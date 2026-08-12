@@ -28,9 +28,6 @@
     "contact_regions": ["Si"],
     "contact_axis": "x"
   },
-  "doping_device": {
-    "length_scale_to_cm": 1.0
-  },
   "characterization": {
     "type": "iv",
     "region": "Si",
