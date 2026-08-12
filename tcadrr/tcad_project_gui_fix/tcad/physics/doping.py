@@ -12,12 +12,12 @@ given (apply_uniform_doping returns a new one via dataclasses.replace).
 tcad/device/devsim/doping_mapping.py is the only place that turns a
 DopingProfile into actual DevSim node models.
 
-Scope for this phase: uniform (constant per region) doping only.
-Future extension point: gaussian_implant/diffusion would add
-position-dependent fields to DopingRegion and a new
-apply_gaussian_implant()-style builder here, without needing to change
-ProcessResult, DopingProfile's `regions` shape, or anything on the
-DevSim side beyond doping_mapping.py's equation string.
+Implements uniform (Phase 7), step-junction (Phase 8), and
+gaussian_implant doping. gaussian_implant adds position-dependent
+fields to DopingRegion (peak_conc_cm3, peak_position_um, straggle_um)
+and this module's apply_gaussian_implant_doping() — no change needed to
+ProcessResult or DopingProfile's `regions` shape, matching the design
+this module already anticipated for it.
 """
 
 from __future__ import annotations
@@ -73,4 +73,30 @@ def apply_step_junction_doping(
         acceptor_conc_cm3=acceptor_conc_cm3,
     )
     doping = DopingProfile(kind="step_junction", regions=[doping_region])
+    return replace(result, doping=doping)
+
+
+def apply_gaussian_implant_doping(
+    result: ProcessResult,
+    region: str,
+    junction_axis: str,
+    peak_position_um: float,
+    straggle_um: float,
+    peak_conc_cm3: float,
+) -> ProcessResult:
+    """Return a new ProcessResult with a 1D Gaussian implant doping
+    profile attached to one region: net doping along `junction_axis`
+    is peak_conc_cm3 * exp(-((axis - peak_position_um)^2) /
+    (2*straggle_um^2)) — a simple implant/diffusion approximation, not a
+    full process simulation. peak_conc_cm3 sign follows net_doping_cm3's
+    convention (positive = net donor, negative = net acceptor).
+    """
+    doping_region = DopingRegion(
+        region=region,
+        junction_axis=junction_axis,
+        peak_position_um=peak_position_um,
+        straggle_um=straggle_um,
+        peak_conc_cm3=peak_conc_cm3,
+    )
+    doping = DopingProfile(kind="gaussian_implant", regions=[doping_region])
     return replace(result, doping=doping)

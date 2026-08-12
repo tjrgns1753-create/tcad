@@ -54,7 +54,11 @@ def _apply_doping(process_result, cfg: Dict[str, Any] | None):
     if not cfg:
         return process_result
 
-    from tcad.physics.doping import apply_step_junction_doping, apply_uniform_doping
+    from tcad.physics.doping import (
+        apply_gaussian_implant_doping,
+        apply_step_junction_doping,
+        apply_uniform_doping,
+    )
 
     kind = cfg["kind"]
     if kind == "uniform":
@@ -67,6 +71,15 @@ def _apply_doping(process_result, cfg: Dict[str, Any] | None):
             junction_position_um=cfg["junction_position_um"],
             donor_conc_cm3=cfg["donor_conc_cm3"],
             acceptor_conc_cm3=cfg["acceptor_conc_cm3"],
+        )
+    if kind == "gaussian_implant":
+        return apply_gaussian_implant_doping(
+            process_result,
+            region=cfg["region"],
+            junction_axis=cfg["junction_axis"],
+            peak_position_um=cfg["peak_position_um"],
+            straggle_um=cfg["straggle_um"],
+            peak_conc_cm3=cfg["peak_conc_cm3"],
         )
     raise ValueError(f"Unknown doping kind: {kind!r}")
 

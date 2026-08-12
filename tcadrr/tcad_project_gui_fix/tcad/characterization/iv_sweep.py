@@ -35,8 +35,9 @@ def run_iv_sweep(
         sweep (default 0.0 for any contact not named here).
     conductivity : Ohmic conductivity used for the doping-free equation
         set up by resistor_equation.setup_ohmic_equation (see that
-        module's docstring — real device physics needs doping, which
-        is not implemented yet).
+        module's docstring — this Ohmic path is intentionally
+        doping-free; doping-aware I-V uses
+        tcad.characterization.pn_junction_iv_sweep instead).
     """
     fixed_contacts = fixed_contacts or {}
 

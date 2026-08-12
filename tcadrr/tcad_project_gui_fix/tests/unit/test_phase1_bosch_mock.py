@@ -170,7 +170,7 @@ class FakeViennaPS:
     def Domain(self, gridDelta, xExtent, yExtent):
         return FakeDomain(gridDelta, xExtent, yExtent)
 
-    def MakeTrench(self, domain, trenchWidth, trenchDepth, maskHeight):
+    def MakeTrench(self, domain, trenchWidth, trenchDepth, maskHeight, halfTrench=False):
         return FakeMakeTrenchHandle(
             self.trench_calls,
             {
@@ -178,6 +178,7 @@ class FakeViennaPS:
                 "trenchWidth": trenchWidth,
                 "trenchDepth": trenchDepth,
                 "maskHeight": maskHeight,
+                "halfTrench": halfTrench,
             },
         )
 

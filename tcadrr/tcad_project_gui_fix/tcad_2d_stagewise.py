@@ -46,24 +46,22 @@ from tkinter import ttk, filedialog, messagebox
 # Phase 2 refactor: Bosch DRIE moved from tcad.backends.viennaps.bosch
 # to tcad.process.etching.bosch_drie — it is now one registered Etching
 # model among several (SF6O2, Fluorocarbon, IBE, WetEtching, Isotropic,
-# Directional), not a special-cased backend function. Only this import
-# line changed; worker_main()'s call site is untouched.
+# Directional), not a special-cased backend function. worker_main() now
+# dispatches through process_registry for whichever model the GUI picks.
 from tcad.core import BoschRecipe, Wafer
 from tcad.backends.viennaps import session as viennaps_session
-from tcad.process.etching.bosch_drie import run_viennaps_bosch
 from tcad.process import registry as process_registry
 import tcad.process.etching  # noqa: F401 -- import side effect: registers etch models
 import tcad.process.deposition  # noqa: F401 -- import side effect: registers deposition models
 import tcad.process.oxidation  # noqa: F401 -- import side effect: registers oxidation models
 
 # ============================================================
-# VIENNAPS BOSCH ENGINE
+# VIENNAPS ETCH ENGINE
 # ============================================================
 #
-# run_viennaps_bosch() now lives in tcad/process/etching/bosch_drie.py
-# as BoschDRIEEtch.run(), reachable either directly or via
-# process_registry.get("etching", "bosch_drie")(). The algorithm itself
-# (MakeTrench, passivation, breakthrough, silicon etch, Bosch cycle
+# worker_main() dispatches through process_registry.get("etching", ...)
+# so any registered etching model works, not just Bosch. Bosch's own
+# algorithm (MakeTrench, passivation, breakthrough, silicon etch, cycle
 # loop, snapshotting) is unchanged since Phase 1.
 
 # ============================================================
@@ -79,7 +77,10 @@ def worker_main(config_file: str, result_file: str):
             )
         )
 
-        result = run_viennaps_bosch(
+        # Any registered etching model works here (Bosch included): the
+        # GUI sets "_etch_model_key" to pick which one.
+        step_cls = process_registry.get("etching", config["_etch_model_key"])
+        result = step_cls().run(
             config,
             config["output_dir"],
         )
@@ -518,6 +519,12 @@ class TCADApplication(tk.Tk):
             self.wafer.mask_right_um,
         )
 
+        self.depth_var = self._field(
+            frame,
+            "Si substrate depth (µm)",
+            self.wafer.silicon_depth_um,
+        )
+
         self.dose_var = self._field(
             frame,
             "Exposure dose",
@@ -670,6 +677,36 @@ class TCADApplication(tk.Tk):
             self.recipe.neutral_sticking,
         )
 
+        self.directional_rate_var = self._field(
+            frame,
+            "Directional RIE etch rate (µm/s)",
+            0.1,
+        )
+
+        self.isotropic_rate_var = self._field(
+            frame,
+            "Isotropic etch rate (µm/s)",
+            0.05,
+        )
+
+        self.ion_flux_var = self._field(
+            frame,
+            "SF6/O2 ion flux",
+            12.0,
+        )
+
+        self.etchant_flux_var = self._field(
+            frame,
+            "SF6/O2 etchant flux",
+            1800.0,
+        )
+
+        self.oxygen_flux_var = self._field(
+            frame,
+            "SF6/O2 oxygen flux",
+            100.0,
+        )
+
         self.etch_button = ttk.Button(
             frame,
             text="5. START ETCH — VIENNAPS",
@@ -770,6 +807,7 @@ class TCADApplication(tk.Tk):
             self.wafer.pr_thickness_um = float(self.pr_var.get())
             self.wafer.mask_left_um = float(self.left_var.get())
             self.wafer.mask_right_um = float(self.right_var.get())
+            self.wafer.silicon_depth_um = float(self.depth_var.get())
             self.wafer.exposure_dose = float(self.dose_var.get())
             self.wafer.develop_time_s = float(self.develop_var.get())
         except ValueError:
@@ -783,6 +821,13 @@ class TCADApplication(tk.Tk):
             messagebox.showerror(
                 "Mask",
                 "Opening right edge must be larger than left edge.",
+            )
+            return False
+
+        if self.wafer.silicon_depth_um <= 0.0:
+            messagebox.showerror(
+                "Si substrate depth",
+                "Si substrate depth must be positive.",
             )
             return False
 
@@ -910,14 +955,19 @@ class TCADApplication(tk.Tk):
 
             return
 
-        if self.etch_model.get() != "Bosch DRIE":
+        etch_model_keys = {
+            "Bosch DRIE": "bosch_drie",
+            "Directional RIE": "directional",
+            "Isotropic etch": "isotropic",
+            "SF6/O2": "sf6o2",
+        }
+        model_key = etch_model_keys.get(self.etch_model.get())
+
+        if model_key is None:
 
             messagebox.showinfo(
                 "Backend status",
-                "This V2 build connects the real ViennaPS "
-                "backend for Bosch DRIE first. "
-                "Other etch models are UI placeholders "
-                "until their physical backend is connected.",
+                "Unknown etch model selected.",
             )
 
             return
@@ -936,6 +986,8 @@ class TCADApplication(tk.Tk):
         try:
 
             recipe = {
+                "_etch_model_key": model_key,
+
                 "mask_left_um":
                     self.wafer.mask_left_um,
 
@@ -947,11 +999,6 @@ class TCADApplication(tk.Tk):
 
                 "silicon_depth_um":
                     self.wafer.silicon_depth_um,
-
-                "cycles":
-                    int(float(
-                        self.cycles_var.get()
-                    )),
 
                 "grid_delta_um":
                     float(
@@ -968,37 +1015,75 @@ class TCADApplication(tk.Tk):
                     float(
                         self.etch_time_var.get()
                     ),
-
-                "polymer_rate":
-                    float(
-                        self.poly_var.get()
-                    ),
-
-                "polymer_sticking":
-                    float(
-                        self.poly_stick_var.get()
-                    ),
-
-                "ion_source_exponent":
-                    float(
-                        self.ion_exp_var.get()
-                    ),
-
-                "ion_rate":
-                    float(
-                        self.ion_rate_var.get()
-                    ),
-
-                "neutral_rate":
-                    float(
-                        self.neutral_rate_var.get()
-                    ),
-
-                "neutral_sticking":
-                    float(
-                        self.neutral_stick_var.get()
-                    ),
             }
+
+            if model_key == "bosch_drie":
+
+                recipe.update({
+                    "cycles":
+                        int(float(
+                            self.cycles_var.get()
+                        )),
+
+                    "polymer_rate":
+                        float(
+                            self.poly_var.get()
+                        ),
+
+                    "polymer_sticking":
+                        float(
+                            self.poly_stick_var.get()
+                        ),
+
+                    "ion_source_exponent":
+                        float(
+                            self.ion_exp_var.get()
+                        ),
+
+                    "ion_rate":
+                        float(
+                            self.ion_rate_var.get()
+                        ),
+
+                    "neutral_rate":
+                        float(
+                            self.neutral_rate_var.get()
+                        ),
+
+                    "neutral_sticking":
+                        float(
+                            self.neutral_stick_var.get()
+                        ),
+                })
+
+            elif model_key == "directional":
+
+                recipe.update({
+                    "direction": [0.0, -1.0, 0.0],
+                    "directional_velocity":
+                        -abs(float(
+                            self.directional_rate_var.get()
+                        )),
+                    "mask_material": "Mask",
+                })
+
+            elif model_key == "isotropic":
+
+                recipe.update({
+                    "rate":
+                        -abs(float(
+                            self.isotropic_rate_var.get()
+                        )),
+                    "mask_material": "Mask",
+                })
+
+            elif model_key == "sf6o2":
+
+                recipe.update({
+                    "ion_flux": float(self.ion_flux_var.get()),
+                    "etchant_flux": float(self.etchant_flux_var.get()),
+                    "oxygen_flux": float(self.oxygen_flux_var.get()),
+                })
 
         except ValueError:
 
@@ -1032,16 +1117,26 @@ class TCADApplication(tk.Tk):
             encoding="utf-8",
         )
 
+        if model_key == "bosch_drie":
+            start_msg = (
+                "1. MakeTrench\n"
+                "2. Initial Si etch\n"
+                "3. Polymer passivation\n"
+                "4. Bottom breakthrough\n"
+                "5. Si etch\n"
+                f"6. Repeat x {recipe['cycles']}\n"
+            )
+        else:
+            start_msg = (
+                f"1. MakeTrench\n"
+                f"2. {self.etch_model.get()} etch ({recipe['etch_time_s']}s)\n"
+            )
+
         self._log(
-            "\n================================\n"
-            "REAL VIENNAPS BOSCH START\n"
-            "================================\n"
-            "1. MakeTrench\n"
-            "2. Initial Si etch\n"
-            "3. Polymer passivation\n"
-            "4. Bottom breakthrough\n"
-            "5. Si etch\n"
-            f"6. Repeat x {recipe['cycles']}\n"
+            f"\n================================\n"
+            f"REAL VIENNAPS {self.etch_model.get().upper()} START\n"
+            f"================================\n"
+            f"{start_msg}"
         )
 
         self.update_idletasks()
@@ -1117,15 +1212,17 @@ class TCADApplication(tk.Tk):
             6,
         )
 
+        cycles_note = f" x {result['cycles']}" if "cycles" in result else ""
         self.history.append(
-            f"ViennaPS Bosch x {result['cycles']}"
+            f"ViennaPS {self.etch_model.get()}{cycles_note}"
         )
 
+        cycles_line = f"Cycles: {result['cycles']}\n" if "cycles" in result else ""
         self._log(
-            "\n================================\n"
-            "REAL VIENNAPS BOSCH COMPLETE\n"
-            "================================\n"
-            f"Cycles: {result['cycles']}\n"
+            f"\n================================\n"
+            f"REAL VIENNAPS {self.etch_model.get().upper()} COMPLETE\n"
+            f"================================\n"
+            f"{cycles_line}"
             f"Surface files: "
             f"{len(result['snapshots'])}\n"
             f"Final mesh:\n"
@@ -1136,7 +1233,7 @@ class TCADApplication(tk.Tk):
 
         messagebox.showinfo(
             "ViennaPS",
-            "ViennaPS Bosch simulation complete.\n\n"
+            f"ViennaPS {self.etch_model.get()} simulation complete.\n\n"
             f"Final mesh:\n{result['final_mesh']}",
         )
 

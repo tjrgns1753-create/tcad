@@ -93,11 +93,22 @@ def make_trench(
     trench_width_um: float,
     trench_depth_um: float,
     mask_height_um: float,
+    half_trench: bool = False,
 ):
     """Apply vps.MakeTrench(...).apply() to an existing domain in place.
 
     mask_height_um is clamped to a 0.1 um floor, matching the original
     `maskHeight=max(recipe["pr_thickness_um"], 0.1)` call.
+
+    half_trench=True passes MakeTrench's own `halfTrench` flag through
+    (default False, so every existing caller is byte-identical). Verified
+    (isolated scratch probes, this session) this is what avoids the LOCOS
+    mask-mechanics segfault (psOxidation.hpp's solveElasticVelocity),
+    without changing gridDelta/pad-oxide handling. Note: it also rebuilds
+    the domain as a half-geometry mirrored (REFLECTIVE_BOUNDARY) at x=0,
+    so the mask edge lands at trench_width_um/2, NOT at the recipe's
+    mask_left_um/mask_right_um positions -- callers that need exact
+    absolute mask placement must not combine this with those keys.
     """
     module = require_viennaps()
 
@@ -106,6 +117,7 @@ def make_trench(
         trenchWidth=trench_width_um,
         trenchDepth=trench_depth_um,
         maskHeight=max(mask_height_um, 0.1),
+        halfTrench=half_trench,
     ).apply()
 
     return domain

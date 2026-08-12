@@ -44,6 +44,23 @@ RECIPE_OVERRIDES = {
         "etchant_flux": 1800.0,
         "oxygen_flux": 100.0,
     },
+    "hbr_o2": {
+        "ion_flux": 12.0,
+        "etchant_flux": 1800.0,
+        "oxygen_flux": 100.0,
+    },
+    "sf6_c4f8": {
+        "ion_flux": 12.0,
+        "etchant_flux": 1800.0,
+        "mean_energy": 100.0,
+        "sigma_energy": 10.0,
+    },
+    "cf4_o2": {
+        "ion_flux": 12.0,
+        "etchant_flux": 1800.0,
+        "oxygen_flux": 100.0,
+        "polymer_flux": 100.0,
+    },
     "fluorocarbon": {
         "ion_flux": 56.0,
         "etchant_flux": 500.0,
@@ -52,6 +69,11 @@ RECIPE_OVERRIDES = {
     "ibe": {
         "mean_energy": 250.0,
         "plane_wafer_rate": -1.0,
+    },
+    "faraday_cage": {
+        "mean_energy": 250.0,
+        "plane_wafer_rate": -1.0,
+        "cage_angle": 15.0,
     },
     "wet_etching": {
         "material_rates": [
@@ -93,7 +115,7 @@ def main():
 
     assert set(results) == set(registry.list_models("etching"))
     print()
-    print("ALL 7 ETCHING MODELS RAN AGAINST REAL VIENNAPS 4.6.2 SUCCESSFULLY")
+    print(f"ALL {len(results)} ETCHING MODELS RAN AGAINST REAL VIENNAPS 4.6.2 SUCCESSFULLY")
 
 
 if __name__ == "__main__":

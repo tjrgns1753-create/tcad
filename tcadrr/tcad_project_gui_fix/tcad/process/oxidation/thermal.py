@@ -61,7 +61,26 @@ class ThermalOxidation(ProcessStep):
 
         # Fresh wafer normally; the previous step's domain when this
         # step is part of a process flow (see ProcessStep.prepare_domain).
-        geometry = self.prepare_domain(recipe)
+        #
+        # LOCOS (mask_material present) builds with halfTrench=True:
+        # verified (isolated scratch probes, this session) that this
+        # avoids a real segfault in the mask/oxide elastic coupling
+        # solver (solveElasticVelocity) that the full (non-half) trench
+        # geometry triggers, with the process's own pad/seed oxide
+        # setup unchanged. Fin-style oxidation (no mask_material) is
+        # unaffected -- half_trench only ever becomes True here.
+        #
+        # NOTE (open issue, not yet fully physically validated): with
+        # halfTrench=True, real oxide growth beyond the seed and Si
+        # recession were confirmed present and Deal-Grove-consistent in
+        # order of magnitude at time_hours=0.1, but the lateral
+        # bird's-beak *shape* did not visibly change between
+        # time_hours=0.01 and 0.1 -- consistent with it still being
+        # dominated by the seed's own conformal geometry at this
+        # grid_delta, not fully resolved lateral diffusion. Treat LOCOS
+        # geometry as runtime-resolved (no crash) but physically
+        # validation-limited until revisited.
+        geometry = self.prepare_domain(recipe, half_trench="mask_material" in recipe)
 
         model = module.Oxidation()
 

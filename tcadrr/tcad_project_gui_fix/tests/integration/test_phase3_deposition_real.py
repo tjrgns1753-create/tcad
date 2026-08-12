@@ -51,6 +51,10 @@ RECIPE_OVERRIDES = {
         "directional_velocity": 0.1,
         "mask_material": "Mask",
     },
+    "isotropic": {
+        "rate": 0.05,
+        "mask_material": "Mask",
+    },
 }
 
 
@@ -76,7 +80,7 @@ def main():
 
     assert set(results) == set(registry.list_models("deposition"))
     print()
-    print("ALL 5 DEPOSITION MODELS RAN AGAINST REAL VIENNAPS 4.6.2 SUCCESSFULLY")
+    print(f"ALL {len(results)} DEPOSITION MODELS RAN AGAINST REAL VIENNAPS 4.6.2 SUCCESSFULLY")
 
 
 if __name__ == "__main__":

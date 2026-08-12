@@ -4,6 +4,7 @@ deposition models with tcad.process.registry.
 
 from tcad.process.deposition import (
     directional,
+    isotropic,
     selective_epitaxy,
     single_particle_cvd,
     teos,
@@ -16,4 +17,5 @@ __all__ = [
     "selective_epitaxy",
     "single_particle_cvd",
     "directional",
+    "isotropic",
 ]

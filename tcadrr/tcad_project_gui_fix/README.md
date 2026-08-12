@@ -93,14 +93,18 @@ result = run_iv_sweep(
 save_csv(result, "/tmp/out/iv.csv")
 ```
 
-## Supported Process models (13)
+## Supported Process models (18)
 
 | Category | Model (`registry` name) | ViennaPS class |
 |---|---|---|
 | Etching | `bosch_drie` | `SingleParticleProcess` + `MultiParticleProcess` |
 | Etching | `sf6o2` | `SF6O2Etching` |
+| Etching | `hbr_o2` | `HBrO2Etching` |
+| Etching | `sf6_c4f8` | `SF6C4F8Etching` |
+| Etching | `cf4_o2` | `CF4O2Etching` |
 | Etching | `fluorocarbon` | `FluorocarbonEtching` |
 | Etching | `ibe` | `IonBeamEtching` |
+| Etching | `faraday_cage` | `FaradayCageEtching` |
 | Etching | `wet_etching` | `WetEtching` |
 | Etching | `isotropic` | `IsotropicProcess` |
 | Etching | `directional` | `DirectionalProcess` |
@@ -109,6 +113,7 @@ save_csv(result, "/tmp/out/iv.csv")
 | Deposition | `selective_epitaxy` | `SelectiveEpitaxy` |
 | Deposition | `single_particle_cvd` | `SingleParticleProcess` |
 | Deposition | `directional` | `DirectionalProcess` |
+| Deposition | `isotropic` | `IsotropicProcess` |
 | Oxidation | `thermal` | `Oxidation` (fin-style and LOCOS-style, via `mask_material`) |
 
 ```python
@@ -116,7 +121,7 @@ from tcad.process import registry
 import tcad.process.etching, tcad.process.deposition, tcad.process.oxidation
 
 registry.list_categories()        # ["deposition", "etching", "oxidation"]
-registry.list_models("etching")   # 7 names, matching the table above
+registry.list_models("etching")   # 11 names, matching the table above
 step_cls = registry.get("etching", "sf6o2")
 result = step_cls().run(recipe_dict, output_dir)  # {"final_mesh": ..., "snapshots": [...]}
 ```
@@ -181,12 +186,15 @@ The CLI (`tcad.cli.run_pipeline`) writes both under `<workdir>/`:
     "recipe": { /* model-specific — see the model's module docstring */ }
   },
   "doping": {                          // optional
-    "kind": "uniform | step_junction",
+    "kind": "uniform | step_junction | gaussian_implant",
     // uniform:
     "doping_by_region_cm3": {"Si": -1e17},
     // step_junction:
     "region": "Si", "junction_axis": "x", "junction_position_um": 0.0,
-    "donor_conc_cm3": 1e18, "acceptor_conc_cm3": 1e18
+    "donor_conc_cm3": 1e18, "acceptor_conc_cm3": 1e18,
+    // gaussian_implant:
+    "region": "Si", "junction_axis": "x",
+    "peak_position_um": 0.0, "straggle_um": 0.1, "peak_conc_cm3": 1e18
   },
   "device": {
     "mesh_name": "cli_mesh", "device_name": "cli_device",
@@ -230,6 +238,7 @@ tests/
 └── run_regression.py  runs both in one command
 examples/
 └── ohmic_iv_config.json  runnable CLI example
-tcad_2d_stagewise.py  legacy tkinter GUI (Bosch DRIE only), unchanged
-                       since Phase 1 except the etch_button ordering fix
+tcad_2d_stagewise.py  legacy tkinter GUI; etch panel now dispatches
+                       Bosch DRIE, Directional RIE, Isotropic etch, and
+                       SF6/O2 through the same registry as the CLI
 ```

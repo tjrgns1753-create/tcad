@@ -333,7 +333,7 @@ investigation closed as unresolved:**
 | Phase 1 (mock) | PASS |
 | Phase 2 (etching) | PASS |
 | Phase 3 (deposition) | PASS |
-| Phase 4 (oxidation, LOCOS variant) | **FAIL** — segfault, pre-existing, unrelated to this session's changes (see "Oxidation" section below) |
+| Phase 4 (oxidation, LOCOS variant) | **PASS** (later session, was FAIL — segfault fixed via `halfTrench=True`, see "LOCOS (Phase 4) segfault" section below; runtime resolved, physical validation still limited) |
 | Phase 5 (DevSim solve) | PASS |
 | Phase 6 (characterization I-V) | PASS |
 | Phase 7 (doping + Poisson, matches analytic V_bi) | PASS |
@@ -347,6 +347,20 @@ investigation closed as unresolved:**
 No regressions from the floor-depth wiring step: every test that passed
 before it still passes; the two known failures (Phase 4, Phase 8) fail
 identically to how they failed before wiring was added.
+
+**Updated (later session, after the LOCOS `halfTrench` fix and the GUI
+`silicon_depth_um` field):** `tests/run_regression.py` reports **10
+passed, 2 failed**. Phase 4 moved from FAIL to PASS (see "LOCOS (Phase
+4) segfault" above). The 2 remaining failures are both the same
+pre-existing, already-investigated, explicitly-not-pursued PN-junction
+convergence issue: Phase 8 directly, and
+`test_device_lifecycle_repeat_real.py` (fails in its Test B, same root
+cause — the file also hits an unrelated cosmetic `UnicodeEncodeError` in
+its own print statements when run without `PYTHONIOENCODING=utf-8`, per
+the note under "DevSim / OpenMP runtime conflict" above; confirmed by
+re-running with that env var set that Test A still passes and Test B
+still fails with the identical convergence error either way). Nothing
+else regressed.
 
 ### DevSim device/mesh lifecycle cleanup — RESOLVED (this session, found
 while investigating the PN junction issue below)
@@ -374,6 +388,94 @@ mirroring `run_pipeline.py`'s already-verified pattern. No production
 `tcad/` code needed changes — `run_pipeline.py` was already correct, and
 `test_device_lifecycle_repeat_real.py` already goes through
 `run_pipeline()` so was never affected by this gap.
+
+### LOCOS (Phase 4) segfault — RUNTIME RESOLVED / PHYSICAL VALIDATION LIMITED (later session)
+
+The LOCOS mask-mechanics segfault documented above (`solveElasticVelocity`
+residual exploding across ~13 CFL step-halving retries) was investigated
+further via isolated, raw-ViennaPS scratch probes (no production code
+touched during investigation), using the actual production LOCOS recipe
+(`test_phase4_oxidation_real.py`'s `thermal_locos_style_with_mask`
+variant: gridDelta=0.2, mask_left/right=1.5/2.5, pr_thickness=0.5).
+
+**Finding: `MakeTrench(..., halfTrench=True)` avoids the crash.** With
+halfTrench=True and the pad/seed oxide left at production's existing
+`max(0.002, gridDelta)` formula (already >= gridDelta by construction),
+the elastic/mask coupling solver converged cleanly (2 iterations,
+residual 0.016 at t=0.01hr, residual 0.0009 at t=0.1hr — improves, not
+degrades, with more time) instead of crashing. Confirmed at both
+time_hours=0.01 (production's actual value) and 0.1 (single follow-up
+check, not a sweep).
+
+**Side effect discovered (not assumed, confirmed via
+`domain.getBoundaryConditions()`/`getBoundingBox()`):** `halfTrench=True`
+does not preserve `mask_left_um`/`mask_right_um` as absolute positions.
+It rebuilds the domain as a half-geometry with `REFLECTIVE_BOUNDARY` at
+x=0, and the real mask edge lands at `trenchWidth/2`, not at the recipe's
+literal mask_left/right coordinates.
+
+**Physical validation, at time_hours=0.1 (single follow-up run, not a
+sweep), measured via raw level-set (never `saveVolumeMesh`):**
+- Real oxide growth beyond the seed and Si recession are both present
+  and non-zero: measured growth-beyond-seed 2.61nm vs ViennaPS's own
+  `estimatePlanarOxideThickness()` Deal-Grove reference 1.65nm (same
+  order of magnitude); Si recession 0.67nm in the physically correct
+  direction.
+- **Bird's-beak shape did NOT change between time_hours=0.01 and 0.1**
+  (taper width ~0.311um at both) despite the 10x time increase — i.e.
+  the visually beak-like taper is most likely still dominated by the
+  seed's own conformal geometry at this gridDelta, not by resolved
+  lateral diffusion. Real growth exists (previous bullet) but is far
+  below gridDelta, so it isn't yet visible in the taper shape.
+
+**Decision: mark LOCOS geometry as "runtime resolved / physical
+validation limited," not "fully physically verified."** It runs, does
+not crash, and shows real-but-small growth in the right physical
+direction — but the bird's-beak *shape* specifically is not confirmed to
+be genuine lateral-diffusion-driven growth at the grid/time scales
+tested. Do not present LOCOS bird's-beak geometry as validated until
+this is revisited (see Follow-up below).
+
+**Production fix applied (minimal, this session):**
+- `session.make_trench()` (`tcad/backends/viennaps/session.py`) gained
+  an optional `half_trench: bool = False` parameter, passed straight to
+  `MakeTrench(..., halfTrench=half_trench)`. Default False: every
+  existing caller is byte-identical.
+- `ProcessStep.prepare_domain()` (`tcad/process/base.py`) gained a
+  matching optional `half_trench: bool = False` passthrough parameter.
+- `ThermalOxidation.run()` (`tcad/process/oxidation/thermal.py`) now
+  calls `self.prepare_domain(recipe, half_trench="mask_material" in
+  recipe)` — i.e. half_trench is True only for the LOCOS branch
+  (mask_material present). Fin-style oxidation (no mask_material) and
+  every etching/deposition model are unaffected (they never pass this
+  argument, so it stays False).
+- `tests/unit/test_phase1_bosch_mock.py`'s `FakeViennaPS.MakeTrench`
+  mock needed a matching `halfTrench=False` parameter (it raised
+  `TypeError: unexpected keyword argument 'halfTrench'` otherwise) —
+  fixed to accept and record it, same as the real API.
+
+**Verified:** `test_phase4_oxidation_real.py` (both fin and LOCOS
+variants) passes with no crash. Full regression re-run after the fix:
+Phase 1 (mock, previously broken by this same change until the
+FakeViennaPS fix above) now passes; Phase 2/3/4/5/6/7/9/13/14 all pass;
+Phase 8 and `test_device_lifecycle_repeat_real.py` Test B still fail
+with the exact same pre-existing PN-junction convergence error as
+before this fix (unrelated, see dedicated section below) — no new
+regressions.
+
+**Explicitly deferred, not done this session (open items):**
+- The pad/seed oxide formula (`max(0.002, recipe["grid_delta_um"])` in
+  `thermal.py`) is flagged for future re-review — it ties seed thickness
+  to numerical resolution rather than a physical value, and at coarse
+  gridDelta this seed was observed conformally coating the mask top too
+  (not just the open Si window), which is not physically expected for a
+  real oxidant-blocking mask. Left unchanged this session.
+- The bird's-beak shape's true diffusion-driven behavior (as opposed to
+  seed-geometry artifact) is unresolved — would need a finer gridDelta
+  and/or longer time to distinguish, deliberately not pursued now to
+  avoid an open-ended parameter sweep.
+- `gd=0.02` Si-thickness dependency: untouched, out of scope this
+  session per explicit instruction.
 
 ### PN junction (Phase 8) convergence sensitivity to the floor mechanism — UNRESOLVED, investigation closed (this session)
 
@@ -741,6 +843,284 @@ explicitly deferred. Further Bosch root-cause investigation is closed.
 GUI visualization is not authoritative for process geometry.
 
 Actual ViennaPS mesh/output must be used to judge physical geometry.
+
+### Si substrate depth input field — DONE (later session)
+
+`Wafer.silicon_depth_um` was already wired into the recipe dict
+(`tcad_2d_stagewise.py`'s `run_etch()`, `"silicon_depth_um":
+self.wafer.silicon_depth_um`) from the earlier "Floor depth wiring"
+work, but had no GUI input field, so every GUI-triggered run silently
+used the `Wafer` dataclass default (5.0). Fixed: added a "Si substrate
+depth (µm)" entry to the Lithography panel (next to PR
+thickness/mask-opening fields, same `self._field(...)` pattern), wired
+into `_read_lithography_fields()` (`self.wafer.silicon_depth_um =
+float(self.depth_var.get())`), with a positive-value check matching the
+existing mask-opening validation style. Verified headless (no Tk
+mainloop): default field value matches the dataclass default (5.0);
+typing a new value and running the first lithography step (PR coat, the
+earliest step that calls `_read_lithography_fields()`) propagates it to
+`self.wafer.silicon_depth_um`; a negative value is rejected with the
+same `_read_lithography_fields() -> False` pattern the mask-opening
+check already uses. Full regression re-run clean after this change (see
+below).
+
+### Directional RIE wired into the GUI — DONE (later session)
+
+GUI's etch panel only ran Bosch DRIE (`worker_main()` hardcoded
+`run_viennaps_bosch`); every other model was a UI placeholder. Fixed by
+generalizing `worker_main()` to dispatch through
+`process_registry.get("etching", config["_etch_model_key"])().run(...)`
+(the registry indirection was already imported and half-commented-for
+this — just not used). `run_etch()` now allows both "Bosch DRIE" and
+"Directional RIE" (`etch_model_keys` dict), builds the matching recipe
+per model, and added one new field ("Directional RIE etch rate") to the
+etch panel; direction is fixed at `[0,-1,0]` (vertical etch, matches
+this project's own etching convention) rather than exposed as a field,
+since arbitrary-direction etch was not requested. Success/log messages
+that assumed `result["cycles"]` (Bosch-only) now guard with `"cycles" in
+result`. Deleted the now-unused direct `run_viennaps_bosch` import.
+SF6/O2 and Isotropic etch remain placeholders (not wired this round).
+
+**Verified:** headless smoke check (messagebox stubbed to avoid modal
+block in a no-display run) drives `run_etch()` through the real
+subprocess worker for both models against real ViennaPS —
+`wafer.etched` becomes True for each. Full regression re-run: still 10
+passed / 2 failed, identical pre-existing failures (Phase 8,
+`test_device_lifecycle_repeat_real.py` Test B) — no new regressions.
+
+**Isotropic etch and SF6/O2 wired too (same session, immediate
+follow-up):** same pattern — added to `etch_model_keys`, one new
+recipe-building `elif` branch each, one new field each (`Isotropic etch
+rate`; `SF6/O2 ion/etchant/oxygen flux`, defaults matching
+`test_phase2_etching_real.py`'s own values). The generic `worker_main()`
+dispatch and the `"cycles" in result` log/success guards needed no
+further changes — they already covered any registered etching model.
+Verified the same way: headless smoke check now drives all 4 models
+(Bosch, Directional, Isotropic, SF6/O2) through the real subprocess
+worker; full regression re-run still 10 passed / 2 failed, same two
+pre-existing failures. Remaining GUI etch placeholders: none — all 4
+models in the combobox are real now.
+
+### Isotropic deposition — ADDED (later session)
+
+`tcad/process/etching/isotropic.py`'s own docstring had pre-announced
+this ("a positive rate grows material, see
+process/deposition/isotropic.py in a later phase") but the file never
+existed — a genuine, previously-identified gap, not a new idea. Added
+`tcad/process/deposition/isotropic.py`, mirroring the etching file
+almost exactly: same `IsotropicProcess(rate, maskMaterial)` call, same
+`ProcessStep` shape, only the docstring/convention flipped to expect a
+positive rate (deposition/directional.py already established this same
+positive-vs-negative convention split for `DirectionalProcess`, so this
+isn't a new pattern either). Registered via
+`tcad/process/deposition/__init__.py`. `test_phase3_deposition_real.py`
+needed one new `RECIPE_OVERRIDES["isotropic"]` entry (its loop iterates
+every registered model, so a new model without an override would
+KeyError) and its hardcoded "ALL 5 DEPOSITION MODELS" string was changed
+to read the actual count. README's model table/count updated (13 -> 14).
+
+**Verified:** `test_phase3_deposition_real.py` passes against real
+ViennaPS (`[isotropic] real ViennaPS run OK`, "ALL 6 DEPOSITION MODELS
+RAN..."). Full regression re-run: still 10 passed / 2 failed, same two
+pre-existing failures (Phase 8, `test_device_lifecycle_repeat_real.py`
+Test B) — no new regressions. No GUI change needed/made — deposition
+has no GUI panel at all, this is registry/CLI-reachable only, same as
+every other deposition model.
+
+### HBr/O2 etching — ADDED (later session)
+
+Checked the installed ViennaPS 4.6.2 for etching/deposition-shaped
+classes not yet wired into this project's registry
+(`[n for n in dir(vps.d2) if 'Process' in n or 'Etch' in n or ...]`).
+Found `HBrO2Etching` has an overload with the exact same parameter
+names/defaults as the already-implemented `SF6O2Etching`
+(`ionFlux, etchantFlux, oxygenFlux, meanIonEnergy=100.0,
+sigmaIonEnergy=10.0, ionExponent=100.0, oxySputterYield=3.0,
+etchStopDepth=...`) — smallest, least ambiguous next model to add (no
+new parameter shape to design, straight mirror of sf6o2.py). Added
+`tcad/process/etching/hbr_o2.py`, registered via
+`tcad/process/etching/__init__.py`, `test_phase2_etching_real.py` needed
+one new `RECIPE_OVERRIDES["hbr_o2"]` entry (same reasoning as the
+isotropic-deposition addition above — its loop iterates every registered
+model). Both Phase 2/3's hardcoded "ALL N MODELS" print strings were
+changed to read the actual count (`len(results)`), so this stops
+recurring every time a model is added. README's model table/count
+updated (14 -> 15) and its stale "Bosch DRIE only" GUI description
+corrected to match the actual current etch panel (4 models via
+registry).
+
+Other classes checked but NOT added (deliberately, to keep this a small
+one-model addition, not a sweep): `CF4O2Etching` (extra `polymerFlux`
+param, different shape), `SF6C4F8Etching` (different param names:
+`meanEnergy`/`sigmaEnergy` not `meanIonEnergy`/`sigmaIonEnergy`),
+`FaradayCageEtching` (needs a `Parameters` struct + `maskMaterials`
+sequence, not the flat-kwarg style this project's models use) —
+candidates for a future single-model addition each, not attempted now.
+
+**Verified:** `test_phase2_etching_real.py` passes against real
+ViennaPS (`[hbr_o2] real ViennaPS run OK`, "ALL 8 ETCHING MODELS
+RAN..."). Full regression re-run: still 10 passed / 2 failed, same two
+pre-existing failures — no new regressions. No GUI change made (etch
+panel wiring is deliberately capped at the 4 models already done; adding
+a 5th combobox entry was judged UI-design scope, out of bounds per
+explicit instruction this round).
+
+### SF6/C4F8 etching — ADDED (autonomous overnight session)
+
+Mirrored `sf6o2.py`/`hbr_o2.py`'s file shape for `SF6C4F8Etching`
+(`ionFlux, etchantFlux, meanEnergy, sigmaEnergy, ionExponent=300.0,
+etchStopDepth=...`) — different chemistry (no O2), so no
+oxygenFlux/oxySputterYield params, everything else identical pattern.
+Added `tcad/process/etching/sf6_c4f8.py`, registered, one
+`RECIPE_OVERRIDES["sf6_c4f8"]` entry in `test_phase2_etching_real.py`.
+**Verified:** real ViennaPS run OK, "ALL 9 ETCHING MODELS RAN...". Full
+regression: 10 passed / 2 failed, same two pre-existing failures, no new
+regressions. No GUI change (per this round's scope — GUI etch panel
+capped at the 4 models already done).
+
+### CF4/O2 etching — ADDED (autonomous overnight session)
+
+Same shape as sf6o2.py, plus `polymerFlux`/`polySputterYield` (CF4/O2
+deposits a passivating polymer SF6O2Etching's chemistry doesn't model).
+Added `tcad/process/etching/cf4_o2.py`, registered, one
+`RECIPE_OVERRIDES["cf4_o2"]` entry. **Verified:** real ViennaPS run OK,
+"ALL 10 ETCHING MODELS RAN...". Full regression: 10 passed / 2 failed,
+same pre-existing failures, no new regressions.
+
+### Faraday Cage Ion Beam Etching — ADDED (autonomous overnight session)
+
+Discovered (by instantiating `vps.FaradayCageParameters()` directly)
+that this is IBE (`ion_beam.py`) plus one extra top-level field
+(`cageAngle`, default 0.0) — its nested `ibeParams` has identical
+field names/defaults to `ion_beam.py`'s own `_PARAM_FIELDS`, so that
+dict was reused verbatim (as `_IBE_PARAM_FIELDS`) rather than
+redefined. Unlike `IonBeamEtching`, `FaradayCageEtching` has no
+no-maskMaterials overload — always requires `maskMaterials`, so the
+wrapper defaults it to `[Material('Mask')]` when the recipe omits
+`mask_materials`, matching this project's existing mask-default
+convention elsewhere. Added `tcad/process/etching/faraday_cage.py`,
+registered, one `RECIPE_OVERRIDES["faraday_cage"]` entry.
+
+**Verified:** real ViennaPS run OK, "ALL 11 ETCHING MODELS RAN...".
+Full regression: 10 passed / 2 failed, same pre-existing failures, no
+new regressions.
+
+### Gaussian-implant doping — ADDED (autonomous overnight session)
+
+`tcad/physics/doping.py` and `tcad/device/devsim/doping_mapping.py` had
+both explicitly pre-scoped this exact feature in their own docstrings
+("Future extension point: gaussian_implant... would add
+position-dependent fields to DopingRegion and a new
+apply_gaussian_implant()-style builder... without needing to change
+ProcessResult"), but it was never implemented (a `NotImplementedError`
+guarded any `kind` other than `uniform`/`step_junction`). Implemented
+exactly as pre-scoped:
+- `tcad/mesh/interface.py`: `DopingRegion` gained
+  `peak_conc_cm3`/`peak_position_um`/`straggle_um` (reuses the existing
+  `junction_axis` field for the position axis — no new axis field
+  needed). No other `ProcessResult`/`DopingProfile` shape change.
+- `tcad/physics/doping.py`: new `apply_gaussian_implant_doping(result,
+  region, junction_axis, peak_position_um, straggle_um, peak_conc_cm3)`,
+  same shape as `apply_uniform_doping`/`apply_step_junction_doping`.
+- `tcad/device/devsim/doping_mapping.py`: new `elif doping.kind ==
+  "gaussian_implant"` branch, sets `NetDoping` directly to
+  `peak*exp(-((axis-position)^2)/(2*straggle^2))` (confirmed `exp`/`^`
+  are real DevSim equation-parser functions by finding them used in
+  `devsim/python_packages/simple_physics.py`, not guessed) — no
+  Donors/Acceptors split, since a Gaussian implant isn't a donor/acceptor
+  pair the way step_junction is (matches how "uniform" sets NetDoping
+  directly too).
+
+**Verified (new test, `tests/integration/test_gaussian_implant_doping_real.py`,
+now part of the permanent regression suite):** real ViennaPS isotropic
+etch -> `apply_gaussian_implant_doping` -> DevSim import -> `apply_doping`,
+then DevSim's own evaluated `NetDoping` node values compared node-by-node
+against the analytic Gaussian formula computed independently in Python
+from each node's real DevSim `x` coordinate — **exact match, 0.000e+00
+max relative error across all 550 Si nodes**. This checks DevSim's actual
+equation evaluation, not just "doesn't crash". (Does not run a full
+Poisson/drift-diffusion solve — that would need picking a specific
+electrical check, judged out of scope for this addition; the NetDoping
+mapping itself is what was unimplemented and is now verified.)
+
+Also wired into the CLI: `tcad/cli/run_pipeline.py`'s `_apply_doping()`
+gained one `if kind == "gaussian_implant":` branch (same shape as the
+existing uniform/step_junction branches), and README's CLI config schema
+doc updated to document the 3 new JSON fields
+(`peak_position_um`/`straggle_um`/`peak_conc_cm3`) — otherwise the
+feature would exist in `tcad.physics.doping` but be unreachable from the
+CLI, the main way this project's features are meant to be used per
+README's own examples.
+
+Full regression re-run after the CLI wiring too: still **11 passed / 2
+failed**, same two pre-existing failures (Phase 8,
+`test_device_lifecycle_repeat_real.py` Test B) — no new regressions. No
+GUI change (doping has no GUI panel at all, same as every deposition
+model).
+
+### Autonomous overnight session — stopping point reached (later session)
+
+After the additions above (hbr_o2, sf6_c4f8, cf4_o2, faraday_cage
+etching; isotropic deposition; gaussian_implant doping + CLI wiring),
+checked for further small/clear gaps and found none that clear this
+project's own bar without either fabricating physical data or starting
+a large new design:
+- `wet_etching.py`'s own docstring names a crystallographic (KOH/TMAH)
+  overload as addable "once real rate constants are supplied" — this
+  project's stated principle throughout is to never fabricate physical
+  constants, and no real calibration data is available here, so this
+  was left alone rather than guessed.
+- `tcad/characterization/__init__.py` names Vth/subthreshold-slope
+  extraction as future work — this needs an actual MOSFET transfer
+  (Id-Vgs) sweep, not just an extension of the existing MOS *C-V*
+  capacitor structure, i.e. new device geometry/equation design at
+  roughly Phase 7/8's own scale — judged too large for this "smallest
+  next feature" loop, not attempted.
+- `GeometricTrenchDeposition` (ambiguous `bottomMed`/`a`/`b`/`n` tuning
+  params, no documented meaning found) and `CSVFileProcess` (needs an
+  external rates file) were checked earlier and already skipped for the
+  same reason — no confident default without guessing.
+
+Also fixed two now-stale doc comments found in passing (not new
+features): `resistor_equation.py`/`iv_sweep.py` said "doping is not
+implemented yet" / "future work" — false since Phase 7 added doping and
+this session added gaussian_implant; corrected to explain
+resistor_equation.py is *intentionally* doping-free (Ohmic-only,
+Phase 6), with the doping-aware path living in
+`semiconductor_equation.py`/`pn_junction_iv_sweep.py` instead.
+
+**Final state this session:** `tests/run_regression.py` → **11 passed,
+2 failed**, the same two pre-existing, already-investigated failures
+(Phase 8 PN-junction convergence; `test_device_lifecycle_repeat_real.py`
+Test B, same root cause) — no regressions introduced across the entire
+sequence of changes above. Etch/Deposition registry model counts: 11
+etching (was 7 at session start), 6 deposition (was 5). Doping kinds: 3
+(was 2). Stopped here per the explicit instruction not to force further
+features that would require guessed physical constants or a large new
+design — remaining OPEN items (LOCOS physical validation, directional
+deposition benchmark, Phase 8 PN junction) intentionally untouched.
+
+### Directional deposition — OPEN ISSUE, not investigated further (later session)
+
+While looking for the next process phase to verify, a quick raw-level-set
+check of `deposition/directional.py` (production path,
+`registry.get("deposition","directional").run()`, recipe matching
+`test_phase3_deposition_real.py`'s own `directional` override:
+direction=[0,1,0], directional_velocity=0.1, mask_material=Mask) gave an
+ambiguous reading: the open-window Si top showed ~0 growth at both
+t=0.5s and t=1.0s (should differ if real), while the Si level set's
+*bottom* (y_min) moved by exactly `velocity x time` (0.1 x 1.0 = 0.1 at
+t=1.0s). This could be a real bug, or could be the same kind of
+"level-set node list carries more than the visible surface" measurement
+pitfall already documented under Etching above (naive column-wise
+min/max misreading a level set that also encodes other bookkeeping).
+**Not chased further this session** — per explicit instruction to avoid
+open-ended investigation, this is logged as an open item rather than
+resolved. `directional` deposition is otherwise smoke-tested and passing
+(Phase 3), so nothing here blocks other work; do not treat its physical
+correctness as verified until this is revisited with a proper
+measurement methodology (e.g. the same per-material `saveSurfaceMesh`
+technique used for isotropic etch's undercut, not a raw column scan).
 
 ## Current Task
 

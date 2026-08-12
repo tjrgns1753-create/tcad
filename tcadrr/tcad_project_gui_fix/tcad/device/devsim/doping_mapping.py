@@ -33,9 +33,16 @@ floating-point precision — see tests/test_phase8_pn_junction_real.py):
     devsim.node_model(device=, region=, name="NetDoping",
                        equation="Donors-Acceptors")
 
-Only "uniform" and "step_junction" are implemented so far. A future
-gaussian_implant DopingProfile would still call node_model() the same
-way, just with a Gaussian equation string instead of step().
+"uniform", "step_junction", and "gaussian_implant" are implemented.
+gaussian_implant's equation ("exp"/"^" confirmed supported by DevSim's
+own equation parser: devsim/python_packages/simple_physics.py uses both,
+e.g. `"n_i*exp(Potential/V_t)"`, `"NetDoping^2"`) sets NetDoping directly
+to a Gaussian, the same way "uniform" sets it directly to a constant —
+no separate Donors/Acceptors split, since a Gaussian implant isn't a
+donor/acceptor pair the way a step junction is:
+
+    devsim.node_model(device=, region=, name="NetDoping",
+        equation=f"{peak}*exp(-(({axis}-({position}))^2)/(2*({straggle})^2))")
 """
 
 from __future__ import annotations
@@ -57,9 +64,9 @@ def apply_doping(device: str, doping: DopingProfile, length_scale_to_cm: float =
         "uniform" doping, which has no position dependence. Default 1.0
         matches the default (and every Phase 7 caller's) import scale.
 
-    Only "uniform" and "step_junction" are implemented; any other
-    DopingProfile.kind raises, so a future profile type can't be
-    silently mishandled here.
+    "uniform", "step_junction", and "gaussian_implant" are implemented;
+    any other DopingProfile.kind raises, so a future profile type can't
+    be silently mishandled here.
     """
     module = backend.require_devsim()
 
@@ -87,8 +94,20 @@ def apply_doping(device: str, doping: DopingProfile, length_scale_to_cm: float =
                 device=device, region=region_doping.region, name="NetDoping",
                 equation="Donors-Acceptors",
             )
+    elif doping.kind == "gaussian_implant":
+        for region_doping in doping.regions:
+            axis = region_doping.junction_axis
+            position_native = region_doping.peak_position_um * length_scale_to_cm
+            straggle_native = region_doping.straggle_um * length_scale_to_cm
+            module.node_model(
+                device=device, region=region_doping.region, name="NetDoping",
+                equation=(
+                    f"{region_doping.peak_conc_cm3}*exp(-(({axis}-({position_native}))^2)"
+                    f"/(2*({straggle_native})^2))"
+                ),
+            )
     else:
         raise NotImplementedError(
             f"doping_mapping.apply_doping supports kind in "
-            f"('uniform', 'step_junction') so far, got {doping.kind!r}"
+            f"('uniform', 'step_junction', 'gaussian_implant') so far, got {doping.kind!r}"
         )

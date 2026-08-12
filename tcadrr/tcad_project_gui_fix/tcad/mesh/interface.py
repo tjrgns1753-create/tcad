@@ -46,6 +46,13 @@ class DopingRegion:
         on the side where `junction_axis` coordinate is greater than
         `junction_position_um`; acceptor_conc_cm3 on the other side.
         All None for a uniform region.
+    peak_conc_cm3 / peak_position_um / straggle_um : gaussian_implant
+        case — a 1D Gaussian net-doping profile along `junction_axis`
+        (reused from the step-junction fields above, same meaning: the
+        position axis), centered at peak_position_um with peak value
+        peak_conc_cm3 (signed: positive = net donor, negative = net
+        acceptor, same convention as net_doping_cm3) and standard
+        deviation straggle_um. None for uniform/step-junction regions.
     """
 
     region: str
@@ -54,6 +61,9 @@ class DopingRegion:
     junction_position_um: Optional[float] = None
     donor_conc_cm3: Optional[float] = None
     acceptor_conc_cm3: Optional[float] = None
+    peak_conc_cm3: Optional[float] = None
+    peak_position_um: Optional[float] = None
+    straggle_um: Optional[float] = None
 
 
 @dataclass
@@ -62,11 +72,9 @@ class DopingProfile:
 
     kind : "uniform" (Phase 7) — one constant net_doping_cm3 per
         region. "step_junction" (Phase 8) — one region split into a
-        donor side and an acceptor side along an axis. Reserved future
-        value: "gaussian_implant" for a position-dependent Gaussian
-        profile, which would add its own fields to DopingRegion the
-        same way step_junction did, without another ProcessResult
-        interface change.
+        donor side and an acceptor side along an axis. "gaussian_implant"
+        — a 1D Gaussian net-doping profile along an axis (peak_conc_cm3,
+        peak_position_um, straggle_um on DopingRegion).
     regions : one DopingRegion per doped region.
     """
 

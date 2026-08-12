@@ -25,14 +25,16 @@ never a devsim.Device, node model object, or anything else that would
 tie characterization code to DevSim's internal representation. Only
 this module and mesh_import.py import devsim directly.
 
-Physics scope: doping is not implemented yet (see
-tcad/mesh/interface.py's DopingProfile), so there is no carrier
-transport equation available. What is implemented here is a plain
-Ohmic (linear resistor) equation: J = sigma * E, i.e. current
-proportional to the potential gradient with a constant, user-supplied
-conductivity — enough to drive a real bias sweep and extract a real
-terminal I-V curve without doping. A doping-aware drift-diffusion
-equation is future work once doping is implemented.
+Physics scope: this module's own equation is intentionally doping-free.
+What is implemented here is a plain Ohmic (linear resistor) equation:
+J = sigma * E, i.e. current proportional to the potential gradient with
+a constant, user-supplied conductivity — enough to drive a real bias
+sweep and extract a real terminal I-V curve without doping (Phase 6).
+Doping itself (uniform/step_junction/gaussian_implant, see
+tcad/mesh/interface.py's DopingProfile) and the doping-aware
+drift-diffusion equation it needs are both implemented, just in
+tcad/device/devsim/semiconductor_equation.py (Phase 7/8) rather than
+here — this module stays the simple Ohmic path on purpose.
 
 Real API used (verified against installed DevSim 2.10.1 by reading
 devsim_data/examples/capacitance/cap2d.py — the officially bundled
