@@ -1150,6 +1150,13 @@ zooming/panning the real-mesh view, a legend for material colors,
 rendering it during etch-panel-only categories (deposition/oxidation
 have no GUI panel at all, unchanged).
 
+**Follow-up check:** also smoke-tested Bosch DRIE (multi-material
+Si+Polymer+Mask, exercising the color map beyond isotropic etch's
+Si+Mask) through the same real-mesh render path — 1465 real polygons
+drawn, "REAL VIENNAPS MESH" label present, no crash. Confirms the
+rendering generalizes across models, not just the isotropic case the
+question was originally about.
+
 ### Directional deposition — OPEN ISSUE, not investigated further (later session)
 
 While looking for the next process phase to verify, a quick raw-level-set
