@@ -1157,6 +1157,34 @@ drawn, "REAL VIENNAPS MESH" label present, no crash. Confirms the
 rendering generalizes across models, not just the isotropic case the
 question was originally about.
 
+### CLI end-to-end verification, real entry point — DONE (later session)
+
+Everything in the previous entries was verified via direct Python
+function calls (registry.get(...).run(), apply_gaussian_implant_doping,
+etc.) or integration test scripts — never the actual documented CLI
+entry point (`python -m tcad.cli.run_pipeline <config>.json`), which
+README presents as the primary way to use this project and which this
+session edited directly (`_apply_doping`'s new `gaussian_implant`
+branch). Ran both for real:
+- `examples/ohmic_iv_config.json` (pre-existing, unmodified) — ran
+  clean, produced `iv.csv` with the expected linear-in-voltage,
+  equal-and-opposite-at-both-contacts I-V curve.
+- New `examples/gaussian_implant_iv_config.json` (added this session,
+  mirrors the existing example) exercising the new `"doping":
+  {"kind": "gaussian_implant", ...}` config block through the real CLI
+  — ran clean end-to-end, confirming the CLI wiring added earlier this
+  session is not just reachable in principle but actually works via the
+  real entry point. README's CLI example section and project-layout
+  listing both updated to mention it.
+
+Generated run output (`examples/tcad_run/`) was deleted after each
+check — it's the CLI's own regenerable artifact directory, not tracked
+in git, not something to leave lying around.
+
+Full regression re-confirmed after this (docs/example-only change, no
+`tcad/` code touched): 11 passed / 2 failed, same two pre-existing
+failures.
+
 ### Directional deposition — OPEN ISSUE, not investigated further (later session)
 
 While looking for the next process phase to verify, a quick raw-level-set

@@ -63,6 +63,12 @@ This runs an isotropic etch, imports the result into DevSim, sweeps a
 `examples/ohmic_iv_config.json` for the full config, and the "CLI
 config schema" section below for every field.
 
+`examples/gaussian_implant_iv_config.json` is the same pipeline with a
+`gaussian_implant` doping profile added (`python3 -m
+tcad.cli.run_pipeline examples/gaussian_implant_iv_config.json`) —
+confirmed end-to-end via the actual CLI entry point, not just direct
+function calls.
+
 ## Minimal example: Python API
 
 ```python
@@ -237,7 +243,8 @@ tests/
 ├── integration/     real ViennaPS + real DevSim, one file per phase
 └── run_regression.py  runs both in one command
 examples/
-└── ohmic_iv_config.json  runnable CLI example
+├── ohmic_iv_config.json             runnable CLI example
+└── gaussian_implant_iv_config.json  same, with gaussian_implant doping
 tcad_2d_stagewise.py  legacy tkinter GUI; etch panel now dispatches
                        Bosch DRIE, Directional RIE, Isotropic etch, and
                        SF6/O2 through the same registry as the CLI
