@@ -1,0 +1,44 @@
+{
+  "process": {
+    "category": "oxidation",
+    "model": "thermal",
+    "recipe": {
+      "grid_delta_um": 0.05,
+      "x_extent_um": 4.0,
+      "y_extent_um": 3.0,
+      "mask_left_um": 1.0,
+      "mask_right_um": 3.0,
+      "pr_thickness_um": 0.5,
+      "oxidant": "Dry",
+      "temperature_c": 1000.0,
+      "time_hours": 0.05
+    }
+  },
+  "doping": {
+    "kind": "uniform",
+    "doping_by_region_cm3": {"Si": -1e15}
+  },
+  "device": {
+    "mesh_name": "mos_mesh",
+    "device_name": "mos_device",
+    "contact_regions": ["Si", "SiO2"],
+    "contact_axis": "y",
+    "contact_sides": {"Si": "min", "SiO2": "max"},
+    "interface_region_pairs": [["Si", "SiO2"]],
+    "length_scale_to_cm": 1e-4
+  },
+  "characterization": {
+    "type": "mos_cv",
+    "si_region": "Si",
+    "oxide_region": "SiO2",
+    "gate_contact": "SiO2_ymax",
+    "substrate_contact": "Si_ymin",
+    "interface_name": "Si_SiO2_interface",
+    "gate_voltages": [-0.5, 0.0, 0.5]
+  },
+  "outputs": {
+    "csv_filename": "mos_cv.csv",
+    "json_filename": "mos_cv.json",
+    "plot_filename": "mos_cv.png"
+  }
+}

@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Core process/wafer data models.
+
+These dataclasses are backend-independent: they describe the fabrication
+state and recipe parameters, and carry no ViennaPS (or any other backend)
+imports. Moved verbatim out of tcad_2d_stagewise.py in Phase 1 — field
+names, defaults, and semantics are unchanged so existing GUI code and
+saved project JSON files keep working.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass
+class Wafer:
+    width_um: float = 10.0
+    silicon_depth_um: float = 5.0
+    oxide_um: float = 0.0
+
+    pr_thickness_um: float = 1.0
+
+    mask_left_um: float = 3.5
+    mask_right_um: float = 6.5
+
+    exposure_dose: float = 100.0
+    develop_time_s: float = 60.0
+
+    developed: bool = False
+    etched: bool = False
+    stripped: bool = False
+
+
+@dataclass
+class BoschRecipe:
+    cycles: int = 10
+
+    grid_delta_um: float = 0.05
+    x_extent_um: float = 10.0
+    y_extent_um: float = 8.0
+
+    polymer_rate: float = 0.03
+    polymer_sticking: float = 1.0
+
+    ion_source_exponent: float = 500.0
+    ion_rate: float = -0.02
+
+    neutral_rate: float = -0.01
+    neutral_sticking: float = 0.10
+
+    etch_time_s: float = 1.0

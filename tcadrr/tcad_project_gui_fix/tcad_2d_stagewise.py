@@ -1,0 +1,1636 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# ============================================================
+# TCAD_2D_REAL_REWRITE_V2
+# ============================================================
+# This is intentionally a new single-file implementation.
+#
+# PROCESS FLOW
+#   Si wafer
+#     -> film
+#     -> photoresist coat
+#     -> mask
+#     -> exposure
+#     -> develop
+#     -> etch
+#     -> strip
+#
+# ETCH BACKEND
+#   ViennaPS 2-D
+#
+# Current real ViennaPS recipe:
+#   Bosch DRIE
+#       passivation
+#       bottom breakthrough
+#       silicon etch
+#       repeat
+#
+# This program is an educational process-flow front end. It does not
+# claim to reproduce a complete commercial plasma chemistry model.
+# ============================================================
+
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import tempfile
+from dataclasses import asdict
+from pathlib import Path
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+
+# Phase 1 refactor: Wafer/BoschRecipe live in tcad.core; ViennaPS
+# session/domain/I-O plumbing lives in tcad.backends.viennaps.
+# Phase 2 refactor: Bosch DRIE moved from tcad.backends.viennaps.bosch
+# to tcad.process.etching.bosch_drie — it is now one registered Etching
+# model among several (SF6O2, Fluorocarbon, IBE, WetEtching, Isotropic,
+# Directional), not a special-cased backend function. Only this import
+# line changed; worker_main()'s call site is untouched.
+from tcad.core import BoschRecipe, Wafer
+from tcad.backends.viennaps import session as viennaps_session
+from tcad.process.etching.bosch_drie import run_viennaps_bosch
+from tcad.process import registry as process_registry
+import tcad.process.etching  # noqa: F401 -- import side effect: registers etch models
+import tcad.process.deposition  # noqa: F401 -- import side effect: registers deposition models
+import tcad.process.oxidation  # noqa: F401 -- import side effect: registers oxidation models
+
+# ============================================================
+# VIENNAPS BOSCH ENGINE
+# ============================================================
+#
+# run_viennaps_bosch() now lives in tcad/process/etching/bosch_drie.py
+# as BoschDRIEEtch.run(), reachable either directly or via
+# process_registry.get("etching", "bosch_drie")(). The algorithm itself
+# (MakeTrench, passivation, breakthrough, silicon etch, Bosch cycle
+# loop, snapshotting) is unchanged since Phase 1.
+
+# ============================================================
+# SUBPROCESS WORKER
+# ============================================================
+
+def worker_main(config_file: str, result_file: str):
+
+    try:
+        config = json.loads(
+            Path(config_file).read_text(
+                encoding="utf-8"
+            )
+        )
+
+        result = run_viennaps_bosch(
+            config,
+            config["output_dir"],
+        )
+
+        payload = {
+            "success": True,
+            **result,
+        }
+
+    except Exception as exc:
+
+        payload = {
+            "success": False,
+            "error": repr(exc),
+        }
+
+    Path(result_file).write_text(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+
+# ============================================================
+# GUI
+# ============================================================
+
+class TCADApplication(tk.Tk):
+
+    def __init__(self):
+        super().__init__()
+
+        self.title(
+            "TCAD 2D — REAL PROCESS FLOW — V2"
+        )
+
+        self.geometry(
+            "1380x850"
+        )
+
+        self.minsize(
+            1100,
+            700,
+        )
+
+        self.wafer = Wafer()
+        self.recipe = BoschRecipe()
+
+        self.history = []
+
+        # Explicit process-state machine.
+        # The simulator never jumps from PR coat directly to develop.
+        self.process_stage = "wafer"
+
+        self._make_style()
+        self._make_header()
+        self._make_body()
+        self._make_status()
+
+        self.redraw()
+
+    # --------------------------------------------------------
+    # STYLE
+    # --------------------------------------------------------
+
+    def _make_style(self):
+
+        style = ttk.Style(self)
+
+        try:
+            style.theme_use("clam")
+        except Exception:
+            pass
+
+    # --------------------------------------------------------
+    # HEADER
+    # --------------------------------------------------------
+
+    def _make_header(self):
+
+        header = ttk.Frame(
+            self,
+            padding=(12, 10),
+        )
+
+        header.pack(
+            fill="x"
+        )
+
+        ttk.Label(
+            header,
+            text="TCAD 2D",
+            font=(
+                "Segoe UI",
+                21,
+                "bold",
+            ),
+        ).pack(
+            side="left"
+        )
+
+        ttk.Label(
+            header,
+            text=(
+                "  REAL PROCESS FLOW / "
+                "LITHOGRAPHY + VIENNAPS"
+            ),
+            font=(
+                "Segoe UI",
+                10,
+            ),
+        ).pack(
+            side="left"
+        )
+
+        backend = (
+            "VIENNAPS READY"
+            if viennaps_session.is_available()
+            else "VIENNAPS NOT INSTALLED"
+        )
+
+        ttk.Label(
+            header,
+            text=backend,
+            foreground=(
+                "green"
+                if viennaps_session.is_available()
+                else "red"
+            ),
+            font=(
+                "Segoe UI",
+                10,
+                "bold",
+            ),
+        ).pack(
+            side="right"
+        )
+
+    # --------------------------------------------------------
+    # STATUS BAR
+    # --------------------------------------------------------
+
+    def _make_status(self):
+        self.status_var = tk.StringVar(
+            value="Ready — TCAD_2D_REAL_REWRITE_V2"
+        )
+        ttk.Label(
+            self,
+            textvariable=self.status_var,
+            relief="sunken",
+            anchor="w",
+            padding=5,
+        ).pack(
+            fill="x",
+            side="bottom",
+        )
+
+        # --------------------------------------------------------
+    # BODY
+    # --------------------------------------------------------
+
+    def _make_body(self):
+
+        body = ttk.Frame(
+            self
+        )
+
+        body.pack(
+            fill="both",
+            expand=True,
+            padx=10,
+            pady=5,
+        )
+
+        self._make_process_panel(body)
+        self._make_cross_section(body)
+        self._make_control_panel(body)
+
+    # --------------------------------------------------------
+    # PROCESS PANEL
+    # --------------------------------------------------------
+
+    def _make_process_panel(
+        self,
+        parent,
+    ):
+
+        panel = ttk.LabelFrame(
+            parent,
+            text="Fabrication sequence",
+            padding=10,
+        )
+
+        panel.pack(
+            side="left",
+            fill="y",
+        )
+
+        stages = [
+            "Si wafer",
+            "Film / oxide",
+            "PR coat",
+            "Mask alignment",
+            "Exposure",
+            "Develop",
+            "Etch",
+            "PR strip",
+        ]
+
+        self.stage_labels = []
+
+        for index, name in enumerate(stages):
+
+            label = ttk.Label(
+                panel,
+                text=(
+                    f"○ {index + 1:02d}  {name}"
+                ),
+                width=25,
+                padding=(
+                    3,
+                    7,
+                ),
+            )
+
+            label.pack(
+                anchor="w"
+            )
+
+            self.stage_labels.append(
+                label
+            )
+
+        ttk.Separator(
+            panel
+        ).pack(
+            fill="x",
+            pady=12,
+        )
+
+        ttk.Button(
+            panel,
+            text="NEW WAFER",
+            command=self.reset,
+        ).pack(
+            fill="x",
+            pady=3,
+        )
+
+        ttk.Button(
+            panel,
+            text="SAVE PROJECT",
+            command=self.save_project,
+        ).pack(
+            fill="x",
+            pady=3,
+        )
+
+        ttk.Button(
+            panel,
+            text="LOAD PROJECT",
+            command=self.load_project,
+        ).pack(
+            fill="x",
+            pady=3,
+        )
+
+    # --------------------------------------------------------
+    # CROSS SECTION
+    # --------------------------------------------------------
+
+    def _make_cross_section(
+        self,
+        parent,
+    ):
+
+        frame = ttk.LabelFrame(
+            parent,
+            text="2D process cross-section",
+            padding=5,
+        )
+
+        frame.pack(
+            side="left",
+            fill="both",
+            expand=True,
+            padx=10,
+        )
+
+        self.canvas = tk.Canvas(
+            frame,
+            bg="white",
+            highlightthickness=1,
+            highlightbackground="#777",
+        )
+
+        self.canvas.pack(
+            fill="both",
+            expand=True,
+        )
+
+        self.canvas.bind(
+            "<Configure>",
+            lambda event: self.redraw(),
+        )
+
+    # --------------------------------------------------------
+    # CONTROL PANEL
+    # --------------------------------------------------------
+
+    def _make_control_panel(
+        self,
+        parent,
+    ):
+
+        # GUI-only: the control panel is taller than most windows once
+        # the Etch recipe's fields are stacked, which previously pushed
+        # the START ETCH button and the whole Process log below the
+        # window edge with no way to reach them. Hosting the panel in a
+        # scrollable canvas keeps every widget reachable at any window
+        # height. No process/physics logic is affected -- `panel` is
+        # still the same ttk.Frame the sub-panels are built into.
+        scroll_host = ttk.Frame(parent)
+        scroll_host.pack(
+            side="right",
+            fill="y",
+        )
+
+        scroll_canvas = tk.Canvas(
+            scroll_host,
+            width=350,
+            highlightthickness=0,
+            borderwidth=0,
+        )
+        scrollbar = ttk.Scrollbar(
+            scroll_host,
+            orient="vertical",
+            command=scroll_canvas.yview,
+        )
+        scroll_canvas.configure(yscrollcommand=scrollbar.set)
+
+        scrollbar.pack(side="right", fill="y")
+        scroll_canvas.pack(side="left", fill="both", expand=True)
+
+        panel = ttk.Frame(
+            scroll_canvas,
+            width=350,
+        )
+        panel_window = scroll_canvas.create_window(
+            (0, 0),
+            window=panel,
+            anchor="nw",
+            width=350,
+        )
+
+        def _on_panel_configure(event):
+            scroll_canvas.configure(scrollregion=scroll_canvas.bbox("all"))
+
+        panel.bind("<Configure>", _on_panel_configure)
+
+        def _on_canvas_configure(event):
+            scroll_canvas.itemconfigure(panel_window, width=event.width)
+
+        scroll_canvas.bind("<Configure>", _on_canvas_configure)
+
+        def _on_mousewheel(event):
+            if event.num == 4:
+                scroll_canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                scroll_canvas.yview_scroll(1, "units")
+            else:
+                scroll_canvas.yview_scroll(
+                    -1 * int(event.delta / 120), "units"
+                )
+
+        # Windows/macOS use <MouseWheel>; X11 reports buttons 4/5.
+        scroll_canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        scroll_canvas.bind_all("<Button-4>", _on_mousewheel)
+        scroll_canvas.bind_all("<Button-5>", _on_mousewheel)
+
+        self._make_lithography_panel(
+            panel
+        )
+
+        self._make_etch_panel(
+            panel
+        )
+
+        # etch_button (created above) is required by
+        # _update_process_buttons(); call it only after both panels
+        # exist so widget creation order / visual layout is unchanged,
+        # only the timing of this refresh call moves.
+        self._update_process_buttons()
+
+        self._make_log_panel(
+            panel
+        )
+
+    # --------------------------------------------------------
+    # LITHOGRAPHY
+    # --------------------------------------------------------
+
+    def _make_lithography_panel(
+        self,
+        parent,
+    ):
+
+        frame = ttk.LabelFrame(
+            parent,
+            text="Lithography",
+            padding=10,
+        )
+
+        frame.pack(
+            fill="x"
+        )
+
+        self.pr_var = self._field(
+            frame,
+            "PR thickness (µm)",
+            self.wafer.pr_thickness_um,
+        )
+
+        self.left_var = self._field(
+            frame,
+            "Mask opening left (µm)",
+            self.wafer.mask_left_um,
+        )
+
+        self.right_var = self._field(
+            frame,
+            "Mask opening right (µm)",
+            self.wafer.mask_right_um,
+        )
+
+        self.dose_var = self._field(
+            frame,
+            "Exposure dose",
+            self.wafer.exposure_dose,
+        )
+
+        self.develop_var = self._field(
+            frame,
+            "Develop time (s)",
+            self.wafer.develop_time_s,
+        )
+
+        ttk.Label(
+            frame,
+            text="Run each fabrication step separately:",
+            font=("Segoe UI", 9, "bold"),
+        ).pack(anchor="w", pady=(8, 4))
+
+        self.coat_button = ttk.Button(
+            frame,
+            text="1. PR COAT",
+            command=self.process_pr_coat,
+        )
+        self.coat_button.pack(fill="x", pady=2)
+
+        self.align_button = ttk.Button(
+            frame,
+            text="2. MASK ALIGNMENT",
+            command=self.process_mask_alignment,
+        )
+        self.align_button.pack(fill="x", pady=2)
+
+        self.expose_button = ttk.Button(
+            frame,
+            text="3. EXPOSURE",
+            command=self.process_exposure,
+        )
+        self.expose_button.pack(fill="x", pady=2)
+
+        self.develop_button = ttk.Button(
+            frame,
+            text="4. DEVELOP",
+            command=self.process_develop,
+        )
+        self.develop_button.pack(fill="x", pady=2)
+
+        self.strip_button = ttk.Button(
+            frame,
+            text="PR STRIP",
+            command=self.process_pr_strip,
+        )
+        self.strip_button.pack(fill="x", pady=(8, 2))
+
+    # --------------------------------------------------------
+    # ETCH
+    # --------------------------------------------------------
+
+    def _make_etch_panel(
+        self,
+        parent,
+    ):
+
+        frame = ttk.LabelFrame(
+            parent,
+            text="Etch recipe",
+            padding=10,
+        )
+
+        frame.pack(
+            fill="x",
+            pady=10,
+        )
+
+        ttk.Label(
+            frame,
+            text="Etch process",
+        ).pack(
+            anchor="w"
+        )
+
+        self.etch_model = tk.StringVar(
+            value="Bosch DRIE"
+        )
+
+        ttk.Combobox(
+            frame,
+            textvariable=self.etch_model,
+            state="readonly",
+            values=[
+                "Bosch DRIE",
+                "Directional RIE",
+                "Isotropic etch",
+                "SF6/O2",
+            ],
+        ).pack(
+            fill="x"
+        )
+
+        self.cycles_var = self._field(
+            frame,
+            "Bosch cycles",
+            self.recipe.cycles,
+        )
+
+        self.grid_var = self._field(
+            frame,
+            "Grid delta (µm)",
+            self.recipe.grid_delta_um,
+        )
+
+        self.etch_time_var = self._field(
+            frame,
+            "Etch time / cycle (s)",
+            self.recipe.etch_time_s,
+        )
+
+        self.poly_var = self._field(
+            frame,
+            "Polymer deposition rate",
+            self.recipe.polymer_rate,
+        )
+
+        self.poly_stick_var = self._field(
+            frame,
+            "Polymer sticking",
+            self.recipe.polymer_sticking,
+        )
+
+        self.ion_exp_var = self._field(
+            frame,
+            "Ion source exponent",
+            self.recipe.ion_source_exponent,
+        )
+
+        self.ion_rate_var = self._field(
+            frame,
+            "Ion Si contribution",
+            self.recipe.ion_rate,
+        )
+
+        self.neutral_rate_var = self._field(
+            frame,
+            "Neutral Si contribution",
+            self.recipe.neutral_rate,
+        )
+
+        self.neutral_stick_var = self._field(
+            frame,
+            "Neutral sticking",
+            self.recipe.neutral_sticking,
+        )
+
+        self.etch_button = ttk.Button(
+            frame,
+            text="5. START ETCH — VIENNAPS",
+            command=self.run_etch,
+        )
+        self.etch_button.pack(
+            fill="x",
+            pady=(12, 3),
+        )
+
+        ttk.Label(
+            frame,
+            text=(
+                "The etched surface is generated by "
+                "ViennaPS, not by a GUI drawing formula."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=5,
+        )
+
+    # --------------------------------------------------------
+    # LOG
+    # --------------------------------------------------------
+
+    def _make_log_panel(
+        self,
+        parent,
+    ):
+
+        frame = ttk.LabelFrame(
+            parent,
+            text="Process log",
+            padding=5,
+        )
+
+        frame.pack(
+            fill="both",
+            expand=True,
+        )
+
+        self.log = tk.Text(
+            frame,
+            width=42,
+            height=10,
+            state="disabled",
+            font=(
+                "Consolas",
+                9,
+            ),
+        )
+
+        self.log.pack(
+            fill="both",
+            expand=True,
+        )
+
+    # --------------------------------------------------------
+    # FIELD
+    # --------------------------------------------------------
+
+    def _field(
+        self,
+        parent,
+        label,
+        value,
+    ):
+
+        ttk.Label(
+            parent,
+            text=label,
+        ).pack(
+            anchor="w",
+            pady=(4, 0),
+        )
+
+        variable = tk.StringVar(
+            value=str(value)
+        )
+
+        ttk.Entry(
+            parent,
+            textvariable=variable,
+        ).pack(
+            fill="x"
+        )
+
+        return variable
+
+    # --------------------------------------------------------
+    # LITHOGRAPHY OPERATION
+    # --------------------------------------------------------
+
+    def _read_lithography_fields(self):
+        try:
+            self.wafer.pr_thickness_um = float(self.pr_var.get())
+            self.wafer.mask_left_um = float(self.left_var.get())
+            self.wafer.mask_right_um = float(self.right_var.get())
+            self.wafer.exposure_dose = float(self.dose_var.get())
+            self.wafer.develop_time_s = float(self.develop_var.get())
+        except ValueError:
+            messagebox.showerror(
+                "Lithography",
+                "Lithography values must be numeric.",
+            )
+            return False
+
+        if self.wafer.mask_right_um <= self.wafer.mask_left_um:
+            messagebox.showerror(
+                "Mask",
+                "Opening right edge must be larger than left edge.",
+            )
+            return False
+
+        return True
+
+    def _update_process_buttons(self):
+        """Enable exactly the next physically valid process operation."""
+        buttons = {
+            "wafer": [self.coat_button],
+            "pr_coated": [self.align_button],
+            "aligned": [self.expose_button],
+            "exposed": [self.develop_button],
+            "developed": [self.etch_button],
+            "etched": [self.strip_button],
+            "stripped": [],
+        }
+
+        all_buttons = [
+            self.coat_button,
+            self.align_button,
+            self.expose_button,
+            self.develop_button,
+            self.etch_button,
+            self.strip_button,
+        ]
+
+        for button in all_buttons:
+            button.configure(state="disabled")
+
+        for button in buttons.get(self.process_stage, []):
+            button.configure(state="normal")
+
+    def process_pr_coat(self):
+        if self.process_stage != "wafer":
+            return
+        if not self._read_lithography_fields():
+            return
+
+        self.process_stage = "pr_coated"
+        self.history.append("PR coat")
+        self._activate_stages(0, 1, 2)
+        self._log(
+            "\nSTEP: PR COAT\n"
+            f"PR thickness = {self.wafer.pr_thickness_um} um"
+        )
+        self._update_process_buttons()
+        self.redraw()
+
+    def process_mask_alignment(self):
+        if self.process_stage != "pr_coated":
+            return
+        if not self._read_lithography_fields():
+            return
+
+        self.process_stage = "aligned"
+        self.history.append("Mask alignment")
+        self._activate_stages(0, 1, 2, 3)
+        self._log(
+            "\nSTEP: MASK ALIGNMENT\n"
+            f"Opening = "
+            f"{self.wafer.mask_right_um - self.wafer.mask_left_um} um"
+        )
+        self._update_process_buttons()
+        self.redraw()
+
+    def process_exposure(self):
+        if self.process_stage != "aligned":
+            return
+        if not self._read_lithography_fields():
+            return
+
+        self.process_stage = "exposed"
+        self.history.append("Exposure")
+        self._activate_stages(0, 1, 2, 3, 4)
+        self._log(
+            "\nSTEP: EXPOSURE\n"
+            f"Dose = {self.wafer.exposure_dose}"
+        )
+        self._update_process_buttons()
+        self.redraw()
+
+    def process_develop(self):
+        if self.process_stage != "exposed":
+            return
+
+        self.wafer.developed = True
+        self.process_stage = "developed"
+        self.history.append("Develop")
+        self._activate_stages(0, 1, 2, 3, 4, 5)
+        self._log(
+            "\nSTEP: DEVELOP\n"
+            f"Develop time = {self.wafer.develop_time_s} s\n"
+            "Developed PR opening is now the etch mask."
+        )
+        self._update_process_buttons()
+        self.redraw()
+
+    def process_pr_strip(self):
+        if self.process_stage != "etched":
+            return
+
+        self.wafer.stripped = True
+        self.process_stage = "stripped"
+        self.history.append("PR strip")
+        self._activate_stages(0, 1, 2, 3, 4, 5, 6, 7)
+        self._log(
+            "\nSTEP: PR STRIP\n"
+            "Photoresist removed after etch."
+        )
+        self._update_process_buttons()
+        self.redraw()
+
+    # --------------------------------------------------------
+    # ETCH OPERATION
+    # --------------------------------------------------------
+
+    def run_etch(self):
+
+        if not self.wafer.developed:
+
+            messagebox.showwarning(
+                "Process order",
+                "Run lithography and develop first.",
+            )
+
+            return
+
+        if self.etch_model.get() != "Bosch DRIE":
+
+            messagebox.showinfo(
+                "Backend status",
+                "This V2 build connects the real ViennaPS "
+                "backend for Bosch DRIE first. "
+                "Other etch models are UI placeholders "
+                "until their physical backend is connected.",
+            )
+
+            return
+
+        if not viennaps_session.is_available():
+
+            messagebox.showerror(
+                "ViennaPS",
+                "ViennaPS is not installed.\n\n"
+                "Run:\n"
+                "python -m pip install ViennaPS",
+            )
+
+            return
+
+        try:
+
+            recipe = {
+                "mask_left_um":
+                    self.wafer.mask_left_um,
+
+                "mask_right_um":
+                    self.wafer.mask_right_um,
+
+                "pr_thickness_um":
+                    self.wafer.pr_thickness_um,
+
+                "silicon_depth_um":
+                    self.wafer.silicon_depth_um,
+
+                "cycles":
+                    int(float(
+                        self.cycles_var.get()
+                    )),
+
+                "grid_delta_um":
+                    float(
+                        self.grid_var.get()
+                    ),
+
+                "x_extent_um":
+                    self.wafer.width_um,
+
+                "y_extent_um":
+                    8.0,
+
+                "etch_time_s":
+                    float(
+                        self.etch_time_var.get()
+                    ),
+
+                "polymer_rate":
+                    float(
+                        self.poly_var.get()
+                    ),
+
+                "polymer_sticking":
+                    float(
+                        self.poly_stick_var.get()
+                    ),
+
+                "ion_source_exponent":
+                    float(
+                        self.ion_exp_var.get()
+                    ),
+
+                "ion_rate":
+                    float(
+                        self.ion_rate_var.get()
+                    ),
+
+                "neutral_rate":
+                    float(
+                        self.neutral_rate_var.get()
+                    ),
+
+                "neutral_sticking":
+                    float(
+                        self.neutral_stick_var.get()
+                    ),
+            }
+
+        except ValueError:
+
+            messagebox.showerror(
+                "Etch recipe",
+                "All recipe values must be numeric.",
+            )
+
+            return
+
+        output_dir = tempfile.mkdtemp(
+            prefix="tcad2d_real_v2_"
+        )
+
+        recipe["output_dir"] = output_dir
+
+        config_file = Path(
+            output_dir
+        ) / "recipe.json"
+
+        result_file = Path(
+            output_dir
+        ) / "result.json"
+
+        config_file.write_text(
+            json.dumps(
+                recipe,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        self._log(
+            "\n================================\n"
+            "REAL VIENNAPS BOSCH START\n"
+            "================================\n"
+            "1. MakeTrench\n"
+            "2. Initial Si etch\n"
+            "3. Polymer passivation\n"
+            "4. Bottom breakthrough\n"
+            "5. Si etch\n"
+            f"6. Repeat x {recipe['cycles']}\n"
+        )
+
+        self.update_idletasks()
+
+        try:
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(
+                        Path(__file__).resolve()
+                    ),
+                    "--worker",
+                    str(config_file),
+                    str(result_file),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=900,
+            )
+
+        except Exception as exc:
+
+            messagebox.showerror(
+                "ViennaPS",
+                str(exc),
+            )
+
+            return
+
+        if not result_file.exists():
+
+            messagebox.showerror(
+                "ViennaPS",
+                "Worker did not produce a result file.\n\n"
+                + completed.stderr[-4000:],
+            )
+
+            return
+
+        result = json.loads(
+            result_file.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        if not result.get("success"):
+
+            messagebox.showerror(
+                "ViennaPS",
+                result.get(
+                    "error",
+                    "Unknown ViennaPS error.",
+                ),
+            )
+
+            self._log(
+                "\nVIENNAPS FAILED\n"
+            )
+
+            return
+
+        self.wafer.etched = True
+        self.process_stage = "etched"
+
+        self._activate_stages(
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+        )
+
+        self.history.append(
+            f"ViennaPS Bosch x {result['cycles']}"
+        )
+
+        self._log(
+            "\n================================\n"
+            "REAL VIENNAPS BOSCH COMPLETE\n"
+            "================================\n"
+            f"Cycles: {result['cycles']}\n"
+            f"Surface files: "
+            f"{len(result['snapshots'])}\n"
+            f"Final mesh:\n"
+            f"{result['final_mesh']}\n"
+        )
+
+        self.redraw()
+
+        messagebox.showinfo(
+            "ViennaPS",
+            "ViennaPS Bosch simulation complete.\n\n"
+            f"Final mesh:\n{result['final_mesh']}",
+        )
+
+    # --------------------------------------------------------
+    # DRAW
+    # --------------------------------------------------------
+
+    def redraw(self):
+
+        canvas = self.canvas
+
+        canvas.delete(
+            "all"
+        )
+
+        width = max(
+            canvas.winfo_width(),
+            700,
+        )
+
+        height = max(
+            canvas.winfo_height(),
+            500,
+        )
+
+        x0 = 70
+        x1 = width - 70
+
+        surface_y = height * 0.48
+        bottom_y = height - 60
+
+        canvas.create_text(
+            x0,
+            25,
+            text=(
+                "2D CROSS SECTION / "
+                "PROCESS STATE"
+            ),
+            anchor="w",
+            font=(
+                "Segoe UI",
+                13,
+                "bold",
+            ),
+        )
+
+        # Silicon
+        canvas.create_rectangle(
+            x0,
+            surface_y,
+            x1,
+            bottom_y,
+            fill="#bdbdbd",
+            outline="#555",
+        )
+
+        canvas.create_text(
+            x0 + 10,
+            bottom_y - 20,
+            text="Si substrate",
+            anchor="w",
+        )
+
+        # GUI-only stage visualization. Previously only `developed`
+        # drew anything, so PR COAT / MASK ALIGNMENT / EXPOSURE showed
+        # no visible change. These flags drive the drawing below; none
+        # of them alter process state or the ViennaPS recipe.
+        stage = self.process_stage
+        pr_present = stage in (
+            "pr_coated", "aligned", "exposed", "developed", "etched",
+        )
+        mask_present = stage in ("aligned", "exposed")
+        exposed_now = stage == "exposed"
+        opening_open = self.wafer.developed
+
+        pr_height = max(
+            25,
+            min(
+                110,
+                self.wafer.pr_thickness_um
+                * 55,
+            ),
+        )
+
+        scale = (
+            x1 - x0
+        ) / self.wafer.width_um
+
+        opening_x0 = (
+            x0
+            + self.wafer.mask_left_um
+            * scale
+        )
+
+        opening_x1 = (
+            x0
+            + self.wafer.mask_right_um
+            * scale
+        )
+
+        mask_y0 = (
+            surface_y
+            - pr_height
+            - 45
+        )
+
+        if pr_present and not opening_open:
+
+            # Uniform PR film: coated, and still uniform through
+            # alignment and exposure (exposure changes chemistry, not
+            # geometry -- shown by shading the exposed region instead).
+            canvas.create_rectangle(
+                x0,
+                surface_y - pr_height,
+                x1,
+                surface_y,
+                fill="#e8a0bd",
+                outline="#803252",
+            )
+
+            canvas.create_text(
+                x0 + 10,
+                surface_y - pr_height / 2,
+                text="PR",
+                anchor="w",
+            )
+
+            if exposed_now:
+                # Exposed (soluble) PR under the mask opening.
+                canvas.create_rectangle(
+                    opening_x0,
+                    surface_y - pr_height,
+                    opening_x1,
+                    surface_y,
+                    fill="#f6dce7",
+                    outline="#803252",
+                    stipple="gray50",
+                )
+                canvas.create_text(
+                    (opening_x0 + opening_x1) / 2,
+                    surface_y - pr_height / 2,
+                    text="EXPOSED PR",
+                    fill="#803252",
+                )
+
+        if mask_present:
+
+            # Photomask held above the wafer during alignment/exposure.
+            canvas.create_rectangle(
+                x0,
+                mask_y0,
+                opening_x0,
+                surface_y - pr_height,
+                fill="#202020",
+                outline="#111",
+            )
+
+            canvas.create_rectangle(
+                opening_x1,
+                mask_y0,
+                x1,
+                surface_y - pr_height,
+                fill="#202020",
+                outline="#111",
+            )
+
+            canvas.create_text(
+                (opening_x0 + opening_x1) / 2,
+                mask_y0 - 12,
+                text="MASK OPENING",
+                fill="#155ea8",
+            )
+
+            if exposed_now:
+                # UV illumination through the mask opening.
+                for offset in range(5):
+                    ray_x = (
+                        opening_x0
+                        + (offset + 0.5)
+                        * (opening_x1 - opening_x0)
+                        / 5
+                    )
+                    canvas.create_line(
+                        ray_x,
+                        mask_y0 - 30,
+                        ray_x,
+                        surface_y - pr_height,
+                        fill="#2e86de",
+                        arrow="last",
+                    )
+                canvas.create_text(
+                    (opening_x0 + opening_x1) / 2,
+                    mask_y0 - 40,
+                    text="UV EXPOSURE",
+                    fill="#2e86de",
+                )
+
+        if opening_open:
+
+            # After develop the exposed PR is removed, leaving a real
+            # opening in the resist (this is the state the ViennaPS
+            # etch consumes).
+            canvas.create_rectangle(
+                x0,
+                surface_y - pr_height,
+                opening_x0,
+                surface_y,
+                fill="#e8a0bd",
+                outline="#803252",
+            )
+
+            canvas.create_rectangle(
+                opening_x1,
+                surface_y - pr_height,
+                x1,
+                surface_y,
+                fill="#e8a0bd",
+                outline="#803252",
+            )
+
+            canvas.create_text(
+                x0 + 10,
+                surface_y - pr_height / 2,
+                text="PR",
+                anchor="w",
+            )
+
+            canvas.create_text(
+                (opening_x0 + opening_x1) / 2,
+                surface_y - pr_height - 12,
+                text="PR OPENING",
+                fill="#155ea8",
+            )
+
+        # The actual ViennaPS mesh is stored in VTP. The white opening here
+        # only communicates the process state; it is not pretending to be
+        # the numerical ViennaPS surface.
+        if self.wafer.etched:
+
+            scale = (
+                x1 - x0
+            ) / self.wafer.width_um
+
+            opening_x0 = (
+                x0
+                + self.wafer.mask_left_um
+                * scale
+            )
+
+            opening_x1 = (
+                x0
+                + self.wafer.mask_right_um
+                * scale
+            )
+
+            try:
+                cycles = int(
+                    float(
+                        self.cycles_var.get()
+                    )
+                )
+            except Exception:
+                cycles = 1
+
+            visual_depth = min(
+                bottom_y - surface_y - 10,
+                80 + cycles * 10,
+            )
+
+            canvas.create_rectangle(
+                opening_x0,
+                surface_y,
+                opening_x1,
+                surface_y + visual_depth,
+                fill="white",
+                outline="#444",
+            )
+
+            canvas.create_text(
+                (opening_x0 + opening_x1) / 2,
+                surface_y + visual_depth / 2,
+                text=(
+                    "VIENNAPS\n"
+                    "RESULT"
+                ),
+                justify="center",
+            )
+
+    # --------------------------------------------------------
+    # STAGES
+    # --------------------------------------------------------
+
+    def _activate_stages(
+        self,
+        *active,
+    ):
+
+        active = set(
+            active
+        )
+
+        for index, label in enumerate(
+            self.stage_labels
+        ):
+
+            current = label.cget(
+                "text"
+            )
+
+            name = current[2:]
+
+            label.configure(
+                text=(
+                    "● "
+                    if index in active
+                    else "○ "
+                ) + name
+            )
+
+    # --------------------------------------------------------
+    # LOG
+    # --------------------------------------------------------
+
+    def _log(
+        self,
+        text,
+    ):
+
+        self.log.configure(
+            state="normal"
+        )
+
+        self.log.insert(
+            "end",
+            text + "\n"
+        )
+
+        self.log.see(
+            "end"
+        )
+
+        self.log.configure(
+            state="disabled"
+        )
+
+    # --------------------------------------------------------
+    # RESET
+    # --------------------------------------------------------
+
+    def reset(self):
+
+        self.wafer = Wafer()
+        self.recipe = BoschRecipe()
+        self.history = []
+        self.process_stage = "wafer"
+
+        self._activate_stages()
+
+        self._log(
+            "\nNEW WAFER\n"
+        )
+
+        self._update_process_buttons()
+        self.redraw()
+
+    # --------------------------------------------------------
+    # PROJECT SAVE
+    # --------------------------------------------------------
+
+    def save_project(self):
+
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[
+                (
+                    "TCAD project",
+                    "*.json",
+                )
+            ],
+        )
+
+        if not filename:
+            return
+
+        data = {
+            "version":
+                "TCAD_2D_REAL_REWRITE_V2",
+
+            "wafer":
+                asdict(self.wafer),
+
+            "recipe":
+                asdict(self.recipe),
+
+            "history":
+                self.history,
+        }
+
+        Path(filename).write_text(
+            json.dumps(
+                data,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        self._log(
+            f"PROJECT SAVED: {filename}"
+        )
+
+    # --------------------------------------------------------
+    # PROJECT LOAD
+    # --------------------------------------------------------
+
+    def load_project(self):
+
+        filename = filedialog.askopenfilename(
+            filetypes=[
+                (
+                    "TCAD project",
+                    "*.json",
+                )
+            ],
+        )
+
+        if not filename:
+            return
+
+        try:
+
+            data = json.loads(
+                Path(filename).read_text(
+                    encoding="utf-8"
+                )
+            )
+
+            self.wafer = Wafer(
+                **data["wafer"]
+            )
+
+            self.recipe = BoschRecipe(
+                **data["recipe"]
+            )
+
+            self.history = data.get(
+                "history",
+                [],
+            )
+
+            self._log(
+                f"PROJECT LOADED: {filename}"
+            )
+
+            self.redraw()
+
+        except Exception as exc:
+
+            messagebox.showerror(
+                "Load project",
+                str(exc),
+            )
+
+
+# ============================================================
+# ENTRY POINT
+# ============================================================
+
+def main():
+
+    if (
+        len(sys.argv) >= 2
+        and sys.argv[1] == "--worker"
+    ):
+
+        if len(sys.argv) != 4:
+
+            raise SystemExit(
+                "Usage:\n"
+                "tcad_2d_v2_REAL.py "
+                "--worker CONFIG RESULT"
+            )
+
+        worker_main(
+            sys.argv[2],
+            sys.argv[3],
+        )
+
+        return
+
+    application = TCADApplication()
+
+    application.mainloop()
+
+
+if __name__ == "__main__":
+    main()
