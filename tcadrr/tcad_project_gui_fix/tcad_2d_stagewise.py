@@ -64,6 +64,9 @@ import tcad.process.oxidation  # noqa: F401 -- import side effect: registers oxi
 # algorithm (MakeTrench, passivation, breakthrough, silicon etch, cycle
 # loop, snapshotting) is unchanged since Phase 1.
 
+# Canvas polygon cap for _draw_real_mesh_result -- see its use for why.
+_MAX_RENDERED_TRIANGLES = 2000
+
 # ============================================================
 # SUBPROCESS WORKER
 # ============================================================
@@ -131,6 +134,10 @@ class TCADApplication(tk.Tk):
 
         self.wafer = Wafer()
         self.recipe = BoschRecipe()
+        # Path to the real ViennaPS final_mesh from the last successful
+        # run_etch(), so redraw() can draw the actual geometry instead
+        # of the placeholder rectangle. None until an etch succeeds.
+        self.last_final_mesh = None
 
         self.history = []
 
@@ -1201,6 +1208,7 @@ class TCADApplication(tk.Tk):
 
         self.wafer.etched = True
         self.process_stage = "etched"
+        self.last_final_mesh = result.get("final_mesh")
 
         self._activate_stages(
             0,
@@ -1240,6 +1248,119 @@ class TCADApplication(tk.Tk):
     # --------------------------------------------------------
     # DRAW
     # --------------------------------------------------------
+
+    def _draw_real_mesh_result(self, canvas, x0, x1, surface_y, bottom_y):
+        """Draw the actual ViennaPS final_mesh (self.last_final_mesh, a
+        .vtu volume mesh) as filled triangles, instead of the placeholder
+        rectangle below. Returns True on success; False if the mesh
+        can't be read (meshio/ViennaPS unavailable, file missing, no
+        triangle cells, degenerate bounds, etc.), so the caller falls
+        back to the placeholder in that case -- this must never raise.
+
+        Reuses the exact meshio cell/cell_data access pattern already
+        established in tcad/mesh/viennaps_adapter.py's build_process_result
+        (triangle block lookup, "Material" cell_data, vps.Material(tag)
+        name lookup), rather than inventing a new one.
+        """
+        if not self.last_final_mesh or not Path(self.last_final_mesh).exists():
+            return False
+
+        try:
+            import meshio
+            from tcad.backends.viennaps import session as vps_session
+
+            if not vps_session.is_available():
+                return False
+            module = vps_session.require_viennaps()
+
+            mesh = meshio.read(self.last_final_mesh)
+            triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
+            if triangle_block is None or "Material" not in mesh.cell_data:
+                return False
+            block_index = mesh.cells.index(triangle_block)
+            tags = mesh.cell_data["Material"][block_index]
+
+            points = mesh.points
+            xs = [p[0] for p in points]
+            ys = [p[1] for p in points]
+            x_min, x_max = min(xs), max(xs)
+            y_min, y_max = min(ys), max(ys)
+            if (x_max - x_min) < 1e-9 or (x1 - x0) <= 0:
+                return False
+
+            # Mesh y=0 is the original wafer surface (ViennaPS convention
+            # confirmed throughout this project's own investigation --
+            # see CLAUDE.md), lined up here with surface_y so it matches
+            # the lithography drawing above. x is fit to the full canvas
+            # width; y uses the same scale, clamped so deep/tall meshes
+            # stay inside the canvas instead of overflowing it.
+            x_scale = (x1 - x0) / (x_max - x_min)
+            depth_below = max(0.0, -y_min)
+            depth_above = max(0.0, y_max)
+            available_below = max(1.0, bottom_y - surface_y - 10)
+            available_above = max(1.0, surface_y - 40)
+            y_scale = x_scale
+            if depth_below > 1e-9:
+                y_scale = min(y_scale, available_below / depth_below)
+            if depth_above > 1e-9:
+                y_scale = min(y_scale, available_above / depth_above)
+
+            material_colors = {
+                "Si": "#c9c9c9",
+                "Mask": "#202020",
+                "SiO2": "#8fb8e8",
+                "Polymer": "#f2c14e",
+            }
+            material_names = {}
+
+            # redraw() runs on every window resize (<Configure>, see
+            # __init__), and each run rebuilds the whole canvas from
+            # scratch -- a fine grid_delta_um combined with the default
+            # ~5um floor_depth_um can produce 10000+ triangles, which
+            # would make resizing visibly stutter. Uniformly decimate to
+            # a fixed cap rather than skip a spatial region, so this is
+            # a performance safety valve, not a judgment about which
+            # part of the geometry matters more.
+            triangle_data = triangle_block.data
+            if len(triangle_data) > _MAX_RENDERED_TRIANGLES:
+                step = -(-len(triangle_data) // _MAX_RENDERED_TRIANGLES)  # ceil div
+                triangle_data = triangle_data[::step]
+                tags = tags[::step]
+
+            for tri, tag in zip(triangle_data, tags):
+                tag = int(tag)
+                name = material_names.get(tag)
+                if name is None:
+                    name = str(module.Material(tag)).split("'")[1]
+                    material_names[tag] = name
+                color = material_colors.get(name, "#b0b0b0")
+
+                coords = []
+                for node_idx in tri:
+                    px, py = points[node_idx][0], points[node_idx][1]
+                    coords.append(x0 + (px - x_min) * x_scale)
+                    coords.append(surface_y - py * y_scale)
+
+                # Skip sub-pixel triangles (invisible anyway) -- fine
+                # grid_delta / deep floor_depth_um combinations can
+                # produce thousands of them; this keeps the canvas
+                # responsive without changing what's actually visible.
+                tri_xs = coords[0::2]
+                tri_ys = coords[1::2]
+                if max(tri_xs) - min(tri_xs) < 1.0 and max(tri_ys) - min(tri_ys) < 1.0:
+                    continue
+
+                canvas.create_polygon(coords, fill=color, outline=color)
+
+            canvas.create_text(
+                x0 + 5, surface_y + 12,
+                text="REAL VIENNAPS MESH",
+                anchor="w", fill="#333",
+                font=("Segoe UI", 8, "italic"),
+            )
+            return True
+        except Exception:
+            return False
 
     def redraw(self):
 
@@ -1468,10 +1589,17 @@ class TCADApplication(tk.Tk):
                 fill="#155ea8",
             )
 
-        # The actual ViennaPS mesh is stored in VTP. The white opening here
-        # only communicates the process state; it is not pretending to be
-        # the numerical ViennaPS surface.
-        if self.wafer.etched:
+        # Prefer drawing the actual ViennaPS mesh (real geometry, e.g.
+        # isotropic undercut) when one is available from the last
+        # successful run_etch(). Falls back to the placeholder rectangle
+        # below only if that fails (older project state, meshio missing,
+        # etc.) -- the placeholder never pretended to be the numerical
+        # ViennaPS surface, so this is a strict improvement, not a
+        # behavior change for the case it can't apply to.
+        if self.wafer.etched and self._draw_real_mesh_result(canvas, x0, x1, surface_y, bottom_y):
+            pass
+
+        elif self.wafer.etched:
 
             scale = (
                 x1 - x0

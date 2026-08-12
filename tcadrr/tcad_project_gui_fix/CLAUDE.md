@@ -1100,6 +1100,56 @@ features that would require guessed physical constants or a large new
 design — remaining OPEN items (LOCOS physical validation, directional
 deposition benchmark, Phase 8 PN junction) intentionally untouched.
 
+### GUI: real ViennaPS mesh rendering (replaces white-rectangle placeholder) — ADDED (later session)
+
+User asked why isotropic etch showed no undercut in the GUI. Root
+cause: `redraw()`'s etched-state drawing was a plain white rectangle
+sized from `mask_left_um`/`mask_right_um`/`cycles` — identical for every
+etch model, never reading the real ViennaPS mesh (the code's own comment
+already said so: "the white opening here only communicates the process
+state; it is not pretending to be the numerical ViennaPS surface").
+
+Added `TCADApplication._draw_real_mesh_result()`: reads
+`self.last_final_mesh` (the real `.vtu` from the last successful
+`run_etch()`, now stored — previously discarded) with meshio, reusing
+the exact triangle/`"Material"`-cell_data access pattern already
+established in `tcad/mesh/viennaps_adapter.py`'s `build_process_result`
+(not a new pattern), and draws each triangle as a filled canvas polygon
+colored by material (Si/Mask/SiO2/Polymer). Mesh y=0 (confirmed
+throughout this project as the original wafer surface) lines up with
+the existing `surface_y` so it matches the lithography drawing above it.
+Falls back to the old placeholder rectangle if anything about reading
+the mesh fails (meshio/ViennaPS unavailable, no file yet, degenerate
+bounds, etc.) — `_draw_real_mesh_result` never raises, always returns
+True/False.
+
+**Performance guard (not a design change):** `redraw()` runs on every
+window resize (`<Configure>`, bound in `__init__`), rebuilding the whole
+canvas from scratch each time. A fine `grid_delta_um` combined with the
+default ~5um `floor_depth_um` can produce 10000+ triangles (confirmed:
+11436 for a 0.1um-grid isotropic-etch smoke run), which would make
+resizing visibly stutter. Added a fixed cap (`_MAX_RENDERED_TRIANGLES =
+2000`) with uniform decimation (every Kth triangle) when exceeded — a
+performance safety valve, not a judgment about which part of the
+geometry to prioritize.
+
+**Verified:**
+- Headless smoke test: real ViennaPS isotropic etch (grid_delta=0.1,
+  etch_time=2.0) through `run_etch()`'s real subprocess path, then
+  confirmed the canvas actually contains real-mesh polygons (1905, under
+  the cap) and the "REAL VIENNAPS MESH" label, NOT the placeholder
+  "VIENNAPS RESULT" text.
+- Separately confirmed the fallback path: with `last_final_mesh = None`,
+  `redraw()` still renders the placeholder rectangle correctly (old
+  behavior fully preserved for the case the new code can't handle).
+- Full regression: 11 passed / 2 failed, same two pre-existing failures
+  — no new regressions.
+
+Still not attempted (deferred, matches "no UI redesign" instruction):
+zooming/panning the real-mesh view, a legend for material colors,
+rendering it during etch-panel-only categories (deposition/oxidation
+have no GUI panel at all, unchanged).
+
 ### Directional deposition — OPEN ISSUE, not investigated further (later session)
 
 While looking for the next process phase to verify, a quick raw-level-set
