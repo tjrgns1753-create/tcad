@@ -1267,11 +1267,10 @@ class TCADApplication(tk.Tk):
 
         try:
             import meshio
-            from tcad.backends.viennaps import session as vps_session
 
-            if not vps_session.is_available():
+            if not viennaps_session.is_available():
                 return False
-            module = vps_session.require_viennaps()
+            module = viennaps_session.require_viennaps()
 
             mesh = meshio.read(self.last_final_mesh)
             triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
