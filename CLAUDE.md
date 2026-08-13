@@ -671,18 +671,48 @@ via WebFetch, not guessed).
    (this project pins `ViennaPS>=4.6`, installed 4.6.2) that fixes this
    specific `WriteVisualizationMesh` behavior.
 
-7. **Next smallest experiment (not done, out of scope for this
-   round):** build the exported volume mesh by resolving each
-   material's own region independently (e.g. `Si = Si_levelset MINUS
-   union(SiO2_levelset, Si3N4_levelset)`, computed explicitly via
-   `viennals.BooleanOperation`, then triangulated separately per
-   material and merged) instead of relying on
-   `Domain.saveVolumeMesh()`'s built-in reverse-insertion-order
-   resolution — a real, scoped follow-up, but a new mesh-export code
-   path in its own right, not attempted this session given the
-   uncertainty about how much else in this project's pipeline
-   (`mesh_import.py`'s region/contact/interface detection) implicitly
-   assumes `saveVolumeMesh()`'s exact current output shape.
+7. **Attempted and RULED OUT this session (same session, immediate
+   follow-up per explicit user instruction to keep trying real fixes
+   rather than stop at "not yet root-caused"):** the "resolve each
+   material independently via manual boolean subtraction" idea
+   proposed above. Result: **`RELATIVE_COMPLEMENT` (and the equivalent
+   `INTERSECT` with an `INVERT`ed operand) reliably returns an EMPTY
+   level set whenever EITHER operand has ever been through a `UNION`
+   operation — confirmed as a precise, reproducible ViennaLS behavior,
+   not specific to this project's geometry.** Isolated, minimal proof
+   (bypassing this project's own code entirely, pure `vps`/`vls` calls):
+   two independent, never-unioned `vps.MakePlane` level sets (e.g.
+   `y<0.5` and `y<0.0`) — `RELATIVE_COMPLEMENT` between them correctly
+   returns the `[0.0, 0.5]` slab. The *exact same two shapes*, but with
+   one of them first put through a single `UNION` (either via
+   `MakePlane(..., addToExisting=True)` or an explicit
+   `vls.BooleanOperation(..., UNION)` — both tried, identical result) —
+   `RELATIVE_COMPLEMENT` between them now returns empty, even though
+   `INTERSECT`/`UNION` on the very same (post-union) level set continue
+   to work correctly and return the expected shapes. Tried `Prune()` +
+   `Expand()` (various widths 3-50) on the unioned level set before the
+   subtraction, hoping to "re-normalize" whatever internal state the
+   union operation leaves it in — no effect, still empty every time.
+   This means the "next smallest experiment" as originally proposed —
+   manually undoing the wrap via boolean subtraction — is **not
+   viable with this ViennaLS version's Python API**, full stop; it
+   is not a matter of getting the operand order or pre-processing
+   right.
+
+8. **Next smallest experiment (revised, not done, out of scope for
+   this round):** given point 7 above closes off the "boolean
+   subtraction" route entirely, the only remaining paths are (a) a
+   fully custom mesh triangulator that resolves each material's true
+   region from first principles (e.g. Si's own never-unioned level
+   set gives its exact true boundary already; SiO2's true boundary
+   could be reconstructed geometrically as "the region between Si's
+   true top surface and SiO2's own wrapped top surface," triangulated
+   by hand rather than via any ViennaLS boolean op) — a genuinely new,
+   nontrivial mesh-generation code path, not a quick fix; or (b)
+   reporting this as a bug upstream to the ViennaPS/ViennaLS
+   maintainers and checking whether a newer release (this project pins
+   `ViennaPS>=4.6`, installed 4.6.2) behaves differently. Neither was
+   attempted this session.
 
 ### DevSim BLAS/LAPACK DLL environment issue — RESOLVED (later session)
 
