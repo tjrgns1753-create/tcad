@@ -1344,6 +1344,68 @@ Full regression: **12 passed / 2 failed** (new test counted), same two
 pre-existing, unrelated failures (Phase 8, `test_device_lifecycle_repeat_real.py`
 Test B) — no new regressions.
 
+## Session status snapshot (most recent — read this first)
+
+**Where the code lives:** branch `claude/caveman-doeini-1c015f`, pushed
+to `https://github.com/tjrgns1753-create/tcad` (note: NOT
+`tjrgns1753/tcadproject` — that remote URL was wrong/inaccessible;
+corrected this session). Latest commit `c7c8516`. Local `master` was
+fast-forwarded once, to `d8fdaf9` (one commit behind `c7c8516` —
+the LOCOS contactMode fix landed after that fast-forward and has not
+been merged into local `master` again, deliberately, see next point).
+No PR opened yet (link available:
+https://github.com/tjrgns1753-create/tcad/pull/new/claude/caveman-doeini-1c015f).
+
+**Two worktrees exist for this repo, do not confuse them:**
+1. This one — `.../tcad_project_gui_fix/.claude/worktrees/caveman-doeini-1c015f/...` —
+   where all commits in this section were made.
+2. The main project worktree — `C:/Users/PC/.vscode/tcadproject/...` —
+   has its own **independent, uncommitted** work (an alternate LOCOS fix
+   attempt using `MakePlane` pad-oxide, referred to as "B" throughout
+   this file, plus its own BLAS/MKL environment-recovery notes, merged
+   into this file's LOCOS section already). That worktree's `master` ref
+   was fast-forwarded to `d8fdaf9` mid-session, which left its working
+   tree/index stale relative to that ref (a known, diagnosed, NOT yet
+   resolved sync gap — see "the two LOCOS implementations" comparison
+   below for how B was preserved and compared, not lost). Do not run
+   `git reset --hard`/`checkout`/`clean` there without re-checking that
+   gap first; B's files were separately backed up (git blob objects
+   `1056c7d`/`42307ce` in that worktree's own object DB, plus a scratch
+   copy) precisely so this is recoverable either way.
+
+**What this session did, in order (full detail in the dated sections
+above/below — this is just the index):** fixed the LOCOS mask segfault
+(first via `halfTrench=True`, then superseded by the real root-caused
+fix, `OxidationMaskParameters(contactMode=2)`, after an A vs B vs C
+comparison — see "LOCOS (Phase 4) segfault" section); wired 4 etch
+models into the GUI; added 5 new process models (`hbr_o2`, `sf6_c4f8`,
+`cf4_o2`, `faraday_cage`, deposition `isotropic`); added
+`gaussian_implant` doping (physics + DevSim + CLI); replaced the GUI's
+placeholder etch-result rectangle with real ViennaPS mesh rendering;
+found and fixed a real sign-convention bug in directional deposition;
+audited and fast-forward-merged 9 commits into local `master`; verified
+the CLI's real entry point end-to-end for two examples.
+
+**Regression, most recent run:** `tests/run_regression.py` →
+**13 passed, 2 failed**. The 2 failures are the same pre-existing,
+already-investigated PN-junction convergence issue (Phase 8,
+`test_device_lifecycle_repeat_real.py` Test B) — not touched, not
+regressed, tracked as OPEN below.
+
+**OPEN issues, not resolved this session (do not claim fixed):**
+- LOCOS mask preservation (~97-99% area loss during oxidation) —
+  root cause not identified; confirmed independent of the contactMode
+  fix and of the initial-oxide-seed value.
+- LOCOS bird's-beak shape's true diffusion-driven behavior vs.
+  seed-geometry artifact — unresolved.
+- `gd=0.02` Si-thickness dependency — untouched, out of scope by
+  explicit instruction.
+- Phase 8 / PN-junction drift-diffusion convergence failure —
+  extensively investigated earlier this session, explicitly closed by
+  user instruction not to keep pursuing it.
+- Directional deposition's real-growth *shape* (only the sign/magnitude
+  was verified against `|v|*t`, not a full undercut/profile check).
+
 ## Current Task
 
 Do not try to solve everything at once.
