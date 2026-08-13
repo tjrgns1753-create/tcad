@@ -588,7 +588,7 @@ this is inherited there too.
 - `gd=0.02` Si-thickness dependency: untouched, out of scope this
   session per explicit instruction.
 
-### PN junction (Phase 8) convergence sensitivity to the floor mechanism — UNRESOLVED, investigation closed (this session)
+### PN junction (Phase 8) convergence sensitivity to the floor mechanism — UNRESOLVED, investigation closed (this session; ROOT-CAUSED AND FIXED in a later session — see "PN junction (Phase 8) convergence — RESOLVED" further below for the real mechanism and fix. Kept here unedited for the historical record of what was ruled out first.)
 
 With the floor fix applied, `test_phase8_pn_junction_real.py` and
 `test_device_lifecycle_repeat_real.py`'s Test B (PN junction I-V sweep)
@@ -650,6 +650,152 @@ drift-diffusion I-V sweep through the floored mesh path. Does not affect
 Phase 5/6/7/9/14 (Ohmic, doping/Poisson-only, MOS C-V, and the 2-step
 flow test all pass with the floor fix — only the PN-junction
 drift-diffusion continuity-equation solve is affected).
+
+### PN junction (Phase 8) convergence — RESOLVED (later session)
+
+Reopened per explicit user instruction ("실제 tcad도 수렴 문제 발생이 빈번하니" /
+solve the previously-closed issue) after the earlier investigation
+above had exhausted every Python-side hypothesis it tried (iteration
+count, tolerance, floor depth, geometry, triangle quality, matrix
+values, node ordering, OMP) and concluded "needs C++-level
+instrumentation." Found via a different route: comparing against
+DEVSIM's own official example rather than more Python-side probing of
+this project's own code.
+
+1. **What was tested:** Fetched DEVSIM's real official diode example
+   from source (`github.com/devsim/devsim`,
+   `examples/diode/diode_common.py`/`diode_1d.py` — via WebFetch, since
+   the Context7 MCP connector the user first asked for is not
+   authorized/connected in this environment; confirmed by
+   `SearchMcpRegistry`/`SuggestConnectors` returning
+   `installState: "not_installed"`). Found it grades its mesh down to
+   1e-9..1e-7 cm (0.01-1nm) spacing right at the doping junction —
+   this project's ViennaPS-derived mesh is uniform
+   (`grid_delta_um=0.15` = 150nm everywhere). Computed the Debye length
+   at this project's Phase 8 doping (donor=acceptor=1e18 cm^-3):
+   `L_D = sqrt(eps_si * V_t / (q*N)) ~= 4.09nm` — the mesh is ~37x
+   coarser than the depletion-region length scale.
+
+   Ran three previously-untried isolated probes (same production
+   recipe/domain/tolerances throughout, only ever varying ONE thing at
+   a time): (a) `maximum_iterations` 100->300 — no change, residual
+   plateaus at the same voltage; (b) bias-ramp continuation in
+   0.05/0.02/0.01V sub-steps instead of jumping straight to each
+   requested voltage — no change, fails at the same ~0.19-0.20V
+   regardless of path; (c) **doping swept down at fixed mesh/domain/
+   tolerances** (1e18 -> 1e16 -> 1e14 cm^-3, i.e. Debye length 4nm ->
+   41nm -> 409nm against the same fixed 150nm mesh) — this one flipped
+   the result cleanly.
+
+2. **Result:** At 1e18 cm^-3 (37x mismatch) the sweep fails at V=+0.20
+   exactly as before. At 1e16 cm^-3 (3.7x mismatch) and 1e14 cm^-3
+   (well-resolved), the *identical* mesh/domain/solver settings
+   converge all 8 sweep points cleanly. A separate uniform-refinement
+   probe (whole mesh at grid_delta_um=0.08/0.02, same domain/doping)
+   was NOT a clean fix: 0.08um failed *earlier* (V=+0.00) than the
+   0.15um baseline (V=+0.20) — non-monotonic, consistent with
+   ViennaPS's own triangle quality not being a monotonic function of
+   grid_delta_um (already documented under "MakeTrench floating-point
+   sensitivity" above) — while 0.02um got further (failed at V=+0.30)
+   but cost 50k+ nodes and 260+ seconds and still didn't fully
+   converge.
+
+3. **What it proves:** The real root cause is mesh resolution *at the
+   junction* relative to the doping's Debye length/depletion width —
+   not floor depth, geometry, triangle quality (elsewhere), matrix
+   values, node ordering, or OMP (all already ruled out above), and
+   not fixable by uniformly refining the whole mesh (expensive, and
+   not even reliably monotonic). This matches exactly why DEVSIM's own
+   official example grades its mesh locally instead of using a uniform
+   grid.
+
+4. **Fix applied — local mesh refinement, not a doping or tolerance
+   change** (`tcad/device/devsim/mesh_refine.py`, new module):
+   standard "red-green" (regular/conforming) triangle refinement —
+   triangles inside a window around a target position are split into 4
+   (red); untouched neighbor triangles bordering a red triangle are
+   split into 2 using the already-created shared-edge midpoint
+   (green), which is what keeps the mesh conforming (no hanging
+   nodes/T-junctions); any triangle that would need green-splitting on
+   2+ edges is promoted to red instead (closure, iterated to a fixed
+   point) — the standard rule that avoids degenerate slivers. Repeated
+   passes (`levels`) progressively refine only the region still
+   matching the window predicate, so the whole domain doesn't grow
+   uniformly. Triangles never touched keep their original vertex
+   indices unchanged (far-field mesh is bit-for-bit the input).
+
+   Verified in isolation (`tests/unit/test_mesh_refine_mock.py`, no
+   ViennaPS/DevSim needed — pure geometry) before wiring into
+   production: area preserved exactly across 1-3 refinement levels, no
+   edge ever shared by more than 2 triangles (conforming), far-field
+   triangles provably unchanged, local edge length shrinks ~2x per
+   level as expected, and a predicate matching nothing is a byte-exact
+   no-op.
+
+   Wired into `tcad/device/devsim/mesh_import.py`'s
+   `import_process_result()` as four new **opt-in, default-None**
+   parameters (`refine_near_um`, `refine_axis`, `refine_half_width_um`,
+   `refine_levels`) — every existing caller that doesn't pass
+   `refine_near_um` gets bit-for-bit the same mesh as before this
+   change. `tcad/cli/run_pipeline.py`'s `_import_device()` reads the
+   same four keys from the JSON config's `device` block (all optional,
+   same defaults), and `examples/pn_junction_config.json` now sets
+   `"refine_near_um": 0.0` (this recipe's known junction position).
+
+   Defaults (`refine_half_width_um=0.1`, `refine_levels=4`) are
+   real-execution-verified minimums for this project's own Phase 8
+   recipe, not guessed: 0.05um half-width caught zero triangles
+   (narrower than one original grid cell — a silent no-op, failed
+   identically to no refinement at all); 0.08-0.1um both converged the
+   full 8-point sweep at ~10.3k Si nodes / ~15-17s total (vs. the
+   whole-mesh-refinement alternative's 50k+ nodes / 260s+ and still
+   not fully converged); 3 refinement levels got through V=+0.3 but
+   failed at the last point (V=+0.4); 4 levels converged all 8 points.
+   A different doping level or grid_delta_um will need different
+   values — this is a physical meshing parameter, not a fixed
+   constant, per `mesh_refine.py`'s and `mesh_import.py`'s own
+   docstrings.
+
+5. **Verified, real ViennaPS 4.6.2 + DevSim 2.10.1, via the actual
+   production entry points (not just isolated probes):**
+   - `tests/integration/test_phase8_pn_junction_real.py`: PASSES.
+     Forward current increases monotonically with bias, reverse
+     current stays near-zero/blocking, and the dedicated equilibrium
+     check still matches the analytic V_bi to the same tight tolerance
+     as before (0.953719440 V both sides, unchanged) — refinement
+     changed the mesh but not the physics being checked.
+   - `tests/integration/test_device_lifecycle_repeat_real.py`: **all
+     four tests A-D now pass**, including Test B (repeated PN-junction
+     sweep via the real CLI `run_pipeline()` path, through
+     `examples/pn_junction_config.json`'s new `refine_near_um` key) —
+     previously the project's other permanently-failing test.
+   - Full suite: **`tests/run_regression.py` -> 16 passed, 0 failed, 0
+     skipped** — every previously-known failure is gone, no new
+     regressions. This is the first 0-failed regression run recorded
+     anywhere in this file.
+
+6. **What remains uncertain:** the exact minimum mismatch ratio
+   (mesh-spacing-to-Debye-length) needed for reliable convergence in
+   general (only bracketed empirically for this one recipe: 37x fails,
+   3.7x and lower converges); whether `refine_half_width_um`/
+   `refine_levels` need to scale with doping/grid_delta_um
+   automatically (currently a manual per-recipe parameter, not
+   auto-derived from the doping profile even though
+   `import_process_result()` could in principle read
+   `result.doping.regions[i].junction_position_um` itself — left
+   manual/opt-in deliberately, to keep this change's blast radius
+   small and every other existing caller provably untouched); whether
+   the same technique generalizes to `gaussian_implant` doping
+   (continuous profile, no single sharp `junction_position_um`) or to
+   doping levels much higher than 1e18 cm^-3 (would need a smaller
+   `refine_half_width_um`/more `refine_levels`, unverified).
+
+7. **Next smallest experiment (not done, out of scope for this
+   round):** auto-deriving `refine_near_um`/`refine_half_width_um`
+   from `ProcessResult.doping` directly inside `import_process_result()`
+   (opt-in via a boolean flag) so callers don't have to compute/pass
+   the junction position by hand, matching how `silicon_depth_um`
+   already flows from `Wafer` through the recipe automatically.
 
 ### Oxidation — RESOLVED (this session)
 
@@ -1345,6 +1491,77 @@ pre-existing, unrelated failures (Phase 8, `test_device_lifecycle_repeat_real.py
 Test B) — no new regressions.
 
 ## Session status snapshot (most recent — read this first)
+
+**This supersedes the snapshot below it as "most recent."** The
+snapshot below describes a *different, no-longer-relevant* environment
+(a Windows machine, two local worktrees, branch
+`claude/caveman-doeini-1c015f`) — kept only as history, not current
+state. This session ran in a fresh Linux remote container with no
+prior worktree/venv state; the project code itself (everything above
+this point in the file) was inherited as-is from that prior work and
+is what this session built on.
+
+**Where the code lives now:** branch
+`claude/tjrgns1753-tcad-folder-jj3yg0`, repo
+`tjrgns1753-create/tcad`. The project files (previously only living on
+`claude/caveman-doeini-1c015f`) were moved into this branch's repo
+root this session (were at `tcadrr/tcad_project_gui_fix/` on that other
+branch).
+
+**Environment setup done this session (fresh container, nothing
+pre-installed):** created `.venv`, `pip install -e ".[full]"` (real
+ViennaPS 4.6.2 + DevSim 2.10.1, both from PyPI — no source/mock
+substitutes). DevSim's `import devsim` initially failed with
+"MISSING DLL" for `libopenblas.so`/`liblapack.so`/`libblas.so` — this
+Linux container had no BLAS/LAPACK at all (a different flavor of the
+same class of environment issue the "DevSim BLAS/LAPACK DLL
+environment issue" section above hit on Windows). Fixed with
+`apt-get install libopenblas0 liblapack3 libopenblas-dev
+liblapack-dev` (the `-dev` packages specifically provide the
+unversioned `libopenblas.so`/`liblapack.so`/`libblas.so` symlinks
+DevSim's own default `DEVSIM_MATH_LIBS` search string looks for — the
+non-dev packages alone only provide versioned `.so.3`/`.so.0` files,
+which need an explicit `DEVSIM_MATH_LIBS` override to find). No
+project code changes needed for this — purely a system package
+install, verified by `import devsim` succeeding and
+`tests/run_regression.py` reproducing the exact pre-session-documented
+baseline (13 passed, 2 failed, matching this file's own numbers)
+before any of this session's own changes were made.
+
+**What this session did:** root-caused and fixed the long-open Phase 8
+PN-junction convergence failure (see "PN junction (Phase 8)
+convergence — RESOLVED" above for the full investigation) — local mesh
+refinement near the doping junction
+(`tcad/device/devsim/mesh_refine.py`, wired into
+`mesh_import.py`/`run_pipeline.py` as opt-in parameters), found by
+comparing against DEVSIM's own official diode example (fetched via
+WebSearch/WebFetch, since the Context7 MCP connector the user first
+asked for was not connected/authorized in this environment).
+
+**Regression, most recent run (this session, after the fix):**
+`tests/run_regression.py` → **16 passed, 0 failed, 0 skipped** — every
+previously-documented failure in this file (Phase 8 directly,
+`test_device_lifecycle_repeat_real.py` Test B) is gone, no new
+regressions. This is the first 0-failed run recorded anywhere in this
+file's history.
+
+**OPEN issues carried forward, NOT touched or resolved this session:**
+- LOCOS mask preservation (~97-99% area loss during oxidation).
+- LOCOS bird's-beak shape's true diffusion-driven behavior vs.
+  seed-geometry artifact.
+- `gd=0.02` Si-thickness dependency.
+- Directional deposition's real-growth *shape* (only sign/magnitude
+  verified against `|v|*t`).
+- Auto-deriving `refine_near_um` from `ProcessResult.doping` instead of
+  requiring callers to compute/pass it manually (see item 7 in the
+  "PN junction (Phase 8) convergence — RESOLVED" section above).
+- Whether the mesh-refinement fix generalizes to `gaussian_implant`
+  doping or to doping levels far above 1e18 cm^-3 — unverified, see
+  item 6 in the same section above.
+
+---
+
+## Session status snapshot (historical — Windows environment, superseded above)
 
 **Where the code lives:** branch `claude/caveman-doeini-1c015f`, pushed
 to `https://github.com/tjrgns1753-create/tcad` (note: NOT

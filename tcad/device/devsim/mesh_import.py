@@ -41,6 +41,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from tcad.device.devsim import backend
+from tcad.device.devsim.mesh_refine import refine_mesh_near
 from tcad.mesh.interface import ProcessResult
 
 
@@ -63,6 +64,10 @@ def import_process_result(
     length_scale_to_cm: float = 1.0,
     interface_region_pairs: Optional[List[tuple]] = None,
     contact_sides: Optional[Dict[str, str]] = None,
+    refine_near_um: Optional[float] = None,
+    refine_axis: str = "x",
+    refine_half_width_um: float = 0.1,
+    refine_levels: int = 4,
 ) -> ImportedDevice:
     """Import a ProcessResult's volume mesh into DevSim as a device.
 
@@ -108,6 +113,56 @@ def import_process_result(
         (found by real execution, near a triple point where two
         regions and the domain boundary meet) — restricting to the one
         physically-real side avoids registering that spurious contact.
+    refine_near_um : optional. When set, locally refines mesh triangles
+        (tcad.device.devsim.mesh_refine, red-green/conforming
+        refinement — no hanging nodes, far-field mesh untouched) whose
+        centroid falls within `refine_half_width_um` of this position
+        along `refine_axis`, applied `refine_levels` times (each level
+        ~halves the local edge length). Default None: no refinement,
+        bit-for-bit identical behavior to every existing caller.
+
+        Motivation (found by real execution, not guessed): ViennaPS's
+        uniform grid_delta_um mesh can be far coarser than the Debye
+        length at real doping levels near a step junction — confirmed
+        this project's own Phase 8 PN-junction drift-diffusion sweep
+        (donor=acceptor=1e18 cm^-3, grid_delta_um=0.15um -> Debye
+        length ~4nm, mesh ~37x too coarse) stalls in a persistent
+        Newton residual oscillation, while the SAME mesh at a lower,
+        better-resolved doping level (1e16/1e14 cm^-3) converges
+        cleanly. DEVSIM's own official diode example
+        (examples/diode/diode_common.py) grades its mesh down to
+        sub-nm/few-nm right at the junction for exactly this reason.
+        Pass the doping junction's position here (same units/axis as
+        the doping region) rather than lowering doping or refining the
+        whole mesh uniformly (measured separately to be both far more
+        expensive and not reliably better, since ViennaPS's triangle
+        quality is not a monotonic function of grid_delta_um).
+    refine_axis : "x", "y", or "z" — axis `refine_near_um` is measured
+        along. Independent of `contact_axis` (usually the same value,
+        not required to be).
+    refine_half_width_um : half-width of the refinement window. Default
+        0.1 — real-execution-verified minimum working value for this
+        project's own Phase 8 recipe (grid_delta_um=0.15,
+        donor=acceptor=1e18 cm^-3): 0.05 caught zero triangles (smaller
+        than one original grid cell, so nothing was actually refined —
+        the sweep failed identically to no refinement at all) while
+        0.08-0.1 both converged the full 8-point sweep at similar,
+        modest node counts (~10.3k Si nodes, ~15s for the whole sweep
+        vs. a uniformly-refined whole-mesh alternative measured
+        separately at ~50k nodes / 260s+ and STILL not fully
+        converging). Widening further (0.15/0.25/0.4) also converges
+        but costs more nodes for no additional benefit at this recipe.
+        Should cover at least the depletion region at the doping level
+        used (a few Debye lengths) plus margin — a different doping
+        level or grid_delta_um will need a different value.
+    refine_levels : number of refinement passes (each ~halves the
+        local edge length inside the window). Default 4 (~16x finer
+        locally) — real-execution-verified against this project's own
+        1e18 cm^-3 step-junction Phase 8 recipe: 3 passes (~8x) got the
+        sweep through V=+0.3 but failed at the last point, V=+0.4; 4
+        passes converged all 8 points. A different doping level may
+        need a different value (see mesh_refine.py's own Debye-length
+        reasoning).
     """
     module = backend.require_devsim()
 
@@ -129,7 +184,19 @@ def import_process_result(
     block_index = mesh.cells.index(triangle_block)
     triangles = triangle_block.data
     tags = mesh.cell_data[result.material_field][block_index]
-    points = mesh.points * length_scale_to_cm
+    raw_points = mesh.points
+
+    if refine_near_um is not None:
+        axis_index = {"x": 0, "y": 1, "z": 2}[refine_axis]
+
+        def _near_refine_target(centroid):
+            return abs(centroid[axis_index] - refine_near_um) < refine_half_width_um
+
+        raw_points, triangles, tags = refine_mesh_near(
+            raw_points, triangles, tags, _near_refine_target, levels=refine_levels
+        )
+
+    points = raw_points * length_scale_to_cm
 
     tag_to_name = {region.tag: region.name for region in result.material_regions}
 

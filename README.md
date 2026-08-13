@@ -207,7 +207,17 @@ The CLI (`tcad.cli.run_pipeline`) writes both under `<workdir>/`:
     "contact_regions": ["Si"], "contact_axis": "x",
     "contact_sides": {"Si": "min"},           // optional
     "interface_region_pairs": [["Si", "SiO2"]], // optional
-    "length_scale_to_cm": 1.0                  // 1e-4 for real semiconductor physics
+    "length_scale_to_cm": 1.0,                 // 1e-4 for real semiconductor physics
+    "refine_near_um": 0.0,                     // optional: local mesh refinement near this
+                                                // position (see tcad/device/devsim/mesh_refine.py) --
+                                                // needed for real drift-diffusion PN-junction
+                                                // sweeps at typical doping levels (~1e18 cm^-3),
+                                                // whose Debye length is far finer than ViennaPS's
+                                                // uniform process mesh; omit for doping-free/Poisson-only
+                                                // characterization, which does not need it
+    "refine_axis": "x",                        // optional, default "x"
+    "refine_half_width_um": 0.1,               // optional, default 0.1
+    "refine_levels": 4                         // optional, default 4
   },
   "characterization": {
     "type": "iv | pn_junction_iv | mos_cv",

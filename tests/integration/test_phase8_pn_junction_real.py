@@ -17,6 +17,22 @@ devsim.delete_device() any probe device right after reading what's
 needed from it, and do the real sweep as ONE continuous voltage ramp
 on ONE device (matching realistic TCAD practice anyway) rather than
 two separate forward/reverse calls on the same device.
+
+Previously-open convergence issue, now root-caused and fixed (later
+session): the drift-diffusion sweep below used to fail with
+devsim_py3.error: Convergence failure! at forward bias. Root cause,
+confirmed by an isolated doping sweep (same mesh/domain/tolerances,
+only donor/acceptor concentration varied): ViennaPS's uniform
+grid_delta_um=0.15um mesh is ~37x coarser than the Debye length at
+this recipe's 1e18 cm^-3 doping (~4nm) -- the same mesh converges
+cleanly at 1e16/1e14 cm^-3 doping, where that ratio is much smaller.
+DEVSIM's own official diode example (examples/diode/diode_common.py)
+grades its mesh down to sub-nm/few-nm right at the junction for
+exactly this reason; this project's mesh did not. Fixed by
+import_process_result()'s new refine_near_um parameter
+(tcad/device/devsim/mesh_refine.py) -- local red-green mesh refinement
+around the doping junction, not a doping or tolerance change. See that
+module's docstring for the full investigation and verified defaults.
 """
 
 import math
@@ -96,6 +112,7 @@ def main():
             doped_result, mesh_name="phase8_mesh", device_name="phase8_device",
             contact_regions=["Si"], contact_axis="x",
             length_scale_to_cm=LENGTH_SCALE_TO_CM,
+            refine_near_um=junction_position_um, refine_axis="x",
         )
         assert len(imported.contacts) == 2
         p_contact, n_contact = imported.contacts[0], imported.contacts[1]

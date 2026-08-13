@@ -27,7 +27,8 @@
     "device_name": "pn_device",
     "contact_regions": ["Si"],
     "contact_axis": "x",
-    "length_scale_to_cm": 1e-4
+    "length_scale_to_cm": 1e-4,
+    "refine_near_um": 0.0
   },
   "characterization": {
     "type": "pn_junction_iv",

@@ -99,6 +99,10 @@ def _import_device(process_result, cfg: Dict[str, Any]):
         if cfg.get("interface_region_pairs")
         else None,
         contact_sides=cfg.get("contact_sides"),
+        refine_near_um=cfg.get("refine_near_um"),
+        refine_axis=cfg.get("refine_axis", "x"),
+        refine_half_width_um=cfg.get("refine_half_width_um", 0.1),
+        refine_levels=cfg.get("refine_levels", 4),
     )
 
 
