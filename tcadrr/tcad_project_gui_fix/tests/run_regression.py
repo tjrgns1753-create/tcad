@@ -52,6 +52,8 @@ def _run_one(path: Path) -> tuple[str, float, str]:
         cwd=str(ROOT),
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     elapsed = time.time() - start
     if proc.returncode == 0:

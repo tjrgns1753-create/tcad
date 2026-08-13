@@ -37,6 +37,40 @@ fin vs LOCOS, without a separate model file:
     same model into LOCOS behavior. This is why fin/LOCOS do not need
     separate ProcessStep classes at this stage — the recipe's optional
     `mask_material` key is the variation point, as required.
+
+LOCOS mask/oxide elastic-coupling segfault — root cause and fix (this
+session, superseding an earlier halfTrench=True workaround that changed
+this project's trench-geometry coordinate convention and was never
+fully physically validated; see CLAUDE.md history):
+
+    Root cause (isolated by a single-variable ablation against the
+    ORIGINAL, unmodified trench geometry -- no halfTrench, no extra
+    pad-oxide layer): ViennaPS's OxidationMaskParameters defaults to
+    contactMode=1 ("oneway"/kinematic mask contact). For this project's
+    trench geometry, that contact mode's elastic solve diverges
+    (confirmed: 16 non-converged solves, then a native access-violation
+    crash, reproduced deterministically). Setting ONLY
+    OxidationMaskParameters.contactMode=2 ("twoway"/elastic feedback --
+    the same mode the official ViennaPS locosOxidation.py example uses,
+    via its config.txt's maskContactMode="twoway"), with every other
+    parameter left at ViennaPS's own default, is sufficient by itself:
+    0 solver failures, real oxide growth, identical geometry to setting
+    the full official example's parameter set on top. No geometry
+    change was needed or used.
+
+    The additional mechanics/pressure/stokes/coupling iteration and
+    tolerance settings below match the official example's own values
+    (not fabricated) for headroom on grids/recipes not covered by the
+    ablation above, since only contactMode was proven necessary at the
+    tested recipe -- they are not each individually re-verified as
+    load-bearing.
+
+    Separate, still-open issue, NOT fixed by contactMode=2 (verified:
+    identical ~99% mask-area loss with or without it, and independent of
+    the initial-oxide-seed value below): the mask erodes almost
+    completely during LOCOS oxidation in this project's geometry. Not
+    yet root-caused. Do not treat LOCOS mask preservation as physically
+    validated.
 """
 
 from __future__ import annotations
@@ -61,26 +95,9 @@ class ThermalOxidation(ProcessStep):
 
         # Fresh wafer normally; the previous step's domain when this
         # step is part of a process flow (see ProcessStep.prepare_domain).
-        #
-        # LOCOS (mask_material present) builds with halfTrench=True:
-        # verified (isolated scratch probes, this session) that this
-        # avoids a real segfault in the mask/oxide elastic coupling
-        # solver (solveElasticVelocity) that the full (non-half) trench
-        # geometry triggers, with the process's own pad/seed oxide
-        # setup unchanged. Fin-style oxidation (no mask_material) is
-        # unaffected -- half_trench only ever becomes True here.
-        #
-        # NOTE (open issue, not yet fully physically validated): with
-        # halfTrench=True, real oxide growth beyond the seed and Si
-        # recession were confirmed present and Deal-Grove-consistent in
-        # order of magnitude at time_hours=0.1, but the lateral
-        # bird's-beak *shape* did not visibly change between
-        # time_hours=0.01 and 0.1 -- consistent with it still being
-        # dominated by the seed's own conformal geometry at this
-        # grid_delta, not fully resolved lateral diffusion. Treat LOCOS
-        # geometry as runtime-resolved (no crash) but physically
-        # validation-limited until revisited.
-        geometry = self.prepare_domain(recipe, half_trench="mask_material" in recipe)
+        # Plain trench geometry for both fin and LOCOS -- see module
+        # docstring above for why LOCOS no longer needs halfTrench=True.
+        geometry = self.prepare_domain(recipe)
 
         model = module.Oxidation()
 
@@ -107,6 +124,28 @@ class ThermalOxidation(ProcessStep):
             # Presence of this key is the fin (absent) vs LOCOS (present)
             # switch — see module docstring above.
             model.setMaskMaterial(getattr(module.Material, recipe["mask_material"]))
+
+            # LOCOS mask/oxide elastic-coupling fix — see module
+            # docstring for the root cause and the ablation that found
+            # contactMode=2 alone sufficient. The rest of this block
+            # matches the official locosOxidation.py example's own
+            # values, not fabricated, for headroom beyond the tested
+            # recipe.
+            import viennals as vls
+
+            mask_params = vls.OxidationMaskParameters()
+            mask_params.contactMode = 2
+            model.setMaskParameters(mask_params)
+            model.setMechanicsIterations(300)
+            model.setMechanicsTolerance(5e-3)
+            model.setPressureIterations(500)
+            model.setPressureTolerance(1e-3)
+            model.setStokesIterations(500)
+            model.setStokesTolerance(1e-3)
+            model.setCouplingIterations(100)
+            model.setCouplingTolerance(2e-2)
+            model.setMaskCouplingIterations(30)
+            model.setMaskCouplingTolerance(1e-2)
 
         recorder = SnapshotRecorder(output_dir)
         recorder.capture(geometry, "000_initial")

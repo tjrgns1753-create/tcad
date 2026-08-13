@@ -333,7 +333,7 @@ investigation closed as unresolved:**
 | Phase 1 (mock) | PASS |
 | Phase 2 (etching) | PASS |
 | Phase 3 (deposition) | PASS |
-| Phase 4 (oxidation, LOCOS variant) | **PASS** (later session, was FAIL — segfault fixed via `halfTrench=True`, see "LOCOS (Phase 4) segfault" section below; runtime resolved, physical validation still limited) |
+| Phase 4 (oxidation, LOCOS variant) | **PASS** (later session, was FAIL — root cause found (ViennaPS's default mask `contactMode`) and fixed via `OxidationMaskParameters(contactMode=2)`, see "LOCOS (Phase 4) segfault" section below; real oxide growth verified, mask preservation still open) |
 | Phase 5 (DevSim solve) | PASS |
 | Phase 6 (characterization I-V) | PASS |
 | Phase 7 (doping + Poisson, matches analytic V_bi) | PASS |
@@ -389,91 +389,202 @@ mirroring `run_pipeline.py`'s already-verified pattern. No production
 `test_device_lifecycle_repeat_real.py` already goes through
 `run_pipeline()` so was never affected by this gap.
 
-### LOCOS (Phase 4) segfault — RUNTIME RESOLVED / PHYSICAL VALIDATION LIMITED (later session)
+### LOCOS (Phase 4) segfault — RUNTIME RESOLVED (root cause found), MASK PRESERVATION STILL OPEN (later session, supersedes the halfTrench workaround below)
 
-The LOCOS mask-mechanics segfault documented above (`solveElasticVelocity`
-residual exploding across ~13 CFL step-halving retries) was investigated
-further via isolated, raw-ViennaPS scratch probes (no production code
-touched during investigation), using the actual production LOCOS recipe
-(`test_phase4_oxidation_real.py`'s `thermal_locos_style_with_mask`
-variant: gridDelta=0.2, mask_left/right=1.5/2.5, pr_thickness=0.5).
+**History note:** this section previously recorded a fix using
+`MakeTrench(..., halfTrench=True)` ("A" below). That fix genuinely
+avoided the crash but is superseded by the contactMode fix ("C") in
+this section — kept only in the A/B/C comparison for the record, no
+longer used in `thermal.py`. Independently, while this fix was on a
+separate branch, another local investigation (uncommitted, on the main
+project worktree) found and tried a different workaround using an
+explicit `MakePlane(..., SiO2, addToExisting=True)` pad-oxide layer
+("B"). Both A and B are superseded; see the comparison below for why.
 
-**Finding: `MakeTrench(..., halfTrench=True)` avoids the crash.** With
-halfTrench=True and the pad/seed oxide left at production's existing
-`max(0.002, gridDelta)` formula (already >= gridDelta by construction),
-the elastic/mask coupling solver converged cleanly (2 iterations,
-residual 0.016 at t=0.01hr, residual 0.0009 at t=0.1hr — improves, not
-degrades, with more time) instead of crashing. Confirmed at both
-time_hours=0.01 (production's actual value) and 0.1 (single follow-up
-check, not a sweep).
+**Real root cause (found by a single-variable ablation against the
+ORIGINAL, unmodified trench geometry — no halfTrench, no extra pad-oxide
+layer, only one setting changed per run):** ViennaPS's
+`OxidationMaskParameters` defaults to `contactMode=1` ("oneway"/kinematic
+mask contact). For this project's trench geometry, that contact mode's
+elastic solve diverges — confirmed: 16 non-converged solves, then a
+native access-violation crash (`rc=3221225477` / `0xC0000005`),
+reproduced deterministically across repeated runs. Setting **only**
+`OxidationMaskParameters.contactMode=2` ("twoway"/elastic feedback — the
+same mode the official ViennaPS `examples/locosOxidation/locosOxidation.py`
+example uses via its `config.txt`'s `maskContactMode="twoway"`), with
+every other mask/solver parameter left at ViennaPS's own default, is
+**sufficient by itself**: 0 solver failures, real oxide growth,
+geometry identical to setting the full official parameter set on top.
+No trench-geometry change was needed.
 
-**Side effect discovered (not assumed, confirmed via
-`domain.getBoundaryConditions()`/`getBoundingBox()`):** `halfTrench=True`
-does not preserve `mask_left_um`/`mask_right_um` as absolute positions.
-It rebuilds the domain as a half-geometry with `REFLECTIVE_BOUNDARY` at
-x=0, and the real mask edge lands at `trenchWidth/2`, not at the recipe's
-literal mask_left/right coordinates.
+**A / B / C comparison (all measured against the real, floored,
+exported volume mesh via meshio — never the raw in-memory level set,
+whose "bottom" edge is a narrow-band artifact for a semi-infinite
+region, not a physical boundary — and all under the same LOCOS
+recipe/grid used by the original crash, `test_phase4_oxidation_real.py`'s
+`thermal_locos_style_with_mask` variant):**
 
-**Physical validation, at time_hours=0.1 (single follow-up run, not a
-sweep), measured via raw level-set (never `saveVolumeMesh`):**
-- Real oxide growth beyond the seed and Si recession are both present
-  and non-zero: measured growth-beyond-seed 2.61nm vs ViennaPS's own
-  `estimatePlanarOxideThickness()` Deal-Grove reference 1.65nm (same
-  order of magnitude); Si recession 0.67nm in the physically correct
-  direction.
-- **Bird's-beak shape did NOT change between time_hours=0.01 and 0.1**
-  (taper width ~0.311um at both) despite the 10x time increase — i.e.
-  the visually beak-like taper is most likely still dominated by the
-  seed's own conformal geometry at this gridDelta, not by resolved
-  lateral diffusion. Real growth exists (previous bullet) but is far
-  below gridDelta, so it isn't yet visible in the taper shape.
+| | A: `halfTrench=True` | B: explicit `MakePlane` pad oxide | C: `contactMode=2` (adopted) |
+|---|---|---|---|
+| crash | none | none | none |
+| oxide growth | real, +0.2014 area (resolvable-grid test) | **zero** — identical mesh at t=0.01hr and t=0.1hr, no growth at all | real, matches Deal-Grove order of magnitude |
+| mask preservation | ~0.2% area retained | ~0.2% area retained | ~0.6-3.5% area retained (same underlying problem, still open — see below) |
+| mask/window coordinates | **shifted** — rebuilds domain as a half-geometry with `REFLECTIVE_BOUNDARY` at x=0; window lands at `trenchWidth/2`, not the recipe's `mask_left_um`/`mask_right_um` | preserved (no geometry change) | preserved — verified identical Si-window width to the always-correct fin-style variant (0.7994um both, recipe asked for 1.0um, difference is grid discretization, not a shift) |
+| export | OK | OK | OK |
+| official-example consistency | low — invents a half-domain geometry the official example doesn't use, never sets mask parameters | partial — mimics the official example's `MakePlane` pad-oxide *creation* call, but in the wrong construction order (mask placed on Si first, pad oxide inserted after) relative to the official example (Si → pad oxide → mask on top of the oxide), and never sets mask parameters either | high — uses the exact `contactMode` the official example sets, on the project's own already-correct geometry construction |
 
-**Decision: mark LOCOS geometry as "runtime resolved / physical
-validation limited," not "fully physically verified."** It runs, does
-not crash, and shows real-but-small growth in the right physical
-direction — but the bird's-beak *shape* specifically is not confirmed to
-be genuine lateral-diffusion-driven growth at the grid/time scales
-tested. Do not present LOCOS bird's-beak geometry as validated until
-this is revisited (see Follow-up below).
+(A's oxide-growth number above is from a separate, resolvable-grid,
+non-`t=0.01hr` comparison — see the scratch investigation this session;
+B's "zero growth" was confirmed at both t=0.01hr and t=0.1hr, i.e. it
+doesn't just grow slowly, it doesn't grow at all.)
 
-**Production fix applied (minimal, this session):**
-- `session.make_trench()` (`tcad/backends/viennaps/session.py`) gained
-  an optional `half_trench: bool = False` parameter, passed straight to
-  `MakeTrench(..., halfTrench=half_trench)`. Default False: every
-  existing caller is byte-identical.
-- `ProcessStep.prepare_domain()` (`tcad/process/base.py`) gained a
-  matching optional `half_trench: bool = False` passthrough parameter.
-- `ThermalOxidation.run()` (`tcad/process/oxidation/thermal.py`) now
-  calls `self.prepare_domain(recipe, half_trench="mask_material" in
-  recipe)` — i.e. half_trench is True only for the LOCOS branch
-  (mask_material present). Fin-style oxidation (no mask_material) and
-  every etching/deposition model are unaffected (they never pass this
-  argument, so it stays False).
-- `tests/unit/test_phase1_bosch_mock.py`'s `FakeViennaPS.MakeTrench`
-  mock needed a matching `halfTrench=False` parameter (it raised
-  `TypeError: unexpected keyword argument 'halfTrench'` otherwise) —
-  fixed to accept and record it, same as the real API.
+**Decision: adopt C.** A changes coordinate semantics for no offsetting
+benefit once C exists; B doesn't oxidize at all, failing the basic
+requirement regardless of how clean its geometry is. Neither "just
+doesn't crash" — both were rejected specifically because passing that
+bar alone is not sufficient (explicit instruction this session).
 
-**Verified:** `test_phase4_oxidation_real.py` (both fin and LOCOS
-variants) passes with no crash. Full regression re-run after the fix:
-Phase 1 (mock, previously broken by this same change until the
-FakeViennaPS fix above) now passes; Phase 2/3/4/5/6/7/9/13/14 all pass;
-Phase 8 and `test_device_lifecycle_repeat_real.py` Test B still fail
-with the exact same pre-existing PN-junction convergence error as
-before this fix (unrelated, see dedicated section below) — no new
-regressions.
+**Production fix applied — `tcad/process/oxidation/thermal.py`:**
+`ThermalOxidation.run()`'s LOCOS branch (`mask_material` present) now
+calls `model.setMaskParameters(vls.OxidationMaskParameters(contactMode=2))`
+plus the official example's own mechanics/pressure/stokes/coupling
+iteration and tolerance settings (matched values, not fabricated, for
+headroom on grids/recipes the ablation didn't test — only `contactMode`
+itself was proven load-bearing at the tested recipe). Geometry is back
+to plain `self.prepare_domain(recipe)` — the `half_trench` parameter
+threaded through `session.make_trench()`/`ProcessStep.prepare_domain()`
+for A was removed entirely (dead code once C landed; the
+`FakeViennaPS.MakeTrench` mock's matching `halfTrench` parameter was
+reverted too), since nothing else ever used it.
 
-**Explicitly deferred, not done this session (open items):**
-- The pad/seed oxide formula (`max(0.002, recipe["grid_delta_um"])` in
-  `thermal.py`) is flagged for future re-review — it ties seed thickness
-  to numerical resolution rather than a physical value, and at coarse
-  gridDelta this seed was observed conformally coating the mask top too
-  (not just the open Si window), which is not physically expected for a
-  real oxidant-blocking mask. Left unchanged this session.
+**Verified, real ViennaPS 4.6.2, via the actual production entry point
+(`registry.get("oxidation","thermal").run()`, not just isolated
+probes):**
+- `test_phase4_oxidation_real.py` (fin + LOCOS variants): PASS, no crash.
+- New `tests/integration/test_locos_contact_mode_fix_real.py`: real
+  oxide growth (SiO2 area > 0) confirmed; Si consumption confirmed; the
+  LOCOS window's pre-oxidation width matches the fin-style variant's
+  (both go through the same `prepare_domain()`, unaffected by
+  `mask_material`) to within grid resolution — proving C does not
+  reintroduce A's coordinate shift; mask material still exists after
+  oxidation (weak check only — see below, full preservation is NOT
+  asserted).
+- Full regression: **13 passed / 2 failed**, same two pre-existing,
+  already-investigated PN-junction convergence failures (Phase 8,
+  `test_device_lifecycle_repeat_real.py` Test B) — no new regressions.
+- `tests/run_regression.py` itself needed an unrelated one-line fix
+  found along the way: its `subprocess.run(...)` call had no explicit
+  `encoding=`, so it decoded child-process output using the OS's
+  locale-default codepage (cp949 on this machine) instead of UTF-8 —
+  this newly started crashing the *runner itself* once C's fix made
+  ViennaPS print LOCOS log lines containing `µ`/`°` characters that
+  aren't valid cp949. Added `encoding="utf-8", errors="replace"`.
+
+**Still open, NOT fixed by C, verified separately (mask erosion):**
+the mask loses ~97-99% of its area during LOCOS oxidation regardless of
+which of A/B/C is used, and regardless of the initial-oxide-seed value
+(tested both the production formula `max(0.002, gridDelta)` and
+ViennaPS's own raw default `0.002`, isolated from the contactMode fix
+by holding it constant — see below). This is a real, separate,
+unresolved problem. Do not treat LOCOS mask preservation as physically
+validated by the contactMode fix.
+
+**Seed-value investigation, isolated from the contactMode fix (fix held
+constant, only `setInitialOxideThickness` varied — real values only, no
+fabricated calibration):**
+- `seed = max(0.002, gridDelta)` (current formula, 0.2um at this
+  recipe's gridDelta=0.2): oxide genuinely grows with time (SiO2 area
+  0.946 at t=0.01hr -> 0.985 at t=0.1hr); mask retention 0.6-3.5%
+  (worse at longer time — continued erosion, not a one-time effect).
+- `seed = 0.002` (ViennaPS's own raw default, below one grid cell):
+  **confirmed stalled** — SiO2 area is bit-for-bit identical
+  (0.00051) at t=0.01hr and t=0.1hr, i.e. it does not grow at all past
+  the seed once the seed can't resolve on the grid. This directly
+  confirms, in the LOCOS context specifically (not just the earlier
+  fin-oxidation context this formula was originally written for), the
+  existing comment in `thermal.py` about why the seed must be
+  >= gridDelta. Mask retention is not meaningfully better either
+  (0.85%), so a smaller seed is not a viable route to fixing mask
+  erosion — it only reintroduces the CFL stall.
+- Conclusion: the current `max(0.002, gridDelta)` seed formula stays
+  unchanged (confirmed necessary, not just inherited); mask erosion is
+  independent of it and needs a different root cause, not yet
+  identified.
+
+### DevSim BLAS/LAPACK DLL environment issue — RESOLVED (later session)
+
+Every DevSim-touching test now fails at `import devsim` itself, before any
+project code runs:
+```
+Loading "libopenblas.dll": MISSING DLL
+Loading "liblapack.dll": MISSING DLL
+Loading "libblas.dll": MISSING DLL
+Could not find Intel MKL. The maximum tested version is "mkl_rt.2.dll"
+```
+Confirmed unrelated to any change made this session: reproduces identically
+on `test_phase5_devsim_real.py`, which has no connection to
+`tcad/process/oxidation/thermal.py` at all.
+
+**Root cause (confirmed, not guessed):** the `.venv/Library/bin/` directory
+this file's earlier OMP-fix section refers to (`intel_openmp`/`mkl`
+packages providing `libiomp5md.dll` and, implicitly, MKL's BLAS/LAPACK) no
+longer exists in this venv — `pip list` shows no `mkl`/`intel-openmp`
+package installed, only `numpy 2.2.6`. The venv changed since the earlier
+"Phase 5/9/14 PASS" verification was recorded; this is environment drift
+between sessions, not something broken by this session's code changes.
+
+**`DEVSIM_MATH_LIBS` attempted and ruled out as a same-venv fix:** numpy
+2.2.6 does bundle its own OpenBLAS (`numpy.libs/libscipy_openblas64_*.dll`),
+and pointing `DEVSIM_MATH_LIBS` at it (using a proper Windows-style path —
+a Git-Bash `/c/...`-style path silently fails with "MISSING DLL", a red
+herring) gets past the file-loading step but then fails with
+`"MISSING SYMBOLS"`. Root cause: that DLL is built ILP64 (64-bit integer
+BLAS/LAPACK symbol interface, `openblas64_` suffix) — DevSim's compiled
+extension expects the standard LP64 symbol names. No LP64-compatible
+BLAS/LAPACK/MKL library exists anywhere else on this machine either
+(searched the user profile and common conda/Intel install locations —
+none found). Confirmed inside `tcad_project_gui_fix` and this specific
+venv only; not tested elsewhere.
+
+**Fix applied (later session, after explicit confirmation):** `pip install
+mkl` — exactly one package requested, no other packages specified. pip's
+own dependency resolution pulled in 6 more as a result:
+`intel-openmp 2026.1.1`, `intel-cmplr-lib-ur 2026.1.1`, `tbb 2023.1.0`,
+`tcmlib 1.5.0`, `umf 1.1.0`, `onemkl-license 2026.1.0`, plus
+`mkl 2026.1.0` itself. This matches DevSim's own suggested fallback
+("install the Intel MKL") and the venv's apparent prior state (see root
+cause above — this is what `.venv/Library/bin/` used to provide before it
+went missing).
+
+**Verified: the pre-existing 18 packages' versions are unchanged** —
+`pip list` before and after only differ by the 7 new entries above; numpy
+stayed at 2.2.6, devsim at 2.10.1, ViennaPS/ViennaLS untouched.
+
+**Verified working, in order, exactly as planned before installing:**
+`import devsim` → **PASS** (previously `RuntimeError: Issues initializing
+DEVSIM.` at this exact line). `test_phase5_devsim_real.py` (pure DevSim,
+no oxidation involvement) → **PASS**, real solve converges. Only then
+`test_phase9_mos_cv_real.py` → **PASS**. `test_phase14_flow_devsim_real.py`
+→ **PASS**.
+
+**This was a pre-existing environment problem, confirmed unrelated to the
+Phase 4 LOCOS fix** (see root cause above: `test_phase5_devsim_real.py`
+has no connection to `tcad/process/oxidation/thermal.py` and failed
+identically before this fix). No `tcad/` production code was touched to
+resolve this — the fix is entirely a venv package addition. Note: this
+was performed on the main project worktree's own `.venv`, independent of
+whatever venv a given worktree checkout uses for its own regression
+runs — re-verify `import devsim` on any other checkout before assuming
+this is inherited there too.
+
+**Explicitly deferred, still open (open items):**
+- LOCOS mask erosion (~97-99% area loss) — see above, root cause not
+  yet identified, independent of both the contactMode fix and the seed
+  value.
 - The bird's-beak shape's true diffusion-driven behavior (as opposed to
-  seed-geometry artifact) is unresolved — would need a finer gridDelta
-  and/or longer time to distinguish, deliberately not pursued now to
-  avoid an open-ended parameter sweep.
+  a seed-geometry or mask-erosion artifact) is unresolved — would need
+  a finer gridDelta and/or longer time to distinguish, deliberately not
+  pursued now to avoid an open-ended parameter sweep.
 - `gd=0.02` Si-thickness dependency: untouched, out of scope this
   session per explicit instruction.
 

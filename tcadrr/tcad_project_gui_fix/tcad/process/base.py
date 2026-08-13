@@ -77,7 +77,7 @@ class ProcessStep(ABC):
         #: afterwards without reaching into ViennaPS itself.
         self.last_domain: Optional[Any] = None
 
-    def prepare_domain(self, recipe: Dict[str, Any], half_trench: bool = False):
+    def prepare_domain(self, recipe: Dict[str, Any]):
         """Return the domain this step should process.
 
         Fresh case (no inherited domain): builds a new Domain + trench
@@ -87,11 +87,6 @@ class ProcessStep(ABC):
         Inherited case: returns the carried domain untouched — no new
         Domain, no new trench — and warns about any initial-geometry
         recipe keys that therefore cannot apply.
-
-        half_trench: forwarded to session.make_trench() (default False,
-        so every existing caller is unaffected). Only ThermalOxidation's
-        LOCOS branch (mask_material present) passes True — see its
-        module docstring for why.
         """
         if self._inherited_domain is not None:
             ignored = [k for k in INITIAL_GEOMETRY_RECIPE_KEYS if k in recipe]
@@ -131,7 +126,6 @@ class ProcessStep(ABC):
             ),
             trench_depth_um=0.0,
             mask_height_um=recipe["pr_thickness_um"],
-            half_trench=half_trench,
         )
         self.last_domain = geometry
         return geometry
