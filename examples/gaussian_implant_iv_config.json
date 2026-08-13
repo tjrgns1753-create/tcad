@@ -1,0 +1,44 @@
+{
+  "process": {
+    "category": "etching",
+    "model": "isotropic",
+    "recipe": {
+      "grid_delta_um": 0.2,
+      "x_extent_um": 4.0,
+      "y_extent_um": 3.0,
+      "mask_left_um": 1.5,
+      "mask_right_um": 2.5,
+      "pr_thickness_um": 0.5,
+      "etch_time_s": 0.5,
+      "rate": -0.05,
+      "mask_material": "Mask"
+    }
+  },
+  "doping": {
+    "kind": "gaussian_implant",
+    "region": "Si",
+    "junction_axis": "x",
+    "peak_position_um": 0.0,
+    "straggle_um": 0.5,
+    "peak_conc_cm3": 1e17
+  },
+  "device": {
+    "mesh_name": "gaussian_cli_mesh",
+    "device_name": "gaussian_cli_device",
+    "contact_regions": ["Si"],
+    "contact_axis": "x"
+  },
+  "characterization": {
+    "type": "iv",
+    "region": "Si",
+    "sweep_contact": "Si_xmin",
+    "sweep_voltages": [0.0, 0.1, 0.2],
+    "fixed_contacts": {"Si_xmax": 0.0},
+    "conductivity": 1.0
+  },
+  "outputs": {
+    "csv_filename": "iv.csv",
+    "json_filename": "iv.json",
+    "plot_filename": "iv.png"
+  }
+}
