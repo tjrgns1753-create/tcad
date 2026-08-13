@@ -101,6 +101,20 @@ def _floored_copy_for_export(domain, floor_depth_um: float):
     floor_y = -floor_depth_um
 
     for ls in floored.getLevelSets():
+        # Pre-expand before the boolean intersect: found necessary (this
+        # session) for a level set that comes out of Process() narrower
+        # than 2 layers wide (confirmed with a LOCOS mask/pad-oxide
+        # geometry) -- ViennaLS's own internal auto-expand-then-continue
+        # path for such a level set crashes inside the subsequent
+        # BooleanOperation (IndexError: vector::_M_range_check) if not
+        # pre-expanded explicitly here first. A no-op for every
+        # already-verified geometry this project uses (Si+Mask,
+        # Si+SiO2+Mask, Si+Polymer+Mask, Bosch mid-cycle): Expand() only
+        # widens the narrow-band representation, it does not move the
+        # actual interface, so the subsequent intersect still produces
+        # the identical triangulated result for level sets that were
+        # already wide enough.
+        vls.Expand(ls, 3).apply()
         box = vls.Domain(ls)
         vls.MakeGeometry(
             box,
