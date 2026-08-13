@@ -1185,27 +1185,53 @@ Full regression re-confirmed after this (docs/example-only change, no
 `tcad/` code touched): 11 passed / 2 failed, same two pre-existing
 failures.
 
-### Directional deposition — OPEN ISSUE, not investigated further (later session)
+### Directional deposition — RESOLVED, was a real sign-convention bug (later session)
 
-While looking for the next process phase to verify, a quick raw-level-set
-check of `deposition/directional.py` (production path,
-`registry.get("deposition","directional").run()`, recipe matching
-`test_phase3_deposition_real.py`'s own `directional` override:
-direction=[0,1,0], directional_velocity=0.1, mask_material=Mask) gave an
-ambiguous reading: the open-window Si top showed ~0 growth at both
-t=0.5s and t=1.0s (should differ if real), while the Si level set's
-*bottom* (y_min) moved by exactly `velocity x time` (0.1 x 1.0 = 0.1 at
-t=1.0s). This could be a real bug, or could be the same kind of
-"level-set node list carries more than the visible surface" measurement
-pitfall already documented under Etching above (naive column-wise
-min/max misreading a level set that also encodes other bookkeeping).
-**Not chased further this session** — per explicit instruction to avoid
-open-ended investigation, this is logged as an open item rather than
-resolved. `directional` deposition is otherwise smoke-tested and passing
-(Phase 3), so nothing here blocks other work; do not treat its physical
-correctness as verified until this is revisited with a proper
-measurement methodology (e.g. the same per-material `saveSurfaceMesh`
-technique used for isotropic etch's undercut, not a raw column scan).
+Reopened per explicit instruction to review this OPEN item properly
+(after the earlier session's ambiguous raw-level-set reading was
+deliberately not chased further). Root-caused this time using the
+correct methodology: measured via the real, **floored** exported volume
+mesh (`save_volume_mesh()`, same as production) instead of the raw
+in-memory level set. This matters because the raw level set's "bottom"
+edge (y_min) is an arbitrary narrow-band artifact for a semi-infinite
+region — this project's own original Si-thickness investigation
+(top of this file) already established that a raw, un-floored Si level
+set only resolves ~2xgridDelta before floor-fixing — so the earlier
+session's "bottom moved by velocity x time" reading was that artifact
+shifting, not real growth. With the floored measurement, growth at
+`direction=[0,1,0], directional_velocity=+0.1, t=1..3s` was confirmed
+genuinely ~0 (Si top delta -0.0005 to -0.0009, not scaling with time),
+and no new material appeared — the deposition step was doing nothing.
+
+**Real root cause, confirmed by a bounded direction/velocity sign sweep
+(4 combinations, same production path, not a physical-parameter
+sweep):** ViennaPS's `DirectionalProcess.directionalVelocity` sign
+convention is the *opposite* of what `deposition/directional.py`
+assumed. Empirically: material grows when `direction . directionalVelocity
+< 0` and erodes when `> 0` — confirmed consistent with this project's
+own already-verified Etching convention (`direction=[0,-1,0],
+directionalVelocity=-0.1` etches: product = (-1)(-0.1) = +0.1 > 0,
+matches the erode rule). `isotropicVelocity` was checked separately and
+does **not** have this problem — positive genuinely grows, no
+transformation needed; only `directionalVelocity` was inverted.
+
+**Fix applied:** one line in `deposition/directional.py` —
+`"directionalVelocity": -recipe["directional_velocity"]` (was passed
+through unchanged). Module docstring updated with the full empirical
+finding. `isotropic_velocity` is passed through unchanged (unaffected).
+
+**Verified:** new permanent regression test
+`tests/integration/test_directional_deposition_growth_real.py` —
+`directional_velocity=+0.1` now grows Si by `+|v|*t` at t=0.5/1/2/4s
+against the real floored mesh, max relative error 2.0e-4 across all
+four points (matches the rigor already used for the Etching
+counterpart's own `|v|*t` check). `test_phase3_deposition_real.py`
+re-run (was already using this exact broken config,
+`direction=[0,1,0], directional_velocity=0.1` — passed before only
+because it never checked direction/magnitude, just "didn't crash").
+Full regression: **12 passed / 2 failed** (new test counted), same two
+pre-existing, unrelated failures (Phase 8, `test_device_lifecycle_repeat_real.py`
+Test B) — no new regressions.
 
 ## Current Task
 

@@ -17,8 +17,28 @@ Real API used (verified against installed ViennaPS 4.6.2 via
         calculateVisibility=True,
     )
 
-Deposition convention: directionalVelocity (and isotropicVelocity, if
-used) are expected positive to grow material along `direction`.
+Deposition convention: `directional_velocity` (this module's recipe
+key) and `isotropic_velocity` are both expected positive to grow
+material along `direction` -- but the two ViennaPS constructor kwargs
+they map to do NOT share one sign convention, confirmed empirically
+(not assumed) via the real production path with a floored/exported
+volume mesh, sweeping direction/velocity sign combinations:
+
+  - `isotropicVelocity`: positive genuinely grows material (matches its
+    own docstring). No transformation needed.
+  - `directionalVelocity`: for direction=[0,1,0] (grow upward),
+    directionalVelocity=+0.1 measured as -0.2um of material REMOVED
+    after 2s (i.e. it etched), while directionalVelocity=-0.1 measured
+    as +0.2um GROWN. The rule that fit all 4 tested (direction,
+    velocity-sign) combinations, direction in {[0,1,0], [0,-1,0]}: the
+    interface grows when `direction . directionalVelocity < 0` and
+    erodes when `> 0` -- opposite to the naive "positive means grow"
+    reading, and opposite to isotropicVelocity's own convention. This
+    module therefore negates directional_velocity before passing it to
+    ViennaPS's directionalVelocity (see run(), below), so this
+    module's own recipe-level convention (positive = grow) holds
+    regardless of ViennaPS's underlying sign. isotropic_velocity is
+    passed through unchanged.
 """
 
 from __future__ import annotations
@@ -47,7 +67,11 @@ class DirectionalDeposition(ProcessStep):
 
         model_kwargs: Dict[str, Any] = {
             "direction": recipe["direction"],
-            "directionalVelocity": recipe["directional_velocity"],
+            # Negated: see module docstring -- ViennaPS's own
+            # directionalVelocity sign is inverted relative to this
+            # module's recipe convention (positive = grow), confirmed
+            # empirically, not assumed.
+            "directionalVelocity": -recipe["directional_velocity"],
         }
         if "isotropic_velocity" in recipe:
             model_kwargs["isotropicVelocity"] = recipe["isotropic_velocity"]
