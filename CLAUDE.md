@@ -995,6 +995,30 @@ it.
    last, case needing non-default export) — a real design decision,
    not attempted here.
 
+### LOCOS process-flow chaining — ROOT CAUSE REFINED, prototyped export fix implemented and found INSUFFICIENT — real cause is deeper than previously characterized, still NOT fixed (later session, per explicit user instruction to apply the real fix this time — "LOCOS 체이닝 버그 본수정")
+
+Part 10 above ("LOCOS process-flow chaining — REAL BUG FOUND... re-investigated") identified a `getBoundingBox()` degeneracy (`±DBL_MAX` inverted sentinels) inside `_export_single_level_set()`'s isolated single-material domain reconstruction, and proposed a concrete fix: pass already-known-good bounds through explicitly instead of letting the broken call re-derive them. This session implemented and tested exactly that fix — and found it does NOT actually solve the problem it was meant to solve, because the true root cause turned out to be one level deeper than part 10's own diagnosis reached.
+
+1. **What was tested:** Built a full-fidelity prototype (monkeypatching `tcad.backends.viennaps.io` at runtime, not editing production files yet) implementing part 10's proposed fix in two parts: (a) a weakref-keyed side table in `io.py` so `thermal.py` can tag a LOCOS-built domain with its `(materials, wrap_flags)` export hint — chosen over dynamic attribute assignment on the domain object itself after directly confirming that does NOT work (`geometry._custom_attr = ...` raises `AttributeError: 'viennaps.d2.Domain' object has no attribute` — the pybind11 class has no `py::dynamic_attr()`); `save_volume_mesh()` would consult this table and auto-delegate to `save_locos_volume_mesh()`, requiring zero changes to any of the 13+ `ProcessStep.run()` files. (b) `_floored_copy_for_export()`/`_export_single_level_set()` accept an optional `bounds_hint` so the known-good bounds from the ORIGINAL (pre-isolation) domain are threaded through instead of re-querying the broken isolated domain's own `getBoundingBox()`.
+
+   Reproduced the exact scenario from part 8/10: real `ThermalOxidation.run()` (fresh LOCOS, `test_locos_devsim_import_real.py`'s own recipe) → chain a real `DirectionalEtch(inherited_domain=step1.last_domain).run()` onto it → inspect step 2's own export.
+
+2. **Result:** The bounds-hint fix DID eliminate the hang — step 2 completed in under a second instead of hanging for minutes, confirming part 10's hang diagnosis was correct as far as it went. But the resulting per-material isolated export for Si came back as a **genuinely empty mesh** (`NumberOfPoints=0, NumberOfCells=0` in the raw VTU, which is what made meshio's compressed-binary reader crash with `ValueError: need at least one array to concatenate` — not a bbox-query artifact, a real empty file).
+
+   Chased this with direct level-set introspection (`level_set.getNumberOfPoints()`, not just domain-level `getBoundingBox()` — part 10's investigation never checked this): right after step 1 (fresh LOCOS oxidation), Si/SiO2/Mask level sets have 38/62/104 points respectively, all real. **After step 2's chained `Process()` call (the directional etch) — still on the very same domain object, before any export is attempted at all — Si and SiO2's level sets have collapsed to 0 points each, while Mask's is unchanged (104 points).** This is not an export-layer bug at all; the domain's own in-memory geometry is what's actually gone.
+
+   Tested and ruled out "level set too narrow for advection" as the cause (SiO2 measured width=1 right after step 1, below what several other ViennaLS operations in this codebase require ≥2 for): explicitly widened every level set to width=5 (`vls.Expand(ls, 5)`, mutating the real domain in place, not an export copy) immediately before chaining step 2. Made no difference whatsoever — Si and SiO2 still collapsed to 0 points after the same chained `Process()` call, this time even Mask lost points too (148→68, though not to zero). This rules out level-set width as the cause.
+
+3. **What it proves:** Part 10's characterization ("only the ISOLATED single-level-set reconstruction's bbox breaks... the ORIGINAL multi-material domain's own bounding box stays correct throughout") was real but incomplete — it only checked the domain-level aggregate `getBoundingBox()` (which does stay non-degenerate) and the final multi-material export's material tags, not each level set's own point count. The real corruption happens earlier and deeper: **any subsequent `Process()` call applied to a domain built via LOCOS's pad-oxide-first wrapped construction (`insertNextLevelSetAsMaterial(..., wrapLowerLevelSet=True)` for the pad oxide) empties out the non-mask level sets' own point data**, before export is ever involved. This also retroactively explains part 8's original symptom (chained step's own export showing a small, mislabeled "Si"-tagged region matching the *mask's* area almost exactly) — consistent with only the Mask level set having survived with real data by the time any export ran.
+
+   Because the underlying domain data is already gone by the time `save_volume_mesh()`/`save_locos_volume_mesh()` runs, **no export-layer fix — bounds-hint or otherwise — can recover it.** The fix this session implemented and tested is real (it does fix the hang, a genuine improvement) but is not sufficient to fix the actual bug, so it was NOT applied to production code. Shipping only the hang fix would silently turn a loud failure (indefinite hang, impossible to miss) into a fast, quiet one (empty/wrong mesh, already covered by the existing `_warn_if_materials_missing_from_export()` safety net from part 8 — but nothing more).
+
+4. **What remains uncertain:** the exact ViennaPS/ViennaLS C++ mechanism causing a wrapped level-set stack's non-mask members to lose their point data under a further `Process()`/advection call — an attempt to fetch and cross-reference the real `psProcess.hpp`/advection source from GitHub for this session's investigation was blocked by a GitHub-side rate limit (HTTP 429, `Retry-After: 3600`) at the moment it was tried, so this was not root-caused at the C++ level, only precisely characterized at the Python/data level; whether this is specific to `DirectionalProcess` as the second step or would reproduce with any other model (only one downstream model was retested this session, same as part 8); whether a materially different LOCOS geometry construction (not pad-oxide-first/wrapped) could avoid triggering this at all — out of scope to explore this session since the shipped mask-erosion fix (see "LOCOS mask erosion — RESOLVED AND SHIPPED" above) already depends on the wrap topology and is not being revisited here.
+
+5. **Decision: do NOT apply the bounds-hint export fix, or any other change, to production code this session.** It is real, verified working for what it does (eliminates a genuine hang), but does not fix the user-visible problem (materials still missing after chaining), and CLAUDE.md's own rule against shipping something that doesn't solve the actual problem applies here even though the user asked for the "real fix" this round — discovering mid-investigation that the previously-scoped fix doesn't work is exactly the kind of thing this file exists to report honestly rather than paper over. The existing `RuntimeWarning` safety net (`_warn_if_materials_missing_from_export()`, part 8) remains the only production mitigation, and remains valid — it fires correctly for this exact case.
+
+6. **Next smallest experiment (not done, out of scope for this round):** once the GitHub rate limit clears, fetch ViennaPS's real advection/`Process()` C++ source to look specifically for how it handles a level-set stack containing a `wrapLowerLevelSet=True` member during advection, to see whether this is a documented limitation or something to report upstream; separately, test whether the SAME chained-step corruption happens with a *fin-style* (no mask, no LOCOS) domain that still happens to contain a wrapped level set for some other reason (would help isolate "wrap topology" vs. "LOCOS specifically" as the trigger); consider whether avoiding chaining onto fresh-LOCOS output altogether (documenting it as a hard workflow constraint — LOCOS as a terminal step only — rather than something to fix in code) is the more honest near-term answer, since two separate fix attempts (part 10's design, and this session's implementation of it) have now both fallen short.
+
 ### LOCOS bird's-beak shape — INVESTIGATED, evidence supports genuine diffusion physics, no code change needed (later session, per explicit user instruction "지금 발생한 모든 문제를 해결해" — this is the "next smallest experiment" named at the end of "LOCOS mask erosion — RESOLVED AND SHIPPED" above, now that mask erosion no longer confounds it)
 
 The open question (named repeatedly throughout this file, never
@@ -2977,6 +3001,47 @@ verify inside an actual Tkinter window — this container has no
 `tkinter` installed. This is the first GUI-file change of this
 session; every other part touched only `tcad/` backend code.
 
+**What this session did (part 12, later session, per explicit user
+instruction to apply the real LOCOS-chaining fix this time, not just
+re-report it — "LOCOS 체이닝 버그 본수정"):** implemented part 10's
+proposed fix (bounds-hint passthrough to bypass the broken
+`getBoundingBox()` re-query, plus a weakref-keyed export-hint registry
+in `io.py` so no `ProcessStep` file needs to change) as a full-fidelity
+prototype, and found — by testing it for real rather than assuming it
+would work — that it does **not** actually fix the bug. See "LOCOS
+process-flow chaining — ROOT CAUSE REFINED..." above for the full
+investigation. Tracing past the bbox symptom to each level set's own
+`getNumberOfPoints()` revealed the real corruption: Si and SiO2's level
+sets collapse to 0 points as an in-memory side effect of the chained
+step's own `Process()` call, before export is ever involved — an
+export-layer fix categorically cannot recover data that's already gone
+from the domain itself. Ruled out level-set width as the cause by
+directly widening every level set before chaining (no effect). Could
+not go further this session: cross-referencing ViennaPS's real
+advection source to find the exact C++-level mechanism was blocked by
+a GitHub rate limit (429, retry after 1 hour) at the moment it was
+tried. Per explicit standing project rules (report uncertainty
+honestly; never ship a fix that doesn't fix the actual problem), no
+production code was changed — the previously-shipped `RuntimeWarning`
+safety net (part 8) remains the only production mitigation.
+
+Also attempted, separately this session, to install `tkinter` matching
+the GUI's actual venv Python (3.11.15) for visual verification of the
+part-11 GUI fix — blocked by the same class of environment policy: the
+correctly-versioned `python3.11-tk` package is only available via the
+deadsnakes PPA, and fetching it hit a 403 Forbidden from this
+environment's outbound proxy (an organizational egress-policy denial,
+not a transient failure — confirmed via `/root/.ccr/README.md`, which
+explicitly says not to retry or route around this class of error).
+Accepted as a standing limitation of this container per explicit user
+instruction ("일단 적용하고 넘어가자"); the part-11 fix stays verified
+only at the algorithm/data level against real ViennaPS mesh data, not
+via an actual on-screen render.
+
+**Regression after part 12:** unchanged — `tests/run_regression.py` →
+still **19 passed, 0 failed, 0 skipped** (no production code was
+touched).
+
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
   of parts 1-5; struck through here rather than removed, so this list
@@ -2997,14 +3062,21 @@ session; every other part touched only `tcad/` backend code.
   graded refinement, shipped to production.
 - Whether `save_locos_volume_mesh()`'s pad-oxide-first LOCOS fix
   interacts with a subsequent process step continuing from its result
-  — **REAL BUG CONFIRMED in part 8, ROOT CAUSE PRECISELY ISOLATED in
-  part 10** (the exact `getBoundingBox()` degeneracy and its
-  workaround — see part 10 above); fix design is now concrete and
-  small, but per explicit instruction NOT implemented this session —
-  still genuinely open, next actual attempt should start from part
-  10's bounds-passthrough finding rather than re-deriving it.
+  — **REAL BUG CONFIRMED in part 8; part 10's `getBoundingBox()`
+  diagnosis was real but INCOMPLETE; part 12 found the deeper actual
+  cause (in-memory level-set data loss during the chained step's own
+  `Process()` call, not an export-layer bug) and confirmed the
+  previously-proposed fix does NOT solve it** — see part 12 above.
+  Still genuinely open; the next actual attempt needs either C++-level
+  ViennaPS source access (blocked by a GitHub rate limit this session)
+  or a fundamentally different approach, not a retry of the
+  bounds-passthrough idea.
 - KOH/TMAH rate-constant generalization to other concentrations/
   temperatures, or to TMAH — still open, not attempted.
+- Visual (on-screen) verification of the part-11 GUI rendering fix —
+  blocked by a GitHub-PPA proxy policy denial (403) when trying to
+  install the venv-matching `python3.11-tk` package; accepted as a
+  standing container limitation per explicit user instruction.
 
 ---
 
