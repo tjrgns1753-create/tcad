@@ -551,3 +551,198 @@ the chained step's own advection (a much larger architectural change).
 No production code (tcad/*, tests/*) was modified anywhere in this
 log. All probe scripts (.probe_locos_test*.py) were deleted after each
 test.
+
+-------------------------------------------------------------------
+[Continued session -- explicit instruction: "LOCOS 천천히 해도 되니까
+꼭 찾아봐" (take your time on LOCOS, but really find it). Still TEST
+ONLY, no production code changes.]
+
+15/16. Hypothesis (the question every earlier test skipped): item 12
+    established ViennaLS Advect's precondition -- the LAST level set
+    must geometrically CONTAIN every lower one, else
+    adjustLowerLayers()'s INTERSECT empties them. But this project's
+    NORMAL path (MakeTrench -> Si + Mask) chains successfully every
+    single regression run, and its mask is also "last". So HOW does
+    the working path satisfy the precondition that LOCOS violates? If
+    the answer is a structural pattern LOCOS simply doesn't follow,
+    that's a fix route no earlier test looked for.
+    Test: built a normal MakeTrench domain and the real LOCOS domain
+    side by side, read the REAL material order from each domain's own
+    MaterialMap (getMaterialAtIdx -- earlier tests guessed the order
+    from insertion code rather than reading it), and exported EVERY
+    level set in isolation (production's own _export_single_level_set,
+    read-only) to measure each one's true region area and y-extent.
+    Result -- the two structures are fundamentally different, and the
+    normal one is NOT what was assumed:
+
+      normal MakeTrench (chains fine, no collapse -- reconfirmed here):
+        ls[0] = Mask : area 1.4830, y = [ 0.0000, 0.4999]
+        ls[1] = Si   : area 9.5097, y = [-2.0000, 0.4999]
+      -> the SUBSTRATE is inserted LAST, and its level set is the
+         UNION of substrate + mask (area 9.51 ~= 8.0 substrate + 1.5
+         mask; y-range spans from the floor all the way UP through the
+         mask top). The last level set therefore CONTAINS the other.
+         Precondition satisfied.
+
+      real LOCOS (chaining destroys it):
+        ls[0] = Si   : area 8.0000, y = [-2.0000, 0.0000]
+        ls[1] = SiO2 : area 8.8000, y = [-2.0000, 0.2000]  (wrapped)
+        ls[2] = Mask : area 1.4700, y = [ 0.2000, 0.7000]  (NOT wrapped)
+      -> the LAST level set (Mask) is a small box sitting entirely
+         ABOVE y=0.2. It contains NEITHER Si nor SiO2. Precondition
+         violated for both -- exactly the two that go to 0 points.
+
+    Conclusion: this is the missing piece. LOCOS is not hitting a
+    ViennaPS limitation this project has to live with -- it is simply
+    the only geometry in this project that does not follow ViennaPS's
+    own "last level set wraps everything" convention, which
+    MakeTrench (and therefore every other model) follows by
+    construction. The bug is in this project's LOCOS construction
+    relative to that convention, not in ViennaPS.
+
+17. Hypothesis (follows directly from 15/16): tests 11 and 14 both
+    tried to satisfy the precondition by changing the CONSTRUCTION,
+    and both failed for the same underlying reason -- they changed
+    what Oxidation() itself runs on (reordering killed oxide growth;
+    wrapping the mask broke Oxidation's oxide-band detection
+    outright). But nothing requires the precondition to hold DURING
+    oxidation. It only has to hold for the NEXT step. So: leave
+    construction and oxidation exactly as production has them
+    (untouched, verified, ~98-100% mask retention), and restore the
+    invariant AFTERWARD -- union the last level set (mask) with the
+    one below it, making it contain everything, exactly like
+    MakeTrench's own last level set does.
+    Test: real _build_locos_geometry() + real Oxidation() with real
+    production mask/mechanics parameters, measured at every stage via
+    the REAL, unmodified save_locos_volume_mesh() (called exactly as
+    thermal.py calls it), then the union, then a chained
+    DirectionalProcess etch, then the chained step's own export.
+    Result -- WORKS, every check passed:
+      [1] after oxidation (before any fix): Si 7.99986, SiO2 0.80000,
+          Mask 1.46981 -> mask retention 99.99%. Oxidation itself is
+          completely unaffected, as intended (nothing about the
+          construction or the oxidation call changed).
+      [2] after the union: level-set points [38, 62, 46], all nonzero;
+          export with wrap_flags=[F,T,T] still gives all 3 materials
+          with Si/SiO2 areas IDENTICAL to [1] (7.99986 / 0.80000, to
+          5 decimal places). Mask reads 1.51028 vs 1.46981 -- a +2.75%
+          apparent increase, which is a clipping-resolution artifact
+          of save_locos_volume_mesh's per-x-column top-surface lookup
+          (binned at gridDelta=0.2), not real geometry growth: the
+          discrepancy works out to ~0.0135um of vertical slop along
+          the mask's 3.0um-wide bottom edge, i.e. well under one grid
+          cell. Worth noting honestly, not a failure.
+      [3] chained directional etch: NO level set collapsed to zero
+          (the entire bug, gone).
+      [4] the chained step's own export: all 3 materials present, with
+          physically coherent values -- Si unchanged (7.99986, still
+          covered by pad oxide), SiO2 0.80000 -> 0.76021 (the etch
+          removed 0.0398 of oxide; 1.0um-wide window x 0.05um/s x 1.0s
+          predicts 0.05, and gridDelta=0.2 means the requested etch is
+          only a quarter of one grid cell, so this is the expected
+          discretization agreement, not a discrepancy), Mask
+          essentially unchanged at 1.50534 (correctly protected by
+          maskMaterial).
+    Conclusion: a REAL, WORKING FIX for the LOCOS chaining bug --
+    the first one found across four separate attempts (part 10's
+    bounds-hint, test 11's reordering, test 14's mask-wrapping, and
+    now this). It works precisely because it does not touch the two
+    things every previous attempt broke: the geometry Oxidation()
+    runs on, and the oxidation call itself. Generalization checks
+    follow in test 18 before this could be recommended for
+    production.
+
+18. Hypothesis: test 17's fix worked for ONE downstream model and ONE
+    chained step. Before it could be called a real fix rather than a
+    lucky single case, does it generalize across (A) different
+    downstream models, (B) more than one chained step in sequence, and
+    (C) does the negative control -- the identical scenario WITHOUT
+    the re-wrap -- still fail, proving the re-wrap is what's doing the
+    work?
+    Test: real LOCOS build + real Oxidation() each time, then re-wrap,
+    then chain; measured throughout with the REAL, unmodified
+    save_locos_volume_mesh().
+    Result:
+    (A) ALL FOUR downstream models PASS -- no level set collapsed, all
+        3 materials present in every export:
+          directional_etch    : Si 7.99986, SiO2 0.80000->0.76021, Mask 1.50534
+          isotropic_etch      : Si 7.99986, SiO2 0.80000->0.76021, Mask 1.50534
+          isotropic_deposition: Si 7.99986, SiO2 0.80000 (unchanged), Mask 1.50->1.55026
+          single_particle_dep : Si 7.99986, SiO2 0.80000 (unchanged), Mask 1.50->1.69268
+        Physically coherent in each case: the etches remove oxide and
+        leave Si untouched (still covered by pad oxide) with the mask
+        protected; the depositions add material on top and leave the
+        buried layers untouched. CAVEAT worth recording: the
+        directional and isotropic etches produced BIT-IDENTICAL areas
+        (0.76021 / 1.50534). At gridDelta=0.2 the requested 0.05um
+        etch is a quarter of one grid cell, so both plausibly resolve
+        to the same single-cell change -- this is NOT evidence the two
+        models behave identically in general, and a finer grid would
+        be needed to distinguish them. Not pursued here (the question
+        under test was collapse/no-collapse, not etch-model fidelity).
+    (B) TWO chained steps in sequence both PASS, with the re-wrap
+        re-applied after each step (necessary, since every Process()
+        re-derives the lower layers from the top one and thus
+        re-breaks the invariant): SiO2 progressively etched
+        0.80000 -> 0.76021 -> 0.72228 while Si stays exactly 7.99986
+        and the mask stays ~1.50 throughout. Monotonic, physically
+        sensible, no drift or corruption across steps.
+    (C) NEGATIVE CONTROL confirms the re-wrap is load-bearing -- the
+        identical scenario without it did NOT merely produce a wrong
+        answer, it HUNG (100% CPU, no progress for 200+ seconds at the
+        export step, vs. under a second for every re-wrapped case).
+        This is exactly the hang signature part 12 of CLAUDE.md
+        already root-caused: the collapsed (0-point) level sets yield
+        a degenerate +/-DBL_MAX inverted bounding box in
+        _export_single_level_set, which then feeds an absurdly
+        inverted box into BooleanOperation(INTERSECT). The negative
+        control therefore reproduces the ORIGINAL bug faithfully, in
+        the same session, on the same machine, minutes apart from the
+        passing cases.
+    Conclusion: the post-oxidation re-wrap generalizes -- 4/4
+    downstream models, 2 sequential chained steps, with a
+    faithfully-failing negative control. This is a genuine fix for the
+    LOCOS process-flow chaining bug.
+
+-------------------------------------------------------------------
+PROPOSED PRODUCTION CHANGE (designed and verified by the tests above,
+NOT applied -- standing instruction this session is test-only):
+
+Two parts, both small:
+
+  1. tcad/process/oxidation/thermal.py, at the very END of run()'s
+     fresh-LOCOS branch, AFTER save_locos_volume_mesh() has already
+     written this step's own export (so the LOCOS step's own output is
+     bit-for-bit unchanged): union the last level set with the one
+     below it, restoring the "last level set contains everything"
+     invariant that MakeTrench-built geometry (and therefore every
+     other model in this project) already satisfies, and that ViennaLS
+     Advect documents as a requirement:
+         ls = list(geometry.getLevelSets())
+         vls.BooleanOperation(ls[-1], ls[-2],
+                              vls.BooleanOperationEnum.UNION).apply()
+
+  2. A way for a LATER, unrelated step to know its inherited domain
+     still needs save_locos_volume_mesh()-style export with
+     wrap_flags=[False, True, True] (the mask is now wrapped too).
+     The weakref-keyed side table in io.py from part 12 is already
+     verified to work for this (dynamic attributes on the pybind11
+     Domain object are NOT possible -- confirmed, AttributeError), and
+     requires zero changes to any of the 13+ ProcessStep.run() files
+     since save_volume_mesh() itself would consult it.
+
+Known caveats to carry into that change, all measured above, none
+blocking:
+  - The re-wrap must be re-applied after EVERY subsequent step, not
+    just once (test 18B) -- so part 1 belongs somewhere every step
+    runs, not only in thermal.py, OR the hint mechanism must trigger
+    it. This is the one real design question the tests leave open.
+  - Mask area reads ~2.7% high after the re-wrap (1.51028 vs 1.46981),
+    a sub-grid-cell clipping-resolution artifact of
+    save_locos_volume_mesh's per-x-column top lookup at gridDelta=0.2,
+    not real geometry change (test 17[2]). A test asserting mask
+    retention > 0.90 is unaffected; one asserting an exact area would
+    need the tolerance widened.
+  - Not tested: a chained step that itself needs duplicateTopLevelSet
+    (e.g. Bosch), a LOCOS-then-LOCOS chain, or grid resolutions other
+    than gridDelta=0.2.
