@@ -714,6 +714,190 @@ via WebFetch, not guessed).
    `ViennaPS>=4.6`, installed 4.6.2) behaves differently. Neither was
    attempted this session.
 
+### LOCOS mask erosion — RESOLVED AND SHIPPED (later session, per explicit user instruction "더 나아갈 수 있나" / "can we go further" — picks up exactly where point 8 above stopped)
+
+Point 8 above named a "fully custom mesh triangulator that resolves
+each material's true region from first principles" as the one
+remaining route once the boolean-subtraction path was confirmed closed
+(point 7). This session built exactly that, made it work, and shipped
+it.
+
+1. **What was tested:** three isolated, non-production probes, each
+   building directly on the previous one's result (not re-litigating
+   points 1-8 above — the geometry construction, mask parameters, and
+   root cause were already settled):
+   - A minimal probe proving the core idea with plain arithmetic, no
+     mesh-building at all: since a wrapped level set's UPPER boundary
+     is geometrically unaffected by `wrapLowerLevelSet=True` (the wrap
+     only extends the LOWER boundary down to match whatever it wraps —
+     confirmed from `psDomain.hpp`'s own source, `wrapLowerLevelSet`
+     only mutates the NEW level set being inserted, never anything
+     already stored), `Area(SiO2_true) = Area(SiO2_wrapped) -
+     Area(Si_true)` should hold as simple subtraction, where both areas
+     come from independently, correctly exportable single-material
+     meshes (Si from its own never-wrapped level set; SiO2_wrapped from
+     a throwaway domain containing ONLY the SiO2 level set, still
+     wrapped, but with no other level set present to lose the "topmost
+     wins" contest to). Result: `SiO2_true = 0.80021`, physically sane
+     (matches the Deal-Grove-estimated growth order of magnitude for
+     this recipe) and, critically, positive and non-trivial — the
+     concept holds.
+   - A full-mesh version of the same idea: export each level set to
+     its own single-material mesh (via the SAME, already-verified
+     `save_volume_mesh()` — no new export logic needed to solve THIS
+     part), then for the wrapped material, keep only the triangles
+     whose centroid lies above a per-x-column "top of Si" lookup table
+     built from Si's own true mesh, merge the surviving triangles from
+     every material into one combined, per-triangle-tagged mesh. First
+     attempt had a real bug: the lookup table was binned at the
+     process's own (coarse, gd=0.2) grid resolution, and 4 of 22 bins
+     had no Si vertex land in them at all, left at a sentinel value low
+     enough that any SiO2 triangle centroid in those columns passed the
+     "is this point above Si" filter unconditionally — silently keeping
+     triangles that should have been clipped, inflating SiO2's area
+     from the correct ~0.80 to 3.8. Fixed with a nearest-neighbor
+     forward/backward fill of the lookup table for any untouched bin.
+     Re-verified: SiO2 area came out 0.80004, matching the independent
+     area-only arithmetic check (0.800) almost exactly, and the
+     combined mesh, re-read by meshio, correctly reported all three
+     materials present (`['Si', 'SiO2', 'Si3N4']`).
+   - The decisive check: wrapped the combined mesh in a real
+     `ProcessResult`/`MaterialRegion` and called the REAL production
+     `import_process_result()` (`tcad/device/devsim/mesh_import.py`) on
+     it, not a mock. Succeeded: `regions=['Si', 'SiO2', 'Si3N4']`,
+     `contacts=['Si_xmin', 'Si_xmax']` — the exact bar that blocked
+     shipping the geometry fix in the first place (see point 4(ii)
+     above) is cleared.
+
+2. **What it proves:** the "fully custom mesh triangulator" approach
+   point 8 named as the remaining option works, generalizes correctly
+   (the fix required NO changes to the already-verified mask-retention
+   geometry from earlier in this investigation — only a new export
+   path), and survives contact with the real DevSim import boundary,
+   not just meshio round-tripping.
+
+3. **Production implementation (this session, after the probes above):**
+   - **`tcad/backends/viennaps/io.py`**: new `save_locos_volume_mesh(domain,
+     materials, wrap_flags, path, floor_depth_um=DEFAULT_FLOOR_DEPTH_UM)`,
+     generalizing the probes' approach beyond the fixed 3-level-set
+     case: `materials[i]`/`wrap_flags[i]` describe
+     `domain.getLevelSets()[i]` in insertion order (`wrap_flags[i]`
+     mirrors the same `wrapLowerLevelSet` boolean used when that level
+     set was inserted). Each level set is exported in total isolation
+     (`_export_single_level_set` — a fresh throwaway single-level-set
+     Domain run through the existing, unmodified `save_volume_mesh()`,
+     so the normal floor mechanism still applies per-material); a
+     wrapped level set's triangles are then clipped against a running
+     "top of everything claimed so far" lookup (`_top_lookup`, the
+     nearest-neighbor-filled version from the probes) built
+     cumulatively over every earlier level set's TRUE (already-clipped
+     where applicable) region — not just the immediately-preceding one,
+     so this correctly generalizes to a longer wrap chain than the
+     3-layer case actually exercises, mirroring how ViennaPS's own
+     `wrapLowerLevelSet=True` cascades (unions with whatever is
+     currently the top of the stack, which may itself already be a
+     wrap). Surviving triangles from every level set are merged into
+     one mesh, tagged per `materials`, written to
+     `f"{path}_locos_volume.vtu"`.
+   - **`tcad/process/oxidation/thermal.py`**: new
+     `ThermalOxidation._build_locos_geometry()`, used ONLY when
+     building a fresh wafer (`self._inherited_domain is None`) AND
+     `mask_material` is present in the recipe — an inherited-domain
+     LOCOS call (mid process-flow) falls back to the previous behavior
+     unchanged (whatever geometry was carried over, mask material
+     tagged onto it via `setMaskMaterial()` as before; this from-scratch
+     pad-oxide construction has no meaning applied to an
+     already-processed domain, the same restriction
+     `ProcessStep.prepare_domain()` already documents for its own
+     trench-building branch). Builds: `MakePlane(Si)` ->
+     `MakePlane(pad oxide, addToExisting=True)` -> a mask box (two
+     boxes, left+right of the window, unioned together, contact-epsilon
+     overlap into the pad oxide) inserted with `wrapLowerLevelSet=False`.
+     `run()` then skips the `setInitialOxideThickness()` seed call for
+     this path specifically (a real, resolvable pad oxide already
+     exists in the geometry by the time `Process()` runs — that call is
+     only for the no-SiO2-exists case, confirmed by NOT including it in
+     any of the verification probes above and re-confirming the fix
+     still measures the same retention without it) and calls
+     `save_locos_volume_mesh()` instead of `save_volume_mesh()` at
+     export time. Fin-style oxidation (no `mask_material`) is completely
+     unchanged — still `prepare_domain()` + `save_volume_mesh()`, same
+     as before this session.
+   - New `pad_oxide_thickness_um` recipe key, optional, defaulting to
+     `max(0.02, grid_delta_um)` (`DEFAULT_PAD_OXIDE_THICKNESS_UM = 0.02`,
+     20nm, typical real LOCOS pad-oxide thickness; floored at
+     `grid_delta_um` for the same reason `setInitialOxideThickness`'s
+     existing seed floor exists elsewhere in this file — a pad thinner
+     than one grid cell can't be resolved by the level set).
+   - `mask_material`'s value itself was kept fully generic/configurable
+     (geometry is tagged with whatever `recipe["mask_material"]` names,
+     and `setMaskMaterial()` is called with the same value) rather than
+     hardcoded to `Si3N4` — deliberate, because the ablation earlier in
+     this investigation (point 2a above) already proved material
+     identity has ZERO effect on retention, so forcing a material-name
+     change would be an unforced, unverified-as-necessary change to
+     every existing recipe/test using `"mask_material": "Mask"`.
+   - Mechanics parameters were kept as bare `vls.OxidationMaskParameters()`
+     with only `contactMode=2` set (current production code,
+     unchanged) rather than switched to
+     `OxidationPresets.siliconNitrideMask1000C()` (which the
+     verification probes happened to use) — re-verified directly, not
+     assumed: a dedicated probe re-ran the new pad-oxide-first geometry
+     through `session.create_domain()` (the actual production
+     domain-construction function, not the probes' ad-hoc explicit-bounds
+     construction) with bare parameters, confirming retention was still
+     ~98% (97.99%), matching the earlier ablation's finding that the
+     preset is not load-bearing. Keeping the current production
+     parameters minimizes the number of simultaneously-changed
+     variables.
+
+4. **Verified, real ViennaPS 4.6.2 + DevSim 2.10.1, through the actual
+   production entry points (not just probes):**
+   - `tests/integration/test_phase4_oxidation_real.py`: PASS, no crash,
+     both fin and LOCOS variants.
+   - `tests/integration/test_locos_contact_mode_fix_real.py`: updated —
+     item 3 now asserts Si is present with nonzero area (previously
+     just checked growth happened, since Si-vanishing wasn't yet a
+     concern the test needed to guard); item 5 upgraded from "mask area
+     > 0" (a weak sanity check, explicitly documented as NOT validating
+     preservation) to `retention > 0.90` (real, derived from the
+     recipe's own pre-oxidation mask geometry, not a magic number) —
+     PASS, measured 97.99% retention, matching the probes.
+   - New `tests/integration/test_locos_devsim_import_real.py`: the
+     real bar this whole investigation had to clear — calls
+     `registry.get("oxidation", "thermal")().run(recipe, ...)` (the
+     actual production entry point, not manual geometry construction
+     like the probes used), confirms all three materials are present
+     in the exported mesh, runs it through the real
+     `build_process_result()` -> `import_process_result()` adapter
+     chain, and re-confirms retention > 0.90 from the same production
+     mesh. PASS.
+   - Full regression: **`tests/run_regression.py` -> 17 passed, 0
+     failed, 0 skipped** (16 before this session's new test was added;
+     no regressions to anything else — fin-style oxidation and every
+     other model/phase is bit-for-bit unaffected, since the new
+     geometry/export path is only reachable via the specific
+     fresh-wafer-LOCOS branch).
+
+5. **What remains uncertain:** whether `pad_oxide_thickness_um`'s
+   default (`max(0.02, grid_delta_um)`) is appropriate across a wider
+   range of grid resolutions/recipes than the one tested here
+   (gd=0.2); whether `save_locos_volume_mesh()`'s cumulative wrap-chain
+   generalization (point 3 above) is correct for a 4+-level-set stack —
+   only the 3-level Si/SiO2/mask case was ever actually exercised;
+   whether this fix interacts with a subsequent process step continuing
+   from this LOCOS result (untested — every verification here is a
+   single LOCOS step, fresh wafer to final mesh, never chained into a
+   further step the way Phase 13/14 chain other models).
+
+6. **Next smallest experiment (not done, out of scope for this
+   round):** now that LOCOS mask preservation is no longer a blocker,
+   the LOCOS bird's-beak shape's true diffusion-driven behavior (vs. a
+   seed-geometry or mask-erosion artifact) — named as unresolved
+   earlier in this file — is newly investigable, since a previous
+   attempt to look at it would have been confounded by the mask
+   erosion this session fixed. Not attempted this session.
+
 ### DevSim BLAS/LAPACK DLL environment issue — RESOLVED (later session)
 
 Every DevSim-touching test now fails at `import devsim` itself, before any
@@ -1987,23 +2171,49 @@ import, only an isolated probe. Ran both — etch, oxidation, and DevSim
 import all work correctly at `gridDelta=0.02`. No code change, just a
 stale open item closed with real verification.
 
+**What this session did (part 6, same session, per explicit user
+instruction "더 나아갈 수 있나" / "can we go further" to keep pushing on
+the LOCOS blocker rather than accept part 2's dead end as final):**
+shipped the LOCOS mask-erosion fix to production — see "LOCOS mask
+erosion — RESOLVED AND SHIPPED" above for the full investigation. The
+part-2 blocker (`saveVolumeMesh()` dropping `Si` entirely) is solved by
+a new export function, `save_locos_volume_mesh()`
+(`tcad/backends/viennaps/io.py`), that resolves each material's true
+region with plain Python geometry (independent single-material exports
++ a top-surface clip) instead of relying on
+`WriteVisualizationMesh`/ViennaLS's insertion-order stacking
+resolution or any ViennaLS boolean op (both confirmed broken/unusable
+for this in part 2's own investigation). `thermal.py`'s LOCOS branch
+now builds pad-oxide-first geometry (`_build_locos_geometry`) only for
+a fresh wafer, and calls the new export function instead of the normal
+one. Mask retention: 97.99% measured through the real production path,
+up from the ~3.5% baseline part 2 found. New test
+`tests/integration/test_locos_devsim_import_real.py` confirms the real
+production entry points (registry → `ThermalOxidation.run()` →
+`build_process_result()` → `import_process_result()`) all still work
+end to end with the new geometry.
+
+**Regression after part 6:** `tests/run_regression.py` → **17 passed,
+0 failed, 0 skipped** (16 before this part's new test was added) — no
+regressions to fin-style oxidation or any other model/phase.
+
 **OPEN issues carried forward, NOT resolved this session:**
-- LOCOS mask preservation — root cause **now identified** and a fix
-  **verified to work**, but blocked from production by the confirmed
-  `saveVolumeMesh()`/`Si`-vanishes upstream issue above. Next step is
-  architectural (a custom per-material mesh-export path bypassing
-  `WriteVisualizationMesh`'s built-in stacking resolution — see item 8
-  under "LOCOS mask erosion" above), not another parameter/geometry
-  guess — the boolean-subtraction route is now confirmed closed too
-  (see item 7 in that same section).
+- LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
+  of parts 1-5; struck through here rather than removed, so this list
+  stays an honest record of what was still open at each point in the
+  session).
 - LOCOS bird's-beak shape's true diffusion-driven behavior vs.
-  seed-geometry artifact.
+  seed-geometry artifact — still open; newly investigable now that
+  mask erosion (part 6) no longer confounds it, but not attempted.
 - Auto-deriving `refine_near_um` from `ProcessResult.doping` instead of
   requiring callers to compute/pass it manually (see item 7 in the
   "PN junction (Phase 8) convergence — RESOLVED" section above).
 - Whether the mesh-refinement fix generalizes to `gaussian_implant`
   doping or to doping levels far above 1e18 cm^-3 — unverified, see
   item 6 in the same section above.
+- Whether `save_locos_volume_mesh()`'s pad-oxide-first LOCOS fix
+  interacts with a subsequent process step continuing from its result
+  — untested, see "LOCOS mask erosion — RESOLVED AND SHIPPED" point 5.
 
 ---
 

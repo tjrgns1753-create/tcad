@@ -13,8 +13,9 @@ these instead of re-implementing surface/volume mesh saving.
 
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
-from typing import List, Union
+from typing import Any, List, Tuple, Union
 
 PathLike = Union[str, Path]
 
@@ -147,6 +148,221 @@ def save_volume_mesh(
     floored = _floored_copy_for_export(domain, floor_depth_um)
     floored.saveVolumeMesh(path_str)
     return f"{path_str}_volume.vtu"
+
+
+def _read_triangle_mesh(path: PathLike) -> Tuple[Any, List[List[int]]]:
+    import meshio
+
+    mesh = meshio.read(str(path))
+    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
+    if triangle_block is None:
+        return mesh.points, []
+    return mesh.points, [[int(i) for i in tri] for tri in triangle_block.data]
+
+
+def _export_single_level_set(domain, level_set, material, floor_depth_um: float):
+    """Export ONE level set from `domain` in complete isolation: a fresh
+    throwaway Domain containing only a copy of this level set, tagged
+    `material`, run through the normal floored save_volume_mesh() path.
+
+    Because no other level set shares this throwaway domain, the result
+    is that level set's TRUE triangulated region — uncontaminated by
+    ViennaLS's insertion-order material-stacking ("topmost/last-inserted
+    wins") resolution that WriteVisualizationMesh applies whenever
+    multiple level sets share one domain. This is the building block
+    save_locos_volume_mesh() uses to recover a wrapped
+    (wrapLowerLevelSet=True, e.g. from MakePlane(..., addToExisting=True))
+    material's real region: export the wrapping material in isolation
+    (it still geometrically contains whatever it wraps — isolation alone
+    doesn't undo that), export the wrapped-under material in isolation
+    too, then clip the two against each other in plain Python (see
+    save_locos_volume_mesh's docstring for why a ViennaLS boolean
+    subtraction cannot do this instead).
+    """
+    bcs = domain.getBoundaryConditions()
+    grid_delta = domain.getGridDelta()
+    bbox = domain.getBoundingBox()
+    x_min, x_max = bbox[0][0], bbox[1][0]
+    y_max = bbox[1][1]
+
+    import viennals as vls
+
+    single = domain.__class__(
+        [x_min, x_max, -floor_depth_um - 1.0, y_max + 1.0], bcs, grid_delta
+    )
+    single.insertNextLevelSetAsMaterial(vls.Domain(level_set), material, False)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = save_volume_mesh(single, Path(tmp) / "single", floor_depth_um=floor_depth_um)
+        return _read_triangle_mesh(path)
+
+
+def _top_lookup(points, triangles, grid_delta: float, x_min: float, x_max: float):
+    """Per-x-column top-y lookup table built from `triangles`' own
+    vertices, nearest-neighbor-filled for any column no vertex happens
+    to land in.
+
+    The fill matters: a coarse grid can leave some x-bins untouched by
+    any triangle vertex; left at a low sentinel, such a bin would make
+    the "is this point above the surface here" clip test in
+    save_locos_volume_mesh accept everything in that column
+    unconditionally, wrongly keeping triangles that should have been
+    clipped (found and fixed during this function's own verification —
+    see CLAUDE.md, LOCOS mask erosion investigation).
+    """
+    import numpy as np
+
+    n_bins = int(round((x_max - x_min) / grid_delta)) + 2
+    tops = np.full(n_bins, -1e18)
+    for tri in triangles:
+        for idx in tri:
+            x, y = points[idx][0], points[idx][1]
+            b = max(0, min(n_bins - 1, int((x - x_min) / grid_delta)))
+            tops[b] = max(tops[b], y)
+
+    valid = tops > -1e17
+    if valid.any() and not valid.all():
+        idx_valid = np.flatnonzero(valid)
+        for i in range(n_bins):
+            if not valid[i]:
+                nearest = idx_valid[np.argmin(np.abs(idx_valid - i))]
+                tops[i] = tops[nearest]
+
+    def lookup(x: float) -> float:
+        b = max(0, min(n_bins - 1, int((x - x_min) / grid_delta)))
+        return float(tops[b])
+
+    return lookup
+
+
+def save_locos_volume_mesh(
+    domain,
+    materials: List[Any],
+    wrap_flags: List[bool],
+    path: PathLike,
+    floor_depth_um: float = DEFAULT_FLOOR_DEPTH_UM,
+) -> str:
+    """Save a volume mesh for a domain built with ViennaPS's material
+    "wrap" stacking WITHOUT losing a wrapped-under material entirely,
+    unlike the normal save_volume_mesh()/WriteVisualizationMesh path.
+
+    Background (see CLAUDE.md, "LOCOS mask erosion — ROOT CAUSE FOUND
+    AND VERIFIED FIXABLE"): fixing LOCOS mask erosion requires building
+    a pad-oxide layer via `MakePlane(..., addToExisting=True)`
+    (`insertNextLevelSetAsMaterial(..., wrapLowerLevelSet=True)`
+    underneath), which makes the pad oxide's own level set a UNION of
+    itself and the silicon beneath it — that is simply how ViennaPS
+    represents a stack of materials. `WriteVisualizationMesh` (what
+    `saveVolumeMesh()` calls) resolves overlapping level sets by
+    processing them in reverse insertion order, each claiming whatever
+    region isn't already claimed by a later-inserted material — so with
+    the oxide's region now a strict superset of Si's, plain
+    `saveVolumeMesh()` gives 100% of the shared region to the
+    last-inserted material and Si triangulates to nothing.
+
+    The obvious fix — subtract Si's region from the oxide's wrapped
+    region via a ViennaLS boolean op (RELATIVE_COMPLEMENT, or INTERSECT
+    with an inverted operand) — does not work: verified directly (see
+    CLAUDE.md) that ViennaLS reliably returns an EMPTY level set from
+    either operation whenever ONE of the two operands has ever been
+    through a UNION, which every wrapped level set has by definition.
+    This is a ViennaLS Python-API limitation, not something fixable by
+    operand order or pre-processing (Prune/Expand were tried, no
+    effect).
+
+    This function instead resolves each level set's TRUE region with
+    plain Python geometry, entirely bypassing ViennaLS's broken boolean
+    machinery and WriteVisualizationMesh's stacking resolution:
+      1. Export every level set of `domain` in complete isolation (see
+         `_export_single_level_set`) — for a wrapped level set this
+         still includes whatever it wraps, since isolation alone
+         doesn't undo the union baked into its own geometry.
+      2. Process level sets in insertion order. For each one marked
+         `wrapped` in `wrap_flags`, discard every triangle whose
+         centroid is not strictly above the running top-surface lookup
+         of every TRUE region claimed by earlier (lower-index) level
+         sets — i.e. keep only the part of its region that ISN'T
+         already Si's (or an earlier wrapped material's true region).
+      3. Merge the surviving triangles from every level set into one
+         mesh, tagged per `materials`.
+
+    materials[i] / wrap_flags[i] describe domain.getLevelSets()[i], in
+    the SAME order: materials[i] is the vps.Material this level set
+    should be tagged with in the exported mesh; wrap_flags[i] is
+    whether it was inserted into `domain` with wrapLowerLevelSet=True
+    (equivalently, `MakePlane(..., addToExisting=True)`), i.e. whether
+    its own raw region also contains whatever every earlier level set
+    already claims and needs Python-side clipping before export.
+
+    Verified (see CLAUDE.md): real ViennaPS 4.6.2 LOCOS run (Si -> pad
+    SiO2 via addToExisting=True -> Si3N4/Mask box, materials=[Si, SiO2,
+    mask], wrap_flags=[False, True, False]) gives a combined mesh with
+    all three materials genuinely present and correctly bounded (Si not
+    lost), which then imports into DevSim successfully.
+
+    Returns the path actually written (mirrors save_volume_mesh(),
+    though the filename suffix differs).
+    """
+    import numpy as np
+    import meshio
+
+    level_sets = list(domain.getLevelSets())
+    if not (len(level_sets) == len(materials) == len(wrap_flags)):
+        raise ValueError(
+            f"save_locos_volume_mesh: domain has {len(level_sets)} level sets, "
+            f"but materials has {len(materials)} and wrap_flags has "
+            f"{len(wrap_flags)} entries — all three must match "
+            "domain.getLevelSets(), 1:1, in insertion order."
+        )
+
+    grid_delta = domain.getGridDelta()
+    bbox = domain.getBoundingBox()
+    x_min, x_max = bbox[0][0], bbox[1][0]
+
+    all_points: List[List[float]] = []
+    all_tris: List[List[int]] = []
+    all_tags: List[int] = []
+    combined_top = None  # running top-surface lookup of every TRUE region claimed so far
+
+    def add_block(points, tris, tag: int) -> None:
+        offset = len(all_points)
+        for p in points:
+            all_points.append([float(p[0]), float(p[1]), float(p[2]) if len(p) > 2 else 0.0])
+        for tri in tris:
+            all_tris.append([int(tri[0]) + offset, int(tri[1]) + offset, int(tri[2]) + offset])
+            all_tags.append(tag)
+
+    for level_set, material, wrapped in zip(level_sets, materials, wrap_flags):
+        points, tris = _export_single_level_set(domain, level_set, material, floor_depth_um)
+
+        if wrapped and combined_top is not None and tris:
+            margin = grid_delta * 0.1
+            kept = []
+            for tri in tris:
+                cx = sum(points[i][0] for i in tri) / 3.0
+                cy = sum(points[i][1] for i in tri) / 3.0
+                if cy > combined_top(cx) + margin:
+                    kept.append(tri)
+            tris = kept
+
+        add_block(points, tris, int(material))
+
+        if tris:
+            this_top = _top_lookup(points, tris, grid_delta, x_min, x_max)
+            if combined_top is None:
+                combined_top = this_top
+            else:
+                previous_top = combined_top
+                combined_top = lambda x, a=previous_top, b=this_top: max(a(x), b(x))  # noqa: E731
+
+    out_mesh = meshio.Mesh(
+        points=np.array(all_points) if all_points else np.zeros((0, 3)),
+        cells=[("triangle", np.array(all_tris) if all_tris else np.zeros((0, 3), dtype=int))],
+        cell_data={"Material": [np.array(all_tags, dtype=int)]},
+    )
+    out_path = f"{str(path)}_locos_volume.vtu"
+    meshio.write(out_path, out_mesh)
+    return out_path
 
 
 class SnapshotRecorder:

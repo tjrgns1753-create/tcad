@@ -9,29 +9,33 @@ LOCOS mask segfault's real root cause was ViennaPS's
 OxidationMaskParameters defaulting to contactMode=1 ("oneway"), which
 diverges for this project's trench geometry; setting contactMode=2
 ("twoway", the same mode the official ViennaPS locosOxidation.py
-example uses) fixes it with the ORIGINAL geometry unchanged — no
-halfTrench=True (which silently changed the trench-window coordinate
-convention: see the A vs C comparison in CLAUDE.md) and no explicit
-pad-oxide MakePlane layer (which was found to suppress oxide growth to
-exactly zero).
+example uses) fixes it. NOTE: the ORIGINAL (MakeTrench-based, mask
+directly on bare Si) geometry this comment used to describe as
+"unchanged" has since been REPLACED for the fresh-wafer LOCOS path by
+a pad-oxide-first construction (see thermal.py's module docstring,
+"LOCOS mask erosion — root cause found, fixed, and SHIPPED") — that
+geometry change is what fixed mask erosion; contactMode=2 alone still
+only fixes the segfault, unchanged from when this test was written.
 
-This test locks in what was actually verified, not more:
+This test locks in what was actually verified:
   1. no crash (implicit: the test process itself would die otherwise)
   2. real oxide growth (SiO2 area > 0)
   3. Si is consumed correspondingly (recession, not just SiO2 appearing
-     from nowhere)
+     from nowhere) -- and, now that the pad-oxide-first geometry ships,
+     Si must still be PRESENT in the export at all (the specific thing
+     save_locos_volume_mesh() exists to guarantee -- see io.py).
   4. the exposed (Si) window's width matches the recipe's own
      mask_right_um - mask_left_um, i.e. geometry is NOT shifted the way
      halfTrench=True was -- compared against the fin-style variant's
-     identical geometry-construction code path (both go through the
-     same prepare_domain(), unaffected by mask_material), not a
-     hardcoded coordinate.
-  5. mask material still exists after oxidation (area > 0) -- a weak
-     sanity check only. Full mask preservation is NOT asserted here:
-     it is a confirmed, separate, still-open issue (near-total mask
-     erosion, ~99% area loss, independent of this fix -- see
-     thermal.py's module docstring and CLAUDE.md). Do not read this
-     test passing as LOCOS mask preservation being fixed.
+     window width (both variants' pre-oxidation width is measured the
+     same way; fin-style still goes through prepare_domain()/MakeTrench
+     unaffected by mask_material, while LOCOS-style now goes through
+     the new pad-oxide-first construction -- the two are expected to
+     match within grid resolution, not be identical code paths).
+  5. mask retention: now that the root cause is fixed, this asserts
+     real preservation (>=90%, well above the ~3.5% pre-fix baseline
+     and with margin below the ~98% actually measured), not just
+     "area > 0". See CLAUDE.md for the full investigation.
 
 No calibration/fabricated numbers: all expected values come from the
 recipe itself or from comparing two real runs of the production code.
@@ -136,7 +140,10 @@ def main():
     )
     print(f"[2/5] real oxide growth confirmed: SiO2 area = {after['SiO2']['area']:.6f}")
 
-    assert "Si" in after
+    assert "Si" in after and after["Si"]["area"] > 0.0, (
+        "Si missing/zero-area in the LOCOS export -- this is exactly what "
+        "save_locos_volume_mesh() exists to prevent (see io.py docstring)"
+    )
     print(f"[3/5] Si present after oxidation (area={after['Si']['area']:.4f}, "
           f"consumed by growth as expected)")
 
@@ -169,16 +176,30 @@ def main():
                 f"{expected_trench_width} within {2*grid} um -- geometry may have shifted"
             )
 
-    assert after["Mask"]["area"] > 0.0, (
-        "mask material fully vanished -- worse than the known ~1% retention baseline"
+    # Expected pre-oxidation mask area: two boxes (left + right of the
+    # window), each (half_x - window_half) wide by mask_height tall --
+    # not a hardcoded number, derived from the recipe itself.
+    half_x = BASE_RECIPE["x_extent_um"] / 2.0
+    window_half = expected_trench_width / 2.0
+    mask_height = max(BASE_RECIPE["pr_thickness_um"], 0.1)
+    expected_pre_mask_area = 2 * (half_x - window_half) * mask_height
+    retention = after["Mask"]["area"] / expected_pre_mask_area
+
+    assert retention > 0.90, (
+        f"mask retention regressed: {retention:.4f} (area={after['Mask']['area']:.6f} vs "
+        f"expected pre-oxidation {expected_pre_mask_area:.6f}) -- root cause fix "
+        "(pad-oxide-first geometry, see thermal.py) previously measured ~98% retention "
+        "at this recipe"
     )
-    print(f"[5/5] mask material still present after oxidation (area={after['Mask']['area']:.6f}) "
-          f"-- weak sanity check only; full mask preservation is a separate, still-open issue, "
-          f"NOT validated by this test (see thermal.py module docstring)")
+    print(f"[5/5] mask retention = {100*retention:.2f}% "
+          f"(area={after['Mask']['area']:.6f} of expected pre-oxidation "
+          f"{expected_pre_mask_area:.6f}) -- root cause fixed, see thermal.py module "
+          f"docstring and CLAUDE.md for the full investigation")
 
     print()
-    print("LOCOS CONTACT-MODE FIX (no crash, real growth, geometry NOT shifted) "
-          "VERIFIED AGAINST REAL VIENNAPS 4.6.2 -- mask preservation remains OPEN")
+    print("LOCOS CONTACT-MODE FIX + PAD-OXIDE-FIRST MASK-RETENTION FIX "
+          "(no crash, real growth, geometry NOT shifted, Si present, mask retained) "
+          "VERIFIED AGAINST REAL VIENNAPS 4.6.2")
 
     import shutil
     shutil.rmtree(tmp_fin, ignore_errors=True)
