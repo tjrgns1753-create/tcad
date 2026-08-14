@@ -184,3 +184,39 @@ def refine_mesh_near(
             break
         points, triangles, tags = _refine_once(points, triangles, tags, marked)
     return points, triangles, tags
+
+
+def graded_refine_mesh_near(
+    points: np.ndarray,
+    triangles: np.ndarray,
+    tags: np.ndarray,
+    predicates: List[Callable[[np.ndarray], bool]],
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Telescoping/graded alternative to calling refine_mesh_near() once
+    with one wide window and many levels: apply ONE refine_mesh_near()
+    pass (levels=1) per predicate in `predicates`, in order — normally
+    a sequence of windows from widest (matching the mesh's own existing
+    spacing) to narrowest (reaching the real target resolution).
+
+    Because each successively narrower window is a SUBSET of the wider
+    ones before it, only the innermost region ends up refined by every
+    pass (the full cumulative depth), while the outer rings get
+    progressively fewer halvings — unlike refine_mesh_near() with a
+    single wide window and N levels, where the ENTIRE window gets N
+    halvings regardless of how close to the target position it is.
+
+    Found necessary by real execution (not assumed): a single-window
+    approach that reaches deep sub-Debye-length resolution at real
+    device doping levels (1e19-1e20 cm^-3) needs enough levels that the
+    WHOLE window's node count grows by close to 4^levels — confirmed
+    directly to reach ~588k equations for one doping level before this
+    function was written, and to still fail to converge in reasonable
+    time even after capping levels. The graded version reaches the
+    SAME final local resolution with far fewer total nodes (see
+    CLAUDE.md — 16025 vs 51239 Si nodes at 1e19 cm^-3, and reaches
+    1e20 cm^-3 at all, which the single-window approach did not,
+    within a comparable node budget).
+    """
+    for predicate in predicates:
+        points, triangles, tags = refine_mesh_near(points, triangles, tags, predicate, levels=1)
+    return points, triangles, tags

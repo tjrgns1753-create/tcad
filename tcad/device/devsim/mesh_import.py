@@ -44,57 +44,34 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 from tcad.device.devsim import backend
-from tcad.device.devsim.mesh_refine import refine_mesh_near
+from tcad.device.devsim.mesh_refine import graded_refine_mesh_near, refine_mesh_near
 from tcad.mesh.interface import DopingProfile, ProcessResult
 
-#: Refinement half-width, in multiples of the local Debye length,
-#: used by auto_refine_from_doping. Chosen to match this project's own
-#: real-execution-verified Phase 8 value: at 1e18 cm^-3 (Debye length
-#: ~3.99nm using DevSim's own eps_si/eps_0/q/k constants — see
-#: _debye_length_um), refine_half_width_um=0.1um was found to converge
-#: (see this module's refine_half_width_um docstring below), a ratio of
-#: ~25x. This also lines up with the physical picture: a step
-#: junction's depletion width is roughly Debye_length *
-#: sqrt(4*V_bi/V_t), and V_bi/V_t is typically ~25-35 at real doping
-#: levels, so 25x Debye length is roughly "cover the depletion region
-#: plus margin", not an arbitrary constant.
-_AUTO_REFINE_DEBYE_MULTIPLE = 25.0
-
-#: Floor on refine_half_width_um as a multiple of the mesh's own local
-#: spacing (see _estimate_mesh_spacing_um) — a window narrower than
-#: this catches zero triangle centroids and silently refines nothing
-#: (a real, documented failure mode: CLAUDE.md records half-width 0.05
-#: at grid_delta_um=0.15, a ratio of ~0.33x, as "caught zero triangles",
-#: while 0.08-0.1 (~0.53-0.67x) converged). 0.7x sits just above that
-#: verified-working range with a small safety margin, without
-#: over-refining the way a 1x or 2x floor does (measured directly this
-#: session: a 2x floor drove the Phase 8 recipe from ~10.3k Si nodes to
-#: 100k+ equations for no convergence benefit — see CLAUDE.md).
-_SPACING_FLOOR_MULTIPLE = 0.7
-
 #: Target ratio of post-refinement local edge length to Debye length,
-#: used to auto-derive refine_levels. Chosen to match this project's
-#: own real-execution-verified Phase 8 value: at 1e18 cm^-3
-#: (grid_delta_um=0.15, Debye length ~3.99nm), 4 refinement levels
-#: (0.15um / 2^4 = 9.4nm final edge length, a ratio of ~2.35x) was
-#: found to converge, while 3 levels (~8.4x finer, 18.75nm final edge,
-#: ratio ~4.7x) did not (see mesh_refine.py / this module's
+#: used to derive how many graded rings auto_refine_from_doping needs
+#: (see _derive_refine_from_doping). Chosen to match this project's own
+#: real-execution-verified Phase 8 value: at 1e18 cm^-3
+#: (grid_delta_um=0.15, Debye length ~3.99nm), a final local edge length
+#: of 9.4nm (ratio ~2.35x) was found to converge, while 18.75nm
+#: (ratio ~4.7x) did not (see mesh_refine.py / this module's
 #: refine_levels docstring). 2.5x sits between those two verified
 #: points.
 _AUTO_REFINE_TARGET_EDGE_TO_DEBYE_RATIO = 2.5
 
-#: Hard cap on auto-derived refine_levels. Each level is NOT a cheap
-#: linear cost — measured directly this session: going from 4 to 6
-#: levels (same fixed refine_half_width_um) took the Phase 8 recipe's
-#: equation count from ~44k to ~588k (~13x for 2 extra levels, close
-#: to the 4^2=16x a pure "every level ~4x's the local triangle count"
-#: model predicts). A cap of 10 was tried first and is NOT usable in
-#: practice; capped much lower instead. Doping levels needing more
-#: refinement than this cap allows are NOT guaranteed to converge with
-#: auto_refine_from_doping — see CLAUDE.md's "mesh-refinement
-#: generalization" investigation for exactly which doping levels this
-#: was verified to work vs not.
-_AUTO_REFINE_MAX_LEVELS = 5
+#: Hard cap on the number of graded refinement rings (see
+#: _derive_refine_from_doping / graded_refine_mesh_near). Each ring is
+#: cheap (only ~1 level, only over its own — progressively narrower —
+#: window), unlike the single-window-many-levels approach this replaced
+#: (where going from 4 to 6 uniform levels took the Phase 8 recipe's
+#: equation count from ~44k to ~588k for a doping level that still
+#: didn't converge in reasonable time — see CLAUDE.md's
+#: "mesh-refinement generalization" investigation). Verified directly
+#: that graded rings reach 1e20 cm^-3 (100x the originally-tuned
+#: doping) at 8 rings, 61725 Si nodes, full convergence — a doping
+#: level the OLD single-window approach could not reach at all within
+#: a comparable node budget. 20 leaves real headroom beyond that
+#: verified point without being unbounded.
+_AUTO_REFINE_MAX_RINGS = 20
 
 
 def _debye_length_um(concentration_cm3: float, temperature_k: float = 300.0) -> float:
@@ -136,16 +113,39 @@ def _estimate_mesh_spacing_um(points: np.ndarray, triangles: np.ndarray) -> floa
 
 def _derive_refine_from_doping(
     doping: DopingProfile, points: np.ndarray, triangles: np.ndarray
-) -> Optional[Tuple[float, str, float, int]]:
-    """Derive (refine_near_um, refine_axis, refine_half_width_um,
-    refine_levels) from a ProcessResult's doping profile, or None if no
-    region has a determinable junction/peak position.
+) -> Optional[Tuple[float, str, List[float]]]:
+    """Derive (refine_near_um, refine_axis, ring_half_widths) from a
+    ProcessResult's doping profile, or None if no region has a
+    determinable junction/peak position.
 
     Takes the FIRST DopingRegion with a position set (junction_position_um
     for "step_junction", peak_position_um for "gaussian_implant") —
     ambiguous for a doping profile with multiple distinct junctions;
     only ever exercised with one active junction per device so far (see
     CLAUDE.md).
+
+    ring_half_widths is a telescoping sequence for
+    graded_refine_mesh_near(): starting at the mesh's own existing
+    local spacing (already resolvable, so it's a safe starting window —
+    see _estimate_mesh_spacing_um) and halving each step, until the
+    LOCAL edge length reaches within
+    _AUTO_REFINE_TARGET_EDGE_TO_DEBYE_RATIO x the real Debye length at
+    this region's doping concentration (using DevSim's own real
+    Permittivity/kT/q constants — see _debye_length_um).
+
+    Superseded an earlier (single-window, many-levels) formula — kept
+    here only in this docstring for context: that approach widened a
+    SINGLE window via a Debye-length multiple and applied N levels
+    across the WHOLE window, which meant the entire window's node count
+    grew by close to 4^N. Confirmed by real execution to reach ~588k
+    equations for one doping level while still not converging within
+    reasonable time. The graded/telescoping version reaches the SAME
+    final local resolution — only the innermost (narrowest) ring gets
+    the full cumulative halving, outer rings get progressively fewer —
+    with far fewer total nodes (verified: 16025 vs 51239 Si nodes at
+    1e19 cm^-3, both converging; 1e20 cm^-3 converges at all with 8
+    rings / 61725 nodes, which the old single-window approach could not
+    reach in comparable time — see CLAUDE.md).
     """
     for region in doping.regions:
         if region.junction_position_um is not None:
@@ -164,28 +164,24 @@ def _derive_refine_from_doping(
 
         debye_um = _debye_length_um(concentration)
         spacing_um = _estimate_mesh_spacing_um(points, triangles)
-        half_width_um = max(_AUTO_REFINE_DEBYE_MULTIPLE * debye_um, _SPACING_FLOOR_MULTIPLE * spacing_um)
-
-        # How many halvings bring the LOCAL edge length (starting from
-        # the mesh's own existing spacing) within
-        # _AUTO_REFINE_TARGET_EDGE_TO_DEBYE_RATIO x the Debye length —
-        # not just widening the window (refine_half_width_um above),
-        # which alone does NOT increase local resolution. Verified
-        # necessary by real execution (this session): auto-deriving
-        # only refine_half_width_um and leaving refine_levels fixed at
-        # 4 converged at 1e18 cm^-3 (matching the recipe that value was
-        # tuned against) but FAILED to converge at 1e19/1e20 cm^-3 at
-        # the same grid_delta_um=0.15 mesh — the fixed final edge
-        # length (0.15/2^4 = 9.4nm) is only ~2.35x the Debye length at
-        # 1e18 but 7.4x/23.5x too coarse at 1e19/1e20.
         target_edge_um = _AUTO_REFINE_TARGET_EDGE_TO_DEBYE_RATIO * debye_um
-        if target_edge_um > 0.0 and spacing_um > target_edge_um:
-            levels = int(math.ceil(math.log2(spacing_um / target_edge_um)))
-        else:
-            levels = 0
-        levels = max(1, min(levels, _AUTO_REFINE_MAX_LEVELS))
 
-        return position, region.junction_axis, half_width_um, levels
+        ring_half_widths: List[float] = []
+        half_width = spacing_um
+        edge = spacing_um
+        while edge > target_edge_um and len(ring_half_widths) < _AUTO_REFINE_MAX_RINGS:
+            ring_half_widths.append(half_width)
+            half_width /= 2.0
+            edge /= 2.0
+        if not ring_half_widths:
+            # Already resolved at the mesh's own existing spacing --
+            # still refine once, matching the pre-existing "at least 1
+            # level" behavior of the old formula, so a very low doping
+            # region still gets a small amount of local refinement
+            # rather than none at all.
+            ring_half_widths = [spacing_um]
+
+        return position, region.junction_axis, ring_half_widths
 
     return None
 
@@ -314,48 +310,49 @@ def import_process_result(
         fixed final edge length doesn't shrink with doping): see
         `auto_refine_from_doping` below to derive one instead.
     auto_refine_from_doping : opt-in (default False). When True, and
-        `refine_near_um` was NOT explicitly passed, derives
-        `refine_near_um`/`refine_axis` from the first DopingRegion in
-        `result.doping` that has a determinable position
+        `refine_near_um` was NOT explicitly passed, derives the
+        junction position AND applies GRADED refinement directly —
+        entirely bypassing `refine_half_width_um`/`refine_levels`
+        (those two stay meaningful only for the manual/explicit
+        `refine_near_um` path below; a caller combining
+        `auto_refine_from_doping=True` with an explicit
+        `refine_half_width_um`/`refine_levels` gets those ignored,
+        since a single window+level count has no direct equivalent in
+        the graded scheme).
+
+        Position: derived from the first `DopingRegion` in
+        `result.doping` with a determinable position
         (`junction_position_um` for "step_junction",
         `peak_position_um` for "gaussian_implant") — so a caller no
-        longer has to compute/pass the junction position by hand,
-        mirroring how `silicon_depth_um` already flows from `Wafer`
-        through the recipe automatically (this was this project's own
-        named "next smallest experiment" after the mesh-refinement fix
-        first shipped — see CLAUDE.md).
+        longer has to compute/pass it by hand, mirroring how
+        `silicon_depth_um` already flows from `Wafer` through the
+        recipe automatically.
 
-        Also derives `refine_half_width_um` (only when that argument
-        was itself left at its default None) as
-        `max(25 * debye_length_um, 0.7 * local_mesh_spacing_um)`: 25x
-        the Debye length at the region's own doping concentration
+        Refinement: uses `tcad.device.devsim.mesh_refine.
+        graded_refine_mesh_near()` — a TELESCOPING sequence of
+        refinement rings (see `_derive_refine_from_doping`), starting
+        at the mesh's own existing local spacing (estimated from its
+        median triangle edge length, since this function only sees the
+        already-written mesh, never the recipe's `grid_delta_um`) and
+        halving repeatedly until the LOCAL edge length is within 2.5x
+        the real Debye length at the region's own doping concentration
         (using DevSim's own real Permittivity/kT/q constants, not
-        re-derived textbook ones — see `_debye_length_um`) covers the
-        depletion region plus margin (matches the hand-picked 0.1um
-        value above, which is ~25x the ~4nm Debye length at that
-        recipe's 1e18 cm^-3 doping); the `0.7*local_mesh_spacing_um`
-        floor (spacing estimated directly from the mesh's own median
-        triangle edge length, since this function has no access to the
-        recipe's grid_delta_um) exists because a window narrower than
-        the EXISTING mesh spacing catches zero triangle centroids and
-        silently refines nothing — the same failure mode the 0.1um
-        value above was hand-tuned to avoid (0.7x, not e.g. 2x, was
-        itself real-execution-verified: an earlier 2x floor drove the
-        Phase 8 recipe's node count from ~10.3k to 100k+ equations for
-        no convergence benefit, before being corrected to 0.7x — see
-        CLAUDE.md).
-
-        And derives `refine_levels` (only when that argument was
-        itself left at its default None) as however many halvings
-        bring the mesh's local edge length within 2.5x the Debye
-        length, capped at 10 — REQUIRED, not optional, for this to
-        generalize beyond 1e18 cm^-3: verified by real execution that
-        deriving `refine_half_width_um` alone while leaving
-        `refine_levels` fixed at 4 converges at 1e18 cm^-3 (matching
-        the recipe that value was tuned against) but FAILS to converge
-        at 1e19/1e20 cm^-3 at the same grid_delta_um=0.15 mesh, because
-        widening the refinement WINDOW doesn't increase local
-        RESOLUTION — only more halvings do.
+        re-derived textbook ones — see `_debye_length_um`), each ring
+        applied with exactly 1 refinement level. This SUPERSEDES an
+        earlier (single-window, many-levels) formula that widened one
+        fixed window and applied N levels across the WHOLE window —
+        real-execution-verified to need far more nodes for the same
+        final local resolution (51239 vs graded's 16025 Si nodes at
+        1e19 cm^-3, both converging) and to fail entirely at 1e20 cm^-3
+        (100x the originally-tuned 1e18 cm^-3 doping) within reasonable
+        time, where the graded version converges the full sweep at
+        61725 Si nodes — see CLAUDE.md's "mesh-refinement
+        generalization" investigation for the full comparison. This
+        also settled an open question from that investigation: 1e20's
+        earlier non-convergence was a pure MESH-RESOLUTION limit, not a
+        sign the underlying Boltzmann-statistics physics model breaks
+        down at that doping — graded refinement converges it cleanly
+        with no other change.
 
         Does nothing (silently) if `result.doping` is None, or if no
         region has a determinable position — matching every prior
@@ -387,21 +384,27 @@ def import_process_result(
     tags = mesh.cell_data[result.material_field][block_index]
     raw_points = mesh.points
 
+    graded_refinement_applied = False
     if auto_refine_from_doping and refine_near_um is None and result.doping is not None:
         derived = _derive_refine_from_doping(result.doping, raw_points, triangles)
         if derived is not None:
-            refine_near_um, refine_axis, derived_half_width_um, derived_levels = derived
-            if refine_half_width_um is None:
-                refine_half_width_um = derived_half_width_um
-            if refine_levels is None:
-                refine_levels = derived_levels
+            derived_near_um, derived_axis, ring_half_widths = derived
+            axis_index = {"x": 0, "y": 1, "z": 2}[derived_axis]
+            predicates = [
+                (lambda centroid, hw=hw: abs(centroid[axis_index] - derived_near_um) < hw)
+                for hw in ring_half_widths
+            ]
+            raw_points, triangles, tags = graded_refine_mesh_near(
+                raw_points, triangles, tags, predicates
+            )
+            graded_refinement_applied = True
 
     if refine_half_width_um is None:
         refine_half_width_um = 0.1
     if refine_levels is None:
         refine_levels = 4
 
-    if refine_near_um is not None:
+    if refine_near_um is not None and not graded_refinement_applied:
         axis_index = {"x": 0, "y": 1, "z": 2}[refine_axis]
 
         def _near_refine_target(centroid):

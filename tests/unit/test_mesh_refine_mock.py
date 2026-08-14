@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import numpy as np
 
-from tcad.device.devsim.mesh_refine import _edge_key, refine_mesh_near
+from tcad.device.devsim.mesh_refine import _edge_key, graded_refine_mesh_near, refine_mesh_near
 
 
 def make_grid(nx, ny, dx=1.0, dy=1.0):
@@ -129,6 +129,36 @@ def main():
         "a predicate matching nothing must leave the mesh completely unchanged"
     )
     print("empty predicate -> no-op: OK")
+
+    # graded_refine_mesh_near: a telescoping sequence of shrinking
+    # windows (1 level each) should reach the SAME final local edge
+    # length as refine_mesh_near(..., levels=3) with a single window,
+    # while preserving the same invariants (conformity, area, far-field
+    # untouched) -- this is the production auto_refine_from_doping path.
+    ring_predicates = [
+        (lambda c, hw=hw: abs(c[0] - 5.0) < hw)
+        for hw in (1.0, 0.5, 0.25)
+    ]
+    pts4, tri4, tag4 = graded_refine_mesh_near(points, triangles, tags, ring_predicates)
+    area4 = total_area(pts4, tri4)
+    max_mult4 = max_edge_multiplicity(tri4)
+    min_edge4 = min_edge_length(pts4, tri4)
+    far_after4 = {tuple(int(v) for v in tri) for tri in tri4}
+
+    assert abs(area4 - area0) < 1e-9, f"graded: area not preserved ({area4} vs {area0})"
+    assert max_mult4 <= 2, f"graded: non-conforming mesh (an edge shared by {max_mult4} triangles)"
+    assert far_before.issubset(far_after4), "graded: far-field triangles were modified"
+    assert min_edge4 <= 1.0 / 8 + 1e-9, f"graded: expected local edge length <= 0.125, got {min_edge4}"
+    print(f"graded (3 rings, half-widths 1.0/0.5/0.25): {len(tri4)} triangles, "
+          f"area={area4:.6f} (delta={area4 - area0:.2e}), max_edge_multiplicity={max_mult4}, "
+          f"min_edge={min_edge4:.4f}")
+
+    # Empty ring list -> no-op, same as an empty predicate.
+    pts5, tri5, tag5 = graded_refine_mesh_near(points, triangles, tags, [])
+    assert np.array_equal(pts5, points) and np.array_equal(tri5, triangles) and np.array_equal(tag5, tags), (
+        "an empty ring list must leave the mesh completely unchanged"
+    )
+    print("graded, empty ring list -> no-op: OK")
 
     print("ALL MESH_REFINE MOCK CHECKS PASSED")
 

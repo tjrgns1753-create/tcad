@@ -1593,6 +1593,107 @@ answered with real data, not left unverified.
    explicitly wants to spend more compute to reach a doping level like
    1e20 that the default cap doesn't reach.
 
+### `auto_refine_from_doping` — upgraded to GRADED refinement, 1e20 cm^-3 now converges (later session, per explicit user instruction to apply the doping-ceiling fix prototyped and reported the previous round)
+
+Item 7 above (and the 1e20 cm^-3 ceiling characterized in the section
+above it) is now resolved — not by raising the level cap further
+(shown not to work), but by replacing the single-window-many-levels
+refinement strategy with a telescoping/graded one.
+
+1. **What was tested:** prototyped (isolated scripts, no production
+   code touched, per explicit instruction to test first) a
+   telescoping sequence of refinement windows — starting at the mesh's
+   own existing local spacing and halving repeatedly, each halving
+   applied as its OWN `refine_mesh_near(..., levels=1)` pass — instead
+   of one wide window refined `N` times. Verified at 1e19 cm^-3 (must
+   still converge, matching the already-working case) and 1e20 cm^-3
+   (previously failed even at the level cap).
+
+2. **Result:** both converged, and with FEWER total nodes than the old
+   approach even where the old one already worked:
+
+   | doping (cm^-3) | old (single-window) | graded | outcome |
+   |---|---|---|---|
+   | 1e19 (10x) | 51239 Si nodes, converged | **16025 Si nodes**, converged | 3.2x fewer nodes, same result |
+   | 1e20 (100x) | did not converge (capped at level 5, residual plateaued ~6e-6 over 47+ iterations, killed after 7+ min) | **61725 Si nodes, CONVERGED all 8 sweep points** | previously-uncrossable ceiling now crossed |
+
+   This also answers a question the previous investigation left open:
+   whether 1e20's non-convergence was a pure mesh-resolution limit or
+   a sign the underlying Boltzmann-statistics physics model
+   (`devsim.python_packages.simple_physics`) breaks down at doping
+   levels approaching Si's solid solubility limit. It was resolution —
+   the graded approach reaches the SAME target local resolution
+   (2.5x the Debye length) as the old formula intended, just far more
+   cheaply, and converges cleanly with no other change.
+
+3. **Why graded is cheaper:** the old approach's node count in the
+   refined region grows close to `4^levels` (each level ~4x's the
+   local triangle count), because the ENTIRE window gets every level.
+   Graded refinement's outer rings (wide window, few halvings) and
+   inner rings (narrow window, many cumulative halvings) mean only the
+   innermost, smallest ring ever reaches the full target resolution —
+   the SAME idea DEVSIM's own official diode example uses (grading the
+   mesh down to sub-nm right at the junction, not uniformly).
+
+4. **Production implementation:**
+   - **`tcad/device/devsim/mesh_refine.py`**: new
+     `graded_refine_mesh_near(points, triangles, tags, predicates)` —
+     applies one `refine_mesh_near(..., levels=1)` pass per predicate
+     in `predicates`, in order. `refine_mesh_near()` itself is
+     UNCHANGED; this is purely a new way of calling it repeatedly.
+   - **`tcad/device/devsim/mesh_import.py`**: `_derive_refine_from_doping()`
+     rewritten to return `(refine_near_um, refine_axis,
+     ring_half_widths: List[float])` instead of a single
+     `(half_width, levels)` pair — `ring_half_widths` starts at the
+     mesh's own estimated local spacing and halves until the target
+     edge length (2.5x Debye length, unchanged from before) is
+     reached, capped at `_AUTO_REFINE_MAX_RINGS = 20` (raised from the
+     old `_AUTO_REFINE_MAX_LEVELS = 5` — safe to raise since each ring
+     is cheap, unlike each uniform level). The old
+     `_AUTO_REFINE_DEBYE_MULTIPLE`/`_SPACING_FLOOR_MULTIPLE` constants
+     (used only by the superseded single-window half-width formula)
+     were deleted, not kept as dead code.
+   - `import_process_result()`'s `auto_refine_from_doping=True` path
+     now calls `graded_refine_mesh_near()` directly instead of routing
+     through the generic single-window `refine_near_um`/
+     `refine_half_width_um`/`refine_levels` parameters — those three
+     parameters keep their EXACT old behavior and meaning for the
+     manual/explicit path (any caller passing `refine_near_um`
+     directly, e.g. `run_pipeline.py` and
+     `test_phase8_pn_junction_real.py`, is provably unaffected: a new
+     `graded_refinement_applied` flag ensures the old single-window
+     block only runs when graded refinement did NOT already run).
+   - New mock-only coverage in `tests/unit/test_mesh_refine_mock.py`
+     for `graded_refine_mesh_near` (conformity/area/far-field
+     invariants, matches the existing `refine_mesh_near` checks; a
+     3-ring graded call reaches the same minimum edge length as a
+     3-level single-window call using 1180 vs 2860 triangles — the
+     same ~2.4x reduction pattern seen in the real ViennaPS tests, at
+     the pure-geometry level with no backend needed).
+
+5. **Verified, real ViennaPS 4.6.2 + DevSim 2.10.1, through the actual
+   production `import_process_result(auto_refine_from_doping=True)`
+   entry point (not just the isolated prototype scripts from the
+   previous round):** 1e19 cm^-3 — 16025 Si nodes, full 8-point sweep
+   converged. 1e20 cm^-3 — 61725 Si nodes, full 8-point sweep
+   converged. Both match the prototype's own numbers exactly. Full
+   regression: **`tests/run_regression.py` → 19 passed, 0 failed, 0
+   skipped** — including `test_auto_refine_from_doping_real.py`
+   (now exercising the graded path for its existing 1e18 cm^-3 check;
+   its `gaussian_implant` check's node count dropped from 9853 to
+   2691 while still matching the analytic Gaussian formula exactly,
+   0.000e+00 relative error) — no regressions to anything else.
+
+6. **What remains uncertain:** whether `_AUTO_REFINE_MAX_RINGS = 20`
+   is itself a real ceiling for some doping level beyond 1e20 (not
+   tested); whether the graded approach generalizes across
+   `grid_delta_um` values other than this recipe's 0.15um (same open
+   item as before, still not attempted); the 1e19/1e20 verification
+   above is NOT part of the permanent regression suite (too expensive
+   to run every cycle, matching how this project treats other
+   expensive parameter sweeps) — only the original 1e18 cm^-3 case
+   stays as an ongoing regression gate.
+
 ### Oxidation — RESOLVED (this session)
 
 ViennaPS oxidation itself appears correct where sufficient Si exists.
@@ -2717,6 +2818,51 @@ pad=0.1um vs. 0.45um at pad=0.2um) the way real LOCOS lateral-diffusion
 physics predicts. No production code changed — this investigation
 confirms existing behavior is physically sound, it isn't a bug fix.
 
+**What this session did (part 10, later session, per explicit user
+instruction: apply the doping-ceiling fix prototyped and reported the
+previous round, but only re-investigate — do not implement — the LOCOS
+chaining fix):**
+- Applied the graded/telescoping refinement upgrade to production —
+  see "`auto_refine_from_doping` — upgraded to GRADED refinement,
+  1e20 cm^-3 now converges" above. `mesh_refine.py` gained
+  `graded_refine_mesh_near()`; `mesh_import.py`'s
+  `_derive_refine_from_doping()` now returns a telescoping ring
+  sequence instead of a single (half-width, levels) pair. Verified
+  through the real production entry point: 1e19 cm^-3 converges with
+  16025 nodes (was 51239 with the old formula), and 1e20 cm^-3 — a
+  ceiling the old formula could not cross even at its level cap — now
+  converges fully with 61725 nodes. This also resolved an open
+  question from part 8: 1e20's earlier failure was a pure mesh-
+  resolution limit, not the physics model breaking down at that
+  doping level.
+- Re-investigated LOCOS process-flow chaining (per explicit
+  instruction NOT to implement yet, only to prototype/test and
+  re-report): confirmed the "explicit hint propagation" design's core
+  idea works in concept, but found a NEW, more precise root cause
+  along the way — `_export_single_level_set()`'s isolated
+  single-material domain construction, when built from a Si level set
+  that has been through BOTH a LOCOS build AND a subsequent `Process()`
+  call, gets a DEGENERATE bounding box from ViennaLS's own
+  `getBoundingBox()` (literal `±DBL_MAX` inverted min/max sentinels),
+  which then feeds an absurdly-inverted box into
+  `BooleanOperation(INTERSECT)` and hangs for minutes. Traced
+  precisely (isolated diagnostic scripts, not guessed): the ORIGINAL
+  multi-material domain's own bounding box stays correct throughout
+  (before AND after the etch) — only the ISOLATED single-level-set
+  reconstruction's bbox breaks. Since `_export_single_level_set`
+  already has the correct bounds in hand (from the original domain,
+  computed before ever isolating the level set), the fix does not need
+  to understand WHY `getBoundingBox()` breaks for this case — it can
+  simply pass its own already-known-correct bounds through explicitly
+  instead of letting `_floored_copy_for_export()` re-derive them via
+  the broken call. No code changed — probe scripts only, deleted after
+  the investigation, per explicit instruction to test without
+  applying.
+
+**Regression after part 10:** `tests/run_regression.py` → still
+**19 passed, 0 failed, 0 skipped** — the graded-refinement change is
+the only production change this part; no regressions.
+
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
   of parts 1-5; struck through here rather than removed, so this list
@@ -2733,12 +2879,16 @@ confirms existing behavior is physically sound, it isn't a bug fix.
   refinement, not a convergence fix — see that section for why
   `gaussian_implant` was never itself a convergence problem the way
   `step_junction` was); to doping levels far above 1e18 cm^-3 —
-  **CHARACTERIZED in part 8**: works through 1e19, not through 1e20.
+  **RESOLVED in part 10**: 1e19 AND 1e20 cm^-3 now both converge via
+  graded refinement, shipped to production.
 - Whether `save_locos_volume_mesh()`'s pad-oxide-first LOCOS fix
   interacts with a subsequent process step continuing from its result
-  — **REAL BUG CONFIRMED in part 8** (see "LOCOS process-flow
-  chaining" above); safety-net warning shipped, full architectural fix
-  NOT attempted, still genuinely open.
+  — **REAL BUG CONFIRMED in part 8, ROOT CAUSE PRECISELY ISOLATED in
+  part 10** (the exact `getBoundingBox()` degeneracy and its
+  workaround — see part 10 above); fix design is now concrete and
+  small, but per explicit instruction NOT implemented this session —
+  still genuinely open, next actual attempt should start from part
+  10's bounds-passthrough finding rather than re-deriving it.
 - KOH/TMAH rate-constant generalization to other concentrations/
   temperatures, or to TMAH — still open, not attempted.
 
