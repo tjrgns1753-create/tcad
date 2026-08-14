@@ -296,3 +296,201 @@ attempted this session.
 No production code (tcad/*, tests/*) was modified for any test in this
 log. All probe scripts (.probe_locos_test*.py) were deleted after each
 test, per this project's established scratch-file convention.
+
+11. Hypothesis: does the reordering candidate from test 10 (Mask before
+    SiO2 wrap) survive contact with the REAL, physics-coupled
+    vps.Oxidation() model (contactMode=2, the actual production
+    mechanics/pressure/stokes/coupling settings copied read-only from
+    thermal.py -- not just the plain-geometry directional-etch stand-in
+    used in tests 8-10), both for (a) real time-dependent oxide growth
+    and (b) whether the chained-step collapse is still avoided once a
+    REAL Oxidation() step has run first?
+    Test: built the same reordered geometry as test 10, ran the real
+    Oxidation() model at two different times (0.01hr and 0.05hr) with
+    the actual production mask/mechanics parameters, measured isolated
+    per-material areas before/after each, then chained a directional
+    etch afterward exactly like the real bug scenario (oxidation step
+    -> chained further step) and checked for the point-collapse.
+    Result: TWO separate, serious problems found, either one alone
+    would rule this out:
+      (a) NO real oxide growth happened. SiO2's isolated area was
+          IDENTICAL (8.4000025) at BOTH t=0.01hr and t=0.05hr -- a 5x
+          time difference producing zero change is definitive evidence
+          of a stalled/non-functioning growth, not slow growth (matches
+          the exact stalled signature this project's oxidation seed-
+          value investigation elsewhere in CLAUDE.md already
+          established as diagnostic). The mechanics solver's own log
+          confirms this directly: "mask/oxide coupling converged in 2
+          iterations (residual=0.000000, displacement=0.000000 um,
+          maxDisplacement=0.000000 um)" -- EXACTLY zero displacement,
+          not just small. (For comparison, the ORIGINAL, unreordered
+          construction's own log elsewhere in this session showed a
+          real, nonzero maxDisplacement=0.000004 um and a nonzero
+          residual=0.009764 for the same recipe.) Mask retention read
+          100.00% at both times, but this is a false positive -- 100%
+          retention of a mask that also never received real oxide
+          growth around it is not evidence the model is working, it is
+          the two symptoms of the SAME underlying "nothing is actually
+          happening" failure.
+      (b) The point-collapse bug is NOT reliably avoided in the full
+          real scenario after all. After the (non-growing) Oxidation()
+          step ran, the SUBSEQUENT chained directional etch DID
+          collapse a level set to exactly 0 points -- but this time it
+          was Mask (index 1, the reordered "middle" position) that
+          collapsed, not Si/SiO2 as in the original construction.
+          Si (index 0) and SiO2 (index 2, still last-inserted) both
+          survived with nonzero points. This contradicts test 10's own
+          finding (same reordered geometry, chained etch directly with
+          NO prior Oxidation() call -- Mask there stayed EXACTLY
+          unchanged, nothing collapsed) -- meaning inserting a REAL
+          Oxidation()/LOCOS mechanics Process() call as the FIRST
+          Process() call on this domain changes which level set is
+          vulnerable on the NEXT chained call, even though that first
+          call's own geometric effect measured as zero. This suggests
+          the "last Python-insertion-order level set survives" model
+          from tests 9/10 is not the true underlying rule -- it may
+          only have appeared that way because those tests never ran a
+          real physics Process() (only directional etches) before
+          chaining. The real mechanism likely involves some ViennaPS-
+          internal "active/top-of-stack" bookkeeping that a real
+          Oxidation()/LOCOS coupling call can silently change,
+          independent of the Python-visible getLevelSets() order --
+          which would need C++ source access to pin down precisely
+          (still not available this round, see below).
+    Conclusion: the reordering candidate is DEFINITIVELY RULED OUT,
+    on two independent grounds -- it breaks real oxide growth entirely
+    (worse than the bug it was meant to fix), and it does not even
+    reliably avoid the original point-collapse bug once a real
+    Oxidation() step is involved rather than a plain-geometry stand-in.
+    This closes off the most promising lead from the previous test
+    round. No further reordering variants are recommended without a
+    fundamentally different starting idea.
+
+12. Attempted to fetch ViennaPS's real advection/Process source from
+    GitHub (blocked by a rate limit in the previous test round) --
+    THIS TIME IT WORKED. Fetched psDomain.hpp (confirms
+    insertNextLevelSetAsMaterial's exact wrap semantics: unions the
+    NEW level set with levelSets_.back() -- i.e. whatever was already
+    last at THAT moment, not "everything in the domain" -- and that
+    getSurface() is defined as simply levelSets_.back(), no separate
+    internal pointer) and, decisively, ViennaLS's lsAdvect.hpp, which
+    contains the EXACT, documented root cause:
+
+      "Level sets are passed to the constructor in a std::vector, with
+      the last element being the level set to advect, or 'top level
+      set', while the others are then adjusted afterward... the 'top
+      level set' has to include all lower level sets:
+      LS_top = LS_top U LS_i for i = {0...n}"
+
+    The "adjusted afterward" step (adjustLowerLayers(), quoted
+    verbatim by the fetch) is:
+      for i in 0..size-2: BooleanOperation(levelSets[i],
+                                            levelSets.back(),
+                                            INTERSECT).apply()
+    i.e. EVERY level set except the last is intersected against the
+    last one. If the last one does not geometrically CONTAIN a given
+    lower level set, that intersection produces an EMPTY level set --
+    exactly, precisely, the 0-point collapse observed in every test in
+    this log.
+
+    This fully and mechanistically explains every result from tests
+    6-10, not just describes the symptom:
+      - Test 6 (Si, SiO2-wrap-last, 2 level sets): back()=SiO2, which
+        by construction (UNION with Si at insertion) already contains
+        Si. Precondition satisfied -- no collapse. Matches.
+      - Tests 7/8 (Si, SiO2-wrap, Mask-last -- the REAL LOCOS
+        construction): back()=Mask, a small bounded box that does NOT
+        geometrically contain Si or SiO2's regions at all.
+        Precondition violated for BOTH of them -- both go empty.
+        Matches exactly (both collapsed to 0 in every real/synthetic
+        test of this exact ordering).
+      - Tests 9/10 (Si, Mask, SiO2-wrap-last): back()=SiO2. SiO2's OWN
+        plane (semi-infinite half-space below its own y, independent
+        of what it unioned with) already geometrically contains Si's
+        region (also a semi-infinite half-space, at a lower y) as a
+        pure coincidence of both being unbounded planes stacked at
+        different heights -- and SiO2 explicitly unioned with Mask at
+        insertion time too. Precondition satisfied for both -- no
+        collapse. Matches exactly.
+
+    This also explains WHY test 11 (real Oxidation() first, THEN
+    chained etch, on the test-10 reordered geometry) broke differently
+    than test 10's own direct-chain version: since SiO2 in that
+    reordering only ever explicitly unioned with Mask (not Si) at
+    insertion time -- its containment of Si was purely the semi-
+    infinite-plane coincidence noted above, not a real "SiO2 grew on
+    top of Si and consumed it" relationship -- the real Oxidation()
+    model's own internal mechanics (evaluating oxide growth as
+    consuming Si at the true Si/oxide interface) had no valid
+    interface to work with, which is consistent with test 11's other
+    finding (zero displacement, no real growth) and would plausibly
+    leave the domain in a different (still poorly-understood in
+    detail) internal state that changes which level set satisfies
+    containment on the NEXT Process() call.
+
+13. Given item 12's root cause, a CONCRETE fix candidate follows
+    directly from ViennaLS's own documented precondition: whatever
+    level set ends up LAST must geometrically contain every other
+    level set. For LOCOS's real construction, this means the mask
+    should ALSO be inserted as a wrap
+    (wrapLowerLevelSet=True, unioning with SiO2, which by then already
+    contains Si transitively) instead of its current
+    wrapLowerLevelSet=False. This was already tried once, per this
+    file's earlier "LOCOS mask erosion" investigation (item 6 there),
+    and rejected because "the mask's area get[s] absorbed into SiO2
+    during Process()" -- BUT that investigation pre-dates
+    save_locos_volume_mesh()'s current generalized per-level-set
+    isolation+clipping export algorithm, which was specifically built
+    to recover a WRAPPED member's true (un-eroded) shape from its own
+    independent level-set object (already proven for SiO2 relative to
+    Si). Since insertNextLevelSetAsMaterial's UNION mutates the newly-
+    inserted level set object in place before storing it, the ORIGINAL
+    unwrapped mask shape is not separately recoverable after the fact
+    -- but save_locos_volume_mesh()'s algorithm is generic over
+    wrap_flags[i] (not special-cased to SiO2), so retesting whether it
+    can ALSO correctly recover a wrapped mask's true shape (not just a
+    wrapped oxide's) is a well-motivated, not-yet-attempted next test
+    -- this earlier rejection may have been evaluated under the
+    pre-save_locos_volume_mesh() export path, which is a materially
+    different question than "does today's shipped export algorithm
+    handle it." NOT YET TESTED this session -- next step below.
+
+14. Test (per item 13's plan): built LOCOS geometry identical to
+    production except the mask's insertNextLevelSetAsMaterial call
+    used wrapLowerLevelSet=True instead of False (the ONLY change from
+    _build_locos_geometry()'s real construction), ran the real
+    Oxidation() model with production mask/mechanics parameters, and
+    intended to check mask retention via the REAL, unmodified
+    save_locos_volume_mesh() (production function, called exactly as
+    thermal.py calls it).
+    Result: did not need to reach the export step -- the Oxidation()
+    model's own internal solver broke down immediately and severely,
+    worse than test 11's "silently does nothing" failure:
+      "OxidationDiffusion: using CPU BiCGSTAB for diffusion solve
+       (nodes=0, GPU mode not selected)."
+      "WARNING: OxidationDiffusion: no oxide nodes found after
+       buildNodes(). Verify that the reaction and ambient level sets
+       enclose a non-empty oxide band."
+      (same warning repeated for OxidationDeformation)
+    followed by a garbage/corrupted numeric value where a real
+    "displacement" number should be -- a ~10^308-magnitude nonsense
+    float (consistent with reading uninitialized or corrupted memory,
+    not a real physical quantity), and then the process appeared to
+    hang (100% CPU, no further log output for 60+ seconds after
+    "Expanding level set to 3.000000", where every OTHER test in this
+    log completed within a few seconds).
+    Conclusion: wrapping the mask (the theoretically-motivated fix
+    from item 13, meant to satisfy ViennaLS Advect's containment
+    precondition) is DEFINITIVELY REJECTED -- not merely "doesn't
+    help," it actively breaks the Oxidation model's own internal
+    oxide-band detection outright ("no oxide nodes found"), producing
+    corrupted numerical output and an apparent hang/severe slowdown.
+    This is a MORE SEVERE failure than the earlier-documented "mask
+    absorbed into SiO2" finding from the original "LOCOS mask erosion"
+    investigation (item 6 there) -- it's not just an export/retention
+    problem, the physics solver itself cannot function on this
+    geometry at all. This closes off item 13's fix candidate
+    completely; save_locos_volume_mesh()'s newer clipping export
+    capability does not change this conclusion, since the failure
+    happens entirely inside Oxidation()'s own solve, before any export
+    step is ever reached.
