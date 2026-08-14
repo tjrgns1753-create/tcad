@@ -1,0 +1,298 @@
+LOCOS process-flow chaining bug -- cumulative test log
+=======================================================
+
+Purpose: track every isolated test/probe run while investigating why a
+process step chained onto fresh-LOCOS-built geometry corrupts its own
+mesh export (see CLAUDE.md, "LOCOS process-flow chaining"). This is a
+TEST-ONLY log per explicit user instruction -- no production code
+(tcad/*, tests/*) is modified while these entries are added. Entries
+are appended in chronological order, oldest first, and never deleted,
+so this stays an honest record of everything tried, including dead
+ends.
+
+Each entry: date/session marker, hypothesis, what was run, result,
+conclusion.
+
+-------------------------------------------------------------------
+[Prior session, recorded for continuity -- see CLAUDE.md "LOCOS
+process-flow chaining" and its part 12 follow-up for full detail]
+
+1. Hypothesis: an export-layer getBoundingBox() degeneracy in
+   _export_single_level_set() (±DBL_MAX inverted sentinels) is the
+   root cause; passing known-good bounds through explicitly should
+   fix it.
+   Test: implemented as a monkeypatch prototype (bounds_hint threaded
+   through _floored_copy_for_export / _export_single_level_set /
+   save_volume_mesh), reproduced the real bug scenario (fresh LOCOS
+   oxidation -> chained DirectionalEtch), ran end to end.
+   Result: hang eliminated (was minutes, now <1s), but the resulting
+   per-material export came back genuinely EMPTY (0 points, 0 cells),
+   not just fast-and-wrong.
+   Conclusion: fix insufficient -- REJECTED, not applied to production.
+
+2. Hypothesis: the emptiness is itself another symptom of the same
+   bbox bug (i.e. still an export-layer issue).
+   Test: direct level-set introspection (getNumberOfPoints()) on the
+   REAL domain's own level sets, before vs after the chained
+   Process() call -- no export involved at all.
+   Result: Si and SiO2 level sets go from real point counts (38, 62)
+   to exactly 0 points immediately after the chained Process() call
+   itself. Mask (104 points) is unaffected. This happens BEFORE any
+   export/isolation step runs.
+   Conclusion: the corruption is in-memory, inside the domain, caused
+   by the chained step's own Process() call -- not an export bug at
+   all. This is a strictly deeper root cause than item 1 addressed.
+
+3. Hypothesis: SiO2's level set is too narrow (width=1, observed right
+   after LOCOS build) for the second Process() call's advection kernel
+   to handle correctly.
+   Test: explicitly widened every level set to width=5 (vls.Expand)
+   on the REAL domain (not an export copy) immediately before
+   chaining the second step.
+   Result: no effect -- Si and SiO2 still collapsed to 0 points after
+   the same chained Process() call (Mask also lost points this time,
+   148->68, though not to zero).
+   Conclusion: level-set width is NOT the cause -- REJECTED.
+
+4. Attempted: fetch ViennaPS's real psProcess.hpp/advection C++ source
+   from GitHub to identify the exact mechanism.
+   Result: blocked by a GitHub-side rate limit (HTTP 429, Retry-After
+   3600s) at the time it was tried.
+   Conclusion: inconclusive, not a hypothesis test -- infrastructure
+   blocker, not a finding about the bug itself.
+
+-------------------------------------------------------------------
+[This session -- continuing per explicit instruction: analyze current
+state, proceed in the recommended direction, TEST ONLY, no code
+changes, accumulate results in this file]
+
+5. Hypothesis: Domain.getMaterialLevelSet(material) (a method this
+   investigation had not tried -- found via dir(module.Domain)) might
+   return a properly-reconstructed level set even when the raw
+   getLevelSets()[i] entry has collapsed, i.e. maybe the raw indexing
+   accessor is the stale/wrong one, not the underlying data.
+   Test: called getMaterialLevelSet(Si/SiO2/Mask) before and after the
+   same chained Process() call; also checked getMaterialMap(),
+   getSurface(), getMaterialsInDomain() for comparison.
+   Result: getMaterialLevelSet() gives IDENTICAL point counts to raw
+   getLevelSets() (0/0/68 after chaining) -- no better. getSurface()
+   (the domain's "active" top surface) has 68 points, matching ONLY
+   the mask's count -- i.e. the domain's only remaining real geometry
+   after chaining is the mask boundary. getMaterialsInDomain() still
+   reports all 3 materials present even though 2 of them have zero
+   actual level-set points -- confirms the material bookkeeping
+   (MaterialMap) is tracked separately from, and does not get
+   invalidated by, the loss of a material's real geometric data.
+   Conclusion: no alternate Python-level accessor recovers the data --
+   REJECTED as a workaround route. Reinforces that this is a genuine
+   internal-state loss, not a stale-cache/wrong-accessor issue.
+
+6. Hypothesis: is the corruption caused by "wrap topology" (SiO2
+   wrapping Si via addToExisting=True) IN GENERAL, or specifically by
+   something in LOCOS's own construction (the mask box, the contact-
+   epsilon overlap, or the prior real Oxidation()/mechanics solve)?
+   Test: built a MINIMAL synthetic domain -- plain
+   MakePlane(Si) + MakePlane(SiO2, addToExisting=True), no mask box at
+   all, no Oxidation model, no mechanics -- then chained a plain
+   DirectionalProcess() etch (mirroring the real bug scenario's second
+   step). Ran two variants: (a) etch model with no maskMaterial
+   argument, (b) etch model with maskMaterial=Mask specified even
+   though no mask geometry exists in the domain (matches the real
+   recipe's shape). Also ran a (flawed, see result) negative control
+   with addToExisting=False.
+   Result: NEITHER wrapped-synthetic variant collapsed to 0 points --
+   Si went 63->42 (a normal-looking uniform shrink, not emptying),
+   SiO2 stayed 42 (a flat plane uniformly advected keeps the same
+   point count, expected, not evidence of "no change"). The
+   addToExisting=False negative control was invalid as constructed --
+   MakePlane's own non-wrap path only produced 1 level set instead of
+   2 (Si appears to have been discarded/replaced rather than stacked
+   as a second material), so it does not actually test "two
+   non-wrapped materials" and is not a usable comparison point.
+   Conclusion: plain SiO2-wraps-Si topology, BY ITSELF, does NOT
+   trigger the corruption. The real trigger must be something more
+   specific to LOCOS's own construction -- the mask box, the contact-
+   epsilon insertion, or the fact that a real Oxidation()/mechanics
+   Process() ran on the geometry first (as opposed to MakePlane-only
+   construction with no Process() run yet). Next test targets this
+   directly.
+
+7. Hypothesis: does the corruption require a prior Oxidation()/
+   mechanics Process() call to have run on the LOCOS geometry, or is
+   it purely a property of the static geometry construction itself
+   (mask box + pad oxide + contact-epsilon overlap)?
+   Test: called the REAL production _build_locos_geometry() directly
+   (read-only use of existing code, not modified) to get the actual
+   mask-box/pad-oxide construction, then chained a directional etch
+   IMMEDIATELY -- skipping the Oxidation() Process() call entirely.
+   Result: Si and SiO2 STILL collapse to exactly 0 points after the
+   chained Process() call, identically to the full scenario (Mask
+   stays at 72, unaffected). Level-set widths were 2/2/2 before
+   chaining (all comfortably >= the minimum), ruling out width as a
+   factor here too (consistent with test 3's finding).
+   Conclusion: the prior Oxidation()/mechanics solve is NOT required
+   for the corruption -- it reproduces from the STATIC geometry
+   construction alone. Combined with test 6 (plain Si+wrapped-SiO2,
+   no mask box, does NOT corrupt), this narrows the trigger
+   specifically to LOCOS's mask-box construction itself (the two
+   boxes unioned and inserted via insertNextLevelSetAsMaterial with
+   the contact-epsilon overlap into the pad oxide) -- not the SiO2
+   wrap alone, not Oxidation's mechanics solve.
+
+8. Hypothesis: does the corruption need LOCOS's SPECIFIC mask-box
+   construction (contact-epsilon overlap positioned right at the
+   SiO2/mask interface), or does ANY third, unrelated level set --
+   even one that doesn't touch or overlap the wrapped pair at all --
+   trigger it?
+   Test: extended test 6's synthetic Si+wrapped-SiO2 domain with a
+   THIRD level set: a small box far away (y=2.0-2.2, well above the
+   SiO2 top at y=0.3, non-overlapping, no contact epsilon, inserted
+   directly via insertNextLevelSetAsMaterial(..., wrapLowerLevelSet=
+   False) -- the same call shape the mask box uses, but none of its
+   specific positioning tricks), then chained the same directional
+   etch.
+   Result: Si and SiO2 STILL collapse to exactly 0 points, identical
+   to the real LOCOS case -- confirms LOCOS's contact-epsilon/exact
+   positioning is NOT required; merely having a 3rd, independently-
+   inserted level set present (regardless of where it sits) is
+   sufficient to trigger the corruption of the OTHER (non-last-
+   inserted) level sets during a subsequent Process() call. The far-
+   away box's own point count changed too (48->22, not to zero) even
+   though it never should have been touched geometrically by an etch
+   happening in a completely different region -- consistent with
+   Process() re-triangulating/resampling every level set in the
+   domain regardless of whether it was the "active" one, so a raw
+   point-count change alone isn't proof of real geometric movement
+   (same caveat noted in earlier tests).
+   Conclusion: the trigger is not LOCOS-specific mask geometry -- it
+   is a general property of a domain containing >=3 level sets in
+   this base+wrap+separate-third arrangement, once ANY further
+   Process() call runs. This significantly broadens (and simplifies)
+   the bug's real scope beyond what CLAUDE.md previously described.
+   Next test: does reordering WHICH slot the "surviving" material
+   occupies (last-inserted vs first-inserted) show that "last
+   inserted" is the actual rule, independent of material identity?
+
+9. Hypothesis (revised after a probe-construction mistake -- see
+   below): is "last-inserted level set survives, everything earlier
+   collapses" a general insertion-ORDER rule (independent of material
+   identity), or does Mask specifically survive because it is the
+   maskMaterial passed to the etch model regardless of position?
+   First attempt: built [Mask(0, floating box), Si(1, box), SiO2(2,
+   wrap, last)] entirely via explicit insertNextLevelSetAsMaterial
+   calls, including calling geometry.getBoundaryConditions() on a
+   BRAND NEW domain with zero level sets yet inserted. This segfaulted
+   immediately (before any print output at all) -- turned out to be a
+   probe-construction bug, not a new finding: this project's own
+   tcad/process/oxidation/thermal.py already documents that
+   getBoundaryConditions() segfaults on an empty domain, which is
+   exactly what the first version of this probe did. Not a new issue,
+   just re-discovering an already-known, already-documented
+   precondition the hard way.
+   Fixed test (Variant B): kept Si as the required first-via-MakePlane
+   call (to safely establish the domain, matching the documented-safe
+   pattern), then inserted Mask-box SECOND (was third in test 8) and
+   SiO2-wrap THIRD/last (was second/middle in test 8) -- i.e. simply
+   swapped the insertion order of Mask and the SiO2 wrap relative to
+   test 8, keeping everything else identical (same box, same wrap,
+   same chained directional-etch model).
+   Result: with SiO2 (the wrap) now LAST, NEITHER Si (index 0) NOR
+   Mask (index 1) collapsed to zero after the chained Process() call
+   -- both just shrank in point count in the same unremarkable way
+   test 6's non-corrupted baseline did (63->42 for Si, 48->22 for
+   Mask). SiO2 itself (now last) was completely unchanged (64 points,
+   both before and after).
+   Conclusion: this refines (and corrects) the "last inserted
+   survives" theory into something more precise and mechanistic: the
+   corruption specifically triggers when ANY level set is inserted
+   AFTER a wrapped (addToExisting=True / wrapLowerLevelSet=True) level
+   set. When the wrap is itself the LAST insertion (tests 6 and 9),
+   nothing breaks. When something is inserted AFTER the wrap (test 8,
+   and the real LOCOS construction in _build_locos_geometry(), which
+   always does Si -> SiO2-wrap -> Mask, in exactly that order), the
+   wrap and everything inserted before it collapse to 0 points on the
+   next Process() call, while only whatever was inserted after the
+   wrap survives. This is now a precise, mechanistically-isolated
+   characterization -- not just "LOCOS is buggy," but a specific,
+   reproducible ViennaPS behavior: material stacks whose LAST
+   insertion is not the wrap-holding level set corrupt under a
+   further Process() call. Since LOCOS's real construction always
+   inserts the mask AFTER the oxide wrap, it is unconditionally
+   exposed to this every time.
+
+10. Hypothesis: since test 9 shows the corruption depends on whether
+    the wrap is last-inserted, could reordering LOCOS's ACTUAL
+    construction -- inserting the Mask box BEFORE the SiO2 wrap
+    (Si -> Mask -> SiO2-wrap-last) instead of the current
+    Si -> SiO2-wrap -> Mask -- be a real fix candidate? Two things
+    needed checking: (a) does it avoid the collapse-to-zero pattern,
+    and (b) does SiO2 still end up physically wrapping/covering Si
+    correctly, or does reordering silently break that (ViennaPS's
+    wrapLowerLevelSet is documented elsewhere in this file, from the
+    earlier LOCOS mask-erosion investigation, as unioning with
+    "levelSets_.back()" -- the single most-recently-inserted level
+    set -- which would be Mask, not Si, if Mask goes in between)?
+    Test: reproduced _build_locos_geometry()'s real construction
+    (same pad-oxide height, mask height, window half-width, contact-
+    epsilon overlap) but with Si -> Mask -> SiO2(wrap, now last)
+    insertion order, then chained the same directional etch. Also
+    isolated-exported each level set individually (reusing the
+    project's own existing _export_single_level_set(), read-only
+    call) to compare areas before chaining.
+    Result: NO level set collapsed to exactly 0 after chaining this
+    time (Si 63->42, Mask 68->68 UNCHANGED -- consistent with
+    maskMaterial being fully protected from advection, matching this
+    project's already-established "mask fully protects" finding
+    elsewhere in CLAUDE.md -- SiO2 46->32) -- the collapse-to-zero
+    pattern is indeed avoided by this reordering, consistent with
+    test 9. HOWEVER, the area-based check for "does SiO2 still
+    correctly wrap Si" was INCONCLUSIVE by the numbers alone: isolated
+    Si area = 8.00, isolated SiO2 area = 9.89, isolated Mask area =
+    1.47 -- roughly consistent with SiO2 still covering the same
+    floor-to-oxide-top span as Si (which is expected regardless of
+    whether the wrap correctly targeted Si, since ANY MakePlane
+    call -- wrapped or not -- already represents an inherently semi-
+    infinite half-space by itself, per this project's very first,
+    foundational investigation at the top of this file; a raw area
+    comparison cannot distinguish "SiO2 correctly unioned with Si" from
+    "SiO2's own already-semi-infinite plane alone, never actually
+    unioned with Si's true region at all").
+    Conclusion: reordering is a genuinely promising, mechanistically-
+    motivated lead for a future real fix (avoids the collapse
+    entirely, confirmed twice now under two different constructions),
+    but this session's quick area check cannot confirm whether SiO2
+    still physically/correctly wraps Si under this reordering -- that
+    would need a REAL vps.Oxidation() Process() run (not just the
+    directional-etch stand-in used throughout this log) and a repeat
+    of the original "LOCOS mask erosion" investigation's own
+    verification method (real oxide growth + mask retention measured
+    against the actual production mechanics-coupled model), which is
+    a materially larger undertaking than the quick isolated checks in
+    this log and was NOT attempted this session.
+
+-------------------------------------------------------------------
+SUMMARY (this session's incremental additions, tests 5-10):
+
+The bug is now characterized far more precisely than before this
+session's tests. It is NOT specific to LOCOS's mask geometry, contact-
+epsilon trick, or prior Oxidation()/mechanics solve (tests 6, 7, 8 all
+rule these out individually). It IS specifically triggered by:
+inserting any level set AFTER a wrapped (wrapLowerLevelSet=True) level
+set, then running ANY further Process() call on the domain (tests 8
+vs. 9 vs. 10, three independent constructions, consistent result each
+time). LOCOS's actual production construction
+(tcad/process/oxidation/thermal.py's _build_locos_geometry) always
+inserts the mask box AFTER the SiO2 wrap, so it is unconditionally
+exposed every time a further step is chained onto it.
+
+A reordering-based fix candidate (insert the mask BEFORE the wrap, so
+the wrap becomes the last insertion) avoids the collapse in two
+independent tests, but whether it preserves the ACTUAL LOCOS oxidation
+physics (real growth + mask retention, the original bar the shipped
+mask-erosion fix had to clear) is unverified and would need a
+materially larger follow-up test using the real Oxidation() model, not
+attempted this session.
+
+No production code (tcad/*, tests/*) was modified for any test in this
+log. All probe scripts (.probe_locos_test*.py) were deleted after each
+test, per this project's established scratch-file convention.
