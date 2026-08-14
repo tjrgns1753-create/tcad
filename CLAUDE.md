@@ -1696,6 +1696,108 @@ Full regression: **12 passed / 2 failed** (new test counted), same two
 pre-existing, unrelated failures (Phase 8, `test_device_lifecycle_repeat_real.py`
 Test B) — no new regressions.
 
+### Directional deposition growth SHAPE — RESOLVED, calculateVisibility=True was silently under-growing (later session)
+
+Reopened per explicit user instruction, after the LOCOS mask-export
+investigation hit a dead end, to keep working toward the project's
+actual goal (a TCAD that correctly implements and interprets real
+physical phenomena) rather than stop at "sign/magnitude verified."
+The RESOLVED section above only ever checked top-surface magnitude at
+one grid resolution (`grid_delta_um=0.2`); the real growth *shape* —
+does it correctly avoid depositing on surfaces perpendicular to the
+source, does it spread laterally — was never checked, per this
+project's own "What remains uncertain" note on that fix.
+
+1. **What was tested:** Fetched `psDirectionalProcess.hpp`'s
+   `getVectorVelocity()` from GitHub (WebFetch) to find the real
+   physics: normal growth velocity is proportional to
+   `dot(direction, local_surface_normal)` — a flat surface facing the
+   source grows at the full rate, a sidewall parallel to the source
+   should grow ~0 (cosine-law, line-of-sight deposition). Built a
+   probe measuring (a) the mask's own top/sidewall growth, (b) the
+   grown Si cap's x-extent vs. the recipe's own window width, across a
+   `grid_delta_um` sweep (0.2 down to 0.02) and a `deposition_time_s`
+   sweep, for a purely directional recipe (`isotropic_velocity` unset)
+   vs. an isotropic control.
+
+2. **Result:**
+   - `maskMaterial` (default `Material('Mask')`) fully protects the
+     mask from ANY growth, top or sidewall — expected/correct
+     behavior, not a bug (the mask stays whatever height/width the
+     lithography step gave it).
+   - No lateral spread: the grown Si cap's x-extent matched the
+     recipe's own window width (within 1 grid cell) for
+     `isotropic_velocity` unset — confirms real directional/
+     line-of-sight shape behavior, not conformal coating.
+   - **Real bug found:** with ViennaPS's own default
+     (`calculateVisibility=True`), growth STALLED at a small,
+     grid-and-time-dependent, non-monotonic fraction of the expected
+     `|v|*t` — e.g. `grid_delta_um=0.05, direction=[0,1,0]`: matched
+     exactly at t=0.5s (0.0500um) then stayed pinned at exactly that
+     value for t=1/2/4s (expected 0.1/0.2/0.4um) — a hard stop, not a
+     slow approach to a limit. Swept `grid_delta_um` in
+     `{0.2, 0.15, 0.1, 0.075, 0.05, 0.02}` at fixed t=4s: 0.2 and 0.02
+     matched; 0.15 and 0.1 stalled at exactly 2 and 1 grid cells
+     respectively; 0.05 stalled at 1 cell; 0.075 overshot by 12.3%
+     (no stall at all) — non-monotonic, same class of ViennaPS
+     numerical fragility already documented elsewhere in this file
+     (MakeTrench floating-point sensitivity, Phase 8 mesh-quality
+     investigation). `calculateVisibility=False` was tested across the
+     identical sweep: every point matched `|v|*t` exactly except the
+     same 0.075 outlier (12.3% over either way) — i.e. disabling
+     visibility calculation eliminates the up-to-8x stalling and
+     leaves only the same, much smaller, already-known-and-accepted
+     class of grid noise.
+
+3. **What it proves:** `calculateVisibility=True` (ViennaPS's own
+   default, which this project's recipe wrapper silently inherited)
+   is actively harmful for this project's own deposition geometries —
+   a flat, fully-exposed window under a non-tilted, straight-overhead
+   source, where genuine self-shadowing cannot physically occur at
+   all. The existing, already-passing regression test only ever
+   exercised `grid_delta_um=0.2`, which happens not to trigger the
+   stall — it was accidentally not exposing this bug, not evidence
+   the default was safe.
+
+4. **Fix applied — `tcad/process/deposition/directional.py`:**
+   `calculateVisibility` now defaults to `False`
+   (`recipe.get("calculate_visibility", False)`, was previously only
+   set when the recipe explicitly provided it, otherwise silently
+   inheriting ViennaPS's own `True`). Still fully overridable per-recipe
+   for a future geometry that has real re-entrant/tilted-source
+   shadowing to model — this change does not remove the capability,
+   only stops it from silently corrupting the common, simple case
+   every existing recipe in this project actually uses.
+
+5. **Verified, real ViennaPS 4.6.2, via the actual production entry
+   point:** `tests/integration/test_directional_deposition_growth_real.py`
+   extended (not replaced) with a `grid_delta_um` sweep at fixed t=4s
+   (5 resolutions, max relative error 7.5e-8 — essentially exact) and
+   a lateral-spread check (grown cap width within 1 grid cell of the
+   recipe's window width). Full regression: **16 passed, 0 failed, 0
+   skipped** — unchanged, no new regressions.
+
+6. **What remains uncertain:** the exact mechanism inside ViennaPS's
+   visibility/ray-tracing calculation causing the non-monotonic stall
+   (not traced to C++ source level — matches this project's existing
+   precedent of characterizing rather than root-causing this class of
+   library-internal numerical fragility); whether the same
+   `calculateVisibility=True` default is also silently harmful for
+   the Etching counterpart (`tcad/process/etching/directional.py`,
+   already marked "VERIFIED, no changes needed" earlier in this file,
+   but that verification also only used one grid resolution) — not
+   checked this session; the single `grid_delta_um=0.075` outlier
+   (12.3% over expected even with the fix) was not chased further,
+   consistent with how this project already treats this general class
+   of non-monotonic ViennaPS artifact elsewhere.
+
+7. **Next smallest experiment (not done, out of scope for this
+   round):** repeat this exact grid/time sweep methodology against
+   `tcad/process/etching/directional.py` to check whether its own
+   `calculateVisibility=True` default has the same silent stalling
+   issue for material removal (not just growth) — it uses the same
+   underlying ViennaPS model and the same unexamined default.
+
 ## Session status snapshot (most recent — read this first)
 
 **This supersedes the snapshot below it as "most recent."** The
@@ -1778,19 +1880,45 @@ ships, verified to change nothing for every already-working geometry.
 **16 passed, 0 failed, 0 skipped** (the `io.py` `Expand()` fix is the
 only production change from part 2; `thermal.py` itself is untouched).
 
+**What this session did (part 3, same session, continued per explicit
+user instruction to keep working toward "a TCAD that correctly
+implements and interprets real physical phenomena," after part 2's
+LOCOS mask-export investigation hit a genuine dead end):**
+root-caused and fixed a real, previously-undetected bug in directional
+deposition's growth *shape* — see "Directional deposition growth
+SHAPE — RESOLVED" above. `calculateVisibility=True` (ViennaPS's own
+default, silently inherited) stalls growth at a grid-and-time-dependent,
+non-monotonic fraction of the expected `|v|*t` (up to 8x under-growth)
+for this project's own flat-window/non-tilted-source geometry, found
+by fetching `psDirectionalProcess.hpp`'s real velocity-calculation
+source from GitHub and sweeping `grid_delta_um`/`deposition_time_s`.
+Fixed by defaulting `calculateVisibility=False` in
+`tcad/process/deposition/directional.py` (still overridable per-recipe).
+Also positively confirmed (not just assumed): no lateral spread for a
+purely directional recipe — the real physical signature distinguishing
+it from isotropic/conformal deposition.
+
+**Regression after part 3:** `tests/run_regression.py` → still
+**16 passed, 0 failed, 0 skipped** — the `directional.py` default-value
+change and the extended regression test are the only changes; no
+regressions.
+
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — root cause **now identified** and a fix
   **verified to work**, but blocked from production by the confirmed
   `saveVolumeMesh()`/`Si`-vanishes upstream issue above. Next step is
   architectural (a custom per-material mesh-export path bypassing
-  `WriteVisualizationMesh`'s built-in stacking resolution — see item 7
+  `WriteVisualizationMesh`'s built-in stacking resolution — see item 8
   under "LOCOS mask erosion" above), not another parameter/geometry
-  guess.
+  guess — the boolean-subtraction route is now confirmed closed too
+  (see item 7 in that same section).
 - LOCOS bird's-beak shape's true diffusion-driven behavior vs.
   seed-geometry artifact.
 - `gd=0.02` Si-thickness dependency.
-- Directional deposition's real-growth *shape* (only sign/magnitude
-  verified against `|v|*t`).
+- Whether `tcad/process/etching/directional.py` (the Etching
+  counterpart) has the same silent `calculateVisibility=True` stalling
+  issue for material removal — not checked this session, see item 7
+  under "Directional deposition growth SHAPE — RESOLVED" above.
 - Auto-deriving `refine_near_um` from `ProcessResult.doping` instead of
   requiring callers to compute/pass it manually (see item 7 in the
   "PN junction (Phase 8) convergence — RESOLVED" section above).

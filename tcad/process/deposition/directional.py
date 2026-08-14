@@ -39,6 +39,44 @@ volume mesh, sweeping direction/velocity sign combinations:
     module's own recipe-level convention (positive = grow) holds
     regardless of ViennaPS's underlying sign. isotropic_velocity is
     passed through unchanged.
+
+`calculateVisibility` default overridden to False -- real growth-shape
+verification (this session), not just the top-surface |v|*t magnitude
+check test_directional_deposition_growth_real.py already covered:
+
+  ViennaPS's own default, calculateVisibility=True, was found to STALL
+  growth at a small, GRID- AND TIME-DEPENDENT, NON-MONOTONIC fraction
+  of the expected |v|*t for this project's own flat-window/vertical-
+  source geometry (the only geometry this project's recipes build for
+  deposition) -- e.g. grid_delta_um=0.05, direction=[0,1,0] (straight
+  overhead, no tilt): growth matched exactly at t=0.5s (0.0500um) but
+  then STAYED PINNED at exactly that value for t=1/2/4s (expected
+  0.1/0.2/0.4um) -- not a slow approach to a limit, a hard stop. Swept
+  grid_delta_um in {0.2, 0.15, 0.1, 0.075, 0.05, 0.02} at fixed t=4s:
+  0.2 and 0.02 matched; 0.15 and 0.1 stalled at exactly 2 and 1 grid
+  cells respectively; 0.05 stalled at 1 cell; 0.075 did not stall at
+  all (matched). This grid-dependence is non-monotonic, consistent
+  with a class of ViennaPS/ViennaLS numerical fragility this project
+  has already documented elsewhere (see CLAUDE.md's "MakeTrench
+  floating-point sensitivity" and the Phase 8 mesh-quality
+  investigation) -- not something traceable to a single clean
+  parameter threshold.
+
+  calculateVisibility=False was tested across the exact same grid
+  sweep at t=4s: every point matched |v|*t (0.0% relative error)
+  except grid_delta_um=0.075 (12.3% over, a single outlier, same class
+  of non-monotonic artifact, not chased further). Since this project's
+  deposition recipes only ever build a flat, fully-exposed window
+  under a non-tilted, straight-overhead source (`direction=[0,1,0]` or
+  `[0,-1,0]` in every existing recipe/test) -- a geometry where real
+  physical self-shadowing cannot occur at all -- there is no physical
+  reason for `calculateVisibility=True`'s shadow/ray-tracing
+  calculation to matter here, and it was actively harmful (up to 8x
+  under-growth). Recipes that DO need real shadow calculation (a
+  tilted source, or a re-entrant/overhung profile) can still opt back
+  in via `calculate_visibility=True` in the recipe -- this default
+  change does not remove the capability, only stops it from silently
+  corrupting the common, simple case.
 """
 
 from __future__ import annotations
@@ -77,8 +115,12 @@ class DirectionalDeposition(ProcessStep):
             model_kwargs["isotropicVelocity"] = recipe["isotropic_velocity"]
         if "mask_material" in recipe:
             model_kwargs["maskMaterial"] = getattr(module.Material, recipe["mask_material"])
-        if "calculate_visibility" in recipe:
-            model_kwargs["calculateVisibility"] = recipe["calculate_visibility"]
+        # Default False, not ViennaPS's own True: see module docstring
+        # -- real-execution-verified to stall growth non-monotonically
+        # for this project's flat-window/non-tilted-source geometry,
+        # where real shadowing cannot occur anyway. Still overridable
+        # per-recipe for geometries that genuinely need it.
+        model_kwargs["calculateVisibility"] = recipe.get("calculate_visibility", False)
 
         model = module.DirectionalProcess(**model_kwargs)
 
