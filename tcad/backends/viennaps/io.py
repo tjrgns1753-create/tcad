@@ -14,6 +14,7 @@ these instead of re-implementing surface/volume mesh saving.
 from __future__ import annotations
 
 import tempfile
+import warnings
 from pathlib import Path
 from typing import Any, List, Tuple, Union
 
@@ -126,6 +127,71 @@ def _floored_copy_for_export(domain, floor_depth_um: float):
     return floored
 
 
+def _warn_if_materials_missing_from_export(domain, mesh_path: str) -> None:
+    """Sanity check: every material present in `domain` should have at
+    least one triangle in the exported mesh at `mesh_path`. Warns
+    (never raises — a diagnostic must never break a real export it
+    can't itself explain) if one doesn't.
+
+    Exists because ViennaLS's WriteVisualizationMesh (what
+    saveVolumeMesh() calls) resolves overlapping level sets by
+    insertion order ("topmost/last-inserted wins"), which can silently
+    drop an entire material from the export for certain domain
+    topologies. Confirmed real and reproducible (this session — see
+    CLAUDE.md's LOCOS process-flow-chaining investigation): a domain
+    built with ViennaPS's own material "wrap" stacking
+    (`insertNextLevelSetAsMaterial(..., wrapLowerLevelSet=True)`, which
+    `MakePlane(..., addToExisting=True)` also uses internally) can,
+    after a FURTHER `Process()` call from a later, unrelated
+    ProcessStep, export a mesh through this NORMAL path that drops one
+    or more materials entirely — reproduced directly: a fresh LOCOS
+    oxidation step's own mesh has all 3 materials (via
+    save_locos_volume_mesh(), the fix for THAT specific export), but
+    chaining a plain directional etch onto its `last_domain` and
+    calling the NORMAL save_volume_mesh() for THAT step's own export
+    dropped SiO2 and Mask entirely, mislabeling a small residual region
+    as Si. This project does not yet have a general fix for this (the
+    fix would need every ProcessStep to know whether its inherited
+    domain requires save_locos_volume_mesh()-style export, a larger
+    architectural change not made this session) — this check exists so
+    a future occurrence is visible instead of silent.
+    """
+    try:
+        domain_materials = {int(m) for m in domain.getMaterialsInDomain()}
+    except Exception:
+        return
+
+    if not domain_materials:
+        return
+
+    try:
+        import meshio
+
+        mesh = meshio.read(mesh_path)
+        triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
+        if triangle_block is None:
+            exported_materials: set = set()
+        else:
+            block_index = mesh.cells.index(triangle_block)
+            exported_materials = {int(t) for t in mesh.cell_data["Material"][block_index]}
+    except Exception:
+        return
+
+    missing = domain_materials - exported_materials
+    if missing:
+        warnings.warn(
+            f"save_volume_mesh(): the exported mesh {mesh_path} is missing "
+            f"{len(missing)} material(s) that ARE present in the domain "
+            f"(material tag(s) {sorted(missing)}). This is a known ViennaLS "
+            f"WriteVisualizationMesh limitation for certain wrapped/stacked "
+            f"level-set topologies (e.g. a process step chained onto "
+            f"LOCOS-produced geometry) — see CLAUDE.md. The exported mesh may "
+            f"be missing real material regions.",
+            RuntimeWarning,
+            stacklevel=3,
+        )
+
+
 def save_volume_mesh(
     domain, path: PathLike, floor_depth_um: float = DEFAULT_FLOOR_DEPTH_UM
 ) -> str:
@@ -143,11 +209,18 @@ def save_volume_mesh(
     every other material) is present as real triangulated volume down to
     `floor_depth_um`, instead of collapsing to ~2*gridDelta. `domain`
     itself is never modified by this call.
+
+    After export, warns (does not raise) if a material present in
+    `domain` has zero triangles in the written mesh — see
+    `_warn_if_materials_missing_from_export` for why this can happen
+    and what it means.
     """
     path_str = str(path)
     floored = _floored_copy_for_export(domain, floor_depth_um)
     floored.saveVolumeMesh(path_str)
-    return f"{path_str}_volume.vtu"
+    out_path = f"{path_str}_volume.vtu"
+    _warn_if_materials_missing_from_export(domain, out_path)
+    return out_path
 
 
 def _read_triangle_mesh(path: PathLike) -> Tuple[Any, List[List[int]]]:

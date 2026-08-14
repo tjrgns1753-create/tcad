@@ -898,6 +898,103 @@ it.
    attempt to look at it would have been confounded by the mask
    erosion this session fixed. Not attempted this session.
 
+### LOCOS process-flow chaining — REAL BUG FOUND, safety-net mitigation SHIPPED, full fix NOT attempted (later session, per explicit user instruction "지금 발생한 모든 문제를 해결해" / "solve all the problems that have occurred" — resolves point 5's "untested" item above)
+
+1. **What was tested:** built a fresh LOCOS geometry via the real
+   production entry point (`registry.get("oxidation","thermal")().run(recipe,...)`,
+   `mask_material` present), then chained a SECOND, unrelated step
+   (`DirectionalEtch(inherited_domain=step1.last_domain)`) onto its
+   `last_domain` — mirroring exactly how `tcad.process.flow.run_flow()`
+   chains any two steps (`StepCls(inherited_domain=carried_domain)`).
+   Compared against a negative control: the identical chaining pattern
+   with FIN-STYLE oxidation (no `mask_material`) instead of LOCOS —
+   already known-good, since Phase 13's own continuity tests chain
+   fin-style oxidation into further etch/deposition steps successfully.
+
+2. **Result:** the negative control (fin-style) chains correctly —
+   step 2's own export (via the NORMAL `save_volume_mesh()`, not
+   `save_locos_volume_mesh()`) contains all 3 materials (Mask, Si,
+   SiO2) with sane areas, matching step 1's own areas almost exactly
+   (Si 19.9889 → 19.989452, SiO2 0.95965 → 0.9190083 after a shallow
+   etch — both physically reasonable). **The LOCOS case does NOT**:
+   step 1's own export (via `save_locos_volume_mesh()`) correctly has
+   all 3 materials, but step 2's own export — same domain, one
+   `Process()` call later, through the NORMAL `save_volume_mesh()`
+   that `DirectionalEtch.run()` uses — contains ONLY material tag 10
+   (Si), 93 triangles, with an area (1.4698737) that matches step 1's
+   MASK area (1.4698067) almost exactly, not any real Si region. SiO2
+   and Mask are entirely absent from step 2's export, and the "Si"
+   region present is mislabeled/wrong-shaped, not real Si.
+   `domain.getMaterialsInDomain()` still correctly reports all 3
+   materials present in the domain itself both before and after the
+   etch — only the EXPORT is corrupted, not the underlying geometry.
+
+3. **What it proves:** chaining a subsequent process step onto
+   fresh-LOCOS-produced geometry is currently broken — NOT because the
+   pad-oxide-first LOCOS geometry itself is wrong (the domain's own
+   materials stay correct through the etch), but because only
+   `tcad/process/oxidation/thermal.py`'s OWN `run()` knows to call
+   `save_locos_volume_mesh()` instead of the normal `save_volume_mesh()`
+   for ITS OWN export. A DIFFERENT step (any etch/deposition model)
+   that later inherits this domain has no way to know its inherited
+   domain still has ViennaPS's "wrap" stacking topology baked in
+   (SiO2's level set is a union including Si beneath it — see "LOCOS
+   mask erosion" above for the full mechanism) — it just calls the
+   normal `save_volume_mesh()` at the end of its own `run()`, hitting
+   the exact same `WriteVisualizationMesh` reverse-insertion-order
+   "topmost wins" resolution bug the LOCOS export fix was built to
+   route around, uncaught.
+
+4. **Decision: do NOT attempt the full architectural fix this
+   session.** A real fix would need every `ProcessStep` (13+ files) to
+   know whether its `inherited_domain` requires LOCOS-style export —
+   propagating that (plus the `materials`/`wrap_flags` lists
+   `save_locos_volume_mesh()` needs) through `ProcessStep.__init__`
+   and `tcad.process.flow.run_flow()`'s chaining mechanism is a
+   materially larger, more invasive change than this session's other
+   fixes, touching code far outside `mesh_import.py`/`io.py`, and
+   risks regressing the ALREADY-working fin-style/other chaining paths
+   Phase 13/14 depend on if done hastily. This does not meet the "work
+   slowly, one subsystem at a time" bar for a same-session fix.
+
+5. **Safety-net mitigation SHIPPED instead** — turns future silent
+   data corruption into a visible signal:
+   `tcad/backends/viennaps/io.py`'s `save_volume_mesh()` now calls a
+   new `_warn_if_materials_missing_from_export()` after every export:
+   compares `domain.getMaterialsInDomain()` against the materials
+   actually present (nonzero triangles) in the just-written mesh, and
+   issues a `RuntimeWarning` (never raises — a diagnostic must not
+   break an export it can't itself explain) if any domain material is
+   completely absent from the export. Verified directly: fires exactly
+   on the reproduced bug case above (`missing 2 material(s)... tag(s)
+   [0, 30]`), stays silent on the fin-style negative control, and
+   stays silent across the entire regression suite (19 passed, 0
+   failed, 0 skipped, including every LOCOS-touching test — the
+   warning only fires for the CHAINED case, never for LOCOS's own
+   single-step export via `save_locos_volume_mesh()`, which doesn't
+   call this check at all).
+
+6. **What remains uncertain / explicitly not done:** the general
+   architectural fix (item 4) itself; whether a step OTHER than
+   `DirectionalEtch` (e.g. another oxidation, a deposition model)
+   chained onto fresh-LOCOS geometry fails the SAME way or differently
+   — only one downstream model was tested; whether this same class of
+   bug can occur WITHOUT LOCOS at all, for some other domain topology
+   this project hasn't yet built (the fin-style negative control rules
+   out "any wrapped SiO2" as sufficient to trigger it, but doesn't
+   prove LOCOS's specific 3-level, mask-as-third-unwrapped-layer
+   construction is the only topology that can).
+
+7. **Next smallest experiment (not done, out of scope for this
+   round):** if this needs to be fully fixed later, the smallest
+   correct step is probably NOT "make every ProcessStep LOCOS-aware" —
+   it's more likely tagging the inherited domain itself (or the
+   `ProcessStep` instance) with an explicit "export style" descriptor
+   that `ProcessStep.prepare_domain()`/every `run()`'s final export
+   call reads generically (LOCOS being the first, not necessarily
+   last, case needing non-default export) — a real design decision,
+   not attempted here.
+
 ### DevSim BLAS/LAPACK DLL environment issue — RESOLVED (later session)
 
 Every DevSim-touching test now fails at `import devsim` itself, before any
@@ -1231,6 +1328,156 @@ this project's own code.
    (opt-in via a boolean flag) so callers don't have to compute/pass
    the junction position by hand, matching how `silicon_depth_um`
    already flows from `Wafer` through the recipe automatically.
+
+### `auto_refine_from_doping` — ADDED, and mesh-refinement generalization to higher doping — CHARACTERIZED (later session, per explicit user instruction "지금 발생한 모든 문제를 해결해" / "solve all the problems that have occurred" — picks up items 6 and 7 above)
+
+Item 7 above is now implemented, and item 6's open question (does the
+mesh-refinement fix generalize to doping far above 1e18 cm^-3) is now
+answered with real data, not left unverified.
+
+1. **What was tested:** `tcad/device/devsim/mesh_import.py` gained
+   `auto_refine_from_doping: bool = False`. When `True` and
+   `refine_near_um` was not explicitly passed, it derives
+   `refine_near_um`/`refine_axis` from the first `DopingRegion` in
+   `result.doping` with a determinable position
+   (`junction_position_um` for `step_junction`, `peak_position_um` for
+   `gaussian_implant`), plus `refine_half_width_um`/`refine_levels`
+   (each only when that argument was itself left at its own default
+   `None`) from the region's doping concentration — using DevSim's OWN
+   real `Permittivity`/`ElectronCharge`/`kT` constants
+   (`devsim.python_packages.simple_physics`, not re-derived textbook
+   values) to compute a real Debye length (`_debye_length_um`).
+
+   First attempt (probe, not shipped): `refine_half_width_um =
+   max(25*debye_um, 2*local_mesh_spacing_um)`. Reproduced Phase 8's
+   1e18 cm^-3 convergence correctly (14791 Si nodes, all 8 sweep points
+   converge) — but this was because the `2*spacing` floor dominated at
+   `0.3um` regardless of doping (spacing = grid_delta_um = 0.15um for
+   this recipe), NOT because of the Debye-scaled term; testing this
+   revealed the floor was simply too generous, not that the formula
+   was doping-aware in the way intended.
+
+2. **Result (generalization to higher doping):** with `refine_levels`
+   left fixed at its old default (4), the same recipe's doping swept to
+   1e19/1e20 cm^-3 (10x/100x the original) **failed to converge** —
+   confirming item 6's open question was a REAL gap, not just
+   theoretical: widening the refinement WINDOW (`refine_half_width_um`)
+   does nothing for local RESOLUTION; only more halvings
+   (`refine_levels`) do, and a fixed final edge length (0.15/2^4 =
+   9.4nm) is only ~2.35x the Debye length at 1e18 cm^-3 but
+   7.4x/23.5x too coarse at 1e19/1e20.
+
+   Added `refine_levels` auto-derivation: however many halvings bring
+   the local edge length within 2.5x the Debye length (matching the
+   ratio the verified-working 1e18/4-level case already sits at),
+   capped at a maximum. **First cap tried (10) was not usable in
+   practice**: going from 4 to 6 levels alone (same window) took the
+   recipe's equation count from ~44k to ~588k (~13x for 2 extra levels,
+   consistent with each level's ~4x local triangle-count growth
+   compounding) — measured directly, not estimated; the Newton solve's
+   residual oscillated without improving over 90+ iterations rather
+   than diverging cleanly, wasting real compute time before this was
+   caught and killed. **Lowered the cap to 5** and re-verified:
+
+   | doping (cm^-3) | Debye length | derived levels | Si nodes | equations | result |
+   |---|---|---|---|---|---|
+   | 1e18 (baseline) | 3.99nm | 4 | 14791 | 44373 | **CONVERGED**, all 8 sweep points |
+   | 1e19 (10x) | 1.26nm | 5 (capped) | 51239 | 153717 | **CONVERGED**, all 8 sweep points |
+   | 1e20 (100x) | 0.40nm | 5 (capped) | — | 153717 | **DID NOT CONVERGE** — residual plateaued ~6e-6 across 47+ Newton iterations without improving, killed after 7+ minutes rather than let run indefinitely |
+
+   `refine_half_width_um`'s floor was also corrected from `2x` local
+   spacing to `0.7x` (still above the empirically-known "0.05 caught
+   zero triangles, 0.08-0.1 converged" threshold, but without the
+   3x-larger, no-benefit over-refinement the `2x` floor caused).
+
+   Also verified: `auto_refine_from_doping`'s `gaussian_implant` branch
+   (using `peak_position_um`/`peak_conc_cm3` instead of
+   `junction_position_um`/`donor_conc_cm3`/`acceptor_conc_cm3`)
+   correctly derives `refine_near_um=peak_position_um` and does not
+   corrupt the doping mapping — re-ran
+   `test_gaussian_implant_doping_real.py`'s own exact analytic-Gaussian
+   check WITH `auto_refine_from_doping=True` (previously unrefined):
+   still `0.000e+00` max relative error across all (now more numerous,
+   5537-9853 depending on recipe) Si nodes, since NetDoping is
+   evaluated per-node from that node's own real coordinate regardless
+   of how many nodes exist. Note: a pure Gaussian implant (single sign,
+   no superposition with a separate background doping in this
+   project's current API) does not by itself form a sign-crossing PN
+   junction the way `step_junction` does, so this check verifies the
+   auto-derivation machinery and doping-mapping correctness for this
+   doping kind, not a new convergence fix — `gaussian_implant` was
+   never a documented convergence problem the way 1e18 `step_junction`
+   was.
+
+3. **What it proves:** `auto_refine_from_doping` genuinely
+   generalizes the mesh-refinement fix from the one hand-tuned 1e18
+   cm^-3 case up through at least 1e19 cm^-3 (10x) without a caller
+   computing/passing anything by hand, and does so through the real
+   production entry point, not a probe. It also has a real, now
+   honestly-characterized ceiling: at 1e20 cm^-3 (100x), the current
+   formula + level cap is insufficient, and this is NOT a bug to
+   silently paper over with a higher cap — a higher cap was tried
+   (10) and found to cost far more compute for questionable benefit
+   before this session lowered it, so the boundary is a genuine
+   cost/benefit limit of this project's UNIFORM-window red-green
+   refinement approach (`mesh_refine.py`), not a tuning oversight.
+
+4. **Production implementation:**
+   - **`tcad/device/devsim/mesh_import.py`**: new `_debye_length_um`,
+     `_estimate_mesh_spacing_um` (median triangle edge length — a
+     grid_delta_um proxy, since this function only ever sees the
+     already-written mesh, never the recipe that produced it), and
+     `_derive_refine_from_doping` (returns
+     `(refine_near_um, refine_axis, refine_half_width_um,
+     refine_levels)` or `None`). `import_process_result()` gained
+     `auto_refine_from_doping: bool = False`; `refine_half_width_um`'s
+     default changed from a bare `0.1` to `Optional[float] = None`
+     resolving to `0.1`, and `refine_levels`'s default changed from a
+     bare `4` to `Optional[int] = None` resolving to `4` — both purely
+     to distinguish "caller explicitly passed this value" from "let
+     auto-derivation fill it in", with **zero behavior change** for
+     every caller that doesn't pass `auto_refine_from_doping=True`
+     (verified: `run_pipeline.py`'s own `import_process_result()` call
+     always passes an explicit `refine_levels` value via
+     `cfg.get("refine_levels", 4)`, never `None`, so it is provably
+     unaffected).
+   - New `tests/integration/test_auto_refine_from_doping_real.py`
+     (permanent, lightweight — the expensive 1e19/1e20 sweep above was
+     a one-time investigation, not made into an ongoing regression
+     gate, matching how this project treats other expensive parameter
+     sweeps like the LOCOS/Bosch investigations): verifies
+     `auto_refine_from_doping=True` at the Phase 8 recipe's own 1e18
+     cm^-3 doping reproduces the full 8-point converged sweep with NO
+     manually-computed `refine_near_um`, and verifies the
+     `gaussian_implant` branch's analytic-Gaussian match.
+
+5. **Verified, real ViennaPS 4.6.2 + DevSim 2.10.1, through the real
+   production entry points:** full regression —
+   `tests/run_regression.py` → **19 passed, 0 failed, 0 skipped** (18
+   before this addition's new test) — no regressions to anything else.
+
+6. **What remains uncertain:** whether doping levels between 1e19 and
+   1e20 (not swept, only the two endpoints were tested) have a sharper
+   or gradual convergence boundary; whether a fundamentally different
+   (graded/adaptive rather than uniform-window-then-halve) refinement
+   strategy could reach 1e20 without the same node-count explosion —
+   not attempted, `mesh_refine.py`'s red-green algorithm was used
+   as-is; whether the `_AUTO_REFINE_TARGET_EDGE_TO_DEBYE_RATIO=2.5`/
+   `_SPACING_FLOOR_MULTIPLE=0.7` constants are optimal or just
+   "verified sufficient at the two tested doping levels, on the one
+   grid_delta_um=0.15 recipe" — no independent grid-resolution sweep
+   was done for this addition (unlike the original manual-refinement
+   fix, which was only ever verified at this same one grid resolution
+   too).
+
+7. **Next smallest experiment (not done, out of scope for this
+   round):** sweep `grid_delta_um` (not just doping) with
+   `auto_refine_from_doping=True` to check the derivation generalizes
+   across mesh resolutions, not just the one recipe's 0.15um; consider
+   whether `_AUTO_REFINE_MAX_LEVELS` should itself be configurable per
+   call rather than a fixed module constant, for a caller that
+   explicitly wants to spend more compute to reach a doping level like
+   1e20 that the default cap doesn't reach.
 
 ### Oxidation — RESOLVED (this session)
 
@@ -2313,6 +2560,38 @@ parameter-free physical predictions, not fits.
 0 failed, 0 skipped** (17 before this part's new test was added) — no
 regressions.
 
+**What this session did (part 8, later session, per explicit user
+instruction "지금 발생한 모든 문제를 해결해" / "solve all the problems
+that have occurred" — works through every item still open as of part
+7 above):**
+- Implemented `auto_refine_from_doping` (see "`auto_refine_from_doping`
+  — ADDED, and mesh-refinement generalization to higher doping —
+  CHARACTERIZED" above): derives `refine_near_um`/`refine_axis`/
+  `refine_half_width_um`/`refine_levels` from `ProcessResult.doping`
+  directly. Along the way, found and fixed a real formula bug (an
+  initial spacing-floor multiplier of `2x` combined with a
+  doping-scaled `refine_levels` compounded into a 588k-equation
+  near-runaway at 1e19 cm^-3 before being corrected) and established a
+  real, honest boundary: generalizes cleanly through 1e19 cm^-3 (10x
+  the originally-tuned recipe), does NOT converge at 1e20 (100x) even
+  at this session's chosen `refine_levels` cap.
+- Investigated LOCOS process-flow chaining (see "LOCOS process-flow
+  chaining — REAL BUG FOUND, safety-net mitigation SHIPPED" above):
+  confirmed a real, previously-untested bug — a step chained onto
+  fresh-LOCOS geometry corrupts ITS OWN mesh export (SiO2 and Mask
+  vanish, Si is mislabeled). Full architectural fix judged too large
+  for this session (would touch every `ProcessStep` + `flow.py`);
+  shipped a safety-net `RuntimeWarning` in `save_volume_mesh()`
+  instead, verified to fire exactly on the reproduced bug and stay
+  silent everywhere else in the regression suite.
+- LOCOS bird's-beak diffusion-driven shape investigation and KOH
+  rate-constant generalization to other concentrations/temperatures:
+  not yet reached this part — see below for what's still open.
+
+**Regression after part 8:** `tests/run_regression.py` → **19 passed,
+0 failed, 0 skipped** (18 before this part's new test was added) — no
+regressions.
+
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
   of parts 1-5; struck through here rather than removed, so this list
@@ -2321,15 +2600,21 @@ regressions.
 - LOCOS bird's-beak shape's true diffusion-driven behavior vs.
   seed-geometry artifact — still open; newly investigable now that
   mask erosion (part 6) no longer confounds it, but not attempted.
-- Auto-deriving `refine_near_um` from `ProcessResult.doping` instead of
-  requiring callers to compute/pass it manually (see item 7 in the
-  "PN junction (Phase 8) convergence — RESOLVED" section above).
+- Auto-deriving `refine_near_um` from `ProcessResult.doping` — **DONE
+  in part 8 above** (was open through part 7).
 - Whether the mesh-refinement fix generalizes to `gaussian_implant`
-  doping or to doping levels far above 1e18 cm^-3 — unverified, see
-  item 6 in the same section above.
+  doping — **VERIFIED in part 8** (doping-mapping correctness under
+  refinement, not a convergence fix — see that section for why
+  `gaussian_implant` was never itself a convergence problem the way
+  `step_junction` was); to doping levels far above 1e18 cm^-3 —
+  **CHARACTERIZED in part 8**: works through 1e19, not through 1e20.
 - Whether `save_locos_volume_mesh()`'s pad-oxide-first LOCOS fix
   interacts with a subsequent process step continuing from its result
-  — untested, see "LOCOS mask erosion — RESOLVED AND SHIPPED" point 5.
+  — **REAL BUG CONFIRMED in part 8** (see "LOCOS process-flow
+  chaining" above); safety-net warning shipped, full architectural fix
+  NOT attempted, still genuinely open.
+- KOH/TMAH rate-constant generalization to other concentrations/
+  temperatures, or to TMAH — still open, not attempted.
 
 ---
 
