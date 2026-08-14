@@ -794,6 +794,51 @@ this is inherited there too.
 - `gd=0.02` Si-thickness dependency: untouched, out of scope this
   session per explicit instruction.
 
+### `gd=0.02` Si-thickness dependency — RESOLVED, was already fixed, just never re-verified through the real production path (later session)
+
+Reopened per explicit user instruction to keep working the remaining
+OPEN items toward real physical correctness. This item had been
+carried forward, unexamined, across multiple sessions as "untouched,
+out of scope" since the point above — but the underlying question
+("does the floor mechanism actually hold at gridDelta=0.02, not just
+the coarser 0.05/0.01 spot-checks in the original verification table")
+had, on inspection, already been answered by that same original
+table (`gridDelta=0.02` row: Si area after flooring = 1.99970,
+area error −0.015%) — just never confirmed through the *real*
+`ProcessStep.run()` production entry point or a real DevSim import,
+only an isolated Si+Mask probe, which is why this stayed marked open.
+
+**What was tested:** ran the actual production path
+(`registry.get(category, name)().run(recipe, ...)`, not an isolated
+probe) at `grid_delta_um=0.02` for (a) isotropic etch with the default
+floor depth (5.0um), (b) the same etch with an explicit
+`silicon_depth_um=1.0` (checking the floor depth isn't silently
+gd-dependent), (c) a real thermal oxidation run, and (d) DevSim import
+of the oxidation result.
+
+**Result:** all four passed cleanly. (a) Si y-span = 4.99993um
+(matches the requested 5.0um floor, not the old `2×gridDelta=0.04um`
+narrow-band artifact). (b) Si y-span = 0.99993um (matches the
+explicit 1.0um request exactly, confirming the floor depth is a real,
+respected parameter at this resolution, not silently overridden).
+(c) real oxide growth confirmed (SiO2 area 0.04361 > 0) with Si still
+correctly floored at 5.00013um. (d) `import_process_result()` succeeded,
+giving regions `['Mask', 'Si', 'SiO2']` and contacts
+`['Si_xmin', 'Si_xmax']` — the full pipeline works end-to-end at this
+resolution.
+
+**What it proves:** the floor mechanism (and its later `Expand()`
+robustness fix from this same session) generalizes correctly to
+`gridDelta=0.02` through the real production pipeline, not just the
+isolated probe the original verification table used. This was already
+true before this session — nothing was fixed here, only verified
+through the real entry point, closing out a stale "open item" that
+had been carried forward without re-examination since it was first
+flagged as explicitly deferred.
+
+**No code change.** No production file was touched for this item —
+this was a verification-only follow-up.
+
 ### PN junction (Phase 8) convergence sensitivity to the floor mechanism — UNRESOLVED, investigation closed (this session; ROOT-CAUSED AND FIXED in a later session — see "PN junction (Phase 8) convergence — RESOLVED" further below for the real mechanism and fix. Kept here unedited for the historical record of what was ruled out first.)
 
 With the floor fix applied, `test_phase8_pn_junction_real.py` and
@@ -1931,6 +1976,17 @@ growth SHAPE — RESOLVED" and the follow-up under "Etching (basic)"
 above for the full sweep). `etching/directional.py` was deliberately
 left unchanged; this is a negative result, not a missed fix.
 
+**What this session did (part 5, same session, immediate follow-up):**
+closed out the long-carried-forward "`gd=0.02` Si-thickness
+dependency" open item — see "`gd=0.02` Si-thickness dependency —
+RESOLVED" above. Turned out to already be fixed by the existing floor
+mechanism (verification table already had a `gridDelta=0.02` row);
+this item stayed open only because it had never been re-checked
+through the real `ProcessStep.run()` production path or a real DevSim
+import, only an isolated probe. Ran both — etch, oxidation, and DevSim
+import all work correctly at `gridDelta=0.02`. No code change, just a
+stale open item closed with real verification.
+
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — root cause **now identified** and a fix
   **verified to work**, but blocked from production by the confirmed
@@ -1942,7 +1998,6 @@ left unchanged; this is a negative result, not a missed fix.
   (see item 7 in that same section).
 - LOCOS bird's-beak shape's true diffusion-driven behavior vs.
   seed-geometry artifact.
-- `gd=0.02` Si-thickness dependency.
 - Auto-deriving `refine_near_um` from `ProcessResult.doping` instead of
   requiring callers to compute/pass it manually (see item 7 in the
   "PN junction (Phase 8) convergence — RESOLVED" section above).
