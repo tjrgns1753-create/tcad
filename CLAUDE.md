@@ -1715,6 +1715,96 @@ registered, one `RECIPE_OVERRIDES["faraday_cage"]` entry.
 Full regression: 10 passed / 2 failed, same pre-existing failures, no
 new regressions.
 
+### KOH/TMAH crystallographic wet etching — ADDED (later session, per explicit user instruction to expand physical scope — "물리 범위 확장" — after the LOCOS mask-erosion fix shipped)
+
+`wet_etching.py`'s own docstring had pre-flagged this exact gap
+("[the crystallographic overload] can be added once real rate
+constants are supplied") — `vps.WetEtching`'s second overload
+(`direction100, direction010, rate100, rate110, rate111, rate311,
+materialRates`) models orientation-dependent (KOH/TMAH) etching, but
+was never wired in because this project's rule against fabricating
+physical constants blocked it without a real, cited rate-constant
+source.
+
+1. **What was tested:** fetched ViennaPS's own official
+   `examples/cantileverWetEtching/cantileverWetEtching.py`
+   (github.com/ViennaTools/ViennaPS, via WebFetch) — it uses exactly
+   this overload with real, cited rate constants ("30% KOH at 70°C",
+   citing https://doi.org/10.1016/S0924-4247(97)01658-0):
+   `direction100=[0.707106781187, 0.707106781187, 0.0]`,
+   `direction010=[-0.707106781187, 0.707106781187, 0.0]`,
+   `rate100=0.797/60.0`, `rate110=1.455/60.0`, `rate111=0.005/60.0`,
+   `rate311=1.436/60.0` (um/s). That official example is **3D-only**
+   (a GDS-mask cantilever release, `viennaps.d3`) — this project is
+   2D-only, so before wiring these values into production this session
+   ran an isolated probe: the same rate constants, through
+   `vps.d2.WetEtching`'s crystallographic overload, on this project's
+   own normal 2D trench geometry (`session.create_domain` +
+   `session.make_trench`), etched for 60s.
+
+2. **Result:** the model ran without error in 2D, and the resulting
+   Si surface (read from the real, floored `save_volume_mesh()` export
+   — not the raw level set) is a symmetric, faceted V-groove centered
+   on the trench window — not a circular/isotropic undercut. Measured
+   two independent, parameter-free physical checks against the real Si
+   (111)/(100) KOH "magic angle" (54.7356°, a textbook crystallographic
+   fact, not fit to this data):
+   - Apex depth: 1.455um measured vs. 1.4142um predicted
+     (`window_half * tan(54.7356°)` for a fully self-limited wedge of
+     this window's half-width) — 2.9% off.
+   - Sidewall angle: linear fit of the surface points on the clean
+     single-facet region (excluding the apex, where two facets merge
+     and grid discretization smooths the corner, and excluding the
+     immediate mask-edge undercut-transition point) gives 55.91° from
+     vertical vs. the real 54.7356° — 1.2° off, well within
+     gridDelta=0.2um's discretization limit.
+
+3. **What it proves:** the crystallographic overload works correctly
+   through this project's own 2D geometry conventions (not just the
+   official example's 3D one), and — using real, cited rate constants,
+   not fabricated ones — reproduces the textbook KOH V-groove shape and
+   angle to within a few percent / a couple degrees. This is the same
+   distinguishing-signature methodology this project already uses for
+   its other etch models (e.g. isotropic etch's quarter-circle undercut
+   check).
+
+4. **Production implementation:**
+   - **`tcad/process/etching/wet_etching.py`**: `WetEtch.run()` now
+     builds `vps.WetEtching` via the crystallographic overload when
+     `"direction100"` is present in the recipe (mirroring how
+     `"mask_material"` switches fin vs LOCOS in `thermal.py`), else the
+     existing uniform per-material-rate overload — fully backward
+     compatible, zero behavior change for every existing recipe/test
+     that doesn't set `direction100`. New module-level constant
+     `KOH_30PCT_70C`, the real cited rate-constant dict above, so a
+     recipe can select this exact condition via
+     `{**KOH_30PCT_70C, "material_rates": [...]}` rather than
+     retyping the raw numbers.
+   - New `tests/integration/test_koh_crystallographic_wet_etch_real.py`:
+     runs the real production entry point
+     (`registry.get("etching","wet_etching").run()`), then re-checks
+     both physical signatures above (V-groove monotonicity + apex depth
+     within 15% + sidewall angle within 8°) against the real exported
+     mesh.
+
+5. **Verified, real ViennaPS 4.6.2, through the actual production entry
+   point:** `tests/integration/test_phase2_etching_real.py`'s existing
+   `wet_etching` case (uniform overload, unchanged) still passes,
+   confirming zero regression to the existing behavior. New
+   `test_koh_crystallographic_wet_etch_real.py` passes all 4 checks.
+   Full regression: **`tests/run_regression.py` → 18 passed, 0 failed,
+   0 skipped** (17 before this addition's new test) — no regressions.
+
+6. **What remains uncertain:** whether these exact rate constants
+   (specific to 30% KOH at 70°C) generalize to other KOH
+   concentrations/temperatures or to TMAH (a different real etchant
+   with its own published rate constants, not sourced this session);
+   whether the `direction100`/`direction010` vectors need to be
+   recomputed for a mask orientation other than the official example's
+   own (they encode a specific crystal-to-mask alignment); no GUI
+   wiring (etch panel is deliberately capped at 4 models per earlier
+   sessions' scope decisions, unchanged here).
+
 ### Gaussian-implant doping — ADDED (autonomous overnight session)
 
 `tcad/physics/doping.py` and `tcad/device/devsim/doping_mapping.py` had
@@ -2196,6 +2286,32 @@ end to end with the new geometry.
 **Regression after part 6:** `tests/run_regression.py` → **17 passed,
 0 failed, 0 skipped** (16 before this part's new test was added) — no
 regressions to fin-style oxidation or any other model/phase.
+
+**What this session did (part 7, later session, per explicit user
+instruction to expand physical scope — "물리 범위 확장" — after being
+asked directly whether the project was usable as a commercial TCAD "as
+is": answered honestly that it was not, for several named reasons
+including narrow physical coverage, then the user picked "expand
+physical scope" and, from two concrete named candidates, picked
+KOH/TMAH crystallographic wet etching over MOSFET Vth/subthreshold-
+slope extraction — the latter needing a new source/drain/channel/gate
+device design at roughly Phase 7/8's own scale, judged too large to
+just start without being asked):** added KOH/TMAH crystallographic wet
+etching — see "KOH/TMAH crystallographic wet etching — ADDED" above
+for the full investigation. `wet_etching.py`'s own docstring had
+pre-flagged this exact gap ("once real rate constants are supplied");
+fetched ViennaPS's own official `cantileverWetEtching.py` example for
+real, cited rate constants (30% KOH at 70°C,
+https://doi.org/10.1016/S0924-4247(97)01658-0) and verified — since
+that example is 3D-only and this project is 2D-only — that the same
+constants produce a genuine, textbook-correct V-groove profile through
+`vps.d2.WetEtching`: apex depth within 2.9% and sidewall angle within
+1.2° of the real Si (111)/(100) "magic angle" (54.7356°), both
+parameter-free physical predictions, not fits.
+
+**Regression after part 7:** `tests/run_regression.py` → **18 passed,
+0 failed, 0 skipped** (17 before this part's new test was added) — no
+regressions.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
