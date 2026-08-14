@@ -1211,6 +1211,24 @@ opening matched `|v|×t` within ~0% at every time point, mask top
 unchanged (protected), no lateral etch (expected — no isotropic
 component set). No issue found.
 
+**Follow-up (later session):** after finding directional *deposition*
+silently stalled under ViennaPS's default `calculateVisibility=True`
+(see "Directional deposition growth SHAPE — RESOLVED" below), checked
+whether directional *etching* (same underlying `DirectionalProcess`
+model, same unexamined default) has the same issue — it does **not**.
+Swept `grid_delta_um` in `{0.2, 0.15, 0.1, 0.075, 0.05, 0.02}` at
+t=4s and `deposition_time_s` in `{0.5,1,2,4}` at gd=0.05, comparing
+`calculateVisibility=True` (default) against `False`: **identical
+results at every point either way** — etch depth matches `|v|×t`
+exactly at gd∈{0.1,0.075,0.05,0.02} regardless of the visibility flag,
+and the same ~12-13% deviation appears at the two coarsest grids
+(0.2, 0.15) *with or without* visibility calculation, confirming that
+deviation is unrelated to `calculateVisibility` (a separate, already-
+accepted class of coarse-grid noise, not a new issue). Conclusion:
+`calculateVisibility`'s default is safe for directional etching as-is
+— the deposition-side bug does not generalize here, and
+`etching/directional.py` was left unchanged.
+
 **Isotropic Etching** (`tcad/process/etching/isotropic.py`):
 API (`rate, maskMaterial`) matches `psIsotropicProcess.hpp`'s constructor
 and `tests/isotropicProcess/test_isotropic_2d.py` exactly. Ran t =
@@ -1781,22 +1799,24 @@ project's own "What remains uncertain" note on that fix.
    visibility/ray-tracing calculation causing the non-monotonic stall
    (not traced to C++ source level — matches this project's existing
    precedent of characterizing rather than root-causing this class of
-   library-internal numerical fragility); whether the same
-   `calculateVisibility=True` default is also silently harmful for
-   the Etching counterpart (`tcad/process/etching/directional.py`,
-   already marked "VERIFIED, no changes needed" earlier in this file,
-   but that verification also only used one grid resolution) — not
-   checked this session; the single `grid_delta_um=0.075` outlier
-   (12.3% over expected even with the fix) was not chased further,
-   consistent with how this project already treats this general class
-   of non-monotonic ViennaPS artifact elsewhere.
+   library-internal numerical fragility); the single
+   `grid_delta_um=0.075` outlier (12.3% over expected even with the
+   fix) was not chased further, consistent with how this project
+   already treats this general class of non-monotonic ViennaPS
+   artifact elsewhere.
 
-7. **Next smallest experiment (not done, out of scope for this
-   round):** repeat this exact grid/time sweep methodology against
-   `tcad/process/etching/directional.py` to check whether its own
+7. **Etching counterpart checked (same session, immediate follow-up):**
+   whether `tcad/process/etching/directional.py`'s own
    `calculateVisibility=True` default has the same silent stalling
-   issue for material removal (not just growth) — it uses the same
-   underlying ViennaPS model and the same unexamined default.
+   issue for material removal — **it does not.** Swept the identical
+   `grid_delta_um`/time combinations: `calculateVisibility=True` and
+   `False` gave byte-identical etch depth at every point (exact match
+   at gd∈{0.1,0.075,0.05,0.02}, and the same ~12-13% deviation at the
+   two coarsest grids 0.2/0.15 *regardless* of the flag, i.e. that
+   deviation isn't visibility-related). See "Etching (basic)" above
+   for the full result. `etching/directional.py` was left unchanged —
+   the deposition-side bug is specific to growth, not general to the
+   shared `DirectionalProcess` model.
 
 ## Session status snapshot (most recent — read this first)
 
@@ -1903,6 +1923,14 @@ it from isotropic/conformal deposition.
 change and the extended regression test are the only changes; no
 regressions.
 
+**What this session did (part 4, same session, immediate follow-up):**
+checked whether directional *etching* has the same
+`calculateVisibility=True` stalling bug part 3 found in directional
+*deposition* — it does not (see item 7 under "Directional deposition
+growth SHAPE — RESOLVED" and the follow-up under "Etching (basic)"
+above for the full sweep). `etching/directional.py` was deliberately
+left unchanged; this is a negative result, not a missed fix.
+
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — root cause **now identified** and a fix
   **verified to work**, but blocked from production by the confirmed
@@ -1915,10 +1943,6 @@ regressions.
 - LOCOS bird's-beak shape's true diffusion-driven behavior vs.
   seed-geometry artifact.
 - `gd=0.02` Si-thickness dependency.
-- Whether `tcad/process/etching/directional.py` (the Etching
-  counterpart) has the same silent `calculateVisibility=True` stalling
-  issue for material removal — not checked this session, see item 7
-  under "Directional deposition growth SHAPE — RESOLVED" above.
 - Auto-deriving `refine_near_um` from `ProcessResult.doping` instead of
   requiring callers to compute/pass it manually (see item 7 in the
   "PN junction (Phase 8) convergence — RESOLVED" section above).
