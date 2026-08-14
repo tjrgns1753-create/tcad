@@ -494,3 +494,60 @@ test, per this project's established scratch-file convention.
     capability does not change this conclusion, since the failure
     happens entirely inside Oxidation()'s own solve, before any export
     step is ever reached.
+
+    (Follow-up on item 14's hang: left running to see if it would
+    eventually error out or recover -- it did not. Confirmed genuinely
+    stuck, not just slow: 100% CPU, zero further log output, for over
+    90 seconds past the last printed line ("Expanding level set to
+    3.000000") -- every other real-ViennaPS test in this log completes
+    in well under 5 seconds. Killed manually (kill -9). Consistent
+    with the corrupted/garbage displacement value already observed:
+    the solver is stuck in a degenerate numerical state it cannot
+    exit, not merely producing a wrong-but-finite answer slowly. This
+    is an additional, independent piece of evidence against item 13's
+    "wrap the mask" candidate, on top of the "no oxide nodes found"
+    findings already logged above -- does not change the conclusion,
+    already recorded as REJECTED.)
+
+-------------------------------------------------------------------
+SESSION SUMMARY (tests 11-14, this continuation):
+
+Fetched real ViennaLS source (lsAdvect.hpp) once the GitHub rate limit
+cleared and found the EXACT, documented root cause: Advect() requires
+the last-inserted level set to geometrically contain every other level
+set in the domain (adjustLowerLayers() intersects each other level set
+against it; violating containment produces an empty result). This
+single documented precondition fully explains every test result in
+this entire log, from test 6 through test 10, with no remaining
+ambiguity about the mechanism.
+
+Both fix candidates that follow directly from this root cause were
+tested against the REAL, physics-coupled Oxidation() model (not just
+plain-geometry stand-ins) and both FAILED, for two independent
+reasons each:
+  - Reordering (mask before the oxide wrap): avoids the point-collapse
+    in isolation, but the real Oxidation() model then produces ZERO
+    growth (not slow growth -- exactly zero, confirmed at two very
+    different time points), and running Oxidation() first reintroduces
+    the collapse on the next chained step anyway (now hitting Mask
+    instead of Si/SiO2).
+  - Wrapping the mask itself: breaks Oxidation()'s own internal
+    oxide-band detection outright ("no oxide nodes found"), produces
+    corrupted/garbage numerical output, and hangs indefinitely (killed
+    manually after 90+ seconds of no progress, vs. <5s for every other
+    real-ViennaPS test in this log).
+
+Net result of this continuation: the WHY is now fully and precisely
+understood (a documented ViennaLS API precondition, not a mystery),
+but no small, local fix exists within the two most obvious candidate
+directions. A real fix would need either (a) a fundamentally different
+LOCOS geometry construction where the mask genuinely, physically
+contains the rest of the stack in a way the Oxidation model's own
+oxide-band detection can still parse correctly (not attempted -- would
+be a substantial geometry redesign, out of scope for "test only"), or
+(b) bypassing viennals::Advect's multi-level-set handling entirely for
+the chained step's own advection (a much larger architectural change).
+
+No production code (tcad/*, tests/*) was modified anywhere in this
+log. All probe scripts (.probe_locos_test*.py) were deleted after each
+test.
