@@ -2407,6 +2407,102 @@ geometry to prioritize.
 - Full regression: 11 passed / 2 failed, same two pre-existing failures
   — no new regressions.
 
+### GUI: Si cross-section rendering as a stray small triangle — ROOT-CAUSED AND FIXED (later session, reported by the user: "실리콘 기판 단면에 작은 직각삼각형으로 표현이 된다" / "the Si substrate cross-section renders as a small right triangle")
+
+1. **What was tested:** first hypothesis (wrong, corrected by the user)
+   was that the etched amount itself was too small to resolve at the
+   GUI's literal default field values (isotropic rate=0.05um/s,
+   time=1.0s = exactly 1 gridDelta of etch — confirmed real and
+   separately worth fixing, see below, but NOT what the user was
+   describing). The user clarified the actual symptom: the Si
+   substrate itself — not the etched notch — renders as a small stray
+   right triangle instead of its real cross-section. Reproduced
+   directly: ran a real isotropic etch (grid_delta=0.05,
+   x_extent=10.0, silicon_depth_um=5.0 — the GUI's own default field
+   values) through the real production `IsotropicEtch.run()`, then
+   replicated `_draw_real_mesh_result()`'s exact decimation logic
+   (`triangle_data[::step]`, the "every Kth triangle" mechanism from
+   the section above) against the real exported mesh.
+
+2. **Result:** Si is meshed as 39394 uniformly-sized triangles
+   (area=0.00125 each, matching `gridDelta^2/2`) spanning its true
+   y-range `[-5.000, -0.001]`. After the OLD positional-stride
+   decimation (step=23, applied to the combined Mask-then-Si array),
+   the SURVIVING Si triangles were confirmed to cluster almost
+   entirely in the thin band `y=[-5.0, -4.95]` — the very bottom
+   (floor) edge only, NOT spread across the true full extent. This
+   directly reproduces the reported bug: with only a thin sliver near
+   the floor surviving decimation, the rendered "Si cross-section" is
+   effectively just a few small triangles near the bottom, which is
+   what looked like a stray small right triangle instead of the whole
+   substrate. Root cause: the exported mesh's triangle ORDER is not
+   spatially uniform (a real characteristic of `saveVolumeMesh()`'s
+   output, not assumed), so a fixed ARRAY-INDEX stride reproduces
+   whatever ordering bias already exists in the file — it does not
+   sample representatively across the shape's true spatial extent.
+
+3. **What it proves:** the bug is in the GUI's decimation strategy,
+   not in ViennaPS/the mesh export itself (the full, undecimated mesh
+   is geometrically correct — confirmed by its true y-range matching
+   expectation exactly) and not in anything from the earlier LOCOS/
+   auto-refine-from-doping work this session (that work never touches
+   `tcad_2d_stagewise.py` — completely separate files). Pre-existing
+   since the mesh-rendering feature was first added.
+
+4. **Fix applied — `tcad_2d_stagewise.py`'s `_draw_real_mesh_result()`:**
+   replaced the positional stride with PER-MATERIAL RANDOM sampling:
+   group triangle indices by material tag first, then for each
+   material independently take a `random.Random(0).sample(...)` subset
+   sized proportionally to that material's own share of the total
+   triangle count (capped at `_MAX_RENDERED_TRIANGLES` overall). Fixed
+   seed (0) keeps repeated redraws of the same mesh (e.g. window
+   resizes, which call `redraw()` on every `<Configure>` event)
+   visually stable rather than flickering between different random
+   subsets. Per-material allocation also fixes a second, related risk
+   the old combined stride had: a material with few triangles (e.g.
+   Mask) could be crowded out entirely by one with many (e.g. Si) in a
+   single combined stride — now every present material keeps a
+   proportional share by construction.
+
+5. **Verified:** re-ran the same reproduction (real isotropic etch,
+   GUI default field values) with the fixed algorithm (copied
+   verbatim from the actual edited file into a standalone check, not
+   re-implemented separately): kept Si triangles' y-range is now
+   `[-5.0, -0.0006]` — matching the TRUE full Si y-range
+   (`[-5.000, -0.001]`) almost exactly, no longer clustered near the
+   floor. Per-material proportional allocation confirmed too: Mask
+   (13% of total triangles) got 260 of the 2000-cap (13.0%), Si (87%)
+   got 1740 (87.0%). **Could NOT verify inside an actual running
+   Tkinter GUI** — this container has no `tkinter` installed at all
+   (`ModuleNotFoundError` even just importing it), so the fix is
+   verified at the algorithm level (proven correct against real
+   ViennaPS mesh data, same as `redraw()` would receive) but not via
+   an actual on-screen render in this environment. `ast.parse()`
+   confirmed the edited file is still syntactically valid.
+
+6. **Separately confirmed real, but NOT what the user was
+   describing — left uncorrected (a UX/default-value question, not a
+   rendering bug):** the GUI's literal default field values (isotropic
+   rate=0.05um/s, time=1.0s) etch exactly 1 gridDelta of depth, which
+   real execution confirmed produces an almost-unmeasurable actual
+   etch (-0.0004um, i.e. numerical noise, not a real signal) — the
+   same "sub-grid-cell change doesn't resolve" limitation already
+   documented elsewhere in this project (oxide seed thickness, mesh-
+   refinement minimum window). At 5x the default time (5.0s), the same
+   recipe etches a real, measurable 0.16um. Not fixed this session —
+   flagged as a legitimate but separate default-value/UX question,
+   left for the user to decide whether the GUI's defaults should
+   change.
+
+7. **What remains uncertain:** whether `tkinter` needs to be installed
+   in this container for genuine end-to-end verification, or whether
+   this GUI is only ever run in a different (e.g. Windows) environment
+   per this file's own earlier session history; whether other GUI
+   rendering paths (deposition/oxidation have no panel; doping has
+   none either) have similar undiscovered decimation-adjacent issues
+   — not audited, only the etch panel's Si-rendering bug was
+   investigated, since that's what was reported.
+
 Still not attempted (deferred, matches "no UI redesign" instruction):
 zooming/panning the real-mesh view, a legend for material colors,
 rendering it during etch-panel-only categories (deposition/oxidation
@@ -2862,6 +2958,24 @@ chaining fix):**
 **Regression after part 10:** `tests/run_regression.py` → still
 **19 passed, 0 failed, 0 skipped** — the graded-refinement change is
 the only production change this part; no regressions.
+
+**What this session did (part 11, later session, user-reported GUI
+bug: "실리콘 기판 단면에 작은 직각삼각형으로 표현이 된다" / "the Si
+substrate cross-section renders as a small right triangle" after
+etching):** root-caused and fixed a real bug in
+`tcad_2d_stagewise.py`'s `_draw_real_mesh_result()` — see "GUI: Si
+cross-section rendering as a stray small triangle" above. The mesh
+export's triangle order is not spatially uniform, so the existing
+positional-stride decimation (`triangle_data[::step]`) reproduced
+whatever ordering bias was already in the file, ending up keeping only
+a thin sliver of Si triangles near the floor boundary instead of a
+representative sample of the whole substrate. Fixed with per-material
+random sampling (fixed seed for redraw stability), verified at the
+algorithm level against real ViennaPS mesh data (kept Si triangles'
+y-range now matches the true full extent almost exactly). Could not
+verify inside an actual Tkinter window — this container has no
+`tkinter` installed. This is the first GUI-file change of this
+session; every other part touched only `tcad/` backend code.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as

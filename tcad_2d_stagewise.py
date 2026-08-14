@@ -33,6 +33,7 @@
 from __future__ import annotations
 
 import json
+import random
 import subprocess
 import sys
 import tempfile
@@ -1316,15 +1317,49 @@ class TCADApplication(tk.Tk):
             # __init__), and each run rebuilds the whole canvas from
             # scratch -- a fine grid_delta_um combined with the default
             # ~5um floor_depth_um can produce 10000+ triangles, which
-            # would make resizing visibly stutter. Uniformly decimate to
-            # a fixed cap rather than skip a spatial region, so this is
-            # a performance safety valve, not a judgment about which
-            # part of the geometry matters more.
+            # would make resizing visibly stutter. Decimate to a fixed
+            # cap rather than skip a spatial region, so this is a
+            # performance safety valve, not a judgment about which part
+            # of the geometry matters more.
+            #
+            # Found (not assumed) to be a REAL bug in the original
+            # positional-stride version (`triangle_data[::step]`): the
+            # exported mesh's triangle ORDER is not spatially uniform --
+            # a material's own triangles are not spread evenly across
+            # its true area in the file (confirmed by inspection: after
+            # a plain stride, the surviving Si triangles clustered
+            # almost entirely in one thin band near the floor boundary,
+            # rendering as a small stray triangle instead of the whole
+            # Si cross-section). A fixed positional stride reproduces
+            # whatever bias is already in the file's ordering. Fixed by
+            # decimating PER MATERIAL, with a random (not positional)
+            # sample within each material, seeded so repeated redraws of
+            # the same mesh (e.g. window resizes) are stable rather than
+            # flickering between different random subsets. This also
+            # guarantees every material present keeps a share of the
+            # render cap proportional to its own triangle count, rather
+            # than one material's triangles (e.g. a small Mask) being
+            # crowded out entirely by another's (e.g. a much larger Si)
+            # in a combined positional stride.
             triangle_data = triangle_block.data
             if len(triangle_data) > _MAX_RENDERED_TRIANGLES:
-                step = -(-len(triangle_data) // _MAX_RENDERED_TRIANGLES)  # ceil div
-                triangle_data = triangle_data[::step]
-                tags = tags[::step]
+                by_material = {}
+                for idx, tag in enumerate(tags):
+                    by_material.setdefault(int(tag), []).append(idx)
+
+                total = len(triangle_data)
+                rng = random.Random(0)
+                kept_indices = []
+                for tag, indices in by_material.items():
+                    share = max(1, round(_MAX_RENDERED_TRIANGLES * len(indices) / total))
+                    if len(indices) > share:
+                        kept_indices.extend(rng.sample(indices, share))
+                    else:
+                        kept_indices.extend(indices)
+                kept_indices.sort()
+
+                triangle_data = [triangle_data[i] for i in kept_indices]
+                tags = [tags[i] for i in kept_indices]
 
             for tri, tag in zip(triangle_data, tags):
                 tag = int(tag)
