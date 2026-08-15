@@ -34,6 +34,14 @@ Checks:
      and leaves the masked region's Si intact.
   5. A SECOND chained step still works, with no further fixup — the
      invariant is restored once, and Advect preserves it thereafter.
+  6. Bosch DRIE chains too. It is the one model that changes the
+     level-set stack size mid-run (duplicateTopLevelSet adds a polymer
+     layer each cycle, removeTopLevelSet pops it), which both the
+     Advect precondition and the export hint's fixed materials list
+     could in principle have tripped over. Neither does: the duplicate
+     is a copy of a top that already contains everything, so the
+     precondition holds through the cycle, and the stack is back to its
+     registered length by export time.
 
 No fabricated numbers: every expectation is derived from the recipe or
 compared against the step's own measured "before" state.
@@ -74,6 +82,19 @@ ETCH_RECIPE = {
     "mask_material": "Mask",
 }
 
+#: One cycle is enough: the stack grows and shrinks once, which is the
+#: whole point of including Bosch here.
+BOSCH_RECIPE = {
+    "cycles": 1,
+    "etch_time_s": 1.0,
+    "polymer_rate": 0.03,
+    "polymer_sticking": 1.0,
+    "ion_source_exponent": 500.0,
+    "ion_rate": -0.02,
+    "neutral_rate": -0.01,
+    "neutral_sticking": 0.10,
+}
+
 
 def areas_by_material(mesh_path):
     """{material tag: total triangle area} from a written mesh."""
@@ -110,15 +131,15 @@ def main():
         areas1 = areas_by_material(result1["final_mesh"])
 
         assert set(areas1) == expected, (
-            f"[1/5] LOCOS step's own export should have all 3 materials "
+            f"[1/6] LOCOS step's own export should have all 3 materials "
             f"{sorted(expected)}, got {sorted(areas1)}"
         )
         retention = areas1[mask_tag] / mask_area_initial
         assert retention >= 0.90, (
-            f"[1/5] mask retention regressed to {retention:.1%} "
+            f"[1/6] mask retention regressed to {retention:.1%} "
             f"({areas1[mask_tag]:.5f} of {mask_area_initial:.5f})"
         )
-        print(f"[1/5] LOCOS step's own export unchanged by the fix: "
+        print(f"[1/6] LOCOS step's own export unchanged by the fix: "
               f"3 materials, mask retention {retention:.2%}")
 
         # ---- step 2: chain a real, unrelated step onto it ----
@@ -128,25 +149,25 @@ def main():
         areas2 = areas_by_material(result2["final_mesh"])
 
         assert set(areas2) == expected, (
-            f"[2/5] chained step's export is missing materials: expected "
+            f"[2/6] chained step's export is missing materials: expected "
             f"{sorted(expected)}, got {sorted(areas2)} -- this is the bug "
             f"this test exists for"
         )
         for tag, area in areas2.items():
-            assert area > 0.0, f"[2/5] material {tag} exported with zero area"
-        print(f"[2/5] chained step's export has all 3 materials: "
+            assert area > 0.0, f"[2/6] material {tag} exported with zero area"
+        print(f"[2/6] chained step's export has all 3 materials: "
               f"{ {k: round(v, 5) for k, v in sorted(areas2.items())} }")
 
         # ---- 3: nothing was destroyed in the domain itself ----
         points = [ls.getNumberOfPoints() for ls in step2.last_domain.getLevelSets()]
         assert all(p > 0 for p in points), (
-            f"[3/5] a level set was destroyed by the chained step: {points}"
+            f"[3/6] a level set was destroyed by the chained step: {points}"
         )
-        print(f"[3/5] every level set survived the chained step: {points} points")
+        print(f"[3/6] every level set survived the chained step: {points} points")
 
         # ---- 4: the chained etch actually did something physical ----
         assert areas2[oxide_tag] < areas1[oxide_tag], (
-            f"[4/5] the chained etch removed no oxide at all "
+            f"[4/6] the chained etch removed no oxide at all "
             f"({areas1[oxide_tag]:.5f} -> {areas2[oxide_tag]:.5f}); a fix that "
             f"preserves materials by making the step a no-op is not a fix"
         )
@@ -155,10 +176,10 @@ def main():
         # -- see etching/directional.py's docstring; Si survives here
         # purely because oxide is still in the way.)
         assert abs(areas2[si_tag] - areas1[si_tag]) < 1e-3, (
-            f"[4/5] Si changed ({areas1[si_tag]:.5f} -> {areas2[si_tag]:.5f}) "
+            f"[4/6] Si changed ({areas1[si_tag]:.5f} -> {areas2[si_tag]:.5f}) "
             f"though the etch is shallower than the oxide above it"
         )
-        print(f"[4/5] chained etch is physically real: oxide "
+        print(f"[4/6] chained etch is physically real: oxide "
               f"{areas1[oxide_tag]:.5f} -> {areas2[oxide_tag]:.5f}, Si intact")
 
         # ---- 5: a SECOND chained step, with no further fixup ----
@@ -167,14 +188,32 @@ def main():
         areas3 = areas_by_material(result3["final_mesh"])
 
         assert set(areas3) == expected, (
-            f"[5/5] second chained step lost materials: {sorted(areas3)}"
+            f"[5/6] second chained step lost materials: {sorted(areas3)}"
         )
         assert areas3[oxide_tag] < areas2[oxide_tag], (
-            f"[5/5] second chained etch removed no oxide "
+            f"[5/6] second chained etch removed no oxide "
             f"({areas2[oxide_tag]:.5f} -> {areas3[oxide_tag]:.5f})"
         )
-        print(f"[5/5] second chained step also OK, no further fixup needed: "
+        print(f"[5/6] second chained step also OK, no further fixup needed: "
               f"oxide {areas2[oxide_tag]:.5f} -> {areas3[oxide_tag]:.5f}")
+
+        # ---- 6: Bosch, the one model that resizes the level-set stack ----
+        step4 = registry.get("etching", "bosch_drie")(inherited_domain=step3.last_domain)
+        result4 = step4.run(dict(BOSCH_RECIPE), str(Path(tmp) / "step4"))
+        areas4 = areas_by_material(result4["final_mesh"])
+
+        points4 = [ls.getNumberOfPoints() for ls in step4.last_domain.getLevelSets()]
+        assert all(p > 0 for p in points4), (
+            f"[6/6] Bosch destroyed a level set: {points4}"
+        )
+        assert set(areas4) == expected, (
+            f"[6/6] Bosch's export lost materials: expected {sorted(expected)}, "
+            f"got {sorted(areas4)} -- duplicateTopLevelSet resizes the stack "
+            f"mid-run, so the export hint's materials list has to still line up "
+            f"by the time the export happens"
+        )
+        print(f"[6/6] Bosch (duplicateTopLevelSet) chains too: {points4} points, "
+              f"3 materials, oxide {areas3[oxide_tag]:.5f} -> {areas4[oxide_tag]:.5f}")
 
     print("LOCOS CHAINING TEST PASSED")
 

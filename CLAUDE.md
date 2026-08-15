@@ -1113,11 +1113,30 @@ This one works. Full test-by-test record in
    making the step a no-op would not count) and leaves Si intact; and a
    SECOND chained step still works with no further fixup. PASSES.
 
-7. **What remains uncertain:** only `DirectionalEtch`, `IsotropicEtch`
-   and two deposition models were chained (test 18 covered four models,
-   the permanent test covers directional); a chained step that itself
-   calls `duplicateTopLevelSet` (Bosch) is untested; LOCOS-then-LOCOS is
-   untested; only `gridDelta` 0.05 and 0.2 were exercised. Also, mask
+7. **Bosch (`duplicateTopLevelSet`) chains too — verified, was the one
+   model this fix's assumptions could plausibly have broken.** Bosch is
+   the only model that resizes the level-set stack mid-run
+   (`duplicateTopLevelSet` adds a polymer layer each cycle,
+   `removeTopLevelSet` pops it), so it could in principle have tripped
+   either the Advect precondition or the export hint's fixed
+   `materials`/`wrap_flags` length. Measured (LOCOS → Bosch, 2 cycles,
+   gridDelta 0.05): no level set destroyed ([162, 473, 198] → [162,
+   162, 297]), all 3 materials in the export, no warning raised, and
+   physically sensible values (Si unchanged at 19.99983 under its
+   oxide, SiO2 0.80021 → 0.73005, mask 1.49498 → 1.44223). Both
+   mechanisms hold for the same reason: the duplicate is a *copy* of a
+   top that already contains everything, so containment survives the
+   cycle, and `removeTopLevelSet()` restores the registered stack
+   length before the export runs — the length mismatch only exists
+   mid-cycle, where nothing exports. Added as check 6 of
+   `test_locos_chaining_real.py` (1 cycle there, enough to grow and
+   shrink the stack once).
+
+8. **What remains uncertain:** only `DirectionalEtch`, `IsotropicEtch`,
+   `BoschDRIEEtch` and two deposition models were chained (test 18
+   covered four, the permanent test covers directional + Bosch);
+   LOCOS-then-LOCOS is untested; only `gridDelta` 0.05 and 0.2 were
+   exercised. Also, mask
    area reads ~2.7% high immediately after the re-wrap (1.51028 vs
    1.46981) — a sub-grid-cell clipping-resolution artifact of
    `save_locos_volume_mesh`'s per-x-column top lookup, not real geometry
@@ -3252,6 +3271,15 @@ disagree with each other, and a wrong sign is a silent no-op) — see
 
 Full test-by-test record for both, including every rejected
 hypothesis, in `LOCOS_CHAINING_TEST_LOG.txt`.
+
+Follow-up in the same session, prompted by a fair pushback on this
+file's own hedging ("공식예제에서는 씌우는것도 잘 되던데" — the official
+example's layer-adding works fine): the one case listed as untested
+above, chaining Bosch DRIE (`duplicateTopLevelSet`) onto LOCOS output,
+was measured rather than left flagged. It works, on both counts that
+could have failed — see item 7 of the chaining section above for the
+numbers and the mechanism. The hedge was unnecessary. Now covered
+permanently as check 6 of `test_locos_chaining_real.py`.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as

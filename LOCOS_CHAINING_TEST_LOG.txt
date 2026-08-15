@@ -924,3 +924,38 @@ instruction "둘다해줘" / apply both):
        measured: directional Si depth 0.18349um unselective ->
        0.01842um at 10:1 (predicted 0.01835); isotropic 0.24381um ->
        0.02305um (predicted 0.02438).
+
+24. Hypothesis (prompted by the observation that the official ViennaPS
+    example uses duplicateTopLevelSet without trouble -- a fair
+    pushback on this log's own hedging): is chaining Bosch DRIE onto
+    LOCOS geometry actually a risk, or was that flagged as "untested"
+    more cautiously than the evidence warranted?
+    To be precise about what was ever in question: duplicateTopLevelSet
+    itself was never suspect. The official boschProcessSimulate.py uses
+    it, this project's bosch_drie.py is documented as 1:1 identical to
+    it, and that model passes every regression run. The open item was
+    only the COMBINATION with the shipped LOCOS fix, on two counts
+    that could fail independently: (a) Bosch grows the level-set stack
+    3 -> 4 each cycle, which could break Advect's containment
+    precondition, and (b) the export hint is registered against a
+    fixed 3-entry materials/wrap_flags list, which a resized stack
+    could desynchronize.
+    Test: real LOCOS oxidation -> real BoschDRIEEtch(inherited_domain=
+    ...) with 2 cycles at gridDelta 0.05, through the real registry
+    entry points; captured warnings explicitly.
+    Result: BOTH fine.
+      level sets [162, 473, 198] -> [162, 162, 297], none destroyed
+      export areas: Mask 1.49498 -> 1.44223, Si 19.99983 (unchanged,
+        still under its oxide), SiO2 0.80021 -> 0.73005
+      all 3 materials present; NO warnings raised
+    Conclusion: works, and the mechanism explains why on both counts.
+    (a) duplicateTopLevelSet makes a COPY of the current top; after the
+    re-wrap that top already contains everything, so the copy does too
+    and the precondition survives the cycle. (b) removeTopLevelSet()
+    pops it at the end of each cycle, so the stack is back to its
+    registered length of 3 by the time any export runs -- the length
+    mismatch exists only mid-cycle, where nothing exports. The
+    hedge was unnecessary; the pushback was correct. Added as check 6
+    of tests/integration/test_locos_chaining_real.py (1 cycle, enough
+    to grow and shrink the stack once) -- PASSES: [38, 42, 67] points,
+    3 materials, oxide 0.72268 -> 0.69063.
