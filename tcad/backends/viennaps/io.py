@@ -15,8 +15,9 @@ from __future__ import annotations
 
 import tempfile
 import warnings
+import weakref
 from pathlib import Path
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 PathLike = Union[str, Path]
 
@@ -47,6 +48,68 @@ set) that band is only ~2*gridDelta wide regardless of gridDelta, so
 without a floor the exported Si region collapses to a sliver a couple of
 grid cells deep.
 """
+
+
+#: Domains whose exports must go through save_locos_volume_mesh() rather
+#: than the normal WriteVisualizationMesh path, keyed by id(domain).
+#: See register_locos_export() for why this is a side table rather than
+#: an attribute on the domain itself.
+_LOCOS_EXPORT_HINTS: dict = {}
+_LOCOS_EXPORT_REFS: dict = {}
+
+
+def register_locos_export(domain, materials: List[Any], wrap_flags: List[bool]) -> None:
+    """Record that `domain` carries ViennaPS "wrap" material stacking, so
+    every later save_volume_mesh() on it delegates to
+    save_locos_volume_mesh() with these `materials`/`wrap_flags` instead
+    of exporting through WriteVisualizationMesh (which would silently
+    drop the wrapped-under materials — see save_locos_volume_mesh's
+    docstring).
+
+    Exists so a LATER, unrelated ProcessStep that inherits this domain
+    exports it correctly without needing to know anything about LOCOS:
+    none of the 13+ ProcessStep.run() implementations change, they keep
+    calling save_volume_mesh() exactly as before.
+
+    A side table keyed by id(domain) rather than an attribute set on the
+    domain: confirmed directly (not assumed) that the pybind11
+    viennaps.d2.Domain class has no py::dynamic_attr(), so
+    `domain.anything = ...` raises AttributeError. id() is safe as a key
+    here only because the weakref below removes the entry the moment the
+    domain is collected, so an id can never be silently reused by a
+    different, unrelated object while an entry is live. The domain
+    object's identity is preserved across Process() calls (they mutate
+    it in place) — verified against real ViennaPS 4.6.2 across a
+    three-step chain, which is what makes the lookup work for a
+    downstream step at all.
+    """
+    key = id(domain)
+    _LOCOS_EXPORT_HINTS[key] = (list(materials), list(wrap_flags))
+
+    def _forget(_ref, key=key):
+        _LOCOS_EXPORT_HINTS.pop(key, None)
+        _LOCOS_EXPORT_REFS.pop(key, None)
+
+    _LOCOS_EXPORT_REFS[key] = weakref.ref(domain, _forget)
+
+
+def _locos_export_hint(domain) -> Optional[Tuple[List[Any], List[bool]]]:
+    """The (materials, wrap_flags) registered for `domain`, or None."""
+    hint = _LOCOS_EXPORT_HINTS.get(id(domain))
+    if hint is None:
+        return None
+    # Guard against a level set having been added/removed since
+    # registration: the lists must still describe getLevelSets() 1:1, or
+    # save_locos_volume_mesh() would raise. Fall back to the normal
+    # export (plus its missing-material warning) rather than crash a
+    # step that is otherwise fine.
+    materials, wrap_flags = hint
+    try:
+        if len(list(domain.getLevelSets())) != len(materials):
+            return None
+    except Exception:
+        return None
+    return materials, wrap_flags
 
 
 def save_surface_mesh(domain, path: PathLike, add_material_ids: bool = True) -> str:
@@ -210,11 +273,25 @@ def save_volume_mesh(
     `floor_depth_um`, instead of collapsing to ~2*gridDelta. `domain`
     itself is never modified by this call.
 
+    If `domain` was registered via register_locos_export() (i.e. it
+    carries ViennaPS "wrap" material stacking, which this export path
+    cannot resolve correctly), this delegates to
+    save_locos_volume_mesh() instead. That is what lets a downstream
+    ProcessStep inheriting a LOCOS-built domain export it correctly
+    while still just calling save_volume_mesh() like every other step.
+
     After export, warns (does not raise) if a material present in
     `domain` has zero triangles in the written mesh — see
     `_warn_if_materials_missing_from_export` for why this can happen
     and what it means.
     """
+    hint = _locos_export_hint(domain)
+    if hint is not None:
+        materials, wrap_flags = hint
+        return save_locos_volume_mesh(
+            domain, materials, wrap_flags, path, floor_depth_um=floor_depth_um
+        )
+
     path_str = str(path)
     floored = _floored_copy_for_export(domain, floor_depth_um)
     floored.saveVolumeMesh(path_str)

@@ -1019,6 +1019,111 @@ Part 10 above ("LOCOS process-flow chaining — REAL BUG FOUND... re-investigate
 
 6. **Next smallest experiment (not done, out of scope for this round):** once the GitHub rate limit clears, fetch ViennaPS's real advection/`Process()` C++ source to look specifically for how it handles a level-set stack containing a `wrapLowerLevelSet=True` member during advection, to see whether this is a documented limitation or something to report upstream; separately, test whether the SAME chained-step corruption happens with a *fin-style* (no mask, no LOCOS) domain that still happens to contain a wrapped level set for some other reason (would help isolate "wrap topology" vs. "LOCOS specifically" as the trigger); consider whether avoiding chaining onto fresh-LOCOS output altogether (documenting it as a hard workflow constraint — LOCOS as a terminal step only — rather than something to fix in code) is the more honest near-term answer, since two separate fix attempts (part 10's design, and this session's implementation of it) have now both fallen short.
 
+### LOCOS process-flow chaining — RESOLVED AND SHIPPED (later session, per explicit user instruction "LOCOS 천천히 해도 되니까 꼭 찾아봐" / take your time but really find it, then "둘다해줘" / apply it)
+
+Four earlier attempts failed (part 10's bounds-hint design, part 12's
+implementation of it, plus a reordering and a mask-wrapping variant).
+This one works. Full test-by-test record in
+`LOCOS_CHAINING_TEST_LOG.txt` (items 15-18, 22).
+
+1. **What was tested — the question every earlier attempt skipped.**
+   Part 12 had established ViennaLS `Advect`'s documented precondition
+   (advects only the LAST level set, then replaces each lower one with
+   `lower INTERSECT last`, requiring the last to CONTAIN all others).
+   But this project's NORMAL path (`MakeTrench` → Si + Mask) chains
+   successfully every regression run, and its mask is also "last" — so
+   *how does the working path satisfy the precondition that LOCOS
+   violates?* Measured both domains side by side, reading the REAL
+   material order from each domain's own `MaterialMap`
+   (`getMaterialAtIdx` — every earlier test guessed the order from
+   insertion code instead of reading it) and exporting every level set
+   in isolation:
+
+   | | normal MakeTrench (chains fine) | real LOCOS (chaining destroys it) |
+   |---|---|---|
+   | ls[0] | **Mask**, area 1.4830, y [0.0000, 0.4999] | Si, area 8.0000, y [-2.0000, 0.0000] |
+   | ls[1] | **Si**, area 9.5097, y [**-2.0000**, 0.4999] | SiO2, area 8.8000, y [-2.0000, 0.2000] (wrapped) |
+   | ls[2] | — | **Mask**, area 1.4700, y [**0.2000**, 0.7000] (not wrapped) |
+
+   MakeTrench inserts the **substrate** last, and its level set is the
+   union of substrate + mask (9.51 ≈ 8.0 + 1.5, spanning floor to mask
+   top) — so the last level set contains the other. LOCOS's last level
+   set is a small box sitting entirely above y=0.2, containing neither
+   Si nor SiO2.
+
+2. **What it proves:** LOCOS is not hitting a ViennaPS limitation this
+   project must live with — it is the only geometry in the project that
+   does not follow ViennaPS's own "last level set wraps everything"
+   convention, which `MakeTrench` (and therefore every other model)
+   follows by construction. The bug is in this project's LOCOS
+   construction relative to that convention.
+
+3. **Why the fix goes after oxidation, not in the construction.**
+   Tests 11 and 14 both tried to satisfy the precondition at
+   construction time and both broke `vps.Oxidation()` itself —
+   reordering gave literally zero oxide growth (bit-identical SiO2 area
+   at t=0.01hr and t=0.05hr, `maxDisplacement=0.000000`), and wrapping
+   the mask broke the model's own oxide-band detection outright
+   (`"no oxide nodes found after buildNodes()"`, a ~10^308 garbage
+   displacement value, then an apparent hang). But the precondition
+   does not have to hold *during* oxidation — only for the NEXT step.
+
+4. **Production fix applied — two small pieces:**
+   - **`tcad/process/oxidation/thermal.py`**: new
+     `ThermalOxidation._make_locos_domain_chainable()`, called at the
+     very end of `run()`'s fresh-LOCOS branch, **after**
+     `save_locos_volume_mesh()` has already written this step's own
+     export — so the LOCOS step's own output is bit-for-bit unchanged.
+     It unions the last level set with the one below it, restoring the
+     invariant, and registers the export hint.
+   - **`tcad/backends/viennaps/io.py`**: new
+     `register_locos_export(domain, materials, wrap_flags)` plus a
+     weakref-keyed side table, and `save_volume_mesh()` now consults it
+     and delegates to `save_locos_volume_mesh()` when the domain is
+     registered. This is what lets a downstream step export a
+     LOCOS-inherited domain correctly **without any of the 13+
+     `ProcessStep.run()` files changing** — they keep calling
+     `save_volume_mesh()` exactly as before. A side table rather than
+     an attribute on the domain because the pybind11
+     `viennaps.d2.Domain` class has no `py::dynamic_attr()` (confirmed
+     directly: `domain.anything = ...` raises `AttributeError`).
+
+5. **One-time, not per-step — measured, not assumed.** Test 18 applied
+   the re-wrap after every chained step but never checked whether that
+   was necessary. Test 22 did: re-wrap **once**, then chain three steps
+   (directional etch → isotropic etch → isotropic deposition) with no
+   further fixup — all three pass, Si stays exactly 7.99983 throughout,
+   SiO2 progresses 0.80021 → 0.75394 → 0.70215, mask grows on the
+   deposition step. This matches the mechanism: `Advect` replaces each
+   lower layer with an intersection *with* the top, which is a subset of
+   the top by construction, so it **preserves** the invariant once it
+   holds. Also confirmed there: the domain's Python object identity
+   survives every `Process()` call, which is what makes the
+   `id(domain)` lookup work at all.
+
+6. **Verified, real ViennaPS 4.6.2, through the actual production entry
+   points:** new `tests/integration/test_locos_chaining_real.py` runs
+   `registry.get("oxidation","thermal")().run()` →
+   `registry.get("etching","directional")(inherited_domain=...).run()`,
+   the same way `tcad.process.flow.run_flow()` chains any two steps, and
+   asserts: the LOCOS step's own export is unchanged (3 materials, mask
+   retention ≥90%); the chained step's own export has all 3 materials
+   with nonzero area; no level set was destroyed; the chained etch is
+   physically real (removes oxide — a fix that preserved materials by
+   making the step a no-op would not count) and leaves Si intact; and a
+   SECOND chained step still works with no further fixup. PASSES.
+
+7. **What remains uncertain:** only `DirectionalEtch`, `IsotropicEtch`
+   and two deposition models were chained (test 18 covered four models,
+   the permanent test covers directional); a chained step that itself
+   calls `duplicateTopLevelSet` (Bosch) is untested; LOCOS-then-LOCOS is
+   untested; only `gridDelta` 0.05 and 0.2 were exercised. Also, mask
+   area reads ~2.7% high immediately after the re-wrap (1.51028 vs
+   1.46981) — a sub-grid-cell clipping-resolution artifact of
+   `save_locos_volume_mesh`'s per-x-column top lookup, not real geometry
+   change; a retention-threshold assertion is unaffected, an exact-area
+   assertion would need widening.
+
 ### LOCOS bird's-beak shape — INVESTIGATED, evidence supports genuine diffusion physics, no code change needed (later session, per explicit user instruction "지금 발생한 모든 문제를 해결해" — this is the "next smallest experiment" named at the end of "LOCOS mask erosion — RESOLVED AND SHIPPED" above, now that mask erosion no longer confounds it)
 
 The open question (named repeatedly throughout this file, never
@@ -2291,6 +2396,78 @@ source.
    wiring (etch panel is deliberately capped at 4 models per earlier
    sessions' scope decisions, unchanged here).
 
+### Per-material etch selectivity — ADDED (later session, found by questioning a claim this file itself had made)
+
+Found while verifying the LOCOS chaining fix, not by looking for it: a
+test-log entry described a chained etch as "removing oxide and leaving
+Si untouched." That was an interpretation, never a measurement, and it
+turned out to be true for the uninteresting reason.
+
+1. **What was tested:** etched a masked window covered by 0.2um of pad
+   oxide at progressively greater depths (0.05 / 0.10 / 0.20 / 0.40um)
+   through the real production `DirectionalEtch.run()`, at
+   `grid_delta_um=0.05` so a 0.05um etch is a full grid cell.
+2. **Result:** oxide loss tracks the requested depth exactly while oxide
+   remains (0.0463 / 0.0941 / 0.1902 vs 0.05 / 0.10 / 0.20 × 1.0um
+   window), then saturates at 0.1999 — the whole pad oxide gone. At that
+   same 0.40um step Si loses 0.1835 (~0.18um deep) against a
+   no-selectivity prediction of 0.20um, i.e. within ~1/3 of a grid cell.
+3. **What it proves:** it was pure geometry, not selectivity. The etch
+   removed only oxide at shallow depths because the oxide was in the
+   way, and consumed Si at the identical rate the moment it punched
+   through. This project's directional and isotropic etches had **no
+   material selectivity at all** — one rate for every non-mask material
+   — even though real etch chemistry is strongly selective (a real oxide
+   etch runs 10:1 or better against Si) and the installed ViennaPS
+   4.6.2 supports it.
+4. **The trap, measured rather than assumed.** ViennaPS exposes
+   per-material rates via `DirectionalProcess` overload 1
+   (`materialRates: {Material: (directional, isotropic)}`) and
+   `IsotropicProcess` overload 3 (`materialRates: {Material: rate}`) —
+   and **the two disagree on sign with each other**:
+   - `DirectionalProcess.materialRates`: **POSITIVE removes**, the
+     opposite of its own single-velocity overload. A negative value
+     removed exactly 0.0000 where a positive one removed the full
+     0.2001.
+   - `IsotropicProcess.materialRates`: **NEGATIVE removes**, matching
+     its own single-rate overload (measured separately — bit-identical
+     to the single-rate result).
+
+   A wrong sign is a **silent no-op**, not an error. This project has
+   already been bitten once by this class of trap on a different
+   overload (see "Directional deposition — RESOLVED, was a real
+   sign-convention bug").
+5. **Production implementation:** optional `material_rates` recipe key
+   on `tcad/process/etching/directional.py` and
+   `tcad/process/etching/isotropic.py`, selecting the per-material
+   overload; absent, both files behave exactly as before (every existing
+   recipe/test is provably untouched — the new code is a separate
+   branch). Recipes keep ONE convention — **negative removes**, matching
+   every other model in `etching/` — so `directional.py` flips the sign
+   on the way to ViennaPS and `isotropic.py` does not. Optional
+   `default_directional_rate`/`default_isotropic_rate`/`default_rate`
+   keys cover materials absent from the map (default 0.0, i.e. inert).
+6. **Verified, real ViennaPS 4.6.2, via the real production entry
+   points:** new `tests/integration/test_etch_selectivity_real.py`
+   builds a real oxide-on-Si stack (real `ThermalOxidation.run()`),
+   etches deep enough to clear the oxide, and compares selective vs
+   unselective:
+   - directional: Si depth 0.18349um unselective → **0.01842um** at
+     10:1 (predicted 0.01835um) — ratio 9.96
+   - isotropic: Si depth 0.24381um unselective → **0.02305um** at 10:1
+     (predicted 0.02438um) — within one grid cell
+
+   The test also asserts the selective recipe removes real oxide, so a
+   sign regression (which would look like "the etch did nothing" rather
+   than a crash) fails it loudly.
+7. **What remains uncertain / not done:** deposition models were not
+   given the same key (out of scope — this was an etch-selectivity
+   change, and `deposition/directional.py`'s own sign handling would
+   need its own separate measurement); the other etch models
+   (`sf6o2`, `hbr_o2`, `cf4_o2`, …) have their own chemistry-specific
+   parameter shapes and were not touched; only 10:1 at one grid
+   resolution was verified, not a selectivity sweep.
+
 ### Gaussian-implant doping — ADDED (autonomous overnight session)
 
 `tcad/physics/doping.py` and `tcad/device/devsim/doping_mapping.py` had
@@ -3042,6 +3219,40 @@ via an actual on-screen render.
 still **19 passed, 0 failed, 0 skipped** (no production code was
 touched).
 
+**What this session did (part 13, later session, per explicit user
+instruction "LOCOS 천천히 해도 되니까 꼭 찾아봐" / take your time on
+LOCOS but really find it, then "둘다해줘" / apply both):** solved and
+shipped the LOCOS process-flow chaining bug that parts 8/10/12 all
+failed on — see "LOCOS process-flow chaining — RESOLVED AND SHIPPED"
+above. The breakthrough was asking the question every earlier attempt
+skipped: how does the NORMAL `MakeTrench` path satisfy the ViennaLS
+`Advect` precondition that LOCOS violates? Measuring both domains'
+real material order and per-level-set regions showed MakeTrench
+inserts the substrate LAST, wrapping the mask, so its last level set
+contains everything — LOCOS is the only geometry in the project not
+following that convention. Since every earlier attempt to fix the
+CONSTRUCTION broke `vps.Oxidation()` itself, the fix restores the
+invariant AFTERWARD instead (one union at the end of LOCOS's own
+`run()`, plus a weakref-keyed export hint in `io.py` so downstream
+steps export correctly with zero changes to any `ProcessStep.run()`
+file). Measured, not assumed, that one re-wrap suffices — three
+chained steps pass with no further fixup, because `Advect` preserves
+the invariant once it holds.
+
+Also, separately: found and fixed a real physical-coverage gap
+surfaced by questioning this project's own wording — a test log had
+described a chained etch as "removing oxide and leaving Si untouched,"
+which measurement showed was pure geometry (the etch was shallower
+than the oxide), not selectivity. This project's directional and
+isotropic etches had NO material selectivity at all. Added an optional
+`material_rates` recipe key to both, with the per-overload sign
+conventions measured rather than assumed (ViennaPS's two overloads
+disagree with each other, and a wrong sign is a silent no-op) — see
+"Per-material etch selectivity — ADDED" above.
+
+Full test-by-test record for both, including every rejected
+hypothesis, in `LOCOS_CHAINING_TEST_LOG.txt`.
+
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
   of parts 1-5; struck through here rather than removed, so this list
@@ -3067,10 +3278,12 @@ touched).
   cause (in-memory level-set data loss during the chained step's own
   `Process()` call, not an export-layer bug) and confirmed the
   previously-proposed fix does NOT solve it** — see part 12 above.
-  Still genuinely open; the next actual attempt needs either C++-level
-  ViennaPS source access (blocked by a GitHub rate limit this session)
-  or a fundamentally different approach, not a retry of the
-  bounds-passthrough idea.
+  **RESOLVED AND SHIPPED in part 13** — see "LOCOS process-flow
+  chaining — RESOLVED AND SHIPPED" above. Part 12's call for "a
+  fundamentally different approach" was right: the answer was not an
+  export-layer fix at all, but restoring ViennaLS Advect's
+  containment precondition on the domain itself after oxidation
+  finishes.
 - KOH/TMAH rate-constant generalization to other concentrations/
   temperatures, or to TMAH — still open, not attempted.
 - Visual (on-screen) verification of the part-11 GUI rendering fix —

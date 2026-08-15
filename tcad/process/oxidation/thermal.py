@@ -114,6 +114,7 @@ from tcad.backends.viennaps import session
 from tcad.backends.viennaps.io import (
     DEFAULT_FLOOR_DEPTH_UM,
     SnapshotRecorder,
+    register_locos_export,
     save_locos_volume_mesh,
     save_volume_mesh,
 )
@@ -234,6 +235,52 @@ class ThermalOxidation(ProcessStep):
         wrap_flags = [False, True, False]
         return geometry, materials, wrap_flags
 
+    def _make_locos_domain_chainable(self, geometry, materials, wrap_flags) -> None:
+        """Make a just-oxidized LOCOS domain safe for a LATER process
+        step to continue from. Called only after this step's own export
+        is already written, so this step's own output is unaffected.
+
+        Why it is needed: ViennaLS's Advect (what every vps.Process()
+        call runs) advects only the LAST level set and then sets each
+        lower one to `lower INTERSECT last`. Its own documentation
+        states the precondition -- "the 'top level set' has to include
+        all lower level sets" -- and when that is violated the
+        intersection is empty, so the lower level sets are destroyed.
+
+        Every other geometry in this project satisfies that
+        automatically: MakeTrench inserts the SUBSTRATE last, wrapping
+        the mask (measured: its last level set spans the floor all the
+        way up through the mask top, area = substrate + mask). LOCOS is
+        the sole exception -- _build_locos_geometry() must insert the
+        mask last and unwrapped, because wrapping it, or reordering it
+        earlier, each break vps.Oxidation()'s own solve (measured: no
+        oxide growth at all in one case, "no oxide nodes found" in the
+        other).
+
+        The precondition only has to hold for the NEXT step, though, not
+        during oxidation -- so restore it here, afterwards, by unioning
+        the last level set with the one below it. Advect then PRESERVES
+        it from that point on (each adjusted lower layer is an
+        intersection with the top, hence a subset of it), so this is a
+        one-time fixup, not something every subsequent step must repeat
+        -- verified across a three-step chain with no further fixups.
+
+        Also registers the export hint, since the mask level set now
+        wraps everything and the normal WriteVisualizationMesh export
+        would give the whole region to it (see register_locos_export).
+        """
+        import viennals as vls
+
+        level_sets = list(geometry.getLevelSets())
+        if len(level_sets) < 2:
+            return
+
+        vls.BooleanOperation(
+            level_sets[-1], level_sets[-2], vls.BooleanOperationEnum.UNION
+        ).apply()
+
+        register_locos_export(geometry, materials, list(wrap_flags[:-1]) + [True])
+
     def run(self, recipe: Dict[str, Any], output_dir: str) -> Dict[str, Any]:
         module = session.require_viennaps()
 
@@ -321,6 +368,7 @@ class ThermalOxidation(ProcessStep):
                 geometry, locos_materials, locos_wrap_flags, final_mesh,
                 floor_depth_um=floor_depth_um,
             )
+            self._make_locos_domain_chainable(geometry, locos_materials, locos_wrap_flags)
         else:
             final_mesh_path = save_volume_mesh(
                 geometry, final_mesh, floor_depth_um=floor_depth_um,

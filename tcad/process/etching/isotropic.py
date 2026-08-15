@@ -15,6 +15,25 @@ material (see process/deposition/isotropic.py in a later phase) and a
 negative rate removes it. This module fixes the etching convention
 (rate is expected negative) so it can be registered distinctly from the
 future deposition counterpart.
+
+Material selectivity (optional `material_rates` recipe key)
+-----------------------------------------------------------
+Without it, one rate applies to every material except `mask_material`
+— no selectivity, which real wet/isotropic chemistries do have.
+Supplying `material_rates` selects ViennaPS's per-material overload:
+
+    vps.IsotropicProcess(
+        materialRates: {Material: rate},
+        defaultRate=0.0,
+    )
+
+SIGN: negative removes, i.e. the SAME convention as the single-rate
+overload above, so rates are passed through unchanged. This was
+measured, not assumed, and specifically must not be inferred from
+etching/directional.py: DirectionalProcess's own materialRates overload
+uses the OPPOSITE sign from this one (positive removes there), and that
+wrapper therefore has to flip the sign where this one must not. See
+LOCOS_CHAINING_TEST_LOG.txt items 21/23 for both measurements.
 """
 
 from __future__ import annotations
@@ -41,11 +60,25 @@ class IsotropicEtch(ProcessStep):
         # step is part of a process flow (see ProcessStep.prepare_domain).
         geometry = self.prepare_domain(recipe)
 
-        model_kwargs: Dict[str, Any] = {"rate": recipe["rate"]}
-        if "mask_material" in recipe:
-            model_kwargs["maskMaterial"] = getattr(module.Material, recipe["mask_material"])
+        if "material_rates" in recipe:
+            # Per-material selectivity. Rates pass through UNCHANGED:
+            # this overload's sign convention matches the single-rate
+            # one (negative removes), unlike DirectionalProcess's
+            # materialRates overload. See the module docstring.
+            material_rates = {
+                getattr(module.Material, name): float(rate)
+                for name, rate in recipe["material_rates"].items()
+            }
+            model = module.IsotropicProcess(
+                materialRates=material_rates,
+                defaultRate=float(recipe.get("default_rate", 0.0)),
+            )
+        else:
+            model_kwargs: Dict[str, Any] = {"rate": recipe["rate"]}
+            if "mask_material" in recipe:
+                model_kwargs["maskMaterial"] = getattr(module.Material, recipe["mask_material"])
 
-        model = module.IsotropicProcess(**model_kwargs)
+            model = module.IsotropicProcess(**model_kwargs)
 
         recorder = SnapshotRecorder(output_dir)
         recorder.capture(geometry, "000_initial")

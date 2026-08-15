@@ -859,3 +859,68 @@ relative to the single-velocity overload, and a wrong-signed value
 fails silently as a no-op rather than raising.
 
 NOT implemented -- test-only session.
+
+22. Hypothesis: test 18B re-applied the re-wrap after EVERY chained
+    step but never checked whether that was NECESSARY. That decides
+    the shape of the whole production fix -- one line in thermal.py,
+    or something every ProcessStep has to participate in. Reasoning
+    that says once should suffice (to be confirmed, not trusted):
+    Advect sets each lower layer to `lower INTERSECT last`, and an
+    intersection with X is always a subset of X, so the new top
+    contains every adjusted lower layer by construction -- Advect
+    should PRESERVE the invariant once it holds.
+    Test: re-wrap ONCE right after oxidation, then chain three steps
+    (directional etch -> isotropic etch -> isotropic deposition) with
+    NO further re-wrapping, checking after each.
+    Result: all three PASS. Si stays exactly 7.99983 throughout; SiO2
+    progresses 0.80021 -> 0.75394 -> 0.70215 (monotonic, physical);
+    the deposition step grows the mask 1.49555 -> 1.51221 while
+    leaving the buried layers alone; no level set ever collapses.
+    Also confirmed in the same run: the domain's Python object
+    identity is preserved across every Process() call, which is what
+    makes an id(domain)-keyed export-hint lookup viable at all.
+    Conclusion: ONE re-wrap is sufficient -- the reasoning holds. The
+    production fix needs no architectural change to ProcessStep or
+    flow.py, just a one-time fixup at the end of LOCOS's own run().
+
+23. Hypothesis: IsotropicProcess's own materialRates overload
+    (overload 3) shares DirectionalProcess's inverted sign convention
+    from item 21. Must NOT be assumed -- measure before wiring.
+    Test: simple Si+Mask trench (no LOCOS), single-rate overload as a
+    reference, then materialRates with both signs.
+    Result:
+      single-rate, -0.1        : Si removed 0.0944  (reference)
+      materialRates, NEGATIVE  : Si removed 0.0944  (identical)
+      materialRates, POSITIVE  : Si removed -0.0987 (grew instead)
+    Conclusion: the OPPOSITE of item 21 -- IsotropicProcess's
+    materialRates removes for NEGATIVE rates, matching its own
+    single-rate overload. So the two ViennaPS overloads disagree with
+    EACH OTHER on sign, and neither wrapper's convention may be
+    inferred from the other's. Both wrappers therefore normalize to
+    one recipe-level convention (negative removes, as everywhere else
+    in etching/), with directional.py flipping the sign and
+    isotropic.py passing it through.
+
+-------------------------------------------------------------------
+SHIPPED (this round -- the test-only phase ended here on explicit
+instruction "둘다해줘" / apply both):
+
+  1. LOCOS chaining fix
+     - tcad/process/oxidation/thermal.py:
+       _make_locos_domain_chainable(), called at the end of run()'s
+       fresh-LOCOS branch AFTER its own export is written, so that
+       export is bit-for-bit unchanged.
+     - tcad/backends/viennaps/io.py: register_locos_export() plus a
+       weakref-keyed side table; save_volume_mesh() consults it and
+       delegates to save_locos_volume_mesh(). No ProcessStep.run()
+       file changed.
+     - tests/integration/test_locos_chaining_real.py (new).
+
+  2. Per-material etch selectivity
+     - Optional `material_rates` recipe key on
+       tcad/process/etching/directional.py and isotropic.py, with the
+       measured per-overload sign handling from items 21/23.
+     - tests/integration/test_etch_selectivity_real.py (new), which
+       measured: directional Si depth 0.18349um unselective ->
+       0.01842um at 10:1 (predicted 0.01835); isotropic 0.24381um ->
+       0.02305um (predicted 0.02438).
