@@ -1132,11 +1132,43 @@ This one works. Full test-by-test record in
    `test_locos_chaining_real.py` (1 cycle there, enough to grow and
    shrink the stack once).
 
-8. **What remains uncertain:** only `DirectionalEtch`, `IsotropicEtch`,
-   `BoschDRIEEtch` and two deposition models were chained (test 18
-   covered four, the permanent test covers directional + Bosch);
-   LOCOS-then-LOCOS is untested; only `gridDelta` 0.05 and 0.2 were
-   exercised. Also, mask
+8. **Grid-resolution coverage — closed.** The fix touches three
+   grid-sensitive things (the pad-oxide floor at
+   `max(0.02, gridDelta)`, `save_locos_volume_mesh`'s per-x-column
+   clipping lookup binned at gridDelta, and the level-set narrow
+   band), so it was swept: LOCOS → chained etch at gridDelta 0.02 /
+   0.1 / 0.15 / 0.25, all PASS, all 3 materials, no level set
+   destroyed, no warnings, real oxide removed each time. With the two
+   already-covered values that is **six resolutions over a >12x
+   range**. Mask retention degrades gently and monotonically as the
+   grid coarsens (100.0% at 0.02 → 95.8% at 0.25) — ordinary
+   discretization behaviour, and every point clears the permanent
+   test's 90% threshold.
+
+9. **LOCOS-on-LOCOS — refused, not fixed, and NOT a regression.** A
+   second LOCOS oxidation on a LOCOS-produced domain hangs: the
+   re-wrap makes the mask level set contain SiO2, and
+   `vps.Oxidation()`'s oxide-band detection needs a real band between
+   distinct level sets (same failure signature as the construction-time
+   mask-wrap attempt — `"no oxide nodes found after buildNodes()"`,
+   ~10^308 garbage displacement). Verified this is pre-existing, not
+   caused by the fix, by rerunning the chain with the re-wrap disabled:
+   it completes but silently exports a mesh with **Si entirely absent**
+   and SiO2 collapsed 0.80000 → 0.00555, i.e. the original chaining
+   bug. LOCOS-on-LOCOS has never worked; the fix only changed how it
+   fails. `thermal.py` now raises `NotImplementedError` up front with
+   the two real workarounds, turning an indefinite hang into something
+   actionable. The guard is deliberately narrow — keyed on
+   `mask_material in recipe` AND the inherited domain being
+   LOCOS-registered (new `io.is_locos_registered()`) — because
+   **fin-style oxidation chained onto LOCOS works and must not be
+   blocked**: measured, all 3 materials preserved, Si unchanged, and
+   SiO2 genuinely grew 0.80000 → 0.80132.
+
+10. **What remains uncertain:** only `DirectionalEtch`, `IsotropicEtch`,
+   `BoschDRIEEtch`, fin-style `ThermalOxidation` and two deposition
+   models were chained (test 18 covered four, the permanent test covers
+   directional + Bosch + fin oxidation). Also, mask
    area reads ~2.7% high immediately after the re-wrap (1.51028 vs
    1.46981) — a sub-grid-cell clipping-resolution artifact of
    `save_locos_volume_mesh`'s per-x-column top lookup, not real geometry

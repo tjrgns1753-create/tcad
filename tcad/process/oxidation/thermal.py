@@ -114,6 +114,7 @@ from tcad.backends.viennaps import session
 from tcad.backends.viennaps.io import (
     DEFAULT_FLOOR_DEPTH_UM,
     SnapshotRecorder,
+    is_locos_registered,
     register_locos_export,
     save_locos_volume_mesh,
     save_volume_mesh,
@@ -291,6 +292,43 @@ class ThermalOxidation(ProcessStep):
         # was carried over, mask material tagged onto it as before.
         # Fin-style oxidation (no mask_material) is always the plain
         # trench geometry, fresh or inherited, exactly as before.
+        if (
+            self._inherited_domain is not None
+            and "mask_material" in recipe
+            and is_locos_registered(self._inherited_domain)
+        ):
+            # LOCOS on top of LOCOS. Measured (see
+            # LOCOS_CHAINING_TEST_LOG.txt, tests 27/28): the chainable
+            # re-wrap that _make_locos_domain_chainable() applies makes
+            # the mask level set contain SiO2, and vps.Oxidation()'s
+            # oxide-band detection needs a real oxide band between
+            # distinct level sets -- so a second LOCOS oxidation logs
+            # "no oxide nodes found after buildNodes()", produces a
+            # garbage displacement value, and then hangs indefinitely.
+            #
+            # This is NOT caused by the re-wrap: verified by rerunning
+            # the same chain with the re-wrap disabled, where the second
+            # oxidation completes but silently exports a mesh with the
+            # Si substrate missing entirely and SiO2 collapsed from
+            # 0.80000 to 0.00555. LOCOS-on-LOCOS has never worked; the
+            # re-wrap only changed how it fails. Refusing up front turns
+            # an indefinite hang into something actionable.
+            #
+            # Deliberately narrow: FIN-STYLE oxidation (no
+            # mask_material) chained onto a LOCOS domain DOES work --
+            # measured, real oxide growth, all materials preserved --
+            # and is not blocked here.
+            raise NotImplementedError(
+                "Cannot run a LOCOS oxidation (mask_material set) on a domain "
+                "produced by a previous LOCOS step: ViennaPS's oxide-band "
+                "detection cannot resolve an oxide band in the resulting "
+                "geometry, and the solve hangs. This combination has never "
+                "worked (before the process-flow chaining fix it silently "
+                "produced a mesh with no Si region at all). Use a single "
+                "longer LOCOS step instead of two, or omit mask_material to "
+                "run a fin-style oxidation on this domain, which does work."
+            )
+
         is_fresh_locos = self._inherited_domain is None and "mask_material" in recipe
         if is_fresh_locos:
             geometry, locos_materials, locos_wrap_flags = self._build_locos_geometry(recipe, module)

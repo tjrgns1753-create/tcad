@@ -959,3 +959,84 @@ instruction "둘다해줘" / apply both):
     of tests/integration/test_locos_chaining_real.py (1 cycle, enough
     to grow and shrink the stack once) -- PASSES: [38, 42, 67] points,
     3 materials, oxide 0.72268 -> 0.69063.
+
+25/26. Hypothesis: does the shipped LOCOS chaining fix hold at grid
+    resolutions other than the 0.05 and 0.2 it was developed against?
+    Everything it touches is grid-sensitive -- the pad-oxide floor at
+    max(0.02, gridDelta), save_locos_volume_mesh's per-x-column
+    clipping lookup binned at gridDelta, and the level-set narrow band.
+    Test: fresh LOCOS -> chained directional etch, through the real
+    registry entry points, at gridDelta 0.02 / 0.1 / 0.15 / 0.25.
+    Result: 4/4 PASS -- with the two already-covered values that is six
+    resolutions spanning a >12x range, all with 3 materials exported,
+    no level set destroyed, no warnings, and real oxide removed:
+      gd=0.02: retention 100.0%, oxide etched 0.02013, pts [266,406,757]
+      gd=0.10: retention  99.1%, oxide etched 0.04500, pts [ 64, 82,149]
+      gd=0.15: retention  97.7%, oxide etched 0.04747, pts [ 58, 58,111]
+      gd=0.25: retention  95.8%, oxide etched 0.03739, pts [ 32, 34, 59]
+    Mask retention degrades gently and monotonically with coarsening
+    grid (100% -> 95.8%), which is the expected discretization
+    behaviour, not a failure -- the retention assertion in
+    test_locos_chaining_real.py uses a 90% threshold, so every one of
+    these clears it.
+    Conclusion: grid-resolution coverage closed. This uncertainty is
+    no longer open.
+
+27. Hypothesis: LOCOS chained onto LOCOS fails with "no oxide nodes
+    found after buildNodes()" plus a ~10^308 garbage displacement --
+    the exact signature test 14 produced by wrapping the mask at
+    construction time -- and then hangs. Mechanistically expected: the
+    re-wrap makes the mask level set contain SiO2, and Oxidation()'s
+    oxide-band detection needs a real SiO2 band between distinct level
+    sets, which test 14 already showed wrapping destroys. But is this a
+    REGRESSION caused by the shipped fix, or was LOCOS-on-LOCOS already
+    broken?
+    Test: same chain twice in hard-timeout subprocesses, once normally
+    and once with ThermalOxidation._make_locos_domain_chainable
+    monkeypatched to a no-op -- reproducing pre-fix behavior exactly
+    without touching production code.
+    Result:
+      WITH the fix:    HUNG, killed at 240s, no result.
+      WITHOUT the fix: completes, but the output is corrupt anyway --
+        step1 exports {Mask 1.46981, Si 19.99986, SiO2 0.80000}, step2
+        exports {Mask 1.46427, SiO2 0.00555} with SI ENTIRELY ABSENT
+        and SiO2 collapsed from 0.8 to 0.006. That is the original
+        chaining bug, unmodified.
+    Conclusion: NOT a regression -- LOCOS-on-LOCOS was already broken,
+    and before the fix it failed SILENTLY (a mesh missing its
+    substrate, which would flow straight into DevSim and produce
+    garbage physics) rather than loudly. The fix changes the failure
+    mode from silent corruption to a hang. A hang is at least
+    impossible to miss, but it is still a bad way to fail, and the
+    right resolution is to detect this specific combination up front
+    and raise a clear error instead. Scope for such a guard is settled
+    by test 28 below -- it must not block combinations that work.
+
+28. Hypothesis: test 27 established LOCOS-on-LOCOS is broken (and was
+    broken before the fix), so refusing it up front beats hanging. But
+    how NARROW must that guard be? FIN-STYLE oxidation (no
+    mask_material) takes a different branch of ThermalOxidation.run()
+    -- if it works on a LOCOS domain, the guard must not block it.
+    Test: LOCOS -> fin-style oxidation (identical recipe minus
+    mask_material), real registry entry points, hard-timeout
+    subprocess.
+    Result: WORKS, cleanly.
+      step1 (LOCOS): Mask 1.46981, Si 19.99986, SiO2 0.80000
+      step2 (fin):   Mask 1.51028, Si 19.99930, SiO2 0.80132
+    All 3 materials preserved, Si essentially unchanged, and SiO2
+    genuinely GREW (0.80000 -> 0.80132) -- real oxidation, not a no-op.
+    Conclusion: the guard must key on `mask_material in recipe` AND the
+    inherited domain being LOCOS-registered, nothing broader.
+
+-------------------------------------------------------------------
+SHIPPED (follow-up round -- closing the last two uncertainties):
+
+  - Grid coverage: no code change needed, 6 resolutions verified
+    (test 25/26).
+  - LOCOS-on-LOCOS guard: tcad/process/oxidation/thermal.py now raises
+    NotImplementedError with an explanation and the two real
+    workarounds (one longer LOCOS step, or drop mask_material for a
+    fin-style oxidation) instead of hanging. Backed by a new
+    is_locos_registered() predicate in io.py.
+  - tests/integration/test_locos_chaining_real.py grew checks 7 and 8
+    (fin-style-on-LOCOS works; second LOCOS refuses).

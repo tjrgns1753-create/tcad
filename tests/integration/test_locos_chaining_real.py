@@ -42,6 +42,12 @@ Checks:
      is a copy of a top that already contains everything, so the
      precondition holds through the cycle, and the stack is back to its
      registered length by export time.
+  7. Fin-style oxidation (no mask_material) chains onto LOCOS and grows
+     real oxide — the guard in check 8 must not be over-broad.
+  8. A SECOND LOCOS oxidation on the same domain raises a clear error
+     rather than hanging. That combination has never worked (before
+     this fix it silently exported a mesh with no Si region at all);
+     the guard makes it actionable instead.
 
 No fabricated numbers: every expectation is derived from the recipe or
 compared against the step's own measured "before" state.
@@ -131,15 +137,15 @@ def main():
         areas1 = areas_by_material(result1["final_mesh"])
 
         assert set(areas1) == expected, (
-            f"[1/6] LOCOS step's own export should have all 3 materials "
+            f"[1/8] LOCOS step's own export should have all 3 materials "
             f"{sorted(expected)}, got {sorted(areas1)}"
         )
         retention = areas1[mask_tag] / mask_area_initial
         assert retention >= 0.90, (
-            f"[1/6] mask retention regressed to {retention:.1%} "
+            f"[1/8] mask retention regressed to {retention:.1%} "
             f"({areas1[mask_tag]:.5f} of {mask_area_initial:.5f})"
         )
-        print(f"[1/6] LOCOS step's own export unchanged by the fix: "
+        print(f"[1/8] LOCOS step's own export unchanged by the fix: "
               f"3 materials, mask retention {retention:.2%}")
 
         # ---- step 2: chain a real, unrelated step onto it ----
@@ -149,25 +155,25 @@ def main():
         areas2 = areas_by_material(result2["final_mesh"])
 
         assert set(areas2) == expected, (
-            f"[2/6] chained step's export is missing materials: expected "
+            f"[2/8] chained step's export is missing materials: expected "
             f"{sorted(expected)}, got {sorted(areas2)} -- this is the bug "
             f"this test exists for"
         )
         for tag, area in areas2.items():
-            assert area > 0.0, f"[2/6] material {tag} exported with zero area"
-        print(f"[2/6] chained step's export has all 3 materials: "
+            assert area > 0.0, f"[2/8] material {tag} exported with zero area"
+        print(f"[2/8] chained step's export has all 3 materials: "
               f"{ {k: round(v, 5) for k, v in sorted(areas2.items())} }")
 
         # ---- 3: nothing was destroyed in the domain itself ----
         points = [ls.getNumberOfPoints() for ls in step2.last_domain.getLevelSets()]
         assert all(p > 0 for p in points), (
-            f"[3/6] a level set was destroyed by the chained step: {points}"
+            f"[3/8] a level set was destroyed by the chained step: {points}"
         )
-        print(f"[3/6] every level set survived the chained step: {points} points")
+        print(f"[3/8] every level set survived the chained step: {points} points")
 
         # ---- 4: the chained etch actually did something physical ----
         assert areas2[oxide_tag] < areas1[oxide_tag], (
-            f"[4/6] the chained etch removed no oxide at all "
+            f"[4/8] the chained etch removed no oxide at all "
             f"({areas1[oxide_tag]:.5f} -> {areas2[oxide_tag]:.5f}); a fix that "
             f"preserves materials by making the step a no-op is not a fix"
         )
@@ -176,10 +182,10 @@ def main():
         # -- see etching/directional.py's docstring; Si survives here
         # purely because oxide is still in the way.)
         assert abs(areas2[si_tag] - areas1[si_tag]) < 1e-3, (
-            f"[4/6] Si changed ({areas1[si_tag]:.5f} -> {areas2[si_tag]:.5f}) "
+            f"[4/8] Si changed ({areas1[si_tag]:.5f} -> {areas2[si_tag]:.5f}) "
             f"though the etch is shallower than the oxide above it"
         )
-        print(f"[4/6] chained etch is physically real: oxide "
+        print(f"[4/8] chained etch is physically real: oxide "
               f"{areas1[oxide_tag]:.5f} -> {areas2[oxide_tag]:.5f}, Si intact")
 
         # ---- 5: a SECOND chained step, with no further fixup ----
@@ -188,13 +194,13 @@ def main():
         areas3 = areas_by_material(result3["final_mesh"])
 
         assert set(areas3) == expected, (
-            f"[5/6] second chained step lost materials: {sorted(areas3)}"
+            f"[5/8] second chained step lost materials: {sorted(areas3)}"
         )
         assert areas3[oxide_tag] < areas2[oxide_tag], (
-            f"[5/6] second chained etch removed no oxide "
+            f"[5/8] second chained etch removed no oxide "
             f"({areas2[oxide_tag]:.5f} -> {areas3[oxide_tag]:.5f})"
         )
-        print(f"[5/6] second chained step also OK, no further fixup needed: "
+        print(f"[5/8] second chained step also OK, no further fixup needed: "
               f"oxide {areas2[oxide_tag]:.5f} -> {areas3[oxide_tag]:.5f}")
 
         # ---- 6: Bosch, the one model that resizes the level-set stack ----
@@ -204,16 +210,50 @@ def main():
 
         points4 = [ls.getNumberOfPoints() for ls in step4.last_domain.getLevelSets()]
         assert all(p > 0 for p in points4), (
-            f"[6/6] Bosch destroyed a level set: {points4}"
+            f"[6/8] Bosch destroyed a level set: {points4}"
         )
         assert set(areas4) == expected, (
-            f"[6/6] Bosch's export lost materials: expected {sorted(expected)}, "
+            f"[6/8] Bosch's export lost materials: expected {sorted(expected)}, "
             f"got {sorted(areas4)} -- duplicateTopLevelSet resizes the stack "
             f"mid-run, so the export hint's materials list has to still line up "
             f"by the time the export happens"
         )
-        print(f"[6/6] Bosch (duplicateTopLevelSet) chains too: {points4} points, "
+        print(f"[6/8] Bosch (duplicateTopLevelSet) chains too: {points4} points, "
               f"3 materials, oxide {areas3[oxide_tag]:.5f} -> {areas4[oxide_tag]:.5f}")
+
+        # ---- 7: fin-style oxidation on a LOCOS domain DOES work ----
+        fin_recipe = {k: v for k, v in OXIDATION_RECIPE.items()
+                      if k != "mask_material"}
+        ox_cls = registry.get("oxidation", "thermal")
+        step5 = ox_cls(inherited_domain=step4.last_domain)
+        result5 = step5.run(fin_recipe, str(Path(tmp) / "step5"))
+        areas5 = areas_by_material(result5["final_mesh"])
+
+        assert set(areas5) == expected, (
+            f"[7/8] fin-style oxidation on a LOCOS domain lost materials: "
+            f"{sorted(areas5)}"
+        )
+        assert areas5[oxide_tag] > areas4[oxide_tag], (
+            f"[7/8] fin-style oxidation grew no oxide "
+            f"({areas4[oxide_tag]:.5f} -> {areas5[oxide_tag]:.5f})"
+        )
+        print(f"[7/8] fin-style oxidation chains onto LOCOS and grows real "
+              f"oxide: {areas4[oxide_tag]:.5f} -> {areas5[oxide_tag]:.5f}")
+
+        # ---- 8: a second LOCOS oxidation refuses, rather than hanging ----
+        step6 = ox_cls(inherited_domain=step5.last_domain)
+        try:
+            step6.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step6"))
+        except NotImplementedError as exc:
+            assert "LOCOS" in str(exc), (
+                f"[8/8] refused, but the message does not explain why: {exc}"
+            )
+            print(f"[8/8] a second LOCOS oxidation is refused up front, not hung")
+        else:
+            raise AssertionError(
+                "[8/8] a second LOCOS oxidation on a LOCOS domain should raise "
+                "NotImplementedError -- it hangs indefinitely if allowed through"
+            )
 
     print("LOCOS CHAINING TEST PASSED")
 

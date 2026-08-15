@@ -93,6 +93,18 @@ def register_locos_export(domain, materials: List[Any], wrap_flags: List[bool]) 
     _LOCOS_EXPORT_REFS[key] = weakref.ref(domain, _forget)
 
 
+def is_locos_registered(domain) -> bool:
+    """Whether `domain` was passed to register_locos_export().
+
+    Unlike `_locos_export_hint`, this answers the plain question "did a
+    LOCOS step produce this domain" without also requiring the recorded
+    materials list to still line up with the current level-set count —
+    a caller asking whether some operation is safe on a LOCOS-derived
+    domain needs the former, not the latter.
+    """
+    return id(domain) in _LOCOS_EXPORT_HINTS
+
+
 def _locos_export_hint(domain) -> Optional[Tuple[List[Any], List[bool]]]:
     """The (materials, wrap_flags) registered for `domain`, or None."""
     hint = _LOCOS_EXPORT_HINTS.get(id(domain))
