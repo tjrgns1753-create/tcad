@@ -746,3 +746,116 @@ blocking:
   - Not tested: a chained step that itself needs duplicateTopLevelSet
     (e.g. Bosch), a LOCOS-then-LOCOS chain, or grid resolutions other
     than gridDelta=0.2.
+
+19. Hypothesis (raised as a direct question about test 18's own
+    wording): test 18 described the chained etch as "removing oxide
+    and leaving Si untouched." That was an INTERPRETATION, never a
+    measurement, and it could be true for two physically very
+    different reasons: (i) real etch SELECTIVITY (oxide etches, Si
+    resists), or (ii) the etch simply never reached Si, because
+    0.05um requested is far less than the 0.2um pad oxide covering
+    the window. Distinguish by etching progressively deeper.
+    Test: same LOCOS+oxidation+re-wrap setup, gridDelta refined to
+    0.05 (so a 0.05um etch is a full grid cell, not a quarter of
+    one -- removing test 18's discretization caveat), window 1.0um
+    wide, pad oxide 0.2um. Etched at 0.05 / 0.10 / 0.20 / 0.40um
+    using the SAME overload tcad/process/etching/directional.py
+    itself uses (single directionalVelocity, one maskMaterial).
+    Result:
+      etch 0.05um: SiO2 removed 0.0463, Si removed 0.0000
+      etch 0.10um: SiO2 removed 0.0941, Si removed 0.0000
+      etch 0.20um: SiO2 removed 0.1902, Si removed 0.0000
+      etch 0.40um: SiO2 removed 0.1999, Si removed 0.1835
+    The oxide loss tracks the requested depth almost exactly while
+    oxide remains (0.0463/0.0941/0.1902 vs 0.05/0.10/0.20 x 1.0um
+    window), then SATURATES at 0.1999 -- i.e. the entire 0.2um pad
+    oxide in the window is gone and there is no more to remove. At
+    that same 0.40um step, Si loses 0.1835 (~0.18um deep). Predicted
+    if there were no selectivity at all: 0.40um total minus 0.20um of
+    oxide = 0.20um into Si; measured 0.1835um, i.e. within ~1/3 of a
+    grid cell of the no-selectivity prediction.
+    Conclusion: (ii) -- it was pure geometry, NOT selectivity. The
+    etch removed only oxide at shallow depths solely because the
+    oxide was in the way; the moment it punched through, it consumed
+    Si at the same rate. Test 18's phrasing "leaves Si untouched" was
+    accurate as a description of that specific run's outcome but
+    would be misleading if read as a physical property of the model.
+    Corrected statement for the record: this project's directional
+    etch has NO material selectivity -- every non-mask material is
+    removed at one identical rate.
+
+20. Follow-up gap found while testing item 19: ViennaPS itself DOES
+    support per-material etch rates -- vps.DirectionalProcess
+    overload 1 takes materialRates: Mapping[Material, (directional,
+    isotropic)] plus defaultDirectional/IsotropicRate, and
+    vps.IsotropicProcess overload 3 takes the same idea
+    (materialRates + defaultRate). This project's own wrappers use
+    NEITHER: tcad/process/etching/directional.py builds only
+    overload 2 (direction/directionalVelocity/isotropicVelocity/
+    maskMaterial/calculateVisibility) and isotropic.py only
+    overload 1 (rate/maskMaterial). So real etch selectivity -- a
+    basic, physically essential property of any real RIE or wet etch
+    chemistry (a real oxide etch is typically 10:1 or better against
+    Si) -- is currently NOT expressible through this project's
+    recipes at all, even though the installed ViennaPS supports it.
+    First attempt at using the materialRates overload directly (10:1
+    oxide:Si, negative rates matching the single-velocity
+    convention) removed NOTHING (SiO2 0.0000, Si 0.0000) in the same
+    setup where the single-velocity overload etched normally,
+    suggesting a differing sign or usage convention rather than a
+    working call -- this project has already documented one such trap
+    (deposition's inverted directionalVelocity, see CLAUDE.md), so
+    the sign was tested explicitly rather than assumed. See item 21
+    for that result.
+
+21. Hypothesis (from item 20): does the materialRates overload use the
+    OPPOSITE sign convention from the single-velocity overload, which
+    would explain it removing nothing when handed negative rates?
+    Test: identical setup, 0.4um-equivalent etch with 10:1 oxide:Si
+    selectivity, run three ways -- negative rates (matching the
+    single-velocity convention), positive rates (opposite), and a
+    no-selectivity control (both materials at the same negative rate,
+    which should have reproduced test 19A's 0.40um row if the sign
+    were the same).
+    Result:
+      NEGATIVE rates, 10:1     : SiO2 removed 0.0000, Si removed 0.0000
+      POSITIVE rates, 10:1     : SiO2 removed 0.2001, Si removed 0.0184
+      NEGATIVE, no selectivity : SiO2 removed 0.0000, Si removed 0.0000
+    Conclusion: CONFIRMED -- vps.DirectionalProcess's materialRates
+    overload takes POSITIVE rates to remove material, the exact
+    OPPOSITE of the single-velocity overload this project's wrapper
+    uses (where negative removes). A negative materialRates value is
+    silently a no-op, not an error. This is the same class of trap
+    this project already documented once for directional DEPOSITION
+    (CLAUDE.md, "Directional deposition -- RESOLVED, was a real
+    sign-convention bug"), now confirmed to exist on a second,
+    different ViennaPS overload.
+    And with the correct sign, selectivity works exactly as
+    specified: 10:1 gave Si 0.0184um deep vs. the no-selectivity
+    case's 0.1835um at the same total etch (test 19A) -- a factor of
+    9.97, matching the requested 10:1 to within a percent. Physically
+    checkable end to end too: at 0.4um/s the 0.2um oxide clears in
+    0.5s, leaving 0.5s x 0.04um/s = 0.020um of Si etch predicted vs.
+    0.0184um measured (within 1/3 of a grid cell).
+
+-------------------------------------------------------------------
+SECOND FINDING THIS ROUND (independent of the chaining bug, found by
+questioning test 18's own wording):
+
+This project's directional and isotropic etch models have NO material
+selectivity -- one rate applies to every non-mask material. Real
+etch chemistry is strongly selective (a real oxide etch runs 10:1 or
+better against Si), and the installed ViennaPS 4.6.2 fully supports
+it (DirectionalProcess overload 1, IsotropicProcess overload 3, both
+verified working here). This project simply never wired those
+overloads up.
+
+Adding it would be a small, self-contained change (an optional
+`material_rates` recipe key selecting the other overload, exactly the
+pattern wet_etching.py already uses for its crystallographic
+overload), with one real trap to get right, now measured rather than
+guessed: the materialRates overload's sign convention is INVERTED
+relative to the single-velocity overload, and a wrong-signed value
+fails silently as a no-op rather than raising.
+
+NOT implemented -- test-only session.
