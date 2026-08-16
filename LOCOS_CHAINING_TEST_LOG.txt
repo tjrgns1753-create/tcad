@@ -1040,3 +1040,152 @@ SHIPPED (follow-up round -- closing the last two uncertainties):
     is_locos_registered() predicate in io.py.
   - tests/integration/test_locos_chaining_real.py grew checks 7 and 8
     (fin-style-on-LOCOS works; second LOCOS refuses).
+
+-------------------------------------------------------------------
+[Crystallographic wet etch -- concentration/temperature sweep,
+requested as TMAH coverage. TEST ONLY.]
+
+29. Framing first, because it matters for how these results may be
+    read: real four-plane rate constants for TMAH could NOT be
+    obtained. The paper that has them (Sato & Shikida, Sensors and
+    Actuators A -- TMAH 10-25 wt%, 70-90 C, i.e. exactly this sweep)
+    is paywalled; the one open-access candidate
+    (sensors.myu-group.co.jp) is blocked by this environment's egress
+    proxy; and the installed ViennaPS ships no TMAH data at all
+    (checked the package contents and the Material enum). Fabricating
+    them is against this project's rules and would make any result
+    meaningless. So what follows is NOT a TMAH model. It is a
+    robustness/sensitivity sweep of the code path across the region
+    TMAH occupies, anchored on values that ARE real: the cited 30% KOH
+    @ 70 C constants already in production, and the literature-reported
+    (111)/(100) etch-rate RATIO range for TMAH, 0.02-0.08 (vs 0.0063
+    for this KOH set).
+
+    Test A -- anisotropy (concentration-like): vary rate111/rate100
+    over 0.0063 / 0.02 / 0.05 / 0.08 at t=120s, everything else fixed.
+    Result: bit-IDENTICAL every time -- apex 2.8000um, sidewall
+    57.32deg, for all four. A 12.7x change in the parameter that is
+    supposed to control facet shape did nothing at all.
+    Interpretation, and why this is a finding rather than a null
+    result: the self-limited apex for this window (half-width 1.0um)
+    is 1.0*tan(54.7356deg) = 1.4142um, and t=120s produced 2.8000um --
+    exactly twice as deep. The groove has run well past its
+    self-limiting V, so at that operating point the (111) facet is no
+    longer what sets the shape, and no (111) rate could matter.
+    Followed up properly in test 30.
+
+    Test B1 -- rate scale WITH compensating time (temperature-like, to
+    first order a temperature change is an Arrhenius factor on ALL
+    plane rates equally): scale every rate by s and the time by 1/s,
+    for s = 0.5 / 1 / 2 / 4. Result: bit-identical geometry at every
+    scale (apex 2.8000um, sidewall 57.32deg). The invariance holds
+    exactly -- the solver is NOT time-step sensitive over an 8x range
+    of step size, and a first-order temperature change is correctly
+    just a rate scale. This is a clean positive result and the most
+    directly useful one for the temperature question that was asked.
+
+    Test B2 -- rate scale at FIXED time (deeper total etch): 1x gives
+    apex 2.8000um / 57.32deg; 2x gives 4.9000um / 39.01deg (sidewall
+    degrading, fit points dropping 9 -> 6 as the structure runs out of
+    clean facet); 4x gives NO Si AT ALL in the export -- the substrate
+    is fully consumed. Worth recording that the failure mode at
+    over-etch is an empty-of-Si mesh rather than a crash or a hang.
+
+30. Follow-up to test 29A: re-ran the same anisotropy sweep at times
+    where the V-groove is still forming (t = 20 / 40 / 60 / 90s),
+    since t=120s had clearly run past self-limiting.
+    Result: rate111/rate100 is inert at EVERY time too -- bit-identical
+    apex and sidewall for all four ratios at all four times. And the
+    depth is EXACTLY LINEAR in time:
+      t=20s: apex 0.4850um, sidewall 65.77deg
+      t=40s: apex 0.9700um, sidewall 65.84deg
+      t=60s: apex 1.4550um, sidewall 62.01deg
+      t=90s: apex 2.1677um, sidewall 59.08deg
+    0.4850um / 20s = 1.455 um/min, which is EXACTLY rate110 from the
+    KOH set. So the groove descends at rate110 indefinitely and never
+    self-limits at all.
+    This raises a concern about the EXISTING production test
+    (test_koh_crystallographic_wet_etch_real.py), which asserts apex
+    depth within 15% of window_half*tan(54.7356deg) = 1.4142um: at its
+    t=60s that prediction is matched to 2.9% -- but rate110 * 60s =
+    1.4550um lands in the same place, so that check may be passing on
+    a numerical coincidence rather than on self-limiting physics. The
+    sidewall angle also drifts with time (65.8 -> 62.0 -> 59.1 deg)
+    rather than converging on 54.7356, which self-limiting faceting
+    would do. Test 31 settles which rates actually drive the result.
+
+31. Decisive experiment following test 30: vary each plane rate ALONE
+    (x0.25, x4, and =0) at t=60s and see which ones the result responds
+    to at all.
+    Result:
+      baseline (all KOH)   apex 1.4550um  sidewall 62.01deg
+      rate100 x0.25        apex 1.3524um  sidewall 53.95deg   RESPONDS
+      rate100 x4           apex 1.9615um  sidewall 76.82deg   RESPONDS
+      rate100 = 0          apex 1.3000um  sidewall 42.12deg   RESPONDS
+      rate110 x0.25        apex 0.4714um  sidewall 81.35deg   RESPONDS
+      rate110 x4           apex 4.6869um  sidewall 29.53deg   RESPONDS
+      rate110 = 0          apex 0.0011um  sidewall 90.00deg   etch STOPS
+      rate111 x0.25        apex 1.4550um  sidewall 62.01deg   INERT
+      rate111 x4           apex 1.4550um  sidewall 62.01deg   INERT
+      rate111 = 0          apex 1.4550um  sidewall 62.01deg   INERT
+      rate311 x0.25        apex 1.4550um  sidewall 62.01deg   INERT
+      rate311 x4           apex 1.4550um  sidewall 62.01deg   INERT
+      rate311 = 0          apex 1.4550um  sidewall 62.01deg   INERT
+    rate111 and rate311 are COMPLETELY inert -- bit-identical output
+    even when set to exactly zero. Only rate100 and rate110 do
+    anything, and rate110 dominates: zeroing it stops the etch dead
+    (apex 0.0011um, i.e. nothing).
+
+    What this proves, and it is not a small thing: in this project's 2D
+    configuration, ViennaPS's crystallographic wet etch is driven by
+    only TWO of its four plane rates. The most likely reason is
+    geometric -- with direction100 = [0.707, 0.707, 0] and
+    direction010 = [-0.707, 0.707, 0], the surface normals reachable
+    within the x-y simulation plane never coincide with the {111} or
+    {311} families, which are out-of-plane in this orientation, so
+    ViennaPS correctly never applies those rates. (That is an
+    inference from the measurement, not something confirmed against
+    ViennaPS's source, which was not read for this.)
+
+    CONSEQUENCE FOR THE EXISTING PRODUCTION TEST
+    (tests/integration/test_koh_crystallographic_wet_etch_real.py):
+    its two physical claims do not survive this.
+      * "apex depth matches window_half*tan(54.7356deg) = 1.4142um
+        within 15%" -- at its own t=60s, rate110 * 60s = 1.4550um,
+        which is 2.9% from 1.4142um by coincidence. Depth is exactly
+        linear in time (test 30) and never self-limits, so at any
+        other time the agreement disappears; it is not evidence of a
+        self-limited V.
+      * "sidewall angle within 8deg of the 54.7356deg (111)/(100)
+        magic angle" -- cannot be (111) faceting, because rate111 is
+        provably inert here. The angle also drifts with time
+        (65.8 -> 62.0 -> 59.1 deg over t=20..90s) instead of
+        converging, and moves with rate100/rate110 instead.
+    So the KOH crystallographic etch as currently configured does NOT
+    reproduce real (111)-limited V-groove physics in 2D, and that
+    test's numbers agreeing with the magic angle is not the evidence
+    it was taken to be. The etch model itself runs fine and is
+    self-consistent; what is wrong is the physical interpretation
+    attached to it.
+
+    NOT FIXED -- test-only round, per instruction. Recording this
+    rather than acting on it. Whether a different direction100 /
+    direction010 pair could bring a {111} normal into the 2D
+    simulation plane (making the feature genuinely 2D-meaningful) is
+    the obvious next question and was not investigated.
+
+-------------------------------------------------------------------
+ANSWER TO THE ORIGINAL REQUEST (concentration/temperature sweep):
+
+  - Temperature-like (all rates scaled, time inversely scaled):
+    perfectly invariant over an 8x range. Clean pass. To first order
+    temperature is just a rate scale, and the solver handles it
+    exactly.
+  - Concentration-like (anisotropy ratio rate111/rate100 over TMAH's
+    cited 0.02-0.08 vs KOH's 0.0063): NO EFFECT AT ALL, at any etch
+    time -- not because concentration does not matter physically, but
+    because rate111 is inert in this 2D configuration (test 31). So
+    this code path cannot currently distinguish KOH from TMAH by the
+    parameter that actually distinguishes them, which makes adding
+    real TMAH constants pointless until the inertness is resolved.
+    That is a more useful answer than the sweep itself.
