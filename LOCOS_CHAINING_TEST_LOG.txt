@@ -1189,3 +1189,113 @@ ANSWER TO THE ORIGINAL REQUEST (concentration/temperature sweep):
     parameter that actually distinguishes them, which makes adding
     real TMAH constants pointless until the inertness is resolved.
     That is a more useful answer than the sweep itself.
+
+32/33. Followed the suggestion to go back to the official example and
+    the model source. Both were fetched; together they gave a complete,
+    source-level explanation of test 31's inertness finding.
+
+    (a) The official example
+    (examples/cantileverWetEtching/cantileverWetEtching.py) says
+    plainly "This example only works in 3D mode", and its boundary
+    conditions are reflective on x/y with INFINITE on z -- so in that
+    example the DEPTH axis is z, and direction100/direction010 both lie
+    in the wafer plane. This project's 2D domain has depth along Y but
+    copied those vectors verbatim, which rotates the crystal frame into
+    the wrong axis.
+
+    (b) ViennaPS's psWetEtching.hpp rate function, verbatim:
+          directions[2] = cross(direction100, direction010)
+          N[i] = |dot(directions[i], normal)|, sorted DESCENDING
+          if dot(N, (-1,1,2)) < 0:
+              v = (r100*(N0-N1-2*N2) + r110*(N1-N2) + 3*r311*N2)/N0
+          else:
+              v = (r111*((N1-N0)*0.5+N2) + r110*(N1-N2)
+                   + 1.5*r311*(N0-N1))/N0
+        and for D==2 the normal's z component is forced to 0.
+
+        With the CURRENT vectors, directions[2] = (0,0,1), so in 2D
+        N2 = |dot((0,0,1),(nx,ny,0))| = 0 for EVERY possible normal.
+        The branch test then reduces to (N1 - N0) < 0, always true for
+        a descending sort, so the first branch is taken unconditionally
+        -- and that branch contains no r111 at all, while r311 is
+        multiplied by N2 = 0. That is exactly, and completely, why both
+        measured inert in test 31. Nothing is broken in ViennaPS; the
+        crystal frame is simply pointed along the wrong axis for a 2D
+        run.
+
+    (c) Derived the correct 2D frame from that algorithm rather than
+        guessing: putting [001] on the depth axis requires
+        direction100 = [0.7071, 0, 0.7071], direction010 = [0.7071, 0,
+        -0.7071], giving directions[2] = (0,1,0). Verified by hand
+        against the rate function: a normal at the magic angle,
+        (0.8165, 0.5774, 0), projects to N0 = N1 = N2 = 0.5774, which
+        takes the second branch and collapses to exactly v = r111. That
+        is the correct crystallography, arrived at from the source
+        rather than fitted.
+
+    (d) Measured with the derived vectors: rate111 IS live now -- 0x /
+        1x / 4x / 20x give visibly different profiles, where before
+        even setting it to exactly zero changed nothing. So the
+        diagnosis is confirmed and the axis fix is real as far as it
+        goes.
+
+    (e) But it does NOT yet reproduce a self-limited V-groove: apex
+        keeps growing (0.625 / 1.000 / 1.556 / 2.778 / 4.470um at t =
+        40/60/90/150/240s) instead of stopping at
+        window_half*tan(54.7356) = 1.4142um.
+
+    (f) Correction to my own reading of test 32, which matters: the
+        angle metric used there is 90 - atan(|dy/dx|), so ~88deg means
+        nearly FLAT, not nearly vertical as I first said. A flat (100)
+        bottom is the CORRECT intermediate state before the {111}
+        facets from the two mask edges meet, so those numbers were not
+        the failure they looked like -- a single straight-line fit
+        across 0.15-1.05um simply averages the flat bottom together
+        with the sidewall and cannot answer the question either way.
+        Test 33 dumps the real profile instead of fitting one line
+        through it.
+
+    CONCLUSION SO FAR: the root cause of test 31's inertness is now
+    understood at source level and is a real defect in this project's
+    2D adaptation (wrong crystal axis), not a ViennaPS limitation.
+    A corrected direction pair is derived and demonstrably revives
+    rate111. Whether that alone yields correct self-limited V-groove
+    physics is NOT yet established. Nothing applied -- test-only round.
+
+    (g) Test 33 profile dump (gridDelta 0.05, per-segment local slope
+        instead of one global fit), comparing both vector sets:
+          t=60s   current: apex 1.4550um, 20 flat + 59 sloped segments,
+                           sloped median 51.4deg (min 41.2, max 78.6)
+                  derived: apex 1.0459um, 28 flat + 43 sloped,
+                           sloped median 50.0deg (min 41.1, max 78.7)
+          t=120s  current: apex 2.8275um, 2 flat + 89 sloped,
+                           sloped median 50.5deg
+                  derived: apex 2.1337um, 12 flat + 80 sloped,
+                           sloped median 50.1deg
+        Both sets DO produce sloped facets with a median near, but not
+        at, the 54.7356deg magic angle (~50deg, spread 41-79deg), and
+        NEITHER self-limits -- both blow past the 1.4142um limit and
+        keep going. The derived set does deepen consistently more
+        slowly than the current one (1.05 vs 1.46um at t=60s; 2.13 vs
+        2.83um at t=120s) and retains more flat (100) bottom, which is
+        the direction r111 braking the etch would push it -- consistent
+        with the fix being real, but not sufficient on its own.
+
+    NET RESULT of following the official example, honestly stated:
+      * SOLVED: why rate111/rate311 are inert. Source-level, exact,
+        and it is this project's bug (wrong crystal axis for a 2D
+        domain), not a ViennaPS limitation.
+      * SOLVED: what the correct 2D direction pair is, derived from
+        the rate function rather than guessed, and confirmed by
+        measurement to make rate111 live.
+      * NOT SOLVED: getting a textbook self-limited V-groove. Neither
+        vector set self-limits, and the facet angle sits around 50deg
+        rather than 54.74deg. Something beyond the axis choice is
+        still missing -- candidates not yet examined include the mask
+        edge allowing lateral undercut at the fast {110} rate, and
+        whether a 2D cross-section can represent this geometry at all
+        given the official example is 3D-only by its own statement.
+      * Consequently the existing production test's physical claims
+        remain unsupported (test 31), and adding real TMAH constants
+        remains pointless until the facet physics actually works.
+    Nothing applied -- test-only round throughout.
