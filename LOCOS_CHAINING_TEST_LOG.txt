@@ -1299,3 +1299,148 @@ ANSWER TO THE ORIGINAL REQUEST (concentration/temperature sweep):
         remain unsupported (test 31), and adding real TMAH constants
         remains pointless until the facet physics actually works.
     Nothing applied -- test-only round throughout.
+
+34. Hypothesis: does true self-limiting (apex stops deepening) appear
+    at a SPECIFIC rotation of the crystal frame around the depth axis
+    (y), i.e. is there a rotation where the mask-edge axis (x) lines up
+    with a real <110> direction and produces a genuine symmetric V?
+    Parametrized the rotation analytically first, not just numerically:
+    with direction100(theta) = [cos theta, 0, sin theta], direction010
+    (theta) = [sin theta, 0, -cos theta] (verified this keeps
+    directions[2] = cross(d100,d010) = (0,1,0) = depth axis for every
+    theta), the projections onto a 2D-plane normal n=(nx,ny,0) work out
+    to N0=|cos theta|*|nx|, N1=|sin theta|*|nx|, N2=|ny|. The true
+    magic-angle self-limiting condition (N0=N1=N2, which collapses the
+    rate formula's second branch to exactly v=r111) requires
+    |cos theta|=|sin theta|, i.e. theta=45 deg is the ONLY rotation
+    where that condition is even reachable for any nonzero nx -- for
+    every other theta, N0 can never equal N1, so a true (111)-locked
+    facet cannot form at all, by construction. (theta=45deg is exactly
+    the "derived" vectors already tested in rounds 32/33.) At theta=45,
+    the condition further reduces to |nx|/|ny| = 1/0.7071 = sqrt(2),
+    i.e. the facet normal sits 54.7356 deg from vertical -- the real
+    magic angle, falling out of the algebra rather than being fitted.
+
+    Test: swept theta over 0/15/30/45/60/75/90 deg, running each at
+    t1=90s and t2=3*t1=270s. Self-limiting predicts apex(t2)/apex(t1)
+    close to 1 (bounded); unbounded/linear growth predicts close to 3.
+    Result: EVERY angle gave the same signature -- ratio ~3.0 within
+    noise, no exception:
+      theta=  0: apex 1.2745 -> 3.8566um, ratio 3.026
+      theta= 15: apex 1.5165 -> 4.5691um, ratio 3.013
+      theta= 30: apex 1.6644 -> 4.9500um, ratio 2.974
+      theta= 45: apex 1.5882 -> 4.9436um, ratio 3.113
+      theta= 60: apex 1.6644 -> 4.9500um, ratio 2.974  (mirrors 30, as
+      theta= 75: apex 1.5165 -> 4.5691um, ratio 3.013   expected from
+      theta= 90: apex 1.2745 -> 3.8566um, ratio 3.026   90deg symmetry)
+    The clean theta<->90-theta symmetry (0/90, 15/75, 30/60 identical
+    pairs) confirms the sweep itself is behaving sensibly, not noise --
+    but theta=45, the analytically unique candidate for a real facet,
+    shows NO qualitative difference from any other angle: still
+    unbounded, still ratio ~3. It IS the single slowest starting point
+    (a1=1.5882, lower than the neighboring 30/60's 1.6644) -- some
+    extra deceleration is measurably present early on -- but that
+    advantage washes out by t2, ending at essentially the same depth as
+    every other rotation (4.9436 vs 4.9500).
+    Conclusion: rotation alone does not produce a self-limiting
+    V-groove, even at the one rotation the algebra says is uniquely
+    correct. Something beyond crystal-frame orientation is
+    responsible. The most likely candidate, based on the "starts slow,
+    catches back up" pattern at theta=45: the point where the two
+    symmetric facets CONVERGE (the groove tip) is a concave/convex
+    kink in the level-set representation, and however ViennaLS
+    extends/regularizes velocity across that kink may not correctly
+    preserve the near-zero r111 rate there, letting the tip keep
+    advancing (and dragging the flanking facets down with it) even
+    once the correct facet angle is locally available elsewhere on the
+    surface. This is a level-set-numerics question, not a
+    crystallography question, and would need ViennaLS source
+    investigation (not attempted this round) to confirm.
+
+35. Follow-up to test 34's "tip re-acceleration" guess: finer time
+    series at theta=45 (t=30/90/270/810s), tracking not just apex depth
+    but the WIDTH of the near-apex flat region (x-extent within 0.05um
+    of the minimum) -- a real converging-to-a-point V should have that
+    width shrink toward 0 as the facets close in; a uniformly-advancing
+    front would keep it close to the full window width throughout.
+    Result:
+      t= 30s: apex=0.5000um  tip_width=1.900um  avg_rate=1.0000um/min
+      t= 90s: apex=1.5882um  tip_width=1.980um  avg_rate=1.0588um/min
+      t=270s: apex=4.9436um  tip_width=2.080um  avg_rate=1.0986um/min
+      t=810s: export failed -- Si missing entirely from the mesh, with
+        the project's own existing safety-net RuntimeWarning firing
+        ("missing 1 material(s) ... tag(s) [10]"). Root cause not
+        chased: t=270s was already at 4.94um, within the default 5.0um
+        floor depth (silicon_depth_um not set in this recipe), so by
+        810s the real Si surface across the window is almost certainly
+        entirely below the export floor -- an export-truncation
+        artifact of running this probe past the default floor depth,
+        not a new physics finding. Worth noting only because it
+        confirms the existing missing-materials safety net (see
+        CLAUDE.md, "LOCOS process-flow chaining", part 8) fires
+        correctly on an entirely unrelated recipe, not just the LOCOS
+        case it was written for.
+    tip_width stays at essentially the FULL window width (1.9-2.08um
+    out of a 2.0um window) at every measured time, right from t=30s.
+    Conclusion -- REVISES test 34's "tip re-acceleration" framing: this
+    is not a sharp V that forms and then a corner artifact speeds it
+    back up. There is no meaningful V shape at any point -- the entire
+    window bottom advances together, nearly as a flat front, the whole
+    time. avg_rate (~1.0-1.1um/min) sits between r100 (0.797) and r110
+    (1.455um/min) and nowhere near r111 (0.005um/min), consistently
+    across all four times -- so even at the one crystallographically
+    correct rotation, the model never spends meaningful time exposing a
+    genuinely (111)-locked, near-stationary facet across this window.
+
+-------------------------------------------------------------------
+FINAL STATE of the KOH/TMAH crystallographic wet-etch investigation
+this round (tests 29-35), stated plainly:
+
+  RESOLVED, with a source-level explanation: why rate111/rate311
+  measured as completely inert with this project's existing production
+  direction100/direction010 (copied verbatim from a 3D-only official
+  example whose depth axis is z, not this project's y) -- confirmed
+  from ViennaPS's own psWetEtching.hpp rate-selection code, not
+  guessed.
+
+  RESOLVED, analytically: what the crystallographically-correct 2D
+  direction pair is (theta=45deg in the parametrization above is the
+  UNIQUE rotation where the true magic-angle facet condition is even
+  reachable) -- derived from the same source code, not fitted, and
+  confirmed to make rate111 measurably live.
+
+  NOT RESOLVED: genuine self-limiting V-groove behavior. Even at the
+  one analytically-correct rotation, the etch never meaningfully forms
+  or holds a (111)-locked facet -- the window bottom advances at
+  roughly the r100/r110 blended rate indefinitely, with the near-apex
+  flat region staying close to the full window width rather than
+  narrowing toward a point. This means the EXISTING production test
+  (tests/integration/test_koh_crystallographic_wet_etch_real.py),
+  which is part of the current passing regression suite, is passing
+  for reasons unrelated to genuine (111)-limited faceting -- its
+  apex/angle checks land close to the real magic-angle numbers at its
+  own chosen t=60s by coincidence with the r110-dominated linear
+  growth rate, not because the model is reproducing self-limiting
+  crystallographic physics. This was not previously known; CLAUDE.md's
+  original entry for this test describes a one-time 54.45deg
+  measurement as validation, which this investigation shows was very
+  likely the same kind of coincidental snapshot.
+
+  NOT INVESTIGATED further this round: WHY the model fails to hold a
+  facet even at the correct rotation. The evidence (uniform-width
+  front rather than a narrowing V, at every rotation and every time
+  checked) points at something in ViennaLS's level-set advection/
+  velocity-extension handling for this class of strongly anisotropic,
+  concave-corner-forming problem, not at anything fixable by recipe
+  parameters. Confirming that would need ViennaLS source-level
+  investigation (Advect's velocity extension algorithm specifically),
+  not attempted this round.
+
+  TMAH specifically: moot until the above is resolved, since TMAH's
+  distinguishing parameter (the rate111/rate100 ratio) has no traction
+  on the actual simulated shape regardless of its value, given the
+  self-limiting mechanism that ratio is supposed to control does not
+  engage at all in this project's current 2D configuration.
+
+Nothing was applied to production code or the existing test this round
+-- test-only throughout, per standing instruction.
