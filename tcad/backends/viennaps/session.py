@@ -211,6 +211,143 @@ def make_mask_spans(
     return domain
 
 
+def make_gate_stack(
+    grid_delta_um: float,
+    x_extent_um: float,
+    y_extent_um: float,
+    channel_um,
+    source_um,
+    drain_um,
+    gate_oxide_thickness_um: float,
+    gate_height_um: float,
+    pad_height_um: float,
+    silicon_depth_um: float = 1.0,
+    gate_material: str = "TiN",
+    source_material: str = "W",
+    drain_material: str = "Cu",
+    oxide_material: str = "SiO2",
+    dimension: int = 2,
+):
+    """Build a 5-material MOSFET-shaped gate stack: Si body, a thin gate
+    oxide confined to the channel window, a gate electrode on top of it
+    (also confined to the channel), and separate source/drain pads.
+
+    Verified this is the ONLY insertion order/wrap combination (of
+    several tried) that exports correctly via save_locos_volume_mesh():
+    Si, source, drain, gate oxide all inserted UNWRAPPED (they are
+    mutually disjoint -- touch only at shared boundaries, never overlap
+    in area -- so no material-stacking ambiguity exists between them);
+    the gate ELECTRODE is inserted LAST with wrapLowerLevelSet=True,
+    since it is the true topmost layer (sits on top of the oxide, which
+    sits on top of Si, within the channel window only). Two other
+    orderings were tried and rejected by direct measurement:
+      - wrapping the SUBSTRATE last (mirroring MakeTrench/
+        make_mask_spans' own convention): satisfies ViennaLS Advect's
+        containment precondition, but save_locos_volume_mesh's clip
+        logic assumes the WRAPPED material is the newest TOP layer, the
+        opposite relationship -- the substrate's true (bottom) region
+        gets discarded, exporting only a tiny sliver artifact.
+      - wrapping EVERY insertion after Si (a true cumulative union
+        chain, confirmed by direct measurement to be how
+        wrapLowerLevelSet actually accumulates -- it unions with
+        whatever is CURRENTLY the top of the stack at insertion time,
+        not just the immediately-preceding level set): this DOES
+        satisfy Advect (no level set destroyed by a subsequent
+        Process() call), but corrupts the export differently --
+        save_locos_volume_mesh's per-x-column top-surface lookup
+        (_top_lookup) nearest-neighbor-fills any x-bin a narrow,
+        laterally-confined material (e.g. the source pad) has no real
+        data in, which incorrectly extrapolates that material's own
+        height into completely unrelated lateral windows (e.g. the
+        drain's), corrupting every other wrapped material's clip
+        boundary. This is a real, previously-undiscovered limitation of
+        _top_lookup, verified but NOT fixed this session (see CLAUDE.md)
+        -- it was tuned and tested only for LOCOS's own near-domain-
+        -spanning field oxide, not multiple narrow, disjoint windows.
+
+    CONSEQUENCE, not a hypothetical: because only the gate electrode is
+    wrapped, this domain does NOT satisfy Advect's containment
+    precondition for the OTHER four level sets (Si, source, drain,
+    oxide) -- confirmed directly: chaining a further real Process() step
+    (e.g. an etch) onto this domain destroys all four (their level sets
+    collapse to 0 points), and the subsequent export does not even
+    produce a readable mesh file (no warning fires either, since
+    save_volume_mesh's own missing-material check silently gives up
+    when it can't read the mesh at all). This geometry is a TERMINAL
+    construction only -- do not chain any further ViennaPS process step
+    (or a tcad.process.flow.FlowStep) onto the domain this returns.
+
+    gate_oxide_thickness_um is floored at 1.5x gridDelta, not just 1x:
+    measured directly (not assumed) that a box level set exactly 1x
+    gridDelta thick collapses to an EMPTY export through this project's
+    own floor-export machinery (_floored_copy_for_export's Expand(3) +
+    boolean-intersect pipeline) -- a razor-thin floating-point/grid-
+    -alignment edge case (1.00x fails, 1.01x already succeeds), the same
+    class of bug as the already-documented MakeTrench floating-point
+    sensitivity. 1.5x gridDelta is a safety margin confirmed clear of
+    this failure boundary, not the tightest possible value.
+    gate_height_um / pad_height_um are floored the same way for the same
+    reason (both are also freestanding boxes exported in isolation).
+
+    channel_um / source_um / drain_um : (min_um, max_um) pairs in domain
+        x coordinates. Not validated against overlap -- a caller
+        building a physically nonsensical layout (e.g. source
+        overlapping the channel) gets whatever geometry that implies,
+        same permissiveness as make_mask_spans' own spans_um.
+    """
+    module = require_viennaps()
+    import viennals as vls
+
+    _ensure_units_set(module)
+    module.setDimension(dimension)
+
+    safe_min = 1.5 * grid_delta_um
+    oxide_h = max(gate_oxide_thickness_um, safe_min)
+    gate_h = max(gate_height_um, safe_min)
+    pad_h = max(pad_height_um, safe_min)
+
+    half_x = x_extent_um / 2.0
+    silicon = getattr(module.Material, "Si")
+    gate_mat = getattr(module.Material, gate_material)
+    source_mat = getattr(module.Material, source_material)
+    drain_mat = getattr(module.Material, drain_material)
+    oxide_mat = getattr(module.Material, oxide_material)
+
+    # Scratch domain purely to read this grid's boundary conditions
+    # safely -- getBoundaryConditions() segfaults on an empty Domain
+    # (confirmed elsewhere in this project), same pattern make_mask_spans
+    # already uses.
+    scratch = create_domain(grid_delta_um, x_extent_um, y_extent_um, dimension)
+    module.MakePlane(scratch, 0.0, silicon).apply()
+    bcs = scratch.getBoundaryConditions()
+    bounds = [-half_x, half_x, -silicon_depth_um - 0.5, y_extent_um]
+
+    def box(lo_xy, hi_xy):
+        ls = vls.Domain(bounds, bcs, grid_delta_um)
+        geom = vls.MakeGeometry(ls, vls.Box(list(lo_xy), list(hi_xy)))
+        geom.setIgnoreBoundaryConditions([False, True, False])
+        geom.apply()
+        return ls
+
+    domain = create_domain(grid_delta_um, x_extent_um, y_extent_um, dimension)
+    domain.insertNextLevelSetAsMaterial(
+        box((-half_x, -silicon_depth_um), (half_x, 0.0)), silicon, False)
+    domain.insertNextLevelSetAsMaterial(
+        box((source_um[0], 0.0), (source_um[1], pad_h)), source_mat, False)
+    domain.insertNextLevelSetAsMaterial(
+        box((drain_um[0], 0.0), (drain_um[1], pad_h)), drain_mat, False)
+    domain.insertNextLevelSetAsMaterial(
+        box((channel_um[0], 0.0), (channel_um[1], oxide_h)), oxide_mat, False)
+    domain.insertNextLevelSetAsMaterial(
+        box((channel_um[0], oxide_h), (channel_um[1], oxide_h + gate_h)),
+        gate_mat, True,
+    )
+
+    materials = [silicon, source_mat, drain_mat, oxide_mat, gate_mat]
+    wrap_flags = [False, False, False, False, True]
+    return domain, materials, wrap_flags
+
+
 def save_domain_state(domain, path: str) -> str:
     """Persist a Domain's full level-set/material state to `path`.
 

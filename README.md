@@ -133,7 +133,7 @@ result = run_iv_sweep(
 save_csv(result, "/tmp/out/iv.csv")
 ```
 
-## Supported Process models (19)
+## Supported Process models (20)
 
 | Category | Model (`registry` name) | ViennaPS class |
 |---|---|---|
@@ -156,12 +156,13 @@ save_csv(result, "/tmp/out/iv.csv")
 | Deposition | `isotropic` | `IsotropicProcess` |
 | Deposition | `geometric_trench` | `GeometricTrenchDeposition` (one-shot geometric stamp, not a rate×time simulation — see `tcad/process/deposition/geometric_trench.py`'s module docstring) |
 | Oxidation | `thermal` | `Oxidation` (fin-style and LOCOS-style, via `mask_material`) |
+| Geometry | `gate_stack` | none (plain ViennaLS box construction, no `Process()` call — see `tcad/process/geometry/gate_stack.py`'s module docstring). Builds a MOSFET-shaped 5-material stack: Si body, a gate oxide + electrode confined to a channel window, and separate source/drain pads. **Terminal geometry only** — do not chain a further process step onto it (verified to silently corrupt the export; see the module docstring). |
 
 ```python
 from tcad.process import registry
-import tcad.process.etching, tcad.process.deposition, tcad.process.oxidation
+import tcad.process.etching, tcad.process.deposition, tcad.process.oxidation, tcad.process.geometry
 
-registry.list_categories()        # ["deposition", "etching", "oxidation"]
+registry.list_categories()        # ["deposition", "etching", "geometry", "oxidation"]
 registry.list_models("etching")   # 11 names, matching the table above
 step_cls = registry.get("etching", "sf6o2")
 result = step_cls().run(recipe_dict, output_dir)  # {"final_mesh": ..., "snapshots": [...]}
@@ -292,7 +293,7 @@ The CLI (`tcad.cli.run_pipeline`) writes both under `<workdir>/`:
 tcad/
 ├── core/            Wafer/BoschRecipe (legacy GUI models)
 ├── backends/viennaps/  ViennaPS session/domain/I-O plumbing
-├── process/         ProcessStep + registry; etching/ deposition/ oxidation/
+├── process/         ProcessStep + registry; etching/ deposition/ oxidation/ geometry/
 ├── mesh/            ProcessResult (Process<->Device boundary) + ViennaPS adapter
 ├── physics/         Doping (separate from process models)
 ├── device/devsim/   DevSim mesh import, doping mapping, equation setup

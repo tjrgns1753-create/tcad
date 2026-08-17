@@ -3314,6 +3314,166 @@ bug in already-shipped export code — not in contact placement itself.
    pieces underneath it (windowed doping, arbitrary masks, and now
    confirmed contact placement) are in place.
 
+### Gate-stack geometry (`geometry`/`gate_stack`) — ADDED, as its OWN category, NOT a `prepare_domain()` branch (later session, this is item 8 above, executed — "다음단계 ㄱㄱ" / next step, go)
+
+Item 8 above proposed wiring gate-stack construction into
+`ProcessStep.prepare_domain()` "similarly to `mask_spans_um`." Building
+it surfaced two real, previously-uncharacterized problems that made a
+`prepare_domain()` branch the WRONG design; both were found by direct
+measurement (isolated probes, no production code touched until both were
+understood), not assumed.
+
+1. **What was tested:** built a 5-material domain (Si body; source pad;
+   drain pad; gate oxide confined to a channel window; gate electrode on
+   top of the oxide, also confined to the channel) with several
+   level-set insertion-order/wrap choices, each checked against (a)
+   correct `save_locos_volume_mesh()` export (materials present, each at
+   its own true window) and (b) survival of a real chained
+   `vps.Process()` call (the ViennaLS `Advect` containment precondition
+   every multi-level-set domain in this project must satisfy to be
+   chained safely — see `mask_spans_um`/LOCOS chaining above).
+
+2. **Result — two more findings, on top of the construction itself:**
+   - **A box level set exactly 1×gridDelta thick collapses to an EMPTY
+     export** through this project's own floor-export machinery
+     (`_floored_copy_for_export`'s `Expand(3)` + boolean-intersect
+     pipeline) — measured precisely: 1.00×gridDelta fails, 1.01×
+     already succeeds. The same class of razor-thin floating-point/
+     grid-alignment edge case as the already-documented "MakeTrench
+     floating-point sensitivity" section, just triggered by a thin gate
+     oxide instead of a trench width. Mitigated the same way: a safety
+     margin (1.5×gridDelta), not the bare 1× floor `thermal.py`'s pad
+     oxide uses — `session.make_gate_stack()`'s own docstring documents
+     why 1× is not enough here even though it was enough there.
+   - **Wrapping the substrate last (mask_spans_um/MakeTrench's own
+     convention) is WRONG for `save_locos_volume_mesh()`'s clip logic,
+     the opposite way round.** That clip logic assumes the WRAPPED
+     level set is the newest TOP layer (true for LOCOS's pad oxide,
+     wrapping Si from below as it grows upward) and keeps only
+     triangles above the running top surface of everything processed
+     before it. Wrapping the SUBSTRATE last (true for MakeTrench —
+     confirmed by measurement in the LOCOS-chaining investigation
+     above) means the wrapped material's TRUE region is BELOW the
+     combined top of everything else, not above — the clip logic
+     discards nearly all of it, exporting a tiny sliver artifact
+     instead of the real substrate. Tried the fix of wrapping the true
+     topmost layer (the gate ELECTRODE) instead — correct for export,
+     confirmed by measurement — but this only satisfies Advect
+     containment for the electrode itself, not for Si/source/drain/
+     oxide (each `wrapLowerLevelSet` union was ALSO measured, via a
+     dedicated minimal 3-box probe, to accumulate the CURRENT total
+     stack at insertion time, not just the immediately-preceding level
+     set — confirmed directly, not assumed, since this contradicts a
+     naive reading of the parameter name). Tried wrapping the FULL
+     chain (every insertion after Si) to satisfy Advect too — this DOES
+     stop the destructive chaining (no level set destroyed), but
+     corrupts the export a THIRD way: `_top_lookup`'s nearest-neighbor
+     fill, tuned only for LOCOS's own near-domain-spanning field oxide,
+     extrapolates a laterally-CONFINED material's own height (e.g. the
+     source pad's) into completely unrelated x-columns (e.g. the
+     drain's), corrupting every other wrapped material's clip boundary
+     — measured directly: SiO2/TiN/Cu's exported x-ranges all leaked
+     to span nearly the whole domain instead of their own windows.
+   - **Chaining a further `Process()` step onto this domain is silently
+     destructive, and — unlike the original LOCOS chaining bug — the
+     existing `RuntimeWarning` safety net does NOT fire.** Confirmed
+     directly: with only the electrode wrapped (the export-correct
+     choice), a chained directional etch destroys Si/source/drain/oxide
+     (0 points each) and the resulting `saveVolumeMesh()` output is not
+     even a READABLE `.vtu` file — `_warn_if_materials_missing_from_export`
+     silently gives up (`except Exception: return`) when it can't read
+     the mesh at all, rather than warning about THAT failure too. This
+     is a stronger failure mode than the already-documented LOCOS
+     chaining bug (which produces a wrong-but-readable mesh with a
+     warning), not previously known.
+
+3. **What it proves:** a gate stack cannot safely be "just another
+   `prepare_domain()` branch" the way `mask_spans_um` was, because
+   `mask_spans_um`'s whole design assumes a REAL physical process
+   (etch/deposition/oxidation with a genuine rate/time) runs on top of
+   the constructed geometry afterward — exactly like the `MakeTrench`
+   path it replaces. A gate stack has no such single physical process;
+   the oxide/electrode/pads ARE the finished geometry (each would be its
+   own separate fab step this project doesn't simulate individually).
+   Forcing it through `prepare_domain()` would imply chaining safety
+   that does not exist and cannot cheaply be made to exist (all three
+   ordering/wrap strategies tried have a real, measured failure mode).
+
+4. **Production implementation — a NEW category, not a recipe key:**
+   - **`tcad/backends/viennaps/session.py`**: new `make_gate_stack(...)`
+     — Si, source pad, drain pad, gate oxide inserted UNWRAPPED (mutually
+     disjoint, so no material-stacking ambiguity to resolve); the gate
+     ELECTRODE inserted LAST with `wrapLowerLevelSet=True` (the one
+     combination that exports correctly — see finding 2 above).
+     `gate_oxide_thickness_um`/`gate_height_um`/`pad_height_um` are all
+     floored at `1.5 × grid_delta_um` for the reason in finding 2's
+     first bullet. Returns `(domain, materials, wrap_flags)` for the
+     caller to export via `save_locos_volume_mesh()` directly.
+   - **New category `"geometry"`, model `"gate_stack"`**
+     (`tcad/process/geometry/gate_stack.py`, registered via
+     `tcad/process/geometry/__init__.py`), mirroring
+     `deposition/geometric_trench.py`'s own "geometric processes
+     typically have zero duration" precedent: `run()` builds the stack
+     via `make_gate_stack()` and exports directly via
+     `save_locos_volume_mesh()` — no `vps.Process()` call at all, so
+     there is no rate/time recipe parameter that could accidentally
+     trigger the destructive-chaining failure mode from within this
+     step itself.
+   - `GateStack.__init__` raises `NotImplementedError` if
+     `inherited_domain` is passed — mirrors the same restriction
+     `prepare_domain()` already documents for `MakeTrench` (there is no
+     sensible way to continue an existing flow INTO a from-scratch
+     5-material construction). This blocks INBOUND chaining only —
+     OUTBOUND chaining (a caller reaching into
+     `GateStack().last_domain` and building a further `ProcessStep` or
+     `FlowStep` on top of it) cannot be prevented at the Python level,
+     so the module docstring and this section are the guard for that
+     side: **do not chain any further process step onto this
+     geometry — verified to silently destroy it with no warning.**
+
+5. **Verified, real ViennaPS 4.6.2 + DevSim, through the real production
+   entry point:** new `tests/integration/test_gate_stack_geometry_real.py`
+   — `registry.get("geometry", "gate_stack")().run(recipe, ...)` (not
+   manual geometry construction the way the probes or
+   `test_gate_contact_placement_real.py` built it): all 5 materials
+   present in the exported mesh; DevSim import + all 4 contacts placed
+   via the EXISTING `contact_sides` API, each at its own recipe window;
+   gate strictly between source and drain; `inherited_domain` correctly
+   refused. Full regression: **`tests/run_regression.py` -> 28 passed, 0
+   failed, 0 skipped** (27 before this addition's new test) — no
+   regressions, including every existing LOCOS/gate-contact test.
+
+6. **What remains uncertain / explicitly NOT done:** the gate stack has
+   no gate-to-channel electrostatic coupling verification (this
+   addition is geometry + contacts only, matching the same scope
+   boundary `test_gate_contact_placement_real.py` already drew — "A real
+   gate needs a gate DIELECTRIC... not exercised or fixed this
+   session," now built but still not electrically exercised); doping
+   (source/drain implants via `implant_windows_from_mask_spans()`-style
+   derivation) was not wired to this geometry's own `source_um`/
+   `drain_um`/`channel_um` windows automatically — a caller must still
+   pass matching values by hand to both `gate_stack`'s recipe and a
+   separate `apply_implant_windows_doping()` call, the same
+   floating-numbers-vs-real-geometry gap `mask_spans_um` closed for the
+   mask case, not yet closed here; whether `_top_lookup`'s
+   nearest-neighbor-fill limitation (finding 2's third bullet) matters
+   for any OTHER already-shipped geometry this session didn't construct
+   (only LOCOS's own near-domain-spanning field oxide and this gate
+   stack's laterally-confined pads were compared); the destructive-
+   chaining failure mode's exact ViennaLS/ViennaPS C++ mechanism was
+   not traced to source (characterized precisely at the Python/data
+   level only, matching this project's established practice for this
+   general class of library-internal behavior elsewhere in this file).
+
+7. **Next smallest experiment (not done):** wire a MOSFET example
+   recipe/CLI config combining `gate_stack` geometry with
+   `implant_windows` doping (source/drain windows derived from the same
+   `channel_um`/`source_um`/`drain_um` the geometry used) and a real
+   DevSim I-V or C-V sweep through the gate contact — the first
+   electrically-exercised MOSFET-shaped device this project would have,
+   now that geometry, doping, and contacts are each independently
+   verified working.
+
 After the additions above (hbr_o2, sf6_c4f8, cf4_o2, faraday_cage
 etching; isotropic deposition; gaussian_implant doping + CLI wiring),
 checked for further small/clear gaps and found none that clear this
@@ -4391,6 +4551,32 @@ contacts — VERIFIED" above.
 passed, 0 failed, 0 skipped** (26 before this part's new test),
 including every existing LOCOS test — confirming the `io.py` fix
 changes nothing for any already-shipped caller.
+
+**What this session did (part 20, later session, per explicit
+instruction "다음단계 ㄱㄱ" / next step, go — executes item 8 named at
+the end of the "Gate-over-channel + separate source/drain contacts"
+investigation, "wire a real 'gate stack' geometry constructor"):**
+built and shipped `geometry`/`gate_stack` — see "Gate-stack geometry
+(`geometry`/`gate_stack`) — ADDED" above for the full investigation.
+The originally-proposed design (a `prepare_domain()` branch, mirroring
+`mask_spans_um`) turned out to be the wrong shape once actually built:
+measurement surfaced a razor-thin floating-point export-collapse bug
+for a box exactly 1×gridDelta thick (same class as the already-known
+MakeTrench sensitivity), and — more fundamentally — that no tried
+level-set wrap/order combination satisfies BOTH correct export AND
+safe chaining for this 5-material, multiple-disjoint-window topology;
+one combination (wrap only the true topmost layer, the gate electrode)
+exports correctly but cannot safely be chained further, so the feature
+shipped as its own zero-duration `"geometry"` category (mirroring
+`deposition/geometric_trench.py`'s existing "zero duration" precedent)
+rather than folding into the shared `prepare_domain()` every other
+process model uses — a genuinely different design than initially
+proposed, arrived at by testing the proposal and finding it didn't
+hold up, not by following it blindly.
+
+**Regression after part 20:** `tests/run_regression.py` -> **28
+passed, 0 failed, 0 skipped** (27 before this part's new test) — no
+regressions, including every existing LOCOS/gate-contact test.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
