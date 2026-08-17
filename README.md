@@ -40,6 +40,26 @@ The GUI (`tcad_2d_stagewise.py`) additionally needs `tkinter`, which
 ships with the Python interpreter itself on most platforms (on
 Debian/Ubuntu: `apt install python3-tk` if it's missing).
 
+If `import tkinter` still fails after that — confirmed on at least one
+environment where a non-stock Python build (installed via the
+deadsnakes PPA) had no working `tkinter` package reachable at all,
+while the same distro's stock `/usr/bin/python3` did — install and use
+a stock-distro Python interpreter (e.g. `/usr/bin/python3` on
+Debian/Ubuntu, already carrying `apt install python3-tk`) in a
+separate venv instead of fighting the non-stock interpreter's package
+source:
+
+```bash
+python3 -m venv .venv-gui        # the distro's own /usr/bin/python3, not a PPA build
+.venv-gui/bin/pip install -e ".[full]"
+.venv-gui/bin/python tcad_2d_stagewise.py
+```
+
+Both ViennaPS and devsim ship version-agnostic or broadly-tagged PyPI
+wheels, so this second venv is not a downgrade — verify with
+`.venv-gui/bin/python -c "import tkinter, viennaps, devsim"` after
+install.
+
 ## Quick start: run the tests
 
 ```bash
