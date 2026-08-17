@@ -3144,7 +3144,175 @@ cannot express at all.
    and per this file's own standing rule the numbers, not the drawing,
    remain authoritative.
 
-### Autonomous overnight session — stopping point reached (later session)
+### Gate-over-channel + separate source/drain contacts — VERIFIED; real export bug found and fixed along the way (later session, the "next smallest experiment" the `implant_windows` section explicitly named and did not execute: "verify claim 4(a)... by actually building a 3-material geometry... and confirming import_process_result produces three distinct, correctly-positioned contacts")
+
+The user asked to confirm this before anything else, correctly
+pointing out that the earlier claim ("workable with the existing
+contact API") was reasoned about from reading code, never executed.
+Building the actual geometry surfaced a real, previously-undiscovered
+bug in already-shipped export code — not in contact placement itself.
+
+1. **What was tested:** a 4-material domain, none overlapping in
+   volume: Si body (y<=0, full width), a TiN "gate" box sitting ONLY
+   over a central channel window (y>=0), and separate W/Cu "source"/
+   "drain" pads in disjoint lateral windows (also y>=0). Hypothesis:
+   with `contact_axis="y"` and per-region `contact_sides` (the
+   EXISTING API, unchanged), each region's own boundary at its own axis
+   extreme should already be correctly x-bounded, since a region's
+   shape IS its own material's real extent — no coordinate-windowed
+   contact API should be needed.
+
+2. **Result, in three layers:**
+   - The NORMAL `save_volume_mesh()` path (`WriteVisualizationMesh`'s
+     insertion-order "topmost wins" resolution) fails outright for this
+     topology even though nothing overlaps: the export kept only 1 of 4
+     materials (`['W']`) — the same class of limitation "LOCOS mask
+     erosion" already found, now confirmed to also apply to spatially
+     disjoint (not just nested/wrapped) materials.
+   - Switching to `save_locos_volume_mesh()` (the already-shipped
+     per-material-isolated exporter built for exactly this class of
+     problem) ALSO failed — but with a NEW symptom, an empty export for
+     just the gate (TiN) material, `ValueError: need at least one array
+     to concatenate`. This is a genuinely new bug, not a repeat of the
+     already-known LOCOS chaining issue.
+   - Root-caused precisely, after four rejected hypotheses (see
+     `LOCOS_CHAINING_TEST_LOG.txt`-style methodology, all measured, not
+     guessed):
+     (a) *"the isolated domain's bbox is degenerate"* — checked
+     directly: `domain.getBoundingBox()` on the FULL 4-material domain
+     does NOT return the union across all materials at all (confirmed:
+     it returned only the LAST-inserted material's own bbox, `[[1.0,
+     0],[2.4,0.1]]` — exactly Cu's real extent, not a union spanning
+     [-3,3]). This was real, but fixing it (via a new
+     `_union_bounding_box()` helper that isolates each level set and
+     unions their individually-correct bboxes) did NOT fix the export.
+     (b) *"the isolated single-material domain needs wider declared
+     construction bounds"* — tested by widening `single`'s own
+     construction from the material's tight extent to the domain's
+     true union extent: still failed (0 points after the floor
+     intersect).
+     (c) *"the floor box needs `setIgnoreBoundaryConditions`"* — the
+     domain's x boundary condition is `REFLECTIVE_BOUNDARY` and every
+     OTHER box construction in this codebase sets this flag; the
+     `_floored_copy_for_export` floor box does not. Added it: no
+     effect, still 0 points.
+     (d) **The real cause, isolated with a 4-way factorial test**
+     (tight/wide domain construction x tight/wide floor-padding basis):
+     the isolated single-material domain's own declared construction
+     width does NOT matter. What matters is that
+     `_floored_copy_for_export`'s floor-box padding is computed
+     relative to `getBoundingBox()` on the domain it's given — which,
+     for a domain holding exactly ONE (narrow) level set, CORRECTLY
+     reports that level set's own tight extent (e.g. TiN's real
+     `[-0.8,0.8]`) — and padding relative to a narrow material's own
+     tight extent collapses the subsequent `BooleanOperation(...,
+     INTERSECT)` to EMPTY, even though that tight bbox is itself
+     completely accurate. Confirmed with all 4 combinations: only the
+     ones using the DOMAIN's true total extent as the padding basis
+     (not the level set's own tight bbox) survive — regardless of
+     whether the isolated domain's own construction bounds were tight
+     or wide.
+
+3. **What it proves:** every existing caller of
+   `_floored_copy_for_export()` (every normal, whole-domain process-step
+   export) has always gotten the correct padding basis "for free,"
+   because `getBoundingBox()` on a multi-level-set domain that follows
+   this project's own last-level-set-wraps-everything convention
+   (`MakeTrench`, `mask_spans_um`, LOCOS's own re-wrap) already equals
+   the domain's true total extent. `_export_single_level_set()`'s
+   isolated single-material domain is the first case where that
+   equivalence breaks — the isolated domain genuinely has only one
+   level set, so its bbox is accurate but NARROW, not the total extent
+   the padding math needs. This was latent in already-shipped LOCOS
+   export code; it never manifested before because every previously
+   -tested LOCOS mask/pad-oxide level set happened to span most of the
+   domain's own width already.
+
+4. **Production fix applied — `tcad/backends/viennaps/io.py`:**
+   - New `_union_bounding_box(domain)`: isolates each of `domain`'s
+     level sets into its own single-level-set probe domain (whose own
+     `getBoundingBox()` is confirmed accurate) and takes the min/max
+     across all of them — the correct way to get a multi-material
+     domain's true union extent, since `domain.getBoundingBox()` itself
+     cannot be trusted to return it.
+   - `_floored_copy_for_export()` gained an optional `bounds_hint:
+     (x_min, x_max)` parameter that overrides its own
+     `getBoundingBox()`-derived x-range for the padding calculation
+     only (y still comes from the real bbox). Every existing caller
+     omits it and is completely unaffected — confirmed by the full
+     regression suite (see below) staying green.
+   - `_export_single_level_set()` now computes the domain's true union
+     extent (via `_union_bounding_box`, or a `bounds_hint` passed by a
+     caller like `save_locos_volume_mesh`'s own loop, computed once and
+     reused rather than recomputed per level set) and threads it
+     through to `_floored_copy_for_export` as `bounds_hint`. Also
+     rewired to call `_floored_copy_for_export`/`saveVolumeMesh`
+     directly instead of going through the public `save_volume_mesh()`
+     wrapper — that wrapper's registered-LOCOS-hint check and
+     post-export material-completeness warning don't apply to this
+     internal, deliberately single-material, throwaway domain.
+   - `save_locos_volume_mesh()`'s own `x_min`/`x_max` (previously ALSO
+     computed from the same unreliable `domain.getBoundingBox()`, and
+     used for its wrap-clipping `_top_lookup`'s x-range) now comes from
+     the same one `_union_bounding_box()` call, computed once and
+     reused for every level set in its loop rather than per-iteration.
+
+5. **Verified, real ViennaPS 4.6.2 + DevSim, through the real
+   production entry points:**
+   - New `tests/integration/test_gate_contact_placement_real.py`: the
+     4-material domain above, exported via `save_locos_volume_mesh()`
+     (now fixed), imported via the real
+     `import_process_result(contact_axis="y", contact_sides={...})`
+     (unchanged, existing API) — all 4 materials present in the export;
+     all 4 contacts created with the expected auto-generated names
+     (`Si_ymin`, `TiN_ymax`, `W_ymax`, `Cu_ymax`); each contact's real
+     DevSim node x-range matches its recipe window EXACTLY (gate
+     `(-0.8000, 0.8000)`, source `(-2.4000, -1.0000)`, drain `(1.0000,
+     2.4000)`); the gate contact is strictly between the source and
+     drain windows, confirming it stays bounded to the channel and does
+     not leak into the pads on either side.
+   - Full regression: **`tests/run_regression.py` -> 27 passed, 0
+     failed, 0 skipped** (26 before this round's new test) — critically
+     including every existing LOCOS test (`test_locos_devsim_import_real.py`,
+     `test_locos_chaining_real.py`, `test_locos_contact_mode_fix_real.py`),
+     confirming the `bounds_hint` addition changes nothing for any
+     already-shipped caller.
+
+6. **What it settles about the MOSFET roadmap:** the earlier
+   speculation ("workable with the existing contact API, verified only
+   as a code-reading argument, not executed") is now actually verified,
+   not just argued — a gate confined to the channel, and source/drain
+   as separate, correctly-positioned contacts, both work through the
+   EXISTING `contact_sides` mechanism. No new device/mesh API
+   (coordinate-windowed contact placement) was needed for this piece.
+   The blocker that WAS real (the export bug above) had nothing to do
+   with contact placement logic itself — `mesh_import.py` was never
+   reached until the export was fixed.
+
+7. **What remains uncertain / explicitly NOT done:** this test's
+   geometry (Si + 3 metal/electrode pads) was built directly with raw
+   `vls`/`vps` calls for this investigation — it is NOT wired into
+   `ProcessStep.prepare_domain()` or any recipe key, so there is no
+   production way yet to ask a real process step for a "gate stack"
+   geometry; `mask_spans_um` (the previous section) only builds
+   MASK-material spans, not arbitrary electrode/contact materials at
+   arbitrary heights. A real gate needs a gate DIELECTRIC (oxide)
+   between the electrode and the channel, not the direct
+   electrode-on-Si contact this test used (deliberately simplified,
+   since the point under test was contact placement, not gate
+   electrostatics). Whether `_union_bounding_box`'s per-level-set
+   isolation cost matters for a domain with many more level sets (e.g.
+   deep into a Bosch cycle) was not measured — it is O(N) domain
+   constructions for N level sets, called once per `save_locos_volume_
+   mesh()` export, not per level set, so likely fine, but not profiled.
+
+8. **Next smallest experiment (not done):** wire a real "gate stack"
+   geometry constructor (Si -> thin gate oxide -> gate electrode
+   confined to the channel window, source/drain pads) into
+   `ProcessStep.prepare_domain()` similarly to how `mask_spans_um` was
+   added — the natural next rung of the MOSFET ladder, now that both
+   pieces underneath it (windowed doping, arbitrary masks, and now
+   confirmed contact placement) are in place.
 
 After the additions above (hbr_o2, sf6_c4f8, cf4_o2, faraday_cage
 etching; isotropic deposition; gaussian_implant doping + CLI wiring),
@@ -4192,6 +4360,37 @@ part built.
 passed, 0 failed, 0 skipped** (24 before this part's two new tests),
 including no regression from touching `prepare_domain()`, which every
 process model shares.
+
+**What this session did (part 19, later session, the user asking to
+confirm the previous part's untested claim before moving to the GUI
+layer: "컴탁트 배치 검증"):** built the actual 3+1-material geometry
+(Si body, TiN gate confined to the channel, W source pad, Cu drain pad)
+part 17's own "next smallest experiment" had named and not executed.
+This surfaced a real, previously-undiscovered bug in already-shipped
+`save_locos_volume_mesh()` export code — `_export_single_level_set()`'s
+isolated single-material domain, for a level set narrower than the
+export floor mechanism's own padding, collapsed to an empty export.
+Root-caused after four hypotheses, three of which were tested and
+rejected by direct measurement (a degenerate bbox; the isolated
+domain's own construction width; a missing
+`setIgnoreBoundaryConditions` flag) before finding the real one: the
+floor-box padding was being computed relative to the isolated domain's
+own (accurate but narrow) bbox instead of the full domain's true union
+extent — which every previous LOCOS-only caller never triggered, since
+their mask/pad-oxide level sets already spanned most of the domain
+width. Fixed with a new `_union_bounding_box()` helper and a
+`bounds_hint` parameter threaded through, with every existing caller
+provably unaffected (omits it, unchanged behavior). Once fixed, the
+ORIGINAL hypothesis under test was confirmed true: gate-over-channel
+and separate source/drain contacts all work through the EXISTING
+`contact_sides` API — no new device/mesh API was needed for contact
+placement itself. See "Gate-over-channel + separate source/drain
+contacts — VERIFIED" above.
+
+**Regression after part 19:** `tests/run_regression.py` -> **27
+passed, 0 failed, 0 skipped** (26 before this part's new test),
+including every existing LOCOS test — confirming the `io.py` fix
+changes nothing for any already-shipped caller.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as

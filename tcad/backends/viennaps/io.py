@@ -134,7 +134,7 @@ def save_surface_mesh(domain, path: PathLike, add_material_ids: bool = True) -> 
     return path_str
 
 
-def _floored_copy_for_export(domain, floor_depth_um: float):
+def _floored_copy_for_export(domain, floor_depth_um: float, bounds_hint=None):
     """Return a DEEP COPY of `domain` with every level set intersected
     against a bounding box whose floor is at y = -floor_depth_um
     (absolute, fixed at the wafer's y=0 datum MakeTrench establishes —
@@ -157,19 +157,40 @@ def _floored_copy_for_export(domain, floor_depth_um: float):
     non-topmost material's level set itself implicitly wraps everything
     below it, inheriting the same narrow-band clipping Si has.
 
-    The bounding box's lateral/top extent is measured from
+    The bounding box's lateral extent is measured from
     `domain.getBoundingBox()` (which — unlike the semi-infinite Si
     direction — already correctly reflects the real extent of bounded
-    material such as the mask) plus a safety margin, not hardcoded, so
+    material such as the mask, for every topology this project's normal
+    process-step export uses) plus a safety margin, not hardcoded, so
     this works across differing recipe geometry sizes without risking a
     silent top/side clip of real material.
+
+    bounds_hint : optional (x_min, x_max) OVERRIDE for the lateral
+        padding basis, bypassing `domain.getBoundingBox()`'s own x-range
+        for that purpose (y still comes from the real bbox). Needed by
+        `_export_single_level_set`'s isolated single-material export:
+        confirmed by direct measurement, not assumed, that padding
+        relative to a NARROW material's own tight bbox (which is exactly
+        what `getBoundingBox()` on a genuinely-single-level-set domain
+        correctly reports) collapses the boolean intersect below to
+        EMPTY — even though that same tight bbox is completely accurate.
+        The fix is not a wrong bbox, it's the wrong basis to pad from:
+        the padding needs to be relative to the domain's TRUE total
+        extent (every existing whole-domain caller already gets this for
+        free, since `getBoundingBox()` on a multi-level-set domain that
+        follows this project's own last-level-set-wraps-everything
+        convention already equals the total extent). Every existing
+        caller omits this and is completely unaffected.
     """
     import viennals as vls
 
     floored = domain.__class__(domain)  # ViennaPS Domain deep-copy constructor
 
     bbox = floored.getBoundingBox()
-    x_min, x_max = bbox[0][0], bbox[1][0]
+    if bounds_hint is None:
+        x_min, x_max = bbox[0][0], bbox[1][0]
+    else:
+        x_min, x_max = bounds_hint
     y_max_existing = bbox[1][1]
     grid_delta = floored.getGridDelta()
 
@@ -322,7 +343,50 @@ def _read_triangle_mesh(path: PathLike) -> Tuple[Any, List[List[int]]]:
     return mesh.points, [[int(i) for i in tri] for tri in triangle_block.data]
 
 
-def _export_single_level_set(domain, level_set, material, floor_depth_um: float):
+def _union_bounding_box(domain) -> Tuple[float, float, float, float]:
+    """Return (x_min, x_max, y_min, y_max): the TRUE union bounding box
+    across every level set in `domain`.
+
+    `domain.getBoundingBox()` does NOT return this for a multi-level-set
+    domain — confirmed directly (not assumed): on a real 4-material
+    domain (materials occupying disjoint lateral regions, none wrapping
+    another), it returned only the LAST-inserted level set's own bbox,
+    not the union. This function instead isolates each level set into
+    its own single-level-set probe domain — whose own `getBoundingBox()`
+    was confirmed accurate for a genuinely-single-level-set domain — and
+    takes the min/max across all of them.
+    """
+    bcs = domain.getBoundaryConditions()
+    grid_delta = domain.getGridDelta()
+
+    import viennals as vls
+    from tcad.backends.viennaps.session import require_viennaps
+
+    # Any material works for this probe: it tags a throwaway domain used
+    # only to read back getBoundingBox(), then discarded — the tag value
+    # itself is never inspected. Si is always a valid enum member.
+    probe_material = require_viennaps().Material.Si
+
+    x_min = x_max = y_min = y_max = None
+    for level_set in domain.getLevelSets():
+        # Bounds are irrelevant here (only used to query this one level
+        # set's own true extent, never exported), so a huge placeholder
+        # box avoids clipping any real geometry.
+        probe = domain.__class__([-1e6, 1e6, -1e6, 1e6], bcs, grid_delta)
+        probe.insertNextLevelSetAsMaterial(vls.Domain(level_set), probe_material, False)
+        bbox = probe.getBoundingBox()
+        lo, hi = bbox[0], bbox[1]
+        x_min = lo[0] if x_min is None else min(x_min, lo[0])
+        x_max = hi[0] if x_max is None else max(x_max, hi[0])
+        y_min = lo[1] if y_min is None else min(y_min, lo[1])
+        y_max = hi[1] if y_max is None else max(y_max, hi[1])
+
+    return x_min, x_max, y_min, y_max
+
+
+def _export_single_level_set(
+    domain, level_set, material, floor_depth_um: float, bounds_hint=None
+):
     """Export ONE level set from `domain` in complete isolation: a fresh
     throwaway Domain containing only a copy of this level set, tagged
     `material`, run through the normal floored save_volume_mesh() path.
@@ -340,12 +404,41 @@ def _export_single_level_set(domain, level_set, material, floor_depth_um: float)
     too, then clip the two against each other in plain Python (see
     save_locos_volume_mesh's docstring for why a ViennaLS boolean
     subtraction cannot do this instead).
+
+    bounds_hint : optional (x_min, x_max, y_max) — the domain's TRUE
+        union extent (see `_union_bounding_box`), computed once by a
+        caller that isolates multiple level sets from the same domain
+        (e.g. `save_locos_volume_mesh`'s own loop) to avoid recomputing
+        it per level set. Computed internally via `_union_bounding_box`
+        if omitted.
+
+        This MUST be the domain's union extent, not `level_set`'s own,
+        and for a subtler reason than "the isolated domain needs to be
+        wide enough" (confirmed by direct measurement — widening the
+        isolated domain's own declared construction bounds ALONE does
+        NOT fix this): `_floored_copy_for_export`'s floor-box padding is
+        computed relative to its own `getBoundingBox()` reading, which
+        for a domain holding exactly one (narrow, laterally-bounded)
+        level set correctly reports that level set's own TIGHT extent —
+        and padding relative to a narrow material's own tight bbox
+        collapses the subsequent boolean intersect to EMPTY (0 points),
+        even though that tight bbox is itself completely accurate. This
+        is why the union extent is threaded through as `bounds_hint` to
+        `_floored_copy_for_export` below, not just used to size `single`.
+        Every existing whole-domain export gets the correct padding
+        basis "for free," since `getBoundingBox()` on a multi-level-set
+        domain that follows this project's own last-level-set-wraps-
+        everything convention already equals the true total extent — a
+        laterally narrow, non-wrapped material in isolation (e.g. a gate
+        electrode spanning only the channel width) is what first breaks
+        that assumption.
     """
     bcs = domain.getBoundaryConditions()
     grid_delta = domain.getGridDelta()
-    bbox = domain.getBoundingBox()
-    x_min, x_max = bbox[0][0], bbox[1][0]
-    y_max = bbox[1][1]
+    if bounds_hint is None:
+        x_min, x_max, _y_min, y_max = _union_bounding_box(domain)
+    else:
+        x_min, x_max, y_max = bounds_hint
 
     import viennals as vls
 
@@ -354,9 +447,19 @@ def _export_single_level_set(domain, level_set, material, floor_depth_um: float)
     )
     single.insertNextLevelSetAsMaterial(vls.Domain(level_set), material, False)
 
+    # Floor + export directly (not via save_volume_mesh()) so the floor
+    # box's lateral padding uses `bounds_hint` (the domain's true union
+    # extent) rather than being re-derived from this isolated, single
+    # -material domain's own tight bbox — see the bounds_hint note
+    # above. Also correctly bypasses save_volume_mesh()'s registered
+    # -LOCOS-hint check and post-export material-completeness warning,
+    # neither of which applies to this internal, deliberately single
+    # -material, throwaway domain.
+    floored = _floored_copy_for_export(single, floor_depth_um, bounds_hint=(x_min, x_max))
     with tempfile.TemporaryDirectory() as tmp:
-        path = save_volume_mesh(single, Path(tmp) / "single", floor_depth_um=floor_depth_um)
-        return _read_triangle_mesh(path)
+        path_str = str(Path(tmp) / "single")
+        floored.saveVolumeMesh(path_str)
+        return _read_triangle_mesh(f"{path_str}_volume.vtu")
 
 
 def _top_lookup(points, triangles, grid_delta: float, x_min: float, x_max: float):
@@ -478,8 +581,15 @@ def save_locos_volume_mesh(
         )
 
     grid_delta = domain.getGridDelta()
-    bbox = domain.getBoundingBox()
-    x_min, x_max = bbox[0][0], bbox[1][0]
+    # domain.getBoundingBox() does NOT return the union across every
+    # level set (confirmed directly, not assumed — see
+    # _union_bounding_box's own docstring), so both the wrap-clipping
+    # lookup's x-range below AND each isolated per-level-set export
+    # (via bounds_hint) need the real union instead. Computed once here
+    # and reused for every level set in the loop below, rather than
+    # recomputing it per level set.
+    x_min, x_max, _y_min, y_max = _union_bounding_box(domain)
+    bounds_hint = (x_min, x_max, y_max)
 
     all_points: List[List[float]] = []
     all_tris: List[List[int]] = []
@@ -495,7 +605,9 @@ def save_locos_volume_mesh(
             all_tags.append(tag)
 
     for level_set, material, wrapped in zip(level_sets, materials, wrap_flags):
-        points, tris = _export_single_level_set(domain, level_set, material, floor_depth_um)
+        points, tris = _export_single_level_set(
+            domain, level_set, material, floor_depth_um, bounds_hint=bounds_hint
+        )
 
         if wrapped and combined_top is not None and tris:
             margin = grid_delta * 0.1
