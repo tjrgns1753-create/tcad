@@ -2447,6 +2447,111 @@ source.
    wiring (etch panel is deliberately capped at 4 models per earlier
    sessions' scope decisions, unchanged here).
 
+### KOH/TMAH crystallographic wet etching — self-limiting V-groove NOT reproduced; the existing regression test passes for a coincidental reason, not the physics it claims (later session, test-only per explicit instruction, following up on item 6 above)
+
+Attempting to answer item 6's open question (do these constants
+generalize to other KOH concentrations/TMAH) surfaced a more basic
+problem: the model does not actually reproduce self-limiting
+(111)-faceted V-groove behavior in this project's 2D configuration at
+all, which the original verification above did not catch because it
+only ever checked one snapshot in time. Full test-by-test record
+(tests 29-35) in `LOCOS_CHAINING_TEST_LOG.txt`.
+
+1. **What was tested:** real TMAH rate constants could not be obtained
+   (the paper that has them, Sato & Shikida, is paywalled; the one
+   open-access candidate is blocked by this environment's egress
+   proxy; installed ViennaPS ships no TMAH data) — so rather than a
+   TMAH model, this swept the region TMAH occupies using the cited KOH
+   constants plus the literature-reported (111)/(100) rate-ratio range
+   (0.02–0.08, vs. this KOH set's 0.0063) as a robustness/sensitivity
+   probe. A temperature-like axis (scale every rate by `s`, time by
+   `1/s`) and a concentration-like axis (vary `rate111/rate100`) were
+   both run through the real production `WetEtch.run()` entry point at
+   several etch times, isolating each of the four plane rates
+   individually, then fetching ViennaPS's official 3D example and its
+   `psWetEtching.hpp` rate-selection source to explain what was found.
+
+2. **Result:** the temperature-like axis is a clean pass — scaling all
+   rates and inversely scaling time gives bit-identical geometry over
+   an 8× range. The concentration-like axis found something real:
+   `rate111` and `rate311` are **completely inert** — zeroing either
+   changes nothing — while `rate110` dominates (zeroing it stops the
+   etch outright) and depth grows exactly linearly in time, never
+   self-limiting. Root cause, confirmed from `psWetEtching.hpp`'s own
+   source (fetched, not guessed): this project's
+   `direction100`/`direction010` were copied verbatim from the
+   official example, whose depth axis is **z** (3D, infinite-`z`
+   boundary), while this project's 2D depth axis is **y** — so
+   `directions[2] = cross(direction100, direction010) = (0,0,1)`,
+   and with the 2D solver forcing the normal's z-component to 0, the
+   projection onto that axis (`N2`) is identically zero for every
+   possible 2D surface normal, which algebraically removes `rate111`
+   from the rate formula's reachable branch and multiplies `rate311`
+   by zero. Not a ViennaPS bug — this project's axis choice.
+
+   Derived the correct 2D pair analytically from the same source
+   (`direction100(θ)=[cosθ,0,sinθ]`, `direction010(θ)=[sinθ,0,-cosθ]`
+   keeps `directions[2]` on the depth axis for any θ; solving for when
+   the true magic-angle condition `N0=N1=N2` is reachable shows
+   **θ=45° is the unique rotation** where it can occur at all, and at
+   that θ the condition reduces to exactly 54.7356° from vertical —
+   the real magic angle falling out of the algebra, not fitted).
+   Measured that this correction does revive `rate111` (no longer
+   inert). But swept θ over the full 0–90° range regardless (each
+   compared at `t` and `3t`, since self-limiting means bounded depth
+   while unbounded growth means the ratio tracks the time ratio): every
+   single angle gave the same ~3× growth, including θ=45° — the
+   analytically correct rotation is not qualitatively different from
+   any wrong one. A finer time series at θ=45° (`t`=30/90/270/810s)
+   tracking the width of the near-apex flat region found it stays at
+   essentially the *full window width* the entire time rather than
+   narrowing to a point — there is no forming-then-failing V, there is
+   no V at all; the whole window bottom advances as a near-uniform
+   front the entire time, at a rate between `rate100` and `rate110`.
+
+3. **What it proves:** the existing production test
+   (`tests/integration/test_koh_crystallographic_wet_etch_real.py`,
+   currently part of the passing regression suite) is passing for a
+   coincidental reason. Its apex-depth check lands within 2.9% of the
+   self-limited prediction only because, at its own chosen `t=60s`,
+   `rate110 × 60s` (1.455um) happens to land close to
+   `window_half×tan(54.7356°)` (1.4142um) — not because the model
+   actually stopped etching there. Its sidewall-angle check cannot be
+   measuring (111) faceting either, since `rate111` was completely
+   inert under the vectors that test uses. This was not previously
+   known — the original verification (item 2 above) checked only one
+   time snapshot and read the agreement as validation. **Do not read
+   the existing test's PASS as confirmation of real self-limiting
+   KOH/TMAH physics** — it confirms the model runs and produces an
+   anisotropic (non-circular) profile, nothing stronger.
+
+4. **What remains uncertain:** why the model fails to hold a facet even
+   at the one crystallographically correct rotation. The evidence
+   (uniform-width front rather than a narrowing V, at every rotation
+   and every time checked) points at something in ViennaLS's
+   level-set advection/velocity-extension handling for this class of
+   strongly anisotropic, concave-corner-forming problem — a
+   ViennaLS-source-level question, not a recipe-parameter one.
+   Confirming that would need reading `Advect`'s velocity-extension
+   algorithm specifically, not attempted. TMAH itself stays moot until
+   this is resolved: its distinguishing parameter is exactly the
+   `rate111/rate100` ratio this investigation showed has no traction
+   on the simulated shape at all.
+
+5. **Next smallest experiment (not done, explicitly deferred by user
+   instruction to stop and record rather than keep digging into
+   ViennaLS internals this round):** fetch and read ViennaLS's
+   `Advect` velocity-extension source to see how it treats a
+   concave/convex kink where two slow-moving facets should meet, and
+   whether that is a documented limitation or something to report
+   upstream.
+
+**No production code or existing test was changed for this
+investigation** — test-only per standing instruction. The existing
+KOH-etch feature (item 4 above) is unmodified and still ships; this
+section exists so a future reader does not mistake the existing test's
+PASS for validated self-limiting physics.
+
 ### Per-material etch selectivity — ADDED (later session, found by questioning a claim this file itself had made)
 
 Found while verifying the LOCOS chaining fix, not by looking for it: a
@@ -3313,6 +3418,46 @@ could have failed — see item 7 of the chaining section above for the
 numbers and the mechanism. The hedge was unnecessary. Now covered
 permanently as check 6 of `test_locos_chaining_real.py`.
 
+**What this session did (part 14, later session, closing out the
+remaining LOCOS chaining uncertainties, then per explicit instruction
+"둘다해줘" adding etch selectivity, then a requested KOH/TMAH
+concentration/temperature sweep that surfaced a real gap in the
+existing KOH test):**
+- Closed both uncertainties part 13 left open. Grid-resolution
+  coverage needed no code change (6 resolutions, 0.02–0.25um, all
+  pass — see "LOCOS process-flow chaining" item 8 above). LOCOS-on-
+  LOCOS was confirmed pre-existing and NOT a regression (rerunning
+  with the re-wrap disabled reproduces the original silent-corruption
+  bug, not a clean run), then guarded with a narrow
+  `NotImplementedError` — keyed specifically so fin-style oxidation
+  chained onto LOCOS (which does work) is not blocked (item 9 above).
+- Added per-material etch selectivity (`material_rates` recipe key on
+  `directional.py`/`isotropic.py`), found while verifying the LOCOS
+  fix — see "Per-material etch selectivity — ADDED" above for the
+  measured, disagreeing sign conventions between ViennaPS's two
+  overloads.
+- Investigated the requested KOH/TMAH concentration/temperature
+  sweep, test-only throughout. Found real TMAH rate constants are not
+  obtainable in this environment, so swept the region TMAH occupies
+  using the cited KOH constants instead — and that sweep surfaced a
+  genuine problem: `rate111`/`rate311` are completely inert in this
+  project's existing 2D wiring (traced to a 3D-example depth-axis
+  copied verbatim onto the wrong 2D axis, confirmed from ViennaPS's
+  own `psWetEtching.hpp` source), and even the analytically-correct
+  fix (a uniquely determined 45° crystal-frame rotation) does not
+  produce genuine self-limiting V-groove behavior — the existing
+  shipped KOH test passes for a coincidental reason, not the physics
+  it claims. See "KOH/TMAH crystallographic wet etching — self-
+  limiting V-groove NOT reproduced" above for the full chain of
+  reasoning. Per explicit user instruction, stopped at this point
+  (root cause narrowed to ViennaLS-internal territory) rather than
+  continuing into `Advect`'s velocity-extension source — recorded
+  here instead of chased further.
+
+**Regression after part 14:** unchanged at 21 passed, 0 failed, 0
+skipped for the code changes (selectivity + LOCOS-on-LOCOS guard); the
+KOH/TMAH investigation added no code and no test.
+
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
   of parts 1-5; struck through here rather than removed, so this list
@@ -3344,8 +3489,27 @@ permanently as check 6 of `test_locos_chaining_real.py`.
   export-layer fix at all, but restoring ViennaLS Advect's
   containment precondition on the domain itself after oxidation
   finishes.
+- LOCOS chaining's two remaining uncertainties (grid coverage,
+  LOCOS-on-LOCOS) — **CLOSED in part 14**: grid coverage needed no
+  code change (6 resolutions verified); LOCOS-on-LOCOS confirmed
+  pre-existing (not a regression) and guarded with a narrow
+  `NotImplementedError` rather than left to hang.
+- Per-material etch selectivity — **ADDED in part 14** (was a gap
+  found, not previously tracked as open; see "Per-material etch
+  selectivity — ADDED" above).
 - KOH/TMAH rate-constant generalization to other concentrations/
-  temperatures, or to TMAH — still open, not attempted.
+  temperatures, or to TMAH — **INVESTIGATED in part 14, NOT resolved,
+  and turned out to be blocked on something more basic**: the model
+  does not reproduce genuine self-limiting V-groove physics in this
+  project's 2D configuration at all (root-caused to a depth-axis
+  mismatch copied from the 3D official example; even the
+  analytically-correct fix doesn't self-limit) — see "KOH/TMAH
+  crystallographic wet etching — self-limiting V-groove NOT
+  reproduced" above. TMAH itself is moot until this is fixed. Real
+  TMAH rate constants were also not obtainable (paywalled paper,
+  blocked open-access mirror, no ViennaPS data). Explicitly NOT
+  pursued further into ViennaLS source this round, per user
+  instruction to stop and record rather than keep digging.
 - Visual (on-screen) verification of the part-11 GUI rendering fix —
   blocked by a GitHub-PPA proxy policy denial (403) when trying to
   install the venv-matching `python3.11-tk` package; accepted as a
