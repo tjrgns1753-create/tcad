@@ -2895,6 +2895,132 @@ failed**, same two pre-existing failures (Phase 8,
 GUI change (doping has no GUI panel at all, same as every deposition
 model).
 
+### `implant_windows` doping — ADDED (later session, motivated by a MOSFET feasibility question — "지금 과정이 기껏해야 다이오드 만드는 수준인데 왜 모스펫이 나와")
+
+The user pushed back on treating "MOSFET Vth extraction" as a small
+next feature — correctly: this project could only ever build a single
+1D doping profile per region (uniform / one step junction / one
+Gaussian peak), with no way to lay out laterally-separated source and
+drain implants in the same region. That is a real structural gap a
+MOSFET needs, not a detail. The actual open question was whether
+closing it needs new device/mesh API, or whether it's expressible by
+composing what already exists.
+
+1. **What was tested:** whether DevSim's own equation parser — already
+   used by this project for `step()` (step_junction) and `exp()`/`^`
+   (gaussian_implant) — can express a background doping with two
+   independent, laterally-windowed, SUPERPOSED implants, entirely as
+   one equation string, with **zero change to the mesh/device import
+   API**. Isolated probe (real ViennaPS mesh, real DevSim device):
+
+       -1e17 + 1e20*step(x-(-1.6))*step((-0.6)-x)
+             + 1e20*step(x-(0.6))*step((1.6)-x)
+
+   registered as a single `NetDoping` node model, then every node's
+   DevSim-evaluated value compared against the same formula computed
+   independently in Python from that node's real `x` coordinate.
+
+2. **Result:** 455 nodes checked (235 body / 110 source / 110 drain),
+   **max relative error 0.000e+00**. Composite, laterally-windowed,
+   superposed doping equations evaluate exactly through the existing
+   `node_model()` call this project already uses — confirming the real
+   blocker was never the device/mesh API (`import_process_result`,
+   contact placement), only `DopingRegion`'s inability to hold more than
+   one 1D profile per region.
+
+3. **What it proves:** a MOSFET-shaped doping profile (source + drain
+   over a channel/body background) needed exactly one new `DopingRegion`
+   kind, not new mesh or device machinery — the same "wrap it" instinct
+   the user asked about is correct for doping specifically, while
+   contact placement (a genuinely separate question, still open — see
+   below) is not answerable the same way.
+
+4. **Production implementation, additive throughout (every existing
+   kind's behavior is byte-for-byte unchanged):**
+   - **`tcad/mesh/interface.py`**: `DopingRegion` gained
+     `implant_windows: Optional[List[Dict[str, float]]]` — each entry
+     `{"min_um", "max_um", "conc_cm3"}`. Background doping reuses the
+     existing `net_doping_cm3` field (same meaning as the "uniform"
+     case: a constant net doping the windows superpose on top of); the
+     position axis reuses `junction_axis` (same reuse pattern
+     `gaussian_implant` already established for the same field).
+   - **`tcad/physics/doping.py`**: new `apply_implant_windows_doping(
+     result, region, axis, background_doping_cm3, windows)`, same shape
+     as the three existing `apply_*_doping` builders.
+   - **`tcad/device/devsim/doping_mapping.py`**: new `elif doping.kind
+     == "implant_windows"` branch — builds the background-plus-summed-
+     `step()*step()`-terms equation shown above and sets it as
+     `NetDoping` directly (no separate Donors/Acceptors split, matching
+     how `gaussian_implant` and `uniform` already set `NetDoping`
+     directly rather than splitting it).
+   - Wired into the CLI (`tcad/cli/run_pipeline.py`'s `_apply_doping()`,
+     one `if kind == "implant_windows":` branch) and documented in
+     README's CLI config schema, matching how every other doping kind
+     was wired in — otherwise the feature would exist in
+     `tcad.physics.doping` but be unreachable from the CLI.
+
+5. **Verified, real ViennaPS 4.6.2 + DevSim 2.10.1, through the actual
+   production entry points:**
+   - New `tests/integration/test_implant_windows_doping_real.py`: real
+     ViennaPS isotropic etch -> `apply_implant_windows_doping` -> DevSim
+     import -> `apply_doping`, then every node's real DevSim-evaluated
+     `NetDoping` compared against the independently-computed windowed
+     formula — **0.000e+00 max relative error across all 1891 checked
+     nodes** (2095 total, minus nodes within one grid cell of a window
+     boundary, where `step()`'s exact-boundary convention isn't the
+     thing under test); all three lateral regions (body/source/drain)
+     confirmed present with correct sign and magnitude
+     (source=9.990e+19, drain=9.990e+19, body=-1.000e+17 cm^-3).
+   - New `examples/implant_windows_iv_config.json`, run through the real
+     CLI entry point (`python -m tcad.cli.run_pipeline`) end-to-end —
+     succeeded, produced the expected linear Ohmic I-V (same doping
+     -free-Ohmic-solve caveat as `gaussian_implant_iv_config.json`: the
+     `"iv"` characterization type's equation set doesn't read
+     `NetDoping` at all, so this confirms the doping attaches and maps
+     correctly through the real pipeline, not that it affects an Ohmic
+     solve — a `pn_junction_iv`-shaped characterization would be needed
+     to exercise a doping-aware solve, matching the existing
+     `gaussian_implant` example's own scope).
+   - Full regression: **`tests/run_regression.py` -> 24 passed, 0
+     failed, 0 skipped** (23 before this addition's new test) — no
+     regressions.
+
+6. **What remains uncertain / explicitly NOT done — this is doping
+   only, not a MOSFET.** Contact placement is a separate, still-open
+   problem: `mesh_import.py`'s contact builder only ever places a
+   contact at a region's own axis EXTREME (`axis_min`/`axis_max`,
+   named `{region}_{axis}min/max`), so a gate that sits only over the
+   channel (not spanning the whole device) still needs either (a) a
+   distinct gate-stack material whose own bounding box happens to be
+   the channel window (workable with the *existing* contact API,
+   verified only as a code-reading argument, not executed this
+   session), or (b) new coordinate-windowed contact placement (an API
+   change). Source and drain contacts specifically need distinct
+   materials too, since `mesh_import.py` merges same-material regions
+   into one contact set (`matching_tags[0]`) — not exercised or fixed
+   this session. `auto_refine_from_doping` does not support this kind
+   (its `_derive_refine_from_doping` only reads
+   `junction_position_um`/`peak_position_um`, both `None` for
+   `implant_windows`) — degrades gracefully (silently skips refinement
+   derivation for this kind, returns `None`, confirmed by reading the
+   function rather than assumed) rather than erroring, but a
+   MOSFET-scale S/D concentration (1e19-1e20 cm^-3, per this project's
+   own earlier convergence work) would need refinement supplied
+   manually via the existing explicit `refine_near_um` parameters.
+   Windows are not validated against overlap or against the region's
+   own extent — a caller passing nonsensical bounds gets whatever
+   `step()*step()` evaluates to, same permissiveness this project's
+   other doping kinds already have (e.g. `gaussian_implant` doesn't
+   validate `straggle_um > 0` either).
+
+7. **Next smallest experiment (not done, out of scope for this round):**
+   verify claim 4(a) above by actually building a 3-material geometry
+   (body Si, source contact material, drain contact material) through a
+   real process step and confirming `import_process_result` produces
+   three distinct, correctly-positioned contacts — this is the next
+   real step toward a gate-over-channel MOSFET geometry, and was
+   reasoned about but not executed this session.
+
 ### Autonomous overnight session — stopping point reached (later session)
 
 After the additions above (hbr_o2, sf6_c4f8, cf4_o2, faraday_cage
@@ -3869,6 +3995,50 @@ confirmation.
 
 **Regression after part 15:** unchanged — no production code was
 touched.
+
+**What this session did (part 16, later session, working a
+user-requested priority list in order — item 1, the KOH self-limiting
+V-groove investigation this file's own open-issues list had flagged as
+needing `Advect` source that a rate limit previously blocked):** proved
+the real root cause and shipped an additive partial fix — see "KOH
+crystal frame — ROOT CAUSE PROVEN AND PARTIAL FIX SHIPPED" above. The
+3D-example direction vectors this project had copied verbatim make
+`rate111`/`rate311` algebraically inert for every 2D surface normal
+(`cross(direction100, direction010)` lands on z, forcing `N2` to zero),
+so no (111) facet existed anywhere — not an approximation problem, a
+missing-physics problem. Proven analytically from the fetched
+`psWetEtching.hpp` formula and confirmed behaviourally (rate111 scaled
+159x: bit-identical output under the old frame, changed output under a
+derived 2D frame). Shipped `KOH_30PCT_70C_2D` additively
+(`KOH_30PCT_70C` untouched) plus a new regression test. Self-limiting
+itself is still NOT achieved (now attributable to mask undercut, with
+scheme and grid resolution both ruled out by measurement) — documented
+as an explicit scope limit, not claimed as fixed.
+
+**Regression after part 16:** `tests/run_regression.py` -> **23
+passed, 0 failed, 0 skipped** (22 before this part's new test).
+
+**What this session did (part 17, later session, the user's direct
+question "왜 모스펫이 나와" — correctly challenging "MOSFET Vth
+extraction" as a near-term item and asking whether the real gap could
+be closed by composing the existing API rather than adding new
+device/mesh machinery):** answered by testing, not arguing — a
+composite, laterally-windowed, superposed doping equation
+(background + two windows) was registered via DevSim's existing
+`node_model()` call and checked node-by-node against an independently
+-computed formula: 0.000e+00 error. This confirmed the doping side of
+a MOSFET-shaped profile needed exactly one new `DopingRegion` kind, not
+new API — see "`implant_windows` doping — ADDED" above for the full
+production implementation (`tcad/mesh/interface.py`,
+`tcad/physics/doping.py`, `tcad/device/devsim/doping_mapping.py`, CLI
+wiring, new integration test, new CLI example config). Contact
+placement (needed for a gate that sits only over the channel, and for
+distinct source/drain contacts) was reasoned about but explicitly NOT
+executed this session — real remaining work, not solved by this
+addition.
+
+**Regression after part 17:** `tests/run_regression.py` -> **24
+passed, 0 failed, 0 skipped** (23 before this part's new test).
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as

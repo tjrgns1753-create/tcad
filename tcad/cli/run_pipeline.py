@@ -56,6 +56,7 @@ def _apply_doping(process_result, cfg: Dict[str, Any] | None):
 
     from tcad.physics.doping import (
         apply_gaussian_implant_doping,
+        apply_implant_windows_doping,
         apply_step_junction_doping,
         apply_uniform_doping,
     )
@@ -80,6 +81,14 @@ def _apply_doping(process_result, cfg: Dict[str, Any] | None):
             peak_position_um=cfg["peak_position_um"],
             straggle_um=cfg["straggle_um"],
             peak_conc_cm3=cfg["peak_conc_cm3"],
+        )
+    if kind == "implant_windows":
+        return apply_implant_windows_doping(
+            process_result,
+            region=cfg["region"],
+            axis=cfg["axis"],
+            background_doping_cm3=cfg["background_doping_cm3"],
+            windows=cfg["windows"],
         )
     raise ValueError(f"Unknown doping kind: {kind!r}")
 

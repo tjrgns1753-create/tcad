@@ -53,6 +53,19 @@ class DopingRegion:
         peak_conc_cm3 (signed: positive = net donor, negative = net
         acceptor, same convention as net_doping_cm3) and standard
         deviation straggle_um. None for uniform/step-junction regions.
+    implant_windows : implant_windows case — a background doping
+        (net_doping_cm3, reused from the uniform case's same field/
+        convention) with zero or more rectangular implants SUPERPOSED
+        on top, along `junction_axis` (reused, same meaning: the
+        position axis this region's windows are laid out on). Each
+        window is a dict {"min_um": float, "max_um": float,
+        "conc_cm3": float} — conc_cm3 ADDS to the background wherever
+        min_um <= axis <= max_um (signed, same convention as
+        net_doping_cm3; overlapping windows sum). Models e.g. a
+        source/drain implant superposed on a channel/body background —
+        the real physical relationship (an implant adds dopant on top
+        of whatever was already there), not a replacement. None for
+        every other kind.
     """
 
     region: str
@@ -64,6 +77,7 @@ class DopingRegion:
     peak_conc_cm3: Optional[float] = None
     peak_position_um: Optional[float] = None
     straggle_um: Optional[float] = None
+    implant_windows: Optional[List[Dict[str, float]]] = None
 
 
 @dataclass
@@ -74,7 +88,11 @@ class DopingProfile:
         region. "step_junction" (Phase 8) — one region split into a
         donor side and an acceptor side along an axis. "gaussian_implant"
         — a 1D Gaussian net-doping profile along an axis (peak_conc_cm3,
-        peak_position_um, straggle_um on DopingRegion).
+        peak_position_um, straggle_um on DopingRegion). "implant_windows"
+        — a background doping plus zero or more laterally-windowed
+        implants superposed on top (implant_windows on DopingRegion) —
+        e.g. source/drain regions superposed on a channel/body
+        background within the same region.
     regions : one DopingRegion per doped region.
     """
 

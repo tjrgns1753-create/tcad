@@ -89,6 +89,12 @@ tcad.cli.run_pipeline examples/gaussian_implant_iv_config.json`) —
 confirmed end-to-end via the actual CLI entry point, not just direct
 function calls.
 
+`examples/implant_windows_iv_config.json` uses `implant_windows`
+instead: a background (channel/body) doping with two laterally
+-windowed implants (source/drain) superposed on top, in the same
+region — the doping primitive a MOSFET-shaped profile needs that no
+other `doping.kind` can express. Also confirmed end-to-end via the CLI.
+
 ## Minimal example: Python API
 
 ```python
@@ -213,7 +219,7 @@ The CLI (`tcad.cli.run_pipeline`) writes both under `<workdir>/`:
     "recipe": { /* model-specific — see the model's module docstring */ }
   },
   "doping": {                          // optional
-    "kind": "uniform | step_junction | gaussian_implant",
+    "kind": "uniform | step_junction | gaussian_implant | implant_windows",
     // uniform:
     "doping_by_region_cm3": {"Si": -1e17},
     // step_junction:
@@ -221,7 +227,18 @@ The CLI (`tcad.cli.run_pipeline`) writes both under `<workdir>/`:
     "donor_conc_cm3": 1e18, "acceptor_conc_cm3": 1e18,
     // gaussian_implant:
     "region": "Si", "junction_axis": "x",
-    "peak_position_um": 0.0, "straggle_um": 0.1, "peak_conc_cm3": 1e18
+    "peak_position_um": 0.0, "straggle_um": 0.1, "peak_conc_cm3": 1e18,
+    // implant_windows: a background doping plus zero or more laterally
+    // -windowed implants SUPERPOSED on top, along "axis" -- e.g. source
+    // and drain implants over a channel/body background, all in one
+    // region (this is the piece a MOSFET-shaped doping profile needs
+    // that no other kind above can express: two separate lateral
+    // windows in the same region)
+    "region": "Si", "axis": "x", "background_doping_cm3": -1e17,
+    "windows": [
+      {"min_um": -1.6, "max_um": -0.6, "conc_cm3": 1e20},
+      {"min_um": 0.6, "max_um": 1.6, "conc_cm3": 1e20}
+    ]
   },
   "device": {
     "mesh_name": "cli_mesh", "device_name": "cli_device",
@@ -275,7 +292,9 @@ tests/
 └── run_regression.py  runs both in one command
 examples/
 ├── ohmic_iv_config.json             runnable CLI example
-└── gaussian_implant_iv_config.json  same, with gaussian_implant doping
+├── gaussian_implant_iv_config.json  same, with gaussian_implant doping
+└── implant_windows_iv_config.json   same, with implant_windows doping
+                                      (S/D-over-channel doping shape)
 tcad_2d_stagewise.py  legacy tkinter GUI; etch panel now dispatches
                        Bosch DRIE, Directional RIE, Isotropic etch, and
                        SF6/O2 through the same registry as the CLI

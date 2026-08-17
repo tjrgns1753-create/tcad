@@ -33,16 +33,33 @@ floating-point precision — see tests/test_phase8_pn_junction_real.py):
     devsim.node_model(device=, region=, name="NetDoping",
                        equation="Donors-Acceptors")
 
-"uniform", "step_junction", and "gaussian_implant" are implemented.
-gaussian_implant's equation ("exp"/"^" confirmed supported by DevSim's
-own equation parser: devsim/python_packages/simple_physics.py uses both,
-e.g. `"n_i*exp(Potential/V_t)"`, `"NetDoping^2"`) sets NetDoping directly
-to a Gaussian, the same way "uniform" sets it directly to a constant —
-no separate Donors/Acceptors split, since a Gaussian implant isn't a
+"uniform", "step_junction", "gaussian_implant", and "implant_windows"
+are implemented. gaussian_implant's equation ("exp"/"^" confirmed
+supported by DevSim's own equation parser:
+devsim/python_packages/simple_physics.py uses both, e.g.
+`"n_i*exp(Potential/V_t)"`, `"NetDoping^2"`) sets NetDoping directly to
+a Gaussian, the same way "uniform" sets it directly to a constant — no
+separate Donors/Acceptors split, since a Gaussian implant isn't a
 donor/acceptor pair the way a step junction is:
 
     devsim.node_model(device=, region=, name="NetDoping",
         equation=f"{peak}*exp(-(({axis}-({position}))^2)/(2*({straggle})^2))")
+
+implant_windows sets NetDoping to a background constant plus zero or
+more `step()*step()` window terms SUMMED on top — real DevSim
+`step(x)*step(-x)`-style windowing (the same `step()` function
+diode_common.py uses for the step junction above), confirmed by direct
+execution reading get_node_model_values() back and comparing to an
+independently-computed value per node (0.000e+00 max error across all
+nodes — see test_implant_windows_doping_real.py):
+
+    devsim.node_model(device=, region=, name="NetDoping",
+        equation=(
+            f"{background}"
+            f" + {conc_1}*step({axis}-({min_1}))*step(({max_1})-{axis})"
+            f" + {conc_2}*step({axis}-({min_2}))*step(({max_2})-{axis})"
+            " + ..."
+        ))
 """
 
 from __future__ import annotations
@@ -106,8 +123,25 @@ def apply_doping(device: str, doping: DopingProfile, length_scale_to_cm: float =
                     f"/(2*({straggle_native})^2))"
                 ),
             )
+    elif doping.kind == "implant_windows":
+        for region_doping in doping.regions:
+            axis = region_doping.junction_axis
+            background = region_doping.net_doping_cm3 or 0.0
+            terms = [str(background)]
+            for window in region_doping.implant_windows or []:
+                lo_native = window["min_um"] * length_scale_to_cm
+                hi_native = window["max_um"] * length_scale_to_cm
+                terms.append(
+                    f"{window['conc_cm3']}*step({axis}-({lo_native}))"
+                    f"*step(({hi_native})-{axis})"
+                )
+            module.node_model(
+                device=device, region=region_doping.region, name="NetDoping",
+                equation=" + ".join(terms),
+            )
     else:
         raise NotImplementedError(
             f"doping_mapping.apply_doping supports kind in "
-            f"('uniform', 'step_junction', 'gaussian_implant') so far, got {doping.kind!r}"
+            f"('uniform', 'step_junction', 'gaussian_implant', "
+            f"'implant_windows') so far, got {doping.kind!r}"
         )
