@@ -3474,6 +3474,154 @@ understood), not assumed.
    now that geometry, doping, and contacts are each independently
    verified working.
 
+### First electrically-exercised MOSFET-shaped device — DONE (later session, per explicit user instruction "다음단계로 가자" / go to the next step — executes item 7 above)
+
+Combined `gate_stack` geometry with `implant_windows` doping and ran a
+real DevSim C-V sweep through the gate contact. Two real, previously
+-uncharacterized limitations were found and worked around along the
+way — both in already-shipped code (`save_locos_volume_mesh`), neither
+in anything this session had reason to suspect going in.
+
+1. **What was tested:** `registry.get("geometry","gate_stack")().run()`
+   (default recipe: Si + separate TiN gate electrode + separate W/Cu
+   source/drain pads + SiO2 gate oxide) → attach `implant_windows`
+   doping to the Si region (background = -1e17 cm^-3 p-type
+   channel/body, +1e20 cm^-3 n+ windows at the SAME `source_um`/
+   `drain_um` the geometry used) → DevSim import with a Si-SiO2
+   `interface_region_pairs` entry (needed by
+   `tcad.device.devsim.mos_equation.setup_mos_potential_equation`,
+   unchanged since Phase 9) → `apply_doping()` → the existing, unmodified
+   `tcad.characterization.cv_sweep.run_mos_cv_sweep()`.
+
+2. **Limitation 1 found: `save_locos_volume_mesh()`-produced meshes
+   have ZERO shared vertex indices between materials, even where they
+   are geometrically coincident.** Each level set is triangulated in
+   complete isolation (`_export_single_level_set`), so Si's and SiO2's
+   boundary points at y=0 within the channel window matched in
+   COORDINATE (31/31, confirmed by direct measurement) but used
+   entirely different INDICES in the merged mesh. `mesh_import.py`'s
+   `interface_region_pairs` detects a shared edge by matching sorted
+   node-INDEX pairs, so it silently found nothing — no error, just an
+   empty interface list, which then made
+   `setup_mos_potential_equation`'s `CreateSiliconOxideInterface` fail
+   outright (`Interface "..." does not exist`). This had never
+   surfaced before because no earlier `save_locos_volume_mesh()` caller
+   (LOCOS, gate contact placement, gate_stack's own test) ever
+   requested an interface on its output.
+
+   Fixed with a new, OPT-IN `dedupe_materials` parameter on
+   `save_locos_volume_mesh()` (and a matching `dedupe_materials` recipe
+   key on `GateStack.run()`): merges points with identical (9-decimal-
+   rounded) coordinates ONLY among the named materials, remapping
+   triangle indices accordingly. Default `None` — every existing
+   caller is provably unaffected (full regression stayed green
+   throughout).
+
+3. **Limitation 2 found: deduping blindly across every touching
+   material pair crashes DevSim's own `create_device()`** with a
+   native, uncatchable-from-Python-logic assert
+   (`ASSERT .../Geometry/Region.cc:464 UNEXPECTED`) — reproduced
+   repeatedly, and bisected through several hypotheses before finding
+   the real one (each tested by direct measurement, not assumed):
+   - *Not* "an unregistered shared boundary" — registering topological
+     (no-equation) interfaces for EVERY touching pair (Si-SiO2, Si-W,
+     Si-Cu) still crashed.
+   - *Not* simply "W/Cu are present in the mesh" — restricting dedup
+     to ONLY Si+SiO2 (leaving W/Cu's own vertices completely untouched,
+     independent, exactly as before) still crashed, with W/Cu still
+     merely present as unrelated regions.
+   - **The real cause: gate_stack's own `gate_material=oxide_material=
+     "SiO2"` merge trick** (used to make the "electrode" and "oxide"
+     coalesce into one DevSim region with an exposed top surface,
+     avoiding a separate untested TiN-as-contact question) **means
+     "SiO2" is actually TWO independently-triangulated level sets
+     (the oxide box + the electrode box) sharing one material tag** —
+     confirmed by reproducing the crash with as few as 3 total level
+     sets (Si, oxide, electrode; no W/Cu at all) once both oxide and
+     electrode were tagged "SiO2", and confirming it does NOT crash
+     when SiO2 is a genuine single level set (the original minimal
+     probe, and — decisively — gate_stack's own DEFAULT recipe with
+     TiN kept separate). Even after coordinate-dedup at their shared
+     y=OXIDE_H boundary, the two independently-triangulated pieces'
+     boundary vertex layouts don't perfectly align (different
+     grid-quantization per isolated export), leaving a partially
+     -stitched, inconsistent 2-manifold that DevSim's region
+     -construction code rejects. Not traced further into DevSim's C++
+     (matches this project's established practice for this class of
+     native-library behavior elsewhere in this file).
+
+4. **Real fix: don't merge oxide+electrode at all — keep gate_stack's
+   default, SEPARATE "TiN" electrode, and FILTER it (plus the
+   source/drain metal pads, not needed for a gate-only C-V sweep) out
+   of the mesh before DevSim import.** New `filter_mesh_materials()`
+   (`tcad/backends/viennaps/io.py`): reads an already-written mesh,
+   keeps only triangles tagged with the requested materials, drops
+   now-unused points, remaps triangle indices, writes a new file. With
+   TiN's triangles removed, SiO2's own top boundary (previously shared
+   with/covered by TiN, hence excluded from contact-boundary detection)
+   becomes a genuine EXTERIOR boundary in the filtered mesh — so
+   "SiO2_ymax" becomes a real, correctly-detected gate contact,
+   matching Phase 9's own already-working convention exactly, with
+   ZERO new equation code. SiO2 also stays a genuine SINGLE level set
+   throughout (never merged with anything), sidestepping limitation 2
+   entirely rather than working around it.
+
+5. **Verified, real ViennaPS 4.6.2 + DevSim 2.10.1, through the actual
+   production entry points (not probes):** new
+   `tests/integration/test_mosfet_gate_stack_cv_real.py` —
+   `registry.get("geometry","gate_stack")().run()` →
+   `filter_mesh_materials()` → `apply_implant_windows_doping()` →
+   `import_process_result(interface_region_pairs=...)` →
+   `apply_doping()` → `run_mos_cv_sweep()`. Checks: NetDoping matches
+   the requested implant_windows profile exactly (0 relative error,
+   same rigor as `test_implant_windows_doping_real.py`); the full
+   9-point gate-voltage sweep converges at every point (the sweep
+   itself raises on non-convergence — reaching the assertions IS the
+   check); capacitance is real, positive, and bounded above by the
+   ideal parallel-plate C_ox (computed from DevSim's own real
+   `eps_ox`/`eps_0` constants, not fabricated — a hard physical
+   constraint any series depletion capacitance must satisfy); and
+   capacitance decreases monotonically as gate voltage sweeps from
+   -2V to +2V — the real, expected accumulation-to-depletion signature
+   for this p-type-background device, not just "doesn't crash".
+   Measured: 7.05e-12 F (V=-2V, deep accumulation, closest to the
+   ideal 2.76e-11 F C_ox) down to 5.68e-12 F (V=+2V, depletion
+   setting in) — physically correct direction and magnitude.
+
+6. **What it proves:** geometry (`gate_stack`), doping
+   (`implant_windows`), and contact placement (existing
+   `contact_sides` API), independently verified in earlier rounds, now
+   compose into a genuinely working, electrically-solved MOSFET-shaped
+   device for the first time in this project's history — not just
+   geometrically assembled, but actually driven through a real DevSim
+   equilibrium solve with physically sane output.
+
+7. **What remains uncertain / explicitly NOT done:** this is a GATE
+   C-V sweep only — the source/drain contacts (and their
+   `implant_windows` doping) are geometrically present and correctly
+   doped (checked directly) but never electrically PROBED by this
+   sweep, since C-V only involves the gate/substrate path; a full
+   Id-Vgs or Id-Vds transistor sweep (needed to actually exercise
+   source-to-drain transport, extract Vth, etc.) is unchanged from this
+   project's own prior, unretracted judgment that it needs new device/
+   equation design at roughly Phase 7/8's own scale, not attempted
+   here. `dedupe_materials`/`filter_mesh_materials` are general,
+   reusable additions, but only exercised for this ONE geometry/doping
+   combination — whether they generalize to some other future
+   multi-material topology (e.g. a real Si3N4 mask alongside gate_stack
+   pieces) is untested. The native DevSim assert (limitation 2) was
+   characterized precisely enough to route around, not root-caused —
+   a future geometry that ALSO happens to merge two independently
+   -triangulated level sets under one material tag AND request an
+   interface on them would hit the same crash and need the same
+   "keep it a single level set, or filter one side out" treatment.
+
+**Regression after this addition:** `tests/run_regression.py` -> **29
+passed, 0 failed, 0 skipped** (28 before this addition's new test) —
+no regressions, including every existing LOCOS/gate-stack/gate-contact
+test (all `save_locos_volume_mesh()` callers that don't pass
+`dedupe_materials` are provably unaffected).
+
 After the additions above (hbr_o2, sf6_c4f8, cf4_o2, faraday_cage
 etching; isotropic deposition; gaussian_implant doping + CLI wiring),
 checked for further small/clear gaps and found none that clear this
@@ -4577,6 +4725,33 @@ hold up, not by following it blindly.
 **Regression after part 20:** `tests/run_regression.py` -> **28
 passed, 0 failed, 0 skipped** (27 before this part's new test) — no
 regressions, including every existing LOCOS/gate-contact test.
+
+**What this session did (part 21, later session, per explicit
+instruction "다음단계로 가자" / go to the next step — executes item 7
+named at the end of the gate-stack investigation):** combined
+`gate_stack` geometry with `implant_windows` doping and ran a real
+DevSim C-V sweep through the gate contact — see "First electrically
+-exercised MOSFET-shaped device — DONE" above for the full
+investigation. Found and worked around two real, previously
+-uncharacterized limitations in already-shipped `save_locos_volume_
+mesh()`: (1) its per-material-isolated export means no two materials
+ever share vertex indices, even when geometrically coincident, so
+`interface_region_pairs` silently found nothing — fixed with an
+opt-in `dedupe_materials` parameter; (2) deduping blindly crashes
+DevSim's `create_device()` with a native assert, traced (after three
+rejected hypotheses) to gate_stack's own oxide+electrode material
+-merge trick producing two independently-triangulated level sets
+under one tag — avoided by keeping the electrode a separate material
+and filtering it out via a new `filter_mesh_materials()` helper
+instead of merging it into the oxide. The resulting device solves a
+real 9-point gate-voltage C-V sweep with physically correct behavior
+(capacitance highest in accumulation, decreasing into depletion,
+always below the ideal C_ox) — the first electrically-exercised
+MOSFET-shaped device in this project's history.
+
+**Regression after part 21:** `tests/run_regression.py` -> **29
+passed, 0 failed, 0 skipped** (28 before this part's new test) — no
+regressions.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as

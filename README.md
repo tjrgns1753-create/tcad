@@ -189,6 +189,21 @@ complete, runnable end-to-end examples of each, including the physical
 sanity checks (built-in potential vs. the analytic V_bi, forward
 current increasing with bias, positive C-V capacitance, etc.).
 
+`tests/integration/test_mosfet_gate_stack_cv_real.py` combines the
+`gate_stack` geometry model with `implant_windows` doping (source/drain
+n+ windows over a p-type channel/body, in the same Si region) and runs
+a real gate-voltage C-V sweep through it — the first electrically
+-exercised MOSFET-shaped device in this project (gate-only; a full
+Id-Vgs/Id-Vds transistor sweep needs new device/equation design not yet
+attempted, see the test's own module docstring and CLAUDE.md). Uses two
+new `tcad.backends.viennaps.io` helpers along the way:
+`filter_mesh_materials()` (keep only named materials from an exported
+mesh) and `save_locos_volume_mesh()`'s opt-in `dedupe_materials`
+parameter (merge coincident-coordinate vertices across named materials,
+needed for a real DevSim `interface_region_pairs` interface on a
+`save_locos_volume_mesh()`-produced mesh) — both no-ops for every
+existing caller that doesn't pass them.
+
 ## Output file structure
 
 Every `ProcessStep.run(recipe, output_dir)` writes to `output_dir`:

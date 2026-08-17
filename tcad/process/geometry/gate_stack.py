@@ -102,10 +102,27 @@ class GateStack(ProcessStep):
         recorder = SnapshotRecorder(output_dir)
         recorder.capture(geometry, "000_gate_stack")
 
+        dedupe_materials = None
+        if recipe.get("dedupe_materials"):
+            # See save_locos_volume_mesh's own docstring for why this
+            # is opt-in, not automatic: deduplicating EVERY touching
+            # material pair crashes DevSim's create_device() for this
+            # geometry's own source/drain-pad topology (a native,
+            # uncatchable assert, not root-caused at the C++ level).
+            # Only pass the material NAMES a caller explicitly names
+            # here (e.g. ["Si", "SiO2"] to enable a Si-SiO2 DevSim
+            # interface) -- default (key absent) is byte-for-byte the
+            # same export every existing caller already gets.
+            module = session.require_viennaps()
+            dedupe_materials = [
+                getattr(module.Material, name) for name in recipe["dedupe_materials"]
+            ]
+
         final_mesh = Path(output_dir) / "gate_stack_final"
         final_mesh_path = save_locos_volume_mesh(
             geometry, materials, wrap_flags, final_mesh,
             floor_depth_um=silicon_depth_um,
+            dedupe_materials=dedupe_materials,
         )
 
         return {

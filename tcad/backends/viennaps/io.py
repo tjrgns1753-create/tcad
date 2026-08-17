@@ -17,7 +17,7 @@ import tempfile
 import warnings
 import weakref
 from pathlib import Path
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 PathLike = Union[str, Path]
 
@@ -506,6 +506,7 @@ def save_locos_volume_mesh(
     wrap_flags: List[bool],
     path: PathLike,
     floor_depth_um: float = DEFAULT_FLOOR_DEPTH_UM,
+    dedupe_materials: Optional[List[Any]] = None,
 ) -> str:
     """Save a volume mesh for a domain built with ViennaPS's material
     "wrap" stacking WITHOUT losing a wrapped-under material entirely,
@@ -565,11 +566,45 @@ def save_locos_volume_mesh(
     all three materials genuinely present and correctly bounded (Si not
     lost), which then imports into DevSim successfully.
 
+    dedupe_materials : optional list of vps.Material values. Two
+        materials both listed here that share a geometrically-coincident
+        boundary point (e.g. Si and a confined oxide touching at y=0)
+        get that point MERGED into one shared mesh vertex, instead of
+        each material's independent, isolated triangulation (see point
+        1 above) producing a separate, same-coordinate-but-different-
+        -index point for each. Needed for
+        tcad.device.devsim.mesh_import.import_process_result's
+        `interface_region_pairs`, which detects a shared interface edge
+        by matching vertex INDICES, not coordinates — confirmed
+        directly that without this, a save_locos_volume_mesh()-produced
+        mesh has ZERO shared indices between any two materials even
+        when their coordinates coincide exactly (31/31 points), so
+        `interface_region_pairs` silently finds nothing.
+
+        Default None: no dedup, byte-for-byte the same output every
+        existing caller already gets (LOCOS, gate contact placement,
+        gate_stack's own test) — zero regression risk.
+
+        Deliberately NOT "dedupe every touching pair automatically":
+        tried that first and it crashes DevSim's own create_device()
+        with a native, uncatchable-from-Python-logic assert
+        (`ASSERT .../Geometry/Region.cc:464 UNEXPECTED`) for THIS
+        project's gate_stack topology specifically — reproduced even
+        after registering a topological (no-equation) interface for
+        EVERY touching pair, so it is not simply "an unregistered
+        shared boundary" DevSim objects to; the deeper native cause was
+        not chased further (see CLAUDE.md). Restricting dedup to only
+        the materials a caller actually asked to interface avoids ever
+        exercising that untested, crash-prone topology for materials
+        (e.g. gate_stack's own source/drain metal pads) nothing needs
+        connected to anything else.
     Returns the path actually written (mirrors save_volume_mesh(),
     though the filename suffix differs).
     """
     import numpy as np
     import meshio
+
+    dedupe_tags = {int(m) for m in dedupe_materials} if dedupe_materials else None
 
     level_sets = list(domain.getLevelSets())
     if not (len(level_sets) == len(materials) == len(wrap_flags)):
@@ -592,6 +627,7 @@ def save_locos_volume_mesh(
     bounds_hint = (x_min, x_max, y_max)
 
     all_points: List[List[float]] = []
+    all_point_tags: List[int] = []
     all_tris: List[List[int]] = []
     all_tags: List[int] = []
     combined_top = None  # running top-surface lookup of every TRUE region claimed so far
@@ -600,6 +636,7 @@ def save_locos_volume_mesh(
         offset = len(all_points)
         for p in points:
             all_points.append([float(p[0]), float(p[1]), float(p[2]) if len(p) > 2 else 0.0])
+            all_point_tags.append(tag)
         for tri in tris:
             all_tris.append([int(tri[0]) + offset, int(tri[1]) + offset, int(tri[2]) + offset])
             all_tags.append(tag)
@@ -629,12 +666,112 @@ def save_locos_volume_mesh(
                 previous_top = combined_top
                 combined_top = lambda x, a=previous_top, b=this_top: max(a(x), b(x))  # noqa: E731
 
+    # Deduplicate coincident vertices ACROSS materials before writing.
+    # Each level set above was triangulated in complete isolation (its
+    # own throwaway single-material Domain -- see
+    # _export_single_level_set), so two materials that physically touch
+    # (e.g. Si and a confined oxide sharing the y=0 boundary within a
+    # channel window) end up with geometrically-identical boundary
+    # points at DIFFERENT vertex indices in the merged mesh -- confirmed
+    # directly (not assumed): coordinates matched exactly (31/31) while
+    # sharing zero indices. This silently breaks every DOWNSTREAM
+    # consumer that identifies a shared boundary by vertex index rather
+    # than coordinate -- mesh_import.py's interface_region_pairs (edges
+    # are matched by sorted node-index pairs) finds ZERO interface edges
+    # for a save_locos_volume_mesh()-produced mesh without this, even
+    # when the two materials are geometrically touching. Fixed by
+    # merging points with identical (rounded) coordinates into one
+    # shared vertex, remapping every triangle's indices accordingly. 9
+    # decimal places matches this project's existing float-noise
+    # convention (see ProcessStep.prepare_domain()'s trench_width_um
+    # rounding) -- far finer than any real triangulated distance, so
+    # this cannot merge two vertices that were meant to stay distinct.
+    dedup_key_to_index: Dict[Tuple[float, float, float], int] = {}
+    dedup_points: List[List[float]] = []
+    remap: List[int] = []
+    for p, point_tag in zip(all_points, all_point_tags):
+        eligible = dedupe_tags is not None and point_tag in dedupe_tags
+        key = (round(p[0], 9), round(p[1], 9), round(p[2], 9)) if eligible else None
+        idx = dedup_key_to_index.get(key) if key is not None else None
+        if idx is None:
+            idx = len(dedup_points)
+            if key is not None:
+                dedup_key_to_index[key] = idx
+            dedup_points.append(p)
+        remap.append(idx)
+    dedup_tris = [[remap[i] for i in tri] for tri in all_tris]
+
     out_mesh = meshio.Mesh(
-        points=np.array(all_points) if all_points else np.zeros((0, 3)),
-        cells=[("triangle", np.array(all_tris) if all_tris else np.zeros((0, 3), dtype=int))],
+        points=np.array(dedup_points) if dedup_points else np.zeros((0, 3)),
+        cells=[("triangle", np.array(dedup_tris) if dedup_tris else np.zeros((0, 3), dtype=int))],
         cell_data={"Material": [np.array(all_tags, dtype=int)]},
     )
     out_path = f"{str(path)}_locos_volume.vtu"
+    meshio.write(out_path, out_mesh)
+    return out_path
+
+
+def filter_mesh_materials(mesh_path: PathLike, keep_materials: List[Any]) -> str:
+    """Return the path to a NEW mesh file containing only the triangles
+    (and the points they reference) tagged with one of `keep_materials`.
+
+    Exists to drop electrically-irrelevant regions from a geometry
+    built for a different purpose than the one it's about to be
+    imported for — e.g. tcad/process/geometry/gate_stack.py's source/
+    drain metal PADS, useful for demonstrating contact placement (see
+    CLAUDE.md, "Gate-over-channel + separate source/drain contacts"),
+    but not needed for (and, confirmed by direct measurement, actively
+    HARMFUL to) a gate-only C-V sweep: importing them alongside a
+    dedup()'d Si-SiO2 interface crashes DevSim's own create_device()
+    with a native assert (`ASSERT .../Geometry/Region.cc:464
+    UNEXPECTED`) — reproduced with as few as 3 regions (Si, SiO2, one
+    untouched metal pad) present, even though the pad shares NO
+    deduped vertices with anything. Not root-caused at the DevSim C++
+    level (matches this project's established practice for this class
+    of native-library behavior elsewhere in this file) — sidestepped
+    instead by not asking DevSim to import a region the caller doesn't
+    need at all.
+
+    keep_materials : vps.Material values (or anything int()-convertible
+        to the mesh's own integer material tags) to retain.
+
+    Points referenced by NO surviving triangle are dropped and every
+    triangle's indices are remapped accordingly, so the output is a
+    clean, self-contained mesh — not just a triangle-level filter of the
+    original point list (which would leave stray unused points DevSim's
+    importer does not expect).
+    """
+    import meshio
+    import numpy as np
+
+    mesh = meshio.read(str(mesh_path))
+    block = next(c for c in mesh.cells if c.type == "triangle")
+    block_index = mesh.cells.index(block)
+    tags = mesh.cell_data["Material"][block_index]
+    keep_tags = {int(m) for m in keep_materials}
+
+    kept_tris = [tri for tri, tag in zip(block.data, tags) if int(tag) in keep_tags]
+    kept_tags = [int(tag) for tag in tags if int(tag) in keep_tags]
+
+    remap: Dict[int, int] = {}
+    new_points: List[Any] = []
+    new_tris: List[List[int]] = []
+    for tri in kept_tris:
+        new_tri = []
+        for i in tri:
+            i = int(i)
+            if i not in remap:
+                remap[i] = len(new_points)
+                new_points.append(mesh.points[i])
+            new_tri.append(remap[i])
+        new_tris.append(new_tri)
+
+    out_mesh = meshio.Mesh(
+        points=np.array(new_points) if new_points else np.zeros((0, 3)),
+        cells=[("triangle", np.array(new_tris) if new_tris else np.zeros((0, 3), dtype=int))],
+        cell_data={"Material": [np.array(kept_tags, dtype=int)]},
+    )
+    out_path = f"{str(mesh_path)}.filtered.vtu"
     meshio.write(out_path, out_mesh)
     return out_path
 
