@@ -2552,6 +2552,127 @@ KOH-etch feature (item 4 above) is unmodified and still ships; this
 section exists so a future reader does not mistake the existing test's
 PASS for validated self-limiting physics.
 
+### KOH crystal frame — ROOT CAUSE PROVEN AND PARTIAL FIX SHIPPED; self-limiting still NOT achieved (later session, per explicit instruction to work the priority list in order — picks up the section above, whose "next smallest experiment" was to read ViennaLS `Advect`'s velocity-extension source)
+
+The previous section stopped with the root cause narrowed to
+"ViennaLS-internal territory" and the `Advect` source unread (a GitHub
+rate limit blocked the fetch at the time). This session got the source,
+and the answer turned out **not** to be in `Advect` at all.
+
+1. **What was tested (each an isolated probe, one variable at a time,
+   all through the real production `WetEtch.run()` entry point):**
+   - **The spatial (advection) scheme.** ViennaPS's official
+     `cantileverWetEtching.py` was re-fetched and found to set
+     something this project never sets:
+     `advectionParams.spatialScheme =
+     STENCIL_LOCAL_LAX_FRIEDRICHS_1ST_ORDER`, whereas ViennaLS's own
+     default is `ENGQUIST_OSHER_1ST_ORDER` — a monotone upwind scheme
+     appropriate for position-only velocity fields, while
+     crystallographic etch velocity is by definition normal-dependent.
+     Swept **all 12** `SpatialSchemeEnum` members at t=180s.
+   - **Grid resolution**, 0.2/0.1/0.05um, at fixed time.
+   - **The crystal-frame rotation** (the previous section's theta=45°
+     derivation) crossed with the schemes — a combination neither
+     earlier round had run.
+   - **`rate111`/`rate311` sensitivity** (0x .. 1000x nominal).
+   - **The rate formula itself**, evaluated analytically in pure Python
+     for every 2D surface normal, from `psWetEtching.hpp`'s own source
+     (fetched verbatim: basis via Gram-Schmidt, `N[i] =
+     |dot(directions[i], n)|` sorted descending, branch on
+     `-N0+N1+2*N2 < 0`, and the two rate formulas).
+
+2. **Result — the real root cause, proven both analytically and
+   behaviourally.** `directions[2] = cross(direction100, direction010)`.
+   With `KOH_30PCT_70C`'s vectors (copied verbatim from the official
+   **3D** example) that comes out **(0, 0, 1)** — the z axis. Every 2D
+   normal has `normal[2] == 0`, so `N2 == 0` identically, which removes
+   `rate111` from the reachable branch and multiplies `rate311` by
+   zero. The analytical velocity-vs-angle table makes the consequence
+   stark:
+
+   | | 3D-provenance frame (production) | derived theta=45° 2D frame |
+   |---|---|---|
+   | `directions[2]` | (0,0,**1**) — wrong axis | (0,**1**,0) — the depth axis |
+   | v at the magic angle (54.7356°) | 0.9099 um/min (~`rate100`) | **0.0050 = exactly `rate111`** |
+   | velocity minimum | 0.7970 = `rate100`, at 45° | 0.0191, genuinely `rate111`-governed |
+   | effect of `rate111`/`rate311` | **none — algebraically absent** | live |
+
+   Confirmed behaviourally against real ViennaPS, not just on paper:
+   scaling `rate111` by 159x (up to `rate100`'s magnitude) leaves the
+   exported Si area **bit-identical** (delta = 0.000e+00) under the 3D
+   frame, and shifts it (2.56e-02) under the 2D frame.
+
+   **Ruled out, by direct measurement rather than assumption:** the
+   spatial scheme — all 12 give depth 3.4–4.3um at t=180s where a
+   self-limited groove pins at 1.414um, i.e. *none* self-limit; and grid
+   resolution — 2.4667/2.4667/2.4561um at gd 0.2/0.1/0.05, essentially
+   flat, with mask undercut getting *worse* as the grid refines
+   (0.56 -> 0.97 -> 1.16um). An early "STENCIL scheme self-limits at
+   t=540s" reading was a **false positive** and is recorded as such: the
+   profile there had degenerated into a grid-scale sawtooth
+   (`-0.5, -0.6, -0.7, -0.6, ...`) plus a spurious spike, so depth was
+   capped by numerical breakdown, not by facets holding. A degenerate
+   surface can fake saturation — depth alone is not sufficient evidence.
+
+3. **What it proves:** this project's KOH model was not merely
+   *inaccurate* in 2D, it was **not crystallographic at all** — with no
+   slow (111) facet anywhere in the reachable velocity field, a
+   self-limiting V-groove was unrepresentable rather than just
+   unachieved. That is a provable defect in this project's own wiring
+   (the rate constants were always real and correctly cited; the
+   *orientation* was not), and it is independent of any simulation
+   outcome, scheme choice, or grid.
+
+4. **Production fix applied — `tcad/process/etching/wet_etching.py`,
+   deliberately additive:**
+   - New `KOH_30PCT_70C_2D`: the same real cited rate constants with the
+     derived 2D crystal frame. `KOH_30PCT_70C` is left **byte-identical**
+     so no existing recipe or test changes behaviour, and its docstring
+     now states the 2D degeneracy explicitly.
+   - New optional `spatial_scheme` recipe key (enum member name, e.g.
+     `"STENCIL_LOCAL_LAX_FRIEDRICHS_1ST_ORDER"`, the official example's
+     own choice), applied via `AdvectionParameters`. Absent, ViennaLS's
+     default is untouched — so this is reachable but changes nothing by
+     default. Documented with what it does and does not buy: it visibly
+     moves the facet angle, it does not produce self-limiting.
+   - Module docstring now carries the full derivation, the formula as
+     fetched, the measured numbers, and an explicit scope limit.
+   - New `tests/integration/test_wet_etch_crystal_frame_real.py`: a
+     *behavioural* discriminator, not a re-implementation of the
+     library's formula — asserts `rate111` is bit-identically inert
+     under the 3D frame and measurably live under the 2D frame. Cheap
+     (t=30s, gd=0.2) and deterministic. Its failure message points at
+     re-deriving the docstring if upstream ever changes the formula.
+
+5. **What remains uncertain / explicitly NOT fixed — do not read this
+   section as "KOH now works".** Self-limiting is still not achieved.
+   With the corrected frame, depth still grows near-linearly
+   (0.82 -> 2.47 -> 6.00um at t = 60/180/540s vs the 1.414um a
+   self-limited groove of this window would pin at), because the **mask
+   is undercut**: the fast `rate110` direction is vertical at the mask
+   edge, so lateral attack widens the effective window faster than the
+   slow facet can anchor to it. The facet angle also wanders with time
+   (21.9° -> 37.3° -> 62.1° at t = 30/60/120s) instead of converging on
+   54.74°, so there is no stable converged facet either. The existing
+   `test_koh_crystallographic_wet_etch_real.py` still passes and still
+   passes **for the coincidental reason** documented in the section
+   above — it was deliberately left untouched rather than rewritten
+   around this session's findings, since rewriting a shipped test's
+   physics premise is a separate decision from fixing the crystal frame.
+   TMAH remains moot for the same reason as before.
+
+6. **Next smallest experiment (not done):** the open question is now
+   specifically *mask-edge anchoring*, not the crystal frame or the
+   solver — whether a mask-edge geometry that presents the (111) facet
+   from t=0 (rather than an initially vertical wall at the mask edge,
+   where `rate110` is maximal) lets the facet anchor and the groove
+   close. That is a geometry-construction experiment, in the same family
+   as the LOCOS pad-oxide-first fix elsewhere in this file, and it does
+   not require any further ViennaLS/ViennaPS source archaeology.
+
+**Regression after this change: 23 passed, 0 failed, 0 skipped** (22
+before this section's new test).
+
 ### Per-material etch selectivity — ADDED (later session, found by questioning a claim this file itself had made)
 
 Found while verifying the LOCOS chaining fix, not by looking for it: a
@@ -3801,6 +3922,17 @@ touched.
   blocked open-access mirror, no ViennaPS data). Explicitly NOT
   pursued further into ViennaLS source this round, per user
   instruction to stop and record rather than keep digging.
+  **PARTIALLY RESOLVED in part 16** — the crystal-frame root cause is
+  now *proven* (analytically, from `psWetEtching.hpp`'s own formula,
+  plus a bit-identical-output behavioural confirmation): the
+  3D-provenance direction vectors make `rate111`/`rate311`
+  algebraically inert in 2D, so no (111) facet existed at all. Fixed
+  additively via `KOH_30PCT_70C_2D` (existing constant untouched) and
+  guarded by a new test. **Self-limiting is still NOT achieved** —
+  now attributable to mask undercut, with the spatial scheme (all 12)
+  and grid resolution both ruled out by measurement. See "KOH crystal
+  frame — ROOT CAUSE PROVEN AND PARTIAL FIX SHIPPED" above; TMAH is
+  still moot.
 - Visual (on-screen) verification of the GUI fixes (etch-panel field
   visibility, real ViennaPS mesh rendering, Si cross-section
   decimation) — **RESOLVED, later session**: the `python3.11-tk`
