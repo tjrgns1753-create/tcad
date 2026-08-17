@@ -631,12 +631,7 @@ class TCADApplication(tk.Tk):
             fill="x"
         )
 
-        self.cycles_var = self._field(
-            frame,
-            "Bosch cycles",
-            self.recipe.cycles,
-        )
-
+        # Fields below are used by every etch model.
         self.grid_var = self._field(
             frame,
             "Grid delta (µm)",
@@ -649,71 +644,120 @@ class TCADApplication(tk.Tk):
             self.recipe.etch_time_s,
         )
 
+        # Only one of the four groups below is ever shown at a time,
+        # matching the "Etch process" combobox above -- each model has
+        # its own set of parameters, and showing all 12 at once
+        # regardless of selection was confusing (e.g. Bosch's polymer/
+        # ion fields stayed visible while Isotropic etch was selected,
+        # even though run_etch() never reads them for that model).
+        # See _update_etch_field_visibility(). All four group frames
+        # live inside one fixed container (etch_params_container),
+        # packed once, so switching the selected group never disturbs
+        # the etch_button/log panel below it -- packing/unpacking a
+        # frame directly into `frame` here would instead move it to
+        # the end of the pack order each time, landing below the
+        # button on every switch.
+        etch_params_container = ttk.Frame(frame)
+        etch_params_container.pack(
+            fill="x"
+        )
+
+        bosch_frame = ttk.Frame(etch_params_container)
+
+        self.cycles_var = self._field(
+            bosch_frame,
+            "Bosch cycles",
+            self.recipe.cycles,
+        )
+
         self.poly_var = self._field(
-            frame,
+            bosch_frame,
             "Polymer deposition rate",
             self.recipe.polymer_rate,
         )
 
         self.poly_stick_var = self._field(
-            frame,
+            bosch_frame,
             "Polymer sticking",
             self.recipe.polymer_sticking,
         )
 
         self.ion_exp_var = self._field(
-            frame,
+            bosch_frame,
             "Ion source exponent",
             self.recipe.ion_source_exponent,
         )
 
         self.ion_rate_var = self._field(
-            frame,
+            bosch_frame,
             "Ion Si contribution",
             self.recipe.ion_rate,
         )
 
         self.neutral_rate_var = self._field(
-            frame,
+            bosch_frame,
             "Neutral Si contribution",
             self.recipe.neutral_rate,
         )
 
         self.neutral_stick_var = self._field(
-            frame,
+            bosch_frame,
             "Neutral sticking",
             self.recipe.neutral_sticking,
         )
 
+        directional_frame = ttk.Frame(etch_params_container)
+
         self.directional_rate_var = self._field(
-            frame,
+            directional_frame,
             "Directional RIE etch rate (µm/s)",
             0.1,
         )
 
+        isotropic_frame = ttk.Frame(etch_params_container)
+
         self.isotropic_rate_var = self._field(
-            frame,
+            isotropic_frame,
             "Isotropic etch rate (µm/s)",
             0.05,
         )
 
+        sf6o2_frame = ttk.Frame(etch_params_container)
+
         self.ion_flux_var = self._field(
-            frame,
+            sf6o2_frame,
             "SF6/O2 ion flux",
             12.0,
         )
 
         self.etchant_flux_var = self._field(
-            frame,
+            sf6o2_frame,
             "SF6/O2 etchant flux",
             1800.0,
         )
 
         self.oxygen_flux_var = self._field(
-            frame,
+            sf6o2_frame,
             "SF6/O2 oxygen flux",
             100.0,
         )
+
+        self._etch_model_frames = {
+            "Bosch DRIE": bosch_frame,
+            "Directional RIE": directional_frame,
+            "Isotropic etch": isotropic_frame,
+            "SF6/O2": sf6o2_frame,
+        }
+
+        self.etch_model.trace_add(
+            "write",
+            lambda *_args: self._update_etch_field_visibility(),
+        )
+
+        # Show only the group matching the combobox's current value
+        # (the "Bosch DRIE" default) before the button below is
+        # packed, so the visible group lands in the right place.
+        self._update_etch_field_visibility()
 
         self.etch_button = ttk.Button(
             frame,
@@ -773,6 +817,27 @@ class TCADApplication(tk.Tk):
             fill="both",
             expand=True,
         )
+
+    # --------------------------------------------------------
+    # ETCH FIELD VISIBILITY
+    # --------------------------------------------------------
+
+    def _update_etch_field_visibility(self):
+        """Show only the parameter group matching the currently
+        selected etch model in the "Etch process" combobox, hiding the
+        other three. See _make_etch_panel for why every group frame is
+        packed into a single fixed container instead of `frame`
+        directly (packing order)."""
+
+        selected = self.etch_model.get()
+
+        for model_name, group_frame in self._etch_model_frames.items():
+            if model_name == selected:
+                group_frame.pack(
+                    fill="x"
+                )
+            else:
+                group_frame.pack_forget()
 
     # --------------------------------------------------------
     # FIELD

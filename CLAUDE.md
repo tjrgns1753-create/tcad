@@ -2969,6 +2969,63 @@ drawn, "REAL VIENNAPS MESH" label present, no crash. Confirms the
 rendering generalizes across models, not just the isotropic case the
 question was originally about.
 
+### GUI: etch panel now shows only the fields the selected model actually uses — FIXED (later session, per explicit user observation "에칭 종류를 선택하면 그 종류에 맞게끔 입력할 수 있는 파라미터가 바뀌어야 하지 않을까?")
+
+1. **What was tested:** read `_make_etch_panel()`/`run_etch()`
+   directly rather than guessing. Confirmed: all 12 model-specific
+   fields (7 Bosch-only, 1 Directional-only, 1 Isotropic-only, 3
+   SF6/O2-only) were created with `frame` as their parent and packed
+   unconditionally, so every field was visible regardless of which
+   model the "Etch process" combobox had selected — e.g. selecting
+   "Isotropic etch" still showed all 7 Bosch fields (cycles, polymer
+   rate/sticking, ion exponent, ion/neutral Si contribution, neutral
+   sticking) even though `run_etch()`'s `elif model_key == "isotropic"`
+   branch never reads any of them.
+2. **Root cause:** the combobox was never wired to anything besides
+   `run_etch()`'s own recipe-building branch — nothing updated field
+   visibility when the selection changed, because nothing was written
+   to do so.
+3. **Fix applied — `tcad_2d_stagewise.py`'s `_make_etch_panel()`:**
+   the two fields every model actually uses (`grid_var`, `etch_time_var`)
+   stay directly in `frame`, unconditionally visible, right after the
+   combobox. The 12 model-specific fields were moved (not
+   reordered within their own group, just re-parented) into four
+   `ttk.Frame` groups (`bosch_frame`, `directional_frame`,
+   `isotropic_frame`, `sf6o2_frame`), all four living inside one fixed
+   `etch_params_container` frame that is itself packed exactly once.
+   New `_update_etch_field_visibility()` packs only the group matching
+   `self.etch_model.get()` and calls `pack_forget()` on the other
+   three; `self.etch_model.trace_add("write", ...)` calls it on every
+   combobox change, and it is also called once at panel-build time so
+   the initial "Bosch DRIE" default shows only Bosch's own fields.
+   Deliberately did NOT pack each group frame directly into `frame` —
+   Tkinter's pack manager moves a widget to the END of its parent's
+   pack order every time it's re-packed after `pack_forget()`, which
+   would push whichever group the user last selected below the
+   already-packed etch button/log panel. Routing all four groups
+   through one single always-packed container sidesteps this entirely,
+   since at most one of its children is ever visible at once.
+   `run_etch()` itself needed no changes — the hidden fields' `tk.
+   StringVar`s keep their values regardless of whether their Entry
+   widget is currently packed, so whichever `elif model_key == ...`
+   branch runs still reads the correct value.
+4. **Verified:** `ast.parse()` confirms the edited file is still
+   syntactically valid. The show/hide logic itself was checked by
+   manual trace against documented Tkinter pack-manager semantics
+   (`pack_forget()` on an unpacked widget is a safe no-op; child
+   widgets can be packed into a frame before that frame itself is
+   packed into its own parent; a `StringVar`'s value survives its
+   widget being unpacked) — **could NOT be verified with an actual
+   on-screen render**, since this container still has no `tkinter`
+   installed (same standing blocker as the earlier Si-cross-section
+   rendering fix above — `python3.11-tk` install remains blocked by
+   the environment's outbound proxy policy).
+5. **What remains uncertain:** whether the visual result (spacing,
+   any residual layout jump when switching models) looks right on an
+   actual screen — same category of unverified-by-rendering risk as
+   every other GUI change this session, for the same environment
+   reason.
+
 ### CLI end-to-end verification, real entry point — DONE (later session)
 
 Everything in the previous entries was verified via direct Python
