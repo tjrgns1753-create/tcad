@@ -2860,6 +2860,17 @@ geometry to prioritize.
   behavior fully preserved for the case the new code can't handle).
 - Full regression: 11 passed / 2 failed, same two pre-existing failures
   — no new regressions.
+- **On-screen render, real (later session, once the tkinter blocker
+  was solved — see "GUI visual verification" above):** drove the
+  actual running GUI (`.venv312` + Xvfb + `xdotool`) through all 6
+  lithography steps, selected Isotropic etch, set a 5.0s etch time
+  (0.05um/s rate — large enough to be a real, non-noise etch per the
+  already-documented default-value caveat below), clicked "5. START
+  ETCH — VIENNAPS", and screenshotted the result after the real
+  ViennaPS subprocess finished. Confirmed on-screen: the canvas shows
+  the "REAL VIENNAPS MESH" label (not "VIENNAPS RESULT"/the old
+  placeholder rectangle) and real triangulated PR/Si regions with
+  visible per-triangle edges, not a flat-filled rectangle.
 
 ### GUI: Si cross-section rendering as a stray small triangle — ROOT-CAUSED AND FIXED (later session, reported by the user: "실리콘 기판 단면에 작은 직각삼각형으로 표현이 된다" / "the Si substrate cross-section renders as a small right triangle")
 
@@ -2926,13 +2937,23 @@ geometry to prioritize.
    (`[-5.000, -0.001]`) almost exactly, no longer clustered near the
    floor. Per-material proportional allocation confirmed too: Mask
    (13% of total triangles) got 260 of the 2000-cap (13.0%), Si (87%)
-   got 1740 (87.0%). **Could NOT verify inside an actual running
-   Tkinter GUI** — this container has no `tkinter` installed at all
-   (`ModuleNotFoundError` even just importing it), so the fix is
-   verified at the algorithm level (proven correct against real
-   ViennaPS mesh data, same as `redraw()` would receive) but not via
-   an actual on-screen render in this environment. `ast.parse()`
-   confirmed the edited file is still syntactically valid.
+   got 1740 (87.0%). `ast.parse()` confirmed the edited file was still
+   syntactically valid. At the time this fix was made, this container
+   had no `tkinter` installed at all, so on-screen verification was
+   not possible then — resolved in a later session, see below.
+
+   **On-screen render, real (later session, once the tkinter blocker
+   was solved — see "GUI visual verification" above):** drove the
+   actual running GUI (`.venv312` + Xvfb + `xdotool`) through all 6
+   lithography steps, selected Isotropic etch at a 5.0s etch time (a
+   real, measurable etch — see item 6 below for why the literal
+   default field values were avoided for this check), ran it against
+   real ViennaPS, and screenshotted the result. Confirmed on-screen:
+   the gray Si region's rendered triangles visibly span the entire
+   cross-section height shown on the canvas, not clustered into a
+   small triangle near the floor — matching the algorithm-level
+   verification above, now also confirmed by direct visual
+   inspection.
 
 6. **Separately confirmed real, but NOT what the user was
    describing — left uncorrected (a UX/default-value question, not a
@@ -3009,22 +3030,101 @@ question was originally about.
    StringVar`s keep their values regardless of whether their Entry
    widget is currently packed, so whichever `elif model_key == ...`
    branch runs still reads the correct value.
-4. **Verified:** `ast.parse()` confirms the edited file is still
-   syntactically valid. The show/hide logic itself was checked by
-   manual trace against documented Tkinter pack-manager semantics
-   (`pack_forget()` on an unpacked widget is a safe no-op; child
-   widgets can be packed into a frame before that frame itself is
-   packed into its own parent; a `StringVar`'s value survives its
-   widget being unpacked) — **could NOT be verified with an actual
-   on-screen render**, since this container still has no `tkinter`
-   installed (same standing blocker as the earlier Si-cross-section
-   rendering fix above — `python3.11-tk` install remains blocked by
-   the environment's outbound proxy policy).
-5. **What remains uncertain:** whether the visual result (spacing,
-   any residual layout jump when switching models) looks right on an
-   actual screen — same category of unverified-by-rendering risk as
-   every other GUI change this session, for the same environment
-   reason.
+4. **Verified — at the algorithm level first, then with an actual
+   on-screen render (later session, see "GUI visual verification —
+   the tkinter blocker was actually solvable" below for how):**
+   `ast.parse()` confirmed the edited file was syntactically valid,
+   and the show/hide logic was checked by manual trace against
+   documented Tkinter pack-manager semantics before a real render was
+   possible. Once real rendering became possible, re-verified for
+   real: launched the actual GUI (`.venv312/bin/python
+   tcad_2d_stagewise.py`) under Xvfb, and used `xdotool` to click the
+   "Etch process" combobox and select each of the 4 models in turn,
+   screenshotting after each. Confirmed on-screen, not inferred:
+   - Bosch DRIE (default): all 7 of its own fields shown (cycles,
+     polymer rate/sticking, ion exponent, ion/neutral Si contribution,
+     neutral sticking), nothing from the other 3 models.
+   - Directional RIE: exactly 1 field (etch rate), Bosch's 7 fields
+     gone.
+   - Isotropic etch: exactly 1 field (etch rate), Bosch's 7 fields
+     gone.
+   - SF6/O2: exactly 3 fields (ion/etchant/oxygen flux), nothing from
+     the other 3 models.
+
+   No cross-contamination observed in any of the 4 screenshots — the
+   fix works exactly as designed, confirmed by direct visual
+   inspection, not just code trace.
+5. **What remains uncertain:** none of substance for this specific
+   fix — the concrete concern from item 4 (layout jump, spacing) was
+   resolved by the real screenshots showing clean, correctly-ordered
+   layouts for every model with no residual visual artifacts.
+
+### GUI visual verification — the tkinter blocker was actually solvable (later session, prompted by "Tkinter 설치 못하니")
+
+Every earlier GUI fix this file records was verified only at the
+algorithm/data level, with the standing conclusion that this
+container "cannot visually verify GUI" because the main `.venv`'s
+Python (3.11.15, from the deadsnakes PPA) has no working `tkinter`,
+and installing the matching `python3.11-tk` was blocked by a 403 from
+this environment's egress proxy on the deadsnakes PPA host. Revisited
+when the user asked about the tkinter install directly.
+
+1. **What was tested:** checked whether a DIFFERENT, already-installed
+   Python on this machine has working tkinter, instead of continuing
+   to fight the PPA block for the exact 3.11.15 interpreter the main
+   `.venv` uses. `/usr/bin/python3.12` (the standard Ubuntu archive
+   Python, not from any PPA) already had `python3-tk` installed
+   earlier in this session's history — previously misdiagnosed and
+   dismissed as "wrong Python version, useless" without actually
+   checking whether that package targets this interpreter.
+2. **Result:** `python3 -c "import tkinter"` under `/usr/bin/python3.12`
+   works — real Tk 8.6. Checked whether ViennaPS/DevSim have PyPI
+   wheels for cp312 (PyPI itself, unlike the PPA/GitHub-code-search/
+   GitHub-docs-site hosts, is NOT blocked by this environment's egress
+   proxy): `ViennaPS` ships a `cp312` wheel, `devsim` ships a
+   version-agnostic `cp39-abi3` wheel — both installable.
+3. **What it proves:** the standing "cannot visually verify GUI"
+   conclusion, repeated across multiple earlier sessions in this file,
+   was specific to the exact interpreter this project's main `.venv`
+   happens to use — not a fundamental property of this container. A
+   second, separate venv on a different already-present interpreter
+   sidesteps it entirely, without touching the main `.venv` or
+   fighting the PPA block at all.
+4. **Setup performed:** new `.venv312` (`/usr/bin/python3.12 -m venv
+   .venv312`, NOT committed to git), `pip install -e ".[full]"` inside
+   it — pulled ViennaPS 4.6.2 (cp312), ViennaLS 5.8.5, devsim 2.11.0
+   (cp39-abi3, newer than the main venv's 2.10.1 but still satisfies
+   this project's own `>=2.10` constraint), numpy/matplotlib/meshio,
+   plus `tcad` itself in editable mode. Confirmed `tkinter`,
+   `tcad.backends.viennaps.session.is_available()`, and
+   `tcad.device.devsim.backend.is_available()` all work (DevSim found
+   `libopenblas.so` via the same `DEVSIM_MATH_LIBS` mechanism already
+   documented working in the main venv). Started `Xvfb :99 -screen 0
+   1400x900x24` as a virtual display (standard Ubuntu package, not
+   PPA-blocked), launched the real GUI
+   (`DISPLAY=:99 .venv312/bin/python tcad_2d_stagewise.py`) against
+   it, and installed `imagemagick` + `xdotool` (both standard Ubuntu
+   archive packages) for screenshot capture and simulated mouse
+   clicks, respectively.
+5. **Verified working end-to-end:** captured the first-ever real
+   on-screen screenshot of this GUI in the project's history — the
+   full lithography panel, fabrication-sequence list, and etch panel
+   all rendered correctly with real default values. Then used
+   `xdotool` to click the "Etch process" combobox, select each of the
+   4 registered etch models in turn, and screenshot after each — this
+   is what let the etch-panel field-visibility fix (above) be
+   confirmed with a real render instead of just a code trace.
+6. **What remains uncertain:** whether `.venv312`'s slightly newer
+   `devsim` (2.11.0 vs the main venv's 2.10.1) or `ViennaLS` (5.8.5,
+   not independently version-pinned/checked before) behaves
+   identically to the main venv for anything beyond GUI rendering —
+   this venv was built and used only for visual GUI verification, not
+   run through the full regression suite, and is not intended to
+   replace the main venv for that; whether the same PPA/GitHub-host
+   proxy block that stopped `python3.11-tk` would also stop other,
+   unrelated PPA-hosted packages this project might need later — not
+   re-tested, only the one specific package this session needed was
+   confirmed available elsewhere.
 
 ### CLI end-to-end verification, real entry point — DONE (later session)
 
@@ -3612,6 +3712,43 @@ existing KOH test):**
 skipped for the code changes (selectivity + LOCOS-on-LOCOS guard); the
 KOH/TMAH investigation added no code and no test.
 
+**What this session did (part 15, later session, prompted by "Tkinter
+설치 못하니" — resolves the standing "cannot visually verify GUI"
+limitation named throughout the GUI sections above):** found that the
+tkinter-install block was specific to the main venv's exact
+interpreter (3.11.15 from the deadsnakes PPA), not a fundamental
+container property — `/usr/bin/python3.12` (standard Ubuntu archive,
+already had `python3-tk` installed earlier this session but was
+previously misdiagnosed as useless) has working tkinter, and both
+ViennaPS and devsim have PyPI wheels for it. Built a separate
+`.venv312` (not committed to git) on that interpreter, ran the real
+GUI under `Xvfb`, and used `xdotool` to actually click through it —
+the first real on-screen interaction with this GUI in the project's
+history. Used this to re-verify, with real screenshots instead of
+code trace, all three GUI fixes that had previously been shipped
+without visual confirmation:
+- Etch-panel field visibility: cycled the "Etch process" combobox
+  through all 4 models (Bosch DRIE, Directional RIE, Isotropic etch,
+  SF6/O2), confirming each shows exactly its own fields with zero
+  cross-contamination.
+- Real ViennaPS mesh rendering: ran a real isotropic etch through the
+  GUI's own lithography→etch flow, confirmed the canvas shows the
+  "REAL VIENNAPS MESH" label and real triangulated geometry, not the
+  old placeholder rectangle.
+- Si cross-section decimation fix: confirmed the rendered Si
+  triangles visibly span the full substrate depth, not clustered near
+  the floor as a small triangle (the originally-reported bug).
+
+All three fixes are now confirmed correct by direct visual inspection,
+not just algorithm-level reasoning. No `tcad/` production code changed
+this part — verification only. See "GUI visual verification — the
+tkinter blocker was actually solvable" above for the full setup, and
+each fix's own CLAUDE.md section for its specific screenshot-based
+confirmation.
+
+**Regression after part 15:** unchanged — no production code was
+touched.
+
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
   of parts 1-5; struck through here rather than removed, so this list
@@ -3664,10 +3801,17 @@ KOH/TMAH investigation added no code and no test.
   blocked open-access mirror, no ViennaPS data). Explicitly NOT
   pursued further into ViennaLS source this round, per user
   instruction to stop and record rather than keep digging.
-- Visual (on-screen) verification of the part-11 GUI rendering fix —
-  blocked by a GitHub-PPA proxy policy denial (403) when trying to
-  install the venv-matching `python3.11-tk` package; accepted as a
-  standing container limitation per explicit user instruction.
+- Visual (on-screen) verification of the GUI fixes (etch-panel field
+  visibility, real ViennaPS mesh rendering, Si cross-section
+  decimation) — **RESOLVED, later session**: the `python3.11-tk`
+  PPA block was specific to the main venv's exact interpreter, not a
+  fundamental container limitation. A separate `.venv312` built on
+  the already-installed `/usr/bin/python3.12` (which already has
+  working `tkinter`) plus `Xvfb`/`xdotool`/`imagemagick` gave a real
+  on-screen render for all three — see "GUI visual verification — the
+  tkinter blocker was actually solvable" above for the setup, and
+  each fix's own section above for its specific screenshot-based
+  confirmation.
 
 ---
 
