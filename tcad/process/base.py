@@ -34,6 +34,7 @@ INITIAL_GEOMETRY_RECIPE_KEYS = (
     "y_extent_um",
     "mask_left_um",
     "mask_right_um",
+    "mask_spans_um",
     "pr_thickness_um",
 )
 
@@ -100,6 +101,24 @@ class ProcessStep(ABC):
                 )
             self.last_domain = self._inherited_domain
             return self._inherited_domain
+
+        # Arbitrary multi-span mask, when the recipe asks for one.
+        # MakeTrench below can only build `opaque | open | opaque` (one
+        # centred window); `mask_spans_um` covers any pattern, including
+        # the complement a MOSFET source/drain implant mask needs
+        # (`open | opaque | open`). Purely additive: a recipe without
+        # this key takes the identical MakeTrench path as before.
+        if recipe.get("mask_spans_um"):
+            geometry = session.make_mask_spans(
+                grid_delta_um=recipe["grid_delta_um"],
+                x_extent_um=recipe["x_extent_um"],
+                y_extent_um=recipe["y_extent_um"],
+                spans_um=[tuple(span) for span in recipe["mask_spans_um"]],
+                mask_height_um=max(recipe["pr_thickness_um"], 0.1),
+                mask_material=recipe.get("mask_material", "Mask"),
+            )
+            self.last_domain = geometry
+            return geometry
 
         geometry = session.create_domain(
             grid_delta_um=recipe["grid_delta_um"],

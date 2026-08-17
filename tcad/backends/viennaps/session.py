@@ -111,6 +111,106 @@ def make_trench(
     return domain
 
 
+def make_mask_spans(
+    grid_delta_um: float,
+    x_extent_um: float,
+    y_extent_um: float,
+    spans_um,
+    mask_height_um: float,
+    substrate_depth_um: float = 1.0,
+    mask_material: str = "Mask",
+    dimension: int = 2,
+):
+    """Build a domain whose mask is an arbitrary list of OPAQUE spans.
+
+    `MakeTrench` can only ever produce one fixed pattern —
+    `opaque | open | opaque`, a single centred window. A real mask needs
+    more than that; in particular a MOSFET source/drain implant mask is
+    the COMPLEMENT (`open | opaque(gate/channel) | open`, i.e. one
+    central opaque span), which `MakeTrench` cannot express at all.
+
+    spans_um : sequence of (min_um, max_um) pairs, in domain x
+        coordinates (the domain spans [-x_extent_um/2, +x_extent_um/2]).
+        Each pair is a region COVERED by mask; everything else is open.
+        Spans may touch or overlap — they are unioned, so overlap is
+        harmless rather than an error.
+    substrate_depth_um : the substrate box's own lower bound. This is an
+        HRLE allocation hint only, NOT a physical floor — the y axis is
+        INFINITE_BOUNDARY, and the real floor is applied at export time
+        like every other geometry in this project (see
+        io.DEFAULT_FLOOR_DEPTH_UM).
+
+    Level-set ORDERING is load-bearing, not stylistic. ViennaLS `Advect`
+    advects only the LAST level set and then replaces each lower one with
+    `lower INTERSECT last`, so the last level set must CONTAIN all
+    others or the lower ones are destroyed on any subsequent process
+    step. `MakeTrench` satisfies this by inserting the SUBSTRATE last,
+    wrapping the mask — so this function mirrors that exact ordering
+    (mask first, then substrate last with wrapLowerLevelSet=True).
+    Verified by direct measurement, not assumed: the obvious
+    alternative (mask inserted last, unwrapped) produces an EMPTY export
+    and reproduces the same class of failure as the LOCOS chaining bug,
+    while this ordering survives a real chained etch with every level
+    set intact. See CLAUDE.md.
+
+    Also verified: two spans covering everything outside a window
+    reproduce real `MakeTrench` to within 0.06% in every material's
+    area — i.e. this is a strict generalization of it, not a different
+    geometry that merely looks similar.
+    """
+    module = require_viennaps()
+    import viennals as vls
+
+    _ensure_units_set(module)
+    module.setDimension(dimension)
+
+    half_x = x_extent_um / 2.0
+    substrate = getattr(module.Material, "Si")
+    mask_mat = getattr(module.Material, mask_material)
+
+    # A scratch domain purely to learn this grid's boundary conditions:
+    # getBoundaryConditions() is only safe once a domain has at least
+    # one level set (confirmed elsewhere in this project: it segfaults
+    # on an empty Domain), and the final domain must receive its level
+    # sets in mask-then-substrate order, so the conditions cannot be
+    # read from it before the mask exists.
+    scratch = create_domain(grid_delta_um, x_extent_um, y_extent_um, dimension)
+    module.MakePlane(scratch, 0.0, substrate).apply()
+    bcs = scratch.getBoundaryConditions()
+    bounds = [-half_x, half_x, -substrate_depth_um, y_extent_um]
+
+    mask_ls = None
+    for lo, hi in spans_um:
+        box_ls = vls.Domain(bounds, bcs, grid_delta_um)
+        box = vls.MakeGeometry(box_ls, vls.Box([lo, 0.0], [hi, mask_height_um]))
+        # The mask boxes deliberately run to the domain edge in x for a
+        # full-width span; without this the x boundary condition would
+        # clip them back.
+        box.setIgnoreBoundaryConditions([False, True, False])
+        box.apply()
+        if mask_ls is None:
+            mask_ls = box_ls
+        else:
+            vls.BooleanOperation(
+                mask_ls, box_ls, vls.BooleanOperationEnum.UNION
+            ).apply()
+
+    domain = create_domain(grid_delta_um, x_extent_um, y_extent_um, dimension)
+    if mask_ls is not None:
+        domain.insertNextLevelSetAsMaterial(mask_ls, mask_mat, False)
+
+    substrate_ls = vls.Domain(bounds, bcs, grid_delta_um)
+    vls.MakeGeometry(
+        substrate_ls, vls.Box([-half_x, -substrate_depth_um], [half_x, 0.0])
+    ).apply()
+    # wrapLowerLevelSet=True: makes this (the last) level set the union
+    # of substrate + mask, satisfying Advect's containment precondition
+    # exactly as MakeTrench does.
+    domain.insertNextLevelSetAsMaterial(substrate_ls, substrate, True)
+
+    return domain
+
+
 def save_domain_state(domain, path: str) -> str:
     """Persist a Domain's full level-set/material state to `path`.
 

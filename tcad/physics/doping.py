@@ -106,6 +106,57 @@ def apply_gaussian_implant_doping(
     return replace(result, doping=doping)
 
 
+def implant_windows_from_mask_spans(
+    mask_spans_um: List[List[float]],
+    x_extent_um: float,
+    conc_cm3: float,
+) -> List[Dict[str, float]]:
+    """Turn a mask's OPAQUE spans into the implant windows they leave
+    open — the complement of `mask_spans_um` within the domain.
+
+    This is the physical relationship an implant step actually has to
+    lithography: dopant lands where the mask is NOT. Passing implant
+    windows as free-floating numbers (see apply_implant_windows_doping)
+    lets them drift out of correspondence with the real mask geometry;
+    deriving them removes that failure mode for the common case.
+
+    mask_spans_um : the same value handed to a recipe's `mask_spans_um`
+        (see tcad.backends.viennaps.session.make_mask_spans) — opaque
+        regions, in domain x coordinates.
+    x_extent_um : the domain's own x extent; the domain spans
+        [-x_extent_um/2, +x_extent_um/2], matching every recipe in this
+        project.
+    conc_cm3 : implant concentration for every derived window (signed,
+        same convention as net_doping_cm3). One value for all windows —
+        a single implant step uses one dose, so per-window doses would
+        represent two separate steps.
+
+    Returns a list of {"min_um", "max_um", "conc_cm3"} ready to hand to
+    apply_implant_windows_doping(). Overlapping or unsorted input spans
+    are handled (they are merged first). An empty mask yields one window
+    covering the whole domain; a mask covering everything yields none.
+    """
+    half_x = x_extent_um / 2.0
+    merged: List[List[float]] = []
+    for lo, hi in sorted((min(s), max(s)) for s in mask_spans_um):
+        if merged and lo <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], hi)
+        else:
+            merged.append([lo, hi])
+
+    windows: List[Dict[str, float]] = []
+    cursor = -half_x
+    for lo, hi in merged:
+        if lo > cursor:
+            windows.append(
+                {"min_um": cursor, "max_um": min(lo, half_x), "conc_cm3": conc_cm3}
+            )
+        cursor = max(cursor, hi)
+    if cursor < half_x:
+        windows.append({"min_um": cursor, "max_um": half_x, "conc_cm3": conc_cm3})
+    return windows
+
+
 def apply_implant_windows_doping(
     result: ProcessResult,
     region: str,

@@ -3021,6 +3021,129 @@ composing what already exists.
    real step toward a gate-over-channel MOSFET geometry, and was
    reasoned about but not executed this session.
 
+### Arbitrary multi-span mask (`mask_spans_um`) — ADDED (later session, prompted by the user catching that `implant_windows`' numbers float free of any real mask: "이건 마스크를 내가 직접 그릴 수 있는 상황이어야 가능한거 아니야? 너가 만들어준 건 그냥 중앙에 구멍이 하나 있는 마스크잖아")
+
+The user was right, and more precisely right than the previous section
+realised. `implant_windows` above lets a caller name arbitrary lateral
+doping windows numerically — but the GEOMETRY was still `MakeTrench`,
+whose only possible pattern is `opaque | open | opaque` (one centred
+window). So the implant-window numbers had **no relationship to the
+actual mask**, when in a real flow the implant window IS the mask
+opening.
+
+Worse for the MOSFET case specifically: a source/drain implant mask is
+the **complement** of what `MakeTrench` builds — `open | opaque(gate/
+channel) | open`, i.e. one CENTRAL opaque span — which `MakeTrench`
+cannot express at all.
+
+1. **What was already there, unnoticed:** `_build_locos_geometry`
+   (`tcad/process/oxidation/thermal.py`) already builds its mask from
+   **two independent `vls.Box` level sets unioned together**, then
+   inserts the result as one material. So the mechanism for an
+   arbitrary N-box mask was already proven working in this codebase —
+   just hardcoded to "two boxes forming one centred window" inside the
+   LOCOS path. Generalising it is exposing existing, verified code, not
+   new capability.
+
+   Also checked and deliberately NOT used: ViennaPS ships
+   `GDSGeometry`/`GDSReader` (confirmed present in 4.6.2). GDS is a
+   **layout-plane (x-y)** format while this project's 2D is a
+   **cross-section**, so the axes don't correspond — the official GDS
+   example is 3D. A box/span list is the right primitive for a 2D
+   cross-section; GDS would be the right one only for a 3D extrusion.
+
+2. **The trap, measured rather than assumed.** Level-set ORDERING is
+   load-bearing here for exactly the reason the LOCOS chaining bug was:
+   ViennaLS `Advect` advects only the LAST level set and then replaces
+   each lower one with `lower INTERSECT last`, so the last level set
+   must CONTAIN all the others. Two orderings were built and compared:
+
+   | ordering | result |
+   |---|---|
+   | (A) mask inserted last, unwrapped | **FAILS immediately** — empty export (`ValueError: need at least one array to concatenate`), the same failure class as the LOCOS chaining bug |
+   | (B) mask first, substrate last with `wrapLowerLevelSet=True` | **works** — mirrors what `MakeTrench` itself does (measured earlier: `ls[0]=Mask`, `ls[1]=Si` spanning floor to mask top) |
+
+   (A) is the ordering a naive implementation would pick, so this is a
+   real trap, not a formality.
+
+3. **Result, all measured from the real exported mesh:**
+   - A single central opaque span builds correctly: mask x-extent
+     `(-0.8000, +0.8000)` exactly as requested, area 0.63790 vs the
+     0.64000 its span-width x mask-height predicts — the
+     `open|opaque|open` pattern `MakeTrench` cannot produce.
+   - It survives a real chained etch: level sets `[236, 514]` ->
+     `[152, 262]`, none destroyed, both materials still in the chained
+     export, Si genuinely etched 5.99934 -> 4.96514 (a fix that
+     preserved materials by making the step a no-op would not count).
+   - **Strict generalization of `MakeTrench`, not a lookalike:** two
+     spans covering everything outside a window reproduce real
+     `MakeTrench`'s own areas to 0.06% / 0.025% (Mask 1.75969 vs
+     1.75861, Si 5.99717 vs 5.99864) with an identical mask x-span —
+     sub-grid-cell, i.e. purely the two constructions rasterising the
+     same shape differently.
+
+4. **Production implementation, additive:**
+   - **`tcad/backends/viennaps/session.py`**: new `make_mask_spans(
+     grid_delta_um, x_extent_um, y_extent_um, spans_um, mask_height_um,
+     substrate_depth_um=1.0, mask_material="Mask")` — unions one
+     `vls.Box` per span into a single mask level set, then inserts mask
+     first and the substrate last with `wrapLowerLevelSet=True`.
+     Overlapping/touching spans are harmless (they're unioned). Needs a
+     scratch domain purely to read `getBoundaryConditions()` safely
+     (that call segfaults on an empty Domain, and the final domain
+     can't be queried before its mask exists) — documented inline.
+   - **`tcad/process/base.py`**: `prepare_domain()` takes the new path
+     when `recipe["mask_spans_um"]` is present, else the identical
+     `MakeTrench` path as before. Since this is the shared base every
+     process model inherits, **every model gets multi-span masks at
+     once**, and every recipe without the key is provably unaffected.
+     `mask_spans_um` was added to `INITIAL_GEOMETRY_RECIPE_KEYS` so an
+     inherited-domain step warns about it like the other geometry keys.
+   - **`tcad/physics/doping.py`**: new
+     `implant_windows_from_mask_spans(mask_spans_um, x_extent_um,
+     conc_cm3)` — returns the domain complement of the mask spans as
+     ready-to-use implant windows, closing exactly the gap the user
+     identified (dopant lands where the mask is NOT, instead of the
+     caller re-typing coordinates that can drift out of correspondence
+     with the mask). Merges unsorted/overlapping/reversed input rather
+     than trusting it.
+
+5. **Verified, real ViennaPS 4.6.2, through the real production entry
+   points:**
+   - New `tests/integration/test_mask_spans_real.py`: all three checks
+     in item 3, via `registry.get(...)` / `prepare_domain()` /
+     `ProcessStep.run()`.
+   - New `tests/unit/test_implant_windows_from_mask_mock.py`: the
+     complement arithmetic, pure geometry, no backend — central gate
+     span, MakeTrench-equivalent, unsorted+overlapping, reversed pair,
+     empty mask, fully-covered mask, and two gates -> three windows.
+   - Full regression: **`tests/run_regression.py` -> 26 passed, 0
+     failed, 0 skipped** (24 before this round's two new tests) — and
+     critically no regression from touching `prepare_domain()`, which
+     every single process model shares.
+
+6. **What remains uncertain / explicitly NOT done:** spans are 1D in x
+   with the mask always starting at y=0 and running to
+   `mask_height_um` — there is no per-span height, and no non-mask
+   material can be patterned this way (a gate STACK, oxide + electrode
+   over the channel, still needs its own construction). Contact
+   placement is still extremes-only, so the gate-over-channel contact
+   question from the previous section is untouched. No GUI: the user's
+   actual ask was mouse-drawing the mask with typed numeric editing,
+   and this round deliberately built the geometry/recipe layer it would
+   have to produce — drawing a mask before the recipe could represent
+   it would have had nothing to write to. `mask_spans_um` is not
+   validated against the domain extent (a span outside
+   `[-x_extent/2, +x_extent/2]` is clipped by the box construction
+   rather than rejected).
+
+7. **Next smallest experiment (not done):** the GUI layer the user
+   asked for — a canvas where mask spans are drawn with the mouse and
+   the resulting `mask_spans_um` numbers are shown/editable as text,
+   writing into the same recipe key this round added. Now unblocked,
+   and per this file's own standing rule the numbers, not the drawing,
+   remain authoritative.
+
 ### Autonomous overnight session — stopping point reached (later session)
 
 After the additions above (hbr_o2, sf6_c4f8, cf4_o2, faraday_cage
@@ -4039,6 +4162,36 @@ addition.
 
 **Regression after part 17:** `tests/run_regression.py` -> **24
 passed, 0 failed, 0 skipped** (23 before this part's new test).
+
+**What this session did (part 18, later session, the user catching a
+real hole in part 17: "이건 마스크를 내가 직접 그릴 수 있는 상황이어야
+가능한거 아니야? 너가 만들어준 건 그냥 중앙에 구멍이 하나 있는
+마스크잖아"):** correct, and sharper than part 17 had realised —
+`implant_windows` let a caller name doping windows numerically, but the
+GEOMETRY was still `MakeTrench`, so those numbers corresponded to no
+real mask feature at all. And the MOSFET source/drain mask specifically
+is the **complement** of `MakeTrench`'s only possible pattern (one
+CENTRAL opaque span, open both sides), which it cannot build. Shipped
+`mask_spans_um`: an arbitrary list of opaque mask spans, in the shared
+`ProcessStep.prepare_domain()` so every process model gets it at once,
+built by unioning one `vls.Box` per span — the same mechanism
+`_build_locos_geometry` already used, hardcoded, for its two boxes.
+Verified it is a strict generalization of `MakeTrench` (0.06% area
+agreement for the equivalent 2-span mask) and that it survives chaining;
+the naive mask-last level-set ordering was measured to fail outright
+(empty export, same class as the LOCOS chaining bug), so the
+substrate-last-wrapping ordering is load-bearing. Also added
+`implant_windows_from_mask_spans()` so implant windows are DERIVED from
+the mask openings instead of retyped — the actual coupling the user was
+pointing at. See "Arbitrary multi-span mask (`mask_spans_um`) — ADDED"
+above. GUI mouse-drawing deliberately not attempted this round: it had
+to have a recipe representation to write into first, which is what this
+part built.
+
+**Regression after part 18:** `tests/run_regression.py` -> **26
+passed, 0 failed, 0 skipped** (24 before this part's two new tests),
+including no regression from touching `prepare_domain()`, which every
+process model shares.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as

@@ -109,6 +109,14 @@ recipe = {
     "grid_delta_um": 0.2, "x_extent_um": 4.0, "y_extent_um": 3.0,
     "mask_left_um": 1.5, "mask_right_um": 2.5, "pr_thickness_um": 0.5,
     "etch_time_s": 0.5, "rate": -0.05, "mask_material": "Mask",
+    # Optional: replace the single centred mask_left/mask_right window
+    # with an arbitrary list of OPAQUE spans (domain x spans
+    # [-x_extent/2, +x_extent/2]). Accepted by every process model, since
+    # it lives in the shared ProcessStep.prepare_domain(). Needed for any
+    # pattern the default cannot express -- e.g. a MOSFET source/drain
+    # implant mask is one CENTRAL opaque span (open on both sides), the
+    # complement of what a single window gives:
+    #   "mask_spans_um": [[-0.8, 0.8]],
 }
 step_result = registry.get("etching", "isotropic")().run(recipe, "/tmp/out")
 process_result = build_process_result(step_result)
@@ -233,7 +241,11 @@ The CLI (`tcad.cli.run_pipeline`) writes both under `<workdir>/`:
     // and drain implants over a channel/body background, all in one
     // region (this is the piece a MOSFET-shaped doping profile needs
     // that no other kind above can express: two separate lateral
-    // windows in the same region)
+    // windows in the same region).
+    // To keep the windows tied to the real mask geometry rather than
+    // hand-typed, derive them from the recipe's own mask_spans_um with
+    // tcad.physics.doping.implant_windows_from_mask_spans() -- dopant
+    // lands where the mask is NOT.
     "region": "Si", "axis": "x", "background_doping_cm3": -1e17,
     "windows": [
       {"min_um": -1.6, "max_um": -0.6, "conc_cm3": 1e20},
