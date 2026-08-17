@@ -99,7 +99,7 @@ result = run_iv_sweep(
 save_csv(result, "/tmp/out/iv.csv")
 ```
 
-## Supported Process models (18)
+## Supported Process models (19)
 
 | Category | Model (`registry` name) | ViennaPS class |
 |---|---|---|
@@ -120,6 +120,7 @@ save_csv(result, "/tmp/out/iv.csv")
 | Deposition | `single_particle_cvd` | `SingleParticleProcess` |
 | Deposition | `directional` | `DirectionalProcess` |
 | Deposition | `isotropic` | `IsotropicProcess` |
+| Deposition | `geometric_trench` | `GeometricTrenchDeposition` (one-shot geometric stamp, not a rate×time simulation — see `tcad/process/deposition/geometric_trench.py`'s module docstring) |
 | Oxidation | `thermal` | `Oxidation` (fin-style and LOCOS-style, via `mask_material`) |
 
 ```python

@@ -4,6 +4,7 @@ deposition models with tcad.process.registry.
 
 from tcad.process.deposition import (
     directional,
+    geometric_trench,
     isotropic,
     selective_epitaxy,
     single_particle_cvd,
@@ -18,4 +19,5 @@ __all__ = [
     "single_particle_cvd",
     "directional",
     "isotropic",
+    "geometric_trench",
 ]

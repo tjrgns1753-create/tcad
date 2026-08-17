@@ -2624,6 +2624,103 @@ turned out to be true for the uninteresting reason.
    parameter shapes and were not touched; only 10:1 at one grid
    resolution was verified, not a selectivity sweep.
 
+### `GeometricTrenchDeposition` — ADDED (later session, per explicit user choice among named unimplemented features)
+
+Previously skipped, in the "Autonomous overnight session — stopping
+point reached" section above, specifically because its `bottomMed`/
+`a`/`b`/`n` parameters had "no documented meaning found" and this
+project's rule is to never guess at what an undocumented physical
+parameter does. Resolved this round by reading the real C++ source
+rather than continuing to guess.
+
+1. **What was tested:** the installed ViennaPS 4.6.2 Python bindings
+   (`.pyi` stub) confirm the constructor signature
+   (`trenchWidth, trenchDepth, depositionRate, bottomMed, a, b, n`) but
+   carry no explanation. Fetched ViennaPS's real C++ source from GitHub
+   — `include/viennaps/models/psGeometricDistributionModels.hpp`'s
+   `impl::TrenchDistribution` class, the thing this Python class
+   actually wraps — and read every method body verbatim (constructor,
+   `getSignedDistance`, `getBounds`, `prepare`), not a summary.
+2. **Result — read directly from the algorithm, not guessed:**
+   - `trenchWidth` is stored by the constructor and **read nowhere
+     else in the class**, confirmed by checking every method. It has
+     zero effect on the output.
+   - `depositionRate` is **not a physical rate**. `getBounds()`
+     returns `[-depositionRate, +depositionRate]` per axis — it's the
+     half-width of the geometric search box the underlying
+     `GeometricAdvectDistribution` uses to find candidate surface
+     points. Verified directly: setting it smaller than the true
+     required thickness does **not** clip cleanly — it produces a
+     visibly **larger**, wrong deposit (measured ~2.65um where
+     ~0.35um was expected, in an isolated probe).
+   - `trenchDepth`/`bottomMed`/`a`/`b`/`n` together define thickness as
+     a function of a surface point's own y-coordinate:
+     `thickness = bottomMed` within one gridDelta of `y=-trenchDepth`
+     (a real trench floor, if `trenchDepth` matches an actual recess);
+     `thickness = a*(1-|y|/trenchDepth)^n + b` everywhere else —
+     **peaking at y=0** (this project's wafer-surface datum) and
+     decaying with `|y|` in *either* direction (up onto a mask/raised
+     feature, or down into a trench). Verified against a real 2D
+     trench+mask geometry: mask top (y=0.5) measured 0.1247 vs.
+     predicted 0.125 (a=0.3, b=0.05, n=2); trench floor (y=-1.0,
+     trenchDepth=1.0) measured 0.0998 vs. predicted bottomMed=0.1 —
+     both within grid resolution.
+   - The model has **no mask-material concept at all** — no such
+     constructor parameter exists; it deposits everywhere in the
+     domain purely by y-position.
+   - Confirmed empirically that `Process(geometry, model).apply()`
+     needs **no duration argument** — matches
+     `tests/geometricProcessStrategy`'s own comment, fetched from
+     ViennaPS's real test suite, that "geometric processes typically
+     have zero duration".
+   - Calling the model directly (no other step first) **merges** the
+     deposit into whatever material already sits at the top of the
+     domain's material stack — verified: `getMaterialsInDomain()` was
+     unchanged before/after. This matches every OTHER model already in
+     `tcad/process/deposition/` (none of them tag a distinct material
+     either), so it was kept as the default. An optional `material`
+     recipe key opts into `duplicateTopLevelSet()` first (the same
+     pattern `bosch_drie.py` already uses for its own polymer layer),
+     verified to give the deposit its own separately-tagged,
+     separately-measurable region.
+3. **What it proves:** the parameter meanings were genuinely
+   recoverable without fabricating anything — this was a documentation
+   gap in the Python bindings, not an inherently ambiguous API. All
+   seven constructor values now have a source-verified, testable
+   meaning.
+4. **Production implementation:**
+   `tcad/process/deposition/geometric_trench.py` (new), registered as
+   `("deposition", "geometric_trench")`. Recipe keys: `reference_depth_um`
+   and `deposition_rate_um` required (no invented defaults for a
+   parameter that silently produces wrong results if too small);
+   `bottom_med_um`/`a_um`/`b_um` required (no default that could look
+   like a real calibrated value); `n` optional, defaults to ViennaPS's
+   own default (1.0 — a pure shape exponent, not a physical constant,
+   so reusing the library's own default is not a fabrication);
+   `material` optional. `trenchWidth` is not exposed as a recipe key at
+   all (confirmed dead, see above) — passed as a fixed placeholder
+   internally, with a comment citing the source finding.
+5. **Verified, real ViennaPS 4.6.2, through the actual production entry
+   points:** `tests/integration/test_phase3_deposition_real.py`'s
+   registry-driven sweep (now `len(results)`-reported, no hardcoded
+   count) passes with the new model included. New
+   `tests/integration/test_geometric_trench_deposition_real.py`
+   confirms, through `registry.get("deposition","geometric_trench").run()`:
+   the `material` key gives the deposit its own distinct tag (Mask
+   still separately present, not absorbed); and the field/mask-top
+   thickness matches the source-verified formula (measured 0.1247um vs.
+   predicted 0.1250um). Full regression: **`tests/run_regression.py` →
+   22 passed, 0 failed, 0 skipped** (21 before this addition's new
+   test) — no regressions. README's model table/count updated (18 →
+   19).
+6. **What remains uncertain:** whether `bottom_med_um`/`a_um`/`b_um`
+   generalize as *the* right way to express a real non-conformal
+   deposition process a user has in mind (they're shape knobs, not
+   published material constants the way the KOH rate constants were —
+   there is nothing to cite here, by the nature of the model); no GUI
+   wiring (deposition has no GUI panel at all, same as every other
+   deposition model in this project).
+
 ### Gaussian-implant doping — ADDED (autonomous overnight session)
 
 `tcad/physics/doping.py` and `tcad/device/devsim/doping_mapping.py` had

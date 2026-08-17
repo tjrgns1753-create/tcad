@@ -55,6 +55,21 @@ RECIPE_OVERRIDES = {
         "rate": 0.05,
         "mask_material": "Mask",
     },
+    "geometric_trench": {
+        # No real recess exists in BASE_RECIPE's fresh-wafer trench
+        # (ProcessStep.prepare_domain always cuts trench_depth_um=0.0
+        # -- see tcad/process/base.py), so bottom_med_um is never
+        # actually reached here; this exercises the field/mask-top
+        # power-law branch only. deposition_rate_um is the geometric
+        # search-box bound (NOT a physical rate -- see
+        # geometric_trench.py's module docstring), sized generously
+        # above a_um+b_um.
+        "reference_depth_um": 1.0,
+        "deposition_rate_um": 1.0,
+        "bottom_med_um": 0.05,
+        "a_um": 0.1,
+        "b_um": 0.02,
+    },
 }
 
 
