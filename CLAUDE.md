@@ -3776,7 +3776,13 @@ source-to-drain current.
      Vgs=0V by more than 1.2x (measured: 1.32x) — real transistor
      action, not just "doesn't crash".
 
-8. **What remains uncertain / explicitly NOT resolved:** the drain
+8. **What remains uncertain / explicitly NOT resolved** — *superseded:
+   the magnitude question below was ROOT-CAUSED in a later session and
+   the numbers quoted here are now known to be a meshing artifact. The
+   inversion layer was spanned by a single node; with it resolved,
+   Id at Vgs=8V is 5.68e-05 A, not 1.5e-12 A. See "MOSFET drain current
+   was wrong by 3.8e7x" below. Kept unedited as the record of what was
+   believed at the time.* — the drain
    current's ABSOLUTE MAGNITUDE (~1.5e-12A at Vgs=8V, Vds=0.1V) is
    many orders of magnitude smaller than a simple long-channel
    square-law estimate for this geometry/doping
@@ -3832,6 +3838,12 @@ passed, 0 failed, 0 skipped** (29 before this addition's new test) —
 no regressions.
 
 ### MOSFET Id-Vgs magnitude gap — one candidate explanation RULED OUT analytically, series-resistance/vertical-resolution hypothesis STRENGTHENED (later session, per explicit instruction "다음은" / what's next — the cheapest of the three "next smallest experiment" items named above)
+
+> **Follow-up:** the vertical-resolution hypothesis this section
+> strengthened turned out to be exactly right, and much larger than
+> suspected — see "MOSFET drain current was wrong by 3.8e7x" below,
+> which root-caused and fixed it. This section's own reasoning stands;
+> only its "not yet directly measured" status is superseded.
 
 Picks up item 9's third sub-item (compare against a real, independent
 number) via the cheapest possible version of it: a closed-form
@@ -3943,6 +3955,157 @@ constants, rather than another expensive simulation run. This is test
    reconstruction from node data) disagree with EACH OTHER, that would
    point at a bug in current extraction or the equation setup instead,
    a categorically different problem needing a different fix.
+
+### MOSFET drain current was wrong by 3.8e7x — under-resolved inversion layer — ROOT-CAUSED, FIXED, SHIPPED (later session, per explicit instruction "너가 말한대로 진행해봐" / proceed as you described, plus the challenge "레시피가 특정 도핑 값에 맞춰져있으면 안되는거 아니야?" / the recipe shouldn't be pinned to one doping value)
+
+Executed item 5 above (the Ohm's-law cross-check). It found something
+much larger than the ~800x it was designed to bracket: this project's
+MOSFET drain current was a **mesh artifact**, wrong by seven orders of
+magnitude, and the Id-Vgs test that "passed" was measuring numerical
+noise.
+
+1. **What was tested:** ran the real production MOSFET pipeline to
+   Vgs=8V, then extracted the SIMULATION'S OWN node data (electron
+   density vs. depth at the channel centre, plus DevSim's own `mu_n`,
+   `q`, `n_i` parameters) and built an independent sheet-conductance
+   estimate `Id = (W/L)*mu_n*q*N_sheet*Vds`, with
+   `N_sheet = ∫(n - n_eq) dy` integrated over the simulated vertical
+   profile. Then swept the number of VERTICAL graded refinement rings
+   at the Si-SiO2 interface (1 / 4 / 6) to see how the answer responds.
+
+2. **Result — the vertical profile immediately showed the problem.**
+   At the shipped (1-ring, body-doping-derived) refinement the channel
+   -centre profile was:
+
+   | depth | n (cm^-3) |
+   |---|---|
+   | 0 nm (surface) | 1.00e18 |
+   | 25 nm | 1.00e11 |
+   | 50 nm | 6.31e05 |
+
+   — a **seven-orders-of-magnitude drop in a single mesh step**. The
+   inversion layer was spanned by exactly one node. A real inversion
+   layer is a couple of nm thick; the mesh gave it 25nm.
+
+   Refining vertically (same device, same doping, same solver — ONLY
+   the interface mesh changed):
+
+   | vertical rings | finest edge | nodes | Id | N_sheet |
+   |---|---|---|---|---|
+   | 1 (shipped) | 25 nm | 7 579 | **1.49e-12 A** | unresolved |
+   | 4 | 3.1 nm | 23 788 | **5.68e-05 A** | 1.57e12 cm^-2 |
+   | 6 | 0.78 nm | 79 126 | **5.78e-05 A** | 1.46e12 cm^-2 |
+
+   **Converged at 4 rings** — two further halvings (3.3x the nodes)
+   move Id by 1.7%. The resolved profile decays with a ~2nm
+   characteristic length, exactly what inversion-layer physics
+   predicts, and the surface density itself was also understated
+   before (1.0e18 unresolved vs 9.2e18 resolved).
+
+3. **What it proves, and what it means for the previously-reported
+   numbers:** the "~10-order-of-magnitude square-law discrepancy" and
+   the "residual series-resistance bottleneck at the channel-junction
+   transition" recorded in the two sections above were both **symptoms
+   of this one meshing defect**, not separate physics. The previously
+   -shipped Id-Vgs figures (1.13e-12 A off, 1.49e-12 A on, "1.32x
+   transistor action") were the solver reporting an essentially open
+   circuit; the device now shows a genuine transfer characteristic:
+
+   | Vgs | Id |
+   |---|---|
+   | 0 V | 2.22e-12 A (off) |
+   | 2 V | 4.35e-12 A (still off; analytic Vth ~ 1.77V) |
+   | 4 V | 1.65e-06 A (turning on) |
+   | 6 V | 2.34e-05 A |
+   | 8 V | 5.68e-05 A (on) |
+
+   on/off ratio **2.56e7**, monotonic, and charge conservation now
+   exact at the conducting points (Id = 5.6821e-05, Is = -5.6821e-05).
+
+4. **Root cause, stated as the general principle it is:** the interface
+   refinement was sized from the Debye length at the **body** doping
+   (1e17 -> ~13nm). But an inversion layer's carriers reach the
+   **source/drain** doping scale (1e20 -> ~0.4nm) — that is what
+   "inversion" means. Sizing a mesh for the majority-carrier background
+   and then asking it to resolve a minority-carrier surface layer is a
+   category error, and it is the natural-looking choice, which is why
+   it survived several rounds of review here.
+
+5. **Production fix — `derive_implant_windows_refinement()`
+   (`tcad/device/devsim/mesh_import.py`, new):** returns the full
+   graded-refinement predicate list for an `implant_windows` device,
+   with every scale DERIVED FROM THE DOPING PROFILE ITSELF — lateral
+   telescoping rings at each real junction, plus vertical rings at a
+   named interface, **both sized from the profile's PEAK concentration**.
+   This directly answers the "recipe pinned to one doping value"
+   objection: a caller no longer picks a refinement scale at all, and
+   the previously hand-rolled predicate block in the test (which
+   duplicated the ring formula and chose the wrong concentration for
+   the interface) is deleted. Also closes the long-standing open item
+   that `_derive_refine_from_doping()` could not read `implant_windows`
+   at all. Supporting changes: the telescoping-ring loop is now one
+   shared `_telescoping_ring_half_widths()` helper (behaviour-identical
+   for the existing `auto_refine_from_doping` path — verified, its test
+   still passes); new `_IMPLANT_WINDOWS_MAX_RINGS = 4`, justified by
+   the convergence table above.
+
+6. **A second, separate finding, measured not assumed:** the first
+   version of the helper refined at EVERY implant-window edge,
+   including the two that sit on the device boundary. Those are not
+   junctions — the implant simply runs off the end of the device, the
+   doping does not step — and that boundary is exactly where the Ohmic
+   contacts live. Refining into a contact measurably wrecked
+   convergence: `rampbias` crawled in ~1e-4 V steps and stalled around
+   Vds=0.039V instead of reaching 0.1V. The helper now skips window
+   edges within one mesh spacing of the device's own extent, which also
+   brought the node count back down (31 145 -> 23 788).
+
+7. **On the doping-generality objection specifically — the earlier
+   1e15 failure was NOT a solver-tuning artifact.** Recomputed the
+   junction depletion width for this geometry across doping (DevSim's
+   own constants, one-sided abrupt-junction formula, 2um channel):
+
+   | body doping | W_dep | 2*W_dep / L_channel | verdict |
+   |---|---|---|---|
+   | 1e14 | 3.20 um | 3.20 | punchthrough |
+   | 1e15 | 1.05 um | 1.05 | **punchthrough** |
+   | 1e16 | 0.34 um | 0.34 | ok |
+   | 1e17 | 0.11 um | 0.11 | ok (this project's device) |
+   | 1e18 | 0.04 um | 0.04 | ok |
+
+   At 1e15 the source and drain depletion regions each extend ~1.05um
+   into a 2um channel, so they MERGE — the device is in punchthrough
+   and is not a functioning MOSFET at that doping with that geometry.
+   There is no well-behaved solution for the solver to find, so
+   "Convergence failure" is the correct outcome, and loosening
+   tolerances until it produced a number would have been exactly the
+   kind of "change code to make it pass" this project forbids. The
+   right generalization is the one shipped in point 5 (derive mesh
+   scales from doping) plus honesty about the geometry's own validity
+   range — NOT a solver knob.
+
+8. **What remains uncertain / explicitly NOT resolved:** the
+   independent Ohm's-law estimate still sits ~800x above DevSim's
+   terminal current (4.68e-02 A vs 5.78e-05 A), and that ratio is now
+   STABLE under refinement (882x at 4 rings, 810x at 6), so it is not a
+   resolution artifact — it is the crude estimate's own fault or a real
+   series element. The estimate assumes the channel-centre sheet
+   density applies uniformly along the whole 2um channel and ignores
+   the potential drop along it; the most likely remaining explanation
+   is that the channel is far from uniformly inverted end-to-end. Not
+   measured. Also untested: whether the punchthrough boundary in point
+   7 is where convergence actually breaks (only 1e15 and 1e17 were
+   run); whether `_IMPLANT_WINDOWS_MAX_RINGS = 4` stays sufficient at
+   source/drain doping above 1e20; the MOSFET test now costs 121s
+   (up from ~20s) — real, but the previous number was meaningless.
+
+9. **Next smallest experiment (not done):** measure the LATERAL sheet
+   -density profile along the channel (integrate the vertical n profile
+   at each x, not just at the centre) and recompute the Ohm's-law
+   estimate as a series resistance `∫dx / (q*mu*N_sheet(x))` rather
+   than assuming the centre value everywhere — that would either close
+   the residual 800x directly or localise the remaining bottleneck to a
+   specific x, which is the only place a real series element could hide.
 
 After the additions above (hbr_o2, sf6_c4f8, cf4_o2, faraday_cage
 etching; isotropic deposition; gaussian_implant doping + CLI wiring),
@@ -5139,6 +5302,47 @@ result already answered the question the probe was run to distinguish.
 **No production code changed this part** — analysis/documentation only
 (the doping-sweep probe was a throwaway script, not committed).
 Regression unchanged at 30 passed, 0 failed, 0 skipped.
+
+**What this session did (part 24, later session, per explicit
+instruction "너가 말한대로 진행해봐" / proceed as you described, together
+with the challenge "레시피가 특정 도핑 값에 맞춰져있으면 안되는거
+아니야?" / the recipe shouldn't be pinned to one doping value):** ran
+part 23's named Ohm's-law cross-check and found something far bigger
+than the ~800x it was scoped to bracket — **this project's MOSFET drain
+current was a mesh artifact, wrong by 3.8e7x**, and the Id-Vgs test
+that had been passing was measuring the solver's numerical noise floor.
+See "MOSFET drain current was wrong by 3.8e7x" above for the full
+investigation. Root cause: the Si-SiO2 interface refinement was sized
+from the BODY doping's Debye length (~13nm) when an inversion layer's
+carriers reach the SOURCE/DRAIN scale (~0.4nm), so the channel was
+spanned by a single mesh node. With it resolved, Id at Vgs=8V goes
+1.49e-12 A -> 5.68e-05 A and the device shows a real transfer
+characteristic (on/off 2.56e7, monotonic, charge conservation exact).
+Verified converged, not merely changed: two further halvings move it
+1.7%.
+
+This also retroactively explains — and dissolves — the "~10-order
+square-law discrepancy" and the "residual series-resistance bottleneck"
+that the two preceding sections had each recorded as separate open
+questions. Both were symptoms of this one meshing defect.
+
+On the doping-generality challenge specifically, two separate answers,
+both shipped/measured rather than argued: (a) the real generality fix
+is that refinement scales must be DERIVED from the doping profile —
+new `derive_implant_windows_refinement()` does exactly that (and closes
+the long-standing gap that `_derive_refine_from_doping()` could not
+read `implant_windows` at all), so callers no longer choose a scale;
+(b) the earlier 1e15 convergence failure was NOT solver tuning — at
+that doping the source and drain depletion regions each span ~1.05um
+of a 2um channel and MERGE, i.e. punchthrough, so there is no
+well-behaved solution to find and loosening tolerances to force a
+number would have been the wrong fix.
+
+**Regression after part 24:** `tests/run_regression.py` -> **30 passed,
+0 failed, 0 skipped** — including `test_auto_refine_from_doping_real.py`,
+confirming the shared-helper refactor left the existing refinement path
+behaviour-identical. The MOSFET test now costs 121s (was ~20s) because
+it is finally solving a conducting device.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as

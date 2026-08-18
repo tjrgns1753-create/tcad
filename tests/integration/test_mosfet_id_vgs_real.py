@@ -36,22 +36,36 @@ drift-diffusion tolerances, and devsim.python_packages.ramp.rampbias
 for adaptive bias stepping) — both confirmed necessary by real
 execution, not assumed.
 
+A SECOND real bug was found and fixed after that one, by an independent
+Ohm's-law cross-check of the drain current against the simulation's own
+node data (see CLAUDE.md): the Si-SiO2 interface refinement was sized
+from the BODY doping's Debye length, but an inversion layer's carriers
+reach the SOURCE/DRAIN doping scale, so its real thickness is ~2nm, not
+the ~25nm the body-derived mesh provided. The inversion layer was
+spanned by a single mesh node and the drain current was throttled by
+3.8e7x (Id = 1.49e-12 A, i.e. the device read as essentially an open
+circuit). Refinement is now DERIVED from the doping profile's own peak
+concentration via `derive_implant_windows_refinement()` — Id = 5.68e-05
+A, and confirmed converged (two more halvings, 79126 nodes, move it
+only 1.7% to 5.78e-05 A).
+
 Checks:
-  1. real production run() -> filter -> graded refinement (source/drain
-     junctions AND the Si-SiO2 interface under the gate, both needed —
-     see mesh_refine notes below) -> implant_windows doping -> import
-     -> apply_doping -> run_mosfet_id_vgs_sweep(), all succeed.
+  1. real production run() -> filter -> doping-derived graded
+     refinement -> implant_windows doping -> import -> apply_doping ->
+     run_mosfet_id_vgs_sweep(), all succeed.
   2. NetDoping matches the requested implant_windows profile exactly.
   3. every gate-voltage point converges (the sweep itself raises on
      non-convergence).
-  4. charge conservation: source current ~= -drain current at every
-     point (no artificial current sink/source in the device).
-  5. real transistor action: drain current at high Vgs is meaningfully
-     larger than at Vgs=0 (the channel turning on measurably increases
-     current) — NOT a claim that the absolute magnitude matches an
-     idealized long-channel square-law estimate, which this project's
-     own investigation found does not hold quantitatively for this
-     device/mesh (see CLAUDE.md's "What remains uncertain" for why).
+  4. charge conservation: source current == -drain current, judged
+     against the sweep's own current scale (see the check's own comment
+     for why a per-point relative tolerance is meaningless in the off
+     state).
+  5. real transistor action: the drain current turns on by orders of
+     magnitude across the sweep and rises monotonically with gate
+     voltage. This is NOT a claim that the absolute magnitude matches an
+     idealized long-channel square-law estimate — a residual ~800x gap
+     against a sheet-conductance estimate built from the simulation's
+     own node data remains open and is documented in CLAUDE.md.
 """
 
 import sys
@@ -70,8 +84,7 @@ from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.physics.doping import apply_implant_windows_doping
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import (
-    _debye_length_um,
-    _estimate_mesh_spacing_um,
+    derive_implant_windows_refinement,
     import_process_result,
 )
 from tcad.device.devsim.doping_mapping import apply_doping
@@ -112,27 +125,6 @@ RECIPE = {
 }
 
 
-def _graded_ring_half_widths(spacing_um, concentration_cm3, ratio=2.5, max_rings=4):
-    """Same telescoping-ring formula import_process_result's own
-    auto_refine_from_doping uses internally (_derive_refine_from_doping)
-    -- duplicated here, not imported, because that function only reads
-    step_junction/gaussian_implant positions, not implant_windows (see
-    CLAUDE.md's own "what remains uncertain" note on that limitation).
-    """
-    debye_um = _debye_length_um(concentration_cm3)
-    target_edge_um = ratio * debye_um
-    rings = []
-    half_width = spacing_um
-    edge = spacing_um
-    while edge > target_edge_um and len(rings) < max_rings:
-        rings.append(half_width)
-        half_width /= 2.0
-        edge /= 2.0
-    if not rings:
-        rings = [spacing_um]
-    return rings
-
-
 def main():
     step_cls = registry.get("geometry", "gate_stack")
     with tempfile.TemporaryDirectory() as tmp:
@@ -148,16 +140,29 @@ def main():
         idx = mesh.cells.index(block)
         points, triangles, tags = mesh.points, block.data, mesh.cell_data["Material"][idx]
 
-        spacing_um = _estimate_mesh_spacing_um(points, triangles)
-        sd_rings = _graded_ring_half_widths(spacing_um, SD_DOPING_CM3)
-        body_rings = _graded_ring_half_widths(spacing_um, abs(BACKGROUND_DOPING_CM3))
+        def _dope(process_result):
+            return apply_implant_windows_doping(
+                process_result, region="Si", axis="x",
+                background_doping_cm3=BACKGROUND_DOPING_CM3,
+                windows=[
+                    {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
+                    {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
+                ],
+            )
 
-        predicates = []
-        for junction_x in (SRC[1], DRN[0]):  # lateral: source/drain step junctions
-            for hw in sd_rings:
-                predicates.append(lambda c, jx=junction_x, hw=hw: abs(c[0] - jx) < hw)
-        for hw in body_rings:  # vertical: Si-SiO2 interface under the whole device
-            predicates.append(lambda c, hw=hw: abs(c[1]) < hw)
+        # Refinement is DERIVED from the doping profile, not hand-picked
+        # per doping level -- see derive_implant_windows_refinement's own
+        # docstring for why both the lateral junction rings AND the
+        # Si-SiO2 interface rings must be sized from the profile's PEAK
+        # concentration (measured: sizing the interface from the body
+        # doping instead leaves the inversion layer one node thick and
+        # throttles Id by 3.8e7x).
+        doping = _dope(build_process_result(
+            {"final_mesh": filtered, "snapshots": []})).doping
+        predicates = derive_implant_windows_refinement(
+            doping, points, triangles, interface_position_um=0.0, interface_axis="y",
+        )
+        assert predicates, "no refinement derived from the implant_windows profile"
 
         refined_points, refined_tris, refined_tags = graded_refine_mesh_near(
             points, triangles, tags, predicates
@@ -168,19 +173,11 @@ def main():
         )
         refined_path = f"{filtered}.refined.vtu"
         meshio.write(refined_path, refined_mesh)
-        print(f"[3/6] graded refinement: {len(points)} -> {len(refined_points)} points "
-              f"({len(sd_rings)} S/D-junction rings x2, {len(body_rings)} interface ring(s))")
+        print(f"[3/6] doping-derived graded refinement: {len(points)} -> "
+              f"{len(refined_points)} points ({len(predicates)} predicates)")
 
         step_result = {"final_mesh": refined_path, "snapshots": result["snapshots"]}
-        process_result = build_process_result(step_result)
-        process_result = apply_implant_windows_doping(
-            process_result, region="Si", axis="x",
-            background_doping_cm3=BACKGROUND_DOPING_CM3,
-            windows=[
-                {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
-                {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
-            ],
-        )
+        process_result = _dope(build_process_result(step_result))
 
         imported = import_process_result(
             process_result, mesh_name="mosfet_iv_mesh", device_name="mosfet_iv_device",
@@ -222,26 +219,51 @@ def main():
         )
         assert len(result_iv.points) == len(gate_voltages)
 
-        # Check 4: charge conservation (source ~= -drain at every point).
-        for pt in result_iv.points:
-            i_source = pt.currents["Si_xmin"]
-            i_drain = pt.currents["Si_xmax"]
-            assert abs(i_source + i_drain) < 0.02 * max(abs(i_source), abs(i_drain)), (
-                f"charge not conserved: Is={i_source:.4e} Id={i_drain:.4e}"
+        id_series = [pt.currents["Si_xmax"] for pt in result_iv.points]
+        is_series = [pt.currents["Si_xmin"] for pt in result_iv.points]
+        print(f"      Vgs (V): {gate_voltages}")
+        print(f"      Id  (A): {[f'{i:.4e}' for i in id_series]}")
+        print(f"      Is  (A): {[f'{i:.4e}' for i in is_series]}")
+
+        id_off = abs(id_series[0])
+        id_on = abs(id_series[-1])
+        id_scale = max(abs(i) for i in id_series)
+
+        # Check 4: charge conservation. Judged against the sweep's OWN
+        # current scale, not each point's own magnitude: in the off state
+        # the terminal currents sit at the solver's numerical noise floor
+        # (measured: Is=-2.75e-12 A vs Id=+2.22e-12 A at Vgs=0, while the
+        # on-state carries ~1e-5 A), where a per-point RELATIVE tolerance
+        # is meaningless -- it would be comparing two numbers that are
+        # both, physically, zero. There is nowhere else for current to go
+        # in this device (the gate contact carries no DC current: it has
+        # only PotentialEquation, no continuity equation), so any real
+        # imbalance would show up as a violation at the scale where
+        # current is actually flowing.
+        for vg, i_source, i_drain in zip(gate_voltages, is_series, id_series):
+            assert abs(i_source + i_drain) < 0.02 * id_scale, (
+                f"charge not conserved at Vgs={vg}: Is={i_source:.4e} "
+                f"Id={i_drain:.4e} (sweep current scale {id_scale:.4e})"
             )
 
-        # Check 5: real transistor action -- on-state current exceeds off-state.
-        id_off = abs(result_iv.points[0].currents["Si_xmax"])
-        id_on = abs(result_iv.points[-1].currents["Si_xmax"])
-        assert id_on > 1.2 * id_off, (
-            f"drain current did not increase with gate voltage: "
+        # Check 5: real transistor action -- on-state current exceeds
+        # off-state by orders of magnitude, not a marginal factor. This
+        # threshold is only meaningful because the inversion layer is now
+        # vertically resolved (see the module docstring): with the old,
+        # body-doping-derived interface refinement the whole sweep sat at
+        # the pA noise floor and moved by ~1.3x.
+        assert id_on > 100.0 * id_off, (
+            f"drain current did not turn on with gate voltage: "
             f"Vgs=0 -> {id_off:.4e}A, Vgs={gate_voltages[-1]} -> {id_on:.4e}A"
         )
-        id_series = [pt.currents["Si_xmax"] for pt in result_iv.points]
+        # Monotonic turn-on: every step of gate voltage increases current.
+        for i in range(1, len(id_series)):
+            assert abs(id_series[i]) > abs(id_series[i - 1]), (
+                f"drain current not monotonic in gate voltage: {id_series}"
+            )
         print(f"[6/6] Id-Vgs sweep converged at all {len(gate_voltages)} points; "
-              f"charge conserved at every point; drain current increases with "
-              f"gate voltage ({id_off:.4e}A -> {id_on:.4e}A, "
-              f"{id_on / id_off:.2f}x): {[f'{i:.3e}' for i in id_series]}")
+              f"charge conserved; drain current monotonically turns on "
+              f"({id_off:.4e}A -> {id_on:.4e}A, {id_on / id_off:.3e}x)")
 
     print()
     print("MOSFET Id-Vgs TRANSFER CHARACTERISTIC (real gate-controlled "

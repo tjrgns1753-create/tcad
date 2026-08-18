@@ -73,6 +73,16 @@ _AUTO_REFINE_TARGET_EDGE_TO_DEBYE_RATIO = 2.5
 #: verified point without being unbounded.
 _AUTO_REFINE_MAX_RINGS = 20
 
+#: Cap on graded rings per family for derive_implant_windows_refinement().
+#: Lower than _AUTO_REFINE_MAX_RINGS because that one refines a single
+#: POINT-centred window in 1D, while this refines a horizontal interface
+#: STRIP spanning the whole device as well — each extra ring there costs
+#: far more nodes. Real-execution-verified sufficient on this project's
+#: own MOSFET: 4 rings gave Id = 5.68e-05 A at 23788 nodes, and 6 rings
+#: gave 5.78e-05 A at 79126 nodes — a 1.7% change for 3.3x the mesh, so
+#: the answer is converged at 4 (see CLAUDE.md).
+_IMPLANT_WINDOWS_MAX_RINGS = 4
+
 
 def _debye_length_um(concentration_cm3: float, temperature_k: float = 300.0) -> float:
     """Debye length (um) for a given net carrier concentration (cm^-3),
@@ -109,6 +119,139 @@ def _estimate_mesh_spacing_um(points: np.ndarray, triangles: np.ndarray) -> floa
         lengths.append(np.linalg.norm(v1 - v2))
         lengths.append(np.linalg.norm(v2 - v0))
     return float(np.median(lengths)) if lengths else 0.0
+
+
+def _telescoping_ring_half_widths(
+    spacing_um: float, concentration_cm3: float, max_rings: int
+) -> List[float]:
+    """Telescoping window half-widths for graded_refine_mesh_near():
+    start at the mesh's own existing local spacing (already resolvable,
+    so a safe outermost window) and halve until the LOCAL edge length is
+    within _AUTO_REFINE_TARGET_EDGE_TO_DEBYE_RATIO x the real Debye
+    length at `concentration_cm3` (DevSim's own Permittivity/kT/q — see
+    _debye_length_um), capped at `max_rings`.
+
+    Returns at least one ring: a concentration already resolved at the
+    mesh's own spacing still gets a single refinement pass, matching the
+    pre-existing "at least 1 level" behavior every caller relied on.
+    """
+    target_edge_um = _AUTO_REFINE_TARGET_EDGE_TO_DEBYE_RATIO * _debye_length_um(
+        concentration_cm3
+    )
+    rings: List[float] = []
+    half_width = spacing_um
+    edge = spacing_um
+    while edge > target_edge_um and len(rings) < max_rings:
+        rings.append(half_width)
+        half_width /= 2.0
+        edge /= 2.0
+    return rings or [spacing_um]
+
+
+def derive_implant_windows_refinement(
+    doping: DopingProfile,
+    points: np.ndarray,
+    triangles: np.ndarray,
+    interface_position_um: Optional[float] = None,
+    interface_axis: str = "y",
+    max_rings: int = _IMPLANT_WINDOWS_MAX_RINGS,
+) -> List[Any]:
+    """Graded-refinement predicates for an `implant_windows` device —
+    every one of them derived from the doping profile itself, so a
+    caller never hand-picks a refinement scale for its own doping level.
+
+    Returns a predicate list ready for
+    `tcad.device.devsim.mesh_refine.graded_refine_mesh_near()`:
+      - LATERAL telescoping rings centred on each implant window's own
+        two edges (the real step junctions), along the doping's own axis.
+      - VERTICAL (when `interface_position_um` is given) telescoping
+        rings centred on a horizontal interface — for a MOSFET, the
+        Si-SiO2 interface at y=0, where the inversion channel forms.
+
+    THE PHYSICALLY LOAD-BEARING POINT, measured rather than assumed:
+    BOTH ring families are sized from the profile's PEAK concentration
+    (the implant windows' own, e.g. 1e20 cm^-3 source/drain), NOT from
+    the background/body doping. For the lateral junctions that is
+    obvious — the junction's own carriers are at the peak level. For the
+    INTERFACE it is the whole point of this function: an inversion layer
+    reaches carrier densities on the order of the peak doping, not the
+    body doping, so its physical thickness is the Debye length at the
+    PEAK (a couple of nm), not at the body (tens of nm).
+
+    Sizing the interface rings from the body doping instead — the
+    natural-looking choice, and what this project did before this
+    function existed — leaves the inversion layer spanned by a SINGLE
+    mesh node and throttles the simulated drain current catastrophically.
+    Measured directly on this project's own MOSFET (1e17 body / 1e20
+    source-drain, Vgs=8V, Vds=0.1V): body-derived interface spacing
+    (25nm) gave Id = 1.49e-12 A, while peak-derived spacing (3.1nm) gave
+    Id = 5.68e-05 A on the same device — a factor of 3.8e7, and the
+    vertical electron profile went from a 7-orders-per-node cliff to a
+    properly resolved ~2nm decay. Confirmed converged, not merely
+    changed: halving twice more (0.78nm, 79126 nodes) moved Id only to
+    5.78e-05 A, a 1.7% change. See CLAUDE.md.
+
+    max_rings : cap on rings per family. Defaults to
+        `_IMPLANT_WINDOWS_MAX_RINGS` — real-execution-verified sufficient
+        (see above); each additional ring roughly triples total node
+        count for this device, for no further change in the answer.
+
+    Returns an empty list if `doping` holds no usable `implant_windows`
+    region, so a caller can fall back rather than crash.
+    """
+    axis_index = {"x": 0, "y": 1, "z": 2}
+    predicates: List[Any] = []
+
+    for region in doping.regions:
+        windows = region.implant_windows
+        if not windows or region.junction_axis is None:
+            continue
+
+        peak_cm3 = max(
+            [abs(region.net_doping_cm3 or 0.0)]
+            + [abs(w.get("conc_cm3", 0.0)) for w in windows]
+        )
+        if peak_cm3 <= 0.0:
+            continue
+
+        spacing_um = _estimate_mesh_spacing_um(points, triangles)
+        rings = _telescoping_ring_half_widths(spacing_um, peak_cm3, max_rings)
+
+        lateral = axis_index[region.junction_axis]
+        # A window edge is only a real JUNCTION where the doping actually
+        # steps. An edge sitting at the device's own boundary is not: the
+        # implant simply runs off the end, doping is uniform right up to
+        # it. Refining there buys nothing and actively hurts — that
+        # boundary is where the Ohmic contacts live, and refining into a
+        # contact measurably wrecked the drain-bias ramp's convergence
+        # (observed directly: rampbias crawling in ~1e-4 V steps and
+        # stalling around Vds=0.039V, versus reaching the full 0.1V
+        # target without incident once these edges are skipped).
+        axis_min = float(points[:, lateral].min())
+        axis_max = float(points[:, lateral].max())
+        boundary_tol = spacing_um
+        for window in windows:
+            for edge_um in (window["min_um"], window["max_um"]):
+                if (edge_um - axis_min) < boundary_tol or (axis_max - edge_um) < boundary_tol:
+                    continue
+                for half_width in rings:
+                    predicates.append(
+                        lambda centroid, e=edge_um, hw=half_width, i=lateral: abs(
+                            centroid[i] - e
+                        )
+                        < hw
+                    )
+
+        if interface_position_um is not None:
+            vertical = axis_index[interface_axis]
+            for half_width in rings:
+                predicates.append(
+                    lambda centroid, p=interface_position_um, hw=half_width,
+                    i=vertical: abs(centroid[i] - p) < hw
+                )
+        return predicates
+
+    return predicates
 
 
 def _derive_refine_from_doping(
@@ -162,24 +305,10 @@ def _derive_refine_from_doping(
         if concentration <= 0.0 or region.junction_axis is None:
             continue
 
-        debye_um = _debye_length_um(concentration)
         spacing_um = _estimate_mesh_spacing_um(points, triangles)
-        target_edge_um = _AUTO_REFINE_TARGET_EDGE_TO_DEBYE_RATIO * debye_um
-
-        ring_half_widths: List[float] = []
-        half_width = spacing_um
-        edge = spacing_um
-        while edge > target_edge_um and len(ring_half_widths) < _AUTO_REFINE_MAX_RINGS:
-            ring_half_widths.append(half_width)
-            half_width /= 2.0
-            edge /= 2.0
-        if not ring_half_widths:
-            # Already resolved at the mesh's own existing spacing --
-            # still refine once, matching the pre-existing "at least 1
-            # level" behavior of the old formula, so a very low doping
-            # region still gets a small amount of local refinement
-            # rather than none at all.
-            ring_half_widths = [spacing_um]
+        ring_half_widths = _telescoping_ring_half_widths(
+            spacing_um, concentration, _AUTO_REFINE_MAX_RINGS
+        )
 
         return position, region.junction_axis, ring_half_widths
 
