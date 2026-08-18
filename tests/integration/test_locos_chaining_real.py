@@ -44,10 +44,21 @@ Checks:
      registered length by export time.
   7. Fin-style oxidation (no mask_material) chains onto LOCOS and grows
      real oxide — the guard in check 8 must not be over-broad.
-  8. A SECOND LOCOS oxidation on the same domain raises a clear error
-     rather than hanging. That combination has never worked (before
-     this fix it silently exported a mesh with no Si region at all);
-     the guard makes it actionable instead.
+  8. A second LOCOS oxidation on a domain that intervening steps have
+     since modified raises a clear error rather than running against
+     stale geometry. The unwrapped-mask level sets check 9 relies on
+     are stashed when the FIRST LOCOS step re-wraps its domain; any
+     later step mutates the live domain in place while that stash keeps
+     the older state, so rebuilding from it there would silently
+     discard everything those steps did.
+  9. A second LOCOS oxidation chained DIRECTLY onto the first works and
+     is physically real (oxide grows, Si is consumed, all 3 materials
+     survive). The inherited domain cannot be oxidized as-is — the
+     chainable re-wrap unions the mask into the oxide, and
+     vps.Oxidation()'s oxide-band detection needs a distinct band, so
+     it hangs — so ThermalOxidation rebuilds an unwrapped-mask domain
+     from the stashed copies. This combination previously raised
+     NotImplementedError; before that it hung indefinitely.
 
 No fabricated numbers: every expectation is derived from the recipe or
 compared against the step's own measured "before" state.
@@ -240,20 +251,76 @@ def main():
         print(f"[7/8] fin-style oxidation chains onto LOCOS and grows real "
               f"oxide: {areas4[oxide_tag]:.5f} -> {areas5[oxide_tag]:.5f}")
 
-        # ---- 8: a second LOCOS oxidation refuses, rather than hanging ----
+        # ---- 8: a second LOCOS oxidation chained onto a domain that
+        # some OTHER step has since modified must refuse, not silently
+        # oxidize stale geometry. step5 was a fin-style oxidation on this
+        # domain, so the level sets stashed by step1's own re-wrap no
+        # longer describe it -- rebuilding from them would discard
+        # everything steps 2-5 did. (A second LOCOS chained DIRECTLY onto
+        # a LOCOS step does work; that is check 9.)
         step6 = ox_cls(inherited_domain=step5.last_domain)
         try:
             step6.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step6"))
         except NotImplementedError as exc:
-            assert "LOCOS" in str(exc), (
-                f"[8/8] refused, but the message does not explain why: {exc}"
+            assert "stale" in str(exc), (
+                f"[8/9] refused, but the message does not explain why: {exc}"
             )
-            print(f"[8/8] a second LOCOS oxidation is refused up front, not hung")
+            print("[8/9] a second LOCOS on a domain modified since the stash "
+                  "is refused, not run against stale geometry")
         else:
             raise AssertionError(
-                "[8/8] a second LOCOS oxidation on a LOCOS domain should raise "
-                "NotImplementedError -- it hangs indefinitely if allowed through"
+                "[8/9] a second LOCOS oxidation on a domain modified by "
+                "intervening steps should raise NotImplementedError -- the "
+                "stashed unwrapped-mask geometry is stale, and using it would "
+                "silently discard those steps"
             )
+
+        # ---- 9: a second LOCOS chained DIRECTLY onto the first works ----
+        # The domain cannot be oxidized as-is (the chainable re-wrap
+        # unioned the mask into the oxide, and vps.Oxidation()'s
+        # oxide-band detection needs a distinct band -- it hangs), so
+        # thermal.py rebuilds an unwrapped-mask domain from the copies
+        # stashed just before that union. Expectations here are the
+        # step's OWN measured before/after, not fabricated numbers.
+        #
+        # SCOPE OF WHAT THIS CHECK PROVES, stated honestly: at this
+        # file's deliberately fast 0.02hr recipe the oxide/Si deltas are
+        # ~6e-4 / ~2e-4 um^2, i.e. at the 0.2um grid's own noise floor,
+        # so the growth ASSERTIONS below are weak evidence of magnitude
+        # on their own -- what they robustly guard is that the step runs
+        # at all (no hang, no NotImplementedError), keeps all three
+        # materials, and moves oxide and Si in the physically correct
+        # directions. The magnitude claim was verified separately, at
+        # 10hr where growth is well clear of that floor: SiO2 +0.17511
+        # (vs the first step's own +0.10577) and Si -0.06407, through
+        # these same production entry points. Raising this check's own
+        # time would make the whole suite materially slower for a
+        # property already measured.
+        fresh = ox_cls()
+        fresh_result = fresh.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step7"))
+        areas_first = areas_by_material(fresh_result["final_mesh"])
+
+        second = ox_cls(inherited_domain=fresh.last_domain)
+        second_result = second.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step8"))
+        areas_second = areas_by_material(second_result["final_mesh"])
+
+        for tag, name in ((si_tag, "Si"), (oxide_tag, "SiO2"), (mask_tag, "Mask")):
+            assert areas_second.get(tag, 0.0) > 0.0, (
+                f"[9/9] {name} missing or empty after a second LOCOS: "
+                f"{areas_second}"
+            )
+        assert areas_second[oxide_tag] > areas_first[oxide_tag], (
+            f"[9/9] second LOCOS did not grow oxide: "
+            f"{areas_first[oxide_tag]:.5f} -> {areas_second[oxide_tag]:.5f}"
+        )
+        assert areas_second[si_tag] < areas_first[si_tag], (
+            f"[9/9] second LOCOS grew oxide without consuming Si: "
+            f"{areas_first[si_tag]:.5f} -> {areas_second[si_tag]:.5f}"
+        )
+        print(f"[9/9] a second LOCOS chained directly onto the first runs and "
+              f"is physically real: SiO2 {areas_first[oxide_tag]:.5f} -> "
+              f"{areas_second[oxide_tag]:.5f}, Si {areas_first[si_tag]:.5f} -> "
+              f"{areas_second[si_tag]:.5f}")
 
     print("LOCOS CHAINING TEST PASSED")
 

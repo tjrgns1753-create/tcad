@@ -119,6 +119,7 @@ from tcad.backends.viennaps.io import (
     register_locos_export,
     register_locos_unwrapped,
     save_locos_volume_mesh,
+    seal_locos_unwrapped,
     save_volume_mesh,
 )
 from tcad.process.base import ProcessStep
@@ -309,6 +310,11 @@ class ThermalOxidation(ProcessStep):
 
         register_locos_export(geometry, materials, list(wrap_flags[:-1]) + [True])
 
+        # Fingerprint the post-re-wrap state, so a later chained LOCOS can
+        # detect that some intervening step modified this domain and the
+        # stashed copies no longer describe it.
+        seal_locos_unwrapped(geometry)
+
     def run(self, recipe: Dict[str, Any], output_dir: str) -> Dict[str, Any]:
         module = session.require_viennaps()
 
@@ -352,12 +358,15 @@ class ThermalOxidation(ProcessStep):
             if stashed is None:
                 raise NotImplementedError(
                     "Cannot run a LOCOS oxidation (mask_material set) on this "
-                    "LOCOS-produced domain: its pre-re-wrap level sets were not "
-                    "stashed, so the unwrapped-mask geometry vps.Oxidation() "
-                    "needs cannot be rebuilt. This happens if the domain was "
-                    "produced before that stash existed. Re-run the first LOCOS "
-                    "step, or omit mask_material to run a fin-style oxidation "
-                    "on this domain, which works on the inherited domain "
+                    "LOCOS-produced domain: the unwrapped-mask geometry "
+                    "vps.Oxidation() needs cannot be rebuilt for it. Either "
+                    "nothing was stashed for this domain, or another step "
+                    "(etch/deposition/fin-style oxidation) has modified it "
+                    "since — in which case the stashed geometry is stale, and "
+                    "oxidizing it would silently discard that step's effect. "
+                    "Chain a second LOCOS directly onto the first (no "
+                    "intervening step), or omit mask_material to run a "
+                    "fin-style oxidation, which works on the inherited domain "
                     "directly."
                 )
             locos_materials, locos_wrap_flags = self._locos_stack_spec(recipe, module)

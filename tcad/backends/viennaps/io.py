@@ -131,21 +131,65 @@ def register_locos_unwrapped(domain, level_sets: List[Any]) -> None:
     Copies rather than references because the live level sets are
     mutated in place, first by the re-wrap and then by every later
     chained step; these must hold the post-oxidation, pre-re-wrap state.
+
+    Call this BEFORE the re-wrap, then `seal_locos_unwrapped()` after —
+    see that function for why the stash needs a staleness fingerprint.
     """
     import viennals as vls
 
-    _LOCOS_UNWRAPPED[id(domain)] = [vls.Domain(ls) for ls in level_sets]
+    _LOCOS_UNWRAPPED[id(domain)] = {
+        "level_sets": [vls.Domain(ls) for ls in level_sets],
+        "fingerprint": None,
+    }
+
+
+def seal_locos_unwrapped(domain) -> None:
+    """Record what `domain` looks like right now, so a later rebuild can
+    tell whether anything has modified it since.
+
+    Why this matters: the stashed copies are only a faithful
+    reconstruction of the domain as long as NOTHING has run on it since
+    they were taken. Any intervening step (an etch, a deposition, a
+    fin-style oxidation) mutates the live level sets in place while the
+    stash keeps the older state — so rebuilding from the stash after
+    one of those would silently discard that step's effect and produce
+    a plausible-looking result from the wrong geometry.
+
+    The fingerprint is each level set's point count, taken immediately
+    after the re-wrap (the state a chained step inherits). It is a
+    heuristic, not a proof of identity: a step that changed the geometry
+    while leaving every count identical would slip through. In practice
+    any real advection changes them, and the failure it does catch —
+    silently oxidizing stale geometry — is the one worth refusing over.
+    """
+    entry = _LOCOS_UNWRAPPED.get(id(domain))
+    if entry is None:
+        return
+    entry["fingerprint"] = tuple(
+        ls.getNumberOfPoints() for ls in domain.getLevelSets()
+    )
 
 
 def locos_unwrapped_level_sets(domain) -> Optional[List[Any]]:
     """The unwrapped level-set copies stashed for `domain`, or None.
+
+    Returns None if nothing was stashed, OR if `domain` has been
+    modified since the stash was sealed (see seal_locos_unwrapped) —
+    the caller must treat both as "cannot rebuild" rather than
+    proceeding from geometry that no longer matches.
 
     Returns the stored copies directly. A caller that inserts them into
     a domain (which mutates them) and may need the originals again must
     copy them itself — the one production caller rebuilds a throwaway
     domain per oxidation, so it does not.
     """
-    return _LOCOS_UNWRAPPED.get(id(domain))
+    entry = _LOCOS_UNWRAPPED.get(id(domain))
+    if entry is None:
+        return None
+    current = tuple(ls.getNumberOfPoints() for ls in domain.getLevelSets())
+    if entry["fingerprint"] is not None and current != entry["fingerprint"]:
+        return None
+    return entry["level_sets"]
 
 
 def is_locos_registered(domain) -> bool:
