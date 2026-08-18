@@ -159,49 +159,30 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
 - **Registry growth**: etching 11 models, deposition 6 models, doping
   3 kinds (uniform, step_junction, gaussian_implant, implant_windows),
   plus `geometry`/`gate_stack`.
+- **MOSFET Ohm's-law cross-check ~800x gap — RESOLVED, no real
+  resistive anomaly.** Reading DevSim's own converged edge-current
+  models directly (not reconstructing current from density) at real
+  graph cuts across the channel — validated first against the known
+  terminal Id/Is at contact-adjacent cuts (matched to 4 decimals) —
+  showed current is smooth, fully conserved, and ~100% electron
+  current (hole current negligible, ruling out a body-current
+  explanation) at every x tested, including the exact point where an
+  earlier density-based reconstruction had shown a mathematical
+  singularity. The ~800x figure (and the later, harder-to-explain
+  edge-zone breakdown) both trace to the same root cause: the density
+  -reconstruction proxy ("excess electron density over a pre-bias
+  snapshot") stops correlating with real local current near a doping
+  -window edge, not any actual device defect. Full writeup: search
+  `docs/investigation_log.md` for "RESOLVED: no real resistive anomaly
+  exists".
 
 ## OPEN issues (active — read before starting new work)
 
-1. **MOSFET Ohm's-law cross-check — plateau explained, edge zones need
-   a different technique (not further density reconstruction).** Three
-   independently-implemented extraction methods (raw-node x-column
-   grouping; scattered-point Delaunay reinterpolation; real
-   `matplotlib.tri` FEM triangle-connectivity interpolation, verified
-   21795/21795 vertices coordinate-matched to the actual production
-   mesh) all agree: away from the two channel-junction edges, the
-   properly-integrated N_sheet(x) plateau (~1.5-1.7e12 cm^-2) matches
-   the old centre-point value almost exactly — **this closes, with high
-   confidence, the question of where the originally-reported ~800x
-   figure came from**: purely the crude "apply the centre value over
-   the WHOLE channel length" assumption, not a real distributed
-   physical effect.
-   The two ~0.15um edge zones themselves are a DIFFERENT, harder
-   problem than "needs a better interpolator" — confirmed, not just
-   suspected: with real FEM connectivity, N_sheet(x) genuinely crosses
-   ZERO near the drain edge under this bias, and 99% of the whole
-   -channel R_total then comes from the single sample nearest that
-   zero-crossing. This is the `R = dx/(q·mu·N_sheet(x))` MODEL hitting
-   a real mathematical singularity, not a mesh/interpolation artifact —
-   confirmed because all three structurally-different methods broke
-   down at the same location the same way. A local "all current flows
-   through one inversion sheet" model is simply the wrong tool at a
-   point with no net local inversion charge; no finer mesh or better
-   interpolant fixes that. Also confirmed NOT safe: just discarding the
-   edge zones and using the plateau alone (gives 5.11e-2A, close to the
-   original 874x-too-high figure) — whatever the edge zones actually
-   contribute is not negligible.
-   Next step (named, not started): stop reconstructing current from
-   density through the edge zones — read DevSim's OWN converged
-   electron current density directly (its edge-current models along a
-   few vertical cuts) instead, since DevSim's real drift-diffusion
-   solve was never confined to a local-inversion-sheet assumption in
-   the first place. Full writeup: search `docs/investigation_log.md`
-   for "lateral sheet-density" and "MODEL BREAKDOWN CONFIRMED".
-2. **LOCOS-on-LOCOS is blocked, not fixed.** A second LOCOS oxidation
+1. **LOCOS-on-LOCOS is blocked, not fixed.** A second LOCOS oxidation
    on a LOCOS-produced domain raises `NotImplementedError` (confirmed
    pre-existing hang/silent-corruption otherwise, not a regression).
    No workaround built.
-3. **KOH/TMAH self-limiting V-groove not achieved.** The 2D
+2. **KOH/TMAH self-limiting V-groove not achieved.** The 2D
    crystal-frame bug is fixed (rate111/rate311 are no longer inert),
    but the model still does not hold a stable (111) facet — mask
    undercut is the leading hypothesis (fast `rate110` direction is

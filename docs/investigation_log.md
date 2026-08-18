@@ -5942,6 +5942,111 @@ approximation.
 throwaway probe script (extended, still not committed, same convention
 as before). Regression unchanged at 30 passed, 0 failed, 0 skipped.
 
+### MOSFET Ohm's-law cross-check — verified directly against DevSim's own edge currents — RESOLVED: no real resistive anomaly exists (same session, immediately following the two parts above)
+
+Executed the "next smallest experiment" the FEM-connectivity part named:
+instead of a fourth attempt at reconstructing current from density,
+read DevSim's own converged edge current models directly
+(`ElectronCurrent`, `HoleCurrent`, weighted by the `EdgeCouple` dual
+-length model DevSim's own finite-volume assembly uses) and sum them
+across real graph cuts at fixed x, sidestepping the whole class of
+density-reconstruction artifacts the two parts above found.
+
+1. **What was tested:** built `x@n0`/`x@n1`/`y@n0`/`y@n1` edge-projected
+   node models (`devsim.edge_from_node_model`), identified all Si-region
+   edges whose two endpoints straddle a target x0, and summed
+   `sign * (ElectronCurrent + HoleCurrent) * EdgeCouple` over them —
+   the direct finite-volume equivalent of "total current crossing a
+   vertical cut at x0". Methodology validated first: cuts placed just
+   inside each contact reproduced DevSim's own terminal Id/Is to 4
+   decimal places (ratio 1.0000 / -1.0000) before trusting any interior
+   cut. Then evaluated this at: three plateau/mid-channel points
+   (x=-0.5, 0, +0.5) and the exact set of x values the FEM-connectivity
+   part found N_sheet(x) collapsing/crossing zero at (x=0.95 through
+   0.98, including the singular point x=+0.9599), each split by carrier
+   type (electron vs hole) and by depth band (a shallow y in [-0.02,0]
+   "near-surface" band vs. everything below).
+
+2. **Result:**
+   - **Current is smooth and exactly conserved everywhere**, including
+     through both "problematic" edge zones — every single cut, plateau
+     or edge, reads exactly -5.6821e-05A (matching the terminal Id to
+     the last printed digit). This is expected from KCL (a converged
+     finite-volume solution satisfies node-local current conservation
+     by construction) but is now directly confirmed rather than merely
+     assumed.
+   - **It is essentially 100% electron current everywhere** (hole
+     current is 1e-12 to 1e-16 A vs. electron's 5.68e-05A, at every
+     cut tested, plateau and edge alike) — ruling out a candidate
+     explanation (majority-carrier/body current in the un-contacted
+     p-body substituting for channel current near the junctions; this
+     device has no separate body contact, so that was a real
+     possibility worth checking, not just idle caution).
+   - **The near-surface current FRACTION behaves opposite to naive
+     expectation.** In the well-behaved PLATEAU (where the density
+     -based N_sheet(x) reconstruction matched the historical estimate
+     almost exactly), only ~8.3% of the real current flows within the
+     shallow y in [-0.02,0] (top 20nm) band — the other ~91.7% flows
+     DEEPER. Near the edge zones — including at x=+0.9599, the exact
+     point where the density reconstruction showed N_sheet crossing
+     zero — the near-surface fraction is actually HIGHER (64-93%), not
+     lower: real current keeps flowing through that same shallow band
+     right where the density-based model claimed there was
+     approximately zero excess carrier charge to carry it.
+
+3. **What it proves:** the ~800x gap this whole investigation thread
+   started from is now **fully resolved as a physical question, not
+   merely narrowed**. DevSim's MOSFET solution has no real, unexplained
+   resistive anomaly anywhere along the channel — current is smooth,
+   fully conserved, and electron-dominated end to end, confirmed
+   directly from the solver's own converged edge quantities rather than
+   inferred from a post-hoc reconstruction. What actually broke down in
+   the two earlier parts was the density-reconstruction PROXY itself:
+   "excess electron density over a pre-bias equilibrium snapshot,
+   integrated over depth" is simply not a reliable stand-in for "local
+   channel conductance" near a doping-window edge, because the
+   pre-bias reference point there is itself dominated by the nearby
+   step-junction's own built-in depletion physics (quite different from
+   the mid-channel body region's simple, stable equilibrium) — so
+   "n minus that baseline" stops correlating with real current exactly
+   where the baseline itself stops being physically meaningful, even
+   though the real current (driven by the true local field and
+   quasi-Fermi structure, not by a density-difference-from-a-fixed
+   -reference heuristic) continues flowing smoothly through.
+   Secondary, minor finding worth flagging for anyone reading the
+   original 3.8e7x writeup: the "~2nm decay length" characterization
+   there described the steepest part of the near-surface drop, not the
+   full extent of current-carrying charge — at this strong-inversion
+   bias (Vgs=8V, ~6.2V of overdrive above Vth=1.77V), meaningful
+   electron current in the plateau region extends well beyond 20nm
+   (order the body's own ~13nm Debye length at 1e17, times several),
+   which is why the vertical mesh refinement is correctly sized from
+   the PEAK (source/drain) doping's much finer Debye length rather than
+   this broader conducting extent — that finer sizing was never in
+   question here and needs no change.
+
+4. **What remains uncertain:** why the near-surface CURRENT fraction
+   rises (rather than falls) approaching the edges while the near
+   -surface DENSITY-based N_sheet metric falls (toward zero and
+   negative) is not micro-explained here — plausible mechanism (rising
+   local lateral field near the junction driving disproportionately
+   more drift current through whatever density remains right at the
+   surface, even as that density itself drops) but not directly
+   measured this session. Doesn't change the conclusion (current is
+   conserved and physically unremarkable; the density proxy is what's
+   unreliable there), just leaves the exact mechanism of the proxy's
+   failure at the descriptive rather than fully mechanistic level.
+
+5. **Next smallest experiment:** none needed for this thread — CLOSED.
+   If anyone wants the micro-mechanism from point 4, the smallest next
+   step would be plotting the lateral electric field (`ElectricField`
+   edge model, already available) alongside Electrons density right at
+   the surface through both edge zones.
+
+**No production code changed this part** — analysis/documentation only,
+same throwaway probe script (further extended, still not committed).
+Regression unchanged at 30 passed, 0 failed, 0 skipped.
+
 ## Current Task
 
 Do not try to solve everything at once.
