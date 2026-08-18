@@ -115,7 +115,9 @@ from tcad.backends.viennaps.io import (
     DEFAULT_FLOOR_DEPTH_UM,
     SnapshotRecorder,
     is_locos_registered,
+    locos_unwrapped_level_sets,
     register_locos_export,
+    register_locos_unwrapped,
     save_locos_volume_mesh,
     save_volume_mesh,
 )
@@ -138,6 +140,24 @@ class ThermalOxidation(ProcessStep):
     category = "oxidation"
     name = "thermal"
     display_name = "Thermal Oxidation"
+
+    @staticmethod
+    def _locos_stack_spec(recipe: Dict[str, Any], module):
+        """The (materials, wrap_flags) describing a LOCOS level-set stack
+        in insertion order — Si, pad oxide wrapping it, mask on top.
+
+        Shared by _build_locos_geometry() (which creates that stack) and
+        the chained-LOCOS path in run() (which rebuilds one from stashed
+        level sets), so the two cannot drift apart.
+        """
+        return (
+            [
+                module.Material.Si,
+                getattr(module.Material, recipe.get("oxide_material", "SiO2")),
+                getattr(module.Material, recipe["mask_material"]),
+            ],
+            [False, True, False],
+        )
 
     def _build_locos_geometry(self, recipe: Dict[str, Any], module):
         """Fresh-wafer LOCOS geometry: Si -> pad SiO2 (addToExisting) ->
@@ -232,8 +252,7 @@ class ThermalOxidation(ProcessStep):
         geometry.insertNextLevelSetAsMaterial(left_ls, mask_material, False)
 
         self.last_domain = geometry
-        materials = [si_material, oxide_material, mask_material]
-        wrap_flags = [False, True, False]
+        materials, wrap_flags = self._locos_stack_spec(recipe, module)
         return geometry, materials, wrap_flags
 
     def _make_locos_domain_chainable(self, geometry, materials, wrap_flags) -> None:
@@ -276,6 +295,14 @@ class ThermalOxidation(ProcessStep):
         if len(level_sets) < 2:
             return
 
+        # Stash the still-unwrapped state BEFORE the union below
+        # destroys it: a second LOCOS oxidation cannot use the re-wrapped
+        # domain (vps.Oxidation()'s oxide-band detection needs a distinct
+        # oxide band, which the union removes) and rebuilds from these
+        # instead. See io.register_locos_unwrapped() for the full
+        # reasoning and the real-execution numbers.
+        register_locos_unwrapped(geometry, level_sets)
+
         vls.BooleanOperation(
             level_sets[-1], level_sets[-2], vls.BooleanOperationEnum.UNION
         ).apply()
@@ -292,47 +319,61 @@ class ThermalOxidation(ProcessStep):
         # was carried over, mask material tagged onto it as before.
         # Fin-style oxidation (no mask_material) is always the plain
         # trench geometry, fresh or inherited, exactly as before.
-        if (
+        is_chained_locos = (
             self._inherited_domain is not None
             and "mask_material" in recipe
             and is_locos_registered(self._inherited_domain)
-        ):
-            # LOCOS on top of LOCOS. Measured (see
-            # LOCOS_CHAINING_TEST_LOG.txt, tests 27/28): the chainable
-            # re-wrap that _make_locos_domain_chainable() applies makes
-            # the mask level set contain SiO2, and vps.Oxidation()'s
-            # oxide-band detection needs a real oxide band between
-            # distinct level sets -- so a second LOCOS oxidation logs
-            # "no oxide nodes found after buildNodes()", produces a
-            # garbage displacement value, and then hangs indefinitely.
+        )
+
+        if is_chained_locos:
+            # LOCOS on top of LOCOS. The inherited domain itself cannot
+            # be oxidized: _make_locos_domain_chainable() unioned its
+            # mask level set with the oxide below (needed for ViennaLS
+            # Advect's "last level set contains all others"
+            # precondition), and vps.Oxidation()'s own oxide-band
+            # detection needs a DISTINCT oxide band -- on the re-wrapped
+            # domain it logs "no oxide nodes found after buildNodes()",
+            # produces a garbage displacement and hangs indefinitely.
             #
-            # This is NOT caused by the re-wrap: verified by rerunning
-            # the same chain with the re-wrap disabled, where the second
-            # oxidation completes but silently exports a mesh with the
-            # Si substrate missing entirely and SiO2 collapsed from
-            # 0.80000 to 0.00555. LOCOS-on-LOCOS has never worked; the
-            # re-wrap only changed how it fails. Refusing up front turns
-            # an indefinite hang into something actionable.
+            # Both requirements are satisfiable at once by keeping the
+            # re-wrap for chaining and rebuilding a separate,
+            # unwrapped-mask domain for the oxidation itself, from the
+            # copies stashed just before that union. See
+            # io.register_locos_unwrapped() for the measured numbers.
             #
-            # Deliberately narrow: FIN-STYLE oxidation (no
-            # mask_material) chained onto a LOCOS domain DOES work --
-            # measured, real oxide growth, all materials preserved --
-            # and is not blocked here.
-            raise NotImplementedError(
-                "Cannot run a LOCOS oxidation (mask_material set) on a domain "
-                "produced by a previous LOCOS step: ViennaPS's oxide-band "
-                "detection cannot resolve an oxide band in the resulting "
-                "geometry, and the solve hangs. This combination has never "
-                "worked (before the process-flow chaining fix it silently "
-                "produced a mesh with no Si region at all). Use a single "
-                "longer LOCOS step instead of two, or omit mask_material to "
-                "run a fin-style oxidation on this domain, which does work."
+            # Note: this reuses the INHERITED mask geometry as it stands
+            # after the previous oxidation (deformed by that step's own
+            # mask bending), which is what continuing a LOCOS oxidation
+            # physically means. The recipe's mask_left_um/mask_right_um/
+            # pr_thickness_um are therefore NOT re-applied here -- doing
+            # so would discard the mask's evolved shape and re-impose a
+            # pristine box.
+            stashed = locos_unwrapped_level_sets(self._inherited_domain)
+            if stashed is None:
+                raise NotImplementedError(
+                    "Cannot run a LOCOS oxidation (mask_material set) on this "
+                    "LOCOS-produced domain: its pre-re-wrap level sets were not "
+                    "stashed, so the unwrapped-mask geometry vps.Oxidation() "
+                    "needs cannot be rebuilt. This happens if the domain was "
+                    "produced before that stash existed. Re-run the first LOCOS "
+                    "step, or omit mask_material to run a fin-style oxidation "
+                    "on this domain, which works on the inherited domain "
+                    "directly."
+                )
+            locos_materials, locos_wrap_flags = self._locos_stack_spec(recipe, module)
+            geometry = session.create_domain(
+                grid_delta_um=recipe["grid_delta_um"],
+                x_extent_um=recipe["x_extent_um"],
+                y_extent_um=recipe["y_extent_um"],
             )
+            for level_set, material, wrap in zip(stashed, locos_materials, locos_wrap_flags):
+                geometry.insertNextLevelSetAsMaterial(level_set, material, wrap)
+            self.last_domain = geometry
 
         is_fresh_locos = self._inherited_domain is None and "mask_material" in recipe
         if is_fresh_locos:
             geometry, locos_materials, locos_wrap_flags = self._build_locos_geometry(recipe, module)
-        else:
+        elif not is_chained_locos:
             geometry = self.prepare_domain(recipe)
 
         model = module.Oxidation()
@@ -341,7 +382,7 @@ class ThermalOxidation(ProcessStep):
         model.setTemperature(recipe["temperature_c"])
         model.setTime(recipe["time_hours"])
 
-        if not is_fresh_locos:
+        if not (is_fresh_locos or is_chained_locos):
             # Native-oxide seed the model auto-creates when no SiO2
             # layer exists (psOxidation.hpp) defaults to 0.002um
             # regardless of gridDelta. Below one grid cell, the level-set
@@ -351,9 +392,10 @@ class ThermalOxidation(ProcessStep):
             # from saveVolumeMesh/DevSim). Floor it at gridDelta, same
             # as ViennaPS's own trenchOxidation.py example
             # (seed_thickness = max(oxideThickness, gridDelta)).
-            # Not applicable to the fresh-LOCOS path: that geometry
+            # Not applicable to either LOCOS path: fresh-LOCOS geometry
             # already contains a real, resolvable pad-oxide SiO2 layer,
-            # so there is no seed to create.
+            # and chained LOCOS inherits that layer (grown thicker) from
+            # the previous step — so there is no seed to create.
             model.setInitialOxideThickness(max(0.002, recipe["grid_delta_um"]))
 
         if "pressure_atm" in recipe:
@@ -398,10 +440,12 @@ class ThermalOxidation(ProcessStep):
 
         final_mesh = Path(output_dir) / "thermal_oxidation_final"
         floor_depth_um = recipe.get("silicon_depth_um", DEFAULT_FLOOR_DEPTH_UM)
-        if is_fresh_locos:
+        if is_fresh_locos or is_chained_locos:
             # Normal save_volume_mesh() would drop Si entirely here —
             # see save_locos_volume_mesh's docstring and the module
-            # docstring above for why.
+            # docstring above for why. A chained LOCOS step rebuilt the
+            # same stack shape, so it exports and re-chains identically:
+            # its own output domain is what any FURTHER step inherits.
             final_mesh_path = save_locos_volume_mesh(
                 geometry, locos_materials, locos_wrap_flags, final_mesh,
                 floor_depth_um=floor_depth_um,

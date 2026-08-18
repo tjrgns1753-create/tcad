@@ -57,6 +57,13 @@ grid cells deep.
 _LOCOS_EXPORT_HINTS: dict = {}
 _LOCOS_EXPORT_REFS: dict = {}
 
+#: Deep copies of a LOCOS domain's level sets as they stood BEFORE
+#: _make_locos_domain_chainable() unioned the mask into the oxide,
+#: keyed by id(domain) exactly like _LOCOS_EXPORT_HINTS (and cleared by
+#: the same weakref callback). See register_locos_unwrapped() for why a
+#: second LOCOS oxidation needs these rather than the live domain.
+_LOCOS_UNWRAPPED: dict = {}
+
 
 def register_locos_export(domain, materials: List[Any], wrap_flags: List[bool]) -> None:
     """Record that `domain` carries ViennaPS "wrap" material stacking, so
@@ -89,8 +96,56 @@ def register_locos_export(domain, materials: List[Any], wrap_flags: List[bool]) 
     def _forget(_ref, key=key):
         _LOCOS_EXPORT_HINTS.pop(key, None)
         _LOCOS_EXPORT_REFS.pop(key, None)
+        _LOCOS_UNWRAPPED.pop(key, None)
 
     _LOCOS_EXPORT_REFS[key] = weakref.ref(domain, _forget)
+
+
+def register_locos_unwrapped(domain, level_sets: List[Any]) -> None:
+    """Stash deep copies of `domain`'s level sets as they stand right
+    now — with the mask still UNWRAPPED — for a later second LOCOS
+    oxidation to rebuild from.
+
+    Why a stash is needed at all: a LOCOS domain has to satisfy two
+    mutually exclusive requirements. ViennaLS's Advect (every
+    vps.Process() call) requires the LAST level set to contain all the
+    others, so a LOCOS domain is only safe to chain from once its mask
+    has been unioned with the oxide below it
+    (_make_locos_domain_chainable). But vps.Oxidation()'s own oxide-band
+    detection requires a DISTINCT oxide band between level sets, which
+    that same union destroys — so a second LOCOS oxidation on the
+    re-wrapped domain finds "no oxide nodes after buildNodes()",
+    produces a garbage displacement and hangs.
+
+    Both can be satisfied at once by keeping the re-wrap for chaining
+    and giving a second oxidation its own rebuilt, unwrapped-mask
+    domain — which is what these copies are for. Verified by real
+    execution (ViennaPS 4.6.2, 10hr dry LOCOS at 1000C, grid 0.2um):
+    the second oxidation then completes with real growth of the same
+    order as the first (SiO2 +0.1751 um^2 vs the first step's +0.1058;
+    Si genuinely consumed, -0.0641 vs -0.0819) and all three materials
+    preserved. The shipped chaining test's own 0.02hr recipe is far too
+    short to see this — at that time BOTH oxidations move SiO2 area by
+    ~0, below the grid's own resolution.
+
+    Copies rather than references because the live level sets are
+    mutated in place, first by the re-wrap and then by every later
+    chained step; these must hold the post-oxidation, pre-re-wrap state.
+    """
+    import viennals as vls
+
+    _LOCOS_UNWRAPPED[id(domain)] = [vls.Domain(ls) for ls in level_sets]
+
+
+def locos_unwrapped_level_sets(domain) -> Optional[List[Any]]:
+    """The unwrapped level-set copies stashed for `domain`, or None.
+
+    Returns the stored copies directly. A caller that inserts them into
+    a domain (which mutates them) and may need the originals again must
+    copy them itself — the one production caller rebuilds a throwaway
+    domain per oxidation, so it does not.
+    """
+    return _LOCOS_UNWRAPPED.get(id(domain))
 
 
 def is_locos_registered(domain) -> bool:
