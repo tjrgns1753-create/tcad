@@ -5711,6 +5711,145 @@ regressed, tracked as OPEN below.
 - Directional deposition's real-growth *shape* (only the sign/magnitude
   was verified against `|v|*t`, not a full undercut/profile check).
 
+### MOSFET Ohm's-law cross-check — lateral sheet-density integration attempted — GAP NARROWED, EDGE ZONES STILL UNRESOLVED (later session, fresh container, ViennaPS 4.6.2 + DevSim 2.11.0 — environment rebuilt from scratch: `python3.10 -m venv .venv --system-site-packages`, `pip install devsim ViennaPS meshio matplotlib numpy scipy`, plus `apt-get install libopenblas0 liblapack3` and `DEVSIM_MATH_LIBS=libopenblas.so.0:liblapack.so.3:libblas.so.3` — devsim's own unversioned-`.so` search fails on stock Ubuntu 24.04, needs the exact installed `.so.N` names named explicitly. Regression re-verified clean in this fresh environment first: 30 passed, 0 failed, 0 skipped, including `test_mosfet_id_vgs_real.py` reproducing the exact documented Id=5.68e-05A.)
+
+Executed CLAUDE.md OPEN item 1's named next experiment: integrate the
+LATERAL sheet-density profile along the whole channel and recompute the
+Ohm's-law estimate as a real series resistance
+`R = sum dx/(q*mu*N_sheet(x))`, instead of assuming the centre-point
+N_sheet applies uniformly across the whole channel length (the crude
+estimate that produced the originally-reported ~800x gap).
+
+1. **What was tested:** a throwaway probe script (not committed, same
+   convention as the part-23 doping-sweep probe) rebuilding the exact
+   production MOSFET device (`test_mosfet_id_vgs_real.py`'s own
+   recipe/geometry/doping-derived refinement), solved directly to the
+   single already-characterized "on" point (Vgs=8V, Vds=0.1V) instead
+   of the full 5-point sweep. Extracted real DevSim node data
+   (`Electrons`, `x`, `y`, `mu_n`, `ElectronCharge`) after convergence.
+
+   First correction made before the real experiment could even start:
+   using DevSim's live `IntrinsicElectrons` node model as "n_eq" (the
+   natural-looking choice) gives NEGATIVE, three-orders-too-small
+   N_sheet values — because `IntrinsicElectrons` is a symbolic model
+   (`n_i*exp(Potential/V_t)`) that keeps re-evaluating against the
+   CURRENT potential under bias, so it is contaminated by the
+   quasi-Fermi split once current actually flows, not a fixed
+   pre-bias-equilibrium reference. Fixed by snapshotting `Electrons`
+   right after the equilibrium drift-diffusion solve, BEFORE any bias
+   ramp, and using that snapshot as n_eq for the rest of the analysis
+   (same device, same node ordering, no interpolation needed for this
+   part).
+
+   With that fixed, reproduced the OLD crude centre-point estimate
+   first, as a sanity check on the rest of the methodology: N_sheet at
+   x=0 came out to 1.552e12 cm^-2, giving a ratio to DevSim's real
+   terminal current of **874x** — matching the previously-documented
+   ~800-882x range almost exactly. This confirms the extraction
+   methodology (mu_n, q, node data, snapshot n_eq) is sound and the
+   finding reproduces cleanly across a DevSim version bump (2.10.1 →
+   2.11.0) and a from-scratch environment.
+
+   Then computed the real lateral integral two different ways:
+     (a) grouped raw DevSim mesh nodes into x-columns by rounding x to
+         1nm, trapezoidally integrating each column's own y-samples.
+     (b) built a `scipy.interpolate.LinearNDInterpolator` (a fresh
+         Delaunay reinterpolation) over the full scattered node cloud,
+         sampled a dense uniform y-grid at each of 300 evenly-spaced
+         x-columns, trapezoidally integrated each.
+
+2. **Result:** away from the two channel-junction edges, both methods
+   agree tightly and cleanly — N_sheet is flat at ~1.58-1.6e12 cm^-2
+   across the whole mid-channel (roughly x in [-0.85, +0.85]), a clean,
+   physically sensible plateau matching the centre-point value almost
+   exactly.
+
+   Near each channel-junction edge (within ~0.1-0.15um of x=±1.0),
+   the two methods diverge wildly and are each internally unstable:
+     - Method (a): directly confirmed a real mesh-topology issue —
+       nodes spanning the full device depth (y=0 to y=-1.0um) DO exist
+       in the x-band [0.95, 0.985] (3776 nodes total, 998 of them below
+       y=-0.2um), but essentially none of them share a 1nm-rounded x
+       with the fine near-surface refinement nodes there, so many
+       near-edge "columns" only ever see their top ~10-25nm before the
+       column silently runs out of matching nodes — undercounting
+       N_sheet there by orders of magnitude (measured as low as 4.9e6
+       cm^-2, vs the 1.6e12 plateau) and inflating that one column's
+       resistance contribution to **99% of the entire R_total sum**.
+       This drives Id_lateral/Id_devsim to 0.479 — i.e. it LOOKS like
+       it "closes the gap" to within 2x, but the confirmed column
+       -truncation bug means this specific number cannot be trusted.
+     - Method (b): swings just as badly in the OPPOSITE direction, and
+       is highly sensitive to an essentially arbitrary parameter (how
+       close to the junction edge the integration window is allowed to
+       reach):
+
+       | edge exclusion margin | Id_lateral/Id_devsim ratio |
+       |---|---|
+       | 0.00 um | 11.2x |
+       | 0.02 um | 8.6x |
+       | 0.05 um | 325x |
+       | 0.08 um | 911x |
+       | 0.12 um | 896x |
+
+       A >100x swing from moving an exclusion boundary by tens of nm is
+       not a converged physical quantity — it is the signature of a
+       Delaunay reconstruction (built from the raw point cloud, with no
+       knowledge of the true mesh connectivity or material geometry)
+       creating spurious bridging triangles near the gate-edge/
+       channel-junction corner.
+
+3. **What it proves:** the previously-reported "~800x too high" gap is
+   now confirmed to come ENTIRELY from the crude assumption (apply the
+   centre-point N_sheet uniformly across the WHOLE channel length)
+   rather than from any real distributed physical effect — away from
+   the two narrow edge zones, the correctly-integrated plateau value
+   (~1.6e12 cm^-2) matches the old centre-point value (1.552e12 cm^-2)
+   almost exactly, so the ~874x factor came entirely from multiplying
+   the right local value by the wrong effective length. That part of
+   the mystery is resolved. What the plateau match does NOT yet answer
+   is what the two edge zones themselves actually contribute — both
+   methods agree a real dip exists there (this is not itself in
+   question), but neither method's absolute integrated contribution
+   from that narrow region is trustworthy, for two independently
+   -confirmed, different numerical reasons (one confirmed mesh
+   -topology/column-truncation bug; one confirmed interpolation
+   -sensitivity signature).
+
+4. **What remains uncertain:** whether the true edge-region
+   contribution, computed correctly, would land the lateral estimate
+   within O(1-2)x of DevSim's real terminal current (which the clean
+   plateau match would suggest), or whether a smaller-but-real residual
+   physical bottleneck remains localized to those ~0.15um zones once
+   correctly integrated — genuinely not distinguished yet. Also
+   unconfirmed: whether the part-22/24 session(s) that originally
+   reported "N_sheet=1.57e12 cm^-2" at the centre point used the same
+   pre-bias-equilibrium-snapshot definition of n_eq this session
+   settled on (their own script was a throwaway, not committed, so its
+   exact n_eq definition cannot be checked directly) — the near-exact
+   agreement (1.552e12 here vs 1.57e12 there) is suggestive but not
+   proof the two sessions measured the identical quantity.
+
+5. **Next smallest experiment (not done):** redo just the two ~0.15um
+   edge windows with a triangle-connectivity-aware interpolator (e.g.
+   `matplotlib.tri.Triangulation` + `LinearTriInterpolator` built from
+   the ACTUAL Si-region triangle array already available in this
+   pipeline's own refined mesh — not a fresh Delaunay reconstruction
+   over the raw point cloud, which cannot know where real material/
+   geometry boundaries are and is what produced method (b)'s
+   instability). If that lands near the plateau-implied O(1-2)x
+   closure, the ~800x gap is fully explained and closeable; if it shows
+   its own stable, method-insensitive dip, that would be a real,
+   localized bottleneck at the channel-junction transition — consistent
+   with (and finally resolving) the much earlier "shallow residual dip
+   at channel-junction transition" note recorded before the 3.8e7x mesh
+   bug was found and fixed.
+
+**No production code changed this part** — analysis/documentation only,
+throwaway probe script not committed (same convention as the part-23
+probe). Regression unchanged at 30 passed, 0 failed, 0 skipped (verified
+in the freshly-built environment before this investigation started).
+
 ## Current Task
 
 Do not try to solve everything at once.

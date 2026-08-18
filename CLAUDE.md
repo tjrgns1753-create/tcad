@@ -162,16 +162,30 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
 
 ## OPEN issues (active — read before starting new work)
 
-1. **MOSFET Ohm's-law cross-check residual ~800x gap.** After fixing
-   the 3.8e7x inversion-layer mesh bug, DevSim's terminal Id and an
-   independent Ohm's-law reconstruction from the simulation's own
-   node-level electron density still disagree by ~800x, and the ratio
-   is stable under further refinement (not a resolution artifact).
-   Next step (named, not started): integrate the LATERAL sheet-density
-   profile along the whole channel (not just the centre point) and
-   recompute the Ohm's-law estimate as a real series resistance
-   `∫dx / (q·mu·N_sheet(x))` — would either close the gap or localize
-   a real remaining bottleneck to a specific x.
+1. **MOSFET Ohm's-law cross-check ~800x gap — narrowed, not closed.**
+   The named lateral-integration experiment ran for real: away from the
+   two channel-junction edges, the properly-integrated N_sheet(x)
+   plateau (~1.6e12 cm^-2) matches the old centre-point value almost
+   exactly, so the ~800x figure is now confirmed to come entirely from
+   the crude "apply the centre value over the WHOLE channel length"
+   assumption, not a real distributed physical effect — that part of
+   the mystery is resolved. BUT the two ~0.1-0.15um edge zones
+   themselves are NOT yet resolved: two different numerical extraction
+   methods (raw-node x-column grouping; scattered-point Delaunay
+   reinterpolation) each show a real dip there, but their integrated
+   R contribution from that narrow zone is wildly method-sensitive
+   (0.48x-11x-900x depending on method/margin) — a signature of
+   interpolation artifacts near the geometric corner (neither method is
+   FEM-connectivity-aware), not a converged number. Next step (named,
+   not started): redo just the two edge windows with a triangle
+   -connectivity-aware interpolator (e.g. `matplotlib.tri` built from
+   the ACTUAL Si-region triangle array already available in the
+   pipeline, not a fresh Delaunay reconstruction over the raw point
+   cloud) — if that also lands near the plateau-implied O(1-2)x
+   closure, the gap is fully explained; if it shows its own stable
+   (method-insensitive) dip, that localizes a real bottleneck at the
+   channel-junction transition. Full writeup: search
+   `docs/investigation_log.md` for "lateral sheet-density".
 2. **LOCOS-on-LOCOS is blocked, not fixed.** A second LOCOS oxidation
    on a LOCOS-produced domain raises `NotImplementedError` (confirmed
    pre-existing hang/silent-corruption otherwise, not a regression).
