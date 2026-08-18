@@ -3800,8 +3800,12 @@ source-to-drain current.
    0-8V range (the surface-potential trend suggests strong inversion,
    2*phi_F~0.84V, is reached only around Vgs~7-8V, so the sweep may
    still be capturing mostly weak/moderate inversion rather than a
-   fully-formed strong-inversion channel) were none of them checked
-   further this session. `auto_refine_from_doping`'s own
+   fully-formed strong-inversion channel — **this specific speculation
+   was tested and found WRONG in a later session, see "MOSFET Id-Vgs
+   magnitude gap" below: it conflated surface potential with gate
+   voltage, ignoring the depletion-charge term; the real Vth is
+   ~1.77V, so Vgs=8V is ~6.2V of overdrive, deep strong inversion**)
+   were none of them checked further this session. `auto_refine_from_doping`'s own
    `implant_windows` gap (named as an open item since the
    `implant_windows` doping section, still not closed) is what forced
    this test to build its own refinement predicates by hand rather
@@ -3826,6 +3830,119 @@ source-to-drain current.
 **Regression after this addition:** `tests/run_regression.py` -> **30
 passed, 0 failed, 0 skipped** (29 before this addition's new test) —
 no regressions.
+
+### MOSFET Id-Vgs magnitude gap — one candidate explanation RULED OUT analytically, series-resistance/vertical-resolution hypothesis STRENGTHENED (later session, per explicit instruction "다음은" / what's next — the cheapest of the three "next smallest experiment" items named above)
+
+Picks up item 9's third sub-item (compare against a real, independent
+number) via the cheapest possible version of it: a closed-form
+threshold-voltage calculation using DevSim's own real physical
+constants, rather than another expensive simulation run. This is test
+-only / analysis-only — no production code changed.
+
+1. **What was tested:** two things, one analytical and one a real
+   simulation probe:
+   - Computed long-channel MOSFET threshold voltage
+     `Vth = 2*phi_F + sqrt(2*eps_si*eps_0*q*Na*2*phi_F)/Cox` (standard
+     textbook form, `phi_F = V_t*ln(Na/n_i)`) for this project's ACTUAL
+     device parameters (`Na=1e17 cm^-3` channel doping,
+     `t_ox=0.02um`), using DevSim's own real constants read directly
+     from `devsim.python_packages.simple_physics`
+     (`eps_si=11.1, eps_ox=3.9, eps_0=8.85e-14, q=1.6e-19,
+     k=1.3806503e-23, n_i=1e10` — standard textbook values, not
+     fabricated) — the same "use the library's own real constants, not
+     re-derived textbook numbers" discipline `_debye_length_um()`
+     already established elsewhere in this project. Deliberately
+     ignores flatband voltage (assumes an idealized zero-workfunction
+     -difference gate, matching how `mos_equation.py`'s own
+     `CreateOxideContact` treats the gate — a Dirichlet boundary
+     directly on the oxide, no separate work-function term modeled).
+   - Separately, real-executed a probe: the SAME production pipeline
+     (`test_mosfet_id_vgs_real.py`'s exact structure) with ONLY
+     `BACKGROUND_DOPING_CM3` lowered from `-1e17` to `-1e15`
+     (matching DevSim's own official `gmsh_mos2d_create.py` example's
+     `bulk_doping=1e15`, fetched earlier in this investigation), to
+     see whether a lighter, more realistic channel doping measurably
+     changes the picture.
+
+2. **Result:**
+   - `Vth ≈ 1.77V` for this project's actual device (`2*phi_F=0.835V`,
+     `Qdep_max/Cox=0.939V`) — this DIRECTLY CONTRADICTS the "what
+     remains uncertain" speculation recorded in the section above
+     ("strong inversion... reached only around Vgs~7-8V"): that
+     speculation conflated the SURFACE POTENTIAL reaching `2*phi_F`
+     with the GATE VOLTAGE reaching that value, but `Vgs` must ALSO
+     overcome the depletion-charge term (`Qdep/Cox`, essentially the
+     same magnitude as `2*phi_F` itself here). By the swept range's
+     own top end (`Vgs=8V`), the device sits at `Vgs-Vth ≈ 6.2V` of
+     overdrive — deep, unambiguous strong inversion by classical
+     theory, not "still weak/moderate" as previously speculated.
+   - The lower-doping (`1e15`) probe did NOT reach a comparable result
+     — it failed to converge at the drift-diffusion turn-on stage
+     (the SAME stage `mosfet_sweep.py`'s own tolerances were tuned
+     for at `1e17`), a real, reproducible negative result: this
+     project's current MOSFET convergence recipe
+     (`_DD_ABSOLUTE_ERROR`/`_DD_RELATIVE_ERROR`, the graded-refinement
+     ring counts) is NOT a doping-independent, drop-in-safe set of
+     defaults — it was tuned against one specific doping level and
+     does not automatically generalize to a 100x-lighter channel,
+     mirroring this project's own already-documented pattern for
+     other convergence-tuned parameters elsewhere (e.g.
+     `refine_half_width_um`/`refine_levels`'s own "a different doping
+     level or grid_delta_um will need different values" caveat).
+
+3. **What it proves:** the analytical Vth check RULES OUT "the sweep
+   doesn't reach strong inversion" as an explanation for the ~10
+   -order-of-magnitude current-magnitude gap — a real, decisive,
+   nearly-free result (pure arithmetic, no simulation needed, so this
+   was correctly the CHEAPEST of item 9's three sub-items to try
+   first). Combined with the already-measured fact that the channel
+   DOES form a real, substantial inversion layer (`~1e18 cm^-3`
+   electrons at `Vgs=8V`, exceeding the `1e17` p-type background) yet
+   total current stays minuscule, this sharpens (does not just repeat)
+   the earlier "narrower series-resistance bottleneck" hypothesis: the
+   electrostatics (gate coupling, inversion formation) are verifiably
+   correct and are NOT the limiting factor; something in how current
+   actually TRANSPORTS through the formed channel is. The most likely
+   remaining candidate, not yet directly measured: the inversion
+   layer's own conducting THICKNESS (physically only a few nm in a
+   real device) may not be resolved finely enough by the current
+   vertical mesh refinement (tuned via the channel's OWN bulk-doping
+   Debye length, not the much higher effective carrier concentration
+   the inversion layer itself reaches once formed) — an under-resolved
+   conducting layer would show up as artificially high channel
+   resistance without affecting the (correctly-computed, node-value)
+   electron density itself.
+
+4. **What remains uncertain / explicitly NOT done:** the vertical
+   -resolution hypothesis in point 3 is not yet directly measured (would
+   need either a dedicated refinement pass keyed to the INVERSION
+   density rather than the bulk background doping, or a direct
+   real-execution comparison of total current against an
+   independently-computed sheet-conductance estimate from the
+   simulated electron-density profile itself); whether the
+   `1e15`-doping convergence failure is fixable with the same class of
+   fix already used for `1e17` (different tolerances/ring counts) or
+   needs a materially different recipe was not investigated further,
+   since the analytical Vth result already answered the specific
+   question the probe was run to distinguish; item 9's other two
+   sub-items (extending `_derive_refine_from_doping()` for
+   `implant_windows`; a refinement region at the channel-junction
+   TRANSITION intersection specifically) remain undone.
+
+5. **Next smallest experiment (not done):** directly compare the
+   simulated device's total drain current against an independent
+   Ohm's-law estimate built from the SAME simulation's own node-level
+   electron density and DevSim's own real mobility model along the
+   channel surface (not a textbook square-law formula's own assumed
+   mobility/geometry) — if that independent estimate is ALSO orders of
+   magnitude below a simple square-law prediction, it would confirm
+   the bottleneck is resolvable-in-principle (a real transport/
+   resolution effect the simulation itself can already see, just needs
+   more mesh refinement to size correctly); if the two independently
+   -computed currents (DevSim's own terminal current vs. the Ohm's-law
+   reconstruction from node data) disagree with EACH OTHER, that would
+   point at a bug in current extraction or the equation setup instead,
+   a categorically different problem needing a different fix.
 
 After the additions above (hbr_o2, sf6_c4f8, cf4_o2, faraday_cage
 etching; isotropic deposition; gaussian_implant doping + CLI wiring),
@@ -4994,6 +5111,34 @@ this round.
 **Regression after part 22:** `tests/run_regression.py` -> **30
 passed, 0 failed, 0 skipped** (29 before this part's new test) — no
 regressions.
+
+**What this session did (part 23, later session, per explicit
+instruction "다음은" / what's next — the cheapest of the three "next
+smallest experiment" items part 22 left open):** computed the real
+long-channel threshold voltage for this project's actual MOSFET device
+analytically, using DevSim's own real physical constants — see "MOSFET
+Id-Vgs magnitude gap — one candidate explanation RULED OUT
+analytically" above. Result: `Vth ≈ 1.77V`, meaning the already-swept
+0-8V range reaches ~6.2V of overdrive by its top end — this DISPROVES
+this project's own earlier speculation (part 22's "what remains
+uncertain") that the sweep might still be capturing only weak/moderate
+inversion. Combined with the already-measured fact that the channel
+DOES form a real, substantial inversion layer, this sharpens the
+leading explanation for the still-unresolved current-magnitude gap
+toward a vertical mesh-resolution/series-resistance effect specifically
+(not a gate-coupling or sweep-range problem) — a real, decisive,
+essentially-free result (pure arithmetic, no simulation), correctly
+tried before the two more expensive named alternatives. A companion
+real-execution probe (channel doping lowered from 1e17 to 1e15,
+matching DevSim's own official example) found a genuine, separate
+negative result: this project's current MOSFET convergence recipe does
+NOT generalize to that doping level without its own further tuning —
+recorded honestly rather than pursued further, since the analytical
+result already answered the question the probe was run to distinguish.
+
+**No production code changed this part** — analysis/documentation only
+(the doping-sweep probe was a throwaway script, not committed).
+Regression unchanged at 30 passed, 0 failed, 0 skipped.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
