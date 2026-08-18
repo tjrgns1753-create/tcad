@@ -16,6 +16,25 @@ Build a reliable 2D TCAD process → mesh → DevSim device simulation pipeline.
 - Do not refactor unrelated code.
 - Report uncertainty honestly.
 - Work slowly and one subsystem at a time.
+- When adding a new DevSim characterization/sweep (a new contact, a new
+  measured quantity, a new device region), size any local mesh
+  refinement near it from the CONCENTRATION/REGION ACTUALLY BEING
+  MEASURED there — not from whatever doping happens to be most
+  convenient or already-refined nearby. Concretely: refining an
+  interface or contact from the BULK/background doping's Debye length
+  is not a safe default merely because it "seems related" — a
+  minority-carrier layer that forms there (e.g. a MOS inversion
+  channel) reaches carrier densities near the OPPOSITE (peak/implant)
+  doping, and sizing the mesh for the wrong concentration can leave the
+  very region being measured spanned by a single node. Confirmed to
+  produce a 3.8e7x wrong terminal current, silently — no crash, no
+  convergence warning, a real-looking device with a plausible-looking
+  (monotonic, charge-conserving) I-V curve, and it passed the shipped
+  regression test for the same reason. See "MOSFET drain current was
+  wrong by 3.8e7x" below for the full case study, and prefer deriving
+  refinement scale from the doping profile programmatically
+  (`derive_implant_windows_refinement()` in
+  `tcad/device/devsim/mesh_import.py`) over a caller hand-picking one.
 
 Preferred order:
 1. Initial wafer geometry
@@ -4321,6 +4340,93 @@ drawn, "REAL VIENNAPS MESH" label present, no crash. Confirms the
 rendering generalizes across models, not just the isotropic case the
 question was originally about.
 
+### GUI: real-mesh render still shows intact Si under an isotropic undercut — CONFIRMED (investigation only, fix NOT applied yet, per explicit user instruction to confirm first) — user-supplied screenshot + hypothesis, verified by reading the code
+
+User reported (with a screenshot): after a real isotropic etch, the
+canvas labeled "REAL VIENNAPS MESH" still shows the Si substrate as a
+solid, intact gray block under the PR openings, with only scattered
+triangle marks on top — not the undercut/recessed shape the real
+ViennaPS mesh should have. User's own hypothesis, stated before any
+code was read: the mesh itself is correct (Si etched, undercut formed),
+but `redraw()` draws the OLD placeholder gray "Si substrate" rectangle
+FIRST, unconditionally, and `_draw_real_mesh_result()` then draws real
+mesh triangles ON TOP of it without ever covering/clearing the
+rectangle underneath — so wherever the real mesh has NO Si triangle
+(an etched-away void, e.g. the undercut region), the stale placeholder
+rectangle just keeps showing through, looking exactly like un-etched
+Si.
+
+1. **What was tested:** read `redraw()` and `_draw_real_mesh_result()`
+   in `tcad_2d_stagewise.py` directly (no execution needed — this is a
+   draw-order question, answerable from the source) to check whether
+   the placeholder rectangle is still present on the canvas by the time
+   `_draw_real_mesh_result()` runs.
+
+2. **Result — the user's hypothesis is exactly correct, confirmed by
+   reading the code, not by guessing:**
+   - `redraw()` draws the gray `"Si substrate"` rectangle
+     UNCONDITIONALLY, spanning the FULL `x0..x1, surface_y..bottom_y`
+     area, near the very top of the function (`canvas.create_rectangle(
+     x0, surface_y, x1, bottom_y, fill="#bdbdbd", ...)`) — before any
+     branching on `self.wafer.etched` or process stage at all.
+   - Only much later does `redraw()` reach
+     `if self.wafer.etched and self._draw_real_mesh_result(canvas, x0,
+     x1, surface_y, bottom_y): pass` — i.e. the real-mesh path is tried
+     AFTER the gray rectangle is already on the canvas.
+   - `_draw_real_mesh_result()` itself never deletes or covers anything
+     — it only calls `canvas.create_polygon(coords, fill=color,
+     outline=color)` once per triangle actually present in the real
+     exported mesh. Tkinter's canvas is layered in creation order (later
+     items draw over earlier ones); it does NOT clear the canvas or
+     paint a background at any point in this function.
+   - Consequence, direct and unavoidable from this draw order: wherever
+     the real ViennaPS mesh has NO Si triangle (any void — an isotropic
+     undercut, an etched trench, etc.), nothing is drawn there, so the
+     gray placeholder rectangle from step 1 — already sitting on the
+     canvas underneath — remains fully visible. It is
+     indistinguishable, by eye, from a real Si triangle of the same
+     gray color, which is exactly the "Si substrate stays intact"
+     appearance in the reported screenshot.
+
+3. **What it proves:** this is a real, confirmed rendering bug in the
+   `_draw_real_mesh_result()` path specifically — not a data problem
+   (the real ViennaPS mesh is not being second-guessed here; nothing
+   about it was inspected or needed to be, since the bug is entirely
+   in what the CANVAS shows relative to what the mesh already
+   contains) and not the same bug as the earlier-fixed "stray small
+   triangle" decimation issue (that one was about WHICH real triangles
+   got sampled for rendering; this one is about a non-mesh placeholder
+   shape never being removed). Both bugs happen to live in the same
+   function/area of `tcad_2d_stagewise.py` but are otherwise unrelated.
+
+4. **What remains uncertain / explicitly NOT done — confirmation
+   only, per explicit instruction to check before touching
+   `_draw_real_mesh_result()` itself:** no code was changed this round.
+   Not yet decided: whether the fix should (a) skip drawing the
+   placeholder rectangle when `self.wafer.etched` is true and the
+   real-mesh path is about to be attempted (matching the existing
+   `elif self.wafer.etched:` fallback-placeholder pattern immediately
+   below it, which already assumes "no rectangle yet, draw one"), or
+   (b) have `_draw_real_mesh_result()` itself paint over its own full
+   bounding box first (e.g. white/background) before drawing triangles,
+   which would also correctly handle a mesh that doesn't span the full
+   canvas width; whether any OTHER placeholder shape in `redraw()` has
+   the same latent problem for a different process stage (only the
+   Si-substrate rectangle was checked, since that is what the report
+   and screenshot were about).
+
+5. **Next smallest experiment (not done):** move the gray Si-substrate
+   `canvas.create_rectangle(...)` call so it only runs in the fallback
+   branch (mirroring the pattern already used for the etched-visual
+   -depth placeholder at the `elif self.wafer.etched:` branch a few
+   lines below it) — i.e. draw it BEFORE attempting
+   `_draw_real_mesh_result()` only when NOT etched, and let the
+   etched-and-successful real-mesh path own the entire substrate area
+   itself with no rectangle underneath. Then re-verify on-screen (this
+   project already has the `.venv312` + Xvfb + `xdotool` setup — see
+   "GUI visual verification" above) that an isotropic-etch undercut
+   now renders as a visible recess, not solid gray.
+
 ### GUI: etch panel now shows only the fields the selected model actually uses — FIXED (later session, per explicit user observation "에칭 종류를 선택하면 그 종류에 맞게끔 입력할 수 있는 파라미터가 바뀌어야 하지 않을까?")
 
 1. **What was tested:** read `_make_etch_panel()`/`run_etch()`
@@ -5343,6 +5449,35 @@ number would have been the wrong fix.
 confirming the shared-helper refactor left the existing refinement path
 behaviour-identical. The MOSFET test now costs 121s (was ~20s) because
 it is finally solving a conducting device.
+
+**What this session did (part 25, later session, per explicit user
+instruction to (a) add a standing rule against the class of bug part 24
+found and (b) investigate — confirm only, do not fix yet — a
+user-reported GUI rendering issue with an attached screenshot and the
+user's own hypothesis):**
+- Added a new bullet to "Development Rules" above: size local mesh
+  refinement near any new DevSim measurement/contact from the
+  concentration ACTUALLY being measured there, not from whichever
+  doping is nearby/convenient — the general form of part 24's root
+  cause, so it does not recur silently in a future characterization
+  addition.
+- Confirmed the user's GUI hypothesis by reading `redraw()`/
+  `_draw_real_mesh_result()` in `tcad_2d_stagewise.py` (no execution
+  needed — a draw-order question, answerable from source): the gray
+  "Si substrate" placeholder rectangle IS drawn unconditionally, before
+  the real-mesh path even runs, and `_draw_real_mesh_result()` never
+  clears or covers it — only draws triangles that exist in the real
+  mesh. Any void in the real mesh (an isotropic-etch undercut, in the
+  reported case) therefore still shows the stale rectangle underneath,
+  looking exactly like intact Si. See "GUI: real-mesh render still
+  shows intact Si under an isotropic undercut — CONFIRMED" above for
+  the full writeup. Per explicit instruction, the fix itself
+  (`_draw_real_mesh_result()`/`redraw()`) was NOT applied this round —
+  confirmation only.
+
+**No production code changed this part** — CLAUDE.md only (a new
+standing rule, and a confirmed-but-unfixed GUI bug report). Regression
+unchanged at 30 passed, 0 failed, 0 skipped.
 
 **OPEN issues carried forward, NOT resolved this session:**
 - LOCOS mask preservation — **RESOLVED in part 6 above** (was open as
