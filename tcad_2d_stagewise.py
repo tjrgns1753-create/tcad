@@ -68,6 +68,64 @@ import tcad.process.oxidation  # noqa: F401 -- import side effect: registers oxi
 # Canvas polygon cap for _draw_real_mesh_result -- see its use for why.
 _MAX_RENDERED_TRIANGLES = 2000
 
+
+def _material_boundary_loops(triangles):
+    """Trace the true outer boundary of a set of same-material
+    triangles (already filtered to one material) into one or more
+    closed vertex-index loops.
+
+    An edge touched by exactly one triangle in `triangles` is a
+    boundary edge -- the standard definition of a triangulated
+    region's silhouette. If every boundary vertex touches exactly 2
+    boundary edges, the boundary edges form a disjoint union of
+    simple cycles (one per connected region of this material), each
+    traceable by walking the adjacency. Returns [] if that isn't the
+    case (a non-manifold mesh, or a fully enclosed hole with no
+    opening to this material's own outer boundary -- a topology no
+    etch/deposition model this project ships today produces), so the
+    caller can fall back to per-triangle rendering instead of drawing
+    something wrong.
+    """
+    edge_count = {}
+    for tri in triangles:
+        idxs = [int(i) for i in tri]
+        for i in range(3):
+            a, b = idxs[i], idxs[(i + 1) % 3]
+            key = (a, b) if a < b else (b, a)
+            edge_count[key] = edge_count.get(key, 0) + 1
+
+    boundary_edges = [e for e, c in edge_count.items() if c == 1]
+    if not boundary_edges:
+        return []
+
+    adjacency = {}
+    for a, b in boundary_edges:
+        adjacency.setdefault(a, []).append(b)
+        adjacency.setdefault(b, []).append(a)
+
+    if any(len(v) != 2 for v in adjacency.values()):
+        return []
+
+    unvisited = set(boundary_edges)
+    loops = []
+    while unvisited:
+        start_a, start_b = next(iter(unvisited))
+        unvisited.discard((start_a, start_b))
+        loop = [start_a, start_b]
+        prev, current = start_a, start_b
+        while current != start_a:
+            n0, n1 = adjacency[current]
+            nxt = n1 if n0 == prev else n0
+            key = (current, nxt) if current < nxt else (nxt, current)
+            if key not in unvisited:
+                return []  # malformed / already-closed -- bail to fallback
+            unvisited.discard(key)
+            loop.append(nxt)
+            prev, current = current, nxt
+        loops.append(loop[:-1])
+
+    return loops
+
 # ============================================================
 # SUBPROCESS WORKER
 # ============================================================
@@ -1317,11 +1375,28 @@ class TCADApplication(tk.Tk):
 
     def _draw_real_mesh_result(self, canvas, x0, x1, surface_y, bottom_y):
         """Draw the actual ViennaPS final_mesh (self.last_final_mesh, a
-        .vtu volume mesh) as filled triangles, instead of the placeholder
-        rectangle below. Returns True on success; False if the mesh
-        can't be read (meshio/ViennaPS unavailable, file missing, no
-        triangle cells, degenerate bounds, etc.), so the caller falls
-        back to the placeholder in that case -- this must never raise.
+        .vtu volume mesh), instead of the placeholder rectangle in
+        redraw(). Returns True on success; False if the mesh can't be
+        read (meshio/ViennaPS unavailable, file missing, no triangle
+        cells, degenerate bounds, etc.), so the caller falls back to
+        the placeholder in that case -- this must never raise.
+
+        Each material is drawn as its TRUE boundary silhouette (via
+        _material_boundary_loops(), traced from every one of its
+        triangles, not a decimated sample) -- one solid filled polygon
+        per connected region. This is what makes a genuine void (e.g.
+        an isotropic-etch undercut) show up correctly: the silhouette
+        simply excludes it, rather than either hiding it under a
+        stale placeholder (the original bug -- see CLAUDE.md's "GUI:
+        real-mesh render still shows intact Si under an isotropic
+        undercut") or rendering it as a sparse scatter of randomly
+        -sampled triangles (which is what drawing every material this
+        way used to look like, and is why redraw() no longer draws
+        the flat Si-substrate rectangle at all when this succeeds --
+        this silhouette IS the substrate shape now, notch included).
+        Falls back to the old per-triangle decimated rendering only
+        for a material whose boundary isn't a clean set of simple
+        loops (see _material_boundary_loops's own docstring for when).
 
         Reuses the exact meshio cell/cell_data access pattern already
         established in tcad/mesh/viennaps_adapter.py's build_process_result
@@ -1343,7 +1418,8 @@ class TCADApplication(tk.Tk):
             if triangle_block is None or "Material" not in mesh.cell_data:
                 return False
             block_index = mesh.cells.index(triangle_block)
-            tags = mesh.cell_data["Material"][block_index]
+            tags = [int(t) for t in mesh.cell_data["Material"][block_index]]
+            triangle_data = triangle_block.data
 
             points = mesh.points
             xs = [p[0] for p in points]
@@ -1378,78 +1454,77 @@ class TCADApplication(tk.Tk):
             }
             material_names = {}
 
+            def to_canvas(node_idx):
+                px, py = points[node_idx][0], points[node_idx][1]
+                return x0 + (px - x_min) * x_scale, surface_y - py * y_scale
+
+            by_material = {}
+            for idx, tag in enumerate(tags):
+                by_material.setdefault(tag, []).append(idx)
+
             # redraw() runs on every window resize (<Configure>, see
             # __init__), and each run rebuilds the whole canvas from
-            # scratch -- a fine grid_delta_um combined with the default
-            # ~5um floor_depth_um can produce 10000+ triangles, which
-            # would make resizing visibly stutter. Decimate to a fixed
-            # cap rather than skip a spatial region, so this is a
-            # performance safety valve, not a judgment about which part
-            # of the geometry matters more.
+            # scratch. Per material, prefer its TRUE boundary
+            # silhouette (_material_boundary_loops(), traced from
+            # EVERY one of its triangles -- boundary edges are
+            # O(perimeter), not O(area), so this stays fast without
+            # decimating) and draw it as one solid filled polygon per
+            # connected region. This is what makes a genuine void
+            # (e.g. an isotropic-etch undercut) render correctly: the
+            # silhouette simply excludes it, so nothing needs to be
+            # separately cleared or painted over.
             #
-            # Found (not assumed) to be a REAL bug in the original
-            # positional-stride version (`triangle_data[::step]`): the
-            # exported mesh's triangle ORDER is not spatially uniform --
-            # a material's own triangles are not spread evenly across
-            # its true area in the file (confirmed by inspection: after
-            # a plain stride, the surviving Si triangles clustered
-            # almost entirely in one thin band near the floor boundary,
-            # rendering as a small stray triangle instead of the whole
-            # Si cross-section). A fixed positional stride reproduces
-            # whatever bias is already in the file's ordering. Fixed by
-            # decimating PER MATERIAL, with a random (not positional)
-            # sample within each material, seeded so repeated redraws of
-            # the same mesh (e.g. window resizes) are stable rather than
-            # flickering between different random subsets. This also
-            # guarantees every material present keeps a share of the
-            # render cap proportional to its own triangle count, rather
-            # than one material's triangles (e.g. a small Mask) being
-            # crowded out entirely by another's (e.g. a much larger Si)
-            # in a combined positional stride.
-            triangle_data = triangle_block.data
-            if len(triangle_data) > _MAX_RENDERED_TRIANGLES:
-                by_material = {}
-                for idx, tag in enumerate(tags):
-                    by_material.setdefault(int(tag), []).append(idx)
+            # A fine grid_delta / deep floor_depth_um combination can
+            # still produce a material whose boundary tracing fails
+            # (see that function's own docstring) -- for that fallback
+            # case ONLY, decimate to a fixed cap with a random (not
+            # positional) per-material sample, seeded so repeated
+            # redraws of the same mesh are stable. (An earlier version
+            # of this decimation used a positional stride across ALL
+            # materials combined, which reproduced whatever spatial
+            # bias already existed in the exported file's triangle
+            # order -- confirmed to leave the Si cross-section
+            # rendered as a small stray triangle instead of the whole
+            # substrate. Per-material boundary tracing replaces that
+            # bug's fix rather than just inheriting it.)
+            rng = random.Random(0)
 
-                total = len(triangle_data)
-                rng = random.Random(0)
-                kept_indices = []
-                for tag, indices in by_material.items():
-                    share = max(1, round(_MAX_RENDERED_TRIANGLES * len(indices) / total))
-                    if len(indices) > share:
-                        kept_indices.extend(rng.sample(indices, share))
-                    else:
-                        kept_indices.extend(indices)
-                kept_indices.sort()
-
-                triangle_data = [triangle_data[i] for i in kept_indices]
-                tags = [tags[i] for i in kept_indices]
-
-            for tri, tag in zip(triangle_data, tags):
-                tag = int(tag)
+            for tag, indices in by_material.items():
                 name = material_names.get(tag)
                 if name is None:
                     name = str(module.Material(tag)).split("'")[1]
                     material_names[tag] = name
                 color = material_colors.get(name, "#b0b0b0")
 
-                coords = []
-                for node_idx in tri:
-                    px, py = points[node_idx][0], points[node_idx][1]
-                    coords.append(x0 + (px - x_min) * x_scale)
-                    coords.append(surface_y - py * y_scale)
+                loops = _material_boundary_loops([triangle_data[i] for i in indices])
 
-                # Skip sub-pixel triangles (invisible anyway) -- fine
-                # grid_delta / deep floor_depth_um combinations can
-                # produce thousands of them; this keeps the canvas
-                # responsive without changing what's actually visible.
-                tri_xs = coords[0::2]
-                tri_ys = coords[1::2]
-                if max(tri_xs) - min(tri_xs) < 1.0 and max(tri_ys) - min(tri_ys) < 1.0:
+                if loops:
+                    for loop in loops:
+                        coords = []
+                        for node_idx in loop:
+                            cx, cy = to_canvas(node_idx)
+                            coords.extend([cx, cy])
+                        if len(coords) >= 6:
+                            canvas.create_polygon(coords, fill=color, outline=color)
                     continue
 
-                canvas.create_polygon(coords, fill=color, outline=color)
+                draw_indices = indices
+                if len(draw_indices) > _MAX_RENDERED_TRIANGLES:
+                    draw_indices = rng.sample(draw_indices, _MAX_RENDERED_TRIANGLES)
+
+                for i in draw_indices:
+                    coords = []
+                    for node_idx in triangle_data[i]:
+                        cx, cy = to_canvas(node_idx)
+                        coords.extend([cx, cy])
+
+                    # Skip sub-pixel triangles (invisible anyway).
+                    tri_xs = coords[0::2]
+                    tri_ys = coords[1::2]
+                    if max(tri_xs) - min(tri_xs) < 1.0 and max(tri_ys) - min(tri_ys) < 1.0:
+                        continue
+
+                    canvas.create_polygon(coords, fill=color, outline=color)
 
             canvas.create_text(
                 x0 + 5, surface_y + 12,
@@ -1500,22 +1575,39 @@ class TCADApplication(tk.Tk):
             ),
         )
 
-        # Silicon
-        canvas.create_rectangle(
-            x0,
-            surface_y,
-            x1,
-            bottom_y,
-            fill="#bdbdbd",
-            outline="#555",
+        # Silicon placeholder -- drawn only when we do NOT expect the
+        # real-mesh render below (_draw_real_mesh_result(), called
+        # later in this function, after the PR/mask litho visuals) to
+        # succeed. When a real mesh IS available, its own
+        # boundary-traced Si silhouette becomes the solid substrate
+        # shape instead -- drawing this flat rectangle unconditionally
+        # first, with nothing later clearing it, is what let a real
+        # void (e.g. an isotropic-etch undercut) keep showing through
+        # as if it were still intact Si. See CLAUDE.md's "GUI:
+        # real-mesh render still shows intact Si under an isotropic
+        # undercut" for the investigation this fixes.
+        real_mesh_available = bool(
+            self.wafer.etched
+            and self.last_final_mesh
+            and Path(self.last_final_mesh).exists()
         )
 
-        canvas.create_text(
-            x0 + 10,
-            bottom_y - 20,
-            text="Si substrate",
-            anchor="w",
-        )
+        if not real_mesh_available:
+            canvas.create_rectangle(
+                x0,
+                surface_y,
+                x1,
+                bottom_y,
+                fill="#bdbdbd",
+                outline="#555",
+            )
+
+            canvas.create_text(
+                x0 + 10,
+                bottom_y - 20,
+                text="Si substrate",
+                anchor="w",
+            )
 
         # GUI-only stage visualization. Previously only `developed`
         # drew anything, so PR COAT / MASK ALIGNMENT / EXPOSURE showed
@@ -1695,8 +1787,22 @@ class TCADApplication(tk.Tk):
         # etc.) -- the placeholder never pretended to be the numerical
         # ViennaPS surface, so this is a strict improvement, not a
         # behavior change for the case it can't apply to.
-        if self.wafer.etched and self._draw_real_mesh_result(canvas, x0, x1, surface_y, bottom_y):
-            pass
+        if real_mesh_available:
+            if not self._draw_real_mesh_result(canvas, x0, x1, surface_y, bottom_y):
+                # real_mesh_available said a mesh file exists, but
+                # reading/rendering it failed anyway (meshio missing,
+                # corrupt file, ViennaPS unavailable, etc.). The flat
+                # rectangle was skipped earlier trusting this call to
+                # succeed -- draw it now as a last-resort fallback so
+                # the canvas isn't left blank.
+                canvas.create_rectangle(
+                    x0, surface_y, x1, bottom_y,
+                    fill="#bdbdbd", outline="#555",
+                )
+                canvas.create_text(
+                    x0 + 10, bottom_y - 20,
+                    text="Si substrate", anchor="w",
+                )
 
         elif self.wafer.etched:
 

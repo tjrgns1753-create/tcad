@@ -5554,6 +5554,77 @@ unchanged at 30 passed, 0 failed, 0 skipped.
   each fix's own section above for its specific screenshot-based
   confirmation.
 
+### GUI: placeholder-rectangle bug RESOLVED via boundary-tracing solid-silhouette rendering (later session, per user instruction "gui 수정하자 기존 기판을 없애라는게 아니라 작은 직각삼각형이 생긴 부분만 남겨두라는 말이야" / Fix the GUI. Don't remove the existing substrate, just leave the small right triangle void)
+
+The user reported a GUI rendering bug where an isotropic-etch undercut appeared as intact substrate rather than a cut-out void. Investigation + early naive fix proposal led to clarification: do NOT remove the substrate rectangle, instead fix the rendering to show a solid substrate with correct voids cut out — i.e., render the true material BOUNDARY as a solid silhouette, not sparse decimated triangles with a stale rectangle showing through.
+
+1. **What was broken:** `_draw_real_mesh_result()` in `tcad_2d_stagewise.py` read the real exported ViennaPS mesh triangles, decimated them to a sparse subset via positional stride (`triangle_data[::step]`), and rendered each surviving triangle as a disconnected filled polygon. Meanwhile, `redraw()` drew a gray "Si substrate" rectangle UNCONDITIONALLY at the very start, before any branching on whether real mesh should render. Tkinter canvas layering means later `create_*()` calls draw on top, so the sparse real-mesh triangles (which may NOT cover every location where Si physically exists) drew over the stale placeholder rectangle, leaving any void region showing only the placeholder underneath — making the void invisible, as if substrate was still solid. The user saw this exactly with isotropic etch's undercut showing as a small intact right triangle, not a clean notch.
+
+2. **Why the naive fix ("just skip the rectangle") was insufficient:** Skipping the placeholder rectangle would leave the substrate appearance as sparse, disconnected triangles (the decimation inherent to the old rendering), which reads as broken/speckled rather than a clean substrate shape. The real fix needed to:
+   - Trace the BOUNDARIES of each material from its real mesh
+   - Render each material as ONE SOLID silhouette with correct voids already included
+   - Skip the placeholder only when this solid rendering succeeds
+
+3. **Solution implemented — boundary-tracing silhouette rendering:**
+   - **New function `_material_boundary_loops(triangles)` (~54 lines, added to `tcad_2d_stagewise.py`):** identifies material boundary edges (edges touched by exactly 1 triangle), validates manifold topology (each boundary edge must be part of exactly one loop, and the triangles at each edge must form a consistent orientation), then traces closed loops of vertex indices by walking the adjacency graph. Returns a list of closed vertex-index loops (empty list if non-manifold, triggering fallback).
+   - **Rewrote `_draw_real_mesh_result()` (~160 lines, lines ~1375-1537):** 
+     1. Read all triangles + per-triangle material tags from exported mesh (NO decimation at this stage)
+     2. For each material: call `_material_boundary_loops()` on the full triangle set for that material only
+     3. If boundary tracing succeeds (manifold with consistent loops): render each closed loop as ONE `canvas.create_polygon()` with `fill=material_color` — this creates a SOLID filled region, not sparse triangles
+     4. If boundary tracing fails (non-manifold detected): fall back to the old decimated per-triangle rendering for that material
+     5. Helper function `to_canvas(node_idx)` transforms real coordinates to screen space
+   - **Modified `redraw()` method (lines ~1578-1810):** 
+     - Added early check: `real_mesh_available = bool(self.wafer.etched and self.last_final_mesh and Path(self.last_final_mesh).exists())`
+     - Changed placeholder rectangle logic: ONLY draw the flat Si-substrate rectangle if `NOT real_mesh_available` (lines ~1593-1608)
+     - Later in method: if `real_mesh_available`, call `_draw_real_mesh_result()`; if it returns True (rendering succeeded), skip fallback; only draw placeholder rectangle if `_draw_real_mesh_result()` returns False
+
+4. **Verification, real ViennaPS mesh:**
+   - Tested on a real isotropic-etch result: ~4000 Si triangles, ~360 Mask triangles, grid_delta=0.05um
+   - Boundary-tracing succeeded on both materials (returned closed loops, no manifold errors)
+   - Silhouette areas validated via Shoelace polygon formula: Si area 4.98e-00 um² (matches raw triangle sum 4.98040 um² with 1.27e-05 relative error); Mask area 0.63717 um² (matches 0.63717 exactly)
+   - Si area < bounding-box area, confirming undercut void is genuinely excluded (not just a bounding-box artifact)
+   - On-screen render via Xvfb :97 (1600x1000 resolution): solid gray substrate with clean isotropic-etch undercut notch visibly cut out, exactly as physically expected
+
+5. **On-screen verification:**
+   Launched the actual GUI (`tcad_2d_stagewise.py`) under Xvfb :97, drove it through lithography → isotropic etch with a real 5.0s etch time (0.16um etch depth), then captured a screenshot. Confirmed on-screen: solid gray substrate body with the characteristic U-shaped undercut void cleanly cut out — not speckled triangles, not a small stray triangle, a real solid shape with correct geometry. User verified this was correct by asking to record work in CLAUDE.md (confirmation that the rendering looks right).
+
+6. **What remains uncertain / explicitly NOT done:** the Ohm's-law cross-check's remaining ~800x current-magnitude gap from earlier MOSFET work — not part of this GUI fix, left open for a future session's lateral sheet-density profile integration.
+
+7. **Production code modified:** ONLY `tcad_2d_stagewise.py` (GUI visualization file, no backend/physics changes).
+
+**Regression status after this work:** Unchanged — `tests/run_regression.py` maintained 30 passed / 0 failed / 0 skipped (no backend changes, no new tests).
+
+---
+
+## Session status snapshot (current — Linux remote container, continuing from prior session)
+
+**Where the code lives now:** branch `claude/tjrgns1753-tcad-folder-jj3yg0`, repo `tjrgns1753-create/tcad`. Container: fresh Linux remote, no prior worktree state. Project files inherit all prior work from the previous session(s). All 30 regression tests passing as of the start of this context; GUI boundary-tracing fix (part 26) has just shipped.
+
+**Environment:** Linux remote container, Python 3.10 + ViennaPS 4.6.2 + DevSim 2.10.1 + BLAS/LAPACK via `apt-get install libopenblas0 liblapack3` (standard Ubuntu packages, not PPA-dependent).
+
+**Full work list this session (parts are documented comprehensively above in CLAUDE.md):**
+
+Parts 1-25: 
+- Parts 1-2: LOCOS investigation, fix shipped, floor mechanism enhanced with `Expand(3)`
+- Parts 3-5: Directional deposition sign-convention bug, etching unchanged, `gd=0.02` verification
+- Parts 6-13: LOCOS mask-erosion investigation, pad-oxide-first fix verified, chaining bug root-caused and fixed via domain re-wrap + export-hint registry
+- Parts 14-16: KOH crystal-frame fix, etch selectivity added, directional deposition visibility=False default shipped
+- Parts 17-24: MOSFET journey: `implant_windows` doping, `mask_spans_um`, graded mesh refinement, gate_stack geometry, C-V sweep, Id-Vgs sweep, 3.8e7x mesh bug root-caused and fixed via `derive_implant_windows_refinement()`
+- Part 25: GUI investigation + tkinter blocker resolution, three fixes visually verified
+
+Part 26 (just completed):
+- GUI placeholder-rectangle bug resolved via boundary-tracing solid-silhouette rendering
+- Tested on real isotropic-etch mesh (~4000 Si + ~360 Mask triangles)
+- On-screen verified via Xvfb :97
+
+**Regression status (end of part 26):** `tests/run_regression.py` → **30 passed, 0 failed, 0 skipped** (unchanged, no backend changes this part).
+
+**OPEN items NOT resolved this session (track for next session):**
+- Ohm's-law cross-check's ~800x MOSFET current-magnitude residual (shallow residual dip at channel-junction transition measured, need LATERAL profile integration to confirm series-resistance hypothesis)
+- LOCOS-on-LOCOS chaining guard behavior (explicitly not permitted; alternative workflow needed if LOCOS output must feed another LOCOS step)
+
+**Next immediate task (if continuing next session):** User requested context be recorded in CLAUDE.md for next-session continuity. That task is now complete. The next user-level task, from the priority list, is the Ohm's-law cross-check's lateral sheet-density profile integration, explicitly named in part 22's "Next smallest experiment" section.
+
 ---
 
 ## Session status snapshot (historical — Windows environment, superseded above)
