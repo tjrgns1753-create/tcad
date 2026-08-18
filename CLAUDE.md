@@ -162,30 +162,41 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
 
 ## OPEN issues (active — read before starting new work)
 
-1. **MOSFET Ohm's-law cross-check ~800x gap — narrowed, not closed.**
-   The named lateral-integration experiment ran for real: away from the
-   two channel-junction edges, the properly-integrated N_sheet(x)
-   plateau (~1.6e12 cm^-2) matches the old centre-point value almost
-   exactly, so the ~800x figure is now confirmed to come entirely from
-   the crude "apply the centre value over the WHOLE channel length"
-   assumption, not a real distributed physical effect — that part of
-   the mystery is resolved. BUT the two ~0.1-0.15um edge zones
-   themselves are NOT yet resolved: two different numerical extraction
-   methods (raw-node x-column grouping; scattered-point Delaunay
-   reinterpolation) each show a real dip there, but their integrated
-   R contribution from that narrow zone is wildly method-sensitive
-   (0.48x-11x-900x depending on method/margin) — a signature of
-   interpolation artifacts near the geometric corner (neither method is
-   FEM-connectivity-aware), not a converged number. Next step (named,
-   not started): redo just the two edge windows with a triangle
-   -connectivity-aware interpolator (e.g. `matplotlib.tri` built from
-   the ACTUAL Si-region triangle array already available in the
-   pipeline, not a fresh Delaunay reconstruction over the raw point
-   cloud) — if that also lands near the plateau-implied O(1-2)x
-   closure, the gap is fully explained; if it shows its own stable
-   (method-insensitive) dip, that localizes a real bottleneck at the
-   channel-junction transition. Full writeup: search
-   `docs/investigation_log.md` for "lateral sheet-density".
+1. **MOSFET Ohm's-law cross-check — plateau explained, edge zones need
+   a different technique (not further density reconstruction).** Three
+   independently-implemented extraction methods (raw-node x-column
+   grouping; scattered-point Delaunay reinterpolation; real
+   `matplotlib.tri` FEM triangle-connectivity interpolation, verified
+   21795/21795 vertices coordinate-matched to the actual production
+   mesh) all agree: away from the two channel-junction edges, the
+   properly-integrated N_sheet(x) plateau (~1.5-1.7e12 cm^-2) matches
+   the old centre-point value almost exactly — **this closes, with high
+   confidence, the question of where the originally-reported ~800x
+   figure came from**: purely the crude "apply the centre value over
+   the WHOLE channel length" assumption, not a real distributed
+   physical effect.
+   The two ~0.15um edge zones themselves are a DIFFERENT, harder
+   problem than "needs a better interpolator" — confirmed, not just
+   suspected: with real FEM connectivity, N_sheet(x) genuinely crosses
+   ZERO near the drain edge under this bias, and 99% of the whole
+   -channel R_total then comes from the single sample nearest that
+   zero-crossing. This is the `R = dx/(q·mu·N_sheet(x))` MODEL hitting
+   a real mathematical singularity, not a mesh/interpolation artifact —
+   confirmed because all three structurally-different methods broke
+   down at the same location the same way. A local "all current flows
+   through one inversion sheet" model is simply the wrong tool at a
+   point with no net local inversion charge; no finer mesh or better
+   interpolant fixes that. Also confirmed NOT safe: just discarding the
+   edge zones and using the plateau alone (gives 5.11e-2A, close to the
+   original 874x-too-high figure) — whatever the edge zones actually
+   contribute is not negligible.
+   Next step (named, not started): stop reconstructing current from
+   density through the edge zones — read DevSim's OWN converged
+   electron current density directly (its edge-current models along a
+   few vertical cuts) instead, since DevSim's real drift-diffusion
+   solve was never confined to a local-inversion-sheet assumption in
+   the first place. Full writeup: search `docs/investigation_log.md`
+   for "lateral sheet-density" and "MODEL BREAKDOWN CONFIRMED".
 2. **LOCOS-on-LOCOS is blocked, not fixed.** A second LOCOS oxidation
    on a LOCOS-produced domain raises `NotImplementedError` (confirmed
    pre-existing hang/silent-corruption otherwise, not a regression).

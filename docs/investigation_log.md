@@ -5850,6 +5850,98 @@ throwaway probe script not committed (same convention as the part-23
 probe). Regression unchanged at 30 passed, 0 failed, 0 skipped (verified
 in the freshly-built environment before this investigation started).
 
+### MOSFET Ohm's-law cross-check — edge zone redone with real FEM triangle connectivity — MODEL BREAKDOWN CONFIRMED, not a numerical artifact (same session, immediately following the part above)
+
+Executed the "next smallest experiment" the part above named: redid the
+two channel-junction edge zones using `matplotlib.tri.Triangulation` +
+`LinearTriInterpolator` built from the ACTUAL Si-region triangle array
+of the same refined mesh this device was built from
+(`refined_points`/`refined_tris`/`refined_tags`, captured directly from
+the production import path before `import_process_result()`), instead
+of a fresh Delaunay reconstruction over the raw point cloud. DevSim's
+own per-region node arrays were mapped back onto this real mesh by
+exact coordinate match: 21795/21795 Si-triangle vertices matched with
+zero unmatched — a clean, verified 1:1 correspondence, not an
+approximation.
+
+1. **What was tested:** the full lateral N_sheet(x) integral, this time
+   sampled through a real, connectivity-respecting linear interpolant
+   that can only interpolate within actual mesh triangles — it cannot
+   bridge across a material/geometry discontinuity the way a naive
+   Delaunay reconstruction over scattered points can.
+
+2. **Result:** away from the edges, this method agrees closely with
+   both earlier methods — plateau N_sheet ~1.5-1.7e12 cm^-2 across
+   mid-channel, and now three independently-implemented extraction
+   methods (raw-node columns; scattered Delaunay; real FEM
+   connectivity) all agree on this. **That part of the investigation is
+   now closed with high confidence**: the properly-integrated plateau
+   value matches the historical centre-point estimate, so the crude
+   "~800x too high" figure is fully explained by the wrong-effective
+   -length assumption, not any real distributed physical effect.
+
+   In the two edge zones, this method still does NOT converge, but for
+   a newly-understood and different reason than the earlier two
+   methods' bugs. N_sheet(x) genuinely drops from the plateau by
+   several orders of magnitude approaching each junction, and on the
+   drain side (x approaching +1.0, under this bias — Vgs=8V, Vds=0.1V)
+   it actually **crosses zero and goes negative** over a real, several
+   -sample-wide span (x=+0.965 to +0.995: N_sheet = -3.3e7 to -2.7e12).
+   Isolating exactly where R_total's mass comes from: **99.0% of the
+   entire channel's R_total comes from a single sample column**
+   (x=+0.9599, N_sheet=4.6e6 cm^-2 — six orders below the plateau),
+   which sits immediately adjacent to where the interpolated curve
+   crosses zero.
+
+3. **What it proves:** this is not a numerical-method artifact that a
+   yet-better interpolator would fix — it is the `R = dx/(q·mu·N_sheet
+   (x))` MODEL ITSELF hitting a genuine mathematical singularity at
+   the point where local N_sheet passes through zero. Three
+   structurally different extraction methods (node-column grouping,
+   Delaunay reinterpolation, real FEM triangle interpolation) all broke
+   down at the same physical location for what is now understood to be
+   the same underlying reason: the 1D "all current flows through a
+   single local inversion sheet at each x" assumption is simply wrong
+   at a point where that local sheet has (by this reconstruction's own
+   measure) no net inversion charge left — the real device obviously
+   still carries current there (DevSim's own terminal Id is a real,
+   converged, charge-conserving 5.68e-05A), just not through the thing
+   this model assumes is the only conduction path (current instead
+   flows through some combination of 2D spreading around the pinch
+   and/or deeper, non-surface conduction that a purely local N_sheet(x)
+   integral cannot represent). No finer mesh, no better interpolation,
+   and no amount of additional numerical care can fix a model that is
+   structurally the wrong tool at that location.
+
+4. **What remains uncertain:** whether the true edge-zone series
+   -resistance contribution (correctly computed by some method that
+   doesn't share this structural flaw) would land the total estimate
+   within O(1-2)x of DevSim's real current — still not directly known.
+   The plateau-only sub-total (excluding both edge zones entirely,
+   |x|<=0.85, then naively extrapolated as if the whole 2um channel sat
+   at plateau density) gives Id=5.11e-2A, close to the original crude
+   874x-too-high figure — confirming that simply DISCARDING the edge
+   zones is not a safe substitute either; whatever they actually
+   contribute is not negligible, it is just not correctly captured by
+   any density-reconstruction approach tried so far.
+
+5. **Next smallest experiment (not done):** stop trying to reconstruct
+   an approximate Ohm's-law model from carrier-density data through the
+   edge zones — DevSim's own drift-diffusion solve does not assume
+   current is confined to a local inversion sheet; it already solves
+   the true continuity equation. Read DevSim's OWN converged electron
+   current density directly (e.g. its edge-current models along a
+   handful of vertical cuts, including through mid-channel as a
+   consistency check against this session's density-based plateau
+   number and through/near the two edge zones where the density
+   -reconstruction approach breaks down) instead of re-deriving current
+   from density a fourth way. This sidesteps the structural problem
+   entirely rather than trying to out-engineer it.
+
+**No production code changed this part** — analysis/documentation only,
+throwaway probe script (extended, still not committed, same convention
+as before). Regression unchanged at 30 passed, 0 failed, 0 skipped.
+
 ## Current Task
 
 Do not try to solve everything at once.
