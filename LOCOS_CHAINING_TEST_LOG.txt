@@ -1,0 +1,1590 @@
+LOCOS process-flow chaining bug -- cumulative test log
+=======================================================
+
+Purpose: track every isolated test/probe run while investigating why a
+process step chained onto fresh-LOCOS-built geometry corrupts its own
+mesh export (see CLAUDE.md, "LOCOS process-flow chaining"). This is a
+TEST-ONLY log per explicit user instruction -- no production code
+(tcad/*, tests/*) is modified while these entries are added. Entries
+are appended in chronological order, oldest first, and never deleted,
+so this stays an honest record of everything tried, including dead
+ends.
+
+Each entry: date/session marker, hypothesis, what was run, result,
+conclusion.
+
+-------------------------------------------------------------------
+[Prior session, recorded for continuity -- see CLAUDE.md "LOCOS
+process-flow chaining" and its part 12 follow-up for full detail]
+
+1. Hypothesis: an export-layer getBoundingBox() degeneracy in
+   _export_single_level_set() (±DBL_MAX inverted sentinels) is the
+   root cause; passing known-good bounds through explicitly should
+   fix it.
+   Test: implemented as a monkeypatch prototype (bounds_hint threaded
+   through _floored_copy_for_export / _export_single_level_set /
+   save_volume_mesh), reproduced the real bug scenario (fresh LOCOS
+   oxidation -> chained DirectionalEtch), ran end to end.
+   Result: hang eliminated (was minutes, now <1s), but the resulting
+   per-material export came back genuinely EMPTY (0 points, 0 cells),
+   not just fast-and-wrong.
+   Conclusion: fix insufficient -- REJECTED, not applied to production.
+
+2. Hypothesis: the emptiness is itself another symptom of the same
+   bbox bug (i.e. still an export-layer issue).
+   Test: direct level-set introspection (getNumberOfPoints()) on the
+   REAL domain's own level sets, before vs after the chained
+   Process() call -- no export involved at all.
+   Result: Si and SiO2 level sets go from real point counts (38, 62)
+   to exactly 0 points immediately after the chained Process() call
+   itself. Mask (104 points) is unaffected. This happens BEFORE any
+   export/isolation step runs.
+   Conclusion: the corruption is in-memory, inside the domain, caused
+   by the chained step's own Process() call -- not an export bug at
+   all. This is a strictly deeper root cause than item 1 addressed.
+
+3. Hypothesis: SiO2's level set is too narrow (width=1, observed right
+   after LOCOS build) for the second Process() call's advection kernel
+   to handle correctly.
+   Test: explicitly widened every level set to width=5 (vls.Expand)
+   on the REAL domain (not an export copy) immediately before
+   chaining the second step.
+   Result: no effect -- Si and SiO2 still collapsed to 0 points after
+   the same chained Process() call (Mask also lost points this time,
+   148->68, though not to zero).
+   Conclusion: level-set width is NOT the cause -- REJECTED.
+
+4. Attempted: fetch ViennaPS's real psProcess.hpp/advection C++ source
+   from GitHub to identify the exact mechanism.
+   Result: blocked by a GitHub-side rate limit (HTTP 429, Retry-After
+   3600s) at the time it was tried.
+   Conclusion: inconclusive, not a hypothesis test -- infrastructure
+   blocker, not a finding about the bug itself.
+
+-------------------------------------------------------------------
+[This session -- continuing per explicit instruction: analyze current
+state, proceed in the recommended direction, TEST ONLY, no code
+changes, accumulate results in this file]
+
+5. Hypothesis: Domain.getMaterialLevelSet(material) (a method this
+   investigation had not tried -- found via dir(module.Domain)) might
+   return a properly-reconstructed level set even when the raw
+   getLevelSets()[i] entry has collapsed, i.e. maybe the raw indexing
+   accessor is the stale/wrong one, not the underlying data.
+   Test: called getMaterialLevelSet(Si/SiO2/Mask) before and after the
+   same chained Process() call; also checked getMaterialMap(),
+   getSurface(), getMaterialsInDomain() for comparison.
+   Result: getMaterialLevelSet() gives IDENTICAL point counts to raw
+   getLevelSets() (0/0/68 after chaining) -- no better. getSurface()
+   (the domain's "active" top surface) has 68 points, matching ONLY
+   the mask's count -- i.e. the domain's only remaining real geometry
+   after chaining is the mask boundary. getMaterialsInDomain() still
+   reports all 3 materials present even though 2 of them have zero
+   actual level-set points -- confirms the material bookkeeping
+   (MaterialMap) is tracked separately from, and does not get
+   invalidated by, the loss of a material's real geometric data.
+   Conclusion: no alternate Python-level accessor recovers the data --
+   REJECTED as a workaround route. Reinforces that this is a genuine
+   internal-state loss, not a stale-cache/wrong-accessor issue.
+
+6. Hypothesis: is the corruption caused by "wrap topology" (SiO2
+   wrapping Si via addToExisting=True) IN GENERAL, or specifically by
+   something in LOCOS's own construction (the mask box, the contact-
+   epsilon overlap, or the prior real Oxidation()/mechanics solve)?
+   Test: built a MINIMAL synthetic domain -- plain
+   MakePlane(Si) + MakePlane(SiO2, addToExisting=True), no mask box at
+   all, no Oxidation model, no mechanics -- then chained a plain
+   DirectionalProcess() etch (mirroring the real bug scenario's second
+   step). Ran two variants: (a) etch model with no maskMaterial
+   argument, (b) etch model with maskMaterial=Mask specified even
+   though no mask geometry exists in the domain (matches the real
+   recipe's shape). Also ran a (flawed, see result) negative control
+   with addToExisting=False.
+   Result: NEITHER wrapped-synthetic variant collapsed to 0 points --
+   Si went 63->42 (a normal-looking uniform shrink, not emptying),
+   SiO2 stayed 42 (a flat plane uniformly advected keeps the same
+   point count, expected, not evidence of "no change"). The
+   addToExisting=False negative control was invalid as constructed --
+   MakePlane's own non-wrap path only produced 1 level set instead of
+   2 (Si appears to have been discarded/replaced rather than stacked
+   as a second material), so it does not actually test "two
+   non-wrapped materials" and is not a usable comparison point.
+   Conclusion: plain SiO2-wraps-Si topology, BY ITSELF, does NOT
+   trigger the corruption. The real trigger must be something more
+   specific to LOCOS's own construction -- the mask box, the contact-
+   epsilon insertion, or the fact that a real Oxidation()/mechanics
+   Process() ran on the geometry first (as opposed to MakePlane-only
+   construction with no Process() run yet). Next test targets this
+   directly.
+
+7. Hypothesis: does the corruption require a prior Oxidation()/
+   mechanics Process() call to have run on the LOCOS geometry, or is
+   it purely a property of the static geometry construction itself
+   (mask box + pad oxide + contact-epsilon overlap)?
+   Test: called the REAL production _build_locos_geometry() directly
+   (read-only use of existing code, not modified) to get the actual
+   mask-box/pad-oxide construction, then chained a directional etch
+   IMMEDIATELY -- skipping the Oxidation() Process() call entirely.
+   Result: Si and SiO2 STILL collapse to exactly 0 points after the
+   chained Process() call, identically to the full scenario (Mask
+   stays at 72, unaffected). Level-set widths were 2/2/2 before
+   chaining (all comfortably >= the minimum), ruling out width as a
+   factor here too (consistent with test 3's finding).
+   Conclusion: the prior Oxidation()/mechanics solve is NOT required
+   for the corruption -- it reproduces from the STATIC geometry
+   construction alone. Combined with test 6 (plain Si+wrapped-SiO2,
+   no mask box, does NOT corrupt), this narrows the trigger
+   specifically to LOCOS's mask-box construction itself (the two
+   boxes unioned and inserted via insertNextLevelSetAsMaterial with
+   the contact-epsilon overlap into the pad oxide) -- not the SiO2
+   wrap alone, not Oxidation's mechanics solve.
+
+8. Hypothesis: does the corruption need LOCOS's SPECIFIC mask-box
+   construction (contact-epsilon overlap positioned right at the
+   SiO2/mask interface), or does ANY third, unrelated level set --
+   even one that doesn't touch or overlap the wrapped pair at all --
+   trigger it?
+   Test: extended test 6's synthetic Si+wrapped-SiO2 domain with a
+   THIRD level set: a small box far away (y=2.0-2.2, well above the
+   SiO2 top at y=0.3, non-overlapping, no contact epsilon, inserted
+   directly via insertNextLevelSetAsMaterial(..., wrapLowerLevelSet=
+   False) -- the same call shape the mask box uses, but none of its
+   specific positioning tricks), then chained the same directional
+   etch.
+   Result: Si and SiO2 STILL collapse to exactly 0 points, identical
+   to the real LOCOS case -- confirms LOCOS's contact-epsilon/exact
+   positioning is NOT required; merely having a 3rd, independently-
+   inserted level set present (regardless of where it sits) is
+   sufficient to trigger the corruption of the OTHER (non-last-
+   inserted) level sets during a subsequent Process() call. The far-
+   away box's own point count changed too (48->22, not to zero) even
+   though it never should have been touched geometrically by an etch
+   happening in a completely different region -- consistent with
+   Process() re-triangulating/resampling every level set in the
+   domain regardless of whether it was the "active" one, so a raw
+   point-count change alone isn't proof of real geometric movement
+   (same caveat noted in earlier tests).
+   Conclusion: the trigger is not LOCOS-specific mask geometry -- it
+   is a general property of a domain containing >=3 level sets in
+   this base+wrap+separate-third arrangement, once ANY further
+   Process() call runs. This significantly broadens (and simplifies)
+   the bug's real scope beyond what CLAUDE.md previously described.
+   Next test: does reordering WHICH slot the "surviving" material
+   occupies (last-inserted vs first-inserted) show that "last
+   inserted" is the actual rule, independent of material identity?
+
+9. Hypothesis (revised after a probe-construction mistake -- see
+   below): is "last-inserted level set survives, everything earlier
+   collapses" a general insertion-ORDER rule (independent of material
+   identity), or does Mask specifically survive because it is the
+   maskMaterial passed to the etch model regardless of position?
+   First attempt: built [Mask(0, floating box), Si(1, box), SiO2(2,
+   wrap, last)] entirely via explicit insertNextLevelSetAsMaterial
+   calls, including calling geometry.getBoundaryConditions() on a
+   BRAND NEW domain with zero level sets yet inserted. This segfaulted
+   immediately (before any print output at all) -- turned out to be a
+   probe-construction bug, not a new finding: this project's own
+   tcad/process/oxidation/thermal.py already documents that
+   getBoundaryConditions() segfaults on an empty domain, which is
+   exactly what the first version of this probe did. Not a new issue,
+   just re-discovering an already-known, already-documented
+   precondition the hard way.
+   Fixed test (Variant B): kept Si as the required first-via-MakePlane
+   call (to safely establish the domain, matching the documented-safe
+   pattern), then inserted Mask-box SECOND (was third in test 8) and
+   SiO2-wrap THIRD/last (was second/middle in test 8) -- i.e. simply
+   swapped the insertion order of Mask and the SiO2 wrap relative to
+   test 8, keeping everything else identical (same box, same wrap,
+   same chained directional-etch model).
+   Result: with SiO2 (the wrap) now LAST, NEITHER Si (index 0) NOR
+   Mask (index 1) collapsed to zero after the chained Process() call
+   -- both just shrank in point count in the same unremarkable way
+   test 6's non-corrupted baseline did (63->42 for Si, 48->22 for
+   Mask). SiO2 itself (now last) was completely unchanged (64 points,
+   both before and after).
+   Conclusion: this refines (and corrects) the "last inserted
+   survives" theory into something more precise and mechanistic: the
+   corruption specifically triggers when ANY level set is inserted
+   AFTER a wrapped (addToExisting=True / wrapLowerLevelSet=True) level
+   set. When the wrap is itself the LAST insertion (tests 6 and 9),
+   nothing breaks. When something is inserted AFTER the wrap (test 8,
+   and the real LOCOS construction in _build_locos_geometry(), which
+   always does Si -> SiO2-wrap -> Mask, in exactly that order), the
+   wrap and everything inserted before it collapse to 0 points on the
+   next Process() call, while only whatever was inserted after the
+   wrap survives. This is now a precise, mechanistically-isolated
+   characterization -- not just "LOCOS is buggy," but a specific,
+   reproducible ViennaPS behavior: material stacks whose LAST
+   insertion is not the wrap-holding level set corrupt under a
+   further Process() call. Since LOCOS's real construction always
+   inserts the mask AFTER the oxide wrap, it is unconditionally
+   exposed to this every time.
+
+10. Hypothesis: since test 9 shows the corruption depends on whether
+    the wrap is last-inserted, could reordering LOCOS's ACTUAL
+    construction -- inserting the Mask box BEFORE the SiO2 wrap
+    (Si -> Mask -> SiO2-wrap-last) instead of the current
+    Si -> SiO2-wrap -> Mask -- be a real fix candidate? Two things
+    needed checking: (a) does it avoid the collapse-to-zero pattern,
+    and (b) does SiO2 still end up physically wrapping/covering Si
+    correctly, or does reordering silently break that (ViennaPS's
+    wrapLowerLevelSet is documented elsewhere in this file, from the
+    earlier LOCOS mask-erosion investigation, as unioning with
+    "levelSets_.back()" -- the single most-recently-inserted level
+    set -- which would be Mask, not Si, if Mask goes in between)?
+    Test: reproduced _build_locos_geometry()'s real construction
+    (same pad-oxide height, mask height, window half-width, contact-
+    epsilon overlap) but with Si -> Mask -> SiO2(wrap, now last)
+    insertion order, then chained the same directional etch. Also
+    isolated-exported each level set individually (reusing the
+    project's own existing _export_single_level_set(), read-only
+    call) to compare areas before chaining.
+    Result: NO level set collapsed to exactly 0 after chaining this
+    time (Si 63->42, Mask 68->68 UNCHANGED -- consistent with
+    maskMaterial being fully protected from advection, matching this
+    project's already-established "mask fully protects" finding
+    elsewhere in CLAUDE.md -- SiO2 46->32) -- the collapse-to-zero
+    pattern is indeed avoided by this reordering, consistent with
+    test 9. HOWEVER, the area-based check for "does SiO2 still
+    correctly wrap Si" was INCONCLUSIVE by the numbers alone: isolated
+    Si area = 8.00, isolated SiO2 area = 9.89, isolated Mask area =
+    1.47 -- roughly consistent with SiO2 still covering the same
+    floor-to-oxide-top span as Si (which is expected regardless of
+    whether the wrap correctly targeted Si, since ANY MakePlane
+    call -- wrapped or not -- already represents an inherently semi-
+    infinite half-space by itself, per this project's very first,
+    foundational investigation at the top of this file; a raw area
+    comparison cannot distinguish "SiO2 correctly unioned with Si" from
+    "SiO2's own already-semi-infinite plane alone, never actually
+    unioned with Si's true region at all").
+    Conclusion: reordering is a genuinely promising, mechanistically-
+    motivated lead for a future real fix (avoids the collapse
+    entirely, confirmed twice now under two different constructions),
+    but this session's quick area check cannot confirm whether SiO2
+    still physically/correctly wraps Si under this reordering -- that
+    would need a REAL vps.Oxidation() Process() run (not just the
+    directional-etch stand-in used throughout this log) and a repeat
+    of the original "LOCOS mask erosion" investigation's own
+    verification method (real oxide growth + mask retention measured
+    against the actual production mechanics-coupled model), which is
+    a materially larger undertaking than the quick isolated checks in
+    this log and was NOT attempted this session.
+
+-------------------------------------------------------------------
+SUMMARY (this session's incremental additions, tests 5-10):
+
+The bug is now characterized far more precisely than before this
+session's tests. It is NOT specific to LOCOS's mask geometry, contact-
+epsilon trick, or prior Oxidation()/mechanics solve (tests 6, 7, 8 all
+rule these out individually). It IS specifically triggered by:
+inserting any level set AFTER a wrapped (wrapLowerLevelSet=True) level
+set, then running ANY further Process() call on the domain (tests 8
+vs. 9 vs. 10, three independent constructions, consistent result each
+time). LOCOS's actual production construction
+(tcad/process/oxidation/thermal.py's _build_locos_geometry) always
+inserts the mask box AFTER the SiO2 wrap, so it is unconditionally
+exposed every time a further step is chained onto it.
+
+A reordering-based fix candidate (insert the mask BEFORE the wrap, so
+the wrap becomes the last insertion) avoids the collapse in two
+independent tests, but whether it preserves the ACTUAL LOCOS oxidation
+physics (real growth + mask retention, the original bar the shipped
+mask-erosion fix had to clear) is unverified and would need a
+materially larger follow-up test using the real Oxidation() model, not
+attempted this session.
+
+No production code (tcad/*, tests/*) was modified for any test in this
+log. All probe scripts (.probe_locos_test*.py) were deleted after each
+test, per this project's established scratch-file convention.
+
+11. Hypothesis: does the reordering candidate from test 10 (Mask before
+    SiO2 wrap) survive contact with the REAL, physics-coupled
+    vps.Oxidation() model (contactMode=2, the actual production
+    mechanics/pressure/stokes/coupling settings copied read-only from
+    thermal.py -- not just the plain-geometry directional-etch stand-in
+    used in tests 8-10), both for (a) real time-dependent oxide growth
+    and (b) whether the chained-step collapse is still avoided once a
+    REAL Oxidation() step has run first?
+    Test: built the same reordered geometry as test 10, ran the real
+    Oxidation() model at two different times (0.01hr and 0.05hr) with
+    the actual production mask/mechanics parameters, measured isolated
+    per-material areas before/after each, then chained a directional
+    etch afterward exactly like the real bug scenario (oxidation step
+    -> chained further step) and checked for the point-collapse.
+    Result: TWO separate, serious problems found, either one alone
+    would rule this out:
+      (a) NO real oxide growth happened. SiO2's isolated area was
+          IDENTICAL (8.4000025) at BOTH t=0.01hr and t=0.05hr -- a 5x
+          time difference producing zero change is definitive evidence
+          of a stalled/non-functioning growth, not slow growth (matches
+          the exact stalled signature this project's oxidation seed-
+          value investigation elsewhere in CLAUDE.md already
+          established as diagnostic). The mechanics solver's own log
+          confirms this directly: "mask/oxide coupling converged in 2
+          iterations (residual=0.000000, displacement=0.000000 um,
+          maxDisplacement=0.000000 um)" -- EXACTLY zero displacement,
+          not just small. (For comparison, the ORIGINAL, unreordered
+          construction's own log elsewhere in this session showed a
+          real, nonzero maxDisplacement=0.000004 um and a nonzero
+          residual=0.009764 for the same recipe.) Mask retention read
+          100.00% at both times, but this is a false positive -- 100%
+          retention of a mask that also never received real oxide
+          growth around it is not evidence the model is working, it is
+          the two symptoms of the SAME underlying "nothing is actually
+          happening" failure.
+      (b) The point-collapse bug is NOT reliably avoided in the full
+          real scenario after all. After the (non-growing) Oxidation()
+          step ran, the SUBSEQUENT chained directional etch DID
+          collapse a level set to exactly 0 points -- but this time it
+          was Mask (index 1, the reordered "middle" position) that
+          collapsed, not Si/SiO2 as in the original construction.
+          Si (index 0) and SiO2 (index 2, still last-inserted) both
+          survived with nonzero points. This contradicts test 10's own
+          finding (same reordered geometry, chained etch directly with
+          NO prior Oxidation() call -- Mask there stayed EXACTLY
+          unchanged, nothing collapsed) -- meaning inserting a REAL
+          Oxidation()/LOCOS mechanics Process() call as the FIRST
+          Process() call on this domain changes which level set is
+          vulnerable on the NEXT chained call, even though that first
+          call's own geometric effect measured as zero. This suggests
+          the "last Python-insertion-order level set survives" model
+          from tests 9/10 is not the true underlying rule -- it may
+          only have appeared that way because those tests never ran a
+          real physics Process() (only directional etches) before
+          chaining. The real mechanism likely involves some ViennaPS-
+          internal "active/top-of-stack" bookkeeping that a real
+          Oxidation()/LOCOS coupling call can silently change,
+          independent of the Python-visible getLevelSets() order --
+          which would need C++ source access to pin down precisely
+          (still not available this round, see below).
+    Conclusion: the reordering candidate is DEFINITIVELY RULED OUT,
+    on two independent grounds -- it breaks real oxide growth entirely
+    (worse than the bug it was meant to fix), and it does not even
+    reliably avoid the original point-collapse bug once a real
+    Oxidation() step is involved rather than a plain-geometry stand-in.
+    This closes off the most promising lead from the previous test
+    round. No further reordering variants are recommended without a
+    fundamentally different starting idea.
+
+12. Attempted to fetch ViennaPS's real advection/Process source from
+    GitHub (blocked by a rate limit in the previous test round) --
+    THIS TIME IT WORKED. Fetched psDomain.hpp (confirms
+    insertNextLevelSetAsMaterial's exact wrap semantics: unions the
+    NEW level set with levelSets_.back() -- i.e. whatever was already
+    last at THAT moment, not "everything in the domain" -- and that
+    getSurface() is defined as simply levelSets_.back(), no separate
+    internal pointer) and, decisively, ViennaLS's lsAdvect.hpp, which
+    contains the EXACT, documented root cause:
+
+      "Level sets are passed to the constructor in a std::vector, with
+      the last element being the level set to advect, or 'top level
+      set', while the others are then adjusted afterward... the 'top
+      level set' has to include all lower level sets:
+      LS_top = LS_top U LS_i for i = {0...n}"
+
+    The "adjusted afterward" step (adjustLowerLayers(), quoted
+    verbatim by the fetch) is:
+      for i in 0..size-2: BooleanOperation(levelSets[i],
+                                            levelSets.back(),
+                                            INTERSECT).apply()
+    i.e. EVERY level set except the last is intersected against the
+    last one. If the last one does not geometrically CONTAIN a given
+    lower level set, that intersection produces an EMPTY level set --
+    exactly, precisely, the 0-point collapse observed in every test in
+    this log.
+
+    This fully and mechanistically explains every result from tests
+    6-10, not just describes the symptom:
+      - Test 6 (Si, SiO2-wrap-last, 2 level sets): back()=SiO2, which
+        by construction (UNION with Si at insertion) already contains
+        Si. Precondition satisfied -- no collapse. Matches.
+      - Tests 7/8 (Si, SiO2-wrap, Mask-last -- the REAL LOCOS
+        construction): back()=Mask, a small bounded box that does NOT
+        geometrically contain Si or SiO2's regions at all.
+        Precondition violated for BOTH of them -- both go empty.
+        Matches exactly (both collapsed to 0 in every real/synthetic
+        test of this exact ordering).
+      - Tests 9/10 (Si, Mask, SiO2-wrap-last): back()=SiO2. SiO2's OWN
+        plane (semi-infinite half-space below its own y, independent
+        of what it unioned with) already geometrically contains Si's
+        region (also a semi-infinite half-space, at a lower y) as a
+        pure coincidence of both being unbounded planes stacked at
+        different heights -- and SiO2 explicitly unioned with Mask at
+        insertion time too. Precondition satisfied for both -- no
+        collapse. Matches exactly.
+
+    This also explains WHY test 11 (real Oxidation() first, THEN
+    chained etch, on the test-10 reordered geometry) broke differently
+    than test 10's own direct-chain version: since SiO2 in that
+    reordering only ever explicitly unioned with Mask (not Si) at
+    insertion time -- its containment of Si was purely the semi-
+    infinite-plane coincidence noted above, not a real "SiO2 grew on
+    top of Si and consumed it" relationship -- the real Oxidation()
+    model's own internal mechanics (evaluating oxide growth as
+    consuming Si at the true Si/oxide interface) had no valid
+    interface to work with, which is consistent with test 11's other
+    finding (zero displacement, no real growth) and would plausibly
+    leave the domain in a different (still poorly-understood in
+    detail) internal state that changes which level set satisfies
+    containment on the NEXT Process() call.
+
+13. Given item 12's root cause, a CONCRETE fix candidate follows
+    directly from ViennaLS's own documented precondition: whatever
+    level set ends up LAST must geometrically contain every other
+    level set. For LOCOS's real construction, this means the mask
+    should ALSO be inserted as a wrap
+    (wrapLowerLevelSet=True, unioning with SiO2, which by then already
+    contains Si transitively) instead of its current
+    wrapLowerLevelSet=False. This was already tried once, per this
+    file's earlier "LOCOS mask erosion" investigation (item 6 there),
+    and rejected because "the mask's area get[s] absorbed into SiO2
+    during Process()" -- BUT that investigation pre-dates
+    save_locos_volume_mesh()'s current generalized per-level-set
+    isolation+clipping export algorithm, which was specifically built
+    to recover a WRAPPED member's true (un-eroded) shape from its own
+    independent level-set object (already proven for SiO2 relative to
+    Si). Since insertNextLevelSetAsMaterial's UNION mutates the newly-
+    inserted level set object in place before storing it, the ORIGINAL
+    unwrapped mask shape is not separately recoverable after the fact
+    -- but save_locos_volume_mesh()'s algorithm is generic over
+    wrap_flags[i] (not special-cased to SiO2), so retesting whether it
+    can ALSO correctly recover a wrapped mask's true shape (not just a
+    wrapped oxide's) is a well-motivated, not-yet-attempted next test
+    -- this earlier rejection may have been evaluated under the
+    pre-save_locos_volume_mesh() export path, which is a materially
+    different question than "does today's shipped export algorithm
+    handle it." NOT YET TESTED this session -- next step below.
+
+14. Test (per item 13's plan): built LOCOS geometry identical to
+    production except the mask's insertNextLevelSetAsMaterial call
+    used wrapLowerLevelSet=True instead of False (the ONLY change from
+    _build_locos_geometry()'s real construction), ran the real
+    Oxidation() model with production mask/mechanics parameters, and
+    intended to check mask retention via the REAL, unmodified
+    save_locos_volume_mesh() (production function, called exactly as
+    thermal.py calls it).
+    Result: did not need to reach the export step -- the Oxidation()
+    model's own internal solver broke down immediately and severely,
+    worse than test 11's "silently does nothing" failure:
+      "OxidationDiffusion: using CPU BiCGSTAB for diffusion solve
+       (nodes=0, GPU mode not selected)."
+      "WARNING: OxidationDiffusion: no oxide nodes found after
+       buildNodes(). Verify that the reaction and ambient level sets
+       enclose a non-empty oxide band."
+      (same warning repeated for OxidationDeformation)
+    followed by a garbage/corrupted numeric value where a real
+    "displacement" number should be -- a ~10^308-magnitude nonsense
+    float (consistent with reading uninitialized or corrupted memory,
+    not a real physical quantity), and then the process appeared to
+    hang (100% CPU, no further log output for 60+ seconds after
+    "Expanding level set to 3.000000", where every OTHER test in this
+    log completed within a few seconds).
+    Conclusion: wrapping the mask (the theoretically-motivated fix
+    from item 13, meant to satisfy ViennaLS Advect's containment
+    precondition) is DEFINITIVELY REJECTED -- not merely "doesn't
+    help," it actively breaks the Oxidation model's own internal
+    oxide-band detection outright ("no oxide nodes found"), producing
+    corrupted numerical output and an apparent hang/severe slowdown.
+    This is a MORE SEVERE failure than the earlier-documented "mask
+    absorbed into SiO2" finding from the original "LOCOS mask erosion"
+    investigation (item 6 there) -- it's not just an export/retention
+    problem, the physics solver itself cannot function on this
+    geometry at all. This closes off item 13's fix candidate
+    completely; save_locos_volume_mesh()'s newer clipping export
+    capability does not change this conclusion, since the failure
+    happens entirely inside Oxidation()'s own solve, before any export
+    step is ever reached.
+
+    (Follow-up on item 14's hang: left running to see if it would
+    eventually error out or recover -- it did not. Confirmed genuinely
+    stuck, not just slow: 100% CPU, zero further log output, for over
+    90 seconds past the last printed line ("Expanding level set to
+    3.000000") -- every other real-ViennaPS test in this log completes
+    in well under 5 seconds. Killed manually (kill -9). Consistent
+    with the corrupted/garbage displacement value already observed:
+    the solver is stuck in a degenerate numerical state it cannot
+    exit, not merely producing a wrong-but-finite answer slowly. This
+    is an additional, independent piece of evidence against item 13's
+    "wrap the mask" candidate, on top of the "no oxide nodes found"
+    findings already logged above -- does not change the conclusion,
+    already recorded as REJECTED.)
+
+-------------------------------------------------------------------
+SESSION SUMMARY (tests 11-14, this continuation):
+
+Fetched real ViennaLS source (lsAdvect.hpp) once the GitHub rate limit
+cleared and found the EXACT, documented root cause: Advect() requires
+the last-inserted level set to geometrically contain every other level
+set in the domain (adjustLowerLayers() intersects each other level set
+against it; violating containment produces an empty result). This
+single documented precondition fully explains every test result in
+this entire log, from test 6 through test 10, with no remaining
+ambiguity about the mechanism.
+
+Both fix candidates that follow directly from this root cause were
+tested against the REAL, physics-coupled Oxidation() model (not just
+plain-geometry stand-ins) and both FAILED, for two independent
+reasons each:
+  - Reordering (mask before the oxide wrap): avoids the point-collapse
+    in isolation, but the real Oxidation() model then produces ZERO
+    growth (not slow growth -- exactly zero, confirmed at two very
+    different time points), and running Oxidation() first reintroduces
+    the collapse on the next chained step anyway (now hitting Mask
+    instead of Si/SiO2).
+  - Wrapping the mask itself: breaks Oxidation()'s own internal
+    oxide-band detection outright ("no oxide nodes found"), produces
+    corrupted/garbage numerical output, and hangs indefinitely (killed
+    manually after 90+ seconds of no progress, vs. <5s for every other
+    real-ViennaPS test in this log).
+
+Net result of this continuation: the WHY is now fully and precisely
+understood (a documented ViennaLS API precondition, not a mystery),
+but no small, local fix exists within the two most obvious candidate
+directions. A real fix would need either (a) a fundamentally different
+LOCOS geometry construction where the mask genuinely, physically
+contains the rest of the stack in a way the Oxidation model's own
+oxide-band detection can still parse correctly (not attempted -- would
+be a substantial geometry redesign, out of scope for "test only"), or
+(b) bypassing viennals::Advect's multi-level-set handling entirely for
+the chained step's own advection (a much larger architectural change).
+
+No production code (tcad/*, tests/*) was modified anywhere in this
+log. All probe scripts (.probe_locos_test*.py) were deleted after each
+test.
+
+-------------------------------------------------------------------
+[Continued session -- explicit instruction: "LOCOS 천천히 해도 되니까
+꼭 찾아봐" (take your time on LOCOS, but really find it). Still TEST
+ONLY, no production code changes.]
+
+15/16. Hypothesis (the question every earlier test skipped): item 12
+    established ViennaLS Advect's precondition -- the LAST level set
+    must geometrically CONTAIN every lower one, else
+    adjustLowerLayers()'s INTERSECT empties them. But this project's
+    NORMAL path (MakeTrench -> Si + Mask) chains successfully every
+    single regression run, and its mask is also "last". So HOW does
+    the working path satisfy the precondition that LOCOS violates? If
+    the answer is a structural pattern LOCOS simply doesn't follow,
+    that's a fix route no earlier test looked for.
+    Test: built a normal MakeTrench domain and the real LOCOS domain
+    side by side, read the REAL material order from each domain's own
+    MaterialMap (getMaterialAtIdx -- earlier tests guessed the order
+    from insertion code rather than reading it), and exported EVERY
+    level set in isolation (production's own _export_single_level_set,
+    read-only) to measure each one's true region area and y-extent.
+    Result -- the two structures are fundamentally different, and the
+    normal one is NOT what was assumed:
+
+      normal MakeTrench (chains fine, no collapse -- reconfirmed here):
+        ls[0] = Mask : area 1.4830, y = [ 0.0000, 0.4999]
+        ls[1] = Si   : area 9.5097, y = [-2.0000, 0.4999]
+      -> the SUBSTRATE is inserted LAST, and its level set is the
+         UNION of substrate + mask (area 9.51 ~= 8.0 substrate + 1.5
+         mask; y-range spans from the floor all the way UP through the
+         mask top). The last level set therefore CONTAINS the other.
+         Precondition satisfied.
+
+      real LOCOS (chaining destroys it):
+        ls[0] = Si   : area 8.0000, y = [-2.0000, 0.0000]
+        ls[1] = SiO2 : area 8.8000, y = [-2.0000, 0.2000]  (wrapped)
+        ls[2] = Mask : area 1.4700, y = [ 0.2000, 0.7000]  (NOT wrapped)
+      -> the LAST level set (Mask) is a small box sitting entirely
+         ABOVE y=0.2. It contains NEITHER Si nor SiO2. Precondition
+         violated for both -- exactly the two that go to 0 points.
+
+    Conclusion: this is the missing piece. LOCOS is not hitting a
+    ViennaPS limitation this project has to live with -- it is simply
+    the only geometry in this project that does not follow ViennaPS's
+    own "last level set wraps everything" convention, which
+    MakeTrench (and therefore every other model) follows by
+    construction. The bug is in this project's LOCOS construction
+    relative to that convention, not in ViennaPS.
+
+17. Hypothesis (follows directly from 15/16): tests 11 and 14 both
+    tried to satisfy the precondition by changing the CONSTRUCTION,
+    and both failed for the same underlying reason -- they changed
+    what Oxidation() itself runs on (reordering killed oxide growth;
+    wrapping the mask broke Oxidation's oxide-band detection
+    outright). But nothing requires the precondition to hold DURING
+    oxidation. It only has to hold for the NEXT step. So: leave
+    construction and oxidation exactly as production has them
+    (untouched, verified, ~98-100% mask retention), and restore the
+    invariant AFTERWARD -- union the last level set (mask) with the
+    one below it, making it contain everything, exactly like
+    MakeTrench's own last level set does.
+    Test: real _build_locos_geometry() + real Oxidation() with real
+    production mask/mechanics parameters, measured at every stage via
+    the REAL, unmodified save_locos_volume_mesh() (called exactly as
+    thermal.py calls it), then the union, then a chained
+    DirectionalProcess etch, then the chained step's own export.
+    Result -- WORKS, every check passed:
+      [1] after oxidation (before any fix): Si 7.99986, SiO2 0.80000,
+          Mask 1.46981 -> mask retention 99.99%. Oxidation itself is
+          completely unaffected, as intended (nothing about the
+          construction or the oxidation call changed).
+      [2] after the union: level-set points [38, 62, 46], all nonzero;
+          export with wrap_flags=[F,T,T] still gives all 3 materials
+          with Si/SiO2 areas IDENTICAL to [1] (7.99986 / 0.80000, to
+          5 decimal places). Mask reads 1.51028 vs 1.46981 -- a +2.75%
+          apparent increase, which is a clipping-resolution artifact
+          of save_locos_volume_mesh's per-x-column top-surface lookup
+          (binned at gridDelta=0.2), not real geometry growth: the
+          discrepancy works out to ~0.0135um of vertical slop along
+          the mask's 3.0um-wide bottom edge, i.e. well under one grid
+          cell. Worth noting honestly, not a failure.
+      [3] chained directional etch: NO level set collapsed to zero
+          (the entire bug, gone).
+      [4] the chained step's own export: all 3 materials present, with
+          physically coherent values -- Si unchanged (7.99986, still
+          covered by pad oxide), SiO2 0.80000 -> 0.76021 (the etch
+          removed 0.0398 of oxide; 1.0um-wide window x 0.05um/s x 1.0s
+          predicts 0.05, and gridDelta=0.2 means the requested etch is
+          only a quarter of one grid cell, so this is the expected
+          discretization agreement, not a discrepancy), Mask
+          essentially unchanged at 1.50534 (correctly protected by
+          maskMaterial).
+    Conclusion: a REAL, WORKING FIX for the LOCOS chaining bug --
+    the first one found across four separate attempts (part 10's
+    bounds-hint, test 11's reordering, test 14's mask-wrapping, and
+    now this). It works precisely because it does not touch the two
+    things every previous attempt broke: the geometry Oxidation()
+    runs on, and the oxidation call itself. Generalization checks
+    follow in test 18 before this could be recommended for
+    production.
+
+18. Hypothesis: test 17's fix worked for ONE downstream model and ONE
+    chained step. Before it could be called a real fix rather than a
+    lucky single case, does it generalize across (A) different
+    downstream models, (B) more than one chained step in sequence, and
+    (C) does the negative control -- the identical scenario WITHOUT
+    the re-wrap -- still fail, proving the re-wrap is what's doing the
+    work?
+    Test: real LOCOS build + real Oxidation() each time, then re-wrap,
+    then chain; measured throughout with the REAL, unmodified
+    save_locos_volume_mesh().
+    Result:
+    (A) ALL FOUR downstream models PASS -- no level set collapsed, all
+        3 materials present in every export:
+          directional_etch    : Si 7.99986, SiO2 0.80000->0.76021, Mask 1.50534
+          isotropic_etch      : Si 7.99986, SiO2 0.80000->0.76021, Mask 1.50534
+          isotropic_deposition: Si 7.99986, SiO2 0.80000 (unchanged), Mask 1.50->1.55026
+          single_particle_dep : Si 7.99986, SiO2 0.80000 (unchanged), Mask 1.50->1.69268
+        Physically coherent in each case: the etches remove oxide and
+        leave Si untouched (still covered by pad oxide) with the mask
+        protected; the depositions add material on top and leave the
+        buried layers untouched. CAVEAT worth recording: the
+        directional and isotropic etches produced BIT-IDENTICAL areas
+        (0.76021 / 1.50534). At gridDelta=0.2 the requested 0.05um
+        etch is a quarter of one grid cell, so both plausibly resolve
+        to the same single-cell change -- this is NOT evidence the two
+        models behave identically in general, and a finer grid would
+        be needed to distinguish them. Not pursued here (the question
+        under test was collapse/no-collapse, not etch-model fidelity).
+    (B) TWO chained steps in sequence both PASS, with the re-wrap
+        re-applied after each step (necessary, since every Process()
+        re-derives the lower layers from the top one and thus
+        re-breaks the invariant): SiO2 progressively etched
+        0.80000 -> 0.76021 -> 0.72228 while Si stays exactly 7.99986
+        and the mask stays ~1.50 throughout. Monotonic, physically
+        sensible, no drift or corruption across steps.
+    (C) NEGATIVE CONTROL confirms the re-wrap is load-bearing -- the
+        identical scenario without it did NOT merely produce a wrong
+        answer, it HUNG (100% CPU, no progress for 200+ seconds at the
+        export step, vs. under a second for every re-wrapped case).
+        This is exactly the hang signature part 12 of CLAUDE.md
+        already root-caused: the collapsed (0-point) level sets yield
+        a degenerate +/-DBL_MAX inverted bounding box in
+        _export_single_level_set, which then feeds an absurdly
+        inverted box into BooleanOperation(INTERSECT). The negative
+        control therefore reproduces the ORIGINAL bug faithfully, in
+        the same session, on the same machine, minutes apart from the
+        passing cases.
+    Conclusion: the post-oxidation re-wrap generalizes -- 4/4
+    downstream models, 2 sequential chained steps, with a
+    faithfully-failing negative control. This is a genuine fix for the
+    LOCOS process-flow chaining bug.
+
+-------------------------------------------------------------------
+PROPOSED PRODUCTION CHANGE (designed and verified by the tests above,
+NOT applied -- standing instruction this session is test-only):
+
+Two parts, both small:
+
+  1. tcad/process/oxidation/thermal.py, at the very END of run()'s
+     fresh-LOCOS branch, AFTER save_locos_volume_mesh() has already
+     written this step's own export (so the LOCOS step's own output is
+     bit-for-bit unchanged): union the last level set with the one
+     below it, restoring the "last level set contains everything"
+     invariant that MakeTrench-built geometry (and therefore every
+     other model in this project) already satisfies, and that ViennaLS
+     Advect documents as a requirement:
+         ls = list(geometry.getLevelSets())
+         vls.BooleanOperation(ls[-1], ls[-2],
+                              vls.BooleanOperationEnum.UNION).apply()
+
+  2. A way for a LATER, unrelated step to know its inherited domain
+     still needs save_locos_volume_mesh()-style export with
+     wrap_flags=[False, True, True] (the mask is now wrapped too).
+     The weakref-keyed side table in io.py from part 12 is already
+     verified to work for this (dynamic attributes on the pybind11
+     Domain object are NOT possible -- confirmed, AttributeError), and
+     requires zero changes to any of the 13+ ProcessStep.run() files
+     since save_volume_mesh() itself would consult it.
+
+Known caveats to carry into that change, all measured above, none
+blocking:
+  - The re-wrap must be re-applied after EVERY subsequent step, not
+    just once (test 18B) -- so part 1 belongs somewhere every step
+    runs, not only in thermal.py, OR the hint mechanism must trigger
+    it. This is the one real design question the tests leave open.
+  - Mask area reads ~2.7% high after the re-wrap (1.51028 vs 1.46981),
+    a sub-grid-cell clipping-resolution artifact of
+    save_locos_volume_mesh's per-x-column top lookup at gridDelta=0.2,
+    not real geometry change (test 17[2]). A test asserting mask
+    retention > 0.90 is unaffected; one asserting an exact area would
+    need the tolerance widened.
+  - Not tested: a chained step that itself needs duplicateTopLevelSet
+    (e.g. Bosch), a LOCOS-then-LOCOS chain, or grid resolutions other
+    than gridDelta=0.2.
+
+19. Hypothesis (raised as a direct question about test 18's own
+    wording): test 18 described the chained etch as "removing oxide
+    and leaving Si untouched." That was an INTERPRETATION, never a
+    measurement, and it could be true for two physically very
+    different reasons: (i) real etch SELECTIVITY (oxide etches, Si
+    resists), or (ii) the etch simply never reached Si, because
+    0.05um requested is far less than the 0.2um pad oxide covering
+    the window. Distinguish by etching progressively deeper.
+    Test: same LOCOS+oxidation+re-wrap setup, gridDelta refined to
+    0.05 (so a 0.05um etch is a full grid cell, not a quarter of
+    one -- removing test 18's discretization caveat), window 1.0um
+    wide, pad oxide 0.2um. Etched at 0.05 / 0.10 / 0.20 / 0.40um
+    using the SAME overload tcad/process/etching/directional.py
+    itself uses (single directionalVelocity, one maskMaterial).
+    Result:
+      etch 0.05um: SiO2 removed 0.0463, Si removed 0.0000
+      etch 0.10um: SiO2 removed 0.0941, Si removed 0.0000
+      etch 0.20um: SiO2 removed 0.1902, Si removed 0.0000
+      etch 0.40um: SiO2 removed 0.1999, Si removed 0.1835
+    The oxide loss tracks the requested depth almost exactly while
+    oxide remains (0.0463/0.0941/0.1902 vs 0.05/0.10/0.20 x 1.0um
+    window), then SATURATES at 0.1999 -- i.e. the entire 0.2um pad
+    oxide in the window is gone and there is no more to remove. At
+    that same 0.40um step, Si loses 0.1835 (~0.18um deep). Predicted
+    if there were no selectivity at all: 0.40um total minus 0.20um of
+    oxide = 0.20um into Si; measured 0.1835um, i.e. within ~1/3 of a
+    grid cell of the no-selectivity prediction.
+    Conclusion: (ii) -- it was pure geometry, NOT selectivity. The
+    etch removed only oxide at shallow depths solely because the
+    oxide was in the way; the moment it punched through, it consumed
+    Si at the same rate. Test 18's phrasing "leaves Si untouched" was
+    accurate as a description of that specific run's outcome but
+    would be misleading if read as a physical property of the model.
+    Corrected statement for the record: this project's directional
+    etch has NO material selectivity -- every non-mask material is
+    removed at one identical rate.
+
+20. Follow-up gap found while testing item 19: ViennaPS itself DOES
+    support per-material etch rates -- vps.DirectionalProcess
+    overload 1 takes materialRates: Mapping[Material, (directional,
+    isotropic)] plus defaultDirectional/IsotropicRate, and
+    vps.IsotropicProcess overload 3 takes the same idea
+    (materialRates + defaultRate). This project's own wrappers use
+    NEITHER: tcad/process/etching/directional.py builds only
+    overload 2 (direction/directionalVelocity/isotropicVelocity/
+    maskMaterial/calculateVisibility) and isotropic.py only
+    overload 1 (rate/maskMaterial). So real etch selectivity -- a
+    basic, physically essential property of any real RIE or wet etch
+    chemistry (a real oxide etch is typically 10:1 or better against
+    Si) -- is currently NOT expressible through this project's
+    recipes at all, even though the installed ViennaPS supports it.
+    First attempt at using the materialRates overload directly (10:1
+    oxide:Si, negative rates matching the single-velocity
+    convention) removed NOTHING (SiO2 0.0000, Si 0.0000) in the same
+    setup where the single-velocity overload etched normally,
+    suggesting a differing sign or usage convention rather than a
+    working call -- this project has already documented one such trap
+    (deposition's inverted directionalVelocity, see CLAUDE.md), so
+    the sign was tested explicitly rather than assumed. See item 21
+    for that result.
+
+21. Hypothesis (from item 20): does the materialRates overload use the
+    OPPOSITE sign convention from the single-velocity overload, which
+    would explain it removing nothing when handed negative rates?
+    Test: identical setup, 0.4um-equivalent etch with 10:1 oxide:Si
+    selectivity, run three ways -- negative rates (matching the
+    single-velocity convention), positive rates (opposite), and a
+    no-selectivity control (both materials at the same negative rate,
+    which should have reproduced test 19A's 0.40um row if the sign
+    were the same).
+    Result:
+      NEGATIVE rates, 10:1     : SiO2 removed 0.0000, Si removed 0.0000
+      POSITIVE rates, 10:1     : SiO2 removed 0.2001, Si removed 0.0184
+      NEGATIVE, no selectivity : SiO2 removed 0.0000, Si removed 0.0000
+    Conclusion: CONFIRMED -- vps.DirectionalProcess's materialRates
+    overload takes POSITIVE rates to remove material, the exact
+    OPPOSITE of the single-velocity overload this project's wrapper
+    uses (where negative removes). A negative materialRates value is
+    silently a no-op, not an error. This is the same class of trap
+    this project already documented once for directional DEPOSITION
+    (CLAUDE.md, "Directional deposition -- RESOLVED, was a real
+    sign-convention bug"), now confirmed to exist on a second,
+    different ViennaPS overload.
+    And with the correct sign, selectivity works exactly as
+    specified: 10:1 gave Si 0.0184um deep vs. the no-selectivity
+    case's 0.1835um at the same total etch (test 19A) -- a factor of
+    9.97, matching the requested 10:1 to within a percent. Physically
+    checkable end to end too: at 0.4um/s the 0.2um oxide clears in
+    0.5s, leaving 0.5s x 0.04um/s = 0.020um of Si etch predicted vs.
+    0.0184um measured (within 1/3 of a grid cell).
+
+-------------------------------------------------------------------
+SECOND FINDING THIS ROUND (independent of the chaining bug, found by
+questioning test 18's own wording):
+
+This project's directional and isotropic etch models have NO material
+selectivity -- one rate applies to every non-mask material. Real
+etch chemistry is strongly selective (a real oxide etch runs 10:1 or
+better against Si), and the installed ViennaPS 4.6.2 fully supports
+it (DirectionalProcess overload 1, IsotropicProcess overload 3, both
+verified working here). This project simply never wired those
+overloads up.
+
+Adding it would be a small, self-contained change (an optional
+`material_rates` recipe key selecting the other overload, exactly the
+pattern wet_etching.py already uses for its crystallographic
+overload), with one real trap to get right, now measured rather than
+guessed: the materialRates overload's sign convention is INVERTED
+relative to the single-velocity overload, and a wrong-signed value
+fails silently as a no-op rather than raising.
+
+NOT implemented -- test-only session.
+
+22. Hypothesis: test 18B re-applied the re-wrap after EVERY chained
+    step but never checked whether that was NECESSARY. That decides
+    the shape of the whole production fix -- one line in thermal.py,
+    or something every ProcessStep has to participate in. Reasoning
+    that says once should suffice (to be confirmed, not trusted):
+    Advect sets each lower layer to `lower INTERSECT last`, and an
+    intersection with X is always a subset of X, so the new top
+    contains every adjusted lower layer by construction -- Advect
+    should PRESERVE the invariant once it holds.
+    Test: re-wrap ONCE right after oxidation, then chain three steps
+    (directional etch -> isotropic etch -> isotropic deposition) with
+    NO further re-wrapping, checking after each.
+    Result: all three PASS. Si stays exactly 7.99983 throughout; SiO2
+    progresses 0.80021 -> 0.75394 -> 0.70215 (monotonic, physical);
+    the deposition step grows the mask 1.49555 -> 1.51221 while
+    leaving the buried layers alone; no level set ever collapses.
+    Also confirmed in the same run: the domain's Python object
+    identity is preserved across every Process() call, which is what
+    makes an id(domain)-keyed export-hint lookup viable at all.
+    Conclusion: ONE re-wrap is sufficient -- the reasoning holds. The
+    production fix needs no architectural change to ProcessStep or
+    flow.py, just a one-time fixup at the end of LOCOS's own run().
+
+23. Hypothesis: IsotropicProcess's own materialRates overload
+    (overload 3) shares DirectionalProcess's inverted sign convention
+    from item 21. Must NOT be assumed -- measure before wiring.
+    Test: simple Si+Mask trench (no LOCOS), single-rate overload as a
+    reference, then materialRates with both signs.
+    Result:
+      single-rate, -0.1        : Si removed 0.0944  (reference)
+      materialRates, NEGATIVE  : Si removed 0.0944  (identical)
+      materialRates, POSITIVE  : Si removed -0.0987 (grew instead)
+    Conclusion: the OPPOSITE of item 21 -- IsotropicProcess's
+    materialRates removes for NEGATIVE rates, matching its own
+    single-rate overload. So the two ViennaPS overloads disagree with
+    EACH OTHER on sign, and neither wrapper's convention may be
+    inferred from the other's. Both wrappers therefore normalize to
+    one recipe-level convention (negative removes, as everywhere else
+    in etching/), with directional.py flipping the sign and
+    isotropic.py passing it through.
+
+-------------------------------------------------------------------
+SHIPPED (this round -- the test-only phase ended here on explicit
+instruction "둘다해줘" / apply both):
+
+  1. LOCOS chaining fix
+     - tcad/process/oxidation/thermal.py:
+       _make_locos_domain_chainable(), called at the end of run()'s
+       fresh-LOCOS branch AFTER its own export is written, so that
+       export is bit-for-bit unchanged.
+     - tcad/backends/viennaps/io.py: register_locos_export() plus a
+       weakref-keyed side table; save_volume_mesh() consults it and
+       delegates to save_locos_volume_mesh(). No ProcessStep.run()
+       file changed.
+     - tests/integration/test_locos_chaining_real.py (new).
+
+  2. Per-material etch selectivity
+     - Optional `material_rates` recipe key on
+       tcad/process/etching/directional.py and isotropic.py, with the
+       measured per-overload sign handling from items 21/23.
+     - tests/integration/test_etch_selectivity_real.py (new), which
+       measured: directional Si depth 0.18349um unselective ->
+       0.01842um at 10:1 (predicted 0.01835); isotropic 0.24381um ->
+       0.02305um (predicted 0.02438).
+
+24. Hypothesis (prompted by the observation that the official ViennaPS
+    example uses duplicateTopLevelSet without trouble -- a fair
+    pushback on this log's own hedging): is chaining Bosch DRIE onto
+    LOCOS geometry actually a risk, or was that flagged as "untested"
+    more cautiously than the evidence warranted?
+    To be precise about what was ever in question: duplicateTopLevelSet
+    itself was never suspect. The official boschProcessSimulate.py uses
+    it, this project's bosch_drie.py is documented as 1:1 identical to
+    it, and that model passes every regression run. The open item was
+    only the COMBINATION with the shipped LOCOS fix, on two counts
+    that could fail independently: (a) Bosch grows the level-set stack
+    3 -> 4 each cycle, which could break Advect's containment
+    precondition, and (b) the export hint is registered against a
+    fixed 3-entry materials/wrap_flags list, which a resized stack
+    could desynchronize.
+    Test: real LOCOS oxidation -> real BoschDRIEEtch(inherited_domain=
+    ...) with 2 cycles at gridDelta 0.05, through the real registry
+    entry points; captured warnings explicitly.
+    Result: BOTH fine.
+      level sets [162, 473, 198] -> [162, 162, 297], none destroyed
+      export areas: Mask 1.49498 -> 1.44223, Si 19.99983 (unchanged,
+        still under its oxide), SiO2 0.80021 -> 0.73005
+      all 3 materials present; NO warnings raised
+    Conclusion: works, and the mechanism explains why on both counts.
+    (a) duplicateTopLevelSet makes a COPY of the current top; after the
+    re-wrap that top already contains everything, so the copy does too
+    and the precondition survives the cycle. (b) removeTopLevelSet()
+    pops it at the end of each cycle, so the stack is back to its
+    registered length of 3 by the time any export runs -- the length
+    mismatch exists only mid-cycle, where nothing exports. The
+    hedge was unnecessary; the pushback was correct. Added as check 6
+    of tests/integration/test_locos_chaining_real.py (1 cycle, enough
+    to grow and shrink the stack once) -- PASSES: [38, 42, 67] points,
+    3 materials, oxide 0.72268 -> 0.69063.
+
+25/26. Hypothesis: does the shipped LOCOS chaining fix hold at grid
+    resolutions other than the 0.05 and 0.2 it was developed against?
+    Everything it touches is grid-sensitive -- the pad-oxide floor at
+    max(0.02, gridDelta), save_locos_volume_mesh's per-x-column
+    clipping lookup binned at gridDelta, and the level-set narrow band.
+    Test: fresh LOCOS -> chained directional etch, through the real
+    registry entry points, at gridDelta 0.02 / 0.1 / 0.15 / 0.25.
+    Result: 4/4 PASS -- with the two already-covered values that is six
+    resolutions spanning a >12x range, all with 3 materials exported,
+    no level set destroyed, no warnings, and real oxide removed:
+      gd=0.02: retention 100.0%, oxide etched 0.02013, pts [266,406,757]
+      gd=0.10: retention  99.1%, oxide etched 0.04500, pts [ 64, 82,149]
+      gd=0.15: retention  97.7%, oxide etched 0.04747, pts [ 58, 58,111]
+      gd=0.25: retention  95.8%, oxide etched 0.03739, pts [ 32, 34, 59]
+    Mask retention degrades gently and monotonically with coarsening
+    grid (100% -> 95.8%), which is the expected discretization
+    behaviour, not a failure -- the retention assertion in
+    test_locos_chaining_real.py uses a 90% threshold, so every one of
+    these clears it.
+    Conclusion: grid-resolution coverage closed. This uncertainty is
+    no longer open.
+
+27. Hypothesis: LOCOS chained onto LOCOS fails with "no oxide nodes
+    found after buildNodes()" plus a ~10^308 garbage displacement --
+    the exact signature test 14 produced by wrapping the mask at
+    construction time -- and then hangs. Mechanistically expected: the
+    re-wrap makes the mask level set contain SiO2, and Oxidation()'s
+    oxide-band detection needs a real SiO2 band between distinct level
+    sets, which test 14 already showed wrapping destroys. But is this a
+    REGRESSION caused by the shipped fix, or was LOCOS-on-LOCOS already
+    broken?
+    Test: same chain twice in hard-timeout subprocesses, once normally
+    and once with ThermalOxidation._make_locos_domain_chainable
+    monkeypatched to a no-op -- reproducing pre-fix behavior exactly
+    without touching production code.
+    Result:
+      WITH the fix:    HUNG, killed at 240s, no result.
+      WITHOUT the fix: completes, but the output is corrupt anyway --
+        step1 exports {Mask 1.46981, Si 19.99986, SiO2 0.80000}, step2
+        exports {Mask 1.46427, SiO2 0.00555} with SI ENTIRELY ABSENT
+        and SiO2 collapsed from 0.8 to 0.006. That is the original
+        chaining bug, unmodified.
+    Conclusion: NOT a regression -- LOCOS-on-LOCOS was already broken,
+    and before the fix it failed SILENTLY (a mesh missing its
+    substrate, which would flow straight into DevSim and produce
+    garbage physics) rather than loudly. The fix changes the failure
+    mode from silent corruption to a hang. A hang is at least
+    impossible to miss, but it is still a bad way to fail, and the
+    right resolution is to detect this specific combination up front
+    and raise a clear error instead. Scope for such a guard is settled
+    by test 28 below -- it must not block combinations that work.
+
+28. Hypothesis: test 27 established LOCOS-on-LOCOS is broken (and was
+    broken before the fix), so refusing it up front beats hanging. But
+    how NARROW must that guard be? FIN-STYLE oxidation (no
+    mask_material) takes a different branch of ThermalOxidation.run()
+    -- if it works on a LOCOS domain, the guard must not block it.
+    Test: LOCOS -> fin-style oxidation (identical recipe minus
+    mask_material), real registry entry points, hard-timeout
+    subprocess.
+    Result: WORKS, cleanly.
+      step1 (LOCOS): Mask 1.46981, Si 19.99986, SiO2 0.80000
+      step2 (fin):   Mask 1.51028, Si 19.99930, SiO2 0.80132
+    All 3 materials preserved, Si essentially unchanged, and SiO2
+    genuinely GREW (0.80000 -> 0.80132) -- real oxidation, not a no-op.
+    Conclusion: the guard must key on `mask_material in recipe` AND the
+    inherited domain being LOCOS-registered, nothing broader.
+
+-------------------------------------------------------------------
+SHIPPED (follow-up round -- closing the last two uncertainties):
+
+  - Grid coverage: no code change needed, 6 resolutions verified
+    (test 25/26).
+  - LOCOS-on-LOCOS guard: tcad/process/oxidation/thermal.py now raises
+    NotImplementedError with an explanation and the two real
+    workarounds (one longer LOCOS step, or drop mask_material for a
+    fin-style oxidation) instead of hanging. Backed by a new
+    is_locos_registered() predicate in io.py.
+  - tests/integration/test_locos_chaining_real.py grew checks 7 and 8
+    (fin-style-on-LOCOS works; second LOCOS refuses).
+
+-------------------------------------------------------------------
+[Crystallographic wet etch -- concentration/temperature sweep,
+requested as TMAH coverage. TEST ONLY.]
+
+29. Framing first, because it matters for how these results may be
+    read: real four-plane rate constants for TMAH could NOT be
+    obtained. The paper that has them (Sato & Shikida, Sensors and
+    Actuators A -- TMAH 10-25 wt%, 70-90 C, i.e. exactly this sweep)
+    is paywalled; the one open-access candidate
+    (sensors.myu-group.co.jp) is blocked by this environment's egress
+    proxy; and the installed ViennaPS ships no TMAH data at all
+    (checked the package contents and the Material enum). Fabricating
+    them is against this project's rules and would make any result
+    meaningless. So what follows is NOT a TMAH model. It is a
+    robustness/sensitivity sweep of the code path across the region
+    TMAH occupies, anchored on values that ARE real: the cited 30% KOH
+    @ 70 C constants already in production, and the literature-reported
+    (111)/(100) etch-rate RATIO range for TMAH, 0.02-0.08 (vs 0.0063
+    for this KOH set).
+
+    Test A -- anisotropy (concentration-like): vary rate111/rate100
+    over 0.0063 / 0.02 / 0.05 / 0.08 at t=120s, everything else fixed.
+    Result: bit-IDENTICAL every time -- apex 2.8000um, sidewall
+    57.32deg, for all four. A 12.7x change in the parameter that is
+    supposed to control facet shape did nothing at all.
+    Interpretation, and why this is a finding rather than a null
+    result: the self-limited apex for this window (half-width 1.0um)
+    is 1.0*tan(54.7356deg) = 1.4142um, and t=120s produced 2.8000um --
+    exactly twice as deep. The groove has run well past its
+    self-limiting V, so at that operating point the (111) facet is no
+    longer what sets the shape, and no (111) rate could matter.
+    Followed up properly in test 30.
+
+    Test B1 -- rate scale WITH compensating time (temperature-like, to
+    first order a temperature change is an Arrhenius factor on ALL
+    plane rates equally): scale every rate by s and the time by 1/s,
+    for s = 0.5 / 1 / 2 / 4. Result: bit-identical geometry at every
+    scale (apex 2.8000um, sidewall 57.32deg). The invariance holds
+    exactly -- the solver is NOT time-step sensitive over an 8x range
+    of step size, and a first-order temperature change is correctly
+    just a rate scale. This is a clean positive result and the most
+    directly useful one for the temperature question that was asked.
+
+    Test B2 -- rate scale at FIXED time (deeper total etch): 1x gives
+    apex 2.8000um / 57.32deg; 2x gives 4.9000um / 39.01deg (sidewall
+    degrading, fit points dropping 9 -> 6 as the structure runs out of
+    clean facet); 4x gives NO Si AT ALL in the export -- the substrate
+    is fully consumed. Worth recording that the failure mode at
+    over-etch is an empty-of-Si mesh rather than a crash or a hang.
+
+30. Follow-up to test 29A: re-ran the same anisotropy sweep at times
+    where the V-groove is still forming (t = 20 / 40 / 60 / 90s),
+    since t=120s had clearly run past self-limiting.
+    Result: rate111/rate100 is inert at EVERY time too -- bit-identical
+    apex and sidewall for all four ratios at all four times. And the
+    depth is EXACTLY LINEAR in time:
+      t=20s: apex 0.4850um, sidewall 65.77deg
+      t=40s: apex 0.9700um, sidewall 65.84deg
+      t=60s: apex 1.4550um, sidewall 62.01deg
+      t=90s: apex 2.1677um, sidewall 59.08deg
+    0.4850um / 20s = 1.455 um/min, which is EXACTLY rate110 from the
+    KOH set. So the groove descends at rate110 indefinitely and never
+    self-limits at all.
+    This raises a concern about the EXISTING production test
+    (test_koh_crystallographic_wet_etch_real.py), which asserts apex
+    depth within 15% of window_half*tan(54.7356deg) = 1.4142um: at its
+    t=60s that prediction is matched to 2.9% -- but rate110 * 60s =
+    1.4550um lands in the same place, so that check may be passing on
+    a numerical coincidence rather than on self-limiting physics. The
+    sidewall angle also drifts with time (65.8 -> 62.0 -> 59.1 deg)
+    rather than converging on 54.7356, which self-limiting faceting
+    would do. Test 31 settles which rates actually drive the result.
+
+31. Decisive experiment following test 30: vary each plane rate ALONE
+    (x0.25, x4, and =0) at t=60s and see which ones the result responds
+    to at all.
+    Result:
+      baseline (all KOH)   apex 1.4550um  sidewall 62.01deg
+      rate100 x0.25        apex 1.3524um  sidewall 53.95deg   RESPONDS
+      rate100 x4           apex 1.9615um  sidewall 76.82deg   RESPONDS
+      rate100 = 0          apex 1.3000um  sidewall 42.12deg   RESPONDS
+      rate110 x0.25        apex 0.4714um  sidewall 81.35deg   RESPONDS
+      rate110 x4           apex 4.6869um  sidewall 29.53deg   RESPONDS
+      rate110 = 0          apex 0.0011um  sidewall 90.00deg   etch STOPS
+      rate111 x0.25        apex 1.4550um  sidewall 62.01deg   INERT
+      rate111 x4           apex 1.4550um  sidewall 62.01deg   INERT
+      rate111 = 0          apex 1.4550um  sidewall 62.01deg   INERT
+      rate311 x0.25        apex 1.4550um  sidewall 62.01deg   INERT
+      rate311 x4           apex 1.4550um  sidewall 62.01deg   INERT
+      rate311 = 0          apex 1.4550um  sidewall 62.01deg   INERT
+    rate111 and rate311 are COMPLETELY inert -- bit-identical output
+    even when set to exactly zero. Only rate100 and rate110 do
+    anything, and rate110 dominates: zeroing it stops the etch dead
+    (apex 0.0011um, i.e. nothing).
+
+    What this proves, and it is not a small thing: in this project's 2D
+    configuration, ViennaPS's crystallographic wet etch is driven by
+    only TWO of its four plane rates. The most likely reason is
+    geometric -- with direction100 = [0.707, 0.707, 0] and
+    direction010 = [-0.707, 0.707, 0], the surface normals reachable
+    within the x-y simulation plane never coincide with the {111} or
+    {311} families, which are out-of-plane in this orientation, so
+    ViennaPS correctly never applies those rates. (That is an
+    inference from the measurement, not something confirmed against
+    ViennaPS's source, which was not read for this.)
+
+    CONSEQUENCE FOR THE EXISTING PRODUCTION TEST
+    (tests/integration/test_koh_crystallographic_wet_etch_real.py):
+    its two physical claims do not survive this.
+      * "apex depth matches window_half*tan(54.7356deg) = 1.4142um
+        within 15%" -- at its own t=60s, rate110 * 60s = 1.4550um,
+        which is 2.9% from 1.4142um by coincidence. Depth is exactly
+        linear in time (test 30) and never self-limits, so at any
+        other time the agreement disappears; it is not evidence of a
+        self-limited V.
+      * "sidewall angle within 8deg of the 54.7356deg (111)/(100)
+        magic angle" -- cannot be (111) faceting, because rate111 is
+        provably inert here. The angle also drifts with time
+        (65.8 -> 62.0 -> 59.1 deg over t=20..90s) instead of
+        converging, and moves with rate100/rate110 instead.
+    So the KOH crystallographic etch as currently configured does NOT
+    reproduce real (111)-limited V-groove physics in 2D, and that
+    test's numbers agreeing with the magic angle is not the evidence
+    it was taken to be. The etch model itself runs fine and is
+    self-consistent; what is wrong is the physical interpretation
+    attached to it.
+
+    NOT FIXED -- test-only round, per instruction. Recording this
+    rather than acting on it. Whether a different direction100 /
+    direction010 pair could bring a {111} normal into the 2D
+    simulation plane (making the feature genuinely 2D-meaningful) is
+    the obvious next question and was not investigated.
+
+-------------------------------------------------------------------
+ANSWER TO THE ORIGINAL REQUEST (concentration/temperature sweep):
+
+  - Temperature-like (all rates scaled, time inversely scaled):
+    perfectly invariant over an 8x range. Clean pass. To first order
+    temperature is just a rate scale, and the solver handles it
+    exactly.
+  - Concentration-like (anisotropy ratio rate111/rate100 over TMAH's
+    cited 0.02-0.08 vs KOH's 0.0063): NO EFFECT AT ALL, at any etch
+    time -- not because concentration does not matter physically, but
+    because rate111 is inert in this 2D configuration (test 31). So
+    this code path cannot currently distinguish KOH from TMAH by the
+    parameter that actually distinguishes them, which makes adding
+    real TMAH constants pointless until the inertness is resolved.
+    That is a more useful answer than the sweep itself.
+
+32/33. Followed the suggestion to go back to the official example and
+    the model source. Both were fetched; together they gave a complete,
+    source-level explanation of test 31's inertness finding.
+
+    (a) The official example
+    (examples/cantileverWetEtching/cantileverWetEtching.py) says
+    plainly "This example only works in 3D mode", and its boundary
+    conditions are reflective on x/y with INFINITE on z -- so in that
+    example the DEPTH axis is z, and direction100/direction010 both lie
+    in the wafer plane. This project's 2D domain has depth along Y but
+    copied those vectors verbatim, which rotates the crystal frame into
+    the wrong axis.
+
+    (b) ViennaPS's psWetEtching.hpp rate function, verbatim:
+          directions[2] = cross(direction100, direction010)
+          N[i] = |dot(directions[i], normal)|, sorted DESCENDING
+          if dot(N, (-1,1,2)) < 0:
+              v = (r100*(N0-N1-2*N2) + r110*(N1-N2) + 3*r311*N2)/N0
+          else:
+              v = (r111*((N1-N0)*0.5+N2) + r110*(N1-N2)
+                   + 1.5*r311*(N0-N1))/N0
+        and for D==2 the normal's z component is forced to 0.
+
+        With the CURRENT vectors, directions[2] = (0,0,1), so in 2D
+        N2 = |dot((0,0,1),(nx,ny,0))| = 0 for EVERY possible normal.
+        The branch test then reduces to (N1 - N0) < 0, always true for
+        a descending sort, so the first branch is taken unconditionally
+        -- and that branch contains no r111 at all, while r311 is
+        multiplied by N2 = 0. That is exactly, and completely, why both
+        measured inert in test 31. Nothing is broken in ViennaPS; the
+        crystal frame is simply pointed along the wrong axis for a 2D
+        run.
+
+    (c) Derived the correct 2D frame from that algorithm rather than
+        guessing: putting [001] on the depth axis requires
+        direction100 = [0.7071, 0, 0.7071], direction010 = [0.7071, 0,
+        -0.7071], giving directions[2] = (0,1,0). Verified by hand
+        against the rate function: a normal at the magic angle,
+        (0.8165, 0.5774, 0), projects to N0 = N1 = N2 = 0.5774, which
+        takes the second branch and collapses to exactly v = r111. That
+        is the correct crystallography, arrived at from the source
+        rather than fitted.
+
+    (d) Measured with the derived vectors: rate111 IS live now -- 0x /
+        1x / 4x / 20x give visibly different profiles, where before
+        even setting it to exactly zero changed nothing. So the
+        diagnosis is confirmed and the axis fix is real as far as it
+        goes.
+
+    (e) But it does NOT yet reproduce a self-limited V-groove: apex
+        keeps growing (0.625 / 1.000 / 1.556 / 2.778 / 4.470um at t =
+        40/60/90/150/240s) instead of stopping at
+        window_half*tan(54.7356) = 1.4142um.
+
+    (f) Correction to my own reading of test 32, which matters: the
+        angle metric used there is 90 - atan(|dy/dx|), so ~88deg means
+        nearly FLAT, not nearly vertical as I first said. A flat (100)
+        bottom is the CORRECT intermediate state before the {111}
+        facets from the two mask edges meet, so those numbers were not
+        the failure they looked like -- a single straight-line fit
+        across 0.15-1.05um simply averages the flat bottom together
+        with the sidewall and cannot answer the question either way.
+        Test 33 dumps the real profile instead of fitting one line
+        through it.
+
+    CONCLUSION SO FAR: the root cause of test 31's inertness is now
+    understood at source level and is a real defect in this project's
+    2D adaptation (wrong crystal axis), not a ViennaPS limitation.
+    A corrected direction pair is derived and demonstrably revives
+    rate111. Whether that alone yields correct self-limited V-groove
+    physics is NOT yet established. Nothing applied -- test-only round.
+
+    (g) Test 33 profile dump (gridDelta 0.05, per-segment local slope
+        instead of one global fit), comparing both vector sets:
+          t=60s   current: apex 1.4550um, 20 flat + 59 sloped segments,
+                           sloped median 51.4deg (min 41.2, max 78.6)
+                  derived: apex 1.0459um, 28 flat + 43 sloped,
+                           sloped median 50.0deg (min 41.1, max 78.7)
+          t=120s  current: apex 2.8275um, 2 flat + 89 sloped,
+                           sloped median 50.5deg
+                  derived: apex 2.1337um, 12 flat + 80 sloped,
+                           sloped median 50.1deg
+        Both sets DO produce sloped facets with a median near, but not
+        at, the 54.7356deg magic angle (~50deg, spread 41-79deg), and
+        NEITHER self-limits -- both blow past the 1.4142um limit and
+        keep going. The derived set does deepen consistently more
+        slowly than the current one (1.05 vs 1.46um at t=60s; 2.13 vs
+        2.83um at t=120s) and retains more flat (100) bottom, which is
+        the direction r111 braking the etch would push it -- consistent
+        with the fix being real, but not sufficient on its own.
+
+    NET RESULT of following the official example, honestly stated:
+      * SOLVED: why rate111/rate311 are inert. Source-level, exact,
+        and it is this project's bug (wrong crystal axis for a 2D
+        domain), not a ViennaPS limitation.
+      * SOLVED: what the correct 2D direction pair is, derived from
+        the rate function rather than guessed, and confirmed by
+        measurement to make rate111 live.
+      * NOT SOLVED: getting a textbook self-limited V-groove. Neither
+        vector set self-limits, and the facet angle sits around 50deg
+        rather than 54.74deg. Something beyond the axis choice is
+        still missing -- candidates not yet examined include the mask
+        edge allowing lateral undercut at the fast {110} rate, and
+        whether a 2D cross-section can represent this geometry at all
+        given the official example is 3D-only by its own statement.
+      * Consequently the existing production test's physical claims
+        remain unsupported (test 31), and adding real TMAH constants
+        remains pointless until the facet physics actually works.
+    Nothing applied -- test-only round throughout.
+
+34. Hypothesis: does true self-limiting (apex stops deepening) appear
+    at a SPECIFIC rotation of the crystal frame around the depth axis
+    (y), i.e. is there a rotation where the mask-edge axis (x) lines up
+    with a real <110> direction and produces a genuine symmetric V?
+    Parametrized the rotation analytically first, not just numerically:
+    with direction100(theta) = [cos theta, 0, sin theta], direction010
+    (theta) = [sin theta, 0, -cos theta] (verified this keeps
+    directions[2] = cross(d100,d010) = (0,1,0) = depth axis for every
+    theta), the projections onto a 2D-plane normal n=(nx,ny,0) work out
+    to N0=|cos theta|*|nx|, N1=|sin theta|*|nx|, N2=|ny|. The true
+    magic-angle self-limiting condition (N0=N1=N2, which collapses the
+    rate formula's second branch to exactly v=r111) requires
+    |cos theta|=|sin theta|, i.e. theta=45 deg is the ONLY rotation
+    where that condition is even reachable for any nonzero nx -- for
+    every other theta, N0 can never equal N1, so a true (111)-locked
+    facet cannot form at all, by construction. (theta=45deg is exactly
+    the "derived" vectors already tested in rounds 32/33.) At theta=45,
+    the condition further reduces to |nx|/|ny| = 1/0.7071 = sqrt(2),
+    i.e. the facet normal sits 54.7356 deg from vertical -- the real
+    magic angle, falling out of the algebra rather than being fitted.
+
+    Test: swept theta over 0/15/30/45/60/75/90 deg, running each at
+    t1=90s and t2=3*t1=270s. Self-limiting predicts apex(t2)/apex(t1)
+    close to 1 (bounded); unbounded/linear growth predicts close to 3.
+    Result: EVERY angle gave the same signature -- ratio ~3.0 within
+    noise, no exception:
+      theta=  0: apex 1.2745 -> 3.8566um, ratio 3.026
+      theta= 15: apex 1.5165 -> 4.5691um, ratio 3.013
+      theta= 30: apex 1.6644 -> 4.9500um, ratio 2.974
+      theta= 45: apex 1.5882 -> 4.9436um, ratio 3.113
+      theta= 60: apex 1.6644 -> 4.9500um, ratio 2.974  (mirrors 30, as
+      theta= 75: apex 1.5165 -> 4.5691um, ratio 3.013   expected from
+      theta= 90: apex 1.2745 -> 3.8566um, ratio 3.026   90deg symmetry)
+    The clean theta<->90-theta symmetry (0/90, 15/75, 30/60 identical
+    pairs) confirms the sweep itself is behaving sensibly, not noise --
+    but theta=45, the analytically unique candidate for a real facet,
+    shows NO qualitative difference from any other angle: still
+    unbounded, still ratio ~3. It IS the single slowest starting point
+    (a1=1.5882, lower than the neighboring 30/60's 1.6644) -- some
+    extra deceleration is measurably present early on -- but that
+    advantage washes out by t2, ending at essentially the same depth as
+    every other rotation (4.9436 vs 4.9500).
+    Conclusion: rotation alone does not produce a self-limiting
+    V-groove, even at the one rotation the algebra says is uniquely
+    correct. Something beyond crystal-frame orientation is
+    responsible. The most likely candidate, based on the "starts slow,
+    catches back up" pattern at theta=45: the point where the two
+    symmetric facets CONVERGE (the groove tip) is a concave/convex
+    kink in the level-set representation, and however ViennaLS
+    extends/regularizes velocity across that kink may not correctly
+    preserve the near-zero r111 rate there, letting the tip keep
+    advancing (and dragging the flanking facets down with it) even
+    once the correct facet angle is locally available elsewhere on the
+    surface. This is a level-set-numerics question, not a
+    crystallography question, and would need ViennaLS source
+    investigation (not attempted this round) to confirm.
+
+35. Follow-up to test 34's "tip re-acceleration" guess: finer time
+    series at theta=45 (t=30/90/270/810s), tracking not just apex depth
+    but the WIDTH of the near-apex flat region (x-extent within 0.05um
+    of the minimum) -- a real converging-to-a-point V should have that
+    width shrink toward 0 as the facets close in; a uniformly-advancing
+    front would keep it close to the full window width throughout.
+    Result:
+      t= 30s: apex=0.5000um  tip_width=1.900um  avg_rate=1.0000um/min
+      t= 90s: apex=1.5882um  tip_width=1.980um  avg_rate=1.0588um/min
+      t=270s: apex=4.9436um  tip_width=2.080um  avg_rate=1.0986um/min
+      t=810s: export failed -- Si missing entirely from the mesh, with
+        the project's own existing safety-net RuntimeWarning firing
+        ("missing 1 material(s) ... tag(s) [10]"). Root cause not
+        chased: t=270s was already at 4.94um, within the default 5.0um
+        floor depth (silicon_depth_um not set in this recipe), so by
+        810s the real Si surface across the window is almost certainly
+        entirely below the export floor -- an export-truncation
+        artifact of running this probe past the default floor depth,
+        not a new physics finding. Worth noting only because it
+        confirms the existing missing-materials safety net (see
+        CLAUDE.md, "LOCOS process-flow chaining", part 8) fires
+        correctly on an entirely unrelated recipe, not just the LOCOS
+        case it was written for.
+    tip_width stays at essentially the FULL window width (1.9-2.08um
+    out of a 2.0um window) at every measured time, right from t=30s.
+    Conclusion -- REVISES test 34's "tip re-acceleration" framing: this
+    is not a sharp V that forms and then a corner artifact speeds it
+    back up. There is no meaningful V shape at any point -- the entire
+    window bottom advances together, nearly as a flat front, the whole
+    time. avg_rate (~1.0-1.1um/min) sits between r100 (0.797) and r110
+    (1.455um/min) and nowhere near r111 (0.005um/min), consistently
+    across all four times -- so even at the one crystallographically
+    correct rotation, the model never spends meaningful time exposing a
+    genuinely (111)-locked, near-stationary facet across this window.
+
+-------------------------------------------------------------------
+FINAL STATE of the KOH/TMAH crystallographic wet-etch investigation
+this round (tests 29-35), stated plainly:
+
+  RESOLVED, with a source-level explanation: why rate111/rate311
+  measured as completely inert with this project's existing production
+  direction100/direction010 (copied verbatim from a 3D-only official
+  example whose depth axis is z, not this project's y) -- confirmed
+  from ViennaPS's own psWetEtching.hpp rate-selection code, not
+  guessed.
+
+  RESOLVED, analytically: what the crystallographically-correct 2D
+  direction pair is (theta=45deg in the parametrization above is the
+  UNIQUE rotation where the true magic-angle facet condition is even
+  reachable) -- derived from the same source code, not fitted, and
+  confirmed to make rate111 measurably live.
+
+  NOT RESOLVED: genuine self-limiting V-groove behavior. Even at the
+  one analytically-correct rotation, the etch never meaningfully forms
+  or holds a (111)-locked facet -- the window bottom advances at
+  roughly the r100/r110 blended rate indefinitely, with the near-apex
+  flat region staying close to the full window width rather than
+  narrowing toward a point. This means the EXISTING production test
+  (tests/integration/test_koh_crystallographic_wet_etch_real.py),
+  which is part of the current passing regression suite, is passing
+  for reasons unrelated to genuine (111)-limited faceting -- its
+  apex/angle checks land close to the real magic-angle numbers at its
+  own chosen t=60s by coincidence with the r110-dominated linear
+  growth rate, not because the model is reproducing self-limiting
+  crystallographic physics. This was not previously known; CLAUDE.md's
+  original entry for this test describes a one-time 54.45deg
+  measurement as validation, which this investigation shows was very
+  likely the same kind of coincidental snapshot.
+
+  NOT INVESTIGATED further this round: WHY the model fails to hold a
+  facet even at the correct rotation. The evidence (uniform-width
+  front rather than a narrowing V, at every rotation and every time
+  checked) points at something in ViennaLS's level-set advection/
+  velocity-extension handling for this class of strongly anisotropic,
+  concave-corner-forming problem, not at anything fixable by recipe
+  parameters. Confirming that would need ViennaLS source-level
+  investigation (Advect's velocity extension algorithm specifically),
+  not attempted this round.
+
+  TMAH specifically: moot until the above is resolved, since TMAH's
+  distinguishing parameter (the rate111/rate100 ratio) has no traction
+  on the actual simulated shape regardless of its value, given the
+  self-limiting mechanism that ratio is supposed to control does not
+  engage at all in this project's current 2D configuration.
+
+Nothing was applied to production code or the existing test this round
+-- test-only throughout, per standing instruction.
+
+================================================================================
+TEST 36-42: KOH crystal frame -- root cause PROVEN, partial fix shipped
+(later session, working the priority list in order; picks up test 35's
+"next smallest experiment", which was to read ViennaLS Advect's source)
+================================================================================
+
+TEST 36: re-fetched ViennaPS's official cantileverWetEtching.py.
+  FOUND: it sets advectionParams.spatialScheme =
+  STENCIL_LOCAL_LAX_FRIEDRICHS_1ST_ORDER via process.setParameters().
+  ViennaLS's own default is ENGQUIST_OSHER_1ST_ORDER (confirmed from
+  lsAdvect.hpp and from AdvectionParameters() defaults in the installed
+  4.6.2). This project never set any scheme.
+  Installed 4.6.2 has the identical API (vps.AdvectionParameters,
+  Process.setParameters).
+
+TEST 37: injected the scheme into the REAL production WetEtch.run()
+  path via a Process-wrapper monkeypatch (only the scheme differs).
+  t = 20/60/180/540 s.
+  FIRST READING WAS A FALSE POSITIVE, recorded as such:
+    default: 0.4850 / 1.4550 / 4.1952 / 12.2738  (ratio 540/60 = 8.44)
+    STENCIL: 0.4850 / 1.4550 / 4.1840 /  1.3000  (ratio 540/60 = 0.89)
+  The 0.89 looked like self-limiting. It is not: the t=540 profile had
+  degenerated into a grid-scale sawtooth (-0.5,-0.6,-0.7,-0.6,...) plus a
+  spurious spike at x=-2.9. Depth was capped by numerical breakdown, not
+  by facets holding. LESSON: depth alone is not evidence; a degenerate
+  surface can fake saturation.
+
+TEST 38: verified the monkeypatch actually works before trusting anything
+  (bit-identical results at t=20/60/180 were suspicious).
+    default              t=60 -> 1.455000, injections_fired=0
+    LAX_FRIEDRICHS_1ST   t=60 -> 1.344743, injections_fired=1  <- differs
+    STENCIL_LOCAL_LF_1ST t=60 -> 1.455000, injections_fired=1
+  Patch is sound; STENCIL genuinely equals the default at t=60.
+
+TEST 39: swept ALL 12 SpatialSchemeEnum members at t=180s, with a
+  sawtooth detector (a clean V has exactly 1 local minimum).
+  self-limited target 1.4142um, purely linear 4.3650um.
+    ENGQUIST_OSHER_1ST/2ND      4.1952 / 4.2000
+    LAX_FRIEDRICHS_1ST/2ND      3.4240 / 3.7417
+    LOCAL_LAX_FRIEDRICHS_1ST/2ND 3.6940 / 3.7837
+    LOCAL_LAX_FRIEDRICHS_ANALYTICAL_1ST 4.2876
+    LOCAL_LOCAL_LAX_FRIEDRICHS_1ST/2ND  4.1976 / 4.2000
+    STENCIL_LOCAL_LAX_FRIEDRICHS_1ST    4.1840
+    WENO_3RD / WENO_5TH         4.2000 / 4.2654
+  NONE self-limit. Spatial scheme RULED OUT as the cause.
+  Side finding: the LF variants give facet angles near 55deg while the
+  default gives ~40deg -- the scheme does affect facet angle.
+
+TEST 40: the untested CROSS (theta=45 corrected vectors x LF schemes),
+  t=180s, plus direct mask-undercut measurement.
+    vectors      scheme                    depth  undercut  facet_deg
+    3D-copied    DEFAULT                  4.1952     2.00     49.70
+    3D-copied    LAX_FRIEDRICHS_1ST       3.4240     1.70     34.94
+    3D-copied    LOCAL_LAX_FRIEDRICHS_1ST 3.6940     1.40     37.56
+    theta=45     DEFAULT                  3.1222     2.00     28.26
+    theta=45     LAX_FRIEDRICHS_1ST       2.4667     0.10     55.90  <-- best
+    theta=45     LOCAL_LAX_FRIEDRICHS_1ST 2.6505     1.10     56.31
+  theta=45 + LF nearly eliminates undercut (2.00 -> 0.10) and lands the
+  facet at 55.90deg vs the real magic angle 54.74deg. Still not
+  self-limited (2.4667 vs 1.4142).
+
+TEST 41: time series + profile for theta=45 + LAX_FRIEDRICHS_1ST.
+    t= 60 -> 0.8192   t=180 -> 2.4667 (3.011x)   t=540 -> 6.0000 (2.432x)
+  ~linear in time => NOT self-limiting. The t=180 profile is a clean
+  monotone V, correct angle, BUT its whole mouth has sunk to y=-1.19 at
+  the mask edge: the V translates downward instead of closing.
+
+  rate sensitivity at t=180, theta=45 + LF:
+    rate111 x0 / x1 / x100 / x1000 -> 2.4178 / 2.4667 / 2.4992 / 2.3974
+      => rate111 has NO traction on depth (+-2%, noise)
+    rate311 x0 -> 1.3913   (vs 2.4667 nominal; target 1.4142!)
+      => rate311 is what drives the flank
+
+TEST 42 (pure arithmetic, no simulation): evaluated psWetEtching.hpp's
+  OWN formula for every 2D normal. Formula fetched verbatim:
+    directions[0]=normalize(d100); directions[1]=d010 orthogonalized;
+    directions[2]=cross(d0,d1); N[i]=|dot(directions[i],n)| sorted desc;
+    if -N0+N1+2*N2<0: v=(r100*(N0-N1-2N2)+r110*(N1-N2)+3*r311*N2)/N0
+    else:             v=(r111*((N1-N0)*0.5+N2)+r110*(N1-N2)+1.5*r311*(N0-N1))/N0
+
+  *** ROOT CAUSE ***
+    3D-copied vectors -> directions[2] = (0,0,1) = the z axis.
+    Every 2D normal has n[2]=0  =>  N2 == 0 identically
+    =>  r111 leaves the reachable branch and r311 is multiplied by zero.
+    Analytical velocity table (um/min), 3D frame:
+      0deg 1.4550 | 40deg 0.8546 | 54.74deg 0.9099 | 90deg 1.4550
+      MINIMUM 0.7970 (= r100 exactly) at 45deg
+      at the minimum: v(r311=0)=0.7970, v(r111=0)=0.7970  <- both inert
+    => there is NO slow (111) facet anywhere. Self-limiting was not
+       merely unachieved, it was UNREPRESENTABLE.
+
+    theta=45 vectors -> directions[2] = (0,1,0) = the 2D depth axis.
+      54.74deg -> v = 0.0050 = EXACTLY r111
+      MINIMUM 0.0191, genuinely r111-governed
+      sensitivity: 0.5deg off -> 0.032-0.044 (6-9x r111)
+                   1.0deg off -> 0.058-0.083 (12-17x r111)
+
+TEST 43: prediction from test 42's sensitivity -- if the residual failure
+  is DISCRETIZATION (level set can't hold the facet to sub-degree
+  accuracy), refining gridDelta must improve self-limiting.
+  FALSIFIED:
+    theta=45 + LF,      gd 0.2/0.1/0.05 -> 2.4667 / 2.4667 / 2.4561
+                        undercut         ->   0.56 /   0.97 /   1.16
+    theta=45 + DEFAULT, gd 0.2/0.1/0.05 -> 3.1222 / 3.3593 / 3.2488
+                        facet_deg        ->  36.19 /  13.87 /   0.60 (!)
+  Depth flat under 4x refinement; undercut gets WORSE. Discretization
+  RULED OUT. Residual blocker is mask undercut.
+
+TEST 44: facet angle vs time at the shipped test's own grid (gd=0.2).
+    theta=45 + LAX_FRIEDRICHS_1ST t=30/60/120 -> 21.85 / 37.34 / 62.10 deg
+    theta=45 + LOCAL_LF_1ST                   -> 21.91 / 37.18 / 48.50
+    theta=45 + STENCIL_LOCAL_LF_1ST           -> 23.60 / 45.72 / 56.03
+    theta=45 + DEFAULT                        -> 15.57 / 13.68 / 21.38
+  Facet angle WANDERS with time rather than converging on 54.74deg =>
+  no stable converged facet. Do NOT assert a facet angle in a test.
+
+TEST 45: the clean behavioural discriminator that became the shipped
+  test. Scale rate111 by 159x (up to rate100's magnitude), compare
+  exported Si area. t=30s, gd=0.2, fully deterministic.
+    3D-copied frame: 28.76544571 -> 28.76544571   |delta|=0.000e+00  INERT
+    theta=45 frame:  29.20517731 -> 29.17958069   |delta|=2.560e-02  LIVE
+  This directly tests the fix's actual content (is (111) expressible at
+  all) without re-implementing the library formula.
+
+SHIPPED (additive only, nothing existing changed):
+  - KOH_30PCT_70C_2D (same real cited rates, derived 2D crystal frame).
+    KOH_30PCT_70C left byte-identical.
+  - optional `spatial_scheme` recipe key; absent => ViennaLS default
+    untouched, so no existing recipe changes behaviour.
+  - module docstring: full derivation, fetched formula, measured numbers,
+    explicit scope limit.
+  - tests/integration/test_wet_etch_crystal_frame_real.py (test 45).
+  Regression: 23 passed, 0 failed, 0 skipped (22 before).
+
+NOT FIXED, explicitly: self-limiting V-groove. Now attributable to mask
+  undercut (fast rate110 is vertical at the mask edge, so lateral attack
+  widens the window faster than the slow facet can anchor). The existing
+  test_koh_crystallographic_wet_etch_real.py still passes for the
+  coincidental reason recorded at test 29-35, and was deliberately left
+  untouched. NEXT SMALLEST EXPERIMENT: mask-edge geometry that presents
+  the (111) facet from t=0 instead of an initially vertical wall -- a
+  geometry-construction experiment, same family as the LOCOS
+  pad-oxide-first fix. No further ViennaLS source archaeology needed.

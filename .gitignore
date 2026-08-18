@@ -1,0 +1,8 @@
+.venv/
+.venv312/
+__pycache__/
+*.pyc
+*.egg-info/
+.claude/settings.local.json
+.claude/worktrees/
+examples/tcad_run/

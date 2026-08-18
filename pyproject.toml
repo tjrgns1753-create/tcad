@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tcad"
+version = "0.9.0"
+description = "Open-source TCAD pipeline: Process (ViennaPS) -> Mesh -> Doping -> Device (DevSim) -> Characterization"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "tcad project contributors" }]
+
+# Always required: meshio bridges ViennaPS-produced meshes into DevSim
+# (tcad/device/devsim/mesh_import.py), matplotlib renders I-V/C-V plots
+# (tcad/characterization/plotting.py). Neither viennaps nor devsim is
+# listed here — see the [project.optional-dependencies] extras below;
+# tcad.backends.viennaps.is_available() / tcad.device.devsim.is_available()
+# let callers check at runtime instead of failing at import time.
+dependencies = [
+    "meshio>=5.0",
+    "matplotlib>=3.5",
+]
+
+[project.optional-dependencies]
+# Process backend (Etching/Deposition/Oxidation models).
+viennaps = ["ViennaPS>=4.6"]
+# Device backend (mesh import, doping, device physics, characterization).
+devsim = ["devsim>=2.10"]
+# Full pipeline: both backends, so `pip install tcad[full]` matches
+# what tests/run_regression.py expects to find.
+full = ["ViennaPS>=4.6", "devsim>=2.10"]
+# GUI (tcad_2d_stagewise.py) needs tkinter, which ships with the
+# Python interpreter itself on most platforms (apt install python3-tk
+# on Debian/Ubuntu if missing) rather than via pip. If that still
+# doesn't work, the interpreter itself may be the problem, not the
+# package: a non-stock build (e.g. from the deadsnakes PPA) can lack
+# a reachable tkinter package entirely, while the distro's own stock
+# python3 has one -- see the README's Installation section for a
+# separate-venv workaround verified against exactly this case.
+
+[project.scripts]
+tcad = "tcad.cli.run_pipeline:main"
+
+[tool.setuptools.packages.find]
+include = ["tcad*"]

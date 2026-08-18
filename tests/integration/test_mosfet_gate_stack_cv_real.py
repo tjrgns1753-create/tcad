@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+First electrically-exercised MOSFET-shaped device — real ViennaPS 4.6.2
++ DevSim 2.10.1, through the real production entry points throughout.
+
+This is the "next smallest experiment" the gate_stack geometry section
+named and did not execute: combine `geometry`/`gate_stack` with
+`implant_windows` doping (source/drain windows over a channel/body
+background, in the SAME Si region gate_stack already builds) and run a
+real DevSim sweep through the gate contact. A full Id-Vgs/Id-Vds
+transistor sweep is explicitly out of scope (this project's own prior,
+unretracted judgment: that needs new device/equation design at roughly
+Phase 7/8's own scale) — this exercises the GATE via a C-V sweep, using
+the already-shipped, unmodified tcad.device.devsim.mos_equation /
+tcad.characterization.cv_sweep machinery Phase 9 built.
+
+Two real, previously-uncharacterized DevSim/export limitations were
+found and worked around while building this (both documented in
+CLAUDE.md and in tcad/backends/viennaps/io.py's own docstrings, not
+repeated in full here):
+
+1. save_locos_volume_mesh()-produced meshes have NO shared vertex
+   indices between materials, even where they geometrically touch
+   exactly (confirmed: 31/31 coincident coordinates, 0 shared indices)
+   -- so mesh_import.py's interface_region_pairs (index-based edge
+   matching) always found nothing. Fixed with a new, OPT-IN
+   `dedupe_materials` parameter (default None, zero behavior change for
+   every other caller) that merges coincident-coordinate points ONLY
+   among the materials a caller names.
+2. Deduping blindly across every touching material pair crashed
+   DevSim's own create_device() with a native assert
+   (`Geometry/Region.cc:464 UNEXPECTED`) for gate_stack's own topology
+   -- traced to gate_stack's oxide+electrode sharing ONE material tag
+   across TWO independently-triangulated level sets (not, as first
+   suspected, to the untouched source/drain metal pads). Avoided
+   entirely by keeping gate_stack's default, SEPARATE "TiN" electrode
+   material and filtering it (plus the source/drain metal pads, not
+   needed for a gate-only C-V sweep) out of the mesh before DevSim
+   import, via a new `filter_mesh_materials()` helper -- SiO2 then
+   stays a genuine single level set with its own real, exposed top
+   surface, matching the already-working Phase 9 mos_cv convention
+   ("SiO2_ymax" as the idealized gate contact) with zero new equation
+   code.
+
+Checks:
+  1. real production run() -> filter -> doping -> import -> apply_doping
+     -> C-V sweep, all succeed with no error.
+  2. NetDoping in the Si region matches the requested implant_windows
+     profile exactly (background under the channel/gate, heavy n-type
+     under the source/drain windows) -- same rigor as
+     test_implant_windows_doping_real.py's own node-by-node check.
+  3. every gate-voltage point solves (the sweep itself would raise on
+     non-convergence -- reaching this point IS the check).
+  4. capacitance is real, positive, and bounded above by the ideal
+     parallel-plate C_ox = eps_ox*eps_0*width/t_ox (a hard physical
+     constraint: any series depletion capacitance can only REDUCE total
+     capacitance below C_ox, never exceed it) -- using DevSim's own real
+     eps_ox/eps_0 constants, not fabricated ones.
+  5. capacitance decreases monotonically as gate voltage sweeps from
+     negative to positive -- the real, expected MOS-C-V signature for
+     this p-type-background device (accumulation at negative bias, C
+     approaching C_ox; depletion setting in as bias goes positive, C
+     dropping) -- not just "doesn't crash".
+"""
+
+import sys
+import tempfile
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+
+import tcad.process.geometry  # noqa: F401 -- registers gate_stack
+from tcad.process import registry
+from tcad.backends.viennaps.io import filter_mesh_materials
+from tcad.mesh.viennaps_adapter import build_process_result
+from tcad.physics.doping import apply_implant_windows_doping
+from tcad.device.devsim import backend as devsim_backend
+from tcad.device.devsim.mesh_import import import_process_result
+from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.characterization.cv_sweep import run_mos_cv_sweep
+
+devsim = devsim_backend.require_devsim()
+import viennaps as vps  # noqa: E402
+
+GRID = 0.05
+CHANNEL = (-0.8, 0.8)
+SRC = (-2.4, -1.0)
+DRN = (1.0, 2.4)
+BACKGROUND_DOPING_CM3 = -1e17  # p-type channel/body
+SD_DOPING_CM3 = 1e20           # n+ source/drain
+GATE_OXIDE_UM = 0.02
+LENGTH_SCALE_TO_CM = 1e-4
+
+RECIPE = {
+    "grid_delta_um": GRID,
+    "x_extent_um": 6.0,
+    "y_extent_um": 3.0,
+    "silicon_depth_um": 1.0,
+    "channel_um": list(CHANNEL),
+    "source_um": list(SRC),
+    "drain_um": list(DRN),
+    "gate_oxide_thickness_um": GATE_OXIDE_UM,
+    "gate_height_um": 0.15,
+    "pad_height_um": 0.10,
+    # Default materials (Si/TiN/W/Cu/SiO2) -- deliberately unchanged
+    # from gate_stack's own already-shipped test, see point 2 above for
+    # why TiN/W/Cu are then filtered out rather than merged into SiO2.
+    "dedupe_materials": ["Si", "SiO2"],
+}
+
+
+def main():
+    step_cls = registry.get("geometry", "gate_stack")
+    with tempfile.TemporaryDirectory() as tmp:
+        step = step_cls()
+        result = step.run(RECIPE, tmp)
+        print(f"[1/5] gate_stack built via real production run(): {result['final_mesh']}")
+
+        filtered = filter_mesh_materials(result["final_mesh"], [vps.Material.Si, vps.Material.SiO2])
+        print(f"[2/5] filtered to Si+SiO2 only (electrode/pads not needed for gate C-V): {filtered}")
+
+        step_result = {"final_mesh": filtered, "snapshots": result["snapshots"]}
+        process_result = build_process_result(step_result)
+        process_result = apply_implant_windows_doping(
+            process_result, region="Si", axis="x",
+            background_doping_cm3=BACKGROUND_DOPING_CM3,
+            windows=[
+                {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
+                {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
+            ],
+        )
+
+        imported = import_process_result(
+            process_result, mesh_name="mosfet_cv_mesh", device_name="mosfet_cv_device",
+            contact_regions=["Si", "SiO2"], contact_axis="y",
+            contact_sides={"Si": "min", "SiO2": "max"},
+            interface_region_pairs=[("Si", "SiO2")],
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
+        assert set(imported.regions) == {"Si", "SiO2"}, imported.regions
+        assert set(imported.contacts) == {"Si_ymin", "SiO2_ymax"}, imported.contacts
+        assert imported.interfaces == ["Si_SiO2_interface"], imported.interfaces
+        print(f"[3/5] imported: regions={imported.regions} contacts={imported.contacts} "
+              f"interfaces={imported.interfaces}")
+
+        apply_doping(imported.device, process_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+
+        # Check 2: NetDoping matches the requested implant_windows profile
+        # node-by-node (same rigor as test_implant_windows_doping_real.py).
+        xs = devsim.get_node_model_values(device=imported.device, region="Si", name="x")
+        net_doping = devsim.get_node_model_values(device=imported.device, region="Si", name="NetDoping")
+        max_rel_err = 0.0
+        checked = 0
+        for x_cm, doping in zip(xs, net_doping):
+            x_um = x_cm / LENGTH_SCALE_TO_CM
+            expected = BACKGROUND_DOPING_CM3
+            for lo, hi in (SRC, DRN):
+                if lo + GRID < x_um < hi - GRID:  # avoid boundary-tolerance nodes
+                    expected += SD_DOPING_CM3
+            if abs(x_um - SRC[0]) < GRID or abs(x_um - SRC[1]) < GRID or \
+               abs(x_um - DRN[0]) < GRID or abs(x_um - DRN[1]) < GRID:
+                continue  # skip nodes within one grid cell of a window boundary
+            rel_err = abs(doping - expected) / abs(expected)
+            max_rel_err = max(max_rel_err, rel_err)
+            checked += 1
+        assert max_rel_err < 1e-9, f"NetDoping mismatch: max relative error {max_rel_err:.3e}"
+        print(f"[4/5] NetDoping matches the implant_windows profile exactly "
+              f"({checked} nodes checked, max relative error {max_rel_err:.3e})")
+
+        gate_voltages = [-2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0]
+        result_cv = run_mos_cv_sweep(
+            device=imported.device, si_region="Si", oxide_region="SiO2",
+            gate_contact="SiO2_ymax", substrate_contact="Si_ymin",
+            interface_name="Si_SiO2_interface",
+            gate_voltages=gate_voltages,
+        )
+        capacitance_f = result_cv.metadata["capacitance_F"]
+        assert len(capacitance_f) == len(gate_voltages) - 1
+
+        from devsim.python_packages.simple_physics import eps_0, eps_ox
+        t_ox_cm = GATE_OXIDE_UM * LENGTH_SCALE_TO_CM
+        width_cm = (CHANNEL[1] - CHANNEL[0]) * LENGTH_SCALE_TO_CM
+        c_ox_ideal = eps_ox * eps_0 * width_cm / t_ox_cm
+
+        for c in capacitance_f:
+            assert c > 0.0, f"non-positive capacitance: {c}"
+            assert c < c_ox_ideal, f"capacitance {c:.3e} exceeds ideal C_ox {c_ox_ideal:.3e}"
+        for i in range(1, len(capacitance_f)):
+            assert capacitance_f[i] <= capacitance_f[i - 1] + 1e-15, (
+                f"capacitance not monotonically decreasing with gate voltage: "
+                f"{capacitance_f}"
+            )
+        print(f"[5/5] C-V sweep converged at all {len(gate_voltages)} points; capacitance "
+              f"real/positive/bounded by ideal C_ox ({c_ox_ideal:.3e} F) and monotonically "
+              f"decreasing (accumulation -> depletion, the expected p-type-substrate "
+              f"signature): {[f'{c:.3e}' for c in capacitance_f]}")
+
+    print()
+    print("MOSFET-SHAPED DEVICE (gate_stack geometry + implant_windows doping + "
+          "real DevSim C-V sweep through the gate contact) VERIFIED against "
+          "real ViennaPS 4.6.2 + DevSim 2.10.1")
+
+
+if __name__ == "__main__":
+    main()

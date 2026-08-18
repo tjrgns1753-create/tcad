@@ -1,0 +1,45 @@
+{
+  "process": {
+    "category": "etching",
+    "model": "isotropic",
+    "recipe": {
+      "grid_delta_um": 0.15,
+      "x_extent_um": 4.0,
+      "y_extent_um": 3.0,
+      "mask_left_um": 1.5,
+      "mask_right_um": 2.5,
+      "pr_thickness_um": 0.5,
+      "etch_time_s": 0.5,
+      "rate": -0.05,
+      "mask_material": "Mask"
+    }
+  },
+  "doping": {
+    "kind": "step_junction",
+    "region": "Si",
+    "junction_axis": "x",
+    "junction_position_um": 0.0,
+    "donor_conc_cm3": 1e18,
+    "acceptor_conc_cm3": 1e18
+  },
+  "device": {
+    "mesh_name": "pn_mesh",
+    "device_name": "pn_device",
+    "contact_regions": ["Si"],
+    "contact_axis": "x",
+    "length_scale_to_cm": 1e-4,
+    "refine_near_um": 0.0
+  },
+  "characterization": {
+    "type": "pn_junction_iv",
+    "region": "Si",
+    "sweep_contact": "Si_xmax",
+    "sweep_voltages": [0.0, 0.1, 0.2],
+    "fixed_contacts": {"Si_xmin": 0.0}
+  },
+  "outputs": {
+    "csv_filename": "pn_iv.csv",
+    "json_filename": "pn_iv.json",
+    "plot_filename": "pn_iv.png"
+  }
+}
