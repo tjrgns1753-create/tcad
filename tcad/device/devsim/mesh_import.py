@@ -205,6 +205,7 @@ def import_process_result(
     length_scale_to_cm: float = 1.0,
     interface_region_pairs: Optional[List[tuple]] = None,
     contact_sides: Optional[Dict[str, str]] = None,
+    contact_axes: Optional[Dict[str, str]] = None,
     refine_near_um: Optional[float] = None,
     refine_axis: str = "x",
     refine_half_width_um: Optional[float] = None,
@@ -255,6 +256,15 @@ def import_process_result(
         (found by real execution, near a triple point where two
         regions and the domain boundary meet) — restricting to the one
         physically-real side avoids registering that spurious contact.
+    contact_axes : optional {region_name: "x"|"y"|"z"} — per-region
+        override of `contact_axis`. Default (key absent, or this whole
+        parameter omitted) uses the single global `contact_axis` for
+        every region, byte-for-byte the same behavior every existing
+        caller already gets. Needed once a device has regions whose
+        natural contact sits on genuinely different axes in the SAME
+        import call — e.g. a MOSFET's source/drain contacts at Si's own
+        x-extremes, while its gate contact sits at the oxide's y-extreme
+        (see tests/integration/test_mosfet_id_vgs_real.py).
     refine_near_um : optional. When set, locally refines mesh triangles
         (tcad.device.devsim.mesh_refine, red-green/conforming
         refinement — no hanging nodes, far-field mesh untouched) whose
@@ -447,9 +457,6 @@ def import_process_result(
 
     contact_defs: List[tuple] = []  # (contact_name, region_name)
     if contact_regions:
-        axis_index = {"x": 0, "y": 1, "z": 2}[contact_axis]
-        coords_axis = points[:, axis_index]
-
         for region_name in contact_regions:
             matching_tags = [t for t, n in tag_to_name.items() if n == region_name]
             if not matching_tags:
@@ -457,6 +464,16 @@ def import_process_result(
             region_boundary = boundary_edges_by_tag.get(matching_tags[0], [])
             if not region_boundary:
                 continue
+
+            # Per-region axis override (contact_axes), else the single
+            # global contact_axis — see contact_axes' own docstring
+            # below for why one axis for every region isn't always
+            # enough (e.g. a MOSFET's source/drain contacts naturally
+            # sit at Si's own x-extremes while its gate contact sits at
+            # the oxide's y-extreme, in the SAME import call).
+            region_axis = (contact_axes or {}).get(region_name, contact_axis)
+            axis_index = {"x": 0, "y": 1, "z": 2}[region_axis]
+            coords_axis = points[:, axis_index]
 
             # Region-local extremes (not the whole mesh's bounding box):
             # a region's own top/bottom surface is a contact candidate
@@ -492,13 +509,13 @@ def import_process_result(
                 lo_edges = _edges_near(axis_min, widened_tol)
                 hi_edges = _edges_near(axis_max, widened_tol)
 
-            for edges, suffix in ((lo_edges, f"{contact_axis}min"), (hi_edges, f"{contact_axis}max")):
+            for edges, suffix in ((lo_edges, f"{region_axis}min"), (hi_edges, f"{region_axis}max")):
                 if not edges:
                     continue
                 side = contact_sides.get(region_name, "both") if contact_sides else "both"
-                if side == "min" and suffix != f"{contact_axis}min":
+                if side == "min" and suffix != f"{region_axis}min":
                     continue
-                if side == "max" and suffix != f"{contact_axis}max":
+                if side == "max" and suffix != f"{region_axis}max":
                     continue
                 contact_name = f"{region_name}_{suffix}"
                 idx = physical_index(contact_name)

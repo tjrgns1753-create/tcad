@@ -193,9 +193,7 @@ current increasing with bias, positive C-V capacitance, etc.).
 `gate_stack` geometry model with `implant_windows` doping (source/drain
 n+ windows over a p-type channel/body, in the same Si region) and runs
 a real gate-voltage C-V sweep through it — the first electrically
--exercised MOSFET-shaped device in this project (gate-only; a full
-Id-Vgs/Id-Vds transistor sweep needs new device/equation design not yet
-attempted, see the test's own module docstring and CLAUDE.md). Uses two
+-exercised MOSFET-shaped device in this project (gate-only). Uses two
 new `tcad.backends.viennaps.io` helpers along the way:
 `filter_mesh_materials()` (keep only named materials from an exported
 mesh) and `save_locos_volume_mesh()`'s opt-in `dedupe_materials`
@@ -203,6 +201,22 @@ parameter (merge coincident-coordinate vertices across named materials,
 needed for a real DevSim `interface_region_pairs` interface on a
 `save_locos_volume_mesh()`-produced mesh) — both no-ops for every
 existing caller that doesn't pass them.
+
+`tests/integration/test_mosfet_id_vgs_real.py` goes further: a real
+Id-Vgs transfer-characteristic sweep, driving actual source-to-drain
+current under gate control (`tcad.characterization.mosfet_sweep`,
+`tcad.device.devsim.mosfet_equation`) — combining Phase 8's
+drift-diffusion transport with the C-V test's oxide/gate coupling for
+the first time. Convergence needs DevSim's own official MOSFET
+example's tolerances and its `rampbias` adaptive-step utility (see the
+test's module docstrings). Fixing it also surfaced and fixed a real
+geometry bug: `gate_stack`'s gate window must be exactly contiguous
+with the source/drain doping windows, or a real, undoped/ungated strip
+electrically severs the channel from the source/drain regardless of
+how well the gate inverts the channel itself. The resulting current
+genuinely tracks gate voltage; its absolute magnitude is not yet
+reconciled with a simple square-law estimate — see CLAUDE.md's own
+"what remains uncertain" note for that open question.
 
 ## Output file structure
 

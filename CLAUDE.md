@@ -3622,6 +3622,211 @@ no regressions, including every existing LOCOS/gate-stack/gate-contact
 test (all `save_locos_volume_mesh()` callers that don't pass
 `dedupe_materials` are provably unaffected).
 
+### MOSFET Id-Vgs — real gate-controlled source-to-drain current — DONE, with a real geometry bug found and fixed, and a magnitude question left open (later session, per explicit user instruction "실제 전류 흐름 추출 ㄱㄱ" / extract real current flow, go)
+
+The C-V sweep above only ever drove the gate/substrate path (no
+transport, no terminal current). This section combines Phase 8's
+drift-diffusion machinery (Si carrier continuity, Ohmic source/drain
+contacts) with the C-V section's oxide/interface coupling, for the
+first time in this project, to sweep gate voltage and read real
+source-to-drain current.
+
+1. **What was tested:** built on `gate_stack` + `implant_windows` +
+   `filter_mesh_materials` exactly as the C-V section did, but this
+   time requested BOTH source and drain contacts on Si (not just a
+   substrate contact) — which needed a genuinely new mesh_import.py
+   capability (see point 2), a new equation-setup module combining
+   Phase 8 and Phase 9's physics (point 3), and — after the first
+   several attempts converged to a device that didn't actually turn
+   on — a systematic bisection of why (points 4-6).
+
+2. **`contact_axes` added to `import_process_result()`** — a MOSFET
+   needs source/drain contacts at Si's own x-extremes (domain edges,
+   the existing "region-extreme" mechanism, chosen over the still
+   -unbuilt coordinate-windowed contact API for the same reason the
+   C-V section did) AND a gate contact at the oxide's y-extreme, in
+   ONE import call — but `contact_axis` was a single, global parameter
+   shared by every `contact_regions` entry. Added an optional
+   `contact_axes: Dict[str, str]` per-region override (default `None`
+   -> falls back to the existing global `contact_axis`, so every
+   existing caller is provably unaffected) — a small, mechanical,
+   backward-compatible generalization, the same pattern `contact_sides`
+   already established.
+
+3. **New `tcad/device/devsim/mosfet_equation.py`
+   (`setup_mosfet_potential_equation`)**: Si Poisson-only with
+   MULTIPLE Ohmic contacts (source AND drain — `mos_equation.py`'s own
+   `setup_mos_potential_equation` only ever takes one `substrate_contact`,
+   insufficient for a MOSFET) + oxide Poisson-only + a real
+   Si-SiO2 interface, all combined for the first time. Callers then
+   call `semiconductor_equation.setup_drift_diffusion_equation()`
+   (UNCHANGED) to turn on real transport, exactly mirroring Phase 8's
+   own two-stage (equilibrium, then drift-diffusion) sequence.
+
+4. **Convergence, real and non-trivial, needed DevSim's own official
+   MOSFET example's exact tolerances/ramping strategy — not this
+   project's existing Phase 8 defaults.** Fetched and read
+   `devsim_data/examples/mobility/gmsh_mos2d.py` (an official MOSFET
+   example, via `inspect.getsource`, not guessed) after this project's
+   own `pn_junction_iv_sweep.py`-style single-jump bias application
+   and Phase-8-style `absolute_error=1e10` drift-diffusion tolerance
+   both measurably failed on this Si+oxide+interface device (residual
+   oscillation plateauing around 2-6e-5, never settling, and a jump
+   straight to a nonzero drain bias producing a ~1e16 initial residual
+   and failing outright). Two real fixes, both confirmed necessary by
+   direct measurement, not assumed from the official example alone:
+   - `absolute_error=1.0e30, relative_error=1e-5` for the
+     drift-diffusion turn-on solve (the official example's own exact
+     values) — converges cleanly where this project's own `1e10`
+     default does not, for this specific Si+oxide+interface
+     combination.
+   - `devsim.python_packages.ramp.rampbias` (adaptive step size,
+     auto-halves on a convergence failure, already in the installed
+     DevSim package — not something this project had to build) for
+     BOTH the drain-bias ramp-up and the gate-voltage sweep. Confirmed
+     necessary specifically near this device's own threshold-turn-on
+     region (~1.4-1.5V in an earlier, since-superseded recipe):
+     rampbias reached it via automatically-shrinking sub-mV steps with
+     no manual tuning, where a fixed-step loop failed outright at the
+     same point regardless of how many fixed steps were tried (0.02V
+     through 0.095V increments were all tried and failed at the exact
+     same voltage). A first `rampbias` attempt using the SWEEP's own
+     target voltage as the ramp's `step_size` was a real, caught bug
+     (would infinite-loop if a target were exactly 0.0V while starting
+     elsewhere, since `rampbias` never advances with a zero step) —
+     fixed to a fixed 0.5V step, matching the official example's own
+     convention, before this shipped.
+
+5. **Graded mesh refinement needed TWO independent regions, not one.**
+   The already-shipped source/drain-junction lateral refinement (from
+   the earlier PN-junction/Phase-8 work) alone was not enough — the
+   drift-diffusion turn-on solve still failed to converge. Added a
+   SECOND graded refinement region, vertical, near y=0 (the Si-SiO2
+   interface) across the whole device — needed to resolve the
+   inversion layer itself, not just the lateral doping step. Confirmed
+   both are independently necessary by direct measurement (removing
+   either one reintroduced the same convergence failure the other was
+   added to fix).
+
+6. **The real root-cause bug: a geometry mismatch, not a solver
+   issue.** Even after 2-5 above got the sweep to converge cleanly at
+   every gate voltage from 0 to 9V, drain current stayed completely
+   flat (1.13e-12A at Vgs=0 through 1.14e-12A at Vgs=9V, a ~0.1%
+   change) — not a subthreshold curve, not evidence of a wrong
+   threshold guess, genuinely FLAT. Two direct diagnostics (not
+   assumptions) settled why:
+   - The GATE COUPLING itself is correct: channel-surface Potential at
+     the gate center rose smoothly from -0.34V (Vgs=0) to +0.54V
+     (Vgs=8V), and Electrons at the same point rose from ~3e3 cm^-3
+     (near-intrinsic) to ~1e18 cm^-3 (real n-type inversion, exceeding
+     the p-type background) — a textbook-correct MOS inversion
+     response, ruling out "the gate doesn't couple" as the cause.
+   - A per-node electron-density PROFILE along the channel-to-junction
+     transition (the actual diagnostic that found it) showed why
+     current still didn't flow: with `gate_stack`'s own default
+     recipe (`channel_um=(-0.8,0.8)`, `source_um`/`drain_um` starting
+     at mp1.0), there is a genuine 0.2um-wide strip on each side
+     (x in (0.8,1.0) and (-1.0,-0.8)) that is NEITHER under the gate
+     (no oxide there, so no gate-induced inversion) NOR covered by the
+     `implant_windows` source/drain doping (background p-type only,
+     since the windows only start at mp1.0). Measured directly: at
+     x=-0.95um (just inside this strip), electron density crashes from
+     ~8.5e19 (still-elevated source tail) to ~2.6e9 — a >10-order-of
+     -magnitude cliff — then to ~1.5e4 at x=-0.9um (near-intrinsic),
+     before climbing back to ~1e18 in the actual inverted channel. This
+     ungated, undoped strip is a real electrical barrier between the
+     channel and the source/drain, regardless of how well the channel
+     itself inverts.
+   - Fixed by making `channel_um` exactly CONTIGUOUS with
+     `source_um`/`drain_um` (`(-1.0,1.0)` instead of `(-0.8,0.8)`, no
+     gap at all) — re-measuring the identical profile after this
+     change showed a smooth, physically continuous density curve from
+     source through channel to drain, no cliff. Drain current then
+     genuinely responded to gate voltage (1.13e-12A at Vgs=0 rising to
+     1.49e-12A by Vgs=4V and saturating, a real 32% increase,
+     qualitatively correct transistor turn-on behavior) — a clear,
+     reproducible change from the flat-regardless-of-Vgs result before
+     this fix.
+
+7. **Production implementation:**
+   - **`tcad/device/devsim/mesh_import.py`**: new `contact_axes`
+     parameter (point 2).
+   - **`tcad/device/devsim/mosfet_equation.py`** (new): 
+     `setup_mosfet_potential_equation()` (point 3).
+   - **`tcad/characterization/mosfet_sweep.py`** (new):
+     `run_mosfet_id_vgs_sweep()` — equilibrium, drift-diffusion
+     turn-on, `rampbias`-based drain-bias ramp, then a `rampbias`-based
+     gate-voltage sweep reading real terminal current at each point
+     (points 3-4). No `gate_stack`/`session.py` code changes were
+     needed for the geometry fix (point 6) — `channel_um` was already
+     a free recipe parameter; the fix is a RECIPE choice, applied in
+     the new test below, not a change to the geometry constructor
+     itself.
+   - New `tests/integration/test_mosfet_id_vgs_real.py`: the graded
+     dual-region refinement (point 5) applied manually (not through
+     `auto_refine_from_doping`, which does not yet understand
+     `implant_windows` — see "what remains uncertain" below), then the
+     real production `registry.get("geometry","gate_stack")().run()`
+     -> `filter_mesh_materials()` -> `apply_implant_windows_doping()`
+     -> `import_process_result(contact_axes=...)` -> `apply_doping()`
+     -> `run_mosfet_id_vgs_sweep()` chain. Checks: NetDoping matches
+     the implant_windows profile exactly; all 5 gate-voltage points
+     converge; charge conservation (source current ~= -drain current,
+     within 2%) at every point; and drain current at Vgs=8V exceeds
+     Vgs=0V by more than 1.2x (measured: 1.32x) — real transistor
+     action, not just "doesn't crash".
+
+8. **What remains uncertain / explicitly NOT resolved:** the drain
+   current's ABSOLUTE MAGNITUDE (~1.5e-12A at Vgs=8V, Vds=0.1V) is
+   many orders of magnitude smaller than a simple long-channel
+   square-law estimate for this geometry/doping
+   (mu_n*Cox*(W/L)*(Vgs-Vth)*Vds, using DevSim's own eps_ox and a
+   textbook mu_n, gives roughly tens of mA for a comparable overdrive)
+   — a ~10-order-of-magnitude discrepancy not explained by the
+   accumulation-vs-depletion argument that bounds the C-V section's
+   own capacitance. A follow-up electron-density profile at the FIXED
+   (contiguous-channel) geometry still shows a local minimum right at
+   the channel-to-junction transition (~5.7e17 cm^-3 at x=-0.9um vs.
+   ~1e18 in the channel interior and ~8.5e19 approaching the source) —
+   a real but much smaller (roughly 1 order of magnitude, not 10) dip
+   than the pre-fix cliff, suggesting a REMAINING, narrower series
+   -resistance bottleneck at that transition is the most likely
+   explanation for the magnitude gap, not yet confirmed. Whether
+   further graded refinement specifically targeted at that transition
+   (as opposed to the two already-added regions) would close the gap,
+   whether the simple square-law estimate is even the right comparison
+   for this 2D, heavily-doped, thick-oxide device, and whether Vth for
+   this specific doping/oxide combination is well above the swept
+   0-8V range (the surface-potential trend suggests strong inversion,
+   2*phi_F~0.84V, is reached only around Vgs~7-8V, so the sweep may
+   still be capturing mostly weak/moderate inversion rather than a
+   fully-formed strong-inversion channel) were none of them checked
+   further this session. `auto_refine_from_doping`'s own
+   `implant_windows` gap (named as an open item since the
+   `implant_windows` doping section, still not closed) is what forced
+   this test to build its own refinement predicates by hand rather
+   than reusing that mechanism.
+
+9. **Next smallest experiment (not done):** extend
+   `_derive_refine_from_doping()` to understand `implant_windows`
+   (deriving BOTH the source and drain junction positions, plus a
+   separate interface-region refinement) so future callers don't have
+   to hand-roll the graded-ring predicates this test does; separately,
+   a dedicated refinement region centered exactly on the channel
+   -to-junction transition (not just the junction's own doping step,
+   and not just the interface's own y=0 line, but their INTERSECTION)
+   to test whether that closes the magnitude gap in point 8; and a
+   direct comparison against DevSim's own official `gmsh_mos2d.py`
+   example's real Id-Vgs numbers (not just its tolerances), to check
+   whether a comparably-doped/oxide-thickness device converges to a
+   comparable current there, which would help distinguish "this
+   project's device is somehow different" from "the square-law
+   estimate itself doesn't apply here."
+
+**Regression after this addition:** `tests/run_regression.py` -> **30
+passed, 0 failed, 0 skipped** (29 before this addition's new test) —
+no regressions.
+
 After the additions above (hbr_o2, sf6_c4f8, cf4_o2, faraday_cage
 etching; isotropic deposition; gaussian_implant doping + CLI wiring),
 checked for further small/clear gaps and found none that clear this
@@ -4751,6 +4956,43 @@ MOSFET-shaped device in this project's history.
 
 **Regression after part 21:** `tests/run_regression.py` -> **29
 passed, 0 failed, 0 skipped** (28 before this part's new test) — no
+regressions.
+
+**What this session did (part 22, later session, per explicit
+instruction "실제 전류 흐름 추출 ㄱㄱ" / extract real current flow, go):**
+combined Phase 8's drift-diffusion physics with the C-V section's
+oxide/interface coupling to sweep gate voltage and read real
+source-to-drain current for the first time — see "MOSFET Id-Vgs —
+real gate-controlled source-to-drain current — DONE" above for the
+full investigation. Added `contact_axes` to `import_process_result()`
+(per-region contact-axis override, needed for source/drain-on-x +
+gate-on-y contacts in one import call) and a new
+`mosfet_equation.py`/`mosfet_sweep.py` pair combining Phase 8's
+multi-contact Si drift-diffusion with Phase 9's oxide/interface
+coupling. Convergence needed DevSim's own official MOSFET example's
+exact tolerances (fetched via `inspect.getsource`, not guessed) plus
+its `rampbias` adaptive-step utility for both the drain-bias ramp and
+the gate sweep — this project's own existing single-jump/fixed
+-tolerance conventions measurably failed on this equation combination.
+Root-caused why the converged sweep still showed a completely flat
+current regardless of gate voltage: a real geometry bug, not a solver
+issue — `gate_stack`'s own default recipe leaves the gate window
+narrower than the source/drain doping windows, leaving a genuinely
+ungated, undoped strip that electrically severs the channel from the
+source/drain (confirmed by a direct electron-density profile showing
+a 10-order-of-magnitude cliff there). Fixed by making the channel
+window exactly contiguous with the source/drain windows (a recipe
+choice, no geometry-constructor code change needed) — the same
+profile then shows a smooth, physically continuous density curve, and
+drain current genuinely responds to gate voltage (1.32x increase,
+Vgs=0 to Vgs=8V). Left open, honestly: the current's absolute
+magnitude is far below a simple square-law estimate, with a real but
+much smaller residual dip still visible at the channel-junction
+transition — named as the next thing to investigate, not resolved
+this round.
+
+**Regression after part 22:** `tests/run_regression.py` -> **30
+passed, 0 failed, 0 skipped** (29 before this part's new test) — no
 regressions.
 
 **OPEN issues carried forward, NOT resolved this session:**
