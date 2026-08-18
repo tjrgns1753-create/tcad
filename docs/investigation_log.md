@@ -6047,6 +6047,118 @@ density-reconstruction artifacts the two parts above found.
 same throwaway probe script (further extended, still not committed).
 Regression unchanged at 30 passed, 0 failed, 0 skipped.
 
+### LOCOS-on-LOCOS — ROOT-CAUSED, FIXED, SHIPPED (later session, per explicit instruction "하나씩 고쳐볼까?" / shall we fix them one by one — the first of the two remaining OPEN items)
+
+A second LOCOS oxidation on a LOCOS-produced domain had been refused
+with `NotImplementedError` since the process-flow chaining fix. It is
+now genuinely fixed, not refused.
+
+1. **What was tested:** the hypothesis that the refusal's own stated
+   cause was complete — i.e. that the second oxidation fails ONLY
+   because `_make_locos_domain_chainable()` unions the mask level set
+   into the oxide below it, destroying the distinct oxide band
+   `vps.Oxidation()`'s band detection needs. The experiment: keep the
+   re-wrap (so chaining still works), but run the second oxidation on a
+   domain RECONSTRUCTED from deep copies of the level sets taken at the
+   post-oxidation, pre-re-wrap moment — i.e. with the mask still
+   unwrapped, which is exactly the topology `_build_locos_geometry()`
+   produces and that Oxidation() is known to handle.
+
+   This is NOT the experiment the earlier session recorded. That one
+   disabled the re-wrap GLOBALLY, which breaks Advect's precondition
+   for the whole flow (measured then: Si destroyed, SiO2 collapsed
+   0.80000 -> 0.00555). The two requirements are not actually in
+   conflict once the oxidation gets its own rebuilt domain.
+
+2. **Result — the hypothesis held, with a clear margin.** The second
+   oxidation completes: no hang, no `"no oxide nodes found after
+   buildNodes()"`, a real diffusion solve (41 nodes vs the first
+   step's 26 — band detection genuinely found MORE oxide), mask/oxide
+   coupling converged in 11 iterations, displacement a sane 1e-6um
+   rather than the ~1e308 garbage the failing path produced.
+
+   Growth is physically real. Measured at 10hr dry LOCOS, 1000C, grid
+   0.2um (through the real production entry points,
+   `ThermalOxidation(inherited_domain=...).run()`):
+
+   | material | step 1 delta | step 2 delta |
+   |---|---|---|
+   | SiO2 | +0.10577 | **+0.17511** |
+   | Si | -0.08193 | **-0.06407** |
+   | Mask | -0.02140 | -0.01729 |
+
+   Same order as the first step, correct signs (Si consumed, oxide
+   grown), all three materials preserved. A THIRD chained LOCOS step
+   also works (oxide 1.08088 -> 1.16574), and fin-style oxidation on a
+   chained-LOCOS domain still works — the old guard was not replaced
+   by a new over-broad one.
+
+3. **A measurement-methodology finding worth keeping:** the shipped
+   chaining test's own 0.02hr recipe is FAR too short to judge any of
+   this. At that time BOTH oxidations move SiO2 area by ~0 (+0.00063
+   and, for the first step, -0.000000) — at the 0.2um grid's own noise
+   floor. A first attempt at this investigation used that recipe and
+   produced an uninterpretable comparison; only re-running at 10hr, where
+   growth is ~0.3um and well clear of the floor, made the answer
+   decisive. Recorded because the same trap applies to any future
+   "did this process step actually do anything" check in this project.
+
+4. **Production fix.** `io.register_locos_unwrapped()` stashes deep
+   copies of the level sets just before the re-wrap unions them (same
+   weakref-keyed side table and lifetime as the existing export hint,
+   so it is cleared with the domain). `thermal.py`'s chained-LOCOS path
+   rebuilds a domain from those copies, oxidizes it, then exports and
+   re-chains exactly like a fresh LOCOS step, so a further step
+   inherits correctly. `_locos_stack_spec()` was extracted so the fresh
+   and chained paths cannot drift apart in the stack shape they assume.
+
+5. **A second, separate defect found while verifying the fix — and
+   fixed.** The stash is taken when the FIRST LOCOS step re-wraps, but
+   any later step (etch, deposition, fin-style oxidation) mutates the
+   live domain in place while the stash keeps the older state. Rebuilding
+   from it after one of those would have silently discarded that step's
+   effect and oxidized stale geometry — producing a plausible-looking
+   result from the wrong starting shape, with no crash and no warning.
+   `seal_locos_unwrapped()` now fingerprints the domain (per-level-set
+   point counts) immediately after the re-wrap, and
+   `locos_unwrapped_level_sets()` returns None when the live domain no
+   longer matches, so the chained path refuses with a message naming
+   staleness rather than proceeding. Caught by the existing test's own
+   step ordering (its check 8 chains onto a domain four steps
+   downstream), not by inspection.
+
+6. **Test changes.** The existing check 8 asserted the blanket refusal,
+   which is intentionally gone; it now asserts the narrower correct
+   behaviour (refused only when the domain was modified since the
+   stash), and a new check 9 asserts a second LOCOS chained DIRECTLY
+   onto the first runs and is physically real. Check 9's own comment
+   states plainly that at the file's fast 0.02hr recipe its growth
+   assertions guard direction and liveness, NOT magnitude (see point 3),
+   and points at the 10hr measurement where magnitude was established —
+   rather than silently leaving a weak assertion looking strong.
+
+7. **What remains uncertain:** the staleness fingerprint is per-level-set
+   point counts, a heuristic — a step that changed geometry while
+   leaving every count identical would slip through (its docstring says
+   so). Only the ViennaPS-4.6.2 `Dry`/1000C recipe family was exercised;
+   `Wet` oxidant and other temperatures were not re-run for the chained
+   path specifically. The chained path deliberately reuses the
+   INHERITED mask geometry (deformed by the previous oxidation) and
+   does NOT re-apply the recipe's `mask_left_um`/`mask_right_um`/
+   `pr_thickness_um` — correct for "continue oxidizing with the same
+   mask", but it means a caller who expects a DIFFERENT mask window on
+   the second step silently does not get one. Not currently validated
+   or warned about.
+
+8. **Next smallest experiment (not done):** if a differing-mask second
+   LOCOS is ever wanted, the smallest honest step is to warn (or refuse)
+   when the chained recipe's mask-window keys differ from the values the
+   first step actually used — which would require stashing those
+   alongside the level sets, a small addition to the same registry entry.
+
+**Regression: 30 passed, 0 failed, 0 skipped** — unchanged count, with
+`test_locos_chaining_real.py` now covering 9 checks instead of 8.
+
 ## Current Task
 
 Do not try to solve everything at once.

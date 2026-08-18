@@ -117,8 +117,26 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
   `MakeTrench`'s own convention). Fixed by re-wrapping the domain
   right after LOCOS's own export, plus a weakref-keyed export-hint
   registry so downstream steps export correctly with zero changes to
-  any `ProcessStep.run()` file. LOCOS-on-LOCOS is still blocked (see
-  OPEN items).
+  any `ProcessStep.run()` file.
+- **LOCOS-on-LOCOS — RESOLVED (was blocked).** A second LOCOS
+  oxidation used to hang, then was refused outright. Root cause: a
+  LOCOS domain must satisfy two conflicting requirements — Advect
+  needs the last level set to contain all others (so the re-wrap
+  unions mask into oxide), while `vps.Oxidation()`'s oxide-band
+  detection needs a DISTINCT band, which that union destroys. Both are
+  satisfiable at once: keep the re-wrap for chaining, and rebuild a
+  separate unwrapped-mask domain for the oxidation from copies stashed
+  just before the union (`register_locos_unwrapped()` in
+  `tcad/backends/viennaps/io.py`). Verified at 10hr, where growth
+  clears the grid noise floor: SiO2 +0.175 vs the first step's +0.106,
+  Si consumed, all 3 materials preserved, 3-step chains work. A
+  staleness fingerprint refuses the case where an intervening step
+  modified the domain (it would otherwise silently oxidize stale
+  geometry). **Measurement caveat worth reusing:** the chaining test's
+  own 0.02hr recipe is below the 0.2um grid's noise floor — at that
+  time BOTH oxidations move oxide area by ~0, so it cannot judge
+  whether a process step did anything. Full writeup: search
+  `docs/investigation_log.md` for "LOCOS-on-LOCOS — ROOT-CAUSED".
 - **KOH/TMAH crystallographic wet etching**: added using real, cited
   rate constants (30% KOH, 70°C). Later found the 3D-example direction
   vectors made `rate111`/`rate311` algebraically inert in this
@@ -178,11 +196,7 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
 
 ## OPEN issues (active — read before starting new work)
 
-1. **LOCOS-on-LOCOS is blocked, not fixed.** A second LOCOS oxidation
-   on a LOCOS-produced domain raises `NotImplementedError` (confirmed
-   pre-existing hang/silent-corruption otherwise, not a regression).
-   No workaround built.
-2. **KOH/TMAH self-limiting V-groove not achieved.** The 2D
+1. **KOH/TMAH self-limiting V-groove not achieved.** The 2D
    crystal-frame bug is fixed (rate111/rate311 are no longer inert),
    but the model still does not hold a stable (111) facet — mask
    undercut is the leading hypothesis (fast `rate110` direction is
@@ -202,7 +216,9 @@ resolution; `_AUTO_REFINE_MAX_RINGS=20` not stress-tested past 1e20
 cm^-3; `dedupe_materials`/`filter_mesh_materials` only exercised for
 one geometry/doping combination; `mask_spans_um` doesn't validate
 spans against the domain extent; no GUI wiring for doping, gate_stack,
-or the newer etch/deposition models.
+or the newer etch/deposition models; chained LOCOS reuses the inherited
+(deformed) mask and silently ignores the recipe's own mask-window keys,
+and its staleness fingerprint is point-counts only (a heuristic).
 
 ## GUI
 
