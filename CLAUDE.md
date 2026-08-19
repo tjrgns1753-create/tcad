@@ -242,7 +242,8 @@ resolution; `_AUTO_REFINE_MAX_RINGS=20` not stress-tested past 1e20
 cm^-3; `dedupe_materials`/`filter_mesh_materials` only exercised for
 one geometry/doping combination; `mask_spans_um` doesn't validate
 spans against the domain extent; no GUI wiring for doping, gate_stack,
-or the newer etch/deposition models; chained LOCOS reuses the inherited
+deposition, or the newer etch models (oxidation/LOCOS is now wired —
+see GUI section); chained LOCOS reuses the inherited
 (deformed) mask and silently ignores the recipe's own mask-window keys,
 and its staleness fingerprint is point-counts only (a heuristic).
 
@@ -250,9 +251,34 @@ and its staleness fingerprint is point-counts only (a heuristic).
 
 GUI visualization is not authoritative for process geometry — always
 judge physical correctness from the actual ViennaPS mesh/output, never
-from what's drawn on screen. The etch panel now renders the real,
-floored, per-material mesh (boundary-traced solid silhouettes, not a
+from what's drawn on screen. The etch panel renders the real, floored,
+per-material mesh (boundary-traced solid silhouettes, not a
 placeholder), for whichever of the 4 wired etch models is selected.
+
+An oxidation panel (thermal / LOCOS, `tcad/process/oxidation/thermal.py`'s
+one registered model) was added alongside it — `worker_main()` was
+generalized from a hardcoded `"etching"` category to reading
+`_process_category`/`_process_model_key` from the recipe, so it now
+serves any registry category, not etch-only. LOCOS vs fin-style is one
+checkbox (mirrors the recipe's own `mask_material`-presence switch).
+Verified through real ViennaPS 4.6.2 end-to-end via Xvfb + xdotool (no
+tkinter in the main `.venv`; a `.venv312 --system-site-packages` +
+`apt install python3-tk xdotool` matches the project's established
+GUI-testing workaround): both LOCOS and fin-style runs complete and
+render the real mesh, and the existing etch panel is unaffected
+(regression-tested live, not just via `tests/run_regression.py`).
+`Wafer.etched` (etch-only, still gates the trench-opening placeholder
+fallback) and a new `Wafer.processed` (any real process step) are now
+distinct — the real-mesh render gate uses `processed`. Along the way,
+found and fixed a real latent bug this surfaced: `process_pr_strip()`
+guarded on `process_stage != "etched"` literally, which would have
+silently no-opped after a real oxidation run (`process_stage ==
+"oxidized"`) once that stage's button state is ever refreshed — not
+etch-specific once "PR strip after oxidation" is a reachable action,
+so it now accepts either terminal stage. Deposition, doping, and
+gate_stack remain unwired (see OPEN-adjacent minor threads); doping
+in particular is not a registry category at all and needs different
+plumbing than the panel/worker pattern the other three share.
 
 ## Current Task
 

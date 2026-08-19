@@ -6418,6 +6418,109 @@ project's own wiring.
 **No production code changed this part** — analysis/documentation only,
 throwaway probes not committed. Regression unaffected.
 
+### GUI: oxidation/LOCOS panel added — ADDED, verified end-to-end via real ViennaPS (later session, per explicit instruction "다 프로덕션 코드에 적용하고 gui를 적용하기 위한 준비를 하자" / apply everything to production and prepare the GUI)
+
+With all three OPEN items either resolved or root-caused this session,
+moved to the next concrete task: the GUI (`tcad_2d_stagewise.py`) wired
+only the "etching" registry category (4 of 11 models); oxidation
+(including LOCOS, heavily worked on this session), deposition,
+gate_stack, and doping had no GUI path at all.
+
+1. **What was tested/built:** surveyed the GUI's architecture first
+   (single monolithic `TCADApplication(tk.Tk)`, no tabs; the etch panel
+   pre-builds one `ttk.Frame` per model inside a fixed container and
+   shows/hides by combobox selection; `worker_main()` ran as a real OS
+   subprocess — not a thread — dispatching through
+   `process_registry.get("etching", config["_etch_model_key"])`,
+   hardcoded to that one category; mesh rendering
+   (`_draw_real_mesh_result`) was already fully material-generic, not
+   etch-specific). Chose oxidation/LOCOS as the next category to wire
+   (user's explicit choice among oxidation-first / deposition-first /
+   worker-generalization-first), since it needed the least new UI (one
+   registered model) and was the freshest, most-tested code this
+   session.
+
+   Changes: `worker_main()` generalized to read
+   `_process_category`/`_process_model_key` from the recipe instead of
+   a literal `"etching"` string (only caller/writer of the old
+   `_etch_model_key`, confirmed by grep before renaming); a new
+   `_make_oxidation_panel()` (oxidant combobox, temperature/time
+   fields, one LOCOS checkbox mapping directly onto
+   `thermal.py`'s own mask_material-presence switch — no per-model
+   field-visibility machinery needed since only one oxidation model is
+   registered) and `run_oxidation()`, mirroring `run_etch()`'s
+   structure; a new `Wafer.processed: bool` field (generalizes
+   `Wafer.etched`, which several etch-only code paths — e.g. the
+   trench-opening placeholder fallback — still key on deliberately) now
+   gates the real-mesh-available check, while `etched` itself is
+   untouched.
+
+2. **Verification — real, not just code-reading.** The main `.venv` has
+   no tkinter (documented elsewhere in this file). Rebuilt the
+   established workaround: `apt install python3-tk xdotool imagemagick`,
+   `python3.12 -m venv .venv312 --system-site-packages` (inherits system
+   tkinter) + `pip install meshio numpy ViennaPS`, `Xvfb :99`, drove the
+   live app with `xdotool` and captured screenshots with `import
+   -window root`. Ran the FULL flow through real ViennaPS 4.6.2, not a
+   mock:
+   - PR coat -> mask align -> expose -> develop (existing litho, unaffected).
+   - LOCOS oxidation (checkbox on, 0.02hr for a fast real run): completed,
+     "ViennaPS LOCOS simulation complete", real mesh rendered
+     (`thermal_oxidation_final_locos_volume.vtu`, matching
+     `save_locos_volume_mesh`'s own naming).
+   - Fin-style oxidation (checkbox off, same wafer reset + relitho):
+     completed, "ViennaPS fin-style thermal oxidation simulation
+     complete", `thermal_oxidation_final_volume.vtu` (the NON-LOCOS
+     export path, confirming the mask_material-presence switch reaches
+     the GUI correctly).
+   - Etch regression: ran Directional RIE through the SAME (now
+     generalized) `worker_main()` after the above — completed
+     identically to before, confirming the category-dispatch
+     generalization didn't disturb the existing etch path.
+
+3. **A real, previously-latent bug found while verifying, and fixed:**
+   `process_pr_strip()` guarded on `self.process_stage != "etched"`
+   literally. Once oxidation can also produce a real, valid "next step
+   is PR strip" state (`process_stage = "oxidized"`), that guard would
+   silently no-op a strip attempt after oxidation forever, with no
+   error shown — the exact "silent wrong behavior, no crash" failure
+   mode this project's CLAUDE.md warns about elsewhere. Fixed to accept
+   either terminal stage. Also updated `_update_process_buttons()`'s
+   stage->button map and the cosmetic PR-presence draw logic
+   (`pr_present`) for the same reason. NOT independently click-tested
+   end-to-end through a real enabled button, because of a SEPARATE,
+   pre-existing gap this session did not fix (see point 4) — verified
+   correct by code reading instead (a one-line, narrowly-scoped
+   condition change, symmetric with the existing "etched" case).
+
+4. **What remains uncertain / explicitly NOT done:** neither
+   `run_etch()` nor the new `run_oxidation()` calls
+   `_update_process_buttons()` after a successful run — confirmed by
+   reading `run_etch()` in full, not assumed — so the "PR strip" button
+   never visibly enables after EITHER an etch or an oxidation run
+   through the normal UI flow, a pre-existing gap in the shipped app
+   that this session's new code deliberately mirrors rather than
+   silently fixing as a drive-by (out of scope; `process_pr_strip()`'s
+   own guard was fixed because it was a correctness/data bug reachable
+   the moment that refresh gap is ever closed, not a UI polish item).
+   Deposition (7 models), doping (not a registry category — separate
+   plumbing needed), and gate_stack remain unwired. Chaining
+   (`tcad/process/flow.py`'s `FlowStep`/`inherited_domain`) is still out
+   of scope for the GUI — each run still builds a fresh wafer, matching
+   the existing etch panel's own behavior.
+
+5. **Next smallest experiment (not done):** fix the
+   `_update_process_buttons()` gap (call it at the end of `run_etch`/
+   `run_oxidation`, matching every OTHER process_* method's own
+   pattern) so PR strip becomes reachable, THEN click-test
+   `process_pr_strip()` after a real oxidation run to confirm point 3's
+   fix live, not just by reading it. After that, deposition is the next
+   panel to add (same pattern as oxidation, more models but no new
+   architecture).
+
+**Regression: 30 passed, 0 failed, 0 skipped** (unchanged — this is a
+GUI-only change, `tests/run_regression.py` does not exercise the GUI).
+
 ## Current Task
 
 Do not try to solve everything at once.

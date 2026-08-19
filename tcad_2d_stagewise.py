@@ -60,10 +60,11 @@ import tcad.process.oxidation  # noqa: F401 -- import side effect: registers oxi
 # VIENNAPS ETCH ENGINE
 # ============================================================
 #
-# worker_main() dispatches through process_registry.get("etching", ...)
-# so any registered etching model works, not just Bosch. Bosch's own
-# algorithm (MakeTrench, passivation, breakthrough, silicon etch, cycle
-# loop, snapshotting) is unchanged since Phase 1.
+# worker_main() dispatches through process_registry.get(category, model)
+# for whichever category/model the GUI picks (etching or oxidation so
+# far), not just Bosch. Bosch's own algorithm (MakeTrench, passivation,
+# breakthrough, silicon etch, cycle loop, snapshotting) is unchanged
+# since Phase 1.
 
 # Canvas polygon cap for _draw_real_mesh_result -- see its use for why.
 _MAX_RENDERED_TRIANGLES = 2000
@@ -139,9 +140,12 @@ def worker_main(config_file: str, result_file: str):
             )
         )
 
-        # Any registered etching model works here (Bosch included): the
-        # GUI sets "_etch_model_key" to pick which one.
-        step_cls = process_registry.get("etching", config["_etch_model_key"])
+        # Any registered category/model works here (Bosch included): the
+        # GUI sets "_process_category"/"_process_model_key" to pick
+        # which one -- this worker is not etch-specific.
+        step_cls = process_registry.get(
+            config["_process_category"], config["_process_model_key"]
+        )
         result = step_cls().run(
             config,
             config["output_dir"],
@@ -538,7 +542,11 @@ class TCADApplication(tk.Tk):
             panel
         )
 
-        # etch_button (created above) is required by
+        self._make_oxidation_panel(
+            panel
+        )
+
+        # etch_button/oxidation_button (created above) are required by
         # _update_process_buttons(); call it only after both panels
         # exist so widget creation order / visual layout is unchanged,
         # only the timing of this refresh call moves.
@@ -841,6 +849,323 @@ class TCADApplication(tk.Tk):
         )
 
     # --------------------------------------------------------
+    # OXIDATION
+    # --------------------------------------------------------
+
+    def _make_oxidation_panel(
+        self,
+        parent,
+    ):
+        """Thermal oxidation (fin or LOCOS) — only one model is
+        registered under the "oxidation" category (tcad.process.
+        oxidation.thermal), so unlike the etch panel there is no model
+        combobox / per-model field-visibility switch here. LOCOS vs
+        fin-style is instead the one real recipe switch
+        (tcad/process/oxidation/thermal.py's own docstring: presence of
+        "mask_material" activates LOCOS physics), exposed here as a
+        single checkbox.
+
+        Shares self.grid_var (built in _make_etch_panel, above this
+        panel in the layout) rather than adding a second, independently
+        -settable grid field: both panels build a fresh domain from the
+        same self.wafer geometry, and this GUI runs one process step at
+        a time (see run_oxidation), so one shared grid setting avoids
+        two fields that would need to be kept in sync by hand.
+        """
+
+        frame = ttk.LabelFrame(
+            parent,
+            text="Oxidation recipe (thermal / LOCOS)",
+            padding=10,
+        )
+
+        frame.pack(
+            fill="x",
+            pady=10,
+        )
+
+        ttk.Label(
+            frame,
+            text="Oxidant",
+        ).pack(
+            anchor="w"
+        )
+
+        self.oxidant_var = tk.StringVar(
+            value="Dry"
+        )
+
+        ttk.Combobox(
+            frame,
+            textvariable=self.oxidant_var,
+            state="readonly",
+            values=[
+                "Dry",
+                "Wet",
+            ],
+        ).pack(
+            fill="x"
+        )
+
+        self.ox_temp_var = self._field(
+            frame,
+            "Temperature (°C)",
+            1000.0,
+        )
+
+        self.ox_time_var = self._field(
+            frame,
+            "Time (hours)",
+            0.5,
+        )
+
+        self.locos_var = tk.BooleanVar(
+            value=False
+        )
+
+        ttk.Checkbutton(
+            frame,
+            text="LOCOS (mask present during oxidation)",
+            variable=self.locos_var,
+        ).pack(
+            anchor="w",
+            pady=(6, 0),
+        )
+
+        self.oxidation_button = ttk.Button(
+            frame,
+            text="5b. START OXIDATION — VIENNAPS",
+            command=self.run_oxidation,
+        )
+        self.oxidation_button.pack(
+            fill="x",
+            pady=(12, 3),
+        )
+
+        ttk.Label(
+            frame,
+            text=(
+                "LOCOS grows oxide under a real elastic mask/oxide "
+                "contact model; unchecked grows oxide on the exposed "
+                "(fin) silicon with no mask physics."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=5,
+        )
+
+    def run_oxidation(self):
+
+        if not self.wafer.developed:
+
+            messagebox.showwarning(
+                "Process order",
+                "Run lithography and develop first.",
+            )
+
+            return
+
+        if not viennaps_session.is_available():
+
+            messagebox.showerror(
+                "ViennaPS",
+                "ViennaPS is not installed.\n\n"
+                "Run:\n"
+                "python -m pip install ViennaPS",
+            )
+
+            return
+
+        try:
+
+            recipe = {
+                "_process_category": "oxidation",
+                "_process_model_key": "thermal",
+
+                "mask_left_um":
+                    self.wafer.mask_left_um,
+
+                "mask_right_um":
+                    self.wafer.mask_right_um,
+
+                "pr_thickness_um":
+                    self.wafer.pr_thickness_um,
+
+                "silicon_depth_um":
+                    self.wafer.silicon_depth_um,
+
+                "grid_delta_um":
+                    float(
+                        self.grid_var.get()
+                    ),
+
+                "x_extent_um":
+                    self.wafer.width_um,
+
+                "y_extent_um":
+                    8.0,
+
+                "oxidant":
+                    self.oxidant_var.get(),
+
+                "temperature_c":
+                    float(
+                        self.ox_temp_var.get()
+                    ),
+
+                "time_hours":
+                    float(
+                        self.ox_time_var.get()
+                    ),
+            }
+
+            if self.locos_var.get():
+                # Presence of this key is the fin (absent) vs LOCOS
+                # (present) switch -- see thermal.py's own docstring.
+                recipe["mask_material"] = "Mask"
+
+        except ValueError:
+
+            messagebox.showerror(
+                "Oxidation recipe",
+                "All recipe values must be numeric.",
+            )
+
+            return
+
+        output_dir = tempfile.mkdtemp(
+            prefix="tcad2d_real_v2_"
+        )
+
+        recipe["output_dir"] = output_dir
+
+        config_file = Path(
+            output_dir
+        ) / "recipe.json"
+
+        result_file = Path(
+            output_dir
+        ) / "result.json"
+
+        config_file.write_text(
+            json.dumps(
+                recipe,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        model_label = "LOCOS" if self.locos_var.get() else "fin-style thermal oxidation"
+
+        self._log(
+            f"\n================================\n"
+            f"REAL VIENNAPS {model_label.upper()} START\n"
+            f"================================\n"
+            f"1. {'Pad oxide + mask (LOCOS)' if self.locos_var.get() else 'MakeTrench'}\n"
+            f"2. {recipe['oxidant']} oxidation, "
+            f"{recipe['temperature_c']}°C, {recipe['time_hours']}h\n"
+        )
+
+        self.update_idletasks()
+
+        try:
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(
+                        Path(__file__).resolve()
+                    ),
+                    "--worker",
+                    str(config_file),
+                    str(result_file),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=900,
+            )
+
+        except Exception as exc:
+
+            messagebox.showerror(
+                "ViennaPS",
+                str(exc),
+            )
+
+            return
+
+        if not result_file.exists():
+
+            messagebox.showerror(
+                "ViennaPS",
+                "Worker did not produce a result file.\n\n"
+                + completed.stderr[-4000:],
+            )
+
+            return
+
+        result = json.loads(
+            result_file.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        if not result.get("success"):
+
+            messagebox.showerror(
+                "ViennaPS",
+                result.get(
+                    "error",
+                    "Unknown ViennaPS error.",
+                ),
+            )
+
+            self._log(
+                "\nVIENNAPS FAILED\n"
+            )
+
+            return
+
+        self.wafer.processed = True
+        self.process_stage = "oxidized"
+        self.last_final_mesh = result.get("final_mesh")
+
+        self._activate_stages(
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+        )
+
+        self.history.append(
+            f"ViennaPS {model_label}"
+        )
+
+        self._log(
+            f"\n================================\n"
+            f"REAL VIENNAPS {model_label.upper()} COMPLETE\n"
+            f"================================\n"
+            f"Surface files: "
+            f"{len(result['snapshots'])}\n"
+            f"Final mesh:\n"
+            f"{result['final_mesh']}\n"
+        )
+
+        self.redraw()
+
+        messagebox.showinfo(
+            "ViennaPS",
+            f"ViennaPS {model_label} simulation complete.\n\n"
+            f"Final mesh:\n{result['final_mesh']}",
+        )
+
+    # --------------------------------------------------------
     # LOG
     # --------------------------------------------------------
 
@@ -971,8 +1296,13 @@ class TCADApplication(tk.Tk):
             "pr_coated": [self.align_button],
             "aligned": [self.expose_button],
             "exposed": [self.develop_button],
-            "developed": [self.etch_button],
+            # Etch and oxidation are alternative backend process steps
+            # available once the wafer is developed -- either one builds
+            # a fresh domain from the same self.wafer geometry (see
+            # run_etch / run_oxidation), not a two-step sequence.
+            "developed": [self.etch_button, self.oxidation_button],
             "etched": [self.strip_button],
+            "oxidized": [self.strip_button],
             "stripped": [],
         }
 
@@ -982,6 +1312,7 @@ class TCADApplication(tk.Tk):
             self.expose_button,
             self.develop_button,
             self.etch_button,
+            self.oxidation_button,
             self.strip_button,
         ]
 
@@ -1057,7 +1388,7 @@ class TCADApplication(tk.Tk):
         self.redraw()
 
     def process_pr_strip(self):
-        if self.process_stage != "etched":
+        if self.process_stage not in ("etched", "oxidized"):
             return
 
         self.wafer.stripped = True
@@ -1117,7 +1448,8 @@ class TCADApplication(tk.Tk):
         try:
 
             recipe = {
-                "_etch_model_key": model_key,
+                "_process_category": "etching",
+                "_process_model_key": model_key,
 
                 "mask_left_um":
                     self.wafer.mask_left_um,
@@ -1331,6 +1663,7 @@ class TCADApplication(tk.Tk):
             return
 
         self.wafer.etched = True
+        self.wafer.processed = True
         self.process_stage = "etched"
         self.last_final_mesh = result.get("final_mesh")
 
@@ -1587,7 +1920,7 @@ class TCADApplication(tk.Tk):
         # real-mesh render still shows intact Si under an isotropic
         # undercut" for the investigation this fixes.
         real_mesh_available = bool(
-            self.wafer.etched
+            self.wafer.processed
             and self.last_final_mesh
             and Path(self.last_final_mesh).exists()
         )
@@ -1615,7 +1948,7 @@ class TCADApplication(tk.Tk):
         # of them alter process state or the ViennaPS recipe.
         stage = self.process_stage
         pr_present = stage in (
-            "pr_coated", "aligned", "exposed", "developed", "etched",
+            "pr_coated", "aligned", "exposed", "developed", "etched", "oxidized",
         )
         mask_present = stage in ("aligned", "exposed")
         exposed_now = stage == "exposed"

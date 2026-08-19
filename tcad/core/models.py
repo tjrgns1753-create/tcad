@@ -34,6 +34,12 @@ class Wafer:
     etched: bool = False
     stripped: bool = False
 
+    # True after ANY real-backend process step (etch, oxidation, ...)
+    # has produced a final mesh -- generalizes `etched`, which several
+    # etch-only code paths (e.g. the trench-opening placeholder fallback
+    # in tcad_2d_stagewise.py) still key on deliberately and unchanged.
+    processed: bool = False
+
 
 @dataclass
 class BoschRecipe:
