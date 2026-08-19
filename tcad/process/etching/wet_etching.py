@@ -88,21 +88,58 @@ LIVE (same 159x test now shifts the Si area by 2.56e-02).
 
 **Honest scope limit — read before trusting this for real process
 design.** Fixing the crystal frame makes the (111) plane expressible
-and is strictly more correct, but it does NOT yield a fully
-self-limiting V-groove in this 2D configuration. Measured, with the
-corrected vectors: etch depth still grows close to linearly in time
-(0.82 -> 2.47 -> 6.00 um at t = 60/180/540 s, where a self-limited
-groove of this window would pin at 1.414 um), because the mask is
-undercut (the fast `rate110` direction is vertical at the mask edge, so
-lateral attack widens the effective window faster than the slow facet
-can anchor). Ruled out as causes, each by direct measurement rather
-than assumption: the ViennaLS spatial scheme (all 12 schemes tested at
-t=180 s — none self-limit) and grid resolution (0.2/0.1/0.05 um — depth
-unchanged at ~2.46 um, and undercut gets *worse* as the grid refines).
-The facet angle also wanders with time (21.9° -> 37.3° -> 62.1° at
-t = 30/60/120 s) rather than converging on 54.74°, so there is no stable
-converged facet either. Treat this model as *anisotropic, genuinely
-(111)-aware* — not as validated self-limiting KOH/TMAH physics.
+and is strictly more correct, but it does NOT yield a self-limiting
+V-groove — and this is now ROOT-CAUSED, not just observed, with the
+cause located precisely enough to know it cannot be fixed at this
+project's own layer (recipe, frame, grid, scheme, or geometry).
+
+The velocity field itself is correct: evaluating this module's own
+rate formula (below) with `KOH_30PCT_70C_2D`'s frame gives exactly
+`rate111` at a (111)-oriented surface (54.7356° from horizontal), and
+the field's true velocity MINIMUM over all 2D tilts sits at 54.7400° —
+0.005° from the real Si magic angle. The failure is at the CORNER: a
+V-groove's apex has outward normal (0, 1, 0) by symmetry, at ANY
+resolution — that is not a meshing choice, it follows from the groove
+being symmetric about its centre — and evaluating the formula at that
+exact normal gives **exactly `rate100`, 159x `rate111`**. So the one
+point that must stop moving for the groove to close is the FASTEST
+-moving point on the entire profile. Measured directly (real ViennaPS
+4.6.2, a V-notch pre-carved to the exact ideal apex depth and magic
+angle before any etch runs): the apex advances at ~100-145x `rate111`
+(~0.6-0.85x `rate100`) from the very first timestep, while the
+sidewall angle simultaneously reads 54.50° at R²=0.9998 (i.e. the
+facet itself is genuinely present and correctly oriented — this is not
+a mesh artifact corrupting the facet). Confirmed grid-INDEPENDENT
+across a 4x refinement (0.68/0.78/0.75x `rate100` at gridDelta
+0.2/0.1/0.05 um), which rules out apex rounding as the explanation.
+
+Root cause, stated generally: `v(tilt)` is strongly NON-CONVEX (a deep
+minimum at 54.74° rising to `rate110` at 90° and `rate100` at 0°), and
+plain normal-velocity level-set advection (what `vps.Process()` runs)
+moves every interface point using only ITS OWN local normal — so a
+concave corner sitting between two slow facets is governed by neither
+of them. Correct behaviour needs a Wulff/Frank convexification inside
+the advection library itself, which is unreachable from any choice
+available here. This single mechanism also explains every earlier
+-recorded, previously-separate observation: why none of ViennaLS's 12
+spatial schemes helped, why grid refinement never helped, and why the
+facet angle wanders when starting from a flat mask window (it was never
+anchored in the first place — the apex was always racing ahead at
+`rate100` even while a sidewall looked briefly correct). An earlier
+explanation recorded here — that mask-edge undercut from an initially
+-vertical wall was the cause — was tested directly and refuted: even
+starting a groove already carved to the exact magic-angle facet from
+t=0, with no initial vertical wall to undercut at all, depth still
+grows at an unchanged, non-decelerating rate (2.00 -> 2.60 -> 2.89 ->
+3.32 um at t=60/120/150/180s for a window whose self-limited apex
+should sit at 1.4142 um).
+
+Treat this model as *anisotropic, genuinely (111)-aware* — not as
+validated self-limiting KOH/TMAH physics, and not fixable into one by
+any change at this project's layer. Full derivation, all measured
+numbers, and the analytical velocity-vs-tilt table: search
+`docs/investigation_log.md` for "the apex normal evaluates to
+rate100".
 """
 
 from __future__ import annotations
