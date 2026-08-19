@@ -6521,6 +6521,52 @@ gate_stack, and doping had no GUI path at all.
 **Regression: 30 passed, 0 failed, 0 skipped** (unchanged — this is a
 GUI-only change, `tests/run_regression.py` does not exercise the GUI).
 
+### GUI: PR-strip button-refresh gap — FIXED and live-verified (same session, per explicit instruction "ㄱㄱ" — the "next smallest experiment" named immediately above)
+
+Executed the fix and re-verification the section above named as its
+own next step, closing the one item it had left open.
+
+1. **What was done:** added `self._update_process_buttons()` at the
+   end of both `run_etch()` and `run_oxidation()`, matching the pattern
+   every other `process_*` method already used (`process_pr_coat`,
+   `process_align`, etc.) — the two backend-process methods were the
+   only ones missing it.
+
+2. **What was verified — live, not just by reading the diff.** Rebuilt
+   the same Xvfb + `.venv312` + xdotool setup and drove the full app
+   through BOTH paths this time, through to completion:
+   - Litho -> LOCOS oxidation (0.02hr) -> **PR STRIP is now visibly
+     enabled immediately after the run** (previously stayed grayed out
+     forever) -> clicked it -> stage `08 PR strip` fills in on the
+     sequence list, the button correctly disables again afterward, and
+     the process log shows `STEP: PR STRIP / Photoresist removed after
+     etch.` — confirming `process_pr_strip()`'s `process_stage in
+     ("etched", "oxidized")` guard (fixed in the part above, previously
+     only verified by code reading) actually accepts the "oxidized"
+     stage in real execution.
+   - Litho -> Isotropic etch -> PR STRIP enabled and clicked
+     successfully the same way — confirming the fix didn't disturb the
+     original etch->strip path (regression-clean for the case that
+     already worked once the button could be reached).
+
+3. **What it proves:** both of this session's two open threads on the
+   GUI oxidation panel are now closed with real, live confirmation
+   rather than code-reading alone — the category-dispatch
+   generalization, the LOCOS/fin-style switch, the `Wafer.processed`
+   gate, and the terminal-stage guard fix all exercised end-to-end
+   through real ViennaPS 4.6.2 in the actual running app.
+
+4. **What remains uncertain:** none of this project's own automated
+   tests exercise the GUI (confirmed earlier in this file), so this
+   live verification is not repeatable via `tests/run_regression.py` —
+   a future session touching this file again will need to redo the
+   Xvfb/xdotool setup rather than trust a stale "verified" claim.
+
+5. **Next smallest experiment (not done):** deposition panel (7
+   registered models), same pattern as oxidation.
+
+**Regression: 30 passed, 0 failed, 0 skipped** (unchanged).
+
 ## Current Task
 
 Do not try to solve everything at once.

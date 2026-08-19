@@ -275,7 +275,12 @@ guarded on `process_stage != "etched"` literally, which would have
 silently no-opped after a real oxidation run (`process_stage ==
 "oxidized"`) once that stage's button state is ever refreshed — not
 etch-specific once "PR strip after oxidation" is a reachable action,
-so it now accepts either terminal stage. Deposition, doping, and
+so it now accepts either terminal stage. That refresh gap itself
+(`run_etch`/`run_oxidation` never called `_update_process_buttons()`,
+so PR strip never visibly enabled after either) is now also fixed and
+live-verified: both etch->strip and LOCOS->strip click-tested
+end-to-end through real ViennaPS via the same Xvfb+xdotool setup, not
+just confirmed by reading the diff. Deposition, doping, and
 gate_stack remain unwired (see OPEN-adjacent minor threads); doping
 in particular is not a registry category at all and needs different
 plumbing than the panel/worker pattern the other three share.

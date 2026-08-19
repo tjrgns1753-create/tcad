@@ -1157,6 +1157,13 @@ class TCADApplication(tk.Tk):
             f"{result['final_mesh']}\n"
         )
 
+        # Fixes a real, previously-latent gap: neither this method nor
+        # run_etch() used to call this after a successful run, so the
+        # PR-strip button never visibly enabled through the normal UI
+        # flow (see docs/investigation_log.md's GUI oxidation-panel
+        # section). Same fix applied to run_etch() below.
+        self._update_process_buttons()
+
         self.redraw()
 
         messagebox.showinfo(
@@ -1693,6 +1700,11 @@ class TCADApplication(tk.Tk):
             f"Final mesh:\n"
             f"{result['final_mesh']}\n"
         )
+
+        # See run_oxidation()'s matching comment: this call was missing
+        # here too, so PR strip never visibly enabled after a real etch
+        # through the normal UI flow.
+        self._update_process_buttons()
 
         self.redraw()
 
