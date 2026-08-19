@@ -6159,6 +6159,119 @@ now genuinely fixed, not refused.
 **Regression: 30 passed, 0 failed, 0 skipped** — unchanged count, with
 `test_locos_chaining_real.py` now covering 9 checks instead of 8.
 
+### KOH self-limiting V-groove — mask-edge pre-faceting hypothesis REFUTED, real execution (later session, per explicit instruction "ㄱㄱ" / go ahead — the second of the two remaining OPEN items, following the LOCOS-on-LOCOS fix)
+
+Executed the "next smallest experiment" the "KOH crystal frame" section
+named: whether a mask-edge geometry that presents the (111) facet from
+t=0 (instead of an initially VERTICAL wall, where the fast `rate110`
+direction is maximal) lets the facet anchor and the groove close.
+
+1. **What was tested:** built the normal `MakeTrench` mask+window, then
+   carved a real V-notch into the exposed Si within the window before
+   running any etch — apex at the idealized self-limited depth
+   (`window_half * tan(54.7356deg)` = 1.4142um for this window),
+   sidewalls already at the exact magic angle, via two `vls.Plane`
+   half-spaces intersected with a bounding box. `vls.Plane`'s normal
+   -direction convention (material is on the side OPPOSITE the normal)
+   was established empirically first, not guessed — via a standalone
+   probe checking known cases (`normal=[0,1,0]` at origin gives solid
+   material BELOW y=0, etc.). The wedge-alone shape was verified before
+   touching Si: area 1.3742 vs analytical 1.4142 (2.8%, grid
+   discretization at gd=0.2), y range exactly [-1.4142, 0.0]. Two real
+   ViennaLS segfaults were hit and fixed while building this (both
+   independently reusable lessons, not just this probe's problem):
+   `getBoundaryConditions()` segfaults on a domain with zero level sets
+   (already documented in `thermal.py`'s own comments — insert a first
+   level set before calling it); a raw `vls.Plane` level set (infinite,
+   defined only at the interface) segfaults in a later
+   `BooleanOperation` unless `vls.Expand(ls, 3)` is applied first (same
+   documented pitfall as `_floored_copy_for_export`'s own comment, now
+   confirmed to bite a hand-built `Plane` too, not just an
+   already-narrow Process() output).
+
+   Then ran the real `KOH_30PCT_70C_2D` crystallographic etch (the
+   corrected 2D frame) on this notched geometry through real ViennaPS
+   4.6.2, tracking depth over time via a robust GLOBAL minimum-y (not a
+   fixed x-window, and not the previous section's centre-point key
+   lookup — both broke as the profile evolved, see point 2 below).
+
+2. **Result — TWO measurement traps found and fixed before the real
+   answer emerged, then a clean negative result.**
+   - Trap 1: a per-column dict keyed on an exact x lookup (`tops.get
+     (0.0, ...)`, mirroring the existing shipped test's own pattern)
+     intermittently returned NaN once the groove's deepest point
+     stopped landing exactly on a rounded x=0.0 vertex. Fixed by
+     scanning the whole per-column dict for the minimum instead of one
+     fixed key.
+   - Trap 2, more serious: at the project's usual `floor_depth_um=2.0`
+     export setting, the measured depth appeared to PLATEAU at almost
+     exactly -1.8um for 90+ seconds (t=60 to t=150s) while the flat
+     bottom visibly widened sideways — which looked exactly like a
+     genuine self-limited groove (depth pinned, width still creeping).
+     It was not: `save_volume_mesh()`'s own floor mechanism clips
+     anything deeper than `floor_depth_um` from the export, so once the
+     true etch front sank past 2.0um the clipped FLOOR ITSELF became
+     the visible "top" of that column, producing a fake, suspiciously
+     -exact plateau. Caught by increasing `floor_depth_um` to 4.0 and
+     re-measuring: the "plateau" vanished — depth was never pinned at
+     all.
+
+     With the artifact removed, real measured depth (from the same
+     1.4um-deep starting notch): **2.00 / 2.60 / 2.89 / 3.32 um at
+     t = 60 / 120 / 150 / 180s**, i.e. growth of +0.60 / +0.29 / +0.43um
+     over each interval — rates of 0.0100 / 0.0097 / 0.0144 um/s. Flat
+     to mildly ACCELERATING, not decelerating, and nowhere close to
+     pinning at the 1.4142um ideal or at any other fixed value.
+
+3. **What it proves:** the mask-edge pre-faceting hypothesis is
+   **refuted by real execution, not merely unconfirmed**. Presenting
+   the (111) facet from t=0, with the exact ideal starting angle and
+   apex depth, produces a growth-rate profile indistinguishable in
+   character from the original flat-start case (which grew 0.82 -> 2.47
+   -> 6.00um at t=60/180/540s, also without decelerating) — once you
+   correct for the fact that this run starts 1.4um ahead. The initially
+   -vertical mask-edge wall was never the operative cause; giving the
+   groove the "right" starting shape does not make it hold that shape.
+   Mask geometry was independently confirmed static throughout (its own
+   top-profile is bit-identical at every time point checked), which
+   also rules out "the mask physically lifts/erodes" as any part of the
+   mechanism — Mask material is not etched by this recipe at all
+   (`material_rates` names only Si), so whatever drives continued
+   growth is purely in how the Si front's own velocity field evolves
+   once perturbed away from the exact magic-angle configuration.
+
+4. **What remains uncertain:** whether the (111) facet at 54.7356deg is
+   even a STABLE fixed point of this project's 2D velocity field under
+   ViennaLS's discretization at all, as opposed to merely a point where
+   `rate111`'s formula term is small — the earlier "KOH crystal frame"
+   section already found the facet angle "wanders with time (21.9deg ->
+   37.3deg -> 62.1deg at t=30/60/120s) instead of converging on 54.74deg"
+   from a flat start; this session did not check whether the SAME
+   drift-away-from-54.7356deg happens even starting exactly AT the
+   magic angle (time ran out after establishing the depth-growth
+   result, which already answered the question this experiment was
+   built to test). If it drifts away immediately even from a perfect
+   start, that would point squarely at ViennaLS's own velocity
+   -extension/normal computation near that specific angle (the original
+   "Advect... not read at the C++ source level" territory flagged at
+   the very start of this investigation thread) as the real root cause,
+   rather than anything about mask/window geometry.
+
+5. **Next smallest experiment (not done):** track the facet angle
+   itself (not just depth) over time in this SAME pre-notched setup —
+   does it stay near 54.7356deg or start drifting immediately, exactly
+   like the flat-start case did? That single measurement would decide
+   between "the 2D magic-angle configuration is not a stable
+   equilibrium under this discretization at all" (implicates
+   ViennaLS-internal territory, matching the original untested
+   hypothesis) and "it's stable in isolation but something about this
+   window/mask combination still perturbs it" (points back at geometry).
+
+**No production code changed this part** — analysis/documentation only,
+throwaway probe script (not committed, same convention as prior
+sessions' probes). Regression unaffected (nothing in
+`tcad/process/etching/wet_etching.py` was touched).
+
 ## Current Task
 
 Do not try to solve everything at once.

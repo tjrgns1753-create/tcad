@@ -196,18 +196,37 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
 
 ## OPEN issues (active — read before starting new work)
 
-1. **KOH/TMAH self-limiting V-groove not achieved.** The 2D
-   crystal-frame bug is fixed (rate111/rate311 are no longer inert),
-   but the model still does not hold a stable (111) facet — mask
-   undercut is the leading hypothesis (fast `rate110` direction is
-   vertical at the mask edge, widening the window faster than the
-   slow facet can anchor). Root mechanism traced to ViennaLS-internal
-   territory (`Advect`'s velocity-extension handling for a
-   concave-corner-forming problem); not read at the C++ source level.
-   TMAH itself is moot until this is resolved — its distinguishing
-   parameter (`rate111`) has no traction on the simulated shape yet.
-   Real TMAH rate constants were also never obtained (paywalled paper,
-   blocked mirror, no ViennaPS data).
+1. **KOH/TMAH self-limiting V-groove not achieved — mask-undercut
+   hypothesis REFUTED, not just unconfirmed.** The 2D crystal-frame bug
+   is fixed (rate111/rate311 are no longer inert), but the model still
+   does not hold a stable (111) facet. The leading hypothesis (fast
+   `rate110` undercutting an initially-VERTICAL mask-edge wall before
+   the slow facet can anchor) was tested directly: a real V-notch,
+   pre-carved to the exact ideal apex depth and magic angle from t=0
+   (verified geometry: area within 2.8% of analytical, y-range exact),
+   was etched with the real `KOH_30PCT_70C_2D` model. Depth grew
+   2.00 -> 2.60 -> 2.89 -> 3.32um at t=60/120/150/180s — flat-to
+   -mildly-accelerating, not decelerating, and the mask itself was
+   confirmed static throughout. Removing the initial vertical wall
+   entirely made no qualitative difference, so mask-edge undercut was
+   never the operative cause. **Measurement trap worth reusing:** an
+   under-sized `floor_depth_um` at export made this look like a
+   genuine self-limited plateau for 90+ seconds (a suspiciously exact
+   -1.8um depth while the flat bottom visibly widened) — it was the
+   export's own floor clipping the real, still-growing front; doubling
+   `floor_depth_um` made the "plateau" vanish. Root mechanism is now
+   narrowed to whether the 54.7356° magic-angle configuration is even a
+   stable fixed point of this 2D velocity field under ViennaLS's
+   discretization at all — untested next step: track the FACET ANGLE
+   (not just depth) in this same pre-notched setup; if it drifts away
+   from 54.7356° immediately even starting exactly there, that
+   implicates ViennaLS-internal territory (`Advect`'s velocity
+   -extension/normal computation), not geometry. TMAH itself is moot
+   until this is resolved — its distinguishing parameter (`rate111`)
+   has no traction on the simulated shape yet. Real TMAH rate constants
+   were also never obtained (paywalled paper, blocked mirror, no
+   ViennaPS data). Full writeup: search `docs/investigation_log.md` for
+   "mask-edge pre-faceting hypothesis REFUTED".
 
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):
