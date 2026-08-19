@@ -6272,6 +6272,152 @@ throwaway probe script (not committed, same convention as prior
 sessions' probes). Regression unaffected (nothing in
 `tcad/process/etching/wet_etching.py` was touched).
 
+### KOH self-limiting V-groove — ROOT CAUSE FOUND: the apex normal evaluates to rate100, and it is grid-independent (same session, immediately following the REFUTED section above, per explicit instruction "찾아보자" / let's find out)
+
+Ran the facet-angle experiment the section above named, then two
+follow-ups it pointed to. The root cause is now located precisely,
+confirmed analytically AND behaviourally, and it is **not** in this
+project's own wiring.
+
+1. **What was tested:**
+   (a) Facet ANGLE (not just depth) over time, starting from the
+       pre-carved exact-magic-angle notch. Angle defined explicitly as
+       from HORIZONTAL (`atan|dy/dx|`), and the fit VALIDATED at t=0
+       first: it recovered 54.48deg from a notch built to be 54.7356deg
+       (error -0.25deg) at R^2=0.9998 — so later readings mean
+       something. Fit quality (R^2) was tracked at every step, because
+       a straight-line "angle" through a curved profile is a number
+       with no physical referent.
+   (b) Grid convergence of the APEX velocity (gd 0.2 / 0.1 / 0.05),
+       measured over the first 10s only — the cleanest phase, where the
+       angle is still within 0.25deg of magic and no undercut has begun.
+   (c) `psWetEtching.hpp`'s own rate formula evaluated analytically in
+       pure Python (no simulation) for every 2D surface normal, using
+       this project's own `KOH_30PCT_70C_2D` frame.
+
+2. **Result (a) — the facet holds briefly, then departs, and the
+   departure is not a clean re-faceting:**
+
+   | t (s) | angle (deg) | drift | depth (um) | R^2 |
+   |---|---|---|---|---|
+   | 0 | 54.48 | -0.25 | 1.4142 | 0.9998 |
+   | 5 | 54.50 | -0.24 | 1.4570 | 0.9998 |
+   | 10 | 54.51 | -0.22 | 1.5040 | 0.9999 |
+   | 20 | 59.52 | +4.78 | 1.6255 | 0.9811 |
+   | 30 | 65.54 | +10.80 | 1.7055 | 0.9539 |
+   | 45 | 60.64 | +5.91 | 1.8544 | **0.8463** |
+   | 60 | 53.90 | -0.83 | 2.0000 | 0.9795 |
+   | 90 | 49.06 | -5.67 | 2.2895 | 0.9860 |
+   | 120 | 40.46 | -14.28 | 2.6286 | 0.9845 |
+
+   The R^2 column is load-bearing: at t=45s the sidewall genuinely
+   stops being planar (0.85), so the swing up to +10.8deg and back is a
+   real loss of facet, not a facet rotating.
+
+3. **Result — the decisive quantitative finding.** Converting depth to
+   APEX VELOCITY and comparing against the model's own rate constants
+   (`rate111` = 8.33e-5, `rate100` = 1.328e-2 um/s):
+
+   | interval | apex v (um/s) | v / rate111 | v / rate100 |
+   |---|---|---|---|
+   | 0-5s | 0.00856 | 102.7 | 0.644 |
+   | 5-10s | 0.00940 | 112.8 | 0.708 |
+   | 60-90s | 0.00965 | 115.8 | 0.726 |
+   | 90-120s | 0.01130 | 135.6 | 0.851 |
+
+   **From the very first timestep — while the sidewall angle is still
+   54.50deg at R^2=0.9998 — the apex is advancing at ~100x `rate111`
+   and ~0.7x `rate100`.** Self-limiting is therefore impossible by
+   construction: the one point that must stop for the groove to close
+   never slows down at all.
+
+4. **Result (b) — it is NOT a discretization artifact.** The natural
+   hypothesis was apex rounding: a level set rounds the V corner over
+   ~1 grid cell, and a rounded corner contains fast orientations, so
+   refining should drive apex velocity toward `rate111`. Measured over
+   the first 10s, same pre-notched geometry:
+
+   | grid (um) | apex v (um/s) | v / rate111 | v / rate100 |
+   |---|---|---|---|
+   | 0.20 | 0.008976 | 107.7 | 0.676 |
+   | 0.10 | 0.010354 | 124.2 | 0.779 |
+   | 0.05 | 0.010009 | 120.1 | 0.753 |
+
+   Flat across a 4x refinement (if anything slightly higher). Apex
+   rounding is refuted as the mechanism.
+
+5. **Result (c) — the analytical explanation, and it is exact.**
+   Evaluating the real formula with this project's 2D frame:
+
+   - `(111)` facet normal at 54.74deg -> v = **1.0 x rate111** exactly.
+   - velocity MINIMUM over all 2D tilts is at **54.7400deg**, versus
+     the real Si magic angle 54.7356deg — i.e. this project's derived
+     2D crystal frame is correct to within 0.005deg.
+   - **V-groove APEX normal (0, 1, 0) -> v = 1.0000 x `rate100`
+     exactly = 159.4 x `rate111`.**
+
+   That last line is the whole answer. At the apex of a symmetric
+   V-groove the outward normal is the +y (depth) axis at ANY
+   resolution — it is fixed by symmetry, not by the mesh — and in this
+   frame `directions[2]` IS the depth axis, so `N` sorts to (1, 0, 0),
+   the branch test `-N0+N1+2*N2 = -1 < 0` takes the first branch, and
+   that branch reduces to exactly `rate100`. The measured 0.68-0.78x
+   (rather than 1.00x) is consistent with the deepest mesh point being
+   a blend of the exact-vertical point and its slightly-tilted
+   neighbours.
+
+6. **What it proves — root cause, precisely located:** this project's
+   KOH model is *correct for surfaces* and *incorrect at corners*, and
+   the corner failure is a level-set-method limitation, not a bug in
+   this project's frame, rates, recipe, mesh, or solver settings. The
+   velocity function v(tilt) is strongly NON-CONVEX (a deep minimum of
+   `rate111` at 54.74deg, rising to `rate110` at 90deg and `rate100` at
+   0deg). Plain normal-velocity advection evaluates each interface
+   point using its OWN local normal, so a concave corner between two
+   slow facets advances at whatever its own normal happens to
+   evaluate to — here, `rate100`. Physically correct behaviour requires
+   the corner to be governed by its NEIGHBOURING facets instead (the
+   Wulff/Frank convexification standard for crystal etch/growth
+   simulation). This single mechanism explains, coherently, every
+   previously-recorded observation that had looked unrelated: why none
+   of the 12 ViennaLS spatial schemes helped (they address convex
+   Hamiltonians / position-dependent velocity, not a non-convex
+   orientation-dependent one), why grid refinement never helped, why
+   the facet angle wanders from a flat start, and why depth grows
+   near-linearly forever.
+
+7. **What remains uncertain / explicitly NOT done:** it was not
+   confirmed by reading ViennaLS's C++ source that it lacks a
+   Wulff/convexification path — an earlier session did read `Advect`
+   and found no such handling, but this session did not re-verify that,
+   nor check whether some other ViennaLS/ViennaPS entry point offers
+   one. The 0.68-0.78x-vs-1.00x gap between measured and analytical
+   apex velocity is explained plausibly (mesh blending) but not
+   separately measured. TMAH remains moot for the same reason as
+   before, and real TMAH rate constants were still never obtained.
+
+8. **Practical consequence for this project, stated plainly:** a
+   self-limiting V-groove is NOT achievable through any recipe, frame,
+   grid, scheme or geometry choice available at this project's own
+   layer — the fix would have to be a corner-velocity (Wulff)
+   construction inside the advection library. `wet_etching.py`'s
+   existing docstring scope limit ("treat this model as anisotropic,
+   genuinely (111)-aware — not as validated self-limiting KOH/TMAH
+   physics") is therefore correct as written and should stay; what has
+   changed is that the reason is now known exactly rather than
+   suspected.
+
+9. **Next smallest experiment (only if this is pursued further):** read
+   ViennaLS's advection source specifically for corner/Wulff handling
+   to confirm point 7's assumption; if genuinely absent, the honest
+   options are to (i) keep the documented scope limit, (ii) raise it
+   upstream with this analytical case, or (iii) implement a
+   convexified-velocity wrapper, which is a substantial numerical
+   -methods project well beyond a recipe-layer fix.
+
+**No production code changed this part** — analysis/documentation only,
+throwaway probes not committed. Regression unaffected.
+
 ## Current Task
 
 Do not try to solve everything at once.

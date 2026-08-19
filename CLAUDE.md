@@ -196,37 +196,44 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
 
 ## OPEN issues (active — read before starting new work)
 
-1. **KOH/TMAH self-limiting V-groove not achieved — mask-undercut
-   hypothesis REFUTED, not just unconfirmed.** The 2D crystal-frame bug
-   is fixed (rate111/rate311 are no longer inert), but the model still
-   does not hold a stable (111) facet. The leading hypothesis (fast
-   `rate110` undercutting an initially-VERTICAL mask-edge wall before
-   the slow facet can anchor) was tested directly: a real V-notch,
-   pre-carved to the exact ideal apex depth and magic angle from t=0
-   (verified geometry: area within 2.8% of analytical, y-range exact),
-   was etched with the real `KOH_30PCT_70C_2D` model. Depth grew
-   2.00 -> 2.60 -> 2.89 -> 3.32um at t=60/120/150/180s — flat-to
-   -mildly-accelerating, not decelerating, and the mask itself was
-   confirmed static throughout. Removing the initial vertical wall
-   entirely made no qualitative difference, so mask-edge undercut was
-   never the operative cause. **Measurement trap worth reusing:** an
-   under-sized `floor_depth_um` at export made this look like a
-   genuine self-limited plateau for 90+ seconds (a suspiciously exact
-   -1.8um depth while the flat bottom visibly widened) — it was the
-   export's own floor clipping the real, still-growing front; doubling
-   `floor_depth_um` made the "plateau" vanish. Root mechanism is now
-   narrowed to whether the 54.7356° magic-angle configuration is even a
-   stable fixed point of this 2D velocity field under ViennaLS's
-   discretization at all — untested next step: track the FACET ANGLE
-   (not just depth) in this same pre-notched setup; if it drifts away
-   from 54.7356° immediately even starting exactly there, that
-   implicates ViennaLS-internal territory (`Advect`'s velocity
-   -extension/normal computation), not geometry. TMAH itself is moot
-   until this is resolved — its distinguishing parameter (`rate111`)
-   has no traction on the simulated shape yet. Real TMAH rate constants
-   were also never obtained (paywalled paper, blocked mirror, no
-   ViennaPS data). Full writeup: search `docs/investigation_log.md` for
-   "mask-edge pre-faceting hypothesis REFUTED".
+1. **KOH/TMAH self-limiting V-groove — ROOT-CAUSED, and NOT fixable at
+   this project's layer.** No longer an open question, but left here
+   because it bounds what the shipped KOH model may be claimed to do.
+   The velocity field is *correct*: evaluating `psWetEtching.hpp`'s own
+   formula with this project's `KOH_30PCT_70C_2D` frame gives exactly
+   `rate111` at the (111) facet, and its velocity minimum sits at
+   54.7400° vs the real magic angle 54.7356° — the 2D frame is right to
+   0.005°. The failure is at the CORNER: **a V-groove apex has outward
+   normal (0,1,0) by symmetry at any resolution, and that normal
+   evaluates to exactly `rate100` = 159x `rate111`.** So the one point
+   that must stop for the groove to close is the fastest-moving point
+   on the whole profile. Measured directly, starting from a V-notch
+   pre-carved at the exact magic angle: apex advances at ~100x
+   `rate111` (~0.7x `rate100`) from the first timestep, while the
+   sidewall angle still reads 54.50° at R²=0.9998 — and it is
+   **grid-independent** (0.68/0.78/0.75x `rate100` at gd 0.2/0.1/0.05),
+   ruling out apex rounding. Root cause: v(tilt) is strongly
+   NON-CONVEX, and plain normal-velocity level-set advection moves each
+   point by its own local normal, so a concave corner between two slow
+   facets is not governed by those facets. Correct behaviour needs a
+   Wulff/Frank convexification inside the advection library — i.e. a
+   ViennaLS-level numerical-methods change, unreachable from any
+   recipe, frame, grid, scheme or geometry choice here. This one
+   mechanism also explains why none of the 12 spatial schemes helped,
+   why grid refinement never helped, and why the facet angle wanders
+   from a flat start. **Consequence:** `wet_etching.py`'s existing
+   docstring scope limit ("anisotropic, genuinely (111)-aware — NOT
+   validated self-limiting KOH/TMAH physics") is correct and must stay;
+   what changed is that the reason is now exact rather than suspected.
+   TMAH stays moot for the same reason, and real TMAH rate constants
+   were never obtained (paywalled paper, blocked mirror, no ViennaPS
+   data). Two measurement traps worth reusing are recorded with it: an
+   under-sized `floor_depth_um` faked a 90-second "self-limited
+   plateau" (export floor clipping a still-growing front), and a
+   straight-line angle fit needs its R² reported or a curved profile
+   yields a confident, meaningless angle. Full writeup: search
+   `docs/investigation_log.md` for "the apex normal evaluates to
+   rate100".
 
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):
