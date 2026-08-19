@@ -6567,6 +6567,108 @@ own next step, closing the one item it had left open.
 
 **Regression: 30 passed, 0 failed, 0 skipped** (unchanged).
 
+### GUI: deposition panel added — ADDED, verified end-to-end via real ViennaPS (same session, per explicit instruction "Gui하나씩 바꿔가자 너가 옳다고 생각하는 방향대로 하나씩 ㄱㄱ" — "let's change the GUI one at a time, in whatever direction you think is right, go")
+
+1. **What was done:** added `_make_deposition_panel()`,
+   `_update_deposition_field_visibility()`, and `run_deposition()` to
+   `tcad_2d_stagewise.py`, mirroring the already-verified oxidation
+   panel's pattern (combobox + per-model parameter frames in one fixed
+   container, shown/hidden via `pack()`/`pack_forget()`). Wired into
+   `_make_control_panel()`, `_update_process_buttons()` (new
+   `deposition_button`, new `"deposited"` stage key), the
+   `process_pr_strip()` guard (`process_stage in ("etched", "oxidized",
+   "deposited")`), and the `pr_present` cosmetic draw logic.
+
+   Deposition models are more heterogeneous than etch models, so each
+   of the 7 registered models (`isotropic`, `directional`,
+   `single_particle_cvd`, `teos`, `teos_pecvd`, `selective_epitaxy`,
+   `geometric_trench`) got its own parameter frame rather than sharing
+   fields the way the etch panel's models mostly do. Field defaults
+   were taken directly from the real, already-passing
+   `tests/integration/test_phase3_deposition_real.py`
+   (`BASE_RECIPE`/`RECIPE_OVERRIDES`), not invented. `geometric_trench`
+   is architecturally different from the other 6 — it is a
+   zero-duration geometric stamp (`thickness = a*(1-|y|/depth)^n + b`),
+   not a `rate x time` ViennaLS/ViennaPS advection simulation — so its
+   frame has no `deposition_time_s` field and instead carries a
+   descriptive warning label about the "search-box radius must exceed
+   a+b or the result is silently wrong" pitfall already documented in
+   `geometric_trench.py`'s own module docstring. `selective_epitaxy`
+   exposes only a single Si growth-rate field for v1; its `rate_111`/
+   `rate_100` are left unset so ViennaPS's own real defaults (0.5/1.0)
+   apply. TEOS/TEOS PE-CVD expose only their single-precursor fields
+   for v1 (dual-precursor P2 fields, optional ion/reaction-order/
+   min-angle fields not exposed).
+
+2. **What was verified — live, via the same Xvfb + `.venv312` +
+   xdotool setup used for every prior GUI verification this session.**
+   Ran full lithography (PR coat -> mask alignment -> exposure ->
+   develop) to reach the `"developed"` stage, then exercised TWO
+   structurally different deposition models through to a real,
+   completed ViennaPS run:
+   - **Non-Conformal (geometric_trench)** — confirmed the panel's
+     field-visibility switch correctly shows only its 5 fields (no
+     deposition-time field) plus the pitfall warning label; clicked
+     "5c. START DEPOSITION" and got a real completion dialog
+     (`.../geometric_trench_final_volume.vtu`); the rendered mesh shows
+     the expected center-peaked, edge-thinning trench-bottom profile
+     matching the `a*(1-|y|/depth)^n+b` formula, not a placeholder.
+   - **Isotropic Deposition** (the simplest `rate x time` model, rate
+     0.05, time 0.5s) — same flow on a fresh wafer, real completion
+     dialog (`.../isotropic_deposition_final_volume.vtu`), real mesh
+     renders (the ~0.025um film is a sub-pixel hairline at this
+     project's established 5um-substrate canvas scale, same visibility
+     limit already documented for the oxidation panel's SiO2 growth —
+     not a bug).
+   - **PR strip after deposition** — the one previously-unverified
+     branch of `process_pr_strip()`'s guard (`"deposited"`, added when
+     the panel was written but not yet exercised) was live click-tested
+     after the geometric_trench run: stage `08 PR strip` fills in, the
+     black `Mask` boxes are removed from the render, the button
+     correctly re-disables afterward. Confirms the guard fix works for
+     all three terminal stages (`"etched"`, `"oxidized"`, `"deposited"`)
+     in real execution, not just by reading the code.
+   - Confirmed all 7 combobox entries render with correct labels (open
+     dropdown, screenshot).
+
+3. **What it proves:** the deposition panel's dispatch through
+   `worker_main()`'s already-generalized
+   `process_registry.get(config["_process_category"],
+   config["_process_model_key"])` works correctly for a second
+   category beyond oxidation, for both a real rate x time simulation
+   and the architecturally-different zero-duration geometric stamp;
+   the three-way terminal-stage guard on PR strip is now fully
+   live-verified rather than partially inferred.
+
+4. **What remains uncertain:** the other 5 of 7 deposition models
+   (directional, conformal CVD, TEOS, TEOS PE-CVD, selective epitaxy)
+   were wired with real-verified defaults from the integration test but
+   were NOT individually click-run through the live GUI this session —
+   only their field-visibility switching was implicitly exercised via
+   the shared code path, not a real ViennaPS execution per model. Same
+   caveat as every prior GUI verification in this file: no automated
+   test exercises the GUI, so this is not repeatable via
+   `tests/run_regression.py` — a future session will need to redo the
+   Xvfb/xdotool setup to reconfirm. This session's container also
+   revealed that `tests/run_regression.py`'s "30 passed" baseline
+   requires `DEVSIM_MATH_LIBS="libopenblas.so.0:liblapack.so.3:
+   libblas.so.3"` to be set before importing `devsim` in this
+   container (its default `libopenblas.so`/`liblapack.so`/`libblas.so`
+   unversioned names are not present, only the versioned `.so.3`/`.so.0`
+   files) — an environment quirk, not a code issue, and not changed in
+   any committed file since it's a session-only env var.
+
+5. **Next smallest experiment (not done):** either click-run the
+   remaining 5 deposition models individually to raise per-model
+   confidence to the same level as the two tested here, or move on to
+   the next unwired GUI surface per CLAUDE.md's own remaining threads
+   (doping — not a registry category, needs different plumbing than the
+   panel/worker pattern the other three share — or `gate_stack`).
+
+**Regression: 30 passed, 0 failed, 0 skipped** (confirmed this session
+with `DEVSIM_MATH_LIBS` set as above; unaffected — this is a GUI-only
+change and `tests/run_regression.py` does not exercise the GUI).
+
 ## Current Task
 
 Do not try to solve everything at once.

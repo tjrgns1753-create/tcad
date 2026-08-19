@@ -546,10 +546,14 @@ class TCADApplication(tk.Tk):
             panel
         )
 
-        # etch_button/oxidation_button (created above) are required by
-        # _update_process_buttons(); call it only after both panels
-        # exist so widget creation order / visual layout is unchanged,
-        # only the timing of this refresh call moves.
+        self._make_deposition_panel(
+            panel
+        )
+
+        # etch_button/oxidation_button/deposition_button (created above)
+        # are required by _update_process_buttons(); call it only after
+        # all panels exist so widget creation order / visual layout is
+        # unchanged, only the timing of this refresh call moves.
         self._update_process_buttons()
 
         self._make_log_panel(
@@ -1173,6 +1177,517 @@ class TCADApplication(tk.Tk):
         )
 
     # --------------------------------------------------------
+    # DEPOSITION
+    # --------------------------------------------------------
+
+    def _make_deposition_panel(
+        self,
+        parent,
+    ):
+        """7 registered deposition models, same combobox + per-model
+        -frame-visibility pattern as _make_etch_panel. Default values
+        for every field are the SAME ones
+        tests/integration/test_phase3_deposition_real.py already
+        verifies against real ViennaPS 4.6.2 (run every registered
+        deposition model), not invented for this panel.
+
+        Unlike etching, "deposition time" is NOT a field every model
+        shares: geometric_trench is a one-shot geometric stamp with no
+        Process() duration at all (see geometric_trench.py's own module
+        docstring) -- so each per-model frame owns its own time field
+        instead of one shared field living above the container the way
+        grid_delta_um/etch_time_s do in _make_etch_panel.
+        """
+
+        frame = ttk.LabelFrame(
+            parent,
+            text="Deposition recipe",
+            padding=10,
+        )
+
+        frame.pack(
+            fill="x",
+            pady=10,
+        )
+
+        ttk.Label(
+            frame,
+            text="Deposition process",
+        ).pack(
+            anchor="w"
+        )
+
+        self.deposition_model = tk.StringVar(
+            value="Isotropic Deposition"
+        )
+
+        ttk.Combobox(
+            frame,
+            textvariable=self.deposition_model,
+            state="readonly",
+            values=[
+                "Isotropic Deposition",
+                "Directional (PVD/Sputter)",
+                "Conformal CVD",
+                "TEOS Deposition",
+                "TEOS PE-CVD",
+                "Selective Epitaxy",
+                "Non-Conformal (geometric trench)",
+            ],
+        ).pack(
+            fill="x"
+        )
+
+        deposition_params_container = ttk.Frame(frame)
+        deposition_params_container.pack(
+            fill="x"
+        )
+
+        isotropic_frame = ttk.Frame(deposition_params_container)
+        self.dep_isotropic_rate_var = self._field(
+            isotropic_frame, "Rate (µm/s)", 0.05,
+        )
+        self.dep_isotropic_time_var = self._field(
+            isotropic_frame, "Deposition time (s)", 0.5,
+        )
+
+        directional_frame = ttk.Frame(deposition_params_container)
+        self.dep_directional_velocity_var = self._field(
+            directional_frame, "Directional velocity (µm/s)", 0.1,
+        )
+        self.dep_directional_time_var = self._field(
+            directional_frame, "Deposition time (s)", 0.5,
+        )
+
+        cvd_frame = ttk.Frame(deposition_params_container)
+        self.dep_cvd_rate_var = self._field(
+            cvd_frame, "Rate (µm/s)", 0.05,
+        )
+        self.dep_cvd_sticking_var = self._field(
+            cvd_frame, "Sticking probability", 1.0,
+        )
+        self.dep_cvd_time_var = self._field(
+            cvd_frame, "Deposition time (s)", 0.5,
+        )
+
+        teos_frame = ttk.Frame(deposition_params_container)
+        self.dep_teos_sticking_var = self._field(
+            teos_frame, "Sticking probability P1", 0.1,
+        )
+        self.dep_teos_rate_var = self._field(
+            teos_frame, "Rate P1 (µm/s)", 1.0,
+        )
+        self.dep_teos_order_var = self._field(
+            teos_frame, "Order P1", 1.0,
+        )
+        self.dep_teos_time_var = self._field(
+            teos_frame, "Deposition time (s)", 0.5,
+        )
+
+        teos_pecvd_frame = ttk.Frame(deposition_params_container)
+        self.dep_pecvd_sticking_var = self._field(
+            teos_pecvd_frame, "Sticking probability (radical)", 0.1,
+        )
+        self.dep_pecvd_rate_radical_var = self._field(
+            teos_pecvd_frame, "Deposition rate, radical (µm/s)", 1.0,
+        )
+        self.dep_pecvd_rate_ion_var = self._field(
+            teos_pecvd_frame, "Deposition rate, ion (µm/s)", 1.0,
+        )
+        self.dep_pecvd_exponent_ion_var = self._field(
+            teos_pecvd_frame, "Exponent (ion)", 100.0,
+        )
+        self.dep_pecvd_time_var = self._field(
+            teos_pecvd_frame, "Deposition time (s)", 0.5,
+        )
+
+        epitaxy_frame = ttk.Frame(deposition_params_container)
+        self.dep_epitaxy_rate_var = self._field(
+            epitaxy_frame, "Si growth rate (µm/s)", 1.0,
+        )
+        self.dep_epitaxy_time_var = self._field(
+            epitaxy_frame, "Deposition time (s)", 0.5,
+        )
+        ttk.Label(
+            epitaxy_frame,
+            text=(
+                "Crystal-orientation-dependent (rate111/rate100 use "
+                "ViennaPS's own defaults, 0.5/1.0)."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=(4, 0),
+        )
+
+        trench_frame = ttk.Frame(deposition_params_container)
+        self.dep_trench_reference_depth_var = self._field(
+            trench_frame, "Reference depth (µm)", 1.0,
+        )
+        self.dep_trench_search_box_var = self._field(
+            trench_frame, "Search-box radius (µm)", 1.0,
+        )
+        self.dep_trench_bottom_med_var = self._field(
+            trench_frame, "Bottom (trench floor) thickness (µm)", 0.05,
+        )
+        self.dep_trench_a_var = self._field(
+            trench_frame, "a (peak thickness term, µm)", 0.1,
+        )
+        self.dep_trench_b_var = self._field(
+            trench_frame, "b (offset term, µm)", 0.02,
+        )
+        ttk.Label(
+            trench_frame,
+            text=(
+                "Geometric stamp, not a rate x time simulation -- no "
+                "deposition-time field. Thickness = a*(1-|y|/depth)^n+b, "
+                "n=1 (ViennaPS default). Search-box radius must exceed "
+                "a+b or the result is silently wrong -- see "
+                "geometric_trench.py's own module docstring."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=(4, 0),
+        )
+
+        self._deposition_model_frames = {
+            "Isotropic Deposition": isotropic_frame,
+            "Directional (PVD/Sputter)": directional_frame,
+            "Conformal CVD": cvd_frame,
+            "TEOS Deposition": teos_frame,
+            "TEOS PE-CVD": teos_pecvd_frame,
+            "Selective Epitaxy": epitaxy_frame,
+            "Non-Conformal (geometric trench)": trench_frame,
+        }
+
+        self.deposition_model.trace_add(
+            "write",
+            lambda *_args: self._update_deposition_field_visibility(),
+        )
+        self._update_deposition_field_visibility()
+
+        self.deposition_button = ttk.Button(
+            frame,
+            text="5c. START DEPOSITION — VIENNAPS",
+            command=self.run_deposition,
+        )
+        self.deposition_button.pack(
+            fill="x",
+            pady=(12, 3),
+        )
+
+        ttk.Label(
+            frame,
+            text=(
+                "The deposited surface is generated by ViennaPS, not "
+                "by a GUI drawing formula."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=5,
+        )
+
+    def _update_deposition_field_visibility(self):
+        """Same mechanism as _update_etch_field_visibility(): show only
+        the parameter group for the currently-selected deposition
+        model, all packed into one fixed container so switching never
+        moves the button/log panel below it."""
+
+        selected = self.deposition_model.get()
+
+        for model_name, group_frame in self._deposition_model_frames.items():
+            if model_name == selected:
+                group_frame.pack(fill="x")
+            else:
+                group_frame.pack_forget()
+
+    def run_deposition(self):
+
+        if not self.wafer.developed:
+
+            messagebox.showwarning(
+                "Process order",
+                "Run lithography and develop first.",
+            )
+
+            return
+
+        deposition_model_keys = {
+            "Isotropic Deposition": "isotropic",
+            "Directional (PVD/Sputter)": "directional",
+            "Conformal CVD": "single_particle_cvd",
+            "TEOS Deposition": "teos",
+            "TEOS PE-CVD": "teos_pecvd",
+            "Selective Epitaxy": "selective_epitaxy",
+            "Non-Conformal (geometric trench)": "geometric_trench",
+        }
+        model_key = deposition_model_keys.get(self.deposition_model.get())
+
+        if model_key is None:
+
+            messagebox.showinfo(
+                "Backend status",
+                "Unknown deposition model selected.",
+            )
+
+            return
+
+        if not viennaps_session.is_available():
+
+            messagebox.showerror(
+                "ViennaPS",
+                "ViennaPS is not installed.\n\n"
+                "Run:\n"
+                "python -m pip install ViennaPS",
+            )
+
+            return
+
+        try:
+
+            recipe = {
+                "_process_category": "deposition",
+                "_process_model_key": model_key,
+
+                "mask_left_um":
+                    self.wafer.mask_left_um,
+
+                "mask_right_um":
+                    self.wafer.mask_right_um,
+
+                "pr_thickness_um":
+                    self.wafer.pr_thickness_um,
+
+                "silicon_depth_um":
+                    self.wafer.silicon_depth_um,
+
+                "grid_delta_um":
+                    float(
+                        self.grid_var.get()
+                    ),
+
+                "x_extent_um":
+                    self.wafer.width_um,
+
+                "y_extent_um":
+                    8.0,
+            }
+
+            if model_key == "isotropic":
+
+                recipe.update({
+                    "rate": float(self.dep_isotropic_rate_var.get()),
+                    "deposition_time_s": float(self.dep_isotropic_time_var.get()),
+                    "mask_material": "Mask",
+                })
+
+            elif model_key == "directional":
+
+                recipe.update({
+                    "direction": [0.0, 1.0, 0.0],
+                    "directional_velocity": float(self.dep_directional_velocity_var.get()),
+                    "deposition_time_s": float(self.dep_directional_time_var.get()),
+                    "mask_material": "Mask",
+                })
+
+            elif model_key == "single_particle_cvd":
+
+                recipe.update({
+                    "rate": float(self.dep_cvd_rate_var.get()),
+                    "sticking_probability": float(self.dep_cvd_sticking_var.get()),
+                    "deposition_time_s": float(self.dep_cvd_time_var.get()),
+                    "mask_material": "Mask",
+                })
+
+            elif model_key == "teos":
+
+                recipe.update({
+                    "sticking_probability_p1": float(self.dep_teos_sticking_var.get()),
+                    "rate_p1": float(self.dep_teos_rate_var.get()),
+                    "order_p1": float(self.dep_teos_order_var.get()),
+                    "deposition_time_s": float(self.dep_teos_time_var.get()),
+                })
+
+            elif model_key == "teos_pecvd":
+
+                recipe.update({
+                    "sticking_probability_radical": float(self.dep_pecvd_sticking_var.get()),
+                    "deposition_rate_radical": float(self.dep_pecvd_rate_radical_var.get()),
+                    "deposition_rate_ion": float(self.dep_pecvd_rate_ion_var.get()),
+                    "exponent_ion": float(self.dep_pecvd_exponent_ion_var.get()),
+                    "deposition_time_s": float(self.dep_pecvd_time_var.get()),
+                })
+
+            elif model_key == "selective_epitaxy":
+
+                recipe.update({
+                    "material_rates": [
+                        {"material": "Si", "rate": float(self.dep_epitaxy_rate_var.get())},
+                    ],
+                    "deposition_time_s": float(self.dep_epitaxy_time_var.get()),
+                })
+
+            elif model_key == "geometric_trench":
+
+                recipe.update({
+                    "reference_depth_um": float(self.dep_trench_reference_depth_var.get()),
+                    "deposition_rate_um": float(self.dep_trench_search_box_var.get()),
+                    "bottom_med_um": float(self.dep_trench_bottom_med_var.get()),
+                    "a_um": float(self.dep_trench_a_var.get()),
+                    "b_um": float(self.dep_trench_b_var.get()),
+                })
+
+        except ValueError:
+
+            messagebox.showerror(
+                "Deposition recipe",
+                "All recipe values must be numeric.",
+            )
+
+            return
+
+        output_dir = tempfile.mkdtemp(
+            prefix="tcad2d_real_v2_"
+        )
+
+        recipe["output_dir"] = output_dir
+
+        config_file = Path(
+            output_dir
+        ) / "recipe.json"
+
+        result_file = Path(
+            output_dir
+        ) / "result.json"
+
+        config_file.write_text(
+            json.dumps(
+                recipe,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        model_label = self.deposition_model.get()
+
+        time_note = (
+            f" ({recipe['deposition_time_s']}s)"
+            if "deposition_time_s" in recipe
+            else " (zero-duration geometric stamp)"
+        )
+        self._log(
+            f"\n================================\n"
+            f"REAL VIENNAPS {model_label.upper()} START\n"
+            f"================================\n"
+            f"1. MakeTrench\n"
+            f"2. {model_label}{time_note}\n"
+        )
+
+        self.update_idletasks()
+
+        try:
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(
+                        Path(__file__).resolve()
+                    ),
+                    "--worker",
+                    str(config_file),
+                    str(result_file),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=900,
+            )
+
+        except Exception as exc:
+
+            messagebox.showerror(
+                "ViennaPS",
+                str(exc),
+            )
+
+            return
+
+        if not result_file.exists():
+
+            messagebox.showerror(
+                "ViennaPS",
+                "Worker did not produce a result file.\n\n"
+                + completed.stderr[-4000:],
+            )
+
+            return
+
+        result = json.loads(
+            result_file.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        if not result.get("success"):
+
+            messagebox.showerror(
+                "ViennaPS",
+                result.get(
+                    "error",
+                    "Unknown ViennaPS error.",
+                ),
+            )
+
+            self._log(
+                "\nVIENNAPS FAILED\n"
+            )
+
+            return
+
+        self.wafer.processed = True
+        self.process_stage = "deposited"
+        self.last_final_mesh = result.get("final_mesh")
+
+        self._activate_stages(
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+        )
+
+        self.history.append(
+            f"ViennaPS {model_label}"
+        )
+
+        self._log(
+            f"\n================================\n"
+            f"REAL VIENNAPS {model_label.upper()} COMPLETE\n"
+            f"================================\n"
+            f"Surface files: "
+            f"{len(result['snapshots'])}\n"
+            f"Final mesh:\n"
+            f"{result['final_mesh']}\n"
+        )
+
+        self._update_process_buttons()
+
+        self.redraw()
+
+        messagebox.showinfo(
+            "ViennaPS",
+            f"ViennaPS {model_label} simulation complete.\n\n"
+            f"Final mesh:\n{result['final_mesh']}",
+        )
+
+    # --------------------------------------------------------
     # LOG
     # --------------------------------------------------------
 
@@ -1303,13 +1818,15 @@ class TCADApplication(tk.Tk):
             "pr_coated": [self.align_button],
             "aligned": [self.expose_button],
             "exposed": [self.develop_button],
-            # Etch and oxidation are alternative backend process steps
-            # available once the wafer is developed -- either one builds
-            # a fresh domain from the same self.wafer geometry (see
-            # run_etch / run_oxidation), not a two-step sequence.
-            "developed": [self.etch_button, self.oxidation_button],
+            # Etch, oxidation, and deposition are alternative backend
+            # process steps available once the wafer is developed --
+            # each builds a fresh domain from the same self.wafer
+            # geometry (see run_etch / run_oxidation / run_deposition),
+            # not a multi-step sequence.
+            "developed": [self.etch_button, self.oxidation_button, self.deposition_button],
             "etched": [self.strip_button],
             "oxidized": [self.strip_button],
+            "deposited": [self.strip_button],
             "stripped": [],
         }
 
@@ -1320,6 +1837,7 @@ class TCADApplication(tk.Tk):
             self.develop_button,
             self.etch_button,
             self.oxidation_button,
+            self.deposition_button,
             self.strip_button,
         ]
 
@@ -1395,7 +1913,7 @@ class TCADApplication(tk.Tk):
         self.redraw()
 
     def process_pr_strip(self):
-        if self.process_stage not in ("etched", "oxidized"):
+        if self.process_stage not in ("etched", "oxidized", "deposited"):
             return
 
         self.wafer.stripped = True
@@ -1961,6 +2479,7 @@ class TCADApplication(tk.Tk):
         stage = self.process_stage
         pr_present = stage in (
             "pr_coated", "aligned", "exposed", "developed", "etched", "oxidized",
+            "deposited",
         )
         mask_present = stage in ("aligned", "exposed")
         exposed_now = stage == "exposed"

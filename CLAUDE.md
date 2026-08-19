@@ -172,8 +172,9 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
   visually verified on-screen via a secondary `.venv312` + Xvfb +
   `xdotool` setup (the main venv's Python has no installable tkinter
   in this container). GUI etch panel wires 4 models (Bosch DRIE,
-  Directional RIE, Isotropic, SF6/O2); deposition/oxidation/doping
-  have no GUI panel at all.
+  Directional RIE, Isotropic, SF6/O2); an oxidation/LOCOS panel and a
+  deposition panel (7 models) are now also wired (see GUI section
+  below); doping and gate_stack remain unwired.
 - **Registry growth**: etching 11 models, deposition 6 models, doping
   3 kinds (uniform, step_junction, gaussian_implant, implant_windows),
   plus `geometry`/`gate_stack`.
@@ -284,6 +285,25 @@ just confirmed by reading the diff. Deposition, doping, and
 gate_stack remain unwired (see OPEN-adjacent minor threads); doping
 in particular is not a registry category at all and needs different
 plumbing than the panel/worker pattern the other three share.
+
+A deposition panel (7 registered models: isotropic, directional,
+single_particle_cvd, teos, teos_pecvd, selective_epitaxy,
+geometric_trench) was added next, same combobox +
+show/hide-per-model-frame pattern as the oxidation panel, field
+defaults taken from the real, already-passing
+`tests/integration/test_phase3_deposition_real.py` rather than
+invented. `geometric_trench` is architecturally distinct from the
+other 6 (a zero-duration geometric stamp, no `deposition_time_s`
+field) and got its own frame with a pitfall-warning label. Live-
+verified via the same Xvfb+xdotool setup: geometric_trench and
+Isotropic Deposition both ran through real ViennaPS to a completed
+mesh; PR strip's three-way terminal-stage guard (`"etched"`,
+`"oxidized"`, `"deposited"`) is now confirmed live for all three
+stages, not just the first two. The other 5 deposition models are
+wired with real-verified defaults but were not individually click-run
+this session — see `docs/investigation_log.md`'s own "what remains
+uncertain" for the deposition-panel entry. Doping and gate_stack are
+still the only unwired categories.
 
 ## Current Task
 
