@@ -240,6 +240,65 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
    `docs/investigation_log.md` for "the apex normal evaluates to
    rate100".
 
+2. **GUI implant_windows measurement fails on the GUI's OWN default
+   wafer (10x8um) — OPEN.** `refine_process_result_for_implant_windows()`
+   fixed the 4x3um case robustly (see the GUI section), but clicking
+   MEASURE on a default-sized wafer still raises "Convergence failure!",
+   and it fails in the **EQUILIBRIUM** solve (RelError 1.0 -> 1.52,
+   rising) before any bias is applied — so no bias-ramping strategy can
+   help, and refinement does not rescue it either (fails both with and
+   without).
+
+   **ROOT CAUSE (confirmed by direct experiment):** a doping junction
+   placed roughly HALF A MESH CELL from an etched sidewall, with the
+   heavily-doped side forming a full-thickness strip narrower than one
+   cell. The GUI's defaults do exactly that: mask 3.5-6.5 puts the
+   trench sidewall at x=+-1.5, and the implant window's outer edge is
+   at +-1.6 — a 0.1um full-thickness n+ sliver against a 0.2um grid.
+   Same wafer, same mask, same trench, same doping levels, same
+   refinement, moving ONLY the windows:
+
+   | implant windows | edges vs the sidewall at +-1.5 | result |
+   |---|---|---|
+   | 0.6-1.6 (GUI default) | outer edge 0.1um from it | **FAIL** |
+   | 0.6-1.2 | both well inside the trench | OK, +2.9267e-11 A |
+   | 2.0-3.0 | both well outside the trench | OK, +2.9273e-11 A |
+
+   Note the junction-to-sidewall distance alone is not the trigger: the
+   passing 4x3 case also has a window edge 0.1um from its sidewall, but
+   there the etched step falls in the lightly-doped BODY, so no
+   sub-cell strip of 1e20 silicon is formed. Workaround for a user
+   today: keep implant-window edges at least ~1 grid cell away from
+   etched sidewalls (or put them fully inside/outside the trench).
+   Neither a finer base grid nor more refinement rescues the default
+   layout — grid 0.10 (26374 nodes) still fails, and so does the
+   unrefined mesh.
+
+   What makes it look mysterious from the outside: the failure is
+   **marginal in every measurable mesh property**.
+   Measured directly, `mask 3.5-6.5` (the GUI default, FAILS) vs
+   `mask 4.5-5.5` (PASSES) on the same 10x8 wafer produce meshes that
+   are identical in every property checked — 1330 nodes each, same
+   x/y extents, same two contacts with 25 elements each, same NetDoping
+   range — differing only in which side of the junction 4 nodes land on.
+   A 4-node difference flips convergence. Ruled out by bisection, each
+   its own run: domain size alone (10x8 with a narrow mask converges),
+   the implant-window edges coinciding with etched trench sidewalls
+   (4x3 with a wide mask converges), and the doping level (dropping the
+   body to -1e15 still fails).
+
+   Reproducer: `mask_left_um=3.5, mask_right_um=6.5, x_extent_um=10,
+   y_extent_um=8, silicon_depth_um=5, grid_delta_um=0.2`, implant
+   windows [-1.6,-0.6] and [0.6,1.6] at 1e20 on a -1e17 body.
+   Why it is still OPEN rather than fixed: the mechanism is understood
+   but nothing in the code currently prevents a user from choosing that
+   layout, and the panel cannot see the trench geometry from the doping
+   profile alone. Next smallest experiment: check whether the sliver is
+   visible in the imported mesh as degenerate/high-aspect triangles
+   (element areas near the sidewall vs elsewhere) — if so, the panel
+   could detect and warn about it cheaply before solving, instead of
+   surfacing a bare "Convergence failure!".
+
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):
 `pad_oxide_thickness_um`'s default only verified at one grid
@@ -375,9 +434,11 @@ to reconverge if called twice on the same device, every MEASURE click
 imports a fresh DevSim device and cleans it up in `finally`
 (`delete_device`+`delete_mesh`, mirroring
 `tcad/cli/run_pipeline.py`'s own pattern) rather than keeping one
-device alive across clicks. **All 4 doping kinds are now verified to
-converge through this panel at the panel's own default field values**
-(`tests/integration/test_gui_measurement_doping_kinds_real.py`), each
+device alive across clicks. **All 4 doping kinds are verified to
+converge through this panel's own code path at the doping panel's own
+default field values, on a 4x3um wafer — NOT on the GUI's default
+10x8um wafer, where implant_windows still fails (see the OPEN item
+below)** (`tests/integration/test_gui_measurement_doping_kinds_real.py`), each
 with its own refinement strategy: Step Junction uses
 `refine_near_um`/`refine_axis` from the profile; Gaussian Implant uses
 the existing `auto_refine_from_doping=True`; Implant Windows uses the
@@ -414,9 +475,12 @@ because its `DopingRegion` carries neither `junction_position_um` nor
 existing `derive_implant_windows_refinement()`, graded-refines, and
 returns a ProcessResult on the refined mesh carrying the same
 DopingProfile. The GUI panel and the regression test both call that
-one function rather than each holding a copy. Measured: fails outright
--> 622->13543 mesh points, 11269 Si nodes, I=+3.4753e-11 A, ~10.5s
-per click including the ViennaPS etch.
+one function rather than each holding a copy. Measured **on a 4x3um
+wafer**: fails outright -> 622->13543 mesh points, 11269 Si nodes,
+I=+3.4753e-11 A, ~10.5s per click including the ViennaPS etch. Robust
+there rather than lucky — perturbing the mask (1.3-2.7 / 1.4-2.6 /
+1.5-2.5 / 1.6-2.4) keeps all four converging at a consistent ~3.5e-11 A.
+**It does NOT fix the GUI's own default 10x8um wafer — see OPEN item 2.**
 
 **Reusable trap found while chasing this (cost a whole prior
 conclusion):** a LEAKED DevSim device makes the NEXT, unrelated solve

@@ -11,8 +11,19 @@ The panel (tcad_2d_stagewise.py's run_measurement) does, verbatim:
     implant_windows  -> refine_process_result_for_implant_windows()
     uniform          -> no refinement (no junction to resolve)
     run_pn_junction_iv_sweep(sweep_voltages=[voltage])   # single point
-and the doping values below are the panel's own default field values,
-so a failure here is a failure a user would actually hit on MEASURE.
+and the doping values below are the doping panel's own default field
+values, so a failure here is a failure a user would actually hit on
+MEASURE.
+
+SCOPE LIMIT, and it is a real one: the WAFER below is 4x3um, while the
+GUI's own default wafer is 10x8um (Wafer.width_um=10, run_etch's
+y_extent_um=8.0, mask 3.5-6.5). implant_windows passes here and still
+FAILS at that default wafer size — in the equilibrium solve, before any
+bias — so passing this test does NOT mean a default-sized GUI run
+converges. See CLAUDE.md OPEN item 2. The 4x3 case is robust rather
+than lucky (perturbing the mask to 1.3-2.7 / 1.4-2.6 / 1.6-2.4 keeps
+all of them converging at a consistent ~3.5e-11 A), but it is a
+smaller device than the GUI ships with.
 
 Why this test exists (measured, not assumed — see docs/investigation_log.md
 "GUI measurement: which doping kinds actually converge"):
@@ -229,7 +240,9 @@ def main():
 
     print()
     print("ALL 4 DOPING KINDS CONVERGE THROUGH THE GUI MEASUREMENT PANEL'S "
-          "OWN PATH, at the panel's own default field values")
+          "OWN PATH, at the doping panel's own default field values")
+    print("NOTE: on a 4x3um wafer. implant_windows still FAILS on the GUI's "
+          "default 10x8um wafer -- see CLAUDE.md OPEN item 2.")
 
 
 if __name__ == "__main__":

@@ -7139,7 +7139,81 @@ silently return. All 4 converge:
 That the four run back-to-back in one process also confirms repeated
 MEASURE clicks are safe as long as cleanup is correct.
 
-### 5. What remains uncertain
+### 5. Found afterwards: the GUI's OWN DEFAULT WAFER still fails
+
+The verification above uses a 4x3um wafer. Driving the REAL Tk widgets
+under Xvfb (NEW WAFER -> PR coat -> mask -> expose -> develop ->
+Isotropic etch -> APPLY DOPING (Implant Windows) -> MEASURE), at the
+GUI's default 10x8um wafer, still raises "Convergence failure!" —
+and it fails in the EQUILIBRIUM solve (RelError 1.0 -> 1.52, rising)
+before any bias, so no bias-ramping strategy can address it, and
+refinement does not rescue it (fails both with and without).
+
+Bisected, each case its own process:
+
+| case | result |
+|---|---|
+| 4x3, mask 1.5-2.5 (the regression case) | OK, 11269 nodes, +3.4753e-11 A |
+| 10x8, mask 3.5-6.5 (GUI default), refined | **FAIL** |
+| 10x8, mask 3.5-6.5, unrefined | **FAIL** |
+| 10x8, mask 4.5-5.5, refined | OK, 12049 nodes, +3.4717e-11 A |
+| 4x3, mask 0.7-3.3 (trench ON window edges) | OK, 11082 nodes, +3.4364e-11 A |
+| 10x8, mask 3.5-6.5, body -1e15 | **FAIL** |
+
+That rules out domain size alone and the doping level. Dumping both 10x8
+meshes shows them identical in every property checked — 1330 nodes
+each, x=[-5,+5] y=[-5,-0.000] um, contacts Si_xmin/Si_xmax with 25
+elements each, NetDoping -1.000e+17..9.990e+19 — differing only in
+which side of a junction 4 nodes land on (n+ 316/p 1014 vs n+ 312/p
+1018). A 4-node difference decides convergence.
+
+**ROOT CAUSE, confirmed by direct experiment.** Keeping the GUI wafer,
+mask, trench, doping levels and refinement fixed and moving ONLY the
+implant windows:
+
+| implant windows | edges vs the sidewall at +-1.5 | result |
+|---|---|---|
+| 0.6-1.6 (GUI default) | outer edge 0.1um from it | **FAIL** |
+| 0.6-1.2 | both well inside the trench | OK, 11872 nodes, +2.9267e-11 A |
+| 2.0-3.0 | both well outside the trench | OK, 11862 nodes, +2.9273e-11 A |
+
+So the trigger is a doping junction sitting about HALF A MESH CELL from
+an etched sidewall, with the heavily-doped side forming a
+full-thickness strip narrower than one cell. mask 3.5-6.5 puts the
+sidewall at x=+-1.5 and the window's outer edge at +-1.6: a 0.1um strip
+of full-thickness 1e20 silicon against a 0.2um grid.
+
+Crucially, junction-to-sidewall DISTANCE alone is not the trigger. The
+passing 4x3 case has a window edge 0.1um from its sidewall too — but
+there the etched step falls inside the lightly-doped BODY, so no
+sub-cell strip of 1e20 silicon is formed. That is why the earlier
+"trench on the window edges" bisection came back OK and looked like it
+had exonerated the geometry: it moved the trench onto the INNER window
+edge, not the outer one.
+
+Neither more resolution nor more refinement rescues the default layout:
+grid 0.10 (26374 nodes) still fails, and so does the unrefined mesh.
+Workaround for a user today: keep implant-window edges at least ~1 grid
+cell away from etched sidewalls, or fully inside/outside the trench.
+
+The committed 4x3 case was checked for the same fragility and is NOT
+marginal: perturbing its mask to 1.3-2.7, 1.4-2.6, 1.5-2.5 and 1.6-2.4
+converges in all four, at a consistent ~3.5e-11 A.
+
+Two process notes worth reusing. First, the GUI click test's first two
+failures were the harness, not the product — the script skipped the
+lithography sequence ("Run lithography and develop first.") and then
+used a combobox label the GUI does not have ("Isotropic" vs "Isotropic
+etch"); the GUI correctly refused both. Second, and more important:
+**the regression test passing is what hid this.** The test was written
+at 4x3 because that is where the investigation happened, not because
+that is what the GUI ships — so it verified the panel's code path
+without verifying the panel's actual default geometry, and a claim of
+"all 4 kinds converge" went into CLAUDE.md that a single real click
+disproved. A panel-path test should carry the panel's OWN wafer
+defaults, or state the gap in its docstring (this one now does).
+
+### 6. What remains uncertain
 
 - The KCL threshold is 1e-3 relative. The loosest measured case is
   step_junction: I=4.93e-11 A with the terminals differing by 1.0e-15 A
@@ -7164,7 +7238,7 @@ MEASURE clicks are safe as long as cleanup is correct.
   click, a failure of the first call would silently leak the mesh. Not
   observed; left alone rather than changed speculatively.
 
-### 6. Next smallest experiment
+### 7. Next smallest experiment
 
 Validate one current magnitude against an analytic value — the
 `uniform` slab is the easiest: R = rho*L/(W*depth) with rho from the
