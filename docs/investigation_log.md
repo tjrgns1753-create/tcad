@@ -6669,6 +6669,96 @@ own next step, closing the one item it had left open.
 with `DEVSIM_MATH_LIBS` set as above; unaffected — this is a GUI-only
 change and `tests/run_regression.py` does not exercise the GUI).
 
+### GUI: MOSFET gate-stack panel added — ADDED, verified end-to-end via real ViennaPS + DevSim (same session, per "Gui하나씩 바꿔가자 너가 옳다고 생각하는 방향대로 하나씩 ㄱㄱ")
+
+1. **What was tested / done.** `gate_stack` (registry category
+   `"geometry"`) is architecturally unlike etch/oxidation/deposition —
+   confirmed by reading `tcad/process/geometry/gate_stack.py`'s own
+   module docstring before writing any GUI code (investigate before
+   modifying production code): `GateStack.__init__` refuses
+   `inherited_domain` outright (always builds a fresh 5-material
+   stack), no lithography precedes it (no PR/mask-window convention to
+   reuse), and it is explicitly TERMINAL — chaining any further
+   `vps.Process()` call onto its export is documented to silently
+   corrupt 4 of its 5 materials (confirmed separately, not assumed, in
+   that file's own docstring). This ruled out reusing the
+   `process_stage` litho-gated button pattern the other three panels
+   share.
+
+   Built `_make_geometry_panel()` and `run_gate_stack()` instead: the
+   "BUILD GATE STACK" button is always enabled (mirrors NEW WAFER, not
+   gated by `self.process_stage`), field defaults are the same ones
+   `tests/integration/test_gate_stack_geometry_real.py` already
+   verifies against real ViennaPS + DevSim (x_extent 6.0, y_extent 3.0,
+   Si depth 1.0, channel (-0.8,0.8), source (-2.4,-1.0), drain
+   (1.0,2.4), gate oxide 0.02, gate height 0.15, pad height 0.10;
+   materials gate=TiN/source=W/drain=Cu/oxide=SiO2 left as the
+   production code's own defaults, not exposed as fields for v1). On a
+   successful build: `process_stage` is set to a new value,
+   `"gate_stack"`, which `_update_process_buttons()`'s dict has no
+   entry for — every litho/etch/oxidation/deposition/strip button is
+   left disabled (its default fallback), directly enforcing the
+   "do not chain a further process step" restriction at the GUI level
+   too. `_activate_stages()` (the 01-08 sequence markers) is
+   deliberately NOT called, since this build never went through that
+   sequence. Also added `material_colors` entries for TiN/W/Cu (were
+   previously unlisted, would have rendered as the generic gray
+   fallback, making gate/source/drain visually indistinguishable from
+   each other) — a small but necessary addition since distinguishing
+   the 3 new materials is the entire point of viewing this geometry.
+
+2. **Result — live-verified via the same Xvfb + `.venv312` + xdotool
+   setup used for every other GUI panel this session.** Clicked "BUILD
+   GATE STACK" from a fresh, untouched wafer (no litho run first) and
+   got a real completion dialog
+   (`.../gate_stack_final_locos_volume.vtu`). The rendered mesh shows
+   exactly the expected topology: gray Si body, an orange W source pad
+   on the left, a purple TiN gate electrode centered over the channel
+   (on a thin SiO2 layer, barely visible at this thickness — same
+   sub-pixel-hairline visibility limit already documented for the
+   oxidation/deposition panels), and a red Cu drain pad on the right —
+   source left of the channel, drain right, gate confined between them,
+   matching the recipe fields exactly. Confirmed the terminal-state
+   guard live: after the build, scrolling up showed all 5 litho
+   buttons (PR COAT through PR STRIP) correctly grayed out, and the 8
+   stage markers (01-08) all still read `○` (untouched) — the intended
+   behavior, not a bug. Confirmed "NEW WAFER" correctly escapes the
+   terminal state: clicking it re-enabled "1. PR COAT" and restored the
+   flat Si wafer, so the app is not stuck after a gate-stack build.
+
+3. **What it proves:** the `worker_main()` category-dispatch
+   generalization (already proven for `"oxidation"` and `"deposition"`
+   in prior sessions) also works correctly for a third, architecturally
+   different category (`"geometry"`, zero prior state, terminal output)
+   with no changes to `worker_main()` itself — `step_cls()` was already
+   called with no arguments, which happens to match
+   `GateStack.__init__`'s no-inherited-domain default exactly. The
+   "do not chain further" restriction from the module docstring is now
+   also enforced at the GUI layer (not just documented), not merely
+   theoretical.
+
+4. **What remains uncertain:** only the default recipe values were
+   click-tested — no sweep over channel/source/drain window edge cases
+   (e.g. overlapping or out-of-order left/right pairs) was attempted,
+   and the GUI performs no validation of those relationships before
+   calling into `session.make_gate_stack()` (same class of gap already
+   noted for `mask_spans_um` not validating spans against the domain
+   extent). Same standing caveat as every other GUI verification in
+   this file: not exercised by `tests/run_regression.py`, so not
+   repeatable without redoing the Xvfb/xdotool setup.
+
+5. **Next smallest experiment (not done):** doping remains the only
+   unwired GUI category, and needs different plumbing than the
+   panel/worker pattern all four now-wired categories (etch, oxidation,
+   deposition, geometry) share — it is not a registry category at all,
+   so before writing any doping panel code the next step is to
+   investigate how doping is actually invoked in the non-GUI pipeline
+   (`derive_implant_windows_refinement()`, `implant_windows`, etc.) to
+   find the right integration point.
+
+**Regression: 30 passed, 0 failed, 0 skipped** (confirmed this session;
+unaffected — GUI-only change).
+
 ## Current Task
 
 Do not try to solve everything at once.

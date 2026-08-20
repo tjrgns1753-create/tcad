@@ -55,6 +55,7 @@ from tcad.process import registry as process_registry
 import tcad.process.etching  # noqa: F401 -- import side effect: registers etch models
 import tcad.process.deposition  # noqa: F401 -- import side effect: registers deposition models
 import tcad.process.oxidation  # noqa: F401 -- import side effect: registers oxidation models
+import tcad.process.geometry  # noqa: F401 -- import side effect: registers gate_stack
 
 # ============================================================
 # VIENNAPS ETCH ENGINE
@@ -547,6 +548,10 @@ class TCADApplication(tk.Tk):
         )
 
         self._make_deposition_panel(
+            panel
+        )
+
+        self._make_geometry_panel(
             panel
         )
 
@@ -1687,6 +1692,306 @@ class TCADApplication(tk.Tk):
             f"Final mesh:\n{result['final_mesh']}",
         )
 
+    def _make_geometry_panel(
+        self,
+        parent,
+    ):
+        """MOSFET gate-stack geometry (registry category "geometry",
+        model "gate_stack") -- see tcad/process/geometry/gate_stack.py's
+        own module docstring for why this does not fit the etch/
+        oxidation/deposition pattern:
+
+        - No lithography precedes it (no PR/mask fields to reuse) --
+          it builds Si + gate oxide + electrode + separate S/D pads
+          from scratch in one shot, so this button is always enabled,
+          like NEW WAFER, not gated by self.process_stage the way
+          etch/oxidation/deposition are.
+        - It is TERMINAL: GateStack.__init__ refuses inherited_domain
+          outright, and chaining any further vps.Process() call onto
+          its export is confirmed (in the module docstring) to
+          silently corrupt 4 of its 5 materials. So a successful build
+          does not enable any further process button -- process_stage
+          is set to "gate_stack", which _update_process_buttons()'s
+          dict has no entry for (falls through to its own default: no
+          buttons enabled), and _activate_stages() (the 01-08
+          litho/process sequence markers) is deliberately NOT called,
+          since this build did not go through that sequence at all.
+
+        Field defaults are the same ones
+        tests/integration/test_gate_stack_geometry_real.py already
+        verifies against real ViennaPS 4.6.2 + DevSim, not invented.
+        Materials (gate=TiN, source=W, drain=Cu, oxide=SiO2) are not
+        exposed as fields for v1 -- gate_stack.py's own recipe.get()
+        defaults already match the verified test values.
+        """
+
+        frame = ttk.LabelFrame(
+            parent,
+            text="MOSFET gate stack (standalone, terminal geometry)",
+            padding=10,
+        )
+
+        frame.pack(
+            fill="x",
+            pady=10,
+        )
+
+        ttk.Label(
+            frame,
+            text=(
+                "Builds Si + gate oxide + electrode + separate S/D pads "
+                "directly -- no lithography step, and no further process "
+                "may be chained onto the result (see gate_stack.py's own "
+                "module docstring)."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=(0, 6),
+        )
+
+        self.gs_x_extent_var = self._field(
+            frame, "X extent (µm)", 6.0,
+        )
+        self.gs_y_extent_var = self._field(
+            frame, "Y extent (µm)", 3.0,
+        )
+        self.gs_silicon_depth_var = self._field(
+            frame, "Si depth (µm)", 1.0,
+        )
+        self.gs_channel_left_var = self._field(
+            frame, "Channel left (µm)", -0.8,
+        )
+        self.gs_channel_right_var = self._field(
+            frame, "Channel right (µm)", 0.8,
+        )
+        self.gs_source_left_var = self._field(
+            frame, "Source pad left (µm)", -2.4,
+        )
+        self.gs_source_right_var = self._field(
+            frame, "Source pad right (µm)", -1.0,
+        )
+        self.gs_drain_left_var = self._field(
+            frame, "Drain pad left (µm)", 1.0,
+        )
+        self.gs_drain_right_var = self._field(
+            frame, "Drain pad right (µm)", 2.4,
+        )
+        self.gs_gate_oxide_var = self._field(
+            frame, "Gate oxide thickness (µm)", 0.02,
+        )
+        self.gs_gate_height_var = self._field(
+            frame, "Gate electrode height (µm)", 0.15,
+        )
+        self.gs_pad_height_var = self._field(
+            frame, "S/D pad height (µm)", 0.10,
+        )
+
+        self.gate_stack_button = ttk.Button(
+            frame,
+            text="BUILD GATE STACK — VIENNAPS",
+            command=self.run_gate_stack,
+        )
+        self.gate_stack_button.pack(
+            fill="x",
+            pady=(12, 3),
+        )
+
+        ttk.Label(
+            frame,
+            text=(
+                "Uses the shared Grid delta (µm) field above (Etch "
+                "recipe panel)."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=5,
+        )
+
+    def run_gate_stack(self):
+
+        if not viennaps_session.is_available():
+
+            messagebox.showerror(
+                "ViennaPS",
+                "ViennaPS is not installed.\n\n"
+                "Run:\n"
+                "python -m pip install ViennaPS",
+            )
+
+            return
+
+        try:
+
+            recipe = {
+                "_process_category": "geometry",
+                "_process_model_key": "gate_stack",
+
+                "grid_delta_um":
+                    float(
+                        self.grid_var.get()
+                    ),
+
+                "x_extent_um": float(self.gs_x_extent_var.get()),
+                "y_extent_um": float(self.gs_y_extent_var.get()),
+                "silicon_depth_um": float(self.gs_silicon_depth_var.get()),
+
+                "channel_um": [
+                    float(self.gs_channel_left_var.get()),
+                    float(self.gs_channel_right_var.get()),
+                ],
+                "source_um": [
+                    float(self.gs_source_left_var.get()),
+                    float(self.gs_source_right_var.get()),
+                ],
+                "drain_um": [
+                    float(self.gs_drain_left_var.get()),
+                    float(self.gs_drain_right_var.get()),
+                ],
+
+                "gate_oxide_thickness_um": float(self.gs_gate_oxide_var.get()),
+                "gate_height_um": float(self.gs_gate_height_var.get()),
+                "pad_height_um": float(self.gs_pad_height_var.get()),
+            }
+
+        except ValueError:
+
+            messagebox.showerror(
+                "Gate stack recipe",
+                "All recipe values must be numeric.",
+            )
+
+            return
+
+        output_dir = tempfile.mkdtemp(
+            prefix="tcad2d_real_v2_"
+        )
+
+        recipe["output_dir"] = output_dir
+
+        config_file = Path(
+            output_dir
+        ) / "recipe.json"
+
+        result_file = Path(
+            output_dir
+        ) / "result.json"
+
+        config_file.write_text(
+            json.dumps(
+                recipe,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        self._log(
+            f"\n================================\n"
+            f"REAL VIENNAPS GATE STACK START\n"
+            f"================================\n"
+            f"Standalone build -- no lithography, terminal geometry.\n"
+        )
+
+        self.update_idletasks()
+
+        try:
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(
+                        Path(__file__).resolve()
+                    ),
+                    "--worker",
+                    str(config_file),
+                    str(result_file),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=900,
+            )
+
+        except Exception as exc:
+
+            messagebox.showerror(
+                "ViennaPS",
+                str(exc),
+            )
+
+            return
+
+        if not result_file.exists():
+
+            messagebox.showerror(
+                "ViennaPS",
+                "Worker did not produce a result file.\n\n"
+                + completed.stderr[-4000:],
+            )
+
+            return
+
+        result = json.loads(
+            result_file.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        if not result.get("success"):
+
+            messagebox.showerror(
+                "ViennaPS",
+                result.get(
+                    "error",
+                    "Unknown ViennaPS error.",
+                ),
+            )
+
+            self._log(
+                "\nVIENNAPS FAILED\n"
+            )
+
+            return
+
+        self.wafer.processed = True
+        self.process_stage = "gate_stack"
+        self.last_final_mesh = result.get("final_mesh")
+
+        # Deliberately NOT calling self._activate_stages(...): this
+        # build did not go through the 01-08 litho/process sequence at
+        # all, so marking those stage markers "done" would misrepresent
+        # what actually happened. _update_process_buttons() below also
+        # deliberately leaves every gated button disabled ("gate_stack"
+        # has no entry in its dict), matching the module docstring's
+        # "do not chain a further process step onto it".
+
+        self.history.append(
+            "ViennaPS MOSFET gate stack"
+        )
+
+        self._log(
+            f"\n================================\n"
+            f"REAL VIENNAPS GATE STACK COMPLETE\n"
+            f"================================\n"
+            f"Surface files: "
+            f"{len(result['snapshots'])}\n"
+            f"Final mesh:\n"
+            f"{result['final_mesh']}\n"
+        )
+
+        self._update_process_buttons()
+
+        self.redraw()
+
+        messagebox.showinfo(
+            "ViennaPS",
+            f"ViennaPS gate stack build complete.\n\n"
+            f"Final mesh:\n{result['final_mesh']}",
+        )
+
     # --------------------------------------------------------
     # LOG
     # --------------------------------------------------------
@@ -2314,6 +2619,13 @@ class TCADApplication(tk.Tk):
                 "Mask": "#202020",
                 "SiO2": "#8fb8e8",
                 "Polymer": "#f2c14e",
+                # gate_stack.py's own default electrode/pad materials --
+                # otherwise fall back to the generic gray, which would
+                # make gate/source/drain indistinguishable from each
+                # other and from Si.
+                "TiN": "#7d3c98",
+                "W": "#f39c12",
+                "Cu": "#c0392b",
             }
             material_names = {}
 

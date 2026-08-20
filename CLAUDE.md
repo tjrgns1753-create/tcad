@@ -172,9 +172,10 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
   visually verified on-screen via a secondary `.venv312` + Xvfb +
   `xdotool` setup (the main venv's Python has no installable tkinter
   in this container). GUI etch panel wires 4 models (Bosch DRIE,
-  Directional RIE, Isotropic, SF6/O2); an oxidation/LOCOS panel and a
-  deposition panel (7 models) are now also wired (see GUI section
-  below); doping and gate_stack remain unwired.
+  Directional RIE, Isotropic, SF6/O2); an oxidation/LOCOS panel, a
+  deposition panel (7 models), and a MOSFET gate-stack panel are now
+  also wired (see GUI section below); doping is the only remaining
+  unwired category.
 - **Registry growth**: etching 11 models, deposition 6 models, doping
   3 kinds (uniform, step_junction, gaussian_implant, implant_windows),
   plus `geometry`/`gate_stack`.
@@ -302,8 +303,33 @@ mesh; PR strip's three-way terminal-stage guard (`"etched"`,
 stages, not just the first two. The other 5 deposition models are
 wired with real-verified defaults but were not individually click-run
 this session — see `docs/investigation_log.md`'s own "what remains
-uncertain" for the deposition-panel entry. Doping and gate_stack are
-still the only unwired categories.
+uncertain" for the deposition-panel entry.
+
+A MOSFET gate-stack panel (registry category `"geometry"`, model
+`gate_stack`) was added last. It does not fit the etch/oxidation/
+deposition panel pattern: `GateStack.__init__` refuses
+`inherited_domain` outright, there is no lithography step before it,
+and it is explicitly TERMINAL (chaining any further process step onto
+its export is documented, in `gate_stack.py`'s own module docstring,
+to silently corrupt 4 of its 5 materials). So its "BUILD GATE STACK"
+button is always enabled (mirrors NEW WAFER, not gated by
+`process_stage`), and a successful build sets `process_stage` to a new
+value, `"gate_stack"`, that `_update_process_buttons()` has no button
+list for — every litho/etch/oxidation/deposition/strip button is left
+disabled, enforcing "do not chain a further step" at the GUI layer
+too; the 01-08 sequence markers are deliberately left untouched since
+this build never goes through that sequence. Field defaults match
+`tests/integration/test_gate_stack_geometry_real.py`'s own verified
+values. Live-verified via the same Xvfb+xdotool setup: a real build
+from a fresh wafer (no litho run first) produced the correct 5-material
+topology (Si body, W source pad left, TiN gate centered over the
+channel, Cu drain pad right), all litho buttons confirmed grayed out
+afterward, and NEW WAFER confirmed to correctly escape the terminal
+state. `material_colors` gained TiN/W/Cu entries (previously unlisted,
+would have rendered as indistinguishable gray) since telling the 3 new
+materials apart is the entire point of viewing this geometry. Doping —
+not a registry category at all, needs different plumbing — is now the
+only unwired category.
 
 ## Current Task
 
