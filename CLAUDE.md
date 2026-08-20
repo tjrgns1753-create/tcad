@@ -313,12 +313,62 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
    of GEOMETRIC features (etched edges / material boundaries) in
    addition to doping features, or the solver needs to handle a
    sub-cell high-doping sliver without diverging in equilibrium.
-   Next smallest experiment: check whether the sliver is visible in the
-   imported mesh as degenerate/high-aspect triangles (element areas
-   near the sidewall vs elsewhere) — if geometric slivers are cheaply
-   detectable independent of doping, refinement could target them
-   directly instead of only what the doping profile implies, which
-   would generalize past this one reproducer rather than patching it.
+
+   **TRIED "add refinement at the sidewall too" — confirmed it does NOT
+   work with the current mesh-refinement machinery, and confirmed WHY.**
+   Mesh-only checks (no solve, cheap): the RAW mesh already has sub-cell
+   triangles at the etched sidewall x=+-1.5, independent of any doping
+   (ViennaPS's own geometric meshing of the trench corner — areas down
+   to 6.9e-05 vs a normal 0.02, confirmed by direct triangle-area dump).
+   Adding a SEPARATE telescoping ring set at that sidewall, on top of
+   the doping-derived rings already centered at the window edge 0.1um
+   away, does not converge either — worse, it doesn't even reach a
+   solve attempt: at the SAME ring depth the doping-only path uses (4
+   rings, matching `_IMPLANT_WINDOWS_MAX_RINGS`), mesh size went from
+   12049 Si nodes to 156832 — even a SINGLE extra 0.2um-half-width ring
+   alone tripled it (12049 -> 36407). Re-ordering the combined predicate
+   list to interleave by ring width (globally-widest-first across BOTH
+   sources, instead of one source's full telescope then the other's)
+   barely helped (156832 -> 142070, ~9%) — ruling out ORDER as the
+   cause.
+
+   Root cause, confirmed by reading `refine_mesh_near()`
+   (`tcad/device/devsim/mesh_refine.py`): it unconditionally subdivides
+   any triangle whose centroid matches the predicate, with NO check for
+   "already smaller than what this predicate needs" — so two
+   independent full ring telescopes (doping's 4 + a second, separate 4
+   for the sidewall) that overlap spatially don't take the union of
+   what's needed there, they ACCUMULATE: a triangle already refined
+   down to the doping telescope's finest ring gets the sidewall
+   telescope's full 4-level halving applied on top, unconditionally,
+   in either order. `graded_refine_mesh_near`'s own docstring says
+   plainly it is designed for ONE nested telescope per call, widest to
+   narrowest; it was never designed to compose TWO independent
+   telescopes with overlapping footprints, and that is exactly the
+   geometry this failure mode requires (a doping edge close enough to a
+   sidewall to need both).
+
+   **This is a real architectural gap, not a missing experiment.** A
+   correct general fix needs `graded_refine_mesh_near` (or a
+   replacement) to compute, per region, the SINGLE finest resolution
+   needed from ALL sources (doping AND geometry) and refine to it ONCE
+   — not sequentially apply one telescope per source. That is a change
+   to shared mesh-refinement machinery that 21+ other passing tests
+   depend on (MOSFET Id-Vgs, gate stack, step_junction, gaussian_implant
+   all call through `graded_refine_mesh_near`/`refine_mesh_near`), so it
+   needs its own careful, scoped session — investigate the union-based
+   composition design, verify it doesn't change behavior for every
+   EXISTING passing case, before touching it. Not attempted here per
+   CLAUDE.md's own rule against unscoped production changes.
+
+   Next smallest experiment for that future session: design a
+   `union_refine_mesh_near()` (or similar) that takes a list of
+   (predicate, half_width) pairs from potentially-overlapping sources,
+   computes each triangle's REQUIRED minimum size across all sources
+   ONCE, and refines to exactly that depth — then verify it reproduces
+   today's node counts/results on the already-passing cases (4x3
+   implant_windows, MOSFET Id-Vgs, gate stack C-V) before using it on
+   the sidewall-adjacent case this item describes.
 
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):

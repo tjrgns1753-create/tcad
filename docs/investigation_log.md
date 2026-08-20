@@ -7245,3 +7245,137 @@ Validate one current magnitude against an analytic value — the
 1e17 doping's mobility, compared against the measured +2.399644 A at
 0.3V. That would upgrade this panel from "converges and conserves
 charge" to "reads the right number".
+
+---
+
+## implant_windows general robustness: why "add sidewall refinement" fails, root-caused
+
+Follow-up to "GUI measurement: which doping kinds actually converge"
+above, after explicit user correction: the requirement is not "does
+implant_windows converge on THIS wafer" but "does it converge for
+whatever geometry+doping combination a user arbitrarily produces" — a
+general robustness property, not a fixed list of verified
+configurations. This session went back to actually root-cause the
+remaining GUI-default-wafer failure rather than treating the earlier
+fix as sufficient.
+
+### 1. What was tested
+
+Starting point (already established): on the GUI's own default wafer
+(10x8um, mask 3.5-6.5 -> trench sidewalls at x=+-1.5), implant_windows
+with the panel's own default doping (background -1e17, windows
+[-1.6,-0.6]/[0.6,1.6] at 1e20) fails with "Convergence failure!" in the
+EQUILIBRIUM solve, and the raw mesh already carries sub-cell triangles
+at x=+-1.5 (areas down to 6.9e-05 vs a normal 0.02) from ViennaPS's own
+geometric meshing of the trench corner — independent of any doping.
+
+Hypothesis: refining the mesh at the geometric sidewall too (not just
+at doping window edges) would fix it, since `derive_implant_windows_
+refinement()` only ever looks at the doping profile.
+
+Four escalating experiments, each designed to be the smallest one that
+could kill the hypothesis before spending more compute:
+
+1. **Broad geometric-boundary detector** (scan every Mask/Si tag
+   transition in the WHOLE mesh, add full doping-scale telescoping
+   rings — 8 rings — at every one within 1um of a doping-window edge).
+2. **Tight, generic-heuristic sidewall detector** ("vertical-ish"
+   triangle-pair heuristic) with a small, non-telescoping ring set (4
+   rings, hand-picked half-widths 0.1/0.05/0.025/0.0125).
+3. **Exact, hand-confirmed sidewall positions** (x=+-1.5, no detector)
+   with the same small hand-picked rings.
+4. **Exact sidewall positions with the SAME telescoping-ring generator
+   the doping predicates use** (`_telescoping_ring_half_widths`, same
+   peak concentration, so resolution at the sidewall matches
+   resolution elsewhere) — first at max_rings=8 (a real solve attempt),
+   then, after that ran away in memory, a mesh-size-only sweep from
+   max_rings=1 to 8 with an abort threshold, and finally a controlled
+   comparison of CONCATENATED vs INTERLEAVED-BY-WIDTH predicate
+   ordering, mesh size only (no solve), to isolate order from volume.
+
+### 2. Result
+
+| experiment | outcome |
+|---|---|
+| (1) broad detector, 40 boundaries x 8 rings | RSS climbed past 3GB, killed after ~19 min, no result |
+| (2) tight heuristic, 15 falsely-detected "sidewalls" x 4 rings | timed out at 900s (exit 124), no result |
+| (3) exact x=+-1.5, 4 hand-picked rings (0.1/0.05/0.025/0.0125) | ran to completion: 16699 Si nodes, still **"Convergence failure!"** |
+| (4a) exact x=+-1.5, SAME telescoping generator, max_rings=8 (real solve) | RSS hit 11GB / 67% of container memory, killed before any result |
+| (4b) mesh-size-only sweep, max_rings 1..8, exact x=+-1.5 | max_rings=1 (a single 0.2um-half-width ring per sidewall) alone: 12049 -> 36407 points (3x). max_rings=5: 238410 points; aborted before max_rings=8 (which experiment (4a) showed exceeds 1M) |
+| (4c) CONCATENATED vs INTERLEAVED-BY-WIDTH, mesh-size only, 4 rings each source | concatenated: 156832 points. interleaved: 142070 points — a 9% reduction, NOT the order-of-magnitude change the ordering hypothesis predicted |
+
+### 3. What it proves
+
+- **Experiment (3) rules out "coarse resolution" as the reason a naive
+  sidewall fix fails** — even with SOME extra refinement exactly at the
+  right location, it still doesn't converge, so the fix needs the SAME
+  fine resolution the doping rings reach (~nm scale at 1e20 cm^-3), not
+  just "some more resolution nearby".
+- **Experiments (4a)/(4b) show that reaching that resolution via a
+  SEPARATE, independent telescoping ring set is not viable**: it
+  doesn't fail to converge cleanly — it fails to even produce an
+  affordable mesh. A single extra wide ring alone triples node count;
+  by ring depth 5 of 8 it is already 238k points and climbing
+  super-linearly; by depth 8 it exceeds 1 million and 11GB RSS.
+- **Experiment (4c) rules out ORDERING as the cause of the blowup.**
+  Interleaving predicates by width across sources (globally-widest-of-
+  either-source first) rather than concatenating one source's full
+  telescope then the other's only reduced node count by ~9%, not the
+  order-of-magnitude change that would be expected if composition order
+  were the problem.
+- **Root cause, confirmed by reading `refine_mesh_near()`
+  (`tcad/device/devsim/mesh_refine.py`), not inferred from behavior
+  alone**: it unconditionally subdivides any triangle whose CURRENT
+  centroid matches the predicate — there is no check for "this triangle
+  is already smaller than what this predicate requires". So when two
+  independent ring telescopes (doping's own + a second one added for
+  the sidewall) have OVERLAPPING spatial footprints — which is exactly
+  the geometry that causes the ORIGINAL convergence failure, a doping
+  edge close enough to a sidewall to matter — the mesh in the overlap
+  region gets BOTH telescopes' full depth of halving applied
+  UNCONDITIONALLY, compounding rather than converging to the union of
+  what's needed. `graded_refine_mesh_near`'s own docstring confirms it
+  was designed for ONE nested telescope per call (widest to narrowest),
+  never for composing multiple independent telescopes with overlapping
+  footprints.
+- This means "detect geometric slivers and refine them too" is the
+  RIGHT diagnosis of the failure mechanism but the WRONG lever given
+  the current mesh-refinement machinery — implementing it naively
+  (as any of experiments 1-4 did) always explodes precisely in the
+  cases that need it, because those are by construction the cases
+  where two refinement sources' footprints overlap.
+
+### 4. What remains uncertain
+
+- Whether a UNION-based composition (compute each triangle's minimum
+  required size across ALL sources once, refine to exactly that depth)
+  would actually converge AND stay affordable — not tested, since
+  implementing it is a real production-code change to shared machinery
+  that 21+ other passing tests depend on (MOSFET Id-Vgs, gate stack
+  C-V, step_junction, gaussian_implant all route through
+  `graded_refine_mesh_near`/`refine_mesh_near`), and CLAUDE.md's own
+  rules ("investigate before modifying production code", "do not
+  refactor unrelated code") argue against attempting it inside this
+  already-long investigation rather than as its own scoped session.
+- Whether union-based composition alone is sufficient, or whether the
+  equilibrium solver itself also needs help with a sub-cell
+  high-doping sliver even at full resolution (untested, since no
+  attempt reached a completed solve at adequate resolution).
+- Whether there are OTHER geometry+doping relationships beyond
+  "sidewall near window edge" that trigger the same class of failure
+  (e.g., two doping windows close to each other, or a window edge near
+  an oxide/Si interface in a MOS structure) — not surveyed.
+
+### 5. Next smallest experiment
+
+Design and implement a `union_refine_mesh_near()` (or equivalent
+change to `graded_refine_mesh_near`'s composition) that accepts
+multiple (predicate, half_width) sources, computes each triangle's
+single required minimum size across all of them, and refines to that
+depth exactly once per triangle rather than once per source. Verify it
+reproduces IDENTICAL node counts and results on every currently-passing
+case first (4x3 implant_windows, MOSFET Id-Vgs, gate stack C-V,
+step_junction, gaussian_implant) before applying it to the
+sidewall-adjacent case this investigation could not resolve. This is
+real, separately-scoped follow-up work, not a continuation of the
+current session's trial-and-error.
