@@ -82,7 +82,7 @@ MOS C-V, oxidation → etch → doping → DevSim).
 
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
-Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
+Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
 0 skipped**.
 
 - **Si floor / mesh export**: raw ViennaPS `saveVolumeMesh()` clips a
@@ -375,10 +375,14 @@ to reconverge if called twice on the same device, every MEASURE click
 imports a fresh DevSim device and cleans it up in `finally`
 (`delete_device`+`delete_mesh`, mirroring
 `tcad/cli/run_pipeline.py`'s own pattern) rather than keeping one
-device alive across clicks. Mesh refinement at the junction is applied
-only for Step Junction doping (the one kind Phase 8 verified for
-convergence at 1e18 cm^-3); other kinds run unrefined and are flagged
-as unverified in the panel itself.
+device alive across clicks. **All 4 doping kinds are now verified to
+converge through this panel at the panel's own default field values**
+(`tests/integration/test_gui_measurement_doping_kinds_real.py`), each
+with its own refinement strategy: Step Junction uses
+`refine_near_um`/`refine_axis` from the profile; Gaussian Implant uses
+the existing `auto_refine_from_doping=True`; Implant Windows uses the
+new `refine_process_result_for_implant_windows()` (see below); Uniform
+needs none, having no junction to resolve.
 
 Live-verified via the same Xvfb+xdotool setup (after `pip install
 devsim==2.11.0` into `.venv312`, previously tkinter-only): a real
@@ -397,6 +401,38 @@ brought it to ~15k equations and a few-second solve. This is
 recorded as a performance finding, not a correctness one — see
 `docs/investigation_log.md`'s own "what remains uncertain" for
 whether the large-mesh case would have eventually converged.
+
+**Implant Windows was the one kind that genuinely did NOT converge**
+through this panel (real, reproducible "Convergence failure!" at the
+panel's own defaults: -1e17 body with 1e20 source/drain, whose ~1.2nm
+Debye length is ~170x finer than a 0.2um process grid). It is the one
+kind `import_process_result`'s `auto_refine_from_doping` cannot serve,
+because its `DopingRegion` carries neither `junction_position_um` nor
+`peak_position_um`. Fixed with
+`refine_process_result_for_implant_windows()`
+(`tcad/device/devsim/mesh_import.py`) — derives predicates from the
+existing `derive_implant_windows_refinement()`, graded-refines, and
+returns a ProcessResult on the refined mesh carrying the same
+DopingProfile. The GUI panel and the regression test both call that
+one function rather than each holding a copy. Measured: fails outright
+-> 622->13543 mesh points, 11269 Si nodes, I=+3.4753e-11 A, ~10.5s
+per click including the ViennaPS etch.
+
+**Reusable trap found while chasing this (cost a whole prior
+conclusion):** a LEAKED DevSim device makes the NEXT, unrelated solve
+fail — and it does not matter whether the leaked device is
+pathological. Leaking a perfectly healthy `uniform` device was enough
+to turn a converging `implant_windows` solve into "Convergence
+failure!", while a device whose own solve had just FAILED did no harm
+once properly deleted. `devsim.solve()` takes no device filter, so it
+iterates every registered device. A scratch harness whose cleanup was
+`delete_device(device=..., region="")` inside a bare `except: pass`
+(that call raises `region is an invalid option`) therefore reported
+TWO doping kinds as non-convergent when only one had a real problem,
+and blamed the wrong subsystem for it. The new regression test asserts
+`devsim.get_device_list()` is empty after every kind so this can never
+silently recur. Full writeup: search `docs/investigation_log.md` for
+"GUI measurement: which doping kinds actually converge".
 
 ## Current Task
 

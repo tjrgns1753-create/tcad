@@ -7017,36 +7017,157 @@ For each investigation report:
 3. What it proves
 4. What remains uncertain
 5. Next smallest experiment
+
 ---
 
-## Doping kinds verification through measurement panel
+## GUI measurement: which doping kinds actually converge
 
-**What was tested:**
-- Direct end-to-end testing of Uniform, Gaussian Implant, and Implant Windows doping through the real DevSim device-measurement pipeline (no GUI, programmatic test).
-- Each test: etch small demo geometry → apply doping kind → import to DevSim → apply doping mapping → run PN junction IV sweep at +0.3V
-- Mesh: grid_delta_um=0.2, 4x4um domain, ~622 nodes in Si region
-- Used same recipe (Phase 8 derived) as the GUI measurement panel to ensure consistency
+A previous entry in this file (removed, since it was wrong) reported
+"gaussian_implant and implant_windows hit convergence issues" from a
+scratch 3-in-one-process harness. Re-tested properly: **one of those
+two was a false failure caused by the harness itself, and the other was
+a broken test parameter, not a doping kind that cannot converge.** The
+one real production bug found underneath is now fixed.
 
-**Result:**
-- **✓ Uniform doping**: IV sweep converged cleanly, sweeping from equilibrium through V=+0.3V. All iterations converged, potential solution stable, drift-diffusion equations well-conditioned.
-- **✗ Gaussian Implant**: Convergence failure in drift-diffusion sweep (equilibrium solved fine, but transport-enabled solve with V=+0.3V failed to converge even after 100 iterations).
-- **✗ Implant Windows**: Same convergence failure as Gaussian Implant.
+### 1. What was tested
 
-**What it proves:**
-1. Uniform doping mapping to DevSim is correct and produces well-conditioned problems at least for uniform concentration.
-2. The doping-to-DevSim pipeline (apply_doping → import → apply_doping_mapping) is free of attribute/type mismatches for all three kinds.
-3. Gaussian and Implant Windows convergence issues are **not** from broken doping mapping — the mapping succeeded, but the resulting physical problem is harder for the solver.
-4. The measurement-panel contact/sweep architecture (fresh device per measurement, cleanup pattern) is sound — Uniform test verified end-to-end.
+Three experiments, each the smallest one that separates the hypotheses:
 
-**What remains uncertain:**
-- Whether Gaussian/Implant convergence is a mesh resolution issue (0.2um grid is coarse; Phase 8's 0.15um helps, but we coarsened for speed). Finer grids would resolve this.
-- Whether the +0.3V bias is problematic for those doping profiles (e.g., high carrier injection). Could try lower bias.
-- Whether equilibrium-only (no transport) should work. Could test if equilibrium solving passes for Gaussian/Implant (didn't test this path).
-- Physical reasonableness of terminal currents (Uniform test showed real convergence; didn't validate magnitudes against physics).
+1. **Read back what DevSim actually stored for NetDoping** (no solve, so
+   solver behaviour cannot confuse the reading), for every kind, plus
+   the real Si domain extents probed rather than assumed.
+2. **Ablation**: run each failing kind standalone with Phase 8's three
+   ingredients — `length_scale_to_cm=1e-4`, a 7-point bias ramp, and
+   doping-derived graded refinement — then remove one at a time.
+3. **Leak probe**: run something first, leak it or clean it properly,
+   then run an innocent `implant_windows` solve. Three scenarios, each
+   in its own process so nothing leaked between them.
 
-**Next smallest experiment:**
-1. (Optional) Re-run Gaussian/Implant at finer grid (0.15um like Phase 8) to see if convergence improves.
-2. (Optional) Verify Gaussian/Implant equilibrium (no transport) solves cleanly, isolating transport vs. equilibrium as the culprit.
-3. (Deferred) Test other doping kinds through GUI to match visual workflow.
-4. Move on to next GUI improvement — doping panel is now end-to-end verified for Uniform, which is the most common case in early device prototyping.
+Then the **GUI measurement panel's exact path** (`length_scale_to_cm=1e-4`,
+refinement only for `step_junction`, single-point sweep) at the panel's
+**own default field values**, one doping kind per process.
 
+### 2. Result
+
+**NetDoping read-back.** Si spans `y in [-5, -0.0003] um`. The earlier
+gaussian test put its peak at `y=+0.25` — **above the silicon, in the
+air**. 504/550 nodes (91.6%) ended up with `|NetDoping| < n_i`, ranging
+down to `1e-135 cm^-3`: an intrinsic, physically meaningless device.
+`implant_windows`, by contrast, read back completely healthy
+(1e16..1.01e18, **0%** of nodes below n_i) — so its failure was never a
+degenerate profile.
+
+**Ablation.** Every configuration converged — *including* the one
+labelled "the original failing configuration". SCALE, RAMP and REFINE
+were all irrelevant to the original failure. The only thing that had
+changed for gaussian was putting the peak inside the silicon.
+
+**Leak probe.** This is the load-bearing result:
+
+| first device | cleanup | then implant_windows |
+|---|---|---|
+| healthy `uniform` | leaked | **FAIL** — Convergence failure! |
+| degenerate gaussian | leaked | **FAIL** — Convergence failure! |
+| degenerate gaussian | `delete_device` + `delete_mesh` | **OK**, I=+7.3263e-01 A |
+
+**GUI path at the panel's own defaults**, one kind per process:
+
+| kind | result |
+|---|---|
+| uniform | OK, 550 nodes, I=+2.3996e+00 A |
+| step_junction | OK, 7335 nodes, I=+4.9315e-11 A |
+| gaussian_implant | **OK**, 550 nodes, I=+6.8100e-03 A |
+| implant_windows | **FAIL — Convergence failure!** |
+
+### 3. What it proves
+
+- **`gaussian_implant` was never broken.** The GUI's own default
+  (axis x, peak 0.0, straggle 0.5um, 1e17) is inside the domain and
+  converges unrefined. The earlier failure was a test that placed the
+  implant peak outside the silicon.
+- **A leaked DevSim device breaks the NEXT, unrelated solve — and it
+  does not matter whether the leaked device is pathological.** Leaking a
+  perfectly well-conditioned `uniform` device was enough. `devsim.solve()`
+  takes no device filter, so it iterates every registered device. The
+  earlier harness's cleanup was
+  `devsim.delete_device(device=..., region="")` inside a bare
+  `except: pass`; that call raises `region is an invalid option`, so it
+  silently did nothing and every device stayed registered. That is what
+  turned a converging `implant_windows` solve into a reported failure.
+  This is the same lifecycle trap CLAUDE.md already records — worth
+  re-recording because here it presented not as a crash but as a
+  **false, plausible-looking convergence failure attributed to the wrong
+  subsystem.**
+- **`implant_windows` had a real production bug.** At the panel's own
+  defaults (-1e17 body, 1e20 source/drain) it fails outright on MEASURE.
+  Root cause is Phase 8's mechanism at 1e20: a ~1.2nm Debye length
+  against a 0.2um process grid. `implant_windows` is the one kind
+  `import_process_result`'s `auto_refine_from_doping` cannot serve,
+  because its `DopingRegion` carries neither `junction_position_um` nor
+  `peak_position_um`, so `_derive_refine_from_doping()` returns None.
+
+### 4. Fix
+
+`refine_process_result_for_implant_windows()` added to
+`tcad/device/devsim/mesh_import.py`: derives predicates via the existing
+`derive_implant_windows_refinement()` (sized from the profile's PEAK
+concentration), graded-refines, writes a refined mesh, and returns a
+ProcessResult on it carrying the same DopingProfile. The GUI panel calls
+that function, and so does the new regression test, so there is one
+implementation rather than two copies. `gaussian_implant` was also wired
+to the existing `auto_refine_from_doping=True` flag (already regression-
+tested for that kind) so it stays converged at higher peak
+concentrations than the default.
+
+Verified: `implant_windows` goes from "Convergence failure!" to
+622 -> 13543 mesh points (16 predicates), 11269 Si nodes,
+I = +3.4753e-11 A, terminal currents equal and opposite to 4e-16.
+Whole click takes ~10.5s wall including the ViennaPS etch.
+
+New regression test:
+`tests/integration/test_gui_measurement_doping_kinds_real.py` — all 4
+kinds through the panel's own path at the panel's own defaults, in ONE
+process with correct cleanup, asserting after each kind that
+`devsim.get_device_list()` is empty so the leak trap above can never
+silently return. All 4 converge:
+
+    uniform           550 nodes  I=+2.399644e+00 A  KCL 4.1e-15
+    step_junction    7335 nodes  I=+4.931501e-11 A  KCL 2.0e-05
+    gaussian_implant 1781 nodes  I=+6.810788e-03 A  KCL 1.0e-15
+    implant_windows 11269 nodes  I=+3.475285e-11 A  KCL 1.2e-05
+
+That the four run back-to-back in one process also confirms repeated
+MEASURE clicks are safe as long as cleanup is correct.
+
+### 5. What remains uncertain
+
+- The KCL threshold is 1e-3 relative. The loosest measured case is
+  step_junction: I=4.93e-11 A with the terminals differing by 1.0e-15 A
+  absolute (2.0e-5 relative) — solver noise amplified by taking a
+  relative error of a near-zero blocking current, not lost charge. A
+  device genuinely failing to conserve charge would differ by a factor,
+  so the threshold separates the cases by orders of magnitude, but it is
+  a judgement call, not a derived bound.
+- Current MAGNITUDES were not validated against analytic expectation for
+  any kind here; only convergence and conservation were. `uniform`'s
+  +2.4 A is a 4x5um resistive slab at 0.3V per unit depth, plausible but
+  unchecked.
+- Only `grid_delta_um=0.2` was tested. The finer GUI default (0.05)
+  multiplies node count and was already recorded as impractically slow
+  for this panel.
+- `implant_windows` refinement here passes no `interface_position_um`
+  (a 2-terminal device has no Si-SiO2 interface). The MOSFET path still
+  passes one; that path is unchanged.
+- The GUI's own `finally` block calls `delete_device` and `delete_mesh`
+  inside one `try`/`except Exception: pass`. It uses the correct
+  keywords, so it works today — but given that ANY leak breaks the next
+  click, a failure of the first call would silently leak the mesh. Not
+  observed; left alone rather than changed speculatively.
+
+### 6. Next smallest experiment
+
+Validate one current magnitude against an analytic value — the
+`uniform` slab is the easiest: R = rho*L/(W*depth) with rho from the
+1e17 doping's mobility, compared against the measured +2.399644 A at
+0.3V. That would upgrade this panel from "converges and conserves
+charge" to "reads the right number".

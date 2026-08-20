@@ -2510,6 +2510,72 @@ class TCADApplication(tk.Tk):
             pady=(12, 3),
         )
 
+    def _refine_for_implant_windows(self, doped_result):
+        """Graded-refine the real mesh at every implant-window edge.
+
+        implant_windows is the one doping kind import_process_result
+        cannot auto-refine -- it carries neither junction_position_um
+        nor peak_position_um, so _derive_refine_from_doping() returns
+        None for it -- and it is also the kind that needs refinement
+        most: this panel's own default profile puts 1e20 source/drain
+        windows on a -1e17 body, whose Debye length (~1.2nm) is ~170x
+        finer than the 0.2um grid a GUI run uses.
+
+        Measured on the shipped GUI path, one doping kind per process
+        so no leaked device could fake a failure: without this the
+        solve fails outright with "Convergence failure!"; with it the
+        same recipe converges (622 -> 13543 mesh points, 16 predicates,
+        11269 Si nodes, terminal currents equal and opposite to 4e-16).
+
+        The refinement itself lives in
+        tcad.device.devsim.mesh_import.refine_process_result_for_implant_windows()
+        so this panel and
+        tests/integration/test_gui_measurement_doping_kinds_real.py
+        drive ONE implementation, not two copies of it. This method
+        only adds the GUI's error dialogs and log line. Returns None if
+        no refinement could be derived, in which case the caller aborts
+        rather than running a solve already known to fail.
+        """
+
+        from tcad.device.devsim.mesh_import import (
+            refine_process_result_for_implant_windows,
+        )
+
+        try:
+
+            refined_result = refine_process_result_for_implant_windows(
+                doped_result,
+            )
+
+            if refined_result is None:
+
+                messagebox.showerror(
+                    "Measurement",
+                    "Could not derive mesh refinement from this "
+                    "implant_windows profile, and this doping kind is "
+                    "measured NOT to converge unrefined at these "
+                    "concentrations. Aborting rather than running a "
+                    "solve already known to fail.",
+                )
+
+                return None
+
+            self._log(
+                f"\nDoping-derived mesh refinement (implant_windows) "
+                f"applied -- see {refined_result.volume_mesh_path}\n"
+            )
+
+            return refined_result
+
+        except Exception as exc:
+
+            messagebox.showerror(
+                "Measurement",
+                f"Mesh refinement for implant_windows failed:\n\n{exc}",
+            )
+
+            return None
+
     def run_measurement(self):
 
         if self.last_doped_result is None:
@@ -2561,17 +2627,34 @@ class TCADApplication(tk.Tk):
         length_scale_to_cm = 1.0e-4
 
         refine_kwargs = {}
+
         if kind == "step_junction":
             region_doping = doped_result.doping.regions[0]
             refine_kwargs = {
                 "refine_near_um": region_doping.junction_position_um,
                 "refine_axis": region_doping.junction_axis,
             }
+
+        elif kind == "gaussian_implant":
+            # import_process_result derives the refinement position from
+            # the profile's own peak_position_um -- the same opt-in flag
+            # tests/integration/test_auto_refine_from_doping_real.py
+            # already verifies for this kind.
+            refine_kwargs = {"auto_refine_from_doping": True}
+
+        elif kind == "implant_windows":
+            refined_result = self._refine_for_implant_windows(doped_result)
+
+            if refined_result is None:
+
+                return
+
+            doped_result = refined_result
+
         else:
             self._log(
-                f"\n(No mesh refinement applied -- doping kind "
-                f"{kind!r} is unverified for convergence in this "
-                f"panel.)\n"
+                "\n(No mesh refinement needed -- uniform doping has no "
+                "junction to resolve.)\n"
             )
 
         imported = None

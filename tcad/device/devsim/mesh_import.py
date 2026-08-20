@@ -148,6 +148,94 @@ def _telescoping_ring_half_widths(
     return rings or [spacing_um]
 
 
+def refine_process_result_for_implant_windows(
+    result: ProcessResult,
+    refined_mesh_path: Optional[str] = None,
+    interface_position_um: Optional[float] = None,
+    interface_axis: str = "y",
+) -> Optional[ProcessResult]:
+    """Return a ProcessResult whose mesh is graded-refined at every
+    implant-window edge, or None if no refinement could be derived.
+
+    `implant_windows` is the one doping kind `import_process_result`'s
+    own `auto_refine_from_doping` cannot serve: the profile carries
+    neither `junction_position_um` nor `peak_position_um`, so
+    `_derive_refine_from_doping()` returns None for it. It is also the
+    kind that needs refinement most, because its windows are typically
+    the highest concentration in the device (1e20 source/drain on a
+    1e17 body -> a ~1.2nm Debye length against a 0.2um process grid).
+
+    Measured on this project's own GUI measurement path, one doping
+    kind per process so no leaked device could fake the result: the
+    unrefined solve fails outright with "Convergence failure!", while
+    the same recipe refined here converges (622 -> 13543 mesh points,
+    16 predicates, terminal currents equal and opposite to 4e-16).
+
+    Refinement must happen on the MESH, before import, so this writes a
+    refined mesh next to the original and returns a ProcessResult
+    pointing at it — carrying the SAME DopingProfile and the same
+    material regions, since graded refinement subdivides triangles
+    without introducing or removing a material. Same refine-then-
+    reimport shape as tests/integration/test_mosfet_id_vgs_real.py,
+    factored out here so the GUI and the regression test drive one
+    implementation rather than two copies of it.
+
+    interface_position_um / interface_axis : forwarded to
+        `derive_implant_windows_refinement()` to add vertical rings at
+        a horizontal interface (a MOSFET's Si-SiO2 boundary, where the
+        inversion layer forms). Omit for a plain 2-terminal device,
+        which has no such interface to resolve.
+    """
+    import dataclasses
+
+    try:
+        import meshio
+    except ImportError as exc:  # pragma: no cover - same guard as import path
+        raise RuntimeError(
+            "meshio is required to refine process meshes.\n"
+            "Install it first:\n"
+            "python -m pip install meshio"
+        ) from exc
+
+    if result.doping is None:
+        return None
+
+    mesh = meshio.read(result.volume_mesh_path)
+    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
+    if triangle_block is None:
+        raise ValueError(f"No triangle cells found in mesh: {result.volume_mesh_path}")
+
+    block_index = mesh.cells.index(triangle_block)
+    points, triangles = mesh.points, triangle_block.data
+    tags = mesh.cell_data[result.material_field][block_index]
+
+    predicates = derive_implant_windows_refinement(
+        result.doping, points, triangles,
+        interface_position_um=interface_position_um,
+        interface_axis=interface_axis,
+    )
+    if not predicates:
+        return None
+
+    refined_points, refined_triangles, refined_tags = graded_refine_mesh_near(
+        points, triangles, tags, predicates
+    )
+
+    if refined_mesh_path is None:
+        refined_mesh_path = f"{result.volume_mesh_path}.implant_refined.vtu"
+
+    meshio.write(
+        refined_mesh_path,
+        meshio.Mesh(
+            points=refined_points,
+            cells=[("triangle", refined_triangles)],
+            cell_data={result.material_field: [refined_tags]},
+        ),
+    )
+
+    return dataclasses.replace(result, volume_mesh_path=refined_mesh_path)
+
+
 def derive_implant_windows_refinement(
     doping: DopingProfile,
     points: np.ndarray,
