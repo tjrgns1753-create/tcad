@@ -173,9 +173,9 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
   `xdotool` setup (the main venv's Python has no installable tkinter
   in this container). GUI etch panel wires 4 models (Bosch DRIE,
   Directional RIE, Isotropic, SF6/O2); an oxidation/LOCOS panel, a
-  deposition panel (7 models), and a MOSFET gate-stack panel are now
-  also wired (see GUI section below); doping is the only remaining
-  unwired category.
+  deposition panel (7 models), a MOSFET gate-stack panel, and a doping
+  panel (4 kinds) are now also wired (see GUI section below) — every
+  registry and non-registry category is now wired.
 - **Registry growth**: etching 11 models, deposition 6 models, doping
   3 kinds (uniform, step_junction, gaussian_implant, implant_windows),
   plus `geometry`/`gate_stack`.
@@ -327,9 +327,33 @@ channel, Cu drain pad right), all litho buttons confirmed grayed out
 afterward, and NEW WAFER confirmed to correctly escape the terminal
 state. `material_colors` gained TiN/W/Cu entries (previously unlisted,
 would have rendered as indistinguishable gray) since telling the 3 new
-materials apart is the entire point of viewing this geometry. Doping —
-not a registry category at all, needs different plumbing — is now the
-only unwired category.
+materials apart is the entire point of viewing this geometry.
+
+A doping panel (4 kinds: uniform, step_junction, gaussian_implant,
+implant_windows) was added last, closing out every category the GUI's
+own inventory named. `tcad/physics/doping.py` is NOT a registry
+category — no `ProcessStep`, no `vps.Process()` call, pure Python that
+attaches a `DopingProfile` to a `ProcessResult` built (via
+`build_process_result`) from whatever real mesh
+(`self.last_final_mesh`) etch/oxidation/deposition/gate_stack most
+recently produced. Because it is cheap (a meshio read, no ViennaPS
+simulation), it runs directly on the Tk main thread rather than through
+`worker_main()`'s subprocess pattern every other panel uses, and its
+"APPLY DOPING" button is gated on "a real mesh exists"
+(`self.wafer.processed`/`self.last_final_mesh`) inside
+`_update_process_buttons()`, not on `process_stage` — so it stays
+correct after any of the four process panels' success paths, or NEW
+WAFER, with no changes to those methods. The panel states its own
+scope limit up front: it only attaches a `DopingProfile` and logs it —
+no DevSim solve, no contacts, no I-V/C-V curve (that would be a
+separate, larger feature). Live-verified via the same Xvfb+xdotool
+setup: "APPLY DOPING" starts disabled on a fresh wafer, a real
+Isotropic etch enables it immediately, Implant Windows (background +
+2 superposed windows, the structurally most complex kind) and Uniform
+both applied successfully against the real etched mesh with the log
+confirming `build_process_result` read the real materials
+(`['Mask', 'Si']`) — not a stub — and NEW WAFER correctly disables the
+button again afterward.
 
 ## Current Task
 

@@ -6759,6 +6759,106 @@ change and `tests/run_regression.py` does not exercise the GUI).
 **Regression: 30 passed, 0 failed, 0 skipped** (confirmed this session;
 unaffected — GUI-only change).
 
+### GUI: doping panel added — ADDED, verified end-to-end via real ViennaPS (same session, per "도핑 ㄱㄱ" — "doping, go")
+
+1. **What was tested / done.** Investigated `tcad/physics/doping.py`
+   before writing any GUI code (investigate before modifying production
+   code): doping is NOT a registry category at all — no `ProcessStep`,
+   no `vps.Process()` call. It is a pure-Python function that attaches
+   a `DopingProfile` to an existing `ProcessResult` (built from a real
+   mesh via `tcad.mesh.viennaps_adapter.build_process_result`), and its
+   own module docstring states it "has no devsim import". Traced the
+   full real pipeline through
+   `tests/integration/test_phase7_doping_real.py` /
+   `test_phase8_pn_junction_real.py` /
+   `test_gaussian_implant_doping_real.py` /
+   `test_implant_windows_doping_real.py` to confirm: `build_process_result`
+   only needs `step_result["final_mesh"]` (already stored as
+   `self.last_final_mesh` by every other panel), so no new GUI state was
+   needed to reach it.
+
+   This architectural difference from etch/oxidation/deposition/
+   gate_stack matters for the design: doping runs directly on the Tk
+   main thread (no `worker_main()` subprocess) since it is cheap
+   (a meshio read + pure Python, not a ViennaPS simulation), and it is
+   gated on "a real mesh currently exists"
+   (`self.wafer.processed and self.last_final_mesh`) rather than on
+   `self.process_stage`, handled inside `_update_process_buttons()` so
+   it stays correct after every existing success/reset path (etch,
+   oxidation, deposition, gate_stack, NEW WAFER) with no changes to
+   those methods themselves.
+
+   Wired all 4 doping kinds `tcad/physics/doping.py` implements
+   (uniform, step_junction, gaussian_implant, implant_windows), same
+   combobox + per-kind-frame pattern as every other panel. Field
+   defaults are the same ones already verified against real ViennaPS +
+   DevSim in the four tests named above (implant_windows: exactly 2
+   windows, source + drain, matching the one real-verified test — not a
+   general N-window UI). A scope-limit label is shown up front in the
+   panel itself (mirrors `wet_etching.py`'s own "honest scope limit"
+   convention): applying doping here does NOT run a DevSim solve, place
+   contacts, or show an I-V/C-V curve — it only attaches the
+   `DopingProfile` object and reports it in the process log. Wiring an
+   actual biased device simulation into this GUI (contacts, equations,
+   bias sweeps, plotting) is a separate, much larger feature,
+   deliberately not bundled into this step per CLAUDE.md's "one
+   subsystem at a time" rule.
+
+2. **Result — live-verified via the same Xvfb + `.venv312` + xdotool
+   setup used for every other GUI panel this session.** Confirmed
+   "APPLY DOPING" starts correctly DISABLED on a fresh wafer (no real
+   mesh yet). Ran lithography + a real Isotropic etch to produce a real
+   mesh, confirmed the button became enabled immediately after (no
+   extra click needed — `_update_process_buttons()` already runs at
+   the end of `run_etch()`). Applied **Implant Windows** (the
+   structurally most complex kind: background + 2 superposed windows)
+   against the real etched mesh — got a real success dialog and log
+   entry showing the exact region/axis/background/windows values AND
+   `Materials in mesh: ['Mask', 'Si']`, confirming `build_process_result`
+   correctly read the real `.vtu` file's material tags, not a stub.
+   Also applied **Uniform** doping on the same mesh, same live
+   confirmation. Confirmed "APPLY DOPING" correctly disables again
+   after NEW WAFER (fresh wafer, no real mesh) — the gating logic
+   added to `_update_process_buttons()` is not one-way.
+
+3. **What it proves:** the doping-specific integration point identified
+   in the previous panel's "next smallest experiment" note
+   (`build_process_result` + `apply_*_doping`, no registry, no
+   worker_main) is correct and sufficient — no changes to
+   `worker_main()`, `ProcessStep`, or the registry were needed. Running
+   this pure-Python operation directly on the Tk main thread (rather
+   than via the subprocess pattern every other panel uses) is
+   confirmed responsive in practice (sub-second, no UI freeze observed).
+
+4. **What remains uncertain:** only Uniform and Implant Windows were
+   individually click-run this session; Step Junction and Gaussian
+   Implant share the identical code path (same `_field()`-based
+   per-kind frame, same `apply_*_doping` call pattern) but were not
+   individually click-tested — same honest-uncertainty pattern already
+   used for the deposition panel's untested 5 models. No validation is
+   performed on window/region/axis relationships (e.g., a region name
+   that doesn't match any `MaterialRegion` in the mesh silently applies
+   nothing new, since `doping.py`'s own docstring already documents
+   this as "not enforced here"). Doping applied through this panel is
+   never solved/visualized — a user could reasonably expect some
+   feedback beyond a log line; whether that gap needs filling (e.g. a
+   minimal concentration-vs-position plot, short of a full DevSim
+   solve) is an open design question, not attempted here.
+
+5. **Next smallest experiment (not done):** with doping wired, every
+   registry-backed and non-registry category the GUI's own inventory
+   named is now wired (etch, oxidation, deposition, geometry/gate_stack,
+   doping). Remaining threads are all things already flagged as OPEN
+   or minor in this file / CLAUDE.md — process-flow chaining
+   (`tcad.process.flow.FlowStep`/`inherited_domain`) is still out of
+   GUI scope (each run still builds a fresh wafer), and an actual
+   DevSim device-simulation view (contacts + solve + I-V/C-V plot) is
+   the natural next large feature if the project wants doping's results
+   to be electrically visible in the GUI rather than just logged.
+
+**Regression: 30 passed, 0 failed, 0 skipped** (confirmed this session;
+unaffected — GUI-only change).
+
 ## Current Task
 
 Do not try to solve everything at once.

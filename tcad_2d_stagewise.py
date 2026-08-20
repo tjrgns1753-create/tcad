@@ -56,6 +56,13 @@ import tcad.process.etching  # noqa: F401 -- import side effect: registers etch 
 import tcad.process.deposition  # noqa: F401 -- import side effect: registers deposition models
 import tcad.process.oxidation  # noqa: F401 -- import side effect: registers oxidation models
 import tcad.process.geometry  # noqa: F401 -- import side effect: registers gate_stack
+from tcad.mesh.viennaps_adapter import build_process_result
+from tcad.physics.doping import (
+    apply_uniform_doping,
+    apply_step_junction_doping,
+    apply_gaussian_implant_doping,
+    apply_implant_windows_doping,
+)
 
 # ============================================================
 # VIENNAPS ETCH ENGINE
@@ -552,6 +559,10 @@ class TCADApplication(tk.Tk):
         )
 
         self._make_geometry_panel(
+            panel
+        )
+
+        self._make_doping_panel(
             panel
         )
 
@@ -1992,6 +2003,364 @@ class TCADApplication(tk.Tk):
             f"Final mesh:\n{result['final_mesh']}",
         )
 
+    def _make_doping_panel(
+        self,
+        parent,
+    ):
+        """Doping (tcad/physics/doping.py) -- architecturally unlike
+        every other panel in this file: it is NOT a registry category
+        (no ProcessStep, no vps.Process() call at all), so it does not
+        go through worker_main()'s subprocess pattern. It is a pure-
+        Python operation that reads the most recently produced real
+        mesh (self.last_final_mesh, via build_process_result) and
+        attaches a DopingProfile to it -- no ViennaPS simulation, no
+        DevSim import (doping.py's own module docstring: "this module
+        ... has no devsim import"). Cheap enough to run directly on the
+        Tk main thread like a field-visibility toggle, unlike every
+        other "START ..." button in this file.
+
+        Consequently this panel is gated on "a real mesh currently
+        exists" (self.wafer.processed + self.last_final_mesh), handled
+        in _update_process_buttons(), NOT on self.process_stage --
+        doping can be applied after etch, oxidation, deposition, OR a
+        gate_stack build alike.
+
+        IMPORTANT SCOPE LIMIT, stated up front in the panel itself:
+        this only attaches a DopingProfile object and reports it in the
+        log -- it does NOT run a DevSim solve, place contacts, or show
+        an I-V/C-V curve. Wiring an actual biased device simulation
+        into this GUI is a separate, much larger feature (contacts,
+        equations, bias sweeps, plotting) that CLAUDE.md's "one
+        subsystem at a time" rule argues against bundling into this
+        step.
+
+        Field defaults are the same ones already verified against real
+        ViennaPS + DevSim in tests/integration/test_phase7_doping_real.py
+        (uniform), test_phase8_pn_junction_real.py (step_junction),
+        test_gaussian_implant_doping_real.py (gaussian_implant), and
+        test_implant_windows_doping_real.py (implant_windows, source +
+        drain -- exactly 2 windows, matching that test; not a general
+        N-window UI, which nothing here has verified).
+        """
+
+        frame = ttk.LabelFrame(
+            parent,
+            text="Doping",
+            padding=10,
+        )
+
+        frame.pack(
+            fill="x",
+            pady=10,
+        )
+
+        ttk.Label(
+            frame,
+            text=(
+                "Attaches a DopingProfile to the most recent real mesh "
+                "(any of etch/oxidation/deposition/gate stack). Does "
+                "NOT run a DevSim solve or show an I-V/C-V curve -- "
+                "device biasing is out of scope for this panel."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=(0, 6),
+        )
+
+        ttk.Label(
+            frame,
+            text="Doping kind",
+        ).pack(
+            anchor="w"
+        )
+
+        self.doping_kind = tk.StringVar(
+            value="Uniform"
+        )
+
+        ttk.Combobox(
+            frame,
+            textvariable=self.doping_kind,
+            state="readonly",
+            values=[
+                "Uniform",
+                "Step Junction",
+                "Gaussian Implant",
+                "Implant Windows",
+            ],
+        ).pack(
+            fill="x"
+        )
+
+        doping_params_container = ttk.Frame(frame)
+        doping_params_container.pack(
+            fill="x"
+        )
+
+        uniform_frame = ttk.Frame(doping_params_container)
+        self.dope_uniform_region_var = self._field(
+            uniform_frame, "Region", "Si",
+        )
+        self.dope_uniform_conc_var = self._field(
+            uniform_frame, "Net doping (cm^-3, signed)", 1.0e17,
+        )
+
+        step_frame = ttk.Frame(doping_params_container)
+        self.dope_step_region_var = self._field(
+            step_frame, "Region", "Si",
+        )
+        self.dope_step_axis_var = self._field(
+            step_frame, "Axis (x/y)", "x",
+        )
+        self.dope_step_position_var = self._field(
+            step_frame, "Junction position (µm)", 0.0,
+        )
+        self.dope_step_donor_var = self._field(
+            step_frame, "Donor conc (cm^-3)", 1.0e18,
+        )
+        self.dope_step_acceptor_var = self._field(
+            step_frame, "Acceptor conc (cm^-3)", 1.0e18,
+        )
+
+        gaussian_frame = ttk.Frame(doping_params_container)
+        self.dope_gauss_region_var = self._field(
+            gaussian_frame, "Region", "Si",
+        )
+        self.dope_gauss_axis_var = self._field(
+            gaussian_frame, "Axis (x/y)", "x",
+        )
+        self.dope_gauss_position_var = self._field(
+            gaussian_frame, "Peak position (µm)", 0.0,
+        )
+        self.dope_gauss_straggle_var = self._field(
+            gaussian_frame, "Straggle (µm)", 0.5,
+        )
+        self.dope_gauss_conc_var = self._field(
+            gaussian_frame, "Peak conc (cm^-3, signed)", 1.0e17,
+        )
+
+        windows_frame = ttk.Frame(doping_params_container)
+        self.dope_win_region_var = self._field(
+            windows_frame, "Region", "Si",
+        )
+        self.dope_win_axis_var = self._field(
+            windows_frame, "Axis (x/y)", "x",
+        )
+        self.dope_win_background_var = self._field(
+            windows_frame, "Background doping (cm^-3, signed)", -1.0e17,
+        )
+        self.dope_win_src_min_var = self._field(
+            windows_frame, "Source window min (µm)", -1.6,
+        )
+        self.dope_win_src_max_var = self._field(
+            windows_frame, "Source window max (µm)", -0.6,
+        )
+        self.dope_win_src_conc_var = self._field(
+            windows_frame, "Source window conc (cm^-3)", 1.0e20,
+        )
+        self.dope_win_drn_min_var = self._field(
+            windows_frame, "Drain window min (µm)", 0.6,
+        )
+        self.dope_win_drn_max_var = self._field(
+            windows_frame, "Drain window max (µm)", 1.6,
+        )
+        self.dope_win_drn_conc_var = self._field(
+            windows_frame, "Drain window conc (cm^-3)", 1.0e20,
+        )
+        ttk.Label(
+            windows_frame,
+            text=(
+                "Exactly 2 windows (source + drain), superposed on the "
+                "background -- matches the one real-verified "
+                "implant_windows test, not a general N-window UI."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=(4, 0),
+        )
+
+        self._doping_kind_frames = {
+            "Uniform": uniform_frame,
+            "Step Junction": step_frame,
+            "Gaussian Implant": gaussian_frame,
+            "Implant Windows": windows_frame,
+        }
+
+        self.doping_kind.trace_add(
+            "write",
+            lambda *_args: self._update_doping_field_visibility(),
+        )
+        self._update_doping_field_visibility()
+
+        self.doping_button = ttk.Button(
+            frame,
+            text="APPLY DOPING",
+            command=self.run_doping,
+        )
+        self.doping_button.pack(
+            fill="x",
+            pady=(12, 3),
+        )
+
+    def _update_doping_field_visibility(self):
+        """Same mechanism as _update_etch_field_visibility()."""
+
+        selected = self.doping_kind.get()
+
+        for kind_name, group_frame in self._doping_kind_frames.items():
+            if kind_name == selected:
+                group_frame.pack(fill="x")
+            else:
+                group_frame.pack_forget()
+
+    def run_doping(self):
+
+        if not (
+            self.wafer.processed
+            and self.last_final_mesh
+            and Path(self.last_final_mesh).exists()
+        ):
+
+            messagebox.showwarning(
+                "Process order",
+                "Run a real process step (etch, oxidation, deposition, "
+                "or gate stack) first.",
+            )
+
+            return
+
+        kind = self.doping_kind.get()
+
+        try:
+
+            process_result = build_process_result(
+                {"final_mesh": self.last_final_mesh, "snapshots": []}
+            )
+
+            if kind == "Uniform":
+
+                region = self.dope_uniform_region_var.get()
+                conc = float(self.dope_uniform_conc_var.get())
+                doped_result = apply_uniform_doping(
+                    process_result, {region: conc},
+                )
+                summary = f"region={region!r} net_doping_cm3={conc:.3e}"
+
+            elif kind == "Step Junction":
+
+                region = self.dope_step_region_var.get()
+                axis = self.dope_step_axis_var.get()
+                position = float(self.dope_step_position_var.get())
+                donor = float(self.dope_step_donor_var.get())
+                acceptor = float(self.dope_step_acceptor_var.get())
+                doped_result = apply_step_junction_doping(
+                    process_result, region=region, junction_axis=axis,
+                    junction_position_um=position,
+                    donor_conc_cm3=donor, acceptor_conc_cm3=acceptor,
+                )
+                summary = (
+                    f"region={region!r} axis={axis!r} "
+                    f"junction@{position}um donor={donor:.3e} "
+                    f"acceptor={acceptor:.3e}"
+                )
+
+            elif kind == "Gaussian Implant":
+
+                region = self.dope_gauss_region_var.get()
+                axis = self.dope_gauss_axis_var.get()
+                position = float(self.dope_gauss_position_var.get())
+                straggle = float(self.dope_gauss_straggle_var.get())
+                conc = float(self.dope_gauss_conc_var.get())
+                doped_result = apply_gaussian_implant_doping(
+                    process_result, region=region, junction_axis=axis,
+                    peak_position_um=position, straggle_um=straggle,
+                    peak_conc_cm3=conc,
+                )
+                summary = (
+                    f"region={region!r} axis={axis!r} "
+                    f"peak@{position}um straggle={straggle}um "
+                    f"peak_conc={conc:.3e}"
+                )
+
+            elif kind == "Implant Windows":
+
+                region = self.dope_win_region_var.get()
+                axis = self.dope_win_axis_var.get()
+                background = float(self.dope_win_background_var.get())
+                windows = [
+                    {
+                        "min_um": float(self.dope_win_src_min_var.get()),
+                        "max_um": float(self.dope_win_src_max_var.get()),
+                        "conc_cm3": float(self.dope_win_src_conc_var.get()),
+                    },
+                    {
+                        "min_um": float(self.dope_win_drn_min_var.get()),
+                        "max_um": float(self.dope_win_drn_max_var.get()),
+                        "conc_cm3": float(self.dope_win_drn_conc_var.get()),
+                    },
+                ]
+                doped_result = apply_implant_windows_doping(
+                    process_result, region=region, axis=axis,
+                    background_doping_cm3=background, windows=windows,
+                )
+                summary = (
+                    f"region={region!r} axis={axis!r} "
+                    f"background={background:.3e} "
+                    f"windows={windows}"
+                )
+
+            else:
+
+                messagebox.showinfo(
+                    "Doping",
+                    "Unknown doping kind selected.",
+                )
+
+                return
+
+        except ValueError:
+
+            messagebox.showerror(
+                "Doping recipe",
+                "All numeric recipe values must be numeric.",
+            )
+
+            return
+
+        except Exception as exc:
+
+            messagebox.showerror(
+                "Doping",
+                str(exc),
+            )
+
+            return
+
+        self.history.append(
+            f"Doping: {kind}"
+        )
+
+        self._log(
+            f"\n================================\n"
+            f"DOPING APPLIED: {kind.upper()}\n"
+            f"================================\n"
+            f"{summary}\n"
+            f"Materials in mesh: "
+            f"{[r.name for r in doped_result.material_regions]}\n"
+            f"(DopingProfile attached only -- no DevSim solve run.)\n"
+        )
+
+        messagebox.showinfo(
+            "Doping",
+            f"Doping profile attached ({kind}).\n\n{summary}\n\n"
+            f"No DevSim solve was run -- this only attaches the "
+            f"DopingProfile object and reports it in the process log.",
+        )
+
     # --------------------------------------------------------
     # LOG
     # --------------------------------------------------------
@@ -2151,6 +2520,21 @@ class TCADApplication(tk.Tk):
 
         for button in buttons.get(self.process_stage, []):
             button.configure(state="normal")
+
+        # Doping is not part of the litho/process_stage sequence at
+        # all -- it attaches a DopingProfile to whatever real mesh was
+        # most recently produced (etch/oxidation/deposition/gate_stack
+        # all count), so it is gated on "a real mesh currently exists"
+        # rather than on process_stage, same condition redraw() already
+        # uses for real_mesh_available.
+        doping_ready = bool(
+            self.wafer.processed
+            and self.last_final_mesh
+            and Path(self.last_final_mesh).exists()
+        )
+        self.doping_button.configure(
+            state="normal" if doping_ready else "disabled"
+        )
 
     def process_pr_coat(self):
         if self.process_stage != "wafer":
