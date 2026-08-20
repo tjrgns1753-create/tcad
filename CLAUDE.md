@@ -240,14 +240,22 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
    `docs/investigation_log.md` for "the apex normal evaluates to
    rate100".
 
-2. **GUI implant_windows measurement fails on the GUI's OWN default
-   wafer (10x8um) — OPEN.** `refine_process_result_for_implant_windows()`
-   fixed the 4x3um case robustly (see the GUI section), but clicking
-   MEASURE on a default-sized wafer still raises "Convergence failure!",
-   and it fails in the **EQUILIBRIUM** solve (RelError 1.0 -> 1.52,
-   rising) before any bias is applied — so no bias-ramping strategy can
-   help, and refinement does not rescue it either (fails both with and
-   without).
+2. **`implant_windows` convergence is GEOMETRY-DEPENDENT, not solved in
+   general — OPEN.** Framing this correctly matters: the requirement is
+   NOT "wafer size 4x3 works, 10x8 doesn't" — a user arbitrarily etches
+   a device and dopes it, and the solve must converge for WHATEVER
+   geometry+doping combination that produces, not for a fixed list of
+   verified configurations. `refine_process_result_for_implant_windows()`
+   fixed one configuration (4x3um wafer, mask 1.5-2.5) robustly under
+   perturbation of THAT configuration's own mask — but a different
+   configuration (the GUI's own 10x8um default) still raises
+   "Convergence failure!" with the identical doping-derived refinement
+   applied. The fix is real but narrower than "implant_windows
+   converges" — treat it as "one geometry class now converges", not as
+   the general case being solved. It fails in the **EQUILIBRIUM** solve
+   (RelError 1.0 -> 1.52, rising) before any bias is applied — so no
+   bias-ramping strategy can help, and refinement as currently derived
+   does not rescue it either (fails both with and without).
 
    **ROOT CAUSE (confirmed by direct experiment):** a doping junction
    placed roughly HALF A MESH CELL from an etched sidewall, with the
@@ -290,14 +298,27 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
    Reproducer: `mask_left_um=3.5, mask_right_um=6.5, x_extent_um=10,
    y_extent_um=8, silicon_depth_um=5, grid_delta_um=0.2`, implant
    windows [-1.6,-0.6] and [0.6,1.6] at 1e20 on a -1e17 body.
-   Why it is still OPEN rather than fixed: the mechanism is understood
-   but nothing in the code currently prevents a user from choosing that
-   layout, and the panel cannot see the trench geometry from the doping
-   profile alone. Next smallest experiment: check whether the sliver is
-   visible in the imported mesh as degenerate/high-aspect triangles
-   (element areas near the sidewall vs elsewhere) — if so, the panel
-   could detect and warn about it cheaply before solving, instead of
-   surfacing a bare "Convergence failure!".
+
+   Why this is a GENERAL robustness gap, not a one-off case to patch:
+   `derive_implant_windows_refinement()` derives refinement rings from
+   the DOPING profile alone (window edges, peak concentration) — it has
+   no visibility into where the process step put an etched sidewall.
+   Any user who etches a trench and then places an implant window edge
+   near that sidewall (not just at x=+-1.6 on a 10x8 wafer — this is a
+   RELATIONSHIP between two independently-chosen inputs, so it recurs
+   at other coordinates for other geometries too) can reproduce this
+   class of failure. Fixing "the 10x8 default" specifically would just
+   move the undiscovered failure to the next untested combination.
+   A real fix needs the refinement (or the solve strategy) to be aware
+   of GEOMETRIC features (etched edges / material boundaries) in
+   addition to doping features, or the solver needs to handle a
+   sub-cell high-doping sliver without diverging in equilibrium.
+   Next smallest experiment: check whether the sliver is visible in the
+   imported mesh as degenerate/high-aspect triangles (element areas
+   near the sidewall vs elsewhere) — if geometric slivers are cheaply
+   detectable independent of doping, refinement could target them
+   directly instead of only what the doping profile implies, which
+   would generalize past this one reproducer rather than patching it.
 
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):
@@ -434,11 +455,15 @@ to reconverge if called twice on the same device, every MEASURE click
 imports a fresh DevSim device and cleans it up in `finally`
 (`delete_device`+`delete_mesh`, mirroring
 `tcad/cli/run_pipeline.py`'s own pattern) rather than keeping one
-device alive across clicks. **All 4 doping kinds are verified to
-converge through this panel's own code path at the doping panel's own
-default field values, on a 4x3um wafer — NOT on the GUI's default
-10x8um wafer, where implant_windows still fails (see the OPEN item
-below)** (`tests/integration/test_gui_measurement_doping_kinds_real.py`), each
+device alive across clicks. **3 of 4 doping kinds (Uniform, Step
+Junction, Gaussian Implant) converge through this panel's own code path
+for arbitrary geometry+doping combinations tested so far. Implant
+Windows converges only for SOME geometry+doping combinations — it is
+NOT yet general** (verified robust on one wafer/mask family, but fails
+on the GUI's own 10x8um default wafer with a different mask; see OPEN
+item 2 — this is a geometry-dependent solver robustness gap, not a
+single fixed bug)
+(`tests/integration/test_gui_measurement_doping_kinds_real.py`), each
 with its own refinement strategy: Step Junction uses
 `refine_near_um`/`refine_axis` from the profile; Gaussian Implant uses
 the existing `auto_refine_from_doping=True`; Implant Windows uses the
