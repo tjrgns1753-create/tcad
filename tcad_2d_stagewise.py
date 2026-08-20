@@ -210,6 +210,12 @@ class TCADApplication(tk.Tk):
         # of the placeholder rectangle. None until an etch succeeds.
         self.last_final_mesh = None
 
+        # The ProcessResult (with DopingProfile attached) from the last
+        # successful run_doping(), consumed by run_measurement() -- see
+        # _make_measurement_panel()'s own docstring. None until doping
+        # succeeds.
+        self.last_doped_result = None
+
         self.history = []
 
         # Explicit process-state machine.
@@ -563,6 +569,10 @@ class TCADApplication(tk.Tk):
         )
 
         self._make_doping_panel(
+            panel
+        )
+
+        self._make_measurement_panel(
             panel
         )
 
@@ -2340,6 +2350,8 @@ class TCADApplication(tk.Tk):
 
             return
 
+        self.last_doped_result = doped_result
+
         self.history.append(
             f"Doping: {kind}"
         )
@@ -2354,11 +2366,296 @@ class TCADApplication(tk.Tk):
             f"(DopingProfile attached only -- no DevSim solve run.)\n"
         )
 
+        self._update_process_buttons()
+
         messagebox.showinfo(
             "Doping",
             f"Doping profile attached ({kind}).\n\n{summary}\n\n"
             f"No DevSim solve was run -- this only attaches the "
             f"DopingProfile object and reports it in the process log.",
+        )
+
+    def _make_measurement_panel(
+        self,
+        parent,
+    ):
+        """2-terminal DevSim device measurement -- reuses the doping
+        already attached via _make_doping_panel() (self.last_doped_result)
+        and the real, already-verified 2-terminal I-V pipeline
+        (tcad.device.devsim.mesh_import.import_process_result +
+        tcad.device.devsim.doping_mapping.apply_doping +
+        tcad.characterization.pn_junction_iv_sweep.run_pn_junction_iv_sweep
+        -- the exact sequence
+        tests/integration/test_phase8_pn_junction_real.py already
+        verifies against real ViennaPS + DevSim).
+
+        Unlike every process/doping panel, this is the first GUI code
+        path that imports devsim directly -- doping.py's own module
+        docstring states it "has no devsim import" (see
+        _make_doping_panel()'s own docstring), so wiring an actual
+        solve needed a new import point.
+
+        "Pin" here is deliberately NOT a free-form point the user
+        clicks on the mesh -- contacts are auto-derived by
+        mesh_import.py at the doped region's own axis extremes
+        ("<region>_<axis>min"/"...max"), exactly like every existing
+        2-terminal characterization test in this project. What IS
+        user-configurable here: which of the two auto-derived contacts
+        acts as the driven "voltage source" pin (a chosen bias, in
+        volts) versus the "multimeter" pin (held at 0V/ground, current
+        read out) -- both pins always get both a forced voltage AND a
+        read current (real SMU semantics), so "source" vs "multimeter"
+        is a UI framing choice over the same underlying two-contact
+        bias, not two different backend mechanisms.
+
+        run_pn_junction_iv_sweep()'s own docstring states it
+        reproducibly fails to reconverge if called twice on the same
+        already-solved device -- so every MEASURE click imports a
+        FRESH DevSim device from scratch (a fixed mesh_name/device_name
+        reused across clicks is safe only because delete_device() +
+        delete_mesh() always runs in a `finally` block first, mirroring
+        tcad/cli/run_pipeline.py's own _cleanup_device() pattern)
+        rather than trying to keep one device alive across multiple
+        measurements.
+
+        Mesh refinement near the doping junction (refine_near_um) is
+        only applied for step_junction doping, matching the one
+        combination Phase 8 real-verified for convergence at high
+        doping (donor=acceptor=1e18 cm^-3, grid_delta_um=0.15 -> mesh
+        ~37x too coarse without it). Other doping kinds run unrefined
+        through this panel -- convergence for those combinations is
+        NOT yet verified here; a real DevSim convergence failure
+        surfaces as a normal error dialog rather than being hidden.
+        """
+
+        frame = ttk.LabelFrame(
+            parent,
+            text="Device measurement (2-terminal)",
+            padding=10,
+        )
+
+        frame.pack(
+            fill="x",
+            pady=10,
+        )
+
+        ttk.Label(
+            frame,
+            text=(
+                "Uses the doping already applied above. Auto-derives 2 "
+                "contacts at the doped region's own axis extremes -- "
+                "pick which one is the driven voltage source; the "
+                "other is held at 0V and read as the \"multimeter\" "
+                "pin. Mesh refinement at the junction is only applied "
+                "for Step Junction doping -- other kinds are "
+                "unverified for convergence here."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=(0, 6),
+        )
+
+        self.meas_axis_var = self._field(
+            frame, "Contact axis (x/y)", "x",
+        )
+
+        ttk.Label(
+            frame,
+            text="Voltage source pin",
+        ).pack(
+            anchor="w",
+            pady=(4, 0),
+        )
+
+        self.meas_source_pin = tk.StringVar(
+            value="max"
+        )
+
+        ttk.Combobox(
+            frame,
+            textvariable=self.meas_source_pin,
+            state="readonly",
+            values=["min", "max"],
+        ).pack(
+            fill="x"
+        )
+
+        ttk.Label(
+            frame,
+            text=(
+                "\"min\"/\"max\" = the doped region's own lower/upper "
+                "extreme along the contact axis (e.g. Si_xmin / "
+                "Si_xmax) -- the other one is the multimeter/GND pin."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            pady=(2, 0),
+        )
+
+        self.meas_voltage_var = self._field(
+            frame, "Source voltage (V)", 0.3,
+        )
+
+        self.measure_button = ttk.Button(
+            frame,
+            text="MEASURE",
+            command=self.run_measurement,
+        )
+        self.measure_button.pack(
+            fill="x",
+            pady=(12, 3),
+        )
+
+    def run_measurement(self):
+
+        if self.last_doped_result is None:
+
+            messagebox.showwarning(
+                "Process order",
+                "Apply doping first (see the Doping panel above).",
+            )
+
+            return
+
+        from tcad.device.devsim import backend as devsim_backend
+
+        if not devsim_backend.is_available():
+
+            messagebox.showerror(
+                "DevSim",
+                "DevSim is not installed.\n\n"
+                "Run:\n"
+                "python -m pip install devsim",
+            )
+
+            return
+
+        axis = self.meas_axis_var.get()
+
+        try:
+            voltage = float(self.meas_voltage_var.get())
+        except ValueError:
+
+            messagebox.showerror(
+                "Measurement recipe",
+                "Source voltage must be numeric.",
+            )
+
+            return
+
+        doped_result = self.last_doped_result
+        region = doped_result.doping.regions[0].region
+        kind = doped_result.doping.kind
+
+        from tcad.device.devsim.mesh_import import import_process_result
+        from tcad.device.devsim.doping_mapping import apply_doping
+        from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
+
+        module = devsim_backend.require_devsim()
+        device_name = "gui_measure_device"
+        mesh_name = "gui_measure_mesh"
+        length_scale_to_cm = 1.0e-4
+
+        refine_kwargs = {}
+        if kind == "step_junction":
+            region_doping = doped_result.doping.regions[0]
+            refine_kwargs = {
+                "refine_near_um": region_doping.junction_position_um,
+                "refine_axis": region_doping.junction_axis,
+            }
+        else:
+            self._log(
+                f"\n(No mesh refinement applied -- doping kind "
+                f"{kind!r} is unverified for convergence in this "
+                f"panel.)\n"
+            )
+
+        imported = None
+
+        try:
+
+            imported = import_process_result(
+                doped_result, mesh_name=mesh_name, device_name=device_name,
+                contact_regions=[region], contact_axis=axis,
+                length_scale_to_cm=length_scale_to_cm,
+                **refine_kwargs,
+            )
+
+            if len(imported.contacts) != 2:
+
+                messagebox.showerror(
+                    "Measurement",
+                    f"Expected exactly 2 contacts for region "
+                    f"{region!r}, got {imported.contacts}.",
+                )
+
+                return
+
+            apply_doping(
+                imported.device, doped_result.doping,
+                length_scale_to_cm=length_scale_to_cm,
+            )
+
+            min_contact, max_contact = imported.contacts[0], imported.contacts[1]
+            source_contact = (
+                max_contact if self.meas_source_pin.get() == "max" else min_contact
+            )
+            gnd_contact = min_contact if source_contact == max_contact else max_contact
+
+            result = run_pn_junction_iv_sweep(
+                device=imported.device, region=region,
+                all_contacts=imported.contacts,
+                sweep_contact=source_contact, sweep_voltages=[voltage],
+                fixed_contacts={gnd_contact: 0.0},
+            )
+
+        except Exception as exc:
+
+            messagebox.showerror(
+                "Measurement",
+                str(exc),
+            )
+
+            return
+
+        finally:
+
+            if imported is not None:
+                try:
+                    module.delete_device(device=imported.device)
+                    module.delete_mesh(mesh=imported.mesh)
+                except Exception:
+                    pass
+
+        point = result.points[0]
+        source_i = point.currents[source_contact]
+        gnd_i = point.currents[gnd_contact]
+
+        self.history.append(
+            f"Measurement: {source_contact}={voltage}V"
+        )
+
+        self._log(
+            f"\n================================\n"
+            f"DEVSIM MEASUREMENT\n"
+            f"================================\n"
+            f"Region={region!r} axis={axis!r} doping_kind={kind!r}\n"
+            f"Voltage source pin: {source_contact} = {voltage:+.4f} V "
+            f"-> I = {source_i:.6e} A\n"
+            f"Multimeter (GND) pin: {gnd_contact} = 0.0000 V "
+            f"-> I = {gnd_i:.6e} A\n"
+        )
+
+        messagebox.showinfo(
+            "Measurement",
+            f"Voltage source ({source_contact}): {voltage:+.4f} V, "
+            f"I = {source_i:.6e} A\n\n"
+            f"Multimeter ({gnd_contact}): 0.0000 V, "
+            f"I = {gnd_i:.6e} A",
         )
 
     # --------------------------------------------------------
@@ -2534,6 +2831,13 @@ class TCADApplication(tk.Tk):
         )
         self.doping_button.configure(
             state="normal" if doping_ready else "disabled"
+        )
+
+        # Measurement needs doping already attached (self.last_doped_result),
+        # same "not part of the litho/process_stage sequence" reasoning
+        # as doping itself.
+        self.measure_button.configure(
+            state="normal" if self.last_doped_result is not None else "disabled"
         )
 
     def process_pr_coat(self):
@@ -3480,6 +3784,7 @@ class TCADApplication(tk.Tk):
 
         self.wafer = Wafer()
         self.recipe = BoschRecipe()
+        self.last_doped_result = None
         self.history = []
         self.process_stage = "wafer"
 

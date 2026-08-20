@@ -6859,6 +6859,144 @@ unaffected — GUI-only change).
 **Regression: 30 passed, 0 failed, 0 skipped** (confirmed this session;
 unaffected — GUI-only change).
 
+### GUI: 2-terminal device measurement panel added — ADDED, verified end-to-end via real ViennaPS + DevSim; real mesh-size/convergence-time finding along the way (same session, per explicit user request: "이제 핀 위치를 내가 설정하도록 하고 싶어 어디에 전압을 걸고 어디에 멀티미터를 꽂는지" — "now I want to set pin positions myself, where voltage goes and where the multimeter connects")
+
+1. **What was tested / done.** User was asked to clarify scope before
+   any code was written (this was a materially new architecture
+   decision, not a "smallest experiment" extension of an existing
+   panel): (a) which device topology first — chose the 2-terminal
+   etch+doping case over the 4-terminal gate_stack MOSFET; (b) what
+   "set pin position" means — chose "pick a role for each of the
+   EXISTING auto-derived contacts" over "click an arbitrary point on
+   the mesh to create a new contact" (the latter would need new
+   mesh_import.py machinery; contacts are only ever auto-derived at a
+   region's own axis extremes today).
+
+   Investigated the real 2-terminal pipeline before writing GUI code:
+   `tcad.mesh.viennaps_adapter.build_process_result` ->
+   `tcad.device.devsim.mesh_import.import_process_result` (contact
+   names are deterministically `f"{region}_{axis}min"` /
+   `f"{region}_{axis}max"`, index 0/1 in that order) ->
+   `tcad.device.devsim.doping_mapping.apply_doping` ->
+   `tcad.characterization.pn_junction_iv_sweep.run_pn_junction_iv_sweep`
+   — the exact sequence `test_phase8_pn_junction_real.py` already
+   verifies. Key discovery from reading `run_pn_junction_iv_sweep`'s
+   own docstring: it "reproducibly fails to reconverge" if called
+   twice on the same already-solved device, so a repeatable "click
+   MEASURE several times" UX requires a FRESH DevSim device per click,
+   not a persistent one — simplifying the design (no device-lifecycle
+   state to keep alive across clicks) at the cost of re-importing the
+   mesh every time (cheap: a few seconds).
+
+   Added `_make_measurement_panel()` / `run_measurement()`. Unlike
+   every prior panel this session, this is the FIRST GUI code path
+   that imports `devsim` directly (`doping.py`'s own docstring: "no
+   devsim import" — doping only builds a `DopingProfile`, never
+   solves). "Source" vs "multimeter" is framed honestly in the UI as
+   the SAME underlying mechanism (every DevSim contact gets both a
+   forced voltage and a read current, real SMU semantics) rather than
+   two different backend paths — the user picks which of the 2
+   contacts is the driven one; the other is implicitly 0V/ground.
+   Mesh refinement near the junction (`refine_near_um`) is applied
+   only for `step_junction` doping (the one combination Phase 8
+   verified for convergence at 1e18 cm^-3); other doping kinds run
+   unrefined, explicitly flagged as unverified for convergence in both
+   the panel's own label and a log line.
+
+2. **A real, unplanned finding: GUI-default domain size makes the
+   panel's first real ViennaPS/DevSim run impractically slow.** First
+   live-test attempt used the GUI's own etch-panel defaults
+   (`width_um`=10, `y_extent_um`=8, `grid_delta_um`=0.05 — none of
+   which match Phase 8's tiny 4x3um/0.15 test domain) plus Step
+   Junction doping's local 4-level refinement. Result: **218,334
+   DevSim equations** (vs Phase 8's own ~10-15k), and the un-ramped,
+   single-jump bias solve `run_pn_junction_iv_sweep` uses (directly
+   `set_bias()` then one `solve()`, no `rampbias`) sat silently
+   unconverged/unfinished for 5+ minutes at ~30% CPU with no new
+   solver output — killed rather than let run indefinitely. Root cause
+   identified by direct calculation, not guessed: GUI-default domain
+   area is ~6.7x Phase 8's (10x8 vs 4x3um) AND GUI-default
+   `grid_delta_um` is 3x finer per axis (0.05 vs 0.15) -> ~9x more base
+   nodes -> combined ~60x more base mesh nodes than the one
+   combination ever verified to converge.
+
+   **Retested with `grid_delta_um` raised to 0.2** (still a GUI field
+   the user already controls, no code change) — same recipe otherwise.
+   Result: 4,938 equations (Poisson-only) -> 14,814 (drift-diffusion
+   enabled), converged in 7-9 Newton iterations at each stage, and the
+   final biased solve at V=+0.3 completed in a few seconds with a real
+   messagebox result: **Voltage source (Si_xmax): +0.3000 V, I =
+   4.855292e+00 A; Multimeter (Si_xmin): 0.0000 V, I = -4.855292e+00
+   A** — currents equal and opposite (KCL satisfied exactly, a real
+   sanity check on a real solved device, not fabricated). Re-ran with
+   the source/multimeter roles SWAPPED (source now Si_xmin instead of
+   Si_xmax) — same magnitude (4.855292e+00 A) with sign following the
+   new pin assignment, confirming the pin-role-swap code path is
+   correct (forward bias direction is preserved under the swap by the
+   step-junction's own symmetry, exactly as expected). A second
+   MEASURE click on the same doped mesh (re-importing a fresh device
+   each time, per point 1's design) also completed cleanly, confirming
+   the delete_device()+delete_mesh() cleanup pattern (mirrored from
+   `tcad/cli/run_pipeline.py`'s own `_cleanup_device()`) correctly
+   frees state for reuse.
+
+   Also had to `pip install devsim==2.11.0` into the `.venv312` GUI-
+   testing environment (previously tkinter-only via
+   `--system-site-packages`) to live-verify this panel through the
+   real Xvfb+xdotool click path rather than only unit-testing the
+   underlying functions — worth recording since it's a one-time setup
+   step, not a project code change.
+
+3. **What it proves:** the doping panel's already-generalized
+   `self.last_final_mesh`/`self.last_doped_result` state is sufficient
+   to drive a real DevSim solve with no new state-tracking; the
+   contact-naming convention (`<region>_<axis>min/max`, index 0/1) is
+   reliable enough to build a UI around without needing to query
+   DevSim first; and — the most useful finding for future sessions —
+   **this project's mesh-refinement defaults (`refine_half_width_um`,
+   `refine_levels`) were only ever verified at Phase 8's specific small
+   domain/grid combination, and do NOT automatically scale to this
+   GUI's much larger default wafer geometry.** A user who leaves
+   `grid_delta_um` at its GUI default (0.05) and applies Step Junction
+   doping at 1e18 cm^-3 will get a real but very slow (or effectively
+   hung, from the UI's perspective — the Tk mainloop blocks with no
+   progress indicator) MEASURE click, not a wrong answer — this is a
+   PERFORMANCE finding, not a correctness one; no evidence the eventual
+   result would have been wrong, only untested how long it would
+   actually take to converge.
+
+4. **What remains uncertain:** whether the 218k-equation case would
+   have EVENTUALLY converged (just very slowly) or was genuinely stuck
+   was not determined — the run was killed rather than let continue
+   indefinitely; a future session could let it run to completion (or
+   to a definite failure) to distinguish "slow" from "actually stuck".
+   Uniform/Gaussian Implant/Implant Windows doping kinds were not
+   tested through this measurement panel (only Step Junction, the one
+   kind with a verified refinement recipe) — per the panel's own
+   documented scope limit, convergence for those combinations here is
+   unverified. The absolute current magnitude (~4.86 A at 0.3V forward
+   bias) is large for a real diode; this is expected DevSim 2D
+   behavior (currents are implicitly per-unit-depth, not scaled to a
+   physical device width) rather than a bug — same convention every
+   prior DevSim-based test/panel in this project already uses
+   unremarked, not something newly introduced here. No GUI-level
+   guidance/warning about `grid_delta_um` vs. doping-refinement cost
+   trade-offs exists yet.
+
+5. **Next smallest experiment (not done):** either let a large-domain
+   MEASURE run go to completion (or definite failure) to resolve point
+   4's "slow vs. stuck" question, or add a lightweight GUI-level
+   warning/estimate before a MEASURE click proceeds with a large
+   projected equation count. Beyond that: the same panel pattern could
+   extend to a real bias SWEEP (multiple voltages, a plotted I-V curve)
+   instead of today's single-point "multimeter reading", or to the
+   4-terminal gate_stack MOSFET case the user explicitly deferred when
+   scoping this feature.
+
+**Regression: 30 passed, 0 failed, 0 skipped** (confirmed this
+session; unaffected — GUI-only change, does not touch
+`tests/run_regression.py`'s own suite).
+
 ## Current Task
 
 Do not try to solve everything at once.

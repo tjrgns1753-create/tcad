@@ -175,7 +175,10 @@ Current regression: `tests/run_regression.py` → **30 passed, 0 failed,
   Directional RIE, Isotropic, SF6/O2); an oxidation/LOCOS panel, a
   deposition panel (7 models), a MOSFET gate-stack panel, and a doping
   panel (4 kinds) are now also wired (see GUI section below) — every
-  registry and non-registry category is now wired.
+  registry and non-registry category is now wired. A 2-terminal
+  device-measurement panel (real DevSim solve, user-chosen voltage-
+  source/multimeter contact roles) was added on top of that — the
+  first GUI code path to import `devsim` directly.
 - **Registry growth**: etching 11 models, deposition 6 models, doping
   3 kinds (uniform, step_junction, gaussian_implant, implant_windows),
   plus `geometry`/`gate_stack`.
@@ -354,6 +357,46 @@ both applied successfully against the real etched mesh with the log
 confirming `build_process_result` read the real materials
 (`['Mask', 'Si']`) — not a stub — and NEW WAFER correctly disables the
 button again afterward.
+
+A 2-terminal device-measurement panel was added last, going beyond the
+GUI's own original inventory into actual DevSim device simulation for
+the first time. Scoped explicitly with the user first: 2-terminal
+etch+doping (not the 4-terminal gate_stack MOSFET), and "set pin
+position" means picking a role (voltage source vs. multimeter/GND) for
+each of the 2 EXISTING auto-derived contacts, not clicking an arbitrary
+point on the mesh (contacts are only ever auto-derived at a region's
+own axis extremes — `<region>_<axis>min/max` — today; free-form contact
+placement would need new `mesh_import.py` machinery). Reuses
+`self.last_doped_result` from the doping panel; runs the real
+`import_process_result` -> `apply_doping` ->
+`run_pn_junction_iv_sweep` pipeline `test_phase8_pn_junction_real.py`
+already verifies. Because `run_pn_junction_iv_sweep` reproducibly fails
+to reconverge if called twice on the same device, every MEASURE click
+imports a fresh DevSim device and cleans it up in `finally`
+(`delete_device`+`delete_mesh`, mirroring
+`tcad/cli/run_pipeline.py`'s own pattern) rather than keeping one
+device alive across clicks. Mesh refinement at the junction is applied
+only for Step Junction doping (the one kind Phase 8 verified for
+convergence at 1e18 cm^-3); other kinds run unrefined and are flagged
+as unverified in the panel itself.
+
+Live-verified via the same Xvfb+xdotool setup (after `pip install
+devsim==2.11.0` into `.venv312`, previously tkinter-only): a real
+solve at V=+0.3 on Step Junction doping produced Voltage source
+(Si_xmax) I=+4.855292 A / Multimeter (Si_xmin) I=-4.855292 A — equal
+and opposite, a real KCL check on a real solved device — and swapping
+which pin is the source reproduced the same magnitude with the sign
+following the new assignment. Along the way, found (not guessed) that
+the GUI's own default domain size (width_um=10, y_extent_um=8,
+grid_delta_um=0.05) combined with Step Junction's local refinement
+produces ~218k DevSim equations — 60x more than Phase 8's verified
+~10-15k combination — and the panel's un-ramped single-jump bias solve
+sat unfinished for 5+ minutes on that mesh before being killed;
+raising `grid_delta_um` to 0.2 (an existing GUI field, no code change)
+brought it to ~15k equations and a few-second solve. This is
+recorded as a performance finding, not a correctness one — see
+`docs/investigation_log.md`'s own "what remains uncertain" for
+whether the large-mesh case would have eventually converged.
 
 ## Current Task
 
