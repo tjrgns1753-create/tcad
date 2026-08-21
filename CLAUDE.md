@@ -632,6 +632,42 @@ and blamed the wrong subsystem for it. The new regression test asserts
 silently recur. Full writeup: search `docs/investigation_log.md` for
 "GUI measurement: which doping kinds actually converge".
 
+**Mouse-drawn mask** was added to the Lithography panel's 2D
+cross-section canvas: click-drag now sets `mask_left_um`/`mask_right_um`
+directly (previously text-field-only). Implemented as a thin input
+layer on TOP of the existing text-field state — `_on_mask_drag_end()`
+writes into the SAME `self.wafer.mask_left_um`/`mask_right_um` and the
+SAME `self.left_var`/`self.right_var` StringVars `_read_lithography_
+fields()` already reads at process-run time, so nothing downstream
+(the recipe, ViennaPS, every process step) needed to change. A shared
+`_wafer_canvas_x_transform()` helper factors out the pixel<->um mapping
+`redraw()` already computes inline for the mask-opening rectangle, so
+the drag handler can never drift out of sync with what's drawn.
+Handles a reversed (right-to-left) drag by sorting min/max, ignores
+sub-0.05um accidental clicks (leaves the existing mask untouched rather
+than collapsing it), and is disabled once `wafer.processed` (a real
+mesh exists, so the canvas shows the real ViennaPS render instead of
+the mask placeholder — editing the mask then would silently disagree
+with the geometry already on screen). Only a single opening is
+supported (matches the GUI's own existing scope — `mask_spans_um`, the
+backend's multi-span feature, has no GUI field at all today, drawn or
+typed). Live-verified via the same Xvfb+xdotool setup: a real mouse
+drag from x=2.0um to x=5.0um set both text fields to `2.000`/`5.000`
+and, after MASK ALIGNMENT, the rendered "MASK OPENING" appeared at
+exactly that position on screen — a genuine pixel-level round-trip, not
+just a state-variable check. **Found, not fixed (pre-existing, unrelated
+to this change):** `reset()` (NEW WAFER) creates a fresh `Wafer()` but
+never clears `self.left_var`/`self.right_var` (or any other
+Lithography-panel StringVar — `pr_var`, `depth_var`, `dose_var`,
+`develop_var`) — so after NEW WAFER, the text fields keep showing the
+PREVIOUS wafer's values, and the next `_read_lithography_fields()` call
+(first litho button press) overwrites the freshly-reset `self.wafer`
+right back to those stale numbers, silently undoing part of NEW WAFER.
+Confirmed live (mask dragged to 2.000/5.000, NEW WAFER clicked, fields
+still read 2.000/5.000). Out of scope for this change — same class of
+bug would affect a typed edit just as much as a dragged one — left
+here for whoever picks it up next.
+
 ## Current Task
 
 Do not try to solve everything at once.

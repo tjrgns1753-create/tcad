@@ -474,6 +474,13 @@ class TCADApplication(tk.Tk):
             lambda event: self.redraw(),
         )
 
+        self._mask_drag_start_um = None
+        self._mask_drag_rect_id = None
+
+        self.canvas.bind("<ButtonPress-1>", self._on_mask_drag_start)
+        self.canvas.bind("<B1-Motion>", self._on_mask_drag_move)
+        self.canvas.bind("<ButtonRelease-1>", self._on_mask_drag_end)
+
     # --------------------------------------------------------
     # CONTROL PANEL
     # --------------------------------------------------------
@@ -3481,6 +3488,83 @@ class TCADApplication(tk.Tk):
             return True
         except Exception:
             return False
+
+    def _wafer_canvas_x_transform(self):
+        """(x0, x1, scale) mapping wafer x in [0, width_um] to canvas
+        pixel x -- the SAME geometry redraw() computes inline for the
+        mask-opening rectangle, factored out here so the mouse-drag
+        mask editor below stays in sync with it rather than keeping a
+        second, driftable copy of the same formula."""
+        width = max(self.canvas.winfo_width(), 700)
+        x0 = 70
+        x1 = width - 70
+        scale = (x1 - x0) / self.wafer.width_um
+        return x0, x1, scale
+
+    def _canvas_x_to_mask_um(self, canvas_x):
+        x0, x1, scale = self._wafer_canvas_x_transform()
+        clipped = min(max(canvas_x, x0), x1)
+        return (clipped - x0) / scale
+
+    def _mask_dragging_allowed(self):
+        # Mouse-drawn mask editing targets the SAME mask_left_um/
+        # mask_right_um fields the Lithography panel's text entries
+        # already do (_read_lithography_fields reads them at process-run
+        # time) -- so it is meaningful exactly when those fields still
+        # are: before any real process step has produced a mesh. Once
+        # processed, the canvas shows the real ViennaPS mesh instead of
+        # the mask placeholder, and editing mask_left_um/right_um then
+        # would silently disagree with the geometry already on screen.
+        return not self.wafer.processed
+
+    def _on_mask_drag_start(self, event):
+        if not self._mask_dragging_allowed():
+            return
+        self._mask_drag_start_um = self._canvas_x_to_mask_um(event.x)
+
+    def _on_mask_drag_move(self, event):
+        if self._mask_drag_start_um is None:
+            return
+        x0, x1, scale = self._wafer_canvas_x_transform()
+        start_x = x0 + self._mask_drag_start_um * scale
+        end_x = min(max(event.x, x0), x1)
+
+        if self._mask_drag_rect_id is not None:
+            self.canvas.delete(self._mask_drag_rect_id)
+
+        height = max(self.canvas.winfo_height(), 500)
+        self._mask_drag_rect_id = self.canvas.create_rectangle(
+            start_x, 20, end_x, height - 20,
+            outline="#1a73e8", width=2, dash=(4, 2),
+        )
+
+    def _on_mask_drag_end(self, event):
+        if self._mask_drag_start_um is None:
+            return
+
+        end_um = self._canvas_x_to_mask_um(event.x)
+        left_um = min(self._mask_drag_start_um, end_um)
+        right_um = max(self._mask_drag_start_um, end_um)
+
+        self._mask_drag_start_um = None
+        if self._mask_drag_rect_id is not None:
+            self.canvas.delete(self._mask_drag_rect_id)
+            self._mask_drag_rect_id = None
+
+        # A drag shorter than this is almost certainly an accidental
+        # click, not an intended mask -- leave the existing mask
+        # untouched rather than silently collapsing it to ~0 width.
+        min_width_um = 0.05
+        if (right_um - left_um) < min_width_um:
+            self.redraw()
+            return
+
+        self.wafer.mask_left_um = left_um
+        self.wafer.mask_right_um = right_um
+        self.left_var.set(f"{left_um:.3f}")
+        self.right_var.set(f"{right_um:.3f}")
+
+        self.redraw()
 
     def redraw(self):
 
