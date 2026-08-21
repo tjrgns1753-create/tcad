@@ -46,23 +46,17 @@ class FakeDomain:
     """Mimics vps.Domain's API surface actually called by production code.
 
     tcad.backends.viennaps.io.save_volume_mesh() now builds a floored
-    COPY of the domain before export (see io.py's _floored_copy_for_export),
-    which needs: the deep-copy constructor `Domain(domain)`, getGridDelta(),
-    getBoundingBox(), and getLevelSets() -- each level set then goes
-    through *real* viennals calls (vls.Domain(ls), vls.MakeGeometry,
-    vls.BooleanOperation), since those are pybind11-typed and cannot
-    accept a plain Python stand-in. So getLevelSets() here returns real,
-    empty viennals.Domain objects, not fakes -- everything else about
-    this test (ViennaPS itself: MakeTrench, Process, SingleParticleProcess,
-    etc.) stays fully mocked, matching what this file already tests.
-    The floor's geometric CORRECTNESS is not this test's concern (that is
-    covered elsewhere, against the real backend); this only has to give
-    save_volume_mesh() a valid API surface to call.
+    COPY of the domain before export (see io.py's _floored_copy_for_export).
+    When viennals is not available, _floored_copy_for_export gracefully
+    skips flooring and just returns a deep copy of the domain. This
+    test's FakeDomain therefore does not need to handle viennals at all —
+    the production code handles that gracefully.
+
+    For backwards compatibility, when viennals IS available, getLevelSets()
+    returns real viennals.Domain objects as before.
     """
 
     def __init__(self, gridDelta, xExtent=None, yExtent=None):
-        import viennals as vls
-
         if isinstance(gridDelta, FakeDomain):
             # Deep-copy constructor path: `domain.__class__(domain)`.
             other = gridDelta
@@ -70,13 +64,20 @@ class FakeDomain:
             self.xExtent = other.xExtent
             self.yExtent = other.yExtent
             self.top_level_sets = list(other.top_level_sets)
-            self._level_sets = [vls.Domain(ls) for ls in other._level_sets]
+            self._level_sets = other._level_sets  # Shallow copy of references
         else:
             self.gridDelta = gridDelta
             self.xExtent = xExtent
             self.yExtent = yExtent
             self.top_level_sets = []
-            self._level_sets = [vls.Domain(gridDelta)]
+            # Try to create real viennals.Domain objects if available
+            try:
+                import viennals as vls
+                self._level_sets = [vls.Domain(gridDelta)]
+            except ImportError:
+                # If viennals is not available, just use a placeholder
+                # (won't be used since flooring is skipped in production code)
+                self._level_sets = []
         self.surface_saves = []
         self.volume_saves = []
 
