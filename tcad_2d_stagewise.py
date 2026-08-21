@@ -3044,12 +3044,15 @@ class TCADApplication(tk.Tk):
 
         if not devsim_backend.is_available():
 
-            messagebox.showerror(
-                "DevSim",
-                "DevSim is not installed.\n\n"
-                "Run:\n"
-                "python -m pip install devsim",
-            )
+            # require_devsim()'s message distinguishes "genuinely not
+            # installed" from "installed but failed to import" (e.g. a
+            # missing BLAS/LAPACK library) — showing the wrong one sends
+            # a user who already has DevSim installed to pip-install a
+            # package that's already there instead of the real fix.
+            try:
+                devsim_backend.require_devsim()
+            except RuntimeError as exc:
+                messagebox.showerror("DevSim", str(exc))
 
             return
 
