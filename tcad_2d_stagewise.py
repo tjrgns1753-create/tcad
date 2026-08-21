@@ -259,6 +259,16 @@ class TCADApplication(tk.Tk):
         # state machine could not express at all.
         self.flow_steps = []
 
+        # Every real ViennaPS step already run this session (etch,
+        # oxidation, deposition — NOT gate_stack, which is terminal and
+        # cannot chain), in order. A standalone "RUN X" click (not
+        # ADD TO FLOW) re-executes self.completed_steps + [this recipe]
+        # as ONE flow via run_flow, so it continues from the real
+        # current geometry instead of silently rebuilding a fresh wafer
+        # -- see _chained_flow_config(). RUN PROCESS FLOW folds its own
+        # queued self.flow_steps into this list the same way.
+        self.completed_steps = []
+
         # Set only while an "ADD TO FLOW" button is being handled, so
         # the existing run_* recipe builders can be reused verbatim to
         # QUEUE a step instead of running it (see the hook they share).
@@ -632,13 +642,20 @@ class TCADApplication(tk.Tk):
             )
             return
 
+        # Fold in whatever standalone RUN clicks already built this wafer
+        # (self.completed_steps) so RUN PROCESS FLOW continues from the
+        # real current geometry too, not just from queued steps -- e.g.
+        # RUN ETCH now, then ADD TO FLOW an oxidation and RUN PROCESS
+        # FLOW, must oxidize the etched wafer, not a fresh one.
+        all_steps = self.completed_steps + self.flow_steps
+
         output_dir = tempfile.mkdtemp(prefix="tcad2d_flow_")
         config_file = Path(output_dir) / "flow.json"
         result_file = Path(output_dir) / "result.json"
 
         config_file.write_text(
             json.dumps(
-                {"_flow_steps": self.flow_steps, "output_dir": output_dir},
+                {"_flow_steps": all_steps, "output_dir": output_dir},
                 ensure_ascii=False,
                 indent=2,
             ),
@@ -696,11 +713,36 @@ class TCADApplication(tk.Tk):
         self.process_stage = "flow_done"
 
         self._log(
-            f"\nPROCESS FLOW COMPLETE ({len(self.flow_steps)} steps)\n"
+            f"\nPROCESS FLOW COMPLETE ({len(all_steps)} steps)\n"
             f"final mesh: {self.last_final_mesh}\n"
         )
+
+        # The queued steps are now part of the wafer's real history, so
+        # a later standalone RUN click (or another RUN PROCESS FLOW)
+        # continues from here instead of redoing/discarding them.
+        self.completed_steps = all_steps
+        self.flow_steps = []
+        self._refresh_flow_list()
+
         self._update_process_buttons()
         self.redraw()
+
+    def _chained_flow_config(self, recipe, output_dir):
+        """Wrap a single RUN-click recipe together with every step
+        already run this session, so it executes as one run_flow() call
+        that continues from the real current geometry via
+        ProcessStep(inherited_domain=...) -- the same chaining
+        RUN PROCESS FLOW already uses -- instead of silently rebuilding
+        a fresh wafer the way a standalone single-step run used to.
+
+        Called AFTER the ADD TO FLOW interception (self._pending_flow_add
+        returns before this), so `recipe` here is always something about
+        to run now, not merely queued.
+        """
+        return {
+            "_flow_steps": self.completed_steps + [recipe],
+            "output_dir": output_dir,
+        }
 
     def _flow_step_label(self, recipe):
         category = recipe.get("_process_category", "?")
@@ -1416,15 +1458,13 @@ class TCADApplication(tk.Tk):
 
     def run_oxidation(self):
 
-        if not self.wafer.developed:
-
-            messagebox.showwarning(
-                "Process order",
-                "Run lithography and develop first.",
-            )
-
-            return
-
+        # No litho-first gate: oxidation is a valid FIRST step (a real
+        # fab textbook PN-junction flow starts oxidation -> lithography
+        # -> doping -> metallization, not the reverse). prepare_domain()
+        # only ever reads self.wafer's mask/PR-thickness fields, which
+        # always carry a value (defaulted or user-set), whether or not
+        # develop() was ever clicked -- so this never lacked what it
+        # needs, only used to refuse to run anyway.
         if not viennaps_session.is_available():
 
             messagebox.showerror(
@@ -1502,8 +1542,6 @@ class TCADApplication(tk.Tk):
             prefix="tcad2d_real_v2_"
         )
 
-        recipe["output_dir"] = output_dir
-
         config_file = Path(
             output_dir
         ) / "recipe.json"
@@ -1512,9 +1550,11 @@ class TCADApplication(tk.Tk):
             output_dir
         ) / "result.json"
 
+        # Chains onto whatever this session already built (see
+        # _chained_flow_config()) instead of a fresh wafer.
         config_file.write_text(
             json.dumps(
-                recipe,
+                self._chained_flow_config(recipe, output_dir),
                 ensure_ascii=False,
                 indent=2,
             ),
@@ -1595,6 +1635,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "oxidized"
         self.last_final_mesh = result.get("final_mesh")
+        self.completed_steps.append(recipe)
 
         self._activate_stages(
             0,
@@ -1615,7 +1656,7 @@ class TCADApplication(tk.Tk):
             f"REAL VIENNAPS {model_label.upper()} COMPLETE\n"
             f"================================\n"
             f"Surface files: "
-            f"{len(result['snapshots'])}\n"
+            f"{len(result.get('snapshots', []))}\n"
             f"Final mesh:\n"
             f"{result['final_mesh']}\n"
         )
@@ -1711,6 +1752,9 @@ class TCADApplication(tk.Tk):
         self.dep_isotropic_time_var = self._field(
             isotropic_frame, "Deposition time (s)", 0.5,
         )
+        self.dep_isotropic_material_var = self._material_field(
+            isotropic_frame, "Deposited material", "SiO2",
+        )
 
         directional_frame = ttk.Frame(deposition_params_container)
         self.dep_directional_velocity_var = self._field(
@@ -1718,6 +1762,9 @@ class TCADApplication(tk.Tk):
         )
         self.dep_directional_time_var = self._field(
             directional_frame, "Deposition time (s)", 0.5,
+        )
+        self.dep_directional_material_var = self._material_field(
+            directional_frame, "Deposited material", "Metal",
         )
 
         cvd_frame = ttk.Frame(deposition_params_container)
@@ -1729,6 +1776,9 @@ class TCADApplication(tk.Tk):
         )
         self.dep_cvd_time_var = self._field(
             cvd_frame, "Deposition time (s)", 0.5,
+        )
+        self.dep_cvd_material_var = self._material_field(
+            cvd_frame, "Deposited material", "SiO2",
         )
 
         teos_frame = ttk.Frame(deposition_params_container)
@@ -1743,6 +1793,9 @@ class TCADApplication(tk.Tk):
         )
         self.dep_teos_time_var = self._field(
             teos_frame, "Deposition time (s)", 0.5,
+        )
+        self.dep_teos_material_var = self._material_field(
+            teos_frame, "Deposited material", "SiO2",
         )
 
         teos_pecvd_frame = ttk.Frame(deposition_params_container)
@@ -1760,6 +1813,9 @@ class TCADApplication(tk.Tk):
         )
         self.dep_pecvd_time_var = self._field(
             teos_pecvd_frame, "Deposition time (s)", 0.5,
+        )
+        self.dep_pecvd_material_var = self._material_field(
+            teos_pecvd_frame, "Deposited material", "SiO2",
         )
 
         epitaxy_frame = ttk.Frame(deposition_params_container)
@@ -1797,6 +1853,9 @@ class TCADApplication(tk.Tk):
         )
         self.dep_trench_b_var = self._field(
             trench_frame, "b (offset term, µm)", 0.02,
+        )
+        self.dep_trench_material_var = self._material_field(
+            trench_frame, "Deposited material", "SiO2",
         )
         ttk.Label(
             trench_frame,
@@ -1869,15 +1928,9 @@ class TCADApplication(tk.Tk):
 
     def run_deposition(self):
 
-        if not self.wafer.developed:
-
-            messagebox.showwarning(
-                "Process order",
-                "Run lithography and develop first.",
-            )
-
-            return
-
+        # No litho-first gate -- see run_oxidation()'s matching comment;
+        # deposition is equally valid as a first step (blanket film on a
+        # bare wafer) and prepare_domain() needs nothing develop() sets.
         deposition_model_keys = {
             "Isotropic Deposition": "isotropic",
             "Directional (PVD/Sputter)": "directional",
@@ -1943,6 +1996,7 @@ class TCADApplication(tk.Tk):
                     "rate": float(self.dep_isotropic_rate_var.get()),
                     "deposition_time_s": float(self.dep_isotropic_time_var.get()),
                     "mask_material": "Mask",
+                    "material": self.dep_isotropic_material_var.get(),
                 })
 
             elif model_key == "directional":
@@ -1952,6 +2006,7 @@ class TCADApplication(tk.Tk):
                     "directional_velocity": float(self.dep_directional_velocity_var.get()),
                     "deposition_time_s": float(self.dep_directional_time_var.get()),
                     "mask_material": "Mask",
+                    "material": self.dep_directional_material_var.get(),
                 })
 
             elif model_key == "single_particle_cvd":
@@ -1961,6 +2016,7 @@ class TCADApplication(tk.Tk):
                     "sticking_probability": float(self.dep_cvd_sticking_var.get()),
                     "deposition_time_s": float(self.dep_cvd_time_var.get()),
                     "mask_material": "Mask",
+                    "material": self.dep_cvd_material_var.get(),
                 })
 
             elif model_key == "teos":
@@ -1970,6 +2026,7 @@ class TCADApplication(tk.Tk):
                     "rate_p1": float(self.dep_teos_rate_var.get()),
                     "order_p1": float(self.dep_teos_order_var.get()),
                     "deposition_time_s": float(self.dep_teos_time_var.get()),
+                    "material": self.dep_teos_material_var.get(),
                 })
 
             elif model_key == "teos_pecvd":
@@ -1980,6 +2037,7 @@ class TCADApplication(tk.Tk):
                     "deposition_rate_ion": float(self.dep_pecvd_rate_ion_var.get()),
                     "exponent_ion": float(self.dep_pecvd_exponent_ion_var.get()),
                     "deposition_time_s": float(self.dep_pecvd_time_var.get()),
+                    "material": self.dep_pecvd_material_var.get(),
                 })
 
             elif model_key == "selective_epitaxy":
@@ -1999,6 +2057,7 @@ class TCADApplication(tk.Tk):
                     "bottom_med_um": float(self.dep_trench_bottom_med_var.get()),
                     "a_um": float(self.dep_trench_a_var.get()),
                     "b_um": float(self.dep_trench_b_var.get()),
+                    "material": self.dep_trench_material_var.get(),
                 })
 
         except ValueError:
@@ -2021,8 +2080,6 @@ class TCADApplication(tk.Tk):
             prefix="tcad2d_real_v2_"
         )
 
-        recipe["output_dir"] = output_dir
-
         config_file = Path(
             output_dir
         ) / "recipe.json"
@@ -2031,9 +2088,11 @@ class TCADApplication(tk.Tk):
             output_dir
         ) / "result.json"
 
+        # Chains onto whatever this session already built (see
+        # _chained_flow_config()) instead of a fresh wafer.
         config_file.write_text(
             json.dumps(
-                recipe,
+                self._chained_flow_config(recipe, output_dir),
                 ensure_ascii=False,
                 indent=2,
             ),
@@ -2118,6 +2177,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "deposited"
         self.last_final_mesh = result.get("final_mesh")
+        self.completed_steps.append(recipe)
 
         self._activate_stages(
             0,
@@ -2138,7 +2198,7 @@ class TCADApplication(tk.Tk):
             f"REAL VIENNAPS {model_label.upper()} COMPLETE\n"
             f"================================\n"
             f"Surface files: "
-            f"{len(result['snapshots'])}\n"
+            f"{len(result.get('snapshots', []))}\n"
             f"Final mesh:\n"
             f"{result['final_mesh']}\n"
         )
@@ -2429,6 +2489,16 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "gate_stack"
         self.last_final_mesh = result.get("final_mesh")
+
+        # Gate stack is standalone/terminal (see the module docstring in
+        # tcad/process/geometry/gate_stack.py -- it refuses
+        # inherited_domain outright), so it deliberately does NOT join
+        # self.completed_steps the way etch/oxidation/deposition do.
+        # Clearing here instead of leaving it stale prevents a LATER
+        # standalone RUN click from silently resurrecting the
+        # pre-gate-stack history via _chained_flow_config() as if this
+        # build had never happened.
+        self.completed_steps = []
 
         # Deliberately NOT calling self._activate_stages(...): this
         # build did not go through the 01-08 litho/process sequence at
@@ -3315,6 +3385,45 @@ class TCADApplication(tk.Tk):
 
         return variable
 
+    #: Curated subset of vps.Material -- the full enum has ~80 entries
+    #: (see viennaps.Material), most irrelevant to a 2D Si process flow.
+    #: These are what this project's own recipes/tests already deposit
+    #: or reference (SiO2, Si3N4, PolySi, W, TiN, Cu -- see
+    #: gate_stack.py and material_colors in redraw()) plus a generic
+    #: "Metal" for a sputter target with no specific alloy chosen.
+    _DEPOSITION_MATERIAL_OPTIONS = [
+        "SiO2", "Si3N4", "PolySi", "W", "TiN", "Cu", "Metal", "Ta", "Ti",
+    ]
+
+    def _material_field(self, parent, label, default):
+        """Same layout as _field(), but a readonly material combobox
+        instead of a free-text numeric entry -- feeds the recipe's
+        optional `material` key (see e.g. isotropic.py's own
+        duplicateTopLevelSet() use), which tags the newly-deposited
+        region as a genuinely distinct material instead of silently
+        merging it into whatever material already sits on top."""
+
+        ttk.Label(
+            parent,
+            text=label,
+        ).pack(
+            anchor="w",
+            pady=(4, 0),
+        )
+
+        variable = tk.StringVar(value=default)
+
+        ttk.Combobox(
+            parent,
+            textvariable=variable,
+            state="readonly",
+            values=self._DEPOSITION_MATERIAL_OPTIONS,
+        ).pack(
+            fill="x"
+        )
+
+        return variable
+
     # --------------------------------------------------------
     # LITHOGRAPHY OPERATION
     # --------------------------------------------------------
@@ -3496,12 +3605,14 @@ class TCADApplication(tk.Tk):
         lithography, and nothing in that order was reachable.
 
         Order is now the user's to choose (see _make_flow_panel), so
-        the buttons are no longer gated on `process_stage`. The
-        remaining sequencing is PHYSICAL, not enforced here: a step
-        that genuinely cannot work without a prior one still says so
-        when pressed (run_etch checks `wafer.developed`, run_measurement
-        checks that doping exists), which reports the real reason
-        instead of silently greying a button out.
+        the buttons are no longer gated on `process_stage`.
+        run_etch/run_oxidation/run_deposition dropped their own
+        litho-first checks too (prepare_domain() never actually needed
+        develop() to have run -- it only ever reads self.wafer's
+        mask/PR-thickness fields, which always carry a value). What
+        remains gated here is genuinely required: doping needs a real
+        mesh to attach to, and measurement needs doping already applied
+        (run_measurement checks that).
         """
         for button in (
             self.coat_button,
@@ -3623,15 +3734,13 @@ class TCADApplication(tk.Tk):
 
     def run_etch(self):
 
-        if not self.wafer.developed:
-
-            messagebox.showwarning(
-                "Process order",
-                "Run lithography and develop first.",
-            )
-
-            return
-
+        # No litho-first gate -- see run_oxidation()'s matching comment.
+        # This used to be the one step that still enforced litho-first;
+        # keeping it while oxidation/deposition dropped theirs would
+        # just move the same "why do I have to do X first" complaint
+        # here instead of fixing it, and prepare_domain() needs nothing
+        # from develop() that self.wafer doesn't already carry a value
+        # for (defaulted or user-set).
         etch_model_keys = {
             "Bosch DRIE": "bosch_drie",
             "Directional RIE": "directional",
@@ -3781,8 +3890,6 @@ class TCADApplication(tk.Tk):
             prefix="tcad2d_real_v2_"
         )
 
-        recipe["output_dir"] = output_dir
-
         config_file = Path(
             output_dir
         ) / "recipe.json"
@@ -3791,9 +3898,11 @@ class TCADApplication(tk.Tk):
             output_dir
         ) / "result.json"
 
+        # Chains onto whatever this session already built (see
+        # _chained_flow_config()) instead of a fresh wafer.
         config_file.write_text(
             json.dumps(
-                recipe,
+                self._chained_flow_config(recipe, output_dir),
                 ensure_ascii=False,
                 indent=2,
             ),
@@ -3886,6 +3995,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "etched"
         self.last_final_mesh = result.get("final_mesh")
+        self.completed_steps.append(recipe)
 
         self._activate_stages(
             0,
@@ -3909,7 +4019,7 @@ class TCADApplication(tk.Tk):
             f"================================\n"
             f"{cycles_line}"
             f"Surface files: "
-            f"{len(result['snapshots'])}\n"
+            f"{len(result.get('snapshots', []))}\n"
             f"Final mesh:\n"
             f"{result['final_mesh']}\n"
         )
@@ -4091,6 +4201,45 @@ class TCADApplication(tk.Tk):
 
                     canvas.create_polygon(coords, fill=color, outline=color)
 
+            # p/n doping overlay: a translucent red (p-type, net
+            # negative) / blue (n-type, net positive) tint over whatever
+            # doped region(s) exist, so a doping change is visible on
+            # screen instead of only in the log. Drawn last so it sits
+            # on top of the material fill; stipple keeps the material
+            # silhouette underneath legible rather than hiding it.
+            if self.last_doped_result is not None and getattr(
+                self.last_doped_result, "doping", None
+            ) is not None:
+                for region_name in {r.region for r in self.last_doped_result.doping.regions}:
+                    region_tag = next(
+                        (t for t, n in material_names.items() if n == region_name),
+                        None,
+                    )
+                    if region_tag is None:
+                        continue
+                    node_idxs = {
+                        node for i in by_material.get(region_tag, [])
+                        for node in triangle_data[i]
+                    }
+                    if not node_idxs:
+                        continue
+                    region_y_top = max(points[n][1] for n in node_idxs)
+                    region_y_bot = min(points[n][1] for n in node_idxs)
+                    cy_top = surface_y - region_y_top * y_scale
+                    cy_bot = surface_y - region_y_bot * y_scale
+
+                    for x_lo_um, x_hi_um, color in self._doping_color_segments(
+                        region_name, x_min, x_max
+                    ):
+                        if x_hi_um <= x_lo_um:
+                            continue
+                        cx_lo = x0 + (x_lo_um - x_min) * x_scale
+                        cx_hi = x0 + (x_hi_um - x_min) * x_scale
+                        canvas.create_rectangle(
+                            cx_lo, cy_top, cx_hi, cy_bot,
+                            fill=color, outline="", stipple="gray50",
+                        )
+
             canvas.create_text(
                 x0 + 5, surface_y + 12,
                 text="REAL VIENNAPS MESH",
@@ -4100,6 +4249,79 @@ class TCADApplication(tk.Tk):
             return True
         except Exception:
             return False
+
+    def _doping_color_segments(self, region_name, x_min_um, x_max_um):
+        """(x_lo_um, x_hi_um, color) segments for region_name's doping,
+        in real domain x coordinates, matching apply_doping()'s own
+        sign convention exactly (tcad/device/devsim/doping_mapping.py:
+        NetDoping = Donors-Acceptors for step_junction, background +
+        summed windows for implant_windows, etc.) so the overlay never
+        shows a p/n split that disagrees with what would actually be
+        solved. n-type (net doping >= 0) is blue, p-type (net doping
+        < 0) is red -- the standard convention the doping panel itself
+        already documents (net_doping_cm3: "positive = net donor
+        (n-type), negative = net acceptor (p-type)").
+
+        Only "x"-axis doping is visualized (every doping kind this GUI
+        exposes defaults to axis="x"); a region doped along "y" is left
+        uncolored rather than drawn wrong.
+        """
+        doping = getattr(self.last_doped_result, "doping", None)
+        if doping is None:
+            return []
+
+        N_COLOR, P_COLOR = "#2f6fed", "#e0393e"
+        segments = []
+
+        for region in doping.regions:
+            if region.region != region_name:
+                continue
+            axis = getattr(region, "junction_axis", None)
+
+            if doping.kind == "uniform":
+                color = N_COLOR if (region.net_doping_cm3 or 0.0) >= 0 else P_COLOR
+                segments.append((x_min_um, x_max_um, color))
+
+            elif doping.kind == "gaussian_implant":
+                if axis != "x":
+                    continue
+                color = N_COLOR if (region.peak_conc_cm3 or 0.0) >= 0 else P_COLOR
+                segments.append((x_min_um, x_max_um, color))
+
+            elif doping.kind == "step_junction":
+                if axis != "x":
+                    continue
+                position = region.junction_position_um
+                acceptor_color = (
+                    P_COLOR if (region.acceptor_conc_cm3 or 0.0) > 0 else N_COLOR
+                )
+                donor_color = (
+                    N_COLOR if (region.donor_conc_cm3 or 0.0) >= 0 else P_COLOR
+                )
+                segments.append((x_min_um, position, acceptor_color))
+                segments.append((position, x_max_um, donor_color))
+
+            elif doping.kind == "implant_windows":
+                if axis != "x":
+                    continue
+                background = region.net_doping_cm3 or 0.0
+                bg_color = N_COLOR if background >= 0 else P_COLOR
+                windows = sorted(
+                    region.implant_windows or [], key=lambda w: w["min_um"]
+                )
+                cursor = x_min_um
+                for window in windows:
+                    lo = max(x_min_um, window["min_um"])
+                    hi = min(x_max_um, window["max_um"])
+                    if lo > cursor:
+                        segments.append((cursor, lo, bg_color))
+                    net = background + window["conc_cm3"]
+                    segments.append((lo, hi, N_COLOR if net >= 0 else P_COLOR))
+                    cursor = max(cursor, hi)
+                if cursor < x_max_um:
+                    segments.append((cursor, x_max_um, bg_color))
+
+        return segments
 
     def _wafer_canvas_x_transform(self):
         """(x0, x1, scale) mapping wafer x in [0, width_um] to canvas
@@ -4600,8 +4822,18 @@ class TCADApplication(tk.Tk):
         self.wafer = Wafer()
         self.recipe = BoschRecipe()
         self.last_doped_result = None
+        self.last_final_mesh = None
         self.history = []
         self.process_stage = "wafer"
+
+        # Both must clear here: completed_steps is what every standalone
+        # RUN click now replays (see _chained_flow_config()), so leaving
+        # it stale would make NEW WAFER silently keep re-growing the
+        # PREVIOUS wafer's geometry underneath whatever gets run next.
+        self.flow_steps = []
+        self.completed_steps = []
+        if hasattr(self, "_refresh_flow_list"):
+            self._refresh_flow_list()
 
         self._activate_stages()
 

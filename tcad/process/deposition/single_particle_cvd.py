@@ -44,6 +44,13 @@ class SingleParticleCVDDeposition(ProcessStep):
         # step is part of a process flow (see ProcessStep.prepare_domain).
         geometry = self.prepare_domain(recipe)
 
+        if "material" in recipe:
+            # Opt-in distinct-material tagging, same mechanism and same
+            # default-off behavior as geometric_trench.py/bosch_drie.py:
+            # without this key the deposit merges into whatever material
+            # already sits on top (unchanged from before this existed).
+            geometry.duplicateTopLevelSet(getattr(module.Material, recipe["material"]))
+
         model_kwargs: Dict[str, Any] = {
             "rate": recipe["rate"],
             "stickingProbability": recipe["sticking_probability"],

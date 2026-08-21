@@ -7903,3 +7903,186 @@ correctly labeled as an import failure rather than "not installed".
 
 **Next smallest experiment.** None planned — this was a direct bug
 report with a clean root cause and fix; no open thread remains.
+
+### GUI: order-free single-step runs, deposition chaining, deposition material selection, p/n doping color — RESOLVED
+
+User report (Korean, paraphrased): (1) clicking RUN OXIDATION still
+demanded lithography be run first, contradicting the Process Flow
+work's own stated goal of letting the user choose any order; (2)
+running deposition after etch appeared to start a brand-new wafer
+instead of continuing from the etched geometry; (3) none of the 6
+rate-based deposition models exposed WHAT MATERIAL was being
+deposited, even though that is deposition's central physical
+parameter; (4) doped regions were not visually distinguishable as p
+(should be red) or n (should be blue) on the canvas.
+
+**Root cause of (1) and, by the same mechanism, (2).** The earlier
+Process Flow work (queued steps via ADD TO FLOW, chained through
+`run_flow`/`ProcessStep(inherited_domain=...)`) only changed how a
+QUEUED, explicitly-composed flow runs. It never touched the plain
+"RUN ETCH" / "RUN OXIDATION" / "RUN DEPOSITION" buttons' own code path:
+each one still (a) gated on `self.wafer.developed` with a hardcoded
+"Run lithography and develop first" message (oxidation and deposition
+had it identically to etch — copy-pasted, not intentionally kept), and
+(b) built and ran a SINGLE, standalone recipe with no `inherited_domain`
+at all — a fresh subprocess call to `worker_main`'s single-step branch,
+which never sees any prior step. So a standalone RUN DEPOSITION click
+was never "continuing from the previous geometry" in the first place —
+it always silently rebuilt a fresh wafer from `self.wafer`'s
+mask/PR-thickness fields, which is exactly what "새로운 화면이 뜨는
+것 같다" (looks like a brand-new screen) was reporting correctly.
+
+Checked directly that `ProcessStep.prepare_domain()`'s fresh-build path
+only ever reads recipe values (`mask_left_um`/`mask_right_um`/
+`mask_spans_um`/`pr_thickness_um`/`grid_delta_um`/`x_extent_um`/
+`y_extent_um`), all of which `Wafer()` defaults regardless of whether
+`develop()` was ever called — so the litho-first gate was never
+actually load-bearing for any of etch/oxidation/deposition; it only
+ever refused to run when it didn't have to.
+
+**Fix.** `TCADApplication` now tracks `self.completed_steps` (every
+real ViennaPS step already run this session, in order — separate from
+`self.flow_steps`, which is still the user's explicitly-queued-but-not-
+-run batch). A new helper, `_chained_flow_config(recipe, output_dir)`,
+wraps a single RUN-click's recipe as
+`{"_flow_steps": self.completed_steps + [recipe], "output_dir": ...}`
+— the exact same `_flow_steps` format `worker_main` already handles via
+`run_flow`/`ProcessStep(inherited_domain=...)`, so a "single" run now
+executes as a 1-or-more-step flow that always continues from the real
+current geometry. `run_etch`/`run_oxidation`/`run_deposition` all route
+through it now instead of writing their recipe directly; on success
+each appends its own recipe to `self.completed_steps`.
+`run_process_flow()` (the explicit ADD TO FLOW + RUN PROCESS FLOW path)
+was updated symmetrically: it now runs `self.completed_steps +
+self.flow_steps` as one flow, and folds the queued steps into
+`self.completed_steps` on success — so a user can freely interleave
+standalone RUN clicks and explicit flow composition and both keep
+building on the SAME wafer history. `reset()` (NEW WAFER) now clears
+`self.completed_steps` (and `self.flow_steps`, and `self.last_final_mesh`,
+neither of which it cleared before) — this is load-bearing now, not
+cosmetic: leaving `completed_steps` stale after NEW WAFER would make
+the next standalone RUN click silently keep growing the PREVIOUS
+wafer's geometry underneath. `run_gate_stack` (terminal, explicitly
+refuses `inherited_domain` per its own module docstring) deliberately
+does NOT join `completed_steps`, and clears it to empty on a successful
+build instead, so a later RUN click starts a fresh history rather than
+resurrecting the pre-gate-stack one.
+
+The litho-first gates were removed from all three of
+run_etch/run_oxidation/run_deposition (not just oxidation/deposition,
+which is what was reported) — leaving etch's in place while removing
+the other two would just relocate the same complaint to etch next.
+
+Verified live through the real GUI under Xvfb (script:
+`test_order_and_chain.py`, not checked in — ad hoc verification):
+RUN OXIDATION succeeds with zero lithography steps run first; a
+standalone RUN ETCH followed by a standalone RUN DEPOSITION click (no
+ADD TO FLOW) produces a mesh carrying BOTH the etched trench (Mask,
+Si) AND the newly deposited material — real chaining, not two
+independent runs that happened to both succeed. Existing Process Flow
+regression scripts (`test_flow_order.py`, `test_multi_mask.py`, both
+from earlier sessions) re-run clean against these changes. Full
+regression suite: 33 passed, 0 failed, 0 skipped.
+
+**Fix for (3): deposition material selection.** Investigated what
+`vps.IsotropicProcess`/`DirectionalProcess`/`SingleParticleProcess`/
+`TEOSDeposition`/`TEOSPECVD` actually do to the domain's material stack:
+none of them have a "what material am I depositing" constructor
+parameter at all — confirmed by reading each wrapper
+(`tcad/process/deposition/*.py`) and, for `geometric_trench.py`, by its
+own module docstring, which already documents (and this project's
+`bosch_drie.py` already independently relies on for its polymer layer)
+that the deposit MERGES into whatever material already sits on top of
+the domain's material stack unless the caller first calls
+`geometry.duplicateTopLevelSet(material)` to explicitly start a new,
+distinctly-tagged region. `geometric_trench.py` already had an opt-in
+`material` recipe key for this; the other 5 rate-based models
+(isotropic, directional, single_particle_cvd, teos, teos_pecvd) did
+not — meaning e.g. a "TEOS Deposition" (which in a real fab always
+means depositing SiO2) would silently extend whatever was on top
+(commonly "Mask") instead of producing a real, separately-identifiable
+oxide region. Added the identical opt-in `if "material" in recipe:
+geometry.duplicateTopLevelSet(getattr(module.Material,
+recipe["material"]))` to all 5, called right after `prepare_domain()`,
+matching `geometric_trench.py`'s own placement and the already-proven
+`bosch_drie.py` mechanism — purely additive (absent key = unchanged
+behavior, so `test_phase3_deposition_real.py`'s existing recipes, which
+never pass `material`, are byte-for-byte unaffected — confirmed by that
+test still passing in the regression run above).
+
+GUI: a new `_material_field()` combobox (readonly, a curated ~9-entry
+subset of `vps.Material`'s ~80 total, drawn from what this project
+already uses elsewhere — SiO2/Si3N4/PolySi/W/TiN/Cu plus Ta/Ti/generic
+Metal) was added to each of the 6 deposition models that grow a
+distinct material (isotropic, directional, single_particle_cvd, teos,
+teos_pecvd, geometric_trench), wired into `run_deposition()`'s
+recipe-building `if/elif` chain. `selective_epitaxy` was deliberately
+left out — it already names its material explicitly via
+`material_rates` (`{"material": "Si", "rate": ...}`), so there is
+nothing ambiguous to add a selector for. Defaults: SiO2 for the oxide-
+-like processes (isotropic/CVD/TEOS/TEOS-PECVD/geometric_trench, the
+common real case), Metal for directional (PVD/sputter, no single
+"correct" default alloy). Verified live: a standalone RUN DEPOSITION
+(Isotropic, material=SiO2) chained onto a real etched (Mask+Si) mesh
+produced a mesh whose materials are exactly `['Mask', 'Si', 'SiO2']` —
+a genuinely distinct, separately-identifiable SiO2 region, not merged
+into Mask.
+
+**Fix for (4): p/n doping color overlay.** Added
+`_doping_color_segments(region_name, x_min_um, x_max_um)` to
+`TCADApplication`, called from `_draw_real_mesh_result()` right after
+the existing per-material silhouette rendering (so the overlay sits on
+top, drawn with `stipple="gray50"` so the material silhouette
+underneath stays legible rather than being hidden). It reads
+`self.last_doped_result.doping` and reproduces
+`tcad/device/devsim/doping_mapping.py`'s `apply_doping()` sign
+convention EXACTLY per kind (NetDoping = Donors-Acceptors for
+step_junction, so the acceptor side — `axis < junction_position_um` —
+is red and the donor side is blue; background+summed-window sign per
+window for implant_windows; a single sign for uniform/gaussian_implant)
+rather than inventing a separate approximation, so the overlay can
+never show a p/n split that disagrees with what DevSim would actually
+solve. n-type (net doping >= 0) is blue (#2f6fed), p-type (net doping
+< 0) is red (#e0393e) — the doping panel's own existing docstring
+convention ("positive = net donor (n-type), negative = net acceptor
+(p-type)"), not a new convention. Only axis="x" doping is colored
+(every doping kind this GUI exposes defaults to that); a hypothetical
+axis="y" region is left uncolored rather than drawn wrong. The overlay
+region's vertical extent is taken from the ACTUAL rendered Si
+silhouette's own node y-range (not a guessed/fixed band), so it always
+matches the real mesh underneath regardless of wafer depth or floor
+clipping.
+
+Verified live: a real etch + Step Junction doping run (donor_conc_cm3=
+acceptor_conc_cm3=1e18, junction at x=0) produced exactly one blue
+overlay rectangle (donor side) and one red overlay rectangle (acceptor
+side) on the canvas after `redraw()` — confirmed by counting canvas
+items with `fill="#2f6fed"`/`"#e0393e"` before (0 of each) and after
+(1 of each) applying doping.
+
+**What remains uncertain / out of scope.**
+- `_update_process_buttons()`'s own docstring/behavior around
+  `process_stage == "gate_stack"` disabling further litho/etch/
+  oxidation/strip buttons is now stale relative to the earlier "order
+  is the user's to choose" rewrite, which made the button-state loop
+  unconditional (`state="normal"` for everything, no process_stage
+  check at all) — this predates this session's changes and was not
+  touched; `run_gate_stack` clearing `self.completed_steps` on success
+  (this session's addition) only prevents the CHAINING side of that gap
+  (a later RUN click can't silently resurrect pre-gate-stack history
+  through `_chained_flow_config`), it does not restore the documented
+  "every button stays disabled after gate_stack" UI behavior.
+- The deposition material combobox's curated 9-material list is a
+  judgment call (this project's own already-used materials plus two
+  generic metals), not exhaustive; a user wanting an uncommon material
+  from ViennaPS's ~80-entry enum has no GUI path to it (the backend
+  `material` recipe key accepts any valid `vps.Material` name directly,
+  so this is a GUI-only limitation).
+- p/n coloring for `gaussian_implant` and `uniform` paints the WHOLE
+  region a single flat color (no shading by concentration magnitude,
+  no visual distinction between e.g. 1e15 and 1e19 net doping) — a
+  reasonable first cut for "is this p or q", not a concentration
+  heatmap.
+
+**Next smallest experiment.** None planned — direct bug reports/feature
+requests with clear root causes, fixed and verified this session.

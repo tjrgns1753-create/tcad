@@ -250,6 +250,38 @@ Current regression: `tests/run_regression.py` → **33 passed, 0 failed,
   click producing a real converged solve with no error dialog. Search
   `docs/investigation_log.md` for "DevSim is not installed" error was
   misleading" for the full writeup.
+- **GUI order-free single-step runs, deposition chaining, deposition
+  material selection, p/n doping color — fixed.** The earlier "order is
+  the user's choice" Process Flow work only changed the explicit ADD TO
+  FLOW/RUN PROCESS FLOW path; the plain RUN ETCH/RUN OXIDATION/RUN
+  DEPOSITION buttons still each ran standalone (no `inherited_domain`,
+  so a click after a previous click silently rebuilt a fresh wafer
+  instead of continuing) and oxidation/deposition still carried a
+  leftover "Run lithography and develop first" gate neither genuinely
+  needed (`prepare_domain()` only ever reads `self.wafer` fields that
+  are always defaulted). Fixed with `self.completed_steps` (every real
+  step already run this session) + `_chained_flow_config()`, which
+  wraps a single RUN click as `completed_steps + [recipe]` and executes
+  it through the SAME `run_flow`/`ProcessStep(inherited_domain=...)`
+  mechanism the flow panel already used — so a standalone click now
+  chains too. All three litho-first gates removed (etch's included, for
+  consistency — leaving just one would relocate the same complaint).
+  Also added: deposition material selection (5 of 7 deposition models
+  had no way to choose WHAT was deposited — they silently merge into
+  whatever material sits on top unless `geometry.duplicateTopLevelSet()`
+  is called first, a mechanism `geometric_trench.py`/`bosch_drie.py`
+  already used; now wired as an opt-in `material` recipe key + GUI
+  combobox on all 6 material-relevant models); and a p/n doping color
+  overlay (blue = n / red = p, reproducing `doping_mapping.py`'s own
+  NetDoping sign convention exactly, not a separate approximation) on
+  the real-mesh canvas render. Verified live through real ViennaPS
+  (order-free oxidation, standalone-click chaining producing a mesh
+  with both the prior step's and new step's materials, material
+  tagging producing a genuinely distinct SiO2 region, and a real doping
+  run producing both a blue and a red overlay rectangle) plus the full
+  33-test regression suite. Search `docs/investigation_log.md` for
+  "order-free single-step runs, deposition chaining, deposition
+  material selection, p/n doping color" for the full writeup.
 
 ## OPEN issues (active — read before starting new work)
 
