@@ -2627,6 +2627,9 @@ class TCADApplication(tk.Tk):
         from tcad.device.devsim.mesh_import import import_process_result
         from tcad.device.devsim.doping_mapping import apply_doping
         from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
+        from tcad.characterization.robust_iv_sweep import (
+            run_robust_pn_junction_iv_sweep,
+        )
 
         module = devsim_backend.require_devsim()
         device_name = "gui_measure_device"
@@ -2685,23 +2688,49 @@ class TCADApplication(tk.Tk):
 
                 return
 
-            apply_doping(
-                imported.device, doped_result.doping,
-                length_scale_to_cm=length_scale_to_cm,
-            )
-
             min_contact, max_contact = imported.contacts[0], imported.contacts[1]
             source_contact = (
                 max_contact if self.meas_source_pin.get() == "max" else min_contact
             )
             gnd_contact = min_contact if source_contact == max_contact else max_contact
 
-            result = run_pn_junction_iv_sweep(
-                device=imported.device, region=region,
-                all_contacts=imported.contacts,
-                sweep_contact=source_contact, sweep_voltages=[voltage],
-                fixed_contacts={gnd_contact: 0.0},
-            )
+            if kind == "implant_windows":
+                # implant_windows is the kind that puts real production
+                # source/drain levels (1e20 cm^-3) on this device, which
+                # run_pn_junction_iv_sweep's single-jump strategy cannot
+                # reach -- it fails in the EQUILIBRIUM solve before any
+                # bias is applied. The robust path ramps the doping
+                # level, uses DevSim's own drift-diffusion tolerances,
+                # and restores the solution on a failed bias step; it
+                # returns the SAME current as the simple path wherever
+                # the simple path works (verified to 5.7e-08 relative --
+                # see tests/integration/test_robust_iv_sweep_real.py).
+                # It registers NetDoping itself, so apply_doping must
+                # NOT be called first for this kind.
+                self._log(
+                    "\nUsing the robust solve path (doping-level "
+                    "continuation + DevSim's own drift-diffusion "
+                    "tolerances + restoring bias ramp).\n"
+                )
+                result = run_robust_pn_junction_iv_sweep(
+                    device=imported.device, region=region,
+                    all_contacts=imported.contacts,
+                    sweep_contact=source_contact, sweep_voltages=[voltage],
+                    doping=doped_result.doping,
+                    length_scale_to_cm=length_scale_to_cm,
+                    fixed_contacts={gnd_contact: 0.0},
+                )
+            else:
+                apply_doping(
+                    imported.device, doped_result.doping,
+                    length_scale_to_cm=length_scale_to_cm,
+                )
+                result = run_pn_junction_iv_sweep(
+                    device=imported.device, region=region,
+                    all_contacts=imported.contacts,
+                    sweep_contact=source_contact, sweep_voltages=[voltage],
+                    fixed_contacts={gnd_contact: 0.0},
+                )
 
         except Exception as exc:
 

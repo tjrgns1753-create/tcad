@@ -7795,3 +7795,27 @@ local damping (or simply refusing to build such a mesh and warning the
 user) is justified; if the update is global, the problem is the
 structure's conditioning as a whole and a different formulation
 (e.g. quasi-Fermi variables) is the real answer.
+
+### Addendum: robust path wired into the GUI measurement panel
+
+The library-level fix above is only useful if it reaches where users
+actually hit the problem, so `run_measurement()`'s `implant_windows`
+branch now calls `run_robust_pn_junction_iv_sweep` instead of
+`run_pn_junction_iv_sweep`. The other three doping kinds keep their
+previous code path byte-for-byte; only the branch that carries real
+production source/drain doping changed. That branch deliberately does
+NOT call `apply_doping` first, because the robust path registers
+NetDoping itself (it has to, in order to ramp the doping level).
+
+Live-verified through the REAL GUI headlessly under Xvfb, driving the
+actual sequence a user clicks (PR coat -> mask alignment -> exposure ->
+develop -> Isotropic etch -> Implant Windows doping -> MEASURE):
+
+    Voltage source (Si_xmax): +0.3000 V, I = 3.471737e-11 A
+    Multimeter    (Si_xmin):  0.0000 V, I = -3.471681e-11 A
+
+Equal and opposite, no error dialog. Confirmed the ROBUST path is the
+one that ran (not merely that a solve succeeded) by counting DevSim's
+own "Replacing Node Model NetDoping" messages: 5, exactly matching the
+continuation's 5 ramp steps, where the simple path registers NetDoping
+once.

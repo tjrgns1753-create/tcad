@@ -690,20 +690,32 @@ to reconverge if called twice on the same device, every MEASURE click
 imports a fresh DevSim device and cleans it up in `finally`
 (`delete_device`+`delete_mesh`, mirroring
 `tcad/cli/run_pipeline.py`'s own pattern) rather than keeping one
-device alive across clicks. **3 of 4 doping kinds (Uniform, Step
-Junction, Gaussian Implant) converge through this panel's own code path
-for arbitrary geometry+doping combinations tested so far. Implant
-Windows converges only for SOME geometry+doping combinations — it is
-NOT yet general** (verified robust on one wafer/mask family, but fails
-on the GUI's own 10x8um default wafer with a different mask; see OPEN
-item 2 — this is a geometry-dependent solver robustness gap, not a
-single fixed bug)
+device alive across clicks. All 4 doping kinds converge through this
+panel's own code path
 (`tests/integration/test_gui_measurement_doping_kinds_real.py`), each
 with its own refinement strategy: Step Junction uses
 `refine_near_um`/`refine_axis` from the profile; Gaussian Implant uses
-the existing `auto_refine_from_doping=True`; Implant Windows uses the
-new `refine_process_result_for_implant_windows()` (see below); Uniform
+the existing `auto_refine_from_doping=True`; Implant Windows uses
+`refine_process_result_for_implant_windows()` (see below); Uniform
 needs none, having no junction to resolve.
+
+**Implant Windows additionally routes through the ROBUST solve path**
+(`run_robust_pn_junction_iv_sweep`, see the Completed summary) rather
+than `run_pn_junction_iv_sweep`, because it is the kind that carries
+real production source/drain levels (1e20 cm^-3), which the simple
+path's single-jump strategy cannot reach — it fails in the EQUILIBRIUM
+solve before any bias is applied. That branch owns NetDoping
+registration itself (it ramps the doping level), so `apply_doping` is
+deliberately NOT called first for this kind; the other three kinds keep
+exactly their previous code path. Live-verified through the real GUI
+end to end (litho -> Isotropic etch -> Implant Windows doping ->
+MEASURE) under Xvfb: "Voltage source (Si_xmax): +0.3000 V,
+I = 3.471737e-11 A / Multimeter (Si_xmin): 0.0000 V,
+I = -3.471681e-11 A" — equal and opposite, and NetDoping was observed
+re-registered 5 times, matching the continuation's 5 ramp steps, so the
+robust path is confirmed to be the one that ran. Still subject to
+OPEN item 2's one remaining pathological combination (window edge
+within ~half a grid cell of an etched sidewall AND 1e20 doping).
 
 Live-verified via the same Xvfb+xdotool setup (after `pip install
 devsim==2.11.0` into `.venv312`, previously tkinter-only): a real
