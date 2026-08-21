@@ -13,7 +13,8 @@ saved project JSON files keep working.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import List
 
 
 @dataclass
@@ -26,6 +27,23 @@ class Wafer:
 
     mask_left_um: float = 3.5
     mask_right_um: float = 6.5
+
+    # Every OPEN window in the photomask, in the same 0..width_um
+    # coordinates as mask_left_um/mask_right_um. A real mask patterns
+    # several windows at once (a MOSFET's source and drain implant
+    # openings, for instance); mask_left_um/mask_right_um can only
+    # describe one, and are kept as the FIRST opening so every existing
+    # reader of them keeps working unchanged.
+    #
+    # The process layer consumes this as `mask_spans_um` (the OPAQUE
+    # complement -- see tcad.process.base.mask_spans_from_openings),
+    # which also makes the mask's POSITION real: the older
+    # mask_left/mask_right path goes through MakeTrench, which uses only
+    # the WIDTH and always centres the window, so a mask drawn off to
+    # one side was silently processed as a centred one.
+    mask_openings_um: List[List[float]] = field(
+        default_factory=lambda: [[3.5, 6.5]]
+    )
 
     exposure_dose: float = 100.0
     develop_time_s: float = 60.0

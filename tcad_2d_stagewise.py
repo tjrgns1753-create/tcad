@@ -148,21 +148,49 @@ def worker_main(config_file: str, result_file: str):
             )
         )
 
-        # Any registered category/model works here (Bosch included): the
-        # GUI sets "_process_category"/"_process_model_key" to pick
-        # which one -- this worker is not etch-specific.
-        step_cls = process_registry.get(
-            config["_process_category"], config["_process_model_key"]
-        )
-        result = step_cls().run(
-            config,
-            config["output_dir"],
-        )
+        if config.get("_flow_steps"):
+            # A user-composed process FLOW: several steps, in whatever
+            # order the user queued them, each continuing from the
+            # previous step's real geometry via
+            # ProcessStep(inherited_domain=...). run_flow is the Phase
+            # 13/14 machinery this project already verified; the GUI
+            # simply had no way in until now.
+            from tcad.process.flow import FlowStep, run_flow
 
-        payload = {
-            "success": True,
-            **result,
-        }
+            results = run_flow(
+                [
+                    FlowStep(
+                        category=step["_process_category"],
+                        name=step["_process_model_key"],
+                        recipe=step,
+                    )
+                    for step in config["_flow_steps"]
+                ],
+                config["output_dir"],
+            )
+            # The LAST step's mesh is the finished device -- that is what
+            # doping and device measurement consume.
+            payload = {
+                "success": True,
+                "final_mesh": results[-1].volume_mesh_path,
+                "step_count": len(results),
+            }
+        else:
+            # Any registered category/model works here (Bosch included):
+            # the GUI sets "_process_category"/"_process_model_key" to
+            # pick which one -- this worker is not etch-specific.
+            step_cls = process_registry.get(
+                config["_process_category"], config["_process_model_key"]
+            )
+            result = step_cls().run(
+                config,
+                config["output_dir"],
+            )
+
+            payload = {
+                "success": True,
+                **result,
+            }
 
     except Exception as exc:
 
@@ -215,6 +243,26 @@ class TCADApplication(tk.Tk):
         # _make_measurement_panel()'s own docstring. None until doping
         # succeeds.
         self.last_doped_result = None
+
+        # Each category panel's LabelFrame, registered as it is built,
+        # so the category selector can show exactly one at a time (see
+        # _show_panel_category).
+        self._panel_frames = {}
+
+        # The user-composed process flow: a list of fully-built recipes,
+        # run in the given order by tcad.process.flow.run_flow so each
+        # step continues from the previous one's real geometry. This is
+        # what makes the ORDER the user's choice instead of a fixed
+        # sequence -- a real device (a PN-junction diode, say) needs
+        # oxidation -> lithography -> doping -> metallization, which the
+        # old one-shot "etch OR oxidation OR deposition, then strip"
+        # state machine could not express at all.
+        self.flow_steps = []
+
+        # Set only while an "ADD TO FLOW" button is being handled, so
+        # the existing run_* recipe builders can be reused verbatim to
+        # QUEUE a step instead of running it (see the hook they share).
+        self._pending_flow_add = False
 
         self.history = []
 
@@ -485,6 +533,283 @@ class TCADApplication(tk.Tk):
     # CONTROL PANEL
     # --------------------------------------------------------
 
+    #: Category selector contents. Keys match self._panel_frames, set
+    #: by each _make_*_panel as it builds its own LabelFrame.
+    _PANEL_ORDER = (
+        "litho",
+        "etch",
+        "oxidation",
+        "deposition",
+        "gate_stack",
+        "doping",
+        "measurement",
+    )
+    _PANEL_LABELS = {
+        "litho": "Lithography / mask",
+        "etch": "Etching",
+        "oxidation": "Oxidation",
+        "deposition": "Deposition",
+        "gate_stack": "Geometry (MOSFET gate stack)",
+        "doping": "Doping",
+        "measurement": "Device measurement",
+    }
+
+    # --------------------------------------------------------
+    # PROCESS FLOW (user-ordered, any sequence)
+    # --------------------------------------------------------
+
+    def _make_flow_panel(self, parent):
+        """The user-composed process flow.
+
+        A real device is not one process step. A PN-junction diode, as
+        every textbook builds it, is oxidation -> lithography -> doping
+        -> metallization -> lithography; a MOS gate is a different order
+        again. The old GUI hard-wired ONE sequence (litho -> etch OR
+        oxidation OR deposition -> strip) and gated the buttons so
+        nothing else was reachable, which is the opposite of what a CAD
+        tool should do.
+
+        Steps are queued here in whatever order the user wants and run
+        by `tcad.process.flow.run_flow`, which chains them through
+        `ProcessStep(inherited_domain=...)` so each one continues from
+        the previous step's real ViennaPS geometry rather than
+        rebuilding a fresh wafer. That chaining is not new -- it is the
+        Phase 13/14 machinery this project already verified -- it simply
+        had no way in from the GUI until now.
+        """
+        frame = ttk.LabelFrame(parent, text="Process flow", padding=10)
+        frame.pack(fill="x", pady=(8, 0))
+
+        ttk.Label(
+            frame,
+            text="Steps run top to bottom; each continues from the previous "
+                 "geometry.",
+            wraplength=320,
+            foreground="#555",
+        ).pack(anchor="w", pady=(0, 4))
+
+        self.flow_list = tk.Listbox(frame, height=6, exportselection=False)
+        self.flow_list.pack(fill="x")
+
+        buttons = ttk.Frame(frame)
+        buttons.pack(fill="x", pady=(3, 0))
+
+        for text, width, command in (
+            ("↑", 3, lambda: self._move_flow_step(-1)),
+            ("↓", 3, lambda: self._move_flow_step(1)),
+            ("Remove", 9, self.remove_flow_step),
+            ("Clear", 7, self.clear_flow),
+        ):
+            ttk.Button(
+                buttons, text=text, width=width, command=command
+            ).pack(side="left", padx=(0, 3))
+
+        self.run_flow_button = ttk.Button(
+            frame,
+            text="RUN PROCESS FLOW",
+            command=self.run_process_flow,
+        )
+        self.run_flow_button.pack(fill="x", pady=(6, 0))
+
+        self._refresh_flow_list()
+
+    def run_process_flow(self):
+        """Run every queued step in order, chained through real geometry."""
+        if not self.flow_steps:
+            messagebox.showinfo(
+                "Process flow",
+                "No steps queued. Pick a category, set its parameters, and "
+                "press ADD TO FLOW.",
+            )
+            return
+
+        if not viennaps_session.is_available():
+            messagebox.showerror(
+                "ViennaPS",
+                "ViennaPS is not installed.\n\n"
+                "Run:\n"
+                "python -m pip install ViennaPS",
+            )
+            return
+
+        output_dir = tempfile.mkdtemp(prefix="tcad2d_flow_")
+        config_file = Path(output_dir) / "flow.json"
+        result_file = Path(output_dir) / "result.json"
+
+        config_file.write_text(
+            json.dumps(
+                {"_flow_steps": self.flow_steps, "output_dir": output_dir},
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        self._log(
+            "\n================================\n"
+            "REAL VIENNAPS PROCESS FLOW START\n"
+            "================================\n"
+            + "".join(
+                f"{i + 1}. {self._flow_step_label(r)}\n"
+                for i, r in enumerate(self.flow_steps)
+            )
+        )
+        self.update_idletasks()
+
+        try:
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "--worker",
+                    str(config_file),
+                    str(result_file),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=1800,
+            )
+        except Exception as exc:
+            messagebox.showerror("ViennaPS", str(exc))
+            return
+
+        if not result_file.exists():
+            messagebox.showerror(
+                "ViennaPS",
+                "Worker did not produce a result file.\n\n"
+                + completed.stderr[-4000:],
+            )
+            return
+
+        result = json.loads(result_file.read_text(encoding="utf-8"))
+
+        if not result.get("success"):
+            messagebox.showerror(
+                "ViennaPS", result.get("error", "Unknown ViennaPS error.")
+            )
+            self._log("\nPROCESS FLOW FAILED\n")
+            return
+
+        self.last_final_mesh = result.get("final_mesh")
+        self.wafer.processed = True
+        self.wafer.etched = True
+        self.process_stage = "flow_done"
+
+        self._log(
+            f"\nPROCESS FLOW COMPLETE ({len(self.flow_steps)} steps)\n"
+            f"final mesh: {self.last_final_mesh}\n"
+        )
+        self._update_process_buttons()
+        self.redraw()
+
+    def _flow_step_label(self, recipe):
+        category = recipe.get("_process_category", "?")
+        model = recipe.get("_process_model_key", "?")
+        detail = ""
+        if "etch_time_s" in recipe:
+            detail = f"  {recipe['etch_time_s']}s"
+        elif "time_hours" in recipe:
+            detail = f"  {recipe['time_hours']}hr"
+        elif "deposition_time_s" in recipe:
+            detail = f"  {recipe['deposition_time_s']}s"
+        return f"{category} / {model}{detail}"
+
+    def _append_flow_step(self, recipe):
+        """Queue a fully-built recipe (called from the run_* builders'
+        shared ADD TO FLOW hook)."""
+        self.flow_steps.append(dict(recipe))
+        self._refresh_flow_list(select=len(self.flow_steps) - 1)
+        self._log(f"Flow step added: {self._flow_step_label(recipe)}\n")
+
+    def _refresh_flow_list(self, select=None):
+        if not hasattr(self, "flow_list"):
+            return
+        self.flow_list.delete(0, tk.END)
+        for index, recipe in enumerate(self.flow_steps):
+            self.flow_list.insert(
+                tk.END, f"{index + 1}.  {self._flow_step_label(recipe)}"
+            )
+        if self.flow_steps:
+            target = select if select is not None else 0
+            target = max(0, min(target, len(self.flow_steps) - 1))
+            self.flow_list.selection_clear(0, tk.END)
+            self.flow_list.selection_set(target)
+
+    def _selected_flow_index(self):
+        selection = self.flow_list.curselection()
+        return int(selection[0]) if selection else -1
+
+    def _move_flow_step(self, delta):
+        index = self._selected_flow_index()
+        target = index + delta
+        if index < 0 or not (0 <= target < len(self.flow_steps)):
+            return
+        self.flow_steps[index], self.flow_steps[target] = (
+            self.flow_steps[target],
+            self.flow_steps[index],
+        )
+        self._refresh_flow_list(select=target)
+
+    def remove_flow_step(self):
+        index = self._selected_flow_index()
+        if index < 0:
+            return
+        removed = self.flow_steps.pop(index)
+        self._refresh_flow_list(select=min(index, len(self.flow_steps) - 1))
+        self._log(f"Flow step removed: {self._flow_step_label(removed)}\n")
+
+    def clear_flow(self):
+        self.flow_steps = []
+        self._refresh_flow_list()
+        self._log("Process flow cleared\n")
+
+    def add_current_step_to_flow(self):
+        """Build the CURRENTLY selected category/model's recipe and queue
+        it, reusing that category's own existing recipe builder."""
+        builders = {
+            "etch": self.run_etch,
+            "oxidation": self.run_oxidation,
+            "deposition": self.run_deposition,
+            "gate_stack": self.run_gate_stack,
+        }
+        key = next(
+            (
+                k
+                for k in self._PANEL_ORDER
+                if self._PANEL_LABELS[k] == self.panel_category.get()
+            ),
+            None,
+        )
+        builder = builders.get(key)
+        if builder is None:
+            messagebox.showinfo(
+                "Process flow",
+                "Only Etching, Oxidation, Deposition and Geometry are real "
+                "ViennaPS process steps that can be queued into a flow.\n\n"
+                "Lithography defines the mask every queued step uses; Doping "
+                "and Device measurement run after the flow, on its final "
+                "mesh.",
+            )
+            return
+
+        self._pending_flow_add = True
+        try:
+            builder()
+        finally:
+            self._pending_flow_add = False
+
+    def _show_panel_category(self):
+        """Show only the selected category's panel."""
+        selected = self.panel_category.get()
+        for key in self._PANEL_ORDER:
+            frame = self._panel_frames.get(key)
+            if frame is None:
+                continue
+            if self._PANEL_LABELS[key] == selected:
+                frame.pack(fill="x", pady=6)
+            else:
+                frame.pack_forget()
+
     def _make_control_panel(
         self,
         parent,
@@ -555,31 +880,73 @@ class TCADApplication(tk.Tk):
         scroll_canvas.bind_all("<Button-4>", _on_mousewheel)
         scroll_canvas.bind_all("<Button-5>", _on_mousewheel)
 
+        # Category selector. Every category's panel is built once, into
+        # one fixed container, and exactly ONE is shown at a time --
+        # stacking all seven made the control panel several screens
+        # long, and most of it was irrelevant to whatever the user was
+        # actually doing. Each panel already picks its own MODEL and
+        # shows only that model's parameters (see e.g.
+        # _update_etch_field_visibility), so this adds the missing outer
+        # level: category -> model -> that model's parameters.
+        ttk.Label(
+            panel,
+            text="Process category",
+            font=("Segoe UI", 10, "bold"),
+        ).pack(anchor="w", pady=(8, 2))
+
+        self.panel_category = tk.StringVar(value=self._PANEL_LABELS["litho"])
+
+        ttk.Combobox(
+            panel,
+            textvariable=self.panel_category,
+            state="readonly",
+            values=[self._PANEL_LABELS[key] for key in self._PANEL_ORDER],
+        ).pack(fill="x")
+
+        self.panel_category.trace_add(
+            "write", lambda *_a: self._show_panel_category()
+        )
+
+        ttk.Button(
+            panel,
+            text="ADD TO FLOW  ▼",
+            command=self.add_current_step_to_flow,
+        ).pack(fill="x", pady=(4, 0))
+
+        panel_container = ttk.Frame(panel)
+        panel_container.pack(fill="x")
+
         self._make_lithography_panel(
-            panel
+            panel_container
         )
 
         self._make_etch_panel(
-            panel
+            panel_container
         )
 
         self._make_oxidation_panel(
-            panel
+            panel_container
         )
 
         self._make_deposition_panel(
-            panel
+            panel_container
         )
 
         self._make_geometry_panel(
-            panel
+            panel_container
         )
 
         self._make_doping_panel(
-            panel
+            panel_container
         )
 
         self._make_measurement_panel(
+            panel_container
+        )
+
+        self._show_panel_category()
+
+        self._make_flow_panel(
             panel
         )
 
@@ -608,6 +975,8 @@ class TCADApplication(tk.Tk):
             padding=10,
         )
 
+        self._panel_frames["litho"] = frame
+
         frame.pack(
             fill="x"
         )
@@ -618,17 +987,65 @@ class TCADApplication(tk.Tk):
             self.wafer.pr_thickness_um,
         )
 
+        # Mask openings. A real mask patterns several windows at once,
+        # so this is a LIST, not one left/right pair. left_var/right_var
+        # stay as the SELECTED opening's two fields (every existing
+        # reader of them, including the canvas drag handler and
+        # _read_lithography_fields, keeps working unchanged); the
+        # listbox below is what makes the other openings reachable.
+        ttk.Label(
+            frame,
+            text="Mask openings (µm)",
+        ).pack(anchor="w", pady=(6, 0))
+
+        self.openings_list = tk.Listbox(
+            frame,
+            height=4,
+            exportselection=False,
+        )
+        self.openings_list.pack(fill="x")
+        self.openings_list.bind(
+            "<<ListboxSelect>>",
+            lambda _e: self._on_opening_selected(),
+        )
+
+        opening_buttons = ttk.Frame(frame)
+        opening_buttons.pack(fill="x", pady=(2, 0))
+
+        ttk.Button(
+            opening_buttons,
+            text="+ Add",
+            width=8,
+            command=self.add_mask_opening,
+        ).pack(side="left")
+
+        ttk.Button(
+            opening_buttons,
+            text="- Remove",
+            width=10,
+            command=self.remove_mask_opening,
+        ).pack(side="left", padx=(4, 0))
+
+        ttk.Button(
+            opening_buttons,
+            text="Update",
+            width=9,
+            command=self.update_mask_opening,
+        ).pack(side="left", padx=(4, 0))
+
         self.left_var = self._field(
             frame,
-            "Mask opening left (µm)",
+            "  selected opening: left (µm)",
             self.wafer.mask_left_um,
         )
 
         self.right_var = self._field(
             frame,
-            "Mask opening right (µm)",
+            "  selected opening: right (µm)",
             self.wafer.mask_right_um,
         )
+
+        self._refresh_openings_list()
 
         self.depth_var = self._field(
             frame,
@@ -703,6 +1120,8 @@ class TCADApplication(tk.Tk):
             text="Etch recipe",
             padding=10,
         )
+
+        self._panel_frames["etch"] = frame
 
         frame.pack(
             fill="x",
@@ -916,6 +1335,8 @@ class TCADApplication(tk.Tk):
             padding=10,
         )
 
+        self._panel_frames["oxidation"] = frame
+
         frame.pack(
             fill="x",
             pady=10,
@@ -1021,11 +1442,9 @@ class TCADApplication(tk.Tk):
                 "_process_category": "oxidation",
                 "_process_model_key": "thermal",
 
-                "mask_left_um":
-                    self.wafer.mask_left_um,
-
-                "mask_right_um":
-                    self.wafer.mask_right_um,
+                # Every mask opening, not just the first -- see
+                # _mask_recipe_keys().
+                **self._mask_recipe_keys(),
 
                 "pr_thickness_um":
                     self.wafer.pr_thickness_um,
@@ -1070,6 +1489,13 @@ class TCADApplication(tk.Tk):
                 "All recipe values must be numeric.",
             )
 
+            return
+
+        # ADD TO FLOW intercepts here: the recipe is fully built but
+        # nothing has run yet, so the same recipe-building code serves
+        # both "run this one step now" and "queue it into the flow".
+        if self._pending_flow_add:
+            self._append_flow_step(recipe)
             return
 
         output_dir = tempfile.mkdtemp(
@@ -1237,6 +1663,8 @@ class TCADApplication(tk.Tk):
             text="Deposition recipe",
             padding=10,
         )
+
+        self._panel_frames["deposition"] = frame
 
         frame.pack(
             fill="x",
@@ -1487,11 +1915,9 @@ class TCADApplication(tk.Tk):
                 "_process_category": "deposition",
                 "_process_model_key": model_key,
 
-                "mask_left_um":
-                    self.wafer.mask_left_um,
-
-                "mask_right_um":
-                    self.wafer.mask_right_um,
+                # Every mask opening, not just the first -- see
+                # _mask_recipe_keys().
+                **self._mask_recipe_keys(),
 
                 "pr_thickness_um":
                     self.wafer.pr_thickness_um,
@@ -1582,6 +2008,13 @@ class TCADApplication(tk.Tk):
                 "All recipe values must be numeric.",
             )
 
+            return
+
+        # ADD TO FLOW intercepts here: the recipe is fully built but
+        # nothing has run yet, so the same recipe-building code serves
+        # both "run this one step now" and "queue it into the flow".
+        if self._pending_flow_add:
+            self._append_flow_step(recipe)
             return
 
         output_dir = tempfile.mkdtemp(
@@ -1759,6 +2192,8 @@ class TCADApplication(tk.Tk):
             padding=10,
         )
 
+        self._panel_frames["gate_stack"] = frame
+
         frame.pack(
             fill="x",
             pady=10,
@@ -1892,6 +2327,13 @@ class TCADApplication(tk.Tk):
                 "All recipe values must be numeric.",
             )
 
+            return
+
+        # ADD TO FLOW intercepts here: the recipe is fully built but
+        # nothing has run yet, so the same recipe-building code serves
+        # both "run this one step now" and "queue it into the flow".
+        if self._pending_flow_add:
+            self._append_flow_step(recipe)
             return
 
         output_dir = tempfile.mkdtemp(
@@ -2065,6 +2507,8 @@ class TCADApplication(tk.Tk):
             text="Doping",
             padding=10,
         )
+
+        self._panel_frames["doping"] = frame
 
         frame.pack(
             fill="x",
@@ -2440,6 +2884,8 @@ class TCADApplication(tk.Tk):
             text="Device measurement (2-terminal)",
             padding=10,
         )
+
+        self._panel_frames["measurement"] = frame
 
         frame.pack(
             fill="x",
@@ -2870,6 +3316,141 @@ class TCADApplication(tk.Tk):
     # LITHOGRAPHY OPERATION
     # --------------------------------------------------------
 
+    # --------------------------------------------------------
+    # MASK OPENINGS (multi-window mask)
+    # --------------------------------------------------------
+
+    def _selected_opening_index(self):
+        selection = self.openings_list.curselection()
+        if selection:
+            return int(selection[0])
+        return 0 if self.wafer.mask_openings_um else -1
+
+    def _refresh_openings_list(self, select=None):
+        """Redraw the listbox from self.wafer.mask_openings_um and keep
+        mask_left_um/mask_right_um pointing at the selected one."""
+        previous = self._selected_opening_index()
+        self.openings_list.delete(0, tk.END)
+        for index, (lo, hi) in enumerate(self.wafer.mask_openings_um):
+            self.openings_list.insert(
+                tk.END, f"{index + 1}.  {lo:.3f} – {hi:.3f} µm"
+            )
+
+        if not self.wafer.mask_openings_um:
+            return
+
+        target = select if select is not None else previous
+        target = max(0, min(target, len(self.wafer.mask_openings_um) - 1))
+        self.openings_list.selection_clear(0, tk.END)
+        self.openings_list.selection_set(target)
+        self._on_opening_selected()
+
+    def _on_opening_selected(self):
+        """Load the selected opening into the left/right fields (and
+        into wafer.mask_left_um/mask_right_um, which the canvas drag
+        handler and the single-opening recipe path both still read)."""
+        index = self._selected_opening_index()
+        if index < 0 or index >= len(self.wafer.mask_openings_um):
+            return
+        lo, hi = self.wafer.mask_openings_um[index]
+        self.wafer.mask_left_um = lo
+        self.wafer.mask_right_um = hi
+        self.left_var.set(f"{lo:.3f}")
+        self.right_var.set(f"{hi:.3f}")
+        self.redraw()
+
+    def add_mask_opening(self):
+        """Append a new opening, placed in the first free gap so it does
+        not silently overlap an existing one."""
+        openings = sorted(self.wafer.mask_openings_um)
+        width = self.wafer.width_um
+        cursor = 0.0
+        placed = None
+        for lo, hi in openings:
+            if lo - cursor >= 0.3:
+                placed = [cursor + 0.1, min(lo - 0.1, cursor + 1.1)]
+                break
+            cursor = max(cursor, hi)
+        if placed is None and width - cursor >= 0.3:
+            placed = [cursor + 0.1, min(width - 0.1, cursor + 1.1)]
+        if placed is None:
+            messagebox.showinfo(
+                "Mask openings",
+                "No free space left on the mask for another opening.",
+            )
+            return
+
+        self.wafer.mask_openings_um.append(placed)
+        self.wafer.mask_openings_um.sort()
+        self._refresh_openings_list(
+            select=self.wafer.mask_openings_um.index(placed)
+        )
+        self._log(f"Mask opening added: {placed[0]:.3f} – {placed[1]:.3f} µm\n")
+
+    def remove_mask_opening(self):
+        if len(self.wafer.mask_openings_um) <= 1:
+            messagebox.showinfo(
+                "Mask openings",
+                "A mask needs at least one opening — otherwise no part "
+                "of the wafer is exposed and no process step would do "
+                "anything.",
+            )
+            return
+        index = self._selected_opening_index()
+        removed = self.wafer.mask_openings_um.pop(index)
+        self._refresh_openings_list(select=min(index, len(self.wafer.mask_openings_um) - 1))
+        self._log(f"Mask opening removed: {removed[0]:.3f} – {removed[1]:.3f} µm\n")
+
+    def update_mask_opening(self):
+        """Write the two text fields back into the selected opening."""
+        index = self._selected_opening_index()
+        if index < 0:
+            return
+        try:
+            lo = float(self.left_var.get())
+            hi = float(self.right_var.get())
+        except ValueError:
+            messagebox.showerror("Mask openings", "Opening edges must be numeric.")
+            return
+        if hi <= lo:
+            messagebox.showerror(
+                "Mask openings", "Opening right edge must be larger than left edge."
+            )
+            return
+        self.wafer.mask_openings_um[index] = [lo, hi]
+        self.wafer.mask_openings_um.sort()
+        self._refresh_openings_list(
+            select=self.wafer.mask_openings_um.index([lo, hi])
+        )
+
+    def _mask_recipe_keys(self):
+        """The mask portion of a process recipe, built from every
+        opening rather than just the first.
+
+        Always emits `mask_spans_um` (the OPAQUE complement — see
+        tcad.process.base.mask_spans_from_openings). That path honours
+        the mask's real POSITION, while the older
+        mask_left_um/mask_right_um path goes through MakeTrench, which
+        uses only the WIDTH and always centres the window — so a mask
+        drawn off to one side used to be processed as a centred one.
+        mask_left_um/mask_right_um are still included for any consumer
+        that reads them, and for a single centred opening the two paths
+        produce the identical geometry (verified: the GUI's own default
+        3.5–6.5 on a 10µm wafer gives sidewalls at ±1.5 either way).
+        """
+        from tcad.process.base import mask_spans_from_openings
+
+        return {
+            "mask_left_um": self.wafer.mask_left_um,
+            "mask_right_um": self.wafer.mask_right_um,
+            "mask_spans_um": [
+                list(span)
+                for span in mask_spans_from_openings(
+                    self.wafer.mask_openings_um, self.wafer.width_um
+                )
+            ],
+        }
+
     def _read_lithography_fields(self):
         try:
             self.wafer.pr_thickness_um = float(self.pr_var.get())
@@ -2902,25 +3483,24 @@ class TCADApplication(tk.Tk):
         return True
 
     def _update_process_buttons(self):
-        """Enable exactly the next physically valid process operation."""
-        buttons = {
-            "wafer": [self.coat_button],
-            "pr_coated": [self.align_button],
-            "aligned": [self.expose_button],
-            "exposed": [self.develop_button],
-            # Etch, oxidation, and deposition are alternative backend
-            # process steps available once the wafer is developed --
-            # each builds a fresh domain from the same self.wafer
-            # geometry (see run_etch / run_oxidation / run_deposition),
-            # not a multi-step sequence.
-            "developed": [self.etch_button, self.oxidation_button, self.deposition_button],
-            "etched": [self.strip_button],
-            "oxidized": [self.strip_button],
-            "deposited": [self.strip_button],
-            "stripped": [],
-        }
+        """Keep every process operation reachable.
 
-        all_buttons = [
+        This used to enable exactly ONE button -- the next step of a
+        single hard-wired sequence (litho -> etch OR oxidation OR
+        deposition -> strip). That made whole classes of real device
+        impossible to build: a textbook PN-junction diode needs
+        oxidation -> lithography -> doping -> metallization ->
+        lithography, and nothing in that order was reachable.
+
+        Order is now the user's to choose (see _make_flow_panel), so
+        the buttons are no longer gated on `process_stage`. The
+        remaining sequencing is PHYSICAL, not enforced here: a step
+        that genuinely cannot work without a prior one still says so
+        when pressed (run_etch checks `wafer.developed`, run_measurement
+        checks that doping exists), which reports the real reason
+        instead of silently greying a button out.
+        """
+        for button in (
             self.coat_button,
             self.align_button,
             self.expose_button,
@@ -2929,12 +3509,7 @@ class TCADApplication(tk.Tk):
             self.oxidation_button,
             self.deposition_button,
             self.strip_button,
-        ]
-
-        for button in all_buttons:
-            button.configure(state="disabled")
-
-        for button in buttons.get(self.process_stage, []):
+        ):
             button.configure(state="normal")
 
         # Doping is not part of the litho/process_stage sequence at
@@ -3088,11 +3663,9 @@ class TCADApplication(tk.Tk):
                 "_process_category": "etching",
                 "_process_model_key": model_key,
 
-                "mask_left_um":
-                    self.wafer.mask_left_um,
-
-                "mask_right_um":
-                    self.wafer.mask_right_um,
+                # Every mask opening, not just the first -- see
+                # _mask_recipe_keys().
+                **self._mask_recipe_keys(),
 
                 "pr_thickness_um":
                     self.wafer.pr_thickness_um,
@@ -3192,6 +3765,13 @@ class TCADApplication(tk.Tk):
                 "All recipe values must be numeric.",
             )
 
+            return
+
+        # ADD TO FLOW intercepts here: the recipe is fully built but
+        # nothing has run yet, so the same recipe-building code serves
+        # both "run this one step now" and "queue it into the flow".
+        if self._pending_flow_add:
+            self._append_flow_step(recipe)
             return
 
         output_dir = tempfile.mkdtemp(
@@ -3588,10 +4168,21 @@ class TCADApplication(tk.Tk):
             self.redraw()
             return
 
-        self.wafer.mask_left_um = left_um
-        self.wafer.mask_right_um = right_um
-        self.left_var.set(f"{left_um:.3f}")
-        self.right_var.set(f"{right_um:.3f}")
+        # A drag edits the SELECTED opening (the mask may have several
+        # -- see _make_lithography_panel), so write it back through the
+        # openings list rather than only into mask_left_um/right_um.
+        index = self._selected_opening_index()
+        if 0 <= index < len(self.wafer.mask_openings_um):
+            self.wafer.mask_openings_um[index] = [left_um, right_um]
+            self.wafer.mask_openings_um.sort()
+            self._refresh_openings_list(
+                select=self.wafer.mask_openings_um.index([left_um, right_um])
+            )
+        else:
+            self.wafer.mask_left_um = left_um
+            self.wafer.mask_right_um = right_um
+            self.left_var.set(f"{left_um:.3f}")
+            self.right_var.set(f"{right_um:.3f}")
 
         self.redraw()
 
@@ -3694,6 +4285,15 @@ class TCADApplication(tk.Tk):
             x1 - x0
         ) / self.wafer.width_um
 
+        # Every mask opening in canvas pixels. The mask may pattern
+        # several windows (see _make_lithography_panel), so the drawing
+        # below iterates this list; opening_x0/opening_x1 remain the
+        # SELECTED opening, still used for the single-window labels.
+        opening_pixels = [
+            (x0 + lo * scale, x0 + hi * scale)
+            for lo, hi in sorted(self.wafer.mask_openings_um)
+        ] or [(x0, x0)]
+
         opening_x0 = (
             x0
             + self.wafer.mask_left_um
@@ -3734,16 +4334,17 @@ class TCADApplication(tk.Tk):
             )
 
             if exposed_now:
-                # Exposed (soluble) PR under the mask opening.
-                canvas.create_rectangle(
-                    opening_x0,
-                    surface_y - pr_height,
-                    opening_x1,
-                    surface_y,
-                    fill="#f6dce7",
-                    outline="#803252",
-                    stipple="gray50",
-                )
+                # Exposed (soluble) PR under EVERY mask opening.
+                for op_x0, op_x1 in opening_pixels:
+                    canvas.create_rectangle(
+                        op_x0,
+                        surface_y - pr_height,
+                        op_x1,
+                        surface_y,
+                        fill="#f6dce7",
+                        outline="#803252",
+                        stipple="gray50",
+                    )
                 canvas.create_text(
                     (opening_x0 + opening_x1) / 2,
                     surface_y - pr_height / 2,
@@ -3754,30 +4355,38 @@ class TCADApplication(tk.Tk):
         if mask_present:
 
             # Photomask held above the wafer during alignment/exposure.
-            canvas.create_rectangle(
-                x0,
-                mask_y0,
-                opening_x0,
-                surface_y - pr_height,
-                fill="#202020",
-                outline="#111",
-            )
+            # Opaque wherever there is no opening -- drawn as the gaps
+            # between consecutive openings, so any number of windows
+            # renders correctly.
+            edge = x0
+            for op_x0, op_x1 in opening_pixels:
+                if op_x0 > edge:
+                    canvas.create_rectangle(
+                        edge,
+                        mask_y0,
+                        op_x0,
+                        surface_y - pr_height,
+                        fill="#202020",
+                        outline="#111",
+                    )
+                edge = max(edge, op_x1)
+            if edge < x1:
+                canvas.create_rectangle(
+                    edge,
+                    mask_y0,
+                    x1,
+                    surface_y - pr_height,
+                    fill="#202020",
+                    outline="#111",
+                )
 
-            canvas.create_rectangle(
-                opening_x1,
-                mask_y0,
-                x1,
-                surface_y - pr_height,
-                fill="#202020",
-                outline="#111",
-            )
-
-            canvas.create_text(
-                (opening_x0 + opening_x1) / 2,
-                mask_y0 - 12,
-                text="MASK OPENING",
-                fill="#155ea8",
-            )
+            for op_x0, op_x1 in opening_pixels:
+                canvas.create_text(
+                    (op_x0 + op_x1) / 2,
+                    mask_y0 - 12,
+                    text="MASK OPENING",
+                    fill="#155ea8",
+                )
 
             if exposed_now:
                 # UV illumination through the mask opening.
@@ -3808,23 +4417,29 @@ class TCADApplication(tk.Tk):
             # After develop the exposed PR is removed, leaving a real
             # opening in the resist (this is the state the ViennaPS
             # etch consumes).
-            canvas.create_rectangle(
-                x0,
-                surface_y - pr_height,
-                opening_x0,
-                surface_y,
-                fill="#e8a0bd",
-                outline="#803252",
-            )
-
-            canvas.create_rectangle(
-                opening_x1,
-                surface_y - pr_height,
-                x1,
-                surface_y,
-                fill="#e8a0bd",
-                outline="#803252",
-            )
+            # Resist remains everywhere EXCEPT the openings, so draw the
+            # gaps between consecutive openings (any number of them).
+            edge = x0
+            for op_x0, op_x1 in opening_pixels:
+                if op_x0 > edge:
+                    canvas.create_rectangle(
+                        edge,
+                        surface_y - pr_height,
+                        op_x0,
+                        surface_y,
+                        fill="#e8a0bd",
+                        outline="#803252",
+                    )
+                edge = max(edge, op_x1)
+            if edge < x1:
+                canvas.create_rectangle(
+                    edge,
+                    surface_y - pr_height,
+                    x1,
+                    surface_y,
+                    fill="#e8a0bd",
+                    outline="#803252",
+                )
 
             canvas.create_text(
                 x0 + 10,
@@ -3833,12 +4448,13 @@ class TCADApplication(tk.Tk):
                 anchor="w",
             )
 
-            canvas.create_text(
-                (opening_x0 + opening_x1) / 2,
-                surface_y - pr_height - 12,
-                text="PR OPENING",
-                fill="#155ea8",
-            )
+            for op_x0, op_x1 in opening_pixels:
+                canvas.create_text(
+                    (op_x0 + op_x1) / 2,
+                    surface_y - pr_height - 12,
+                    text="PR OPENING",
+                    fill="#155ea8",
+                )
 
         # Prefer drawing the actual ViennaPS mesh (real geometry, e.g.
         # isotropic undercut) when one is available from the last
@@ -3985,6 +4601,12 @@ class TCADApplication(tk.Tk):
         self.process_stage = "wafer"
 
         self._activate_stages()
+
+        # The openings listbox is built from self.wafer, so a fresh
+        # Wafer() has to be reflected there too -- otherwise NEW WAFER
+        # leaves the previous wafer's openings on screen.
+        if hasattr(self, "openings_list"):
+            self._refresh_openings_list(select=0)
 
         self._log(
             "\nNEW WAFER\n"

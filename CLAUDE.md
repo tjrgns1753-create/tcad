@@ -82,7 +82,7 @@ MOS C-V, oxidation → etch → doping → DevSim).
 
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
-Current regression: `tests/run_regression.py` → **32 passed, 0 failed,
+Current regression: `tests/run_regression.py` → **33 passed, 0 failed,
 0 skipped**.
 
 - **Si floor / mesh export**: raw ViennaPS `saveVolumeMesh()` clips a
@@ -805,6 +805,54 @@ Confirmed live (mask dragged to 2.000/5.000, NEW WAFER clicked, fields
 still read 2.000/5.000). Out of scope for this change — same class of
 bug would affect a typed edit just as much as a dragged one — left
 here for whoever picks it up next.
+
+**GUI restructured into a real CAD tool (three changes, all
+live-verified through real ViennaPS):**
+
+1. **Process order is now the user's choice.** The GUI used to enforce
+   ONE hard-wired sequence (litho -> etch OR oxidation OR deposition ->
+   strip) by greying out every other button, which made whole classes
+   of real device impossible to express — a textbook PN-junction diode
+   is oxidation -> lithography -> doping -> metallization ->
+   lithography, and none of that order was reachable. A **Process flow**
+   panel now lets steps be queued in any order (ADD TO FLOW), reordered
+   (up/down), removed, and run as one chained flow. It runs through
+   `tcad.process.flow.run_flow`, which chains steps via
+   `ProcessStep(inherited_domain=...)` so each continues from the
+   previous step's REAL geometry — the Phase 13/14 machinery this
+   project already verified, which simply had no way in from the GUI.
+   `worker_main()` grew a `_flow_steps` branch for this; the
+   single-step branch is unchanged. `_update_process_buttons()` no
+   longer gates on `process_stage` — steps that genuinely need a
+   predecessor still say so when pressed (`run_etch` checks
+   `wafer.developed`), which reports the real reason instead of
+   silently greying a button out. Verified live: oxidation queued
+   BEFORE etch, reordered, run — final mesh carries `['Mask', 'Si',
+   'SiO2']`, i.e. the etch really did continue from the oxide.
+
+2. **Category -> model -> parameters.** All seven panels used to be
+   stacked at once, several screens long, most of it irrelevant to the
+   task at hand. A **Process category** combobox now shows exactly one
+   panel at a time (`_show_panel_category`, `self._panel_frames`); each
+   panel already picked its own MODEL and showed only that model's
+   fields, so this just adds the missing outer level. Verified live:
+   exactly one panel is mapped at any time.
+
+3. **Multi-window masks.** `Wafer.mask_openings_um` holds EVERY opening
+   (mask_left_um/mask_right_um remain the selected one, so every
+   existing reader keeps working), edited through a listbox with
+   add/remove/update, and the canvas drag edits the selected opening.
+   Recipes now carry `mask_spans_um` built by the new pure helper
+   `tcad.process.base.mask_spans_from_openings()` (unit-tested in
+   `tests/unit/test_mask_spans_from_openings_mock.py`). **Side effect
+   worth knowing: mask POSITION is now real.** The old
+   mask_left/mask_right path goes through `MakeTrench`, which uses only
+   the WIDTH and always centres the window — a mask drawn off to one
+   side was silently processed as a centred one. For a single centred
+   opening both paths agree exactly (the GUI's own 3.5–6.5 default on a
+   10um wafer gives sidewalls at ±1.5 either way). Verified live: two
+   openings (1.0–2.5 and 7.0–8.5) produced a real ViennaPS mesh with
+   exactly TWO mask windows, at the drawn positions.
 
 ## Current Task
 

@@ -39,6 +39,50 @@ INITIAL_GEOMETRY_RECIPE_KEYS = (
 )
 
 
+def mask_spans_from_openings(openings_um, x_extent_um):
+    """Turn mask OPENINGS into the OPAQUE spans `mask_spans_um` wants.
+
+    A photomask is naturally described by where it is OPEN (that is
+    where the wafer gets processed), but `mask_spans_um` — and
+    ViennaPS's own `make_mask_spans` behind it — take the OPAQUE
+    regions. This is the complement, and the exact inverse of
+    `tcad.physics.doping.implant_windows_from_mask_spans`, which goes
+    the other way for the same reason.
+
+    openings_um : [(lo, hi), ...] in the GUI's own 0..x_extent_um
+        coordinates (0 = the wafer's left edge), the way a mask layout
+        is drawn/typed. Overlapping or unsorted openings are merged
+        first, so a caller may hand over raw user input.
+    x_extent_um : the wafer's full width. Output is in DOMAIN
+        coordinates, which are centred on 0 (spanning
+        [-x_extent_um/2, +x_extent_um/2]) — the convention every recipe
+        and every ViennaPS call in this project already uses.
+
+    Returns [(lo, hi), ...] opaque spans, in domain coordinates. An
+    empty `openings_um` yields one span covering the whole wafer (a
+    fully opaque mask); openings covering everything yield none (no
+    mask at all).
+    """
+    half = x_extent_um / 2.0
+
+    merged = []
+    for lo, hi in sorted((min(o), max(o)) for o in openings_um):
+        if merged and lo <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], hi)
+        else:
+            merged.append([lo, hi])
+
+    spans = []
+    cursor = 0.0
+    for lo, hi in merged:
+        if lo > cursor:
+            spans.append((cursor - half, min(lo, x_extent_um) - half))
+        cursor = max(cursor, hi)
+    if cursor < x_extent_um:
+        spans.append((cursor - half, x_extent_um - half))
+    return spans
+
+
 class ProcessStep(ABC):
     """Base class for one process recipe within a category.
 
