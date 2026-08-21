@@ -210,7 +210,19 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
   showed refining harder at a known-exact sidewall position — even with
   this fixed composition — still fails to converge up to practically
   affordable mesh sizes, which redirects the remaining problem toward
-  the equilibrium SOLVE STRATEGY rather than mesh resolution. Full
+  the equilibrium SOLVE STRATEGY rather than mesh resolution.
+  **Confirmed the redirect was right: doping-LEVEL continuation
+  (ramping NetDoping's magnitude 1e17->1e20 in a few steps, reusing
+  each step's converged solution as the next step's initial guess —
+  the same mechanism already used for BIAS ramping, applied to doping
+  instead) fully and reproducibly solves the EQUILIBRIUM failure.**
+  Extending the same idea to drift-diffusion transport (enable it at
+  low doping, then ramp doping up with transport already active) works
+  PARTIALLY — converges up to ~6.6e18 cm^-3 with a fine enough step
+  schedule, but hits a real wall short of the 1e20 target regardless of
+  how finely stepped (28 vs 51 steps both topped out at 6.62e18) — a
+  different, still-open sub-problem from the equilibrium one, which
+  doping continuation solved outright rather than just improved. Full
   writeup below (OPEN item 2) and in `docs/investigation_log.md`.
 
 ## OPEN issues (active — read before starting new work)
@@ -414,20 +426,58 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
    shown insufficient on its own), leaving only the validated,
    unambiguously-safe union-composition restructuring in production.
 
-   **What this redirects future work toward:** the failure is most
-   likely in the EQUILIBRIUM SOLVE STRATEGY itself, not mesh resolution
-   — e.g. a continuation/homotopy approach that ramps the doping level
-   up gradually rather than setting the full 1e20 cm^-3 sliver in one
-   step, or a damped/globalized Newton iteration, or a different initial
-   guess construction near a sub-cell high-doping region. Next smallest
-   experiment: on the SAME 69274-node (6-ring, exact-sidewall) mesh that
-   still failed above, try ramping the WINDOW CONCENTRATION itself from
-   something the equilibrium solve already handles (e.g. 1e17, matching
-   the body) up to 1e20 in a few steps, reusing each step's converged
-   solution as the next step's initial guess — cheap to try (reuses the
-   exact mesh already built) and would confirm or rule out "solver
-   strategy, not mesh" before investing in a real continuation-method
-   implementation.
+   **CONFIRMED: doping-LEVEL continuation (not mesh) is the correct
+   lever — EQUILIBRIUM fully solved by it; DRIFT-DIFFUSION helped a lot
+   but not fully solved yet.** On the exact 69274-node (6-ring,
+   exact-sidewall) mesh that failed above, ramping the window
+   concentration itself (1e17 -> 1e20 in 5 geometric steps, reusing
+   each step's converged Potential as the next step's initial guess —
+   the same mechanism `run_pn_junction_iv_sweep` already uses for BIAS,
+   applied to a NetDoping node-model constant instead) makes the
+   EQUILIBRIUM (Poisson-only) solve converge cleanly and reproducibly.
+   Confirmed multiple times, always succeeds.
+
+   Extending the identical idea one stage later — enable drift-diffusion
+   at a LOW doping level first (trivial there), then ramp doping UP
+   again with transport equations already active — also works, but only
+   PARTIALLY: it converges up to some point in the 1e18-1e19 cm^-3
+   range, then fails, and where exactly it fails depends on how finely
+   the ramp is stepped:
+
+   | ramp step ratio | steps to 1.0 | got as far as | then failed at |
+   |---|---|---|---|
+   | ~3x (7 coarse steps) | 7 | 3.0e18 | 1.0e19 |
+   | 1.3x (28 steps) | 28 | 6.62e18 (best run) / 5.76e18 (another run) | ~7.6e18-1.0e19 |
+   | 1.15x (51 steps) | 51 | 6.62e18 | 7.61e18 |
+
+   Each finer step schedule pushed the failure point further (3.0e18 ->
+   5.76e18 -> 6.62e18) but with clearly DIMINISHING returns — doubling
+   the step count from 28 to 51 gained nothing further (both topped out
+   at 6.62e18). This is NOT "just needs even finer steps": it looks like
+   a real numerical wall somewhere in the 7e18-1e19 cm^-3 range for
+   drift-diffusion on this specific ultra-fine (12.5nm) mesh, distinct
+   in character from the equilibrium failure (which doping continuation
+   solved outright, not just pushed back).
+
+   ALSO CONFIRMED (a real trap, costly to rediscover): loosening
+   INTERMEDIATE ramp-step tolerance (1e-4 instead of 1e-6, reasoning
+   that an intermediate step only needs to seed the next step's initial
+   guess, not full precision) made things WORSE, not better — a step
+   that "converged" at only 1e-4 precision was a bad enough initial
+   guess that the VERY NEXT step diverged outright (RelError -> 2e4,
+   unbounded, not oscillating). Keep tight tolerance (1e-6) at every
+   ramp step, not just the final target — use smaller STEPS instead of
+   looser precision to control cost.
+
+   Next smallest experiment: investigate why drift-diffusion
+   specifically (not Poisson) hits a wall in the 7e18-1e19 cm^-3 range
+   regardless of step fineness — e.g. inspect the Jacobian condition
+   number or individual equation residuals at the failing step to see
+   whether ONE of ElectronContinuityEquation/HoleContinuityEquation/
+   PotentialEquation is the actual bottleneck; or try ramping mobility-
+   related parameters alongside doping; or try a genuinely different
+   linear solver (`solver_type="iterative"` vs the implicit default) at
+   just the failing step.
 
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):

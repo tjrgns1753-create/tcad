@@ -7539,3 +7539,136 @@ to try — it reuses a mesh already built and known to be adequately
 refined — and would directly confirm or rule out "this needs a solve
 STRATEGY change, not more mesh" before any larger continuation-method
 implementation is attempted.
+
+---
+
+## implant_windows: doping-level continuation solves equilibrium outright; drift-diffusion partially
+
+Direct continuation of "implant_windows: union-based composition
+implemented and validated; decisively rules out 'refine harder' as a
+complete fix" above, per explicit user direction to keep pushing rather
+than stop at "mesh refinement doesn't work, try a solve strategy
+instead."
+
+### 1. What was tested
+
+The prior investigation's own suggested next step: on the SAME
+69274-node (6-ring, exact-sidewall) mesh that still failed with perfect
+refinement, ramp the DOPING LEVEL itself (not bias, not mesh) from
+something the solver trivially handles up to the full 1e20 cm^-3, one
+small step at a time, reusing each step's converged Potential/
+Electrons/Holes as the next step's initial guess — mirroring the exact
+mechanism `run_pn_junction_iv_sweep` already uses for bias ramping
+(`set_bias` + re-solve), just applied to re-registering the NetDoping
+node model with a scaled window concentration instead.
+
+Four rounds, each correcting a specific finding from the last:
+
+1. **Equilibrium-only ramp** (5 geometric steps, 1e-3 to 1.0 scale
+   factor on the window concentration, `setup_semiconductor_potential_
+   equation` + Poisson-only `solve()` at each step): tested in
+   isolation first, before touching drift-diffusion at all.
+2. **Extend to drift-diffusion** (V1): jump straight from the
+   fully-ramped equilibrium to enabling transport, then bias — found
+   transport itself (not bias) fails, even at V=0.0001 (~0V), with
+   RelError oscillating near (not cleanly under) the 1e-6/1e-5
+   tolerance for 300+ iterations without settling.
+3. **Doping-level continuation applied to drift-diffusion too** (V2):
+   re-ramp doping DOWN, enable transport at the low level (trivial
+   there), then ramp doping back UP with transport equations already
+   active. First attempt (7 steps, ratio ~3x, tight 1e-6 tolerance)
+   got substantially further than a single jump. A follow-up attempt
+   loosening INTERMEDIATE step tolerance to 1e-4 (reasoning: an
+   intermediate step only needs to seed the next step, not full
+   precision) made things WORSE — outright divergence (RelError to
+   2e4) on the very next step after a "converged" 1e-4 step, not just
+   the earlier oscillation.
+4. **Finer geometric ramp schedules, tight tolerance throughout** (V3):
+   reverted to 1e-6 tolerance at every step (the V2 lesson), tried
+   ratio 1.3 (28 steps) and ratio 1.15 (51 steps) doping-level
+   schedules for drift-diffusion specifically, run to either
+   completion or the first failure, each run given up to ~28 minutes
+   wall-clock.
+
+### 2. Result
+
+**Equilibrium (Poisson-only):** doping continuation (1e-3, 1e-2, 0.1,
+0.3, 1.0 scale, 5 steps) converges cleanly and reproducibly EVERY time
+this was tried (4+ separate runs, V1 through V3, all succeeded at this
+stage). This alone reaches the full 1e20 cm^-3 target on the exact mesh
+that failed outright with a single-jump doping set.
+
+**Drift-diffusion (transport), single jump after equilibrium ramp
+(V1):** fails even at V=0.0001V (~0V) — RelError oscillates in a tight
+band (roughly 1e-5 to a few times 1e-4) for 300+ iterations without
+cleanly settling under tolerance, though briefly dipping under 1e-5 at
+some individual iterations (e.g. iteration 309 read 9.08e-06) before
+bouncing back up (iteration 310: 1.83e-05) — genuinely marginal, not a
+runaway divergence.
+
+**Drift-diffusion, doping-level continuation (V2/V3):**
+
+| ramp schedule | intermediate tolerance | furthest reached | failed at |
+|---|---|---|---|
+| 7 steps, ratio ~3x | 1e-6 (tight) | 3.0e18 cm^-3 | 1.0e19 |
+| 15 steps, ratio ~1.5x, LOOSENED to 1e-4 | 1e-4 | 3.0e18 cm^-3 (worse — diverged on the NEXT step, RelError->2e4) | 5e18-attempt region |
+| 28 steps, ratio 1.3x | 1e-6 (tight) | 6.62e18 cm^-3 (one run) / 5.76e18 (another run — some run-to-run variance) | ~7.6e18-1.0e19 |
+| 51 steps, ratio 1.15x | 1e-6 (tight) | 6.62e18 cm^-3 | 7.61e18 |
+
+### 3. What it proves
+
+- **Equilibrium: doping-level continuation is a complete, validated
+  fix**, not a partial mitigation. It converges the EXACT mesh/doping
+  combination that failed outright — including with perfect,
+  hand-confirmed sidewall refinement already in place — every time it
+  was tried. This directly confirms the prior session's redirect ("the
+  failure is most likely in the solve STRATEGY, not mesh resolution")
+  was correct for the equilibrium stage specifically.
+- **Drift-diffusion: doping-level continuation clearly HELPS
+  (3.0e18 -> 6.62e18, more than doubling the reachable doping level)
+  but does not fully solve the target case within tested schedules.**
+  Diminishing returns going from 28 to 51 steps (both topped out at the
+  identical 6.62e18) is real evidence against "just needs even finer
+  steps" — this looks like a genuine numerical wall in the 7e18-1e19
+  cm^-3 range specific to the transport equations on this ultra-fine
+  (12.5nm) mesh, not simply a step-size problem.
+- **A concrete, reusable trap, confirmed by direct experiment**:
+  loosening an INTERMEDIATE continuation step's tolerance (reasoning
+  that it only needs to seed the next step, not deliver a final
+  answer) is not a safe way to trade accuracy for speed — a
+  loosely-converged intermediate step can be a bad enough initial guess
+  that the very next (still-tight-tolerance) step diverges outright,
+  worse than if the loose step had simply taken longer to reach tight
+  tolerance itself. Continuation methods on this kind of stiff system
+  need tight tolerance at EVERY step; control cost via smaller steps,
+  not looser per-step precision.
+
+### 4. What remains uncertain
+
+- WHY drift-diffusion specifically (not Poisson) hits a wall in the
+  7e18-1e19 cm^-3 range — not diagnosed at the equation level (which of
+  ElectronContinuityEquation/HoleContinuityEquation/PotentialEquation
+  is the actual bottleneck at the failing step was not isolated).
+- Whether an even more different technique (damped/globalized Newton
+  if DevSim exposes one, an iterative rather than direct linear solver
+  at just the hard step, or ramping a mobility-model parameter
+  alongside doping) would cross the 7e18-1e19 wall where finer doping
+  steps alone plateau.
+- Whether the SAME wall exists for other geometry+doping combinations,
+  or is specific to this exact reproducer's mesh/doping details.
+- Run-to-run variance was observed (one run reached 6.62e18, a very
+  similar run reached only 5.76e18, both at ratio 1.3x) — not
+  characterized further; could be floating-point-order-dependent
+  Newton path sensitivity, not investigated.
+
+### 5. Next smallest experiment
+
+At the LAST successful doping level before failure (e.g. 6.62e18 from
+the 51-step run), inspect the per-equation RelError breakdown
+(ElectronContinuityEquation vs HoleContinuityEquation vs
+PotentialEquation) at the FAILING next step's early iterations to see
+whether one equation is driving the divergence specifically — this
+would point directly at whether the issue is mobility/velocity
+saturation modeling, a scaling issue in one carrier's continuity
+equation, or something in the Poisson coupling, rather than continuing
+to guess at ramp schedules.
