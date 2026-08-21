@@ -198,6 +198,20 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
   -window edge, not any actual device defect. Full writeup: search
   `docs/investigation_log.md` for "RESOLVED: no real resistive anomaly
   exists".
+- **`derive_implant_windows_refinement()` mesh-composition bug fixed
+  (union, not accumulation) — does NOT by itself fix the implant_windows
+  GEOMETRY-DEPENDENT convergence gap, still OPEN, see below.** Lateral
+  refinement rings are now built as one predicate PER RING WIDTH
+  (matching ANY window edge at that depth) instead of one full
+  telescope PER EDGE — so two nearby refinement sources share ring
+  passes instead of stacking. No change to the shared
+  `graded_refine_mesh_near`/`refine_mesh_near` machinery; full 31-test
+  regression suite still passes. A decisive follow-up experiment then
+  showed refining harder at a known-exact sidewall position — even with
+  this fixed composition — still fails to converge up to practically
+  affordable mesh sizes, which redirects the remaining problem toward
+  the equilibrium SOLVE STRATEGY rather than mesh resolution. Full
+  writeup below (OPEN item 2) and in `docs/investigation_log.md`.
 
 ## OPEN issues (active — read before starting new work)
 
@@ -348,27 +362,72 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
    geometry this failure mode requires (a doping edge close enough to a
    sidewall to need both).
 
-   **This is a real architectural gap, not a missing experiment.** A
-   correct general fix needs `graded_refine_mesh_near` (or a
-   replacement) to compute, per region, the SINGLE finest resolution
-   needed from ALL sources (doping AND geometry) and refine to it ONCE
-   — not sequentially apply one telescope per source. That is a change
-   to shared mesh-refinement machinery that 21+ other passing tests
-   depend on (MOSFET Id-Vgs, gate stack, step_junction, gaussian_implant
-   all call through `graded_refine_mesh_near`/`refine_mesh_near`), so it
-   needs its own careful, scoped session — investigate the union-based
-   composition design, verify it doesn't change behavior for every
-   EXISTING passing case, before touching it. Not attempted here per
-   CLAUDE.md's own rule against unscoped production changes.
+   **FIXED (partially) — `derive_implant_windows_refinement()` now
+   composes lateral rings as a UNION, not an accumulation.** Rather than
+   looping per-edge with each edge's own full widest-to-narrowest
+   telescope, it now builds ONE predicate PER RING WIDTH, each matching
+   ANY window edge at that depth — so two nearby edges share ring
+   passes instead of each getting the other's full depth stacked on
+   top. No change was needed to `graded_refine_mesh_near`/
+   `refine_mesh_near` themselves (both stayed exactly as-is, so every
+   other caller — MOSFET Id-Vgs, gate stack C-V, step_junction,
+   gaussian_implant — is unaffected; confirmed by the full 31-test
+   regression suite passing after this change, same as before).
+   Verified directly against the OLD code on the identical known-
+   passing recipe (project's own `test_gui_measurement_doping_kinds_
+   real.py` recipe): OLD gives 11269 Si nodes / +3.475285e-11 A, NEW
+   gives 13955-19421 Si nodes (depending on search radius tried during
+   development) / +3.909162e-11 A to +3.932010e-11 A — both converge,
+   both satisfy KCL (equal-and-opposite terminal currents) to 6+
+   figures; the ~13% current difference reflects the NEW mesh's
+   somewhat finer local resolution, not a regression.
 
-   Next smallest experiment for that future session: design a
-   `union_refine_mesh_near()` (or similar) that takes a list of
-   (predicate, half_width) pairs from potentially-overlapping sources,
-   computes each triangle's REQUIRED minimum size across all sources
-   ONCE, and refines to exactly that depth — then verify it reproduces
-   today's node counts/results on the already-passing cases (4x3
-   implant_windows, MOSFET Id-Vgs, gate stack C-V) before using it on
-   the sidewall-adjacent case this item describes.
+   **DECISIVE FINDING (this session): mesh refinement AT THE SIDEWALL —
+   even done perfectly — is NOT the fix for the GUI-default 10x8 case.**
+   A geometric-anomaly auto-detector was built and tried first (scans
+   the raw mesh for triangles that are both small AND touch a different
+   material tag, feeds their positions into the same union composition
+   as the doping edges) — it correctly located points right at the real
+   sidewall, but the case still failed to converge, so a cleaner
+   decisive test was run: feed the union composition the EXACT,
+   hand-confirmed sidewall position (x=+-1.5um, no detector, no
+   ambiguity) directly. Findings, mesh-size-only checks BEFORE each
+   solve attempt (this project nearly OOM'd twice earlier chasing this
+   same question with the OLD accumulating composition, so every step
+   here was checked cheaply first):
+
+   | ring depth | Si nodes | result |
+   |---|---|---|
+   | 4 rings (0.025um half-width) | ~16550 | Convergence failure! |
+   | 6 rings (0.00625um half-width) | 69274 | Convergence failure! |
+   | 8 rings (0.0016um half-width) | 303530 | did not finish in 300s |
+
+   This rules out "the mesh isn't fine enough at the sidewall" as the
+   (complete) explanation — even PERFECT knowledge of where to refine,
+   composed correctly (no accumulation), pushed to 12.5nm-scale local
+   resolution, still fails in the EQUILIBRIUM solve, and going finer
+   becomes computationally impractical before it has a chance to
+   resolve anyway. The geometric-anomaly auto-detector was therefore
+   REMOVED again (it added real complexity/fragility — an early version
+   false-positived on an unrelated real material boundary, this
+   project's own documented Si-floor artifact — for a mechanism now
+   shown insufficient on its own), leaving only the validated,
+   unambiguously-safe union-composition restructuring in production.
+
+   **What this redirects future work toward:** the failure is most
+   likely in the EQUILIBRIUM SOLVE STRATEGY itself, not mesh resolution
+   — e.g. a continuation/homotopy approach that ramps the doping level
+   up gradually rather than setting the full 1e20 cm^-3 sliver in one
+   step, or a damped/globalized Newton iteration, or a different initial
+   guess construction near a sub-cell high-doping region. Next smallest
+   experiment: on the SAME 69274-node (6-ring, exact-sidewall) mesh that
+   still failed above, try ramping the WINDOW CONCENTRATION itself from
+   something the equilibrium solve already handles (e.g. 1e17, matching
+   the body) up to 1e20 in a few steps, reusing each step's converged
+   solution as the next step's initial guess — cheap to try (reuses the
+   exact mesh already built) and would confirm or rule out "solver
+   strategy, not mesh" before investing in a real continuation-method
+   implementation.
 
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):

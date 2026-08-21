@@ -250,11 +250,60 @@ def derive_implant_windows_refinement(
 
     Returns a predicate list ready for
     `tcad.device.devsim.mesh_refine.graded_refine_mesh_near()`:
-      - LATERAL telescoping rings centred on each implant window's own
-        two edges (the real step junctions), along the doping's own axis.
-      - VERTICAL (when `interface_position_um` is given) telescoping
-        rings centred on a horizontal interface — for a MOSFET, the
-        Si-SiO2 interface at y=0, where the inversion channel forms.
+      - LATERAL telescoping rings, ONE PREDICATE PER RING WIDTH, each
+        predicate matching a triangle near ANY implant-window edge — a
+        UNION across edges at each ring depth, not a separate full
+        telescope per edge. VERTICAL (when `interface_position_um` is
+        given) telescoping rings centred on a horizontal interface —
+        for a MOSFET, the Si-SiO2 interface at y=0, where the inversion
+        channel forms — stay a separate per-level family, since an
+        interface spans the whole device on a different axis and
+        legitimately overlaps a lateral edge's own window on purpose
+        (the channel region under the gate, verified by the MOSFET
+        Id-Vgs test).
+
+    WHY ONE PREDICATE PER RING WIDTH, NOT PER EDGE (found this session,
+    real-execution-verified, not assumed): looping per-edge with each
+    edge's own full widest-to-narrowest telescope — what this function
+    did before — works fine when window edges are far enough apart that
+    their refined regions never overlap (every case this project had
+    tested until now). But `refine_mesh_near()` unconditionally
+    subdivides any triangle matching its predicate regardless of that
+    triangle's CURRENT size, so when two regions DO overlap — e.g. two
+    window edges placed close together — applying one source's full
+    telescope and then another source's full telescope on top
+    ACCUMULATES rather than taking the union of what's needed: a
+    triangle already refined to one source's finest ring gets the other
+    source's full depth of halving applied AGAIN, unconditionally.
+    Confirmed directly: adding one extra 0.2um-half-width ring at a
+    position 0.1um from an existing window edge alone tripled node
+    count (12049 -> 36407); re-ordering the combined predicate list
+    (interleaved-by-width vs. one full telescope then the other) barely
+    helped (~9%), ruling out ORDER as the cause — only true union
+    composition (this restructuring) fixes it. For DISJOINT edges (the
+    passing cases before this change), one-predicate-per-ring-width
+    still applies exactly `len(rings)` total halvings to each edge's
+    own neighborhood, in a different order but with an identical final
+    mesh, since disjoint regions cannot interact through the red-green
+    closure rule — see mesh_refine.py's own `_refine_once`.
+
+    THIS RESTRUCTURING ALONE DOES NOT FIX THE implant_windows
+    GEOMETRY-DEPENDENT CONVERGENCE FAILURE (see CLAUDE.md's OPEN item):
+    a follow-up experiment fed this SAME union composition the EXACT,
+    hand-confirmed position of the etched sidewall that triggers that
+    failure (not an auto-detector — the real x=+-1.5um coordinates) and
+    it still failed to converge at 4 rings (0.025um half-width) and 6
+    rings (69274 Si nodes, 0.00625um half-width); 8 rings (0.0016um
+    half-width, 303530 Si nodes) did not even finish a solve attempt
+    within 300s. This rules out "refine harder at the sidewall" —
+    however the refinement is composed or targeted — as a complete fix
+    within practical mesh sizes; automatic geometric-anomaly detection
+    was tried on top of this restructuring and removed again once the
+    hand-picked-center version above showed the underlying refinement
+    approach itself doesn't reach convergence. See CLAUDE.md's OPEN
+    item 2 for the full investigation and what to try next (a solve
+    STRATEGY change — e.g. continuation/homotopy on doping level, or
+    damped Newton — rather than more mesh refinement).
 
     THE PHYSICALLY LOAD-BEARING POINT, measured rather than assumed:
     BOTH ring families are sized from the profile's PEAK concentration
@@ -318,17 +367,21 @@ def derive_implant_windows_refinement(
         axis_min = float(points[:, lateral].min())
         axis_max = float(points[:, lateral].max())
         boundary_tol = spacing_um
+        centers: List[float] = []
         for window in windows:
             for edge_um in (window["min_um"], window["max_um"]):
                 if (edge_um - axis_min) < boundary_tol or (axis_max - edge_um) < boundary_tol:
                     continue
-                for half_width in rings:
-                    predicates.append(
-                        lambda centroid, e=edge_um, hw=half_width, i=lateral: abs(
-                            centroid[i] - e
-                        )
-                        < hw
+                centers.append(edge_um)
+        centers = sorted(set(round(c, 6) for c in centers))
+
+        if centers:
+            for half_width in rings:
+                predicates.append(
+                    lambda centroid, cs=tuple(centers), hw=half_width, i=lateral: any(
+                        abs(centroid[i] - c) < hw for c in cs
                     )
+                )
 
         if interface_position_um is not None:
             vertical = axis_index[interface_axis]

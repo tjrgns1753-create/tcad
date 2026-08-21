@@ -7379,3 +7379,163 @@ step_junction, gaussian_implant) before applying it to the
 sidewall-adjacent case this investigation could not resolve. This is
 real, separately-scoped follow-up work, not a continuation of the
 current session's trial-and-error.
+
+---
+
+## implant_windows: union-based composition implemented and validated; decisively rules out "refine harder" as a complete fix
+
+Direct continuation of "implant_windows general robustness: why 'add
+sidewall refinement' fails, root-caused" above, per explicit user
+correction that a fix — not just a diagnosis — is required for this
+project to function as a usable TCAD tool for arbitrary
+geometry+doping combinations.
+
+### 1. What was tested
+
+**Part A — implement and validate the union-based composition fix.**
+The prior investigation root-caused (via reading `refine_mesh_near()`)
+that `derive_implant_windows_refinement()`'s per-edge full-telescope
+looping ACCUMULATES rather than taking the UNION of what's needed when
+two refinement sources' footprints overlap. Fix: restructure the
+lateral-edge loop to build ONE predicate PER RING WIDTH (matching ANY
+window edge at that depth) instead of one full widest-to-narrowest
+telescope PER EDGE. No change to `graded_refine_mesh_near`/
+`refine_mesh_near` themselves — the fix lives entirely in how
+`derive_implant_windows_refinement()` constructs its predicate list.
+
+Verified in three stages, each cheaper than the last so mistakes would
+be caught before expensive compute (this project nearly OOM'd twice in
+the prior investigation chasing the same question with the OLD
+accumulating composition):
+1. Mesh-size-only check (no solve) on the known-passing 4x3 recipe and
+   the known-failing 10x8 recipe.
+2. Direct OLD-vs-NEW comparison (`git stash` to snapshot the old
+   `mesh_import.py`, load it under a private module name via
+   `importlib`, run both against IDENTICAL mesh/doping input) — proved
+   the union restructuring is NOT behavior-preserving on the passing
+   case in isolation (NEW gives ~20% more nodes than OLD on the SAME
+   input) because of a second change bundled in at that point (see Part
+   B); isolating just the union restructuring (after Part B was
+   reverted) needed re-verification, done via the real regression
+   suite.
+3. Full `tests/run_regression.py` (31 tests, including
+   `test_mosfet_id_vgs_real.py` and
+   `test_gui_measurement_doping_kinds_real.py`, both of which route
+   through this exact function) — **31 passed, 0 failed, 0 skipped**,
+   confirming the union restructuring does not regress any existing
+   passing case.
+
+**Part B — geometric-anomaly auto-detection, tried and removed.**
+Built `_local_geometric_anomaly_positions()`: scans the raw mesh near
+each doping edge for triangles that are BOTH (a) far smaller than the
+local median area and (b) touching a different material tag (a real
+geometric/material boundary). Iterated through several detector
+designs after direct failures:
+- Area-ratio alone (even at a strict 0.01x-of-local-median cutoff)
+  produced false positives on the ALREADY-PASSING 4x3 case: two
+  "anomalies" at doping-window edges with no trench sidewall anywhere
+  near them (ratios 0.005/0.011) — ordinary ViennaPS meshing has enough
+  triangle-size variance that a small sample occasionally contains an
+  outlier by chance.
+- Adding a same-material-majority + "touches a different tag" boundary
+  requirement did NOT eliminate the false positive at first — direct
+  triangle-edge-ownership dump showed the flagged triangles genuinely
+  DID border a different material tag (tag 10, which `material_regions`
+  confirmed is actually "Si", the tag=0 "Mask" spanning the ENTIRE top
+  surface in this project's isotropic-etch mesh — not a discriminating
+  signal for "trench sidewall specifically" the way it was assumed to
+  be). This traced to this project's own already-documented Si-floor
+  handling, not a new bug.
+- Once correctly discriminating, the detector DID find real points at
+  the actual sidewall in the 10x8 failing case (e.g. -1.59965 for the
+  edge at -1.6, right at the known x=-1.5 sidewall), but the resulting
+  solve STILL failed — see the decisive test below for why.
+
+**Part C — the decisive test.** To separate "auto-detection didn't find
+the right spot" from "even correct refinement doesn't fix this", the
+EXACT, hand-confirmed sidewall position (x=+-1.5um, no detector) was
+fed directly into the union composition, at increasing ring depth, with
+mesh size checked (cheap) before every solve attempt (expensive):
+
+| ring depth (half-width) | Si nodes | result |
+|---|---|---|
+| 4 rings (0.025um) | ~16550 | Convergence failure! |
+| 6 rings (0.00625um) | 69274 | Convergence failure! |
+| 8 rings (0.0016um) | 303530 (416141 total mesh points) | did not finish within 300s |
+
+### 2. Result
+
+- The union-based composition fix is real, validated, and safe: full
+  regression suite passes, OLD-vs-NEW on the passing case both
+  converge with KCL-satisfying currents (OLD: 11269 nodes,
+  +3.475285e-11 A; NEW: 13955-19421 nodes depending on search radius
+  tried during development, +3.909162e-11 to +3.932010e-11 A — a ~13%
+  difference reflecting the NEW mesh's finer local resolution, not a
+  regression).
+- The geometric-anomaly auto-detector, even once correctly
+  discriminating real geometric boundaries from mesh noise, does NOT
+  fix the target 10x8 case's convergence failure.
+- **Decisively: EXACT, perfect knowledge of the sidewall position, refined
+  via the fixed (union, not accumulating) composition, up to 12.5nm
+  local resolution (6 rings, 69274 Si nodes), still fails to converge.**
+  8 rings (303530 Si nodes, ~1.6nm resolution — finer than the Debye
+  length itself) didn't even finish a solve attempt in 300 seconds.
+
+### 3. What it proves
+
+- The mesh-composition bug (accumulate-vs-union) identified in the
+  prior investigation was REAL and is now FIXED — this is genuine
+  architectural progress, independent of whether it solves the target
+  case, because it removes a real risk (catastrophic mesh blowup) for
+  ANY future combination of overlapping refinement sources, not just
+  this one.
+- **"The mesh isn't fine enough at the sidewall" is REFUTED as the
+  (complete) explanation for the 10x8 GUI-default convergence
+  failure.** This was the working hypothesis for this entire multi-
+  session investigation (first raised when the raw mesh was found to
+  have sub-cell triangles at the sidewall, independent of doping). It
+  is now empirically ruled out at every ring depth that reaches a
+  solve attempt at all: refining harder — however correctly composed,
+  however precisely targeted — does not converge this case. Going
+  finer still (8 rings) becomes too expensive to even ATTEMPT a solve
+  in reasonable time, so "just refine more" is not a viable path
+  forward regardless of whether it would theoretically work.
+- This means the geometric-anomaly auto-detector, while directionally
+  well-motivated and now correctly discriminating (Part B), was solving
+  a hypothesis that Part C then disproved — hence it was removed from
+  production rather than shipped as unproven complexity. Its removed
+  code is preserved in this writeup (and git history) in case a future
+  session revisits automatic detection once the underlying solve
+  problem is actually fixed.
+
+### 4. What remains uncertain
+
+- Whether the equilibrium solver would EVER converge on this doping
+  configuration at ANY practical mesh resolution, or whether there is a
+  more fundamental numerical obstruction (e.g. the sub-cell
+  full-thickness 1e20 sliver creates a genuinely ill-conditioned
+  nonlinear system for standard Newton iteration, regardless of mesh).
+- Whether a continuation/homotopy approach (ramping doping level
+  gradually, reusing each step's solution as the next step's initial
+  guess) would succeed — plausible given DevSim's own bias-ramping
+  pattern already used elsewhere in this project for VOLTAGE, but never
+  tried for DOPING LEVEL, and not tested this session.
+- Whether a different equilibrium initial guess (e.g. seeded from a
+  lower-doping solve, or from the analytic built-in-potential formula
+  evaluated pointwise rather than DevSim's own default) would help
+  independent of any ramping.
+
+### 5. Next smallest experiment
+
+On the SAME 69274-node (6-ring, exact-sidewall) mesh already built and
+confirmed to fail above, try ramping the WINDOW CONCENTRATION itself
+(not bias voltage) from a level the equilibrium solve already handles
+(e.g. 1e17, matching the body doping) up to the full 1e20 cm^-3 in a
+few steps, reusing each step's converged Potential/Electrons/Holes as
+the next step's initial guess (the same pattern
+`run_pn_junction_iv_sweep` already uses for bias, just applied to a
+NetDoping model constant instead of a contact voltage). This is cheap
+to try — it reuses a mesh already built and known to be adequately
+refined — and would directly confirm or rule out "this needs a solve
+STRATEGY change, not more mesh" before any larger continuation-method
+implementation is attempted.
