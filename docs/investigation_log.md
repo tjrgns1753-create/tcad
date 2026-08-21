@@ -7819,3 +7819,87 @@ one that ran (not merely that a solve succeeded) by counting DevSim's
 own "Replacing Node Model NetDoping" messages: 5, exactly matching the
 continuation's 5 ramp steps, where the simple path registers NetDoping
 once.
+
+### GUI "DevSim is not installed" error was misleading — RESOLVED
+
+**What was tested.** A user reported that clicking MEASURE in the GUI
+showed "DevSim is not installed. Run: python -m pip install devsim"
+even though DevSim genuinely was installed in their venv. Reproduced
+directly: `import devsim` in this project's own container raises
+`RuntimeError: Issues initializing DEVSIM.` (not `ImportError` /
+`ModuleNotFoundError`) when `DEVSIM_MATH_LIBS` is unset, in both
+`.venv` and `.venv312`.
+
+**Root cause.** DevSim's own default `DEVSIM_MATH_LIBS` search
+(`libopenblas.so:liblapack.so:libblas.so`) looks for UNVERSIONED `.so`
+names. Debian/Ubuntu's `libblas3`/`libopenblas0` packages — a common,
+often-preinstalled dependency, not something DevSim's own installer
+controls — ship only the VERSIONED `libblas.so.3` via
+`/etc/alternatives`, which resolves (confirmed directly) through that
+alternatives symlink to a real OpenBLAS build that bundles LAPACK, so
+one path is sufficient once found. `tcad/device/devsim/backend.py`'s
+own import guard was `try: import devsim / except Exception:
+devsim = None` — a bare catch that discarded the real exception, so
+`is_available()` returning `False` was indistinguishable from "package
+never installed" and every downstream caller (including the GUI) could
+only ever report the wrong fix.
+
+**What was done.**
+- `_default_devsim_math_libs()` (`backend.py`): searches
+  `/usr/lib/*-linux-gnu`, `/usr/lib64`, `/usr/lib` for `libblas.so.3`
+  or `libopenblas.so.0`, sets `DEVSIM_MATH_LIBS` to the first one found
+  — but ONLY if the caller has not already set it, and ONLY if a
+  candidate file actually exists on disk, so a system where none of
+  these paths exist behaves exactly as before (unaffected, not worse).
+- The import guard now also captures `_import_error: Exception | None`
+  instead of discarding it.
+- `require_devsim()` now raises a message that distinguishes
+  "installed but failed to import" (shows the real underlying
+  exception, names BLAS/LAPACK, says reinstalling won't help) from
+  "genuinely not installed" (the original pip-install instructions) —
+  the two states are otherwise indistinguishable from `is_available()`
+  alone.
+- `tcad_2d_stagewise.py`'s `run_measurement()` now shows
+  `require_devsim()`'s real message via a try/except instead of a
+  hardcoded "not installed" string.
+
+**Result.**
+- Full regression suite re-run in a genuinely clean environment
+  (`env -u DEVSIM_MATH_LIBS -u KMP_DUPLICATE_LIB_OK`, i.e. no manually
+  preset BLAS path from prior session setup): 33 passed, 0 failed,
+  0 skipped — the auto-detection alone is sufficient, no other
+  environment setup needed.
+- Forced-negative unit test (`DEVSIM_MATH_LIBS` pointed at a path that
+  does not exist, so devsim's own import genuinely fails): the error
+  message correctly reads "installed but failed to import" and names
+  BLAS/LAPACK, and does NOT contain "not installed".
+- Live headless GUI run (same clean env, real Xvfb, real click
+  sequence PR coat -> mask alignment -> exposure -> develop -> Isotropic
+  etch -> Step Junction doping -> MEASURE): log shows
+  `Loading "/usr/lib/x86_64-linux-gnu/libblas.so.3": ALL BLAS/LAPACK
+  LOADED`, a real DevSim drift-diffusion solve converging, and the
+  MEASURE dialog reporting `Voltage source (Si_xmax): +0.3000 V,
+  I = 6.073582e-12 A` / `Multimeter (Si_xmin): 0.0000 V,
+  I = -6.107338e-12 A` — equal and opposite, no error dialog anywhere
+  in the run.
+
+**What it proves.** The GUI's DevSim path now works out of the box on
+a Debian/Ubuntu system with only the standard `libblas3`/`libopenblas0`
+packages installed (no manual `DEVSIM_MATH_LIBS` export needed by the
+user), and if it ever DOES fail again for some other environment
+reason, the error message will name the real cause instead of sending
+an already-correctly-installed user to `pip install` a package they
+already have.
+
+**What remains uncertain.** The auto-detection only searches for
+`libblas.so.3`/`libopenblas.so.0` specifically (the two names confirmed
+present on this project's own containers across sessions — see the
+existing BLAS/LAPACK entries earlier in this file for the Windows/MKL
+and other-Linux-distro variants of this same class of issue, which use
+different library names and are NOT covered by this auto-detection).
+A system whose BLAS/LAPACK ships under a different versioned name would
+still fall through to DevSim's own original error, now at least
+correctly labeled as an import failure rather than "not installed".
+
+**Next smallest experiment.** None planned — this was a direct bug
+report with a clean root cause and fix; no open thread remains.

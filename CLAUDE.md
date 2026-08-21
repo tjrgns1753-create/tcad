@@ -236,6 +236,20 @@ Current regression: `tests/run_regression.py` → **33 passed, 0 failed,
   the same current as the old path to 5.7e-08 relative. `pn_junction_
   iv_sweep.py` deliberately untouched. Pinned by
   `tests/integration/test_robust_iv_sweep_real.py`.
+- **GUI's "DevSim is not installed" error was misleading — fixed.** A
+  bare `except Exception: devsim = None` in `backend.py` discarded the
+  real import error, so a genuinely-installed DevSim that failed to
+  import (missing unversioned BLAS `.so` symlink — Debian/Ubuntu ships
+  only the versioned `libblas.so.3`) reported the same message as
+  "never installed". Fixed with `_default_devsim_math_libs()`
+  auto-detection (searches for `libblas.so.3`/`libopenblas.so.0`, only
+  acts when `DEVSIM_MATH_LIBS` isn't already set and a candidate
+  exists) plus an error message that distinguishes the two cases.
+  Verified: 33/33 regression in a clean env, a forced-broken-BLAS unit
+  test confirming the correct message, and a live headless GUI MEASURE
+  click producing a real converged solve with no error dialog. Search
+  `docs/investigation_log.md` for "DevSim is not installed" error was
+  misleading" for the full writeup.
 
 ## OPEN issues (active — read before starting new work)
 
