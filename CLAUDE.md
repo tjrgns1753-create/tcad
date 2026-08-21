@@ -282,6 +282,30 @@ Current regression: `tests/run_regression.py` → **33 passed, 0 failed,
   33-test regression suite. Search `docs/investigation_log.md` for
   "order-free single-step runs, deposition chaining, deposition
   material selection, p/n doping color" for the full writeup.
+- **PN diode I-V verified end to end (V_th = 0.720 V, ideality factor
+  1.01) — and two CALLER-SIDE traps found doing it.** A textbook
+  process flow (oxidation → lithography → doping → metallization →
+  lithography) through `run_flow` + `run_pn_junction_iv_sweep` first
+  produced a curve with NO diode knee. Neither cause was in library
+  code. **(1) Wafer vs. domain coordinates:** deriving the junction
+  position from a litho mask window's center in WAFER coords (0..width)
+  puts it in the wrong place — the domain is CENTERED (a 4.0um
+  `x_extent_um` meshes as x = -2.1..+2.1), so `0.5*(1.5+2.5)` = 2.0
+  landed 0.1um from the edge, making a 98%-one-type slab that still
+  solved, still conserved charge, and still drew a smooth monotonic
+  curve. Subtract `0.5*x_extent_um`, or derive it from the mesh the way
+  `test_phase8_pn_junction_real.py` does. **(2) Bias polarity:**
+  `apply_step_junction_doping` puts donors where axis > junction, so
+  `Si_xmax` is the n-side and sweeping IT positive REVERSE-biases the
+  diode; forward bias drives the p-side (`Si_xmin`). Once both were
+  fixed the same device gave 10 decades of exponential forward current,
+  flat 3.7e-11 A reverse saturation, and the classic n≈1.9 →
+  n≈1.01 → n>1.1 (recombination → diffusion → high-injection)
+  progression. **Carries an open flag:** `test_phase8_pn_junction_real.py`
+  uses the same inverted labels and its branch assertions pass either
+  way, so it would not catch a polarity inversion — left unchanged,
+  see the log entry. Search `docs/investigation_log.md` for "PN diode
+  I-V looked broken".
 
 ## OPEN issues (active — read before starting new work)
 

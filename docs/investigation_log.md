@@ -8086,3 +8086,112 @@ items with `fill="#2f6fed"`/`"#e0393e"` before (0 of each) and after
 
 **Next smallest experiment.** None planned — direct bug reports/feature
 requests with clear root causes, fixed and verified this session.
+
+### PN diode I-V looked broken (no 0.7V knee) — TWO CALLER-SIDE BUGS, simulator was correct
+
+**What was tested.** Built a PN diode through the user's specified
+textbook process order (oxidation → lithography → doping →
+metallization → lithography) using `run_flow`, then swept bias with
+`run_pn_junction_iv_sweep`. The first curve showed no diode knee:
+forward current rose to ~7e-11 A by 0.6V then went FLAT through 0.9V,
+despite the analytic built-in potential being V_bi = 0.954V. Extending
+the sweep from 0.6V to 0.9V did not produce a knee either.
+
+**Result — two independent bugs, both in the calling script, neither in
+ViennaPS/DevSim/this project's library code.**
+
+**Bug 1: wafer coordinates vs. domain coordinates for the junction
+position.** The script derived `junction_position_um` as the litho mask
+window's center in WAFER coordinates: `0.5*(mask_left_um +
+mask_right_um)` = `0.5*(1.5+2.5)` = 2.0. But the ViennaPS domain — and
+therefore every DevSim node coordinate that `apply_doping()`'s
+`step()` equations compare `junction_position_um` against — is
+CENTERED. Measured directly with a cheap no-solve probe: a 4.0um
+`x_extent_um` produces a mesh spanning **x = -2.100 .. +2.100**.
+So the junction landed **0.1um from the right edge** of a 4.2um-wide
+device: ~98% acceptor bulk with a sub-micron donor sliver jammed
+against the `Si_xmax` contact. That is not a diode, and it explains the
+flat, tiny current.
+
+Correct conversion (now in the script, explicit):
+`junction_position_um = 0.5*(mask_left_um + mask_right_um) - 0.5*x_extent_um`
+→ 0.0, which is the mesh center. This matches what
+`test_phase8_pn_junction_real.py` and
+`test_auto_refine_from_doping_real.py` already do the robust way
+(`0.5 * (min(x_native) + max(x_native))` from a probe import) — those
+tests never hit this because they never derive the position from
+mask/wafer coordinates at all.
+
+**Why it was hard to see:** the wrong geometry still SOLVED cleanly at
+every bias point (DevSim's own RelError/AbsError criteria satisfied),
+still conserved charge (equal-and-opposite terminal currents), and
+still produced a smooth monotonic curve. Same failure signature class
+as the documented "MOSFET drain current was wrong by 3.8e7x" entry: a
+real-looking device with a plausible-looking curve and no warning.
+A guard now runs before the solve — a bare probe import (no solve,
+deleted immediately) that counts nodes each side of the junction and
+asserts the smaller side is >15% of the region.
+
+**Bug 2: inverted bias polarity.** `apply_step_junction_doping` puts
+DONORS where the axis coordinate is GREATER than
+`junction_position_um`, so **`Si_xmax` is the n-side**. The script
+swept `n_contact` positive with the p-side grounded — which
+**reverse**-biases the diode. The first curve was therefore a correct
+REVERSE characteristic mislabeled as forward.
+
+Forward bias is V_p − V_n > 0, so the sweep must drive the **p**-side
+contact (`Si_xmin`). After flipping it, the same device produces a
+textbook curve:
+
+| quantity | measured |
+|---|---|
+| threshold @ 1 mA | **0.720 V** |
+| reverse saturation current | 3.74e-11 A, flat from −0.2 to −0.5 V |
+| forward current at +0.9 V | 0.739 A |
+| rectification ratio @ ±0.7 V | 1.2e7 |
+| current at V=0 | 1.5e-27 A |
+
+Ideality factor `n`, extracted between adjacent forward points
+(`n = ΔV / (V_t · ln(I₂/I₁))`), independently confirms real diode
+physics that nothing in the setup asked for — the classic three
+regimes in order:
+
+| bias range | n | regime |
+|---|---|---|
+| 0.10–0.40 V | 1.87–1.97 | recombination-dominated (Sah-Noyce-Shockley) |
+| 0.65–0.84 V | 1.01–1.06 | ideal diffusion (Shockley) |
+| 0.86–0.90 V | 1.11–1.21 | high-level injection |
+
+**What it proves.** The process→mesh→DevSim pipeline produces
+quantitatively correct diode physics end to end. Both defects were in
+how the caller set up the problem; no library code needed changing.
+The n≈2 → n≈1 → n>1 progression is strong independent evidence, since
+it is an emergent property of the drift-diffusion solve rather than
+anything the recipe specifies.
+
+**What remains uncertain — a real gap in a SHIPPED test.**
+`tests/integration/test_phase8_pn_junction_real.py` has the identical
+polarity convention (`sweep_contact=n_contact`, positive voltages
+called "forward", negative called "reverse"), and its assertions pass
+either way, so it would NOT catch a polarity inversion:
+- the "forward current increases with bias" assertion is applied to
+  what is physically the REVERSE branch — where leakage magnitude does
+  grow with bias, so it passes;
+- the "reverse current ≤ 1e-12" assertion is applied to what is
+  physically the FORWARD branch — where the current at the n-contact is
+  large and NEGATIVE, so `-1.2e-8 <= 1e-12` passes vacuously.
+
+The test asserts nothing false and its built-in-potential check is
+sound, but its forward/reverse labels are inverted relative to physical
+convention and neither branch assertion is load-bearing. Deliberately
+NOT changed here (CLAUDE.md: preserve existing regression tests) —
+flagged for a decision. Strengthening it would mean asserting an
+actual exponential rise (e.g. ≥3 decades of current over the forward
+sweep) and a flat reverse saturation, which this session has now
+measured concrete values for.
+
+**Next smallest experiment.** If the Phase 8 test is to be
+strengthened: assert `n` extracted from its own forward branch lands
+in 1.0–2.0, which fails immediately under a polarity inversion (the
+reverse branch gives no clean exponential at all) and needs no new
+machinery.
