@@ -82,7 +82,7 @@ MOS C-V, oxidation → etch → doping → DevSim).
 
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
-Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
+Current regression: `tests/run_regression.py` → **32 passed, 0 failed,
 0 skipped**.
 
 - **Si floor / mesh export**: raw ViennaPS `saveVolumeMesh()` clips a
@@ -216,14 +216,26 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
   each step's converged solution as the next step's initial guess —
   the same mechanism already used for BIAS ramping, applied to doping
   instead) fully and reproducibly solves the EQUILIBRIUM failure.**
-  Extending the same idea to drift-diffusion transport (enable it at
-  low doping, then ramp doping up with transport already active) works
-  PARTIALLY — converges up to ~6.6e18 cm^-3 with a fine enough step
-  schedule, but hits a real wall short of the 1e20 target regardless of
-  how finely stepped (28 vs 51 steps both topped out at 6.62e18) — a
-  different, still-open sub-problem from the equilibrium one, which
-  doping continuation solved outright rather than just improved. Full
-  writeup below (OPEN item 2) and in `docs/investigation_log.md`.
+  Full writeup below (OPEN item 2) and in `docs/investigation_log.md`.
+- **Heavily-doped 2-terminal solves fixed and shipped:
+  `tcad/characterization/robust_iv_sweep.py`.** 1e20 cm^-3 is the real
+  production source/drain level (substrate 1e14-1e17, well/channel
+  1e16-1e18, S/D 1e19-1e21), so it has to work. Three pieces, each
+  separately measured, none of them a tolerance fudge: doping-level
+  continuation for equilibrium (via `apply_doping`'s new additive
+  `window_scale`); DevSim's OWN official `gmsh_mos2d.py` transport
+  tolerances (`absolute_error=1e30`, `relative_error=1e-5`) instead of
+  `pn_junction_iv_sweep.py`'s `absolute_error=1e10` — already validated
+  inside this project by the passing MOSFET Id-Vgs test at the same
+  1e20 doping, and blocking because **DevSim requires BOTH its absolute
+  and relative criteria** (a logged solve with RelError 9.08e-06
+  against a 1e-5 tolerance kept iterating solely because AbsError
+  2.86e10 > 1e10); and a bias ramp that RESTORES the node solutions on
+  a failed step, which DevSim's own `rampbias` does not do. Verified
+  not to change answers: on the known-passing 4x3um recipe it returns
+  the same current as the old path to 5.7e-08 relative. `pn_junction_
+  iv_sweep.py` deliberately untouched. Pinned by
+  `tests/integration/test_robust_iv_sweep_real.py`.
 
 ## OPEN issues (active — read before starting new work)
 
@@ -469,15 +481,79 @@ Current regression: `tests/run_regression.py` → **31 passed, 0 failed,
    ramp step, not just the final target — use smaller STEPS instead of
    looser precision to control cost.
 
-   Next smallest experiment: investigate why drift-diffusion
-   specifically (not Poisson) hits a wall in the 7e18-1e19 cm^-3 range
-   regardless of step fineness — e.g. inspect the Jacobian condition
-   number or individual equation residuals at the failing step to see
-   whether ONE of ElectronContinuityEquation/HoleContinuityEquation/
-   PotentialEquation is the actual bottleneck; or try ramping mobility-
-   related parameters alongside doping; or try a genuinely different
-   linear solver (`solver_type="iterative"` vs the implicit default) at
-   just the failing step.
+   **RESOLVED, and shipped — the drift-diffusion half was a TOLERANCE
+   problem, not a doping-ramp problem.** The DD wall above disappears
+   entirely once the transport solve uses DevSim's OWN official
+   `gmsh_mos2d.py` tolerances (`absolute_error=1e30`,
+   `relative_error=1e-5`) instead of `pn_junction_iv_sweep.py`'s
+   `absolute_error=1e10`. That is not a new guess: this project's own
+   PASSING MOSFET Id-Vgs test already uses those values at the same
+   1e20 doping, and `mosfet_sweep.py`'s own docstring already records
+   that 1e10 "plateaus at a residual oscillation around 2-6e-5 rather
+   than settling, even at 100+ iterations" — the exact symptom logged
+   here. **Why 1e10 blocks it: DevSim requires BOTH its absolute and
+   relative criteria** (confirmed directly from this project's solver
+   logs — a solve reporting RelError 9.08e-06 against a 1e-5 tolerance
+   kept iterating because AbsError 2.86e10 exceeded 1e10), and an
+   absolute tolerance of 1e10 is simply unreachable once carrier
+   densities are ~1e20. With continuation for equilibrium + those
+   tolerances for transport, the GUI-default 10x8um wafer now reaches a
+   VERIFIED-PHYSICAL V=0 drift-diffusion state: terminal currents
+   ~1e-28 A, Electrons 1e3..9.99e19, Holes 1.001..1e17 (exactly the
+   analytic n_i^2/N values), no NaN.
+
+   All three pieces are now in production as
+   `tcad/characterization/robust_iv_sweep.py`
+   (`run_robust_pn_junction_iv_sweep`), with
+   `pn_junction_iv_sweep.py` deliberately left untouched:
+   (1) doping-level continuation for equilibrium (via `apply_doping`'s
+   new, additive `window_scale`), (2) DevSim's own DD tolerances,
+   (3) a bias ramp that RESTORES the node solutions on a failed step —
+   DevSim's own `rampbias` restores only the bias parameter, so a
+   diverged attempt otherwise leaves the device corrupted and every
+   subsequent halved step starts from there.
+
+   **What still fails, precisely characterized.** The failure needs BOTH
+   conditions, and neither alone is enough:
+   (a) an implant-window edge within about half a grid cell of an
+   ETCHED SIDEWALL (the sub-cell full-thickness strip), and
+   (b) window doping at 1e20 cm^-3.
+   Controlled proof, identical geometry / identical 12049-node mesh /
+   identical solve strategy, varying ONLY the concentration:
+   1e18 -> converges (+7.414179e-11 A), 1e19 -> converges
+   (+7.341554e-11 A), 1e20 -> fails. And varying only the window
+   POSITION at a fixed 1e20: windows clear of the sidewall converge
+   (measured here at a 0.6um contact gap, and already documented above
+   at 3.8um and 2.0um gaps), so it is the sidewall crossing, not the
+   distance to the contacts (a floating-region explanation was proposed
+   and REFUTED by exactly that comparison).
+
+   The residual failure mode is Newton DIVERGENCE, not a stall: at a
+   1e-06 V bias step the solve starts close (rel ~8.6e-05 against a
+   1e-05 target), improves for two iterations, then blows up to
+   DevSim's clamped 9.99e+02 / 3.00e+03 relative errors. Ring depth
+   shifts it but does not cure it — 4 rings stall at 4e-06 V, 5 rings
+   (23711 nodes) crawl to ~6e-04 V in ~34 attempts with an effective
+   max step of ~3e-05 V, far too slow to reach 0.3 V.
+
+   Ruled out by direct measurement this session, so a future session
+   need not re-test them: mesh RESOLUTION (4/5/6/8 rings, with and
+   without exact sidewall targeting); mesh QUALITY (DevSim's own
+   EdgeCouple has ZERO negative entries and the edge-length ratio is
+   3.050e3 on the failing mesh vs 3.048e3 on the passing one —
+   indistinguishable); solution-state corruption during ramping (a
+   ramp with explicit save/restore fails identically); and
+   `variable_update="log_damp"` on the continuity equations (DevSim
+   already uses `"positive"`; log_damp made the V=0 state measurably
+   WORSE — terminal currents 1e-14 and same-signed, i.e. KCL-violating,
+   versus 1e-28 and opposite without it).
+
+   Next smallest experiment: since the failure is Newton divergence
+   from a near-converged state, try a damped/limited update — e.g.
+   solve the failing step with a much smaller `maximum_iterations` and
+   repeated re-entry (crude damping), or examine which NODES carry the
+   diverging update (`get_node_model_values` on the update between
+   iterations) to see whether it is localized to the sliver or global.
 
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):

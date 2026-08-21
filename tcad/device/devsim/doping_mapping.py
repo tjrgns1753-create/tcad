@@ -68,7 +68,12 @@ from tcad.device.devsim import backend
 from tcad.mesh.interface import DopingProfile
 
 
-def apply_doping(device: str, doping: DopingProfile, length_scale_to_cm: float = 1.0) -> None:
+def apply_doping(
+    device: str,
+    doping: DopingProfile,
+    length_scale_to_cm: float = 1.0,
+    window_scale: float = 1.0,
+) -> None:
     """Register NetDoping (and, for step junctions, Donors/Acceptors)
     node models for every region named in `doping`.
 
@@ -81,9 +86,23 @@ def apply_doping(device: str, doping: DopingProfile, length_scale_to_cm: float =
         "uniform" doping, which has no position dependence. Default 1.0
         matches the default (and every Phase 7 caller's) import scale.
 
-    "uniform", "step_junction", and "gaussian_implant" are implemented;
-    any other DopingProfile.kind raises, so a future profile type can't
-    be silently mishandled here.
+    window_scale : multiplies every implant WINDOW's concentration (not
+        the background), for "implant_windows" only. Default 1.0 leaves
+        every existing caller byte-identical. Its purpose is
+        doping-level CONTINUATION: re-registering NetDoping at a
+        sequence of increasing scales, re-solving at each, lets the
+        equilibrium solve reach a heavily-doped target it cannot reach
+        in one step — see
+        tcad.characterization.robust_iv_sweep.ramp_doping_to_equilibrium,
+        which is the only intended caller. Real-execution-verified: the
+        GUI's own default 10x8um implant_windows device fails outright
+        ("Convergence failure!", RelError rising) when NetDoping is set
+        to its full 1e20 cm^-3 in one step, and converges reliably when
+        ramped 1e17 -> 1e20 in five steps on the identical mesh.
+
+    "uniform", "step_junction", "gaussian_implant", and
+    "implant_windows" are implemented; any other DopingProfile.kind
+    raises, so a future profile type can't be silently mishandled here.
     """
     module = backend.require_devsim()
 
@@ -132,7 +151,7 @@ def apply_doping(device: str, doping: DopingProfile, length_scale_to_cm: float =
                 lo_native = window["min_um"] * length_scale_to_cm
                 hi_native = window["max_um"] * length_scale_to_cm
                 terms.append(
-                    f"{window['conc_cm3']}*step({axis}-({lo_native}))"
+                    f"{window['conc_cm3'] * window_scale}*step({axis}-({lo_native}))"
                     f"*step(({hi_native})-{axis})"
                 )
             module.node_model(

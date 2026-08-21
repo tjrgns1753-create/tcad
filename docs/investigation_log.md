@@ -7672,3 +7672,126 @@ would point directly at whether the issue is mobility/velocity
 saturation modeling, a scaling issue in one carrier's continuity
 equation, or something in the Poisson coupling, rather than continuing
 to guess at ramp schedules.
+
+---
+
+## implant_windows at 1e20: solved for the general case, characterized exactly for the one that remains
+
+Continuation of the two entries above, driven by the user's point that
+1e20 cm^-3 is the real source/drain doping of current production
+processes (it is: substrate 1e14-1e17, well/channel 1e16-1e18, S/D
+1e19-1e21, gate poly >1e20), so a TCAD tool that cannot reach it is not
+usable for real work.
+
+### 1. What was tested
+
+Started from a fact the earlier sessions had not connected: this
+project's OWN passing `test_mosfet_id_vgs_real.py` already converges
+drift-diffusion at 1e20 cm^-3 source/drain. So 1e20 was never the
+blocker in general — only in the 2-terminal path. Reading
+`mosfet_sweep.py` showed the MOSFET path differs from
+`pn_junction_iv_sweep.py` in exactly two ways: DevSim's own official
+`gmsh_mos2d.py` tolerances (`absolute_error=1e30`,
+`relative_error=1e-5`) instead of `absolute_error=1e10`, and
+`rampbias()` instead of a single bias jump.
+
+Combined that with the doping-level continuation validated in the
+previous entry, and tested on the PRODUCTION path
+(`refine_process_result_for_implant_windows`, the function the GUI
+actually calls), plus a series of controlled experiments to attribute
+the remaining failure.
+
+### 2. Result
+
+**Solved and shipped.** With (1) doping-level continuation for the
+equilibrium solve, (2) DevSim's own DD tolerances for the transport
+solve, and (3) a bias ramp that restores the node solutions on a failed
+step, the GUI-default 10x8um wafer now reaches a verified-physical V=0
+drift-diffusion state — terminal currents ~1e-28 A, Electrons
+1e3..9.99e19, Holes 1.001..1e17 (exactly the analytic n_i^2/N values),
+no NaN — where before it failed outright in the EQUILIBRIUM solve.
+
+**Answers unchanged where the old path worked.** On the project's own
+known-passing 4x3um recipe: old path +3.475285e-11 A, new path
++3.475281e-11 A — agreement to 5.7e-08 relative, with equal-and-
+opposite terminal currents. Now pinned by
+`tests/integration/test_robust_iv_sweep_real.py`.
+
+**The remaining failure, characterized exactly.** It requires BOTH:
+(a) an implant-window edge within ~half a grid cell of an etched
+sidewall, and (b) 1e20 cm^-3 windows. Controlled sweep — identical
+geometry, identical 12049-node mesh, identical strategy, varying ONLY
+concentration:
+
+| window concentration | result |
+|---|---|
+| 1e18 | converges, +7.414179e-11 A |
+| 1e19 | converges, +7.341554e-11 A |
+| 1e20 | fails in the bias ramp |
+
+and varying only window POSITION at a fixed 1e20, windows clear of the
+sidewall converge (0.6um contact gap measured here; 3.8um and 2.0um
+gaps already documented) — so the sidewall crossing is the trigger, not
+proximity to the contacts.
+
+**Failure mode is Newton DIVERGENCE, not a stall.** At a 1e-06 V step
+the solve starts close (rel ~8.6e-05 vs a 1e-05 target), improves for
+two iterations, then blows up to DevSim's clamped 9.99e+02 / 3.00e+03
+relative errors. Ring depth shifts but does not cure it: 4 rings stall
+at 4e-06 V, 5 rings (23711 nodes) crawl to ~6e-04 V over ~34 attempts
+with an effective max step of ~3e-05 V.
+
+### 3. What it proves
+
+- 1e20 cm^-3 — the real production S/D level — is NOT beyond this
+  project. It works on the MOSFET, it works on the 4x3 2-terminal
+  device, and after this change the 10x8 geometry works at 1e18/1e19
+  and reaches a correct equilibrium DD state at 1e20.
+- The 2-terminal path's `absolute_error=1e10` was a real, general
+  defect for heavily-doped devices, not a property of any one geometry:
+  DevSim requires BOTH its absolute and relative criteria (confirmed
+  from this project's own logs — RelError 9.08e-06 against a 1e-5
+  tolerance still iterating because AbsError 2.86e10 > 1e10), and 1e10
+  is unreachable once carrier densities are ~1e20.
+- Doping-level continuation is a genuine, reusable technique for this
+  project, not a one-off: it converts an equilibrium solve that fails
+  outright into one that converges reproducibly, on the identical mesh.
+- The one remaining failure is a narrow, precisely-bounded geometric
+  pathology, not a general inability to handle realistic doping.
+
+### 4. What remains uncertain
+
+- Why the sliver + 1e20 combination diverges from a near-converged
+  state. Not explained at the node level (which nodes carry the
+  diverging update was not measured).
+- Whether a damped/limited Newton update would cure it. DevSim's
+  `variable_update="log_damp"` was tried and made things worse (see
+  below); a hand-rolled damping was not attempted.
+- Whether other geometry classes can produce the same pathology at
+  1e20 by a different route than an etched sidewall.
+
+Ruled out by direct measurement, so a future session need not repeat
+them: mesh RESOLUTION (4/5/6/8 rings, with and without exact sidewall
+targeting); mesh QUALITY (DevSim's own EdgeCouple has ZERO negative
+entries on the failing mesh, and its edge-length ratio 3.050e3 is
+indistinguishable from the passing mesh's 3.048e3 — the hypothesis that
+red-green refinement preserves bad aspect ratios was plausible but is
+simply not what is happening); solution-state corruption during bias
+ramping (a ramp with explicit save/restore fails identically);
+`variable_update="log_damp"` (DevSim already uses `"positive"`;
+log_damp degraded the V=0 state to same-signed 1e-14 terminal currents,
+i.e. KCL-violating, versus 1e-28 and opposite without it); and a
+floating-region/contact-coupling explanation (refuted by the
+window-position comparison above).
+
+### 5. Next smallest experiment
+
+The failure is divergence from a near-converged state, so the useful
+next probe is WHERE the diverging update lives: read
+`get_node_model_values` for Electrons/Holes/Potential between two
+successive iterations of the failing step and locate the nodes carrying
+the largest update. If they sit inside the sub-cell sliver, a targeted
+local damping (or simply refusing to build such a mesh and warning the
+user) is justified; if the update is global, the problem is the
+structure's conditioning as a whole and a different formulation
+(e.g. quasi-Fermi variables) is the real answer.
