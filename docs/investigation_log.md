@@ -8195,3 +8195,61 @@ strengthened: assert `n` extracted from its own forward branch lands
 in 1.0–2.0, which fails immediately under a polarity inversion (the
 reverse branch gives no clean exponential at all) and needs no new
 machinery.
+
+### CORRECTION: the earlier "Vth ≈ 1.77V" figure used a stale oxide thickness — real Vth is ~4.35-4.58V for this device
+
+A real-TCAD-workflow audit of the whole project (physical correctness,
+not just "tests pass") flagged the MOS gate-stack C-V test's own
+accumulation capacitance as only ~25% of its computed "ideal C_ox" —
+looking like a real physics/mesh-resolution problem (the same category
+as the already-documented 3.8e7x MOSFET inversion-layer bug). Measured
+directly, it was NOT that: `session.make_gate_stack()` floors
+`gate_oxide_thickness_um` at `1.5*grid_delta_um` for export safety
+(documented in its own docstring since it was added), and at
+`grid_delta_um=0.05`/`gate_oxide_thickness_um=0.02` — the combination
+BOTH `test_mosfet_gate_stack_cv_real.py` AND every MOSFET Id-Vgs test
+in this project use, including the "Vth ≈ 1.77V" section above — that
+floor SILENTLY builds a 0.075um oxide, 3.75x thicker than the 0.02um
+the section above's Vth formula assumed.
+
+Recomputed with the ACTUAL built thickness (now returned directly by
+`GateStack.run()` as `actual_gate_oxide_thickness_um`, so a caller
+never has to guess whether the floor fired): Cox is ~3.75x smaller, and
+the same long-channel formula (`Vth = 2*phi_F + Qdep_max/Cox`, same
+`Na=1e17`, same real DevSim constants) gives **Vth ≈ 4.35V**, not
+1.77V. This was then cross-checked against a real extraction (not
+another analytical estimate) — `tcad.characterization.vth_extraction`
+(new, closes the "Vth/subthreshold slope are future work" item this
+file names elsewhere), a standard linear-extrapolation fit run on this
+exact device's real simulated Id-Vgs curve
+(`tests/integration/test_mosfet_vth_extraction_real.py`) — and the two
+agree closely: **extracted Vth = 4.579V vs. the corrected analytic
+4.354V, a 5% difference**, on a real 8-point sweep (0-8V) whose raw
+Id values (2.22e-12 -> 4.35e-12 -> 5.42e-09 -> 1.65e-06 -> ... ->
+5.68e-05 A) themselves make far more physical sense against a ~4.35V
+threshold than a 1.77V one: at Vgs=4V the device is barely turning on
+(1.65e-6A), not already in deep strong inversion as the old 1.77V
+figure implied.
+
+**What this means for everything ABOVE this note in this file:** every
+place that reasoned from "Vgs=8V is ~6.2V of overdrive, deep strong
+inversion" (the "MOSFET Id-Vgs magnitude gap" section) used the wrong
+Vth or (further above) computed Cox from the same wrong thickness. The
+underlying MEASUREMENTS (the real simulated Id/currents/densities
+themselves) are NOT affected — the DEVICE that was actually built and
+solved always had the real 0.075um oxide; only the NUMBER quoted in the
+prose as its threshold voltage was wrong. Per this project's own
+convention (see the PN-diode polarity-inversion note a few sections
+above for the same kind of decision), the original text above is left
+UNEDITED as the record of what was believed at the time; this addendum
+is the correction. `test_mosfet_gate_stack_cv_real.py` and
+`test_mosfet_id_vgs_real.py`'s own docstrings/assertions did not
+depend on the 1.77V figure being right (neither hard-codes it), so
+this does not itself indicate a shipped test regression — see
+`test_mosfet_gate_stack_cv_real.py`'s own "AUDIT FINDING" docstring
+section for the C_ox side of this same fix.
+
+**Next smallest experiment:** none needed — root-caused, fixed at the
+source (`GateStack.run()` now exposes the actual dimensions), and
+cross-validated by an independent real extraction, not just a second
+analytical guess.

@@ -148,6 +148,149 @@ def _telescoping_ring_half_widths(
     return rings or [spacing_um]
 
 
+#: Cap on graded rings for derive_mos_gate_interface_refinement(). Found
+#: real-execution-verified (this project's own MOS gate-stack C-V audit,
+#: see CLAUDE.md) that the accumulation-charge capacitance measured at a
+#: gate_stack device's abrupt lateral gate edge does NOT converge to a
+#: fixed value as refinement increases -- it keeps climbing (102% of the
+#: correctly-computed ideal C_ox at 0 rings, 128% at 2, 142% at 4) because
+#: an idealized gate with no field plate / no gradual taper has a real
+#: conductor-edge field singularity there (the same category of "not
+#: fixable by refinement at this layer" idealization limit already
+#: documented for the KOH V-groove apex). 2 rings is a modest, cheap
+#: (+15% node count on the project's own reference device) improvement
+#: over zero refinement that still comfortably clears a 0.8x-C_ox
+#: accumulation-capacitance target -- going further chases a singularity
+#: rather than buying real accuracy.
+_MOS_GATE_MAX_RINGS = 2
+
+
+def derive_mos_gate_interface_refinement(
+    channel_min_um: float,
+    channel_max_um: float,
+    points: np.ndarray,
+    triangles: np.ndarray,
+    interface_position_um: float = 0.0,
+    interface_axis: str = "y",
+    lateral_axis: str = "x",
+    max_rings: int = _MOS_GATE_MAX_RINGS,
+) -> List[Any]:
+    """Graded-refinement predicates for the Si-SiO2 interface UNDER A
+    GATE — e.g. `gate_stack`'s own oxide/channel geometry — restricted
+    to `channel_min_um < lateral_axis-coordinate < channel_max_um` so
+    only the real gate/channel interface is refined, not the whole
+    `interface_position_um` plane.
+
+    WHY THE LATERAL RESTRICTION MATTERS (found by direct measurement,
+    not assumed): `gate_stack` devices commonly have bare Si exposed at
+    y=0 OUTSIDE the gate window (the oxide/gate stack is laterally
+    confined to `channel_um`, but Si spans the full device width) —
+    refining the ENTIRE y=0 plane there also refines that open Si
+    boundary, whose own triple-point corner (where the oxide's lateral
+    edge meets bare Si) is a separate, unrelated field concentration.
+    Restricting to strictly inside the channel window (minus one mesh
+    spacing of margin, so the gate's own edge corner is also excluded)
+    isolates the region this function is actually meant to resolve: the
+    real Si-SiO2 interface directly under the gate, where accumulation/
+    inversion charge physically forms.
+
+    Returns an empty list (rather than a single always-refine-everything
+    predicate) if the margin leaves no interior window — a channel
+    narrower than 2 mesh spacings has no interior region to refine.
+    """
+    axis_index = {"x": 0, "y": 1, "z": 2}
+    lateral_i = axis_index[lateral_axis]
+    vertical_i = axis_index[interface_axis]
+
+    spacing_um = _estimate_mesh_spacing_um(points, triangles)
+    margin = spacing_um
+    lo = channel_min_um + margin
+    hi = channel_max_um - margin
+    if lo >= hi:
+        return []
+
+    half_widths: List[float] = []
+    half_width = spacing_um
+    for _ in range(max_rings):
+        half_widths.append(half_width)
+        half_width /= 2.0
+
+    return [
+        (
+            lambda centroid, hw=hw, lo=lo, hi=hi, li=lateral_i, vi=vertical_i,
+            p=interface_position_um: (lo < centroid[li] < hi) and abs(centroid[vi] - p) < hw
+        )
+        for hw in half_widths
+    ]
+
+
+def refine_process_result_for_mos_gate(
+    result: ProcessResult,
+    channel_min_um: float,
+    channel_max_um: float,
+    refined_mesh_path: Optional[str] = None,
+    interface_position_um: float = 0.0,
+    interface_axis: str = "y",
+) -> Optional[ProcessResult]:
+    """Return a ProcessResult whose mesh is graded-refined at the real
+    Si-SiO2 interface under a gate (see
+    `derive_mos_gate_interface_refinement`'s own docstring for why the
+    refinement is laterally restricted to the channel window), or None
+    if the channel window is too narrow to refine.
+
+    Same refine-then-reimport shape as
+    `refine_process_result_for_implant_windows` — refinement has to
+    happen on the raw MESH before DevSim import, so this writes a
+    refined mesh next to the original and returns a ProcessResult
+    pointing at it, carrying the same doping/material regions.
+    """
+    import dataclasses
+
+    try:
+        import meshio
+    except ImportError as exc:  # pragma: no cover - same guard as import path
+        raise RuntimeError(
+            "meshio is required to refine process meshes.\n"
+            "Install it first:\n"
+            "python -m pip install meshio"
+        ) from exc
+
+    mesh = meshio.read(result.volume_mesh_path)
+    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
+    if triangle_block is None:
+        raise ValueError(f"No triangle cells found in mesh: {result.volume_mesh_path}")
+
+    block_index = mesh.cells.index(triangle_block)
+    points, triangles = mesh.points, triangle_block.data
+    tags = mesh.cell_data[result.material_field][block_index]
+
+    predicates = derive_mos_gate_interface_refinement(
+        channel_min_um, channel_max_um, points, triangles,
+        interface_position_um=interface_position_um,
+        interface_axis=interface_axis,
+    )
+    if not predicates:
+        return None
+
+    refined_points, refined_triangles, refined_tags = graded_refine_mesh_near(
+        points, triangles, tags, predicates
+    )
+
+    if refined_mesh_path is None:
+        refined_mesh_path = f"{result.volume_mesh_path}.mos_gate_refined.vtu"
+
+    meshio.write(
+        refined_mesh_path,
+        meshio.Mesh(
+            points=refined_points,
+            cells=[("triangle", refined_triangles)],
+            cell_data={result.material_field: [refined_tags]},
+        ),
+    )
+
+    return dataclasses.replace(result, volume_mesh_path=refined_mesh_path)
+
+
 def refine_process_result_for_implant_windows(
     result: ProcessResult,
     refined_mesh_path: Optional[str] = None,

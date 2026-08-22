@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from typing import List
 
-from tcad.characterization.interface import BiasPoint, CharacterizationResult
+from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
 from tcad.device.devsim import backend
 from tcad.device.devsim.mos_equation import setup_mos_potential_equation
 from tcad.device.devsim.resistor_equation import set_bias
@@ -43,6 +43,17 @@ def run_mos_cv_sweep(
     between consecutive solved points (so it has one fewer entry than
     gate_voltages — stored in metadata, not as BiasPoint fields, since
     it is defined between points rather than at one).
+
+    Every gate charge / capacitance value returned (metadata's
+    "gate_charges_C" / "capacitance_F", below) is PER UNIT DEPTH —
+    DevSim's own 2D-device convention (same one
+    tcad.characterization.pn_junction_iv_sweep.run_pn_junction_iv_sweep's
+    currents follow), not the total charge/capacitance of a real device
+    with a specific physical gate width. See
+    tcad.characterization.interface.CURRENT_CONVENTION_NOTE (also set
+    on this result's own metadata["current_convention"], despite the
+    name — it applies to charge/capacitance identically) for what that
+    means and how to convert it to a real device's actual value.
     """
     module = backend.require_devsim()
 
@@ -92,5 +103,6 @@ def run_mos_cv_sweep(
             "gate_charges_C": gate_charges,
             "capacitance_F": capacitance_f,
             "capacitance_voltages_V": capacitance_voltages,
+            "current_convention": CURRENT_CONVENTION_NOTE,
         },
     )

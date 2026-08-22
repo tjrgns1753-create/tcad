@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from tcad.characterization.interface import BiasPoint, CharacterizationResult
+from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
 from tcad.device.devsim import backend
 from tcad.device.devsim.resistor_equation import set_bias
 from tcad.device.devsim.semiconductor_equation import (
@@ -63,6 +63,13 @@ def run_pn_junction_iv_sweep(
     doping (NetDoping) must already be registered on `region` — see
     tcad.device.devsim.doping_mapping.apply_doping — before calling
     this.
+
+    Every current returned (in each BiasPoint.currents, below) is PER
+    UNIT DEPTH — DevSim's own 2D-device convention, not the total
+    current of a real device with a specific physical width. See
+    tcad.characterization.interface.CURRENT_CONVENTION_NOTE (also set
+    on this result's own metadata["current_convention"]) for what that
+    means and how to convert it to a real device's actual current.
 
     One call per device: this function always (re-)registers the
     equilibrium and drift-diffusion equations from scratch, assuming
@@ -109,5 +116,6 @@ def run_pn_junction_iv_sweep(
             "temperature_k": temperature_k,
             "fixed_contacts": fixed_contacts,
             "physics": "drift_diffusion",
+            "current_convention": CURRENT_CONVENTION_NOTE,
         },
     )

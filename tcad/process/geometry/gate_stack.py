@@ -81,7 +81,7 @@ class GateStack(ProcessStep):
     def run(self, recipe: Dict[str, Any], output_dir: str) -> Dict[str, Any]:
         silicon_depth_um = recipe.get("silicon_depth_um", DEFAULT_SILICON_DEPTH_UM)
 
-        geometry, materials, wrap_flags = session.make_gate_stack(
+        geometry, materials, wrap_flags, actual_dims = session.make_gate_stack(
             grid_delta_um=recipe["grid_delta_um"],
             x_extent_um=recipe["x_extent_um"],
             y_extent_um=recipe["y_extent_um"],
@@ -128,4 +128,15 @@ class GateStack(ProcessStep):
         return {
             "final_mesh": final_mesh_path,
             "snapshots": recorder.snapshots,
+            # ACTUAL applied dimensions (post export-safety floor -- see
+            # session.make_gate_stack()'s own docstring): a caller doing
+            # any physics reference computation from this geometry (e.g.
+            # ideal C_ox = eps_ox*eps_0*width/t_ox for a C-V sanity
+            # check) must use these, not the recipe's requested values,
+            # since grid_delta_um can silently floor a thin requested
+            # layer to 1.5x itself. Equal to the requested recipe values
+            # whenever nothing needed flooring.
+            "actual_gate_oxide_thickness_um": actual_dims["gate_oxide_thickness_um"],
+            "actual_gate_height_um": actual_dims["gate_height_um"],
+            "actual_pad_height_um": actual_dims["pad_height_um"],
         }

@@ -59,7 +59,7 @@ from __future__ import annotations
 
 from typing import List
 
-from tcad.characterization.interface import BiasPoint, CharacterizationResult
+from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
 from tcad.device.devsim import backend
 from tcad.device.devsim.mosfet_equation import setup_mosfet_potential_equation
 from tcad.device.devsim.semiconductor_equation import (
@@ -129,6 +129,14 @@ def run_mosfet_id_vgs_sweep(
     registration is not meant to be re-run on an already-swept device):
     import and dope a fresh device for a different drain_voltage or
     sweep direction.
+
+    Every current returned (source_contact/drain_contact in each
+    BiasPoint.currents, below) is PER UNIT DEPTH — DevSim's own
+    2D-device convention, not the total current of a real device with
+    a specific physical channel width. See
+    tcad.characterization.interface.CURRENT_CONVENTION_NOTE (also set
+    on this result's own metadata["current_convention"]) for what that
+    means and how to convert it to a real device's actual current.
     """
     module = backend.require_devsim()
     from devsim.python_packages.ramp import rampbias
@@ -183,5 +191,6 @@ def run_mosfet_id_vgs_sweep(
             "drain_voltage": drain_voltage,
             "interface": interface_name,
             "physics": "drift_diffusion",
+            "current_convention": CURRENT_CONVENTION_NOTE,
         },
     )

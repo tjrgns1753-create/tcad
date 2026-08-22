@@ -287,7 +287,18 @@ The CLI (`tcad.cli.run_pipeline`) writes both under `<workdir>/`:
     "contact_regions": ["Si"], "contact_axis": "x",
     "contact_sides": {"Si": "min"},           // optional
     "interface_region_pairs": [["Si", "SiO2"]], // optional
-    "length_scale_to_cm": 1.0,                 // 1e-4 for real semiconductor physics
+    "length_scale_to_cm": 1e-4,                 // REQUIRED whenever "doping" (above) is set --
+                                                // ProcessResult coordinates are in um, but DevSim's
+                                                // real semiconductor constants (permittivity, mobility,
+                                                // ...) are calibrated for cm, so any doped/electrically
+                                                // -characterized device needs the um->cm conversion
+                                                // (1e-4). The CLI raises a clear error if this is left
+                                                // unset with "doping" configured, and warns loudly if
+                                                // it's explicitly set to 1.0 (the specific value known
+                                                // to fail/silently mis-solve doped devices) -- only a
+                                                // doping-FREE device (no "doping" key at all, e.g. the
+                                                // plain Ohmic iv example) may safely omit this
+                                                // (defaults to 1.0, "no conversion")
     "refine_near_um": 0.0,                     // optional: local mesh refinement near this
                                                 // position (see tcad/device/devsim/mesh_refine.py) --
                                                 // needed for real drift-diffusion PN-junction

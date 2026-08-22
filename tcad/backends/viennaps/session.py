@@ -289,12 +289,38 @@ def make_gate_stack(
     gate_height_um / pad_height_um are floored the same way for the same
     reason (both are also freestanding boxes exported in isolation).
 
+    THIS FLOOR IS SILENT AND CAN SUBSTANTIALLY CHANGE THE BUILT
+    GEOMETRY -- found (not assumed) by a real MOS C-V audit: a caller
+    requesting gate_oxide_thickness_um=0.02 at grid_delta_um=0.05 (a
+    combination the GUI's own gate_stack panel and this project's own
+    gate_stack C-V test both use) silently gets a 0.075um oxide -- 3.75x
+    thicker than requested -- because 0.02 < 1.5*0.05. A caller that
+    computes a physics reference value (e.g. the ideal C_ox =
+    eps_ox*eps_0*width/t_ox used to sanity-check a C-V sweep) from the
+    REQUESTED thickness instead of the ACTUALLY BUILT one gets a
+    reference wrong by the same 3.75x factor -- this was measured to be
+    the dominant cause of an apparent "MOS accumulation capacitance is
+    only 25% of ideal C_ox" finding that looked like a physics/mesh
+    problem but was actually a stale-reference-value bug once the real
+    built thickness is used (102% of the correctly-computed C_ox, not
+    25%). Returns the ACTUALLY APPLIED dimensions (see `actual_dims`
+    below) specifically so a caller never has to guess whether this
+    floor fired, and warns via `warnings.warn` when it does.
+
     channel_um / source_um / drain_um : (min_um, max_um) pairs in domain
         x coordinates. Not validated against overlap -- a caller
         building a physically nonsensical layout (e.g. source
         overlapping the channel) gets whatever geometry that implies,
         same permissiveness as make_mask_spans' own spans_um.
+
+    Returns (domain, materials, wrap_flags, actual_dims) -- `actual_dims`
+    is {"gate_oxide_thickness_um": oxide_h, "gate_height_um": gate_h,
+    "pad_height_um": pad_h}, the POST-FLOOR values genuinely used to
+    build the geometry (equal to the requested values whenever none of
+    them needed flooring).
     """
+    import warnings
+
     module = require_viennaps()
     import viennals as vls
 
@@ -305,6 +331,23 @@ def make_gate_stack(
     oxide_h = max(gate_oxide_thickness_um, safe_min)
     gate_h = max(gate_height_um, safe_min)
     pad_h = max(pad_height_um, safe_min)
+    _floored = {
+        "gate_oxide_thickness_um": (gate_oxide_thickness_um, oxide_h),
+        "gate_height_um": (gate_height_um, gate_h),
+        "pad_height_um": (pad_height_um, pad_h),
+    }
+    for _name, (_requested, _applied) in _floored.items():
+        if _applied != _requested:
+            warnings.warn(
+                f"make_gate_stack: {_name}={_requested}um is below the "
+                f"1.5*grid_delta_um={safe_min}um export-safety floor for "
+                f"grid_delta_um={grid_delta_um}um -- built with "
+                f"{_name}={_applied}um instead. Use the actual_dims "
+                f"returned by this function (not the requested value) "
+                f"for any downstream physics reference computation (e.g. "
+                f"ideal C_ox).",
+                stacklevel=2,
+            )
 
     half_x = x_extent_um / 2.0
     silicon = getattr(module.Material, "Si")
@@ -345,7 +388,12 @@ def make_gate_stack(
 
     materials = [silicon, source_mat, drain_mat, oxide_mat, gate_mat]
     wrap_flags = [False, False, False, False, True]
-    return domain, materials, wrap_flags
+    actual_dims = {
+        "gate_oxide_thickness_um": oxide_h,
+        "gate_height_um": gate_h,
+        "pad_height_um": pad_h,
+    }
+    return domain, materials, wrap_flags, actual_dims
 
 
 def save_domain_state(domain, path: str) -> str:

@@ -93,8 +93,82 @@ def _apply_doping(process_result, cfg: Dict[str, Any] | None):
     raise ValueError(f"Unknown doping kind: {kind!r}")
 
 
+#: um -> cm. ProcessResult coordinates are always "um" (see
+#: tcad/mesh/interface.py's own docstring); DevSim's real semiconductor
+#: constants (Permittivity, mobility, etc. -- see
+#: tcad.device.devsim.semiconductor_equation) are calibrated assuming
+#: cm. The correct value for ANY doped/electrically-characterized
+#: device -- see _resolve_length_scale_to_cm's own docstring for why
+#: the CLI requires this to be explicit rather than silently
+#: defaulting to "no conversion" once doping is involved.
+_UM_TO_CM = 1.0e-4
+
+
+def _resolve_length_scale_to_cm(device_cfg: Dict[str, Any], has_doping: bool) -> float:
+    """Resolve `length_scale_to_cm` for `_import_device`/
+    `_apply_device_doping`, refusing to silently default to an unsafe
+    value once real doped-device physics is in play.
+
+    Real landmine this closes (found by a real-TCAD-workflow audit of
+    this project, not hypothetical): `import_process_result()`'s own
+    library-level default (`length_scale_to_cm=1.0`) is the RIGHT
+    default for that function in isolation (Phase 5/6's doping-free
+    Ohmic characterization genuinely wants "no conversion" — it never
+    touches DevSim's cm-calibrated semiconductor constants at all). But
+    this CLI previously inherited that same 1.0 default unconditionally
+    via `cfg.get("length_scale_to_cm", 1.0)`, including for a config
+    that ALSO sets `doping` — this project's own tests already
+    established that leaving um-scale coordinates unconverted for a
+    real doping-aware Poisson/drift-diffusion solve fails to converge
+    (see tcad/device/devsim/mesh_import.py's own
+    `length_scale_to_cm` docstring) — and the README's own shipped
+    example config demonstrated exactly this unsafe combination
+    (`"length_scale_to_cm": 1.0` with a doped example).
+
+    Rule: if `doping` is configured, `device.length_scale_to_cm` MUST be
+    given explicitly (raises a clear, actionable error otherwise) and a
+    value of exactly 1.0 gets a loud `warnings.warn` (not silently
+    accepted) since that is the specific value known to break doped
+    solves — a caller who genuinely wants it (e.g. a from-scratch
+    experiment already in cm-native coordinates) can still pass it, but
+    not by accident via an unset default. Doping-free configs keep the
+    old, unconditional 1.0 default — completely unaffected.
+    """
+    value = device_cfg.get("length_scale_to_cm")
+    if not has_doping:
+        return 1.0 if value is None else value
+
+    if value is None:
+        raise ValueError(
+            "config.device.length_scale_to_cm is required whenever "
+            "config.doping is set. ProcessResult coordinates are in um, "
+            "but DevSim's real semiconductor constants are calibrated "
+            f"for cm -- pass {_UM_TO_CM!r} (um -> cm) for real doped-"
+            "device characterization. Leaving this unset previously "
+            "defaulted to 1.0 (no conversion), which this project's own "
+            "tests have shown fails to converge, or converges to a "
+            "physically wrong potential distribution, for a doped "
+            "Poisson/drift-diffusion solve."
+        )
+    if value == 1.0:
+        import warnings
+
+        warnings.warn(
+            "config.device.length_scale_to_cm=1.0 with config.doping "
+            "set: this is the specific value known to break doped "
+            f"DevSim solves (ProcessResult is in um; pass {_UM_TO_CM!r} "
+            "to convert to the cm DevSim's own semiconductor constants "
+            "assume). Proceeding with 1.0 because it was passed "
+            "explicitly, but this is very likely not what you want.",
+            stacklevel=2,
+        )
+    return value
+
+
 def _import_device(process_result, cfg: Dict[str, Any]):
     from tcad.device.devsim.mesh_import import import_process_result
+
+    length_scale_to_cm = _resolve_length_scale_to_cm(cfg, process_result.doping is not None)
 
     return import_process_result(
         process_result,
@@ -103,7 +177,7 @@ def _import_device(process_result, cfg: Dict[str, Any]):
         material_map=cfg.get("material_map"),
         contact_regions=cfg.get("contact_regions"),
         contact_axis=cfg.get("contact_axis", "x"),
-        length_scale_to_cm=cfg.get("length_scale_to_cm", 1.0),
+        length_scale_to_cm=length_scale_to_cm,
         interface_region_pairs=[tuple(p) for p in cfg["interface_region_pairs"]]
         if cfg.get("interface_region_pairs")
         else None,
@@ -120,7 +194,8 @@ def _apply_device_doping(imported, process_result, cfg: Dict[str, Any] | None):
         return
     from tcad.device.devsim.doping_mapping import apply_doping
 
-    apply_doping(imported.device, process_result.doping, length_scale_to_cm=cfg.get("length_scale_to_cm", 1.0))
+    length_scale_to_cm = _resolve_length_scale_to_cm(cfg, True)
+    apply_doping(imported.device, process_result.doping, length_scale_to_cm=length_scale_to_cm)
 
 
 def _run_characterization(imported, cfg: Dict[str, Any]):

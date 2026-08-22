@@ -69,7 +69,7 @@ from __future__ import annotations
 import math
 from typing import Dict, List, Optional
 
-from tcad.characterization.interface import BiasPoint, CharacterizationResult
+from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
 from tcad.device.devsim import backend
 from tcad.device.devsim.doping_mapping import apply_doping
 from tcad.device.devsim.semiconductor_equation import (
@@ -226,6 +226,13 @@ def run_robust_pn_junction_iv_sweep(
     Voltages are visited in the order given; each is reached by ramping
     from wherever the previous one left off, so a caller sweeping
     monotonically gets the cheapest path.
+
+    Every current returned (in each BiasPoint.currents, below) is PER
+    UNIT DEPTH — DevSim's own 2D-device convention, not the total
+    current of a real device with a specific physical width. See
+    tcad.characterization.interface.CURRENT_CONVENTION_NOTE (also set
+    on this result's own metadata["current_convention"]) for what that
+    means and how to convert it to a real device's actual current.
     """
     fixed_contacts = fixed_contacts or {}
 
@@ -265,5 +272,6 @@ def run_robust_pn_junction_iv_sweep(
             "fixed_contacts": fixed_contacts,
             "physics": "drift_diffusion",
             "strategy": "doping_continuation + devsim_dd_tolerances + restoring_bias_ramp",
+            "current_convention": CURRENT_CONVENTION_NOTE,
         },
     )

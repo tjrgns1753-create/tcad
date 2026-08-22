@@ -26,7 +26,8 @@
     "mesh_name": "gaussian_cli_mesh",
     "device_name": "gaussian_cli_device",
     "contact_regions": ["Si"],
-    "contact_axis": "x"
+    "contact_axis": "x",
+    "length_scale_to_cm": 1e-4
   },
   "characterization": {
     "type": "iv",
