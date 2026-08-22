@@ -63,6 +63,41 @@ Checks:
      exactly describe, tight enough to catch a genuinely broken
      extraction (e.g. picking up the wrong segment, or an off-by-one
      in the Vds/2 correction).
+
+FOLLOW-UP VERIFICATION (later session, user-requested check of whether
+4.579V is a robust extraction or an artifact of which segment/window
+happened to be picked): extended this exact device's Id-Vgs sweep to
+0-10V (2 more points past this test's own 0-8V) and compared 3 things
+against the single-steepest-segment method this test uses.
+  - Per-segment gm/Vth across the WIDER sweep: gm rises through 2-7V,
+    PEAKS at the 7-8V segment (1.6855e-05, Vth=4.579V -- exactly what
+    this test's own extraction already picks), then DECLINES at 8-9V
+    (1.6291e-05, Vth=4.462V) and 9-10V (1.5496e-05, Vth=4.232V). The
+    steepest-segment method landing right at the visible gm peak is the
+    textbook-correct behavior (linear extrapolation is specifically
+    defined at the point of MAXIMUM transconductance, to avoid both
+    subthreshold curvature below it and whatever this device's own
+    mild high-field roll-off is above it -- not investigated further
+    here per the user's explicit "no large physics changes" scope;
+    plausibly a real short-channel depletion-charge effect or a
+    reminder that this device's interface refinement was tuned against
+    an 8V-topped sweep, not a defect in the extraction itself).
+  - Independent LEAST-SQUARES fit across 5 points (Vgs=6-10V, a
+    completely different, multi-point method) gives Vth=4.501V --
+    within 1.7% of the single-segment method's 4.579V.
+  - CONSTANT-CURRENT method (Vgs where Id log-interpolates to 1e-8A)
+    gives Vth=3.107V — genuinely different BY DESIGN (constant-current
+    picks up the current at a point still shaped by the subthreshold
+    -to-inversion transition; linear extrapolation deliberately ignores
+    that shape), not evidence of an inconsistency: two named
+    definitions of "Vth" are not expected to agree, and the direction
+    (constant-current < linear-extrapolation) matches known
+    characterization-method literature.
+Conclusion: 4.579V is not an artifact of window choice -- the
+steepest-segment method already used lands at the real gm peak, and an
+independent multi-point method agrees to <2%. No code change resulted
+from this check; recorded here so a future session doesn't have to
+re-derive it.
 """
 
 import math

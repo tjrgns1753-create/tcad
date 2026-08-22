@@ -104,6 +104,47 @@ assertion is replaced with the physically defensible pair of checks
 this docstring's own point 4 states: positive, and >=80% of C_ox at
 peak accumulation -- not an upper bound that real fringing can and does
 violate.
+
+FOLLOW-UP VERIFICATION (later session, user-requested second-guess of
+the ">100% of Cox" finding before trusting it): three independent
+checks were run to distinguish "real fringing" from "a different
+geometry/charge-computation bug that happens to look similar" --
+1. SPATIAL charge profile: read DevSim's own `contactcharge_edge` edge
+   model directly along the gate contact's own vertical edges (not
+   inferred from the total). Result: charge density is UNIFORM to 6
+   significant figures across the center ~70% of the gate width
+   (5.763078e-08 C/cm essentially unchanged from x=-0.4 to +0.35um --
+   matching the ideal parallel-plate PREDICTION exactly, ruling out a
+   bulk permittivity/doping/units bug), then rises sharply approaching
+   both edges (peaking at 9.10e-08 C/cm at the +0.75um edge, a 58%
+   local enhancement over center; +0.45um at the -0.75um edge, 12% --
+   asymmetric in magnitude but the SAME sign/character on both sides).
+   This is the textbook signature of edge charge concentration, not a
+   uniform/global effect.
+2. WIDTH scan (gate half-width 0.8/1.6/3.2/6.4um, same t_ox, grid,
+   UNREFINED mesh so only the width changes): ratio to the correctly
+   -computed Cox is 95.1% / 97.0% / 97.9% / 98.4% -- monotonically
+   approaching 100% as the gate widens, i.e. as the FIXED-size edge
+   feature becomes a smaller fraction of the total. A bulk-property bug
+   (wrong permittivity, wrong doping, a units error) would instead
+   produce a constant percentage offset independent of width.
+3. THICKNESS scan (t_ox 0.075/0.15/0.3/0.6um, same half-width, same
+   UNREFINED mesh): ratio is 95.1% / 96.1% / 97.7% / 98.7% -- also
+   approaching 100% as the oxide thickens, the same dilution signature
+   via an independent parameter.
+   Both scans use an UNREFINED mesh and land BELOW 100% (not above) --
+   consistent with ordinary coarse-mesh discretization error mildly
+   UNDER-counting a sharp field feature; it is specifically adding
+   LOCAL refinement at that same edge (the >100% figures earlier in
+   this docstring) that resolves enough of the true, larger singular
+   contribution to push the total past the naive 1D Cox. Both pieces
+   are consistent with one underlying mechanism (a real, geometry
+   -localized conductor-edge singularity), not two unrelated effects.
+Conclusion: the >100% Cox ratio is real 2D edge/fringing physics from
+this idealized gate's abrupt lateral termination, not a geometry,
+charge-computation, or units bug. No code change resulted from this
+check (the shipped fix above was already correct); recorded here so a
+future session doesn't have to re-derive it.
 """
 
 import sys
