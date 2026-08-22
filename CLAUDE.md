@@ -7,6 +7,28 @@ Build a reliable 2D TCAD process → mesh → DevSim device simulation pipeline.
 - Prioritize physical correctness over feature count.
 - Use actual ViennaPS 4.6.2 / DevSim execution for validation.
 
+## Claude Code environment notes (tooling, not TCAD physics)
+
+Not about this project's physics — carried here only because Claude
+has no memory between sessions and this came up once already.
+
+- This runs as a **remote/web Claude Code session** (managed cloud
+  container), not a local CLI. Terminal-only slash commands —
+  confirmed for `/plugin` and `/reload-plugins` — return "isn't
+  available in this environment" here. Not a permissions issue; those
+  commands simply aren't supported outside the local CLI.
+- Plugin management in this environment goes through the **web UI's
+  own plugin browser screen** (the one with a "폴더 선택"/folder-select
+  button — it's folder/project-scoped), not slash commands.
+- Being LISTED in that browser does not mean a plugin is enabled/active
+  for the session — e.g. "Ponytail" (3rd-party, Dietrich Gebert) and
+  "Frontend design" (Anthropic) showed up in the list but their skills
+  were not available in-session until actually opened and toggled
+  on/installed from that screen.
+- There is no in-session reload command to pick up a change made in the
+  web UI afterward (`/reload-plugins` doesn't exist here) — a browser
+  refresh or a new session is the practical way to pick it up.
+
 ## Development Rules
 
 - Investigate before modifying production code.
