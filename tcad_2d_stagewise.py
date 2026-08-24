@@ -3701,6 +3701,19 @@ class TCADApplication(tk.Tk):
             else:
                 group_frame.pack_forget()
 
+    def _doping_is_stale(self) -> bool:
+        """True when the doping profile describes a mesh a later step replaced.
+
+        Doping attaches to the mesh that existed when it ran. Any process
+        step afterwards produces a new mesh, and the old profile then
+        describes geometry that no longer exists — measurement would
+        silently solve the wafer as it was BEFORE that step.
+        """
+        if self.last_doped_result is None:
+            return False
+        attached = getattr(self.last_doped_result, "volume_mesh_path", None)
+        return bool(attached and attached != self.last_final_mesh)
+
     def run_doping(self):
 
         # Doping runs on the wafer as it is. It used to refuse until some
@@ -3711,7 +3724,7 @@ class TCADApplication(tk.Tk):
         # exported now and doped.
         if not (self.last_final_mesh and Path(self.last_final_mesh).exists()):
             if not self._materialize_current_wafer():
-                return
+                return False
 
         kind = self.doping_kind.get()
 
@@ -3800,7 +3813,7 @@ class TCADApplication(tk.Tk):
                     "Unknown doping kind selected.",
                 )
 
-                return
+                return False
 
         except ValueError:
 
@@ -3809,7 +3822,7 @@ class TCADApplication(tk.Tk):
                 "All numeric recipe values must be numeric.",
             )
 
-            return
+            return False
 
         except Exception as exc:
 
@@ -3818,7 +3831,7 @@ class TCADApplication(tk.Tk):
                 str(exc),
             )
 
-            return
+            return False
 
         self.last_doped_result = doped_result
 
@@ -3844,6 +3857,8 @@ class TCADApplication(tk.Tk):
             f"No DevSim solve was run -- this only attaches the "
             f"DopingProfile object and reports it in the process log.",
         )
+
+        return True
 
     def _make_measurement_panel(
         self,
@@ -4095,6 +4110,21 @@ class TCADApplication(tk.Tk):
             return
 
         doped_result = self.last_doped_result
+
+        if self._doping_is_stale():
+            # Re-apply the SAME doping specification to the CURRENT mesh
+            # instead of solving the geometry as it was before the last
+            # process step. Not a prerequisite: nothing is refused, and
+            # the user is told what happened.
+            self._log(
+                "\nNOTE: the doping profile was attached to an earlier mesh. "
+                "Re-applying the same doping to the current geometry before "
+                "measuring.\n"
+            )
+            if not self.run_doping():
+                return
+            doped_result = self.last_doped_result
+
         region = doped_result.doping.regions[0].region
         kind = doped_result.doping.kind
 
