@@ -29,6 +29,41 @@ has no memory between sessions and this came up once already.
   web UI afterward (`/reload-plugins` doesn't exist here) — a browser
   refresh or a new session is the practical way to pick it up.
 
+## THE INVARIANT (read before changing anything in the GUI or process layer)
+
+    the user picks a process -> only that process runs
+      -> the current wafer is updated -> the user picks the next one
+
+Process order is **never** hardcoded, enforced, or suggested. Any
+category — oxidation, lithography, etching, deposition, doping,
+metallization — must be selectable and runnable at any moment, on
+whatever the wafer currently is.
+
+Concretely, all of these are violations, not just the first:
+
+- a disabled/greyed-out process button;
+- a message like "run X first" or "a previous step is required";
+- a modal confirm dialog that must be answered before the step will
+  run (a confirm is still a block);
+- a warning that tells the user which step to run instead — advice
+  about sequence is still a prescribed sequence;
+- creating a process, mask, resist, material or geometry the user did
+  not ask for, or producing a later step's result early;
+- a specialized variant reaching into the general path (LOCOS is the
+  worked example: it is a sibling option of thermal oxidation, never a
+  prerequisite for it, never a default, and its logic must not touch
+  the plain path).
+
+When a step has nothing to act on, that is a RESULT, not a refusal:
+run it, change nothing, and say so in the log. When something is
+physically questionable, note it in the log and run what was asked.
+
+Pinned by `tests/unit/test_gui_no_forced_order_mock.py`, which traps
+every blocking messagebox call and fails if one fires.
+
+Do not write example process sequences — in code, in comments, or in
+prose. Describe what a step does to the wafer it is given instead.
+
 ## Development Rules
 
 - Investigate before modifying production code.
@@ -58,7 +93,10 @@ has no memory between sessions and this came up once already.
   programmatically (`derive_implant_windows_refinement()` in
   `tcad/device/devsim/mesh_import.py`) over a caller hand-picking one.
 
-Preferred order:
+Order in which these were BUILT AND VERIFIED by this project. This is
+development sequencing only — it is not a process flow, and nothing in
+the tool may enforce, assume, or suggest it (see the invariant above):
+
 1. Initial wafer geometry
 2. Mask representation
 3. Oxidation
@@ -104,8 +142,27 @@ MOS C-V, oxidation → etch → doping → DevSim).
 
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
-Current regression: `tests/run_regression.py` → **33 passed, 0 failed,
-0 skipped**.
+Current regression: `tests/run_regression.py` → **39 passed, 3 failed,
+0 skipped**, measured on Windows with real ViennaPS 4.6.2 + DevSim.
+
+The 3 failures are pre-existing and were confirmed to fail at a clean
+HEAD in a separate git worktree, so they are not caused by any recent
+change. All three are DevSim-side, none are geometry/process-flow:
+`test_device_lifecycle_repeat_real` (asserts two runs produce byte-equal
+I-V points; they differ in the 3rd significant digit at ~1e-27 A, i.e.
+solver noise around zero, so the assertion is stricter than the solver
+is deterministic), `test_robust_iv_sweep_real` and
+`test_gui_measurement_doping_kinds_real` (real `Convergence failure!`,
+OPEN item 2 territory).
+
+**Do not quote an earlier "33 passed, 0 failed" from this file as
+evidence that the suite is green** — that number was written from a
+different environment and was already wrong here before this session
+started (it measured 32/5 on first run). Run the suite and read the
+number. Note also that `run_regression.py` itself crashes with a
+`UnicodeEncodeError` while PRINTING a failing test's traceback under
+the Windows cp949 console, which truncates the whole run — use
+`PYTHONIOENCODING=utf-8` when running it there.
 
 - **Si floor / mesh export**: raw ViennaPS `saveVolumeMesh()` clips a
   semi-infinite Si region to ~2×gridDelta (narrow-band artifact, not a
@@ -304,6 +361,128 @@ Current regression: `tests/run_regression.py` → **33 passed, 0 failed,
   33-test regression suite. Search `docs/investigation_log.md` for
   "order-free single-step runs, deposition chaining, deposition
   material selection, p/n doping color" for the full writeup.
+- **Lithography became real STATE; a process step no longer invents a
+  photomask.** Architecture audit, driven by four user-reported
+  symptoms, found ONE root cause behind all of them: there was no
+  resist state anywhere. Mask/PR were GUI *parameters* that always
+  carry a value (`Wafer.mask_openings_um` defaults to `[[3.5, 6.5]]`,
+  `pr_thickness_um` to 1.0), and each process panel independently
+  decided whether to turn them into geometry. Measured against real
+  ViennaPS before the fix, not assumed: (a) a plain isotropic
+  deposition on a FRESH wafer, user having run no lithography at all,
+  produced materials `['Mask','Si','SiO2']` — a 1.0um Mask solid — and
+  patterned the film to x=[-1.5,1.5] instead of depositing it across
+  the wafer; (b) oxidation → **PR COAT alone** → deposition put Mask
+  only OUTSIDE the openings and Si3N4 only INSIDE them, i.e. a bare
+  coat behaved as coat+align+expose+develop. Note (a) is the SAME
+  defect already fixed for oxidation only (oxide floating on top of a
+  mask) — that fix was a per-panel special case, so etch and
+  deposition kept the bug. Fixed structurally with one resist-state
+  table, `_resist_spans_um()`, read by BOTH the recipe builder and the
+  canvas overlay (they derived resist shape independently before, and
+  disagreed): no resist → no mask at all (fresh OR chained); coated,
+  not developed → ONE full-width span; developed → the opaque
+  complement. A blanket coat needed no new geometry code —
+  `mask_spans_from_openings([])` already returns exactly one
+  full-width span. Also fixed alongside: `wafer.developed` was set once
+  and cleared only by NEW WAFER, so coat→develop→strip→coat left the
+  fresh coat already patterned (PR COAT now clears the cycle); the
+  SESSION STATE markers lit stages 0..6 for a single oxidation,
+  claiming PR coat/alignment/exposure/develop/**etch** the user never
+  ran (`_mark_stage_done` now accumulates only what ran); PR STRIP's
+  silent `return` became a warning; and `run_process_flow` set
+  `wafer.etched` for any flow, including flows containing no etch.
+  Pinned by `tests/unit/test_gui_litho_lifecycle_mock.py` (drives the
+  REAL TCADApplication with the window withdrawn) and
+  `tests/integration/test_litho_lifecycle_state_real.py` (the same
+  recipes through real ViennaPS, plus the full
+  Si→oxidation→litho→etch→strip→deposition→doping sequence).
+  **Still true, deliberately:** PR STRIP is a state transition only —
+  resist already built into an earlier step's exported geometry stays
+  in that mesh. `domain.removeMaterial()` exists in ViennaPS 4.6.2
+  (verified) so a real strip step is implementable; not done yet, and
+  the integration test asserts the current behavior so the gap stays
+  visible.
+- **One wafer now accumulates state: each RUN runs ONE step on the
+  geometry the previous RUN left.** The GUI runs every step in its own
+  subprocess, so it cannot hold a live ViennaPS Domain between clicks.
+  It used to solve that by REPLAYING — `_chained_flow_config()` sent
+  `completed_steps + [recipe]` to a fresh `run_flow()`, so the Nth
+  click re-ran all N steps from a bare wafer. The geometry that
+  produced was correct, but it was O(N²) and re-paid for the slowest
+  step forever (a ~25s oxidation was re-run on every later click), and
+  it is literally the user-reported "each process builds a new wafer".
+  Fixed by carrying the `.vpsd` that `run_flow` was *already writing
+  and nobody read back*: `run_flow` gained an additive
+  `initial_domain=` parameter, the worker takes `_resume_state` and
+  returns `domain_state`, and the GUI keeps it in
+  `self.last_domain_state` (cleared by NEW WAFER).
+  `completed_steps` survives as history/timeline only. Measured: clicks
+  2-4 of a 4-step flow each report `step_count == 1` and take 0.3s
+  instead of re-running the oxidation. Pinned by
+  `tests/integration/test_process_state_resume_real.py`.
+  **LOCOS deliberately still replays.** `io.register_locos_export()` /
+  `register_locos_unwrapped()` are keyed by `id(domain)` and the latter
+  holds live ViennaLS level sets, so a `.vpsd` round-trip loses them
+  and a following LOCOS-on-LOCOS would refuse outright. Measured first
+  rather than assumed: a round-tripped LOCOS domain still EXPORTS all
+  three materials correctly with the same extents, so only
+  LOCOS-after-LOCOS is affected — `_locos_in_history()` falls back to
+  replay for that case rather than trading the feature away for speed.
+- **Metallization is its own GUI category, and the category list is now
+  the CAD one.** Categories are Oxidation / Lithography / Etching /
+  Deposition / Metallization / Doping / Geometry / Device measurement,
+  each selecting exactly one panel (category -> method -> that method's
+  parameters -> RUN), with no order enforced. Metallization is a thin
+  layer over the deposition registry — `run_metallization()` emits
+  `_process_category: "deposition"` — so masking, chaining and state
+  carry are the same verified code path, with no second implementation.
+  Its method list is the physically meaningful subset (sputter/PVD,
+  conformal CVD, isotropic plating; TEOS and epitaxy do not deposit
+  metal) and its material list was checked entry-by-entry against
+  ViennaPS 4.6.2's own `Material` enum — note there is **no Al**, which
+  is why the default is W. `_run_single_step()` was added as a NEW
+  helper for it rather than refactoring run_etch/run_oxidation/
+  run_deposition, deliberately: those three are individually verified
+  and rewriting them to share it would risk three working behaviors to
+  remove duplication that is not causing a bug.
+- **Selective Epitaxy can finally name what it grows.** It was the one
+  deposition model with no `duplicateTopLevelSet()` call, so an
+  epitaxial layer could only merge into whatever material was on top —
+  correct for HOMOepitaxy (Si on Si is the same crystal) but making
+  HETEROepitaxy (SiGe on Si) inexpressible. Added with the same
+  opt-in/default-off shape the other six models use, so a recipe
+  without the key behaves exactly as before. `Si`/`SiGe`/`aSi` joined
+  the GUI's material list. Note the recipe now has two different
+  material meanings: `material_rates` names the SEED surfaces growth is
+  selective to, `material` names what is grown.
+- **The physical rules are pinned as one readable spec**,
+  `tests/integration/test_physics_rules_real.py`: PR coating is really
+  blanket; no mask pattern reaches geometry before develop; selective
+  etch AND selective deposition are possible only after develop; every
+  one of the 7 deposition models can name its material (asserted by
+  inspecting each registered model, so a new model cannot be added
+  without it); doping leaves the Si geometry and material set
+  bit-identical and carries P/N as a signed concentration with the
+  overlay colors P = #e0393e (red) / N = #2f6fed (blue); and a
+  Si -> +SiO2 -> +Si3N4 -> +W flow preserves every earlier layer.
+- **ViennaPS cannot open a non-ASCII path — silently.** Root cause of
+  5 pre-existing regression failures on this machine (user name is
+  `박석훈`, so `tempfile.gettempdir()` is non-ASCII). `vps.Writer(...)
+  .apply()` wrote NO file and raised NOTHING, so `save_domain_state()`
+  returned normally and the caller only found out one step later when
+  `Reader` failed with "Could not open file"; `Reader` failed the same
+  way on a file that demonstrably existed (copied there, 1206 bytes),
+  proving it is the path string and not the content. The usual Windows
+  workaround — an 8.3 short path via `GetShortPathNameW` — was tried
+  first and does NOT work here: 8.3 generation is disabled on this
+  volume, so the call returns the long path unchanged. Fixed with
+  `_ascii_io_path()` in `session.py`: do the I/O in an ASCII scratch
+  directory and move the result to where the caller asked, plus an
+  explicit post-write existence check so a failed save can never again
+  masquerade as a failed load. An ASCII-named machine takes the
+  unchanged path and pays nothing. This fixed `test_phase13_process_flow_real`
+  and `test_phase14_flow_devsim_real` outright.
 - **PN diode I-V verified end to end (V_th = 0.720 V, ideality factor
   1.01) — and two CALLER-SIDE traps found doing it.** A textbook
   process flow (oxidation → lithography → doping → metallization →
@@ -653,13 +832,48 @@ each item's own "what remains uncertain" section if you need it):
 resolution; `_AUTO_REFINE_MAX_RINGS=20` not stress-tested past 1e20
 cm^-3; `dedupe_materials`/`filter_mesh_materials` only exercised for
 one geometry/doping combination; `mask_spans_um` doesn't validate
-spans against the domain extent; no GUI wiring for doping, gate_stack,
-deposition, or the newer etch models (oxidation/LOCOS is now wired —
-see GUI section); chained LOCOS reuses the inherited
+spans against the domain extent; chained LOCOS reuses the inherited
 (deformed) mask and silently ignores the recipe's own mask-window keys,
-and its staleness fingerprint is point-counts only (a heuristic).
+and its staleness fingerprint is point-counts only (a heuristic); every
+RUN still writes into a fresh `tempfile.mkdtemp()` that nothing cleans
+up, and those directories now hold the `.vpsd` the NEXT click resumes
+from, so they cannot simply be deleted when a step ends; and PR STRIP
+removes resist from the process STATE but not from geometry an earlier
+step already exported (`domain.removeMaterial()` exists in ViennaPS
+4.6.2 — verified — so a real strip step is implementable;
+`test_litho_lifecycle_state_real.py` asserts the current behavior so
+the gap stays visible).
+
+Every process category the GUI names is now wired — see the GUI section
+for the current category list.
 
 ## GUI
+
+**Current shape (read this first; the history below predates it).**
+The GUI is a Process CAD: pick a category, pick that category's method,
+fill in only that method's parameters, press RUN. No order is enforced
+anywhere — a step that genuinely needs something says so when pressed
+(and warns rather than blocking, e.g. a blanket-resist etch, or resist
+present during a furnace oxidation).
+
+Categories, in the order they appear: **Oxidation, Lithography,
+Etching, Deposition, Metallization, Doping, Geometry (MOSFET gate
+stack), Device measurement**. Exactly one panel is visible at a time
+(`_PANEL_ORDER` / `_PANEL_LABELS` / `_show_panel_category`).
+
+Two invariants worth not breaking:
+
+* **Lithography is state, not parameters.** `Wafer.pr_present` +
+  `Wafer.developed` are the resist; `mask_openings_um` and
+  `pr_thickness_um` are only inputs. Everything that needs to know
+  "what is the resist doing" — the recipe builder AND the canvas
+  overlay — reads `_resist_spans_um()`, never the fields directly.
+  Adding a second reader that derives resist shape on its own is how
+  the drawn state and the simulated state diverged before.
+* **Each RUN resumes the accumulated wafer** from
+  `self.last_domain_state` (a `.vpsd`), running one step. It falls back
+  to replaying the whole history only when there is no state file yet
+  or the history contains LOCOS (`_locos_in_history`).
 
 GUI visualization is not authoritative for process geometry — always
 judge physical correctness from the actual ViennaPS mesh/output, never
@@ -902,11 +1116,10 @@ here for whoever picks it up next.
 live-verified through real ViennaPS):**
 
 1. **Process order is now the user's choice.** The GUI used to enforce
-   ONE hard-wired sequence (litho -> etch OR oxidation OR deposition ->
-   strip) by greying out every other button, which made whole classes
-   of real device impossible to express — a textbook PN-junction diode
-   is oxidation -> lithography -> doping -> metallization ->
-   lithography, and none of that order was reachable. A **Process flow**
+   one hard-wired sequence by greying out every other button, which
+   made whole classes of real device impossible to express: real
+   devices need categories in orders that sequence could not reach at
+   all. A **Process flow**
    panel now lets steps be queued in any order (ADD TO FLOW), reordered
    (up/down), removed, and run as one chained flow. It runs through
    `tcad.process.flow.run_flow`, which chains steps via

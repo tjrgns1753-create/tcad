@@ -65,6 +65,7 @@ def run_flow(
     steps: List[FlowStep],
     output_dir: str,
     reload_between_steps: bool = False,
+    initial_domain: Optional[Any] = None,
 ) -> List[ProcessResult]:
     """Run `steps` in order, each continuing from the previous geometry.
 
@@ -76,6 +77,15 @@ def run_flow(
         the persisted .vpsd file rather than reusing the live object.
         Slower, but proves the persisted state alone is sufficient to
         continue the flow (used by the continuity tests).
+
+    initial_domain : a domain for the FIRST step to continue from,
+        instead of building a fresh wafer. This is what lets a caller
+        that cannot hold a live domain across invocations — the GUI,
+        which runs each step in its own subprocess — resume the real
+        accumulated wafer rather than re-running its whole history to
+        rebuild it. Load it with session.load_domain_state(). None (the
+        default) keeps the previous behavior exactly: step 0 builds its
+        own wafer.
     """
     session.require_viennaps()
 
@@ -86,7 +96,7 @@ def run_flow(
     base_dir.mkdir(parents=True, exist_ok=True)
 
     results: List[ProcessResult] = []
-    carried_domain: Optional[Any] = None
+    carried_domain: Optional[Any] = initial_domain
 
     for index, step in enumerate(steps):
         label = step.label or f"{index:02d}_{step.category}_{step.name}"

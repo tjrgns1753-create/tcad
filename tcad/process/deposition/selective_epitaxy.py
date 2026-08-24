@@ -41,6 +41,27 @@ class SelectiveEpitaxyDeposition(ProcessStep):
         # step is part of a process flow (see ProcessStep.prepare_domain).
         geometry = self.prepare_domain(recipe)
 
+        if "material" in recipe:
+            # Same opt-in distinct-material tagging every other
+            # deposition model in this package already has (isotropic,
+            # directional, single_particle_cvd, teos, teos_pecvd,
+            # geometric_trench); this was the one model without it, so
+            # an epitaxial layer could only ever merge into whatever
+            # material was already on top.
+            #
+            # Merging is correct for HOMOepitaxy -- Si grown on Si is
+            # the same crystal, not a new region -- which is why the key
+            # stays optional and absent by default: a recipe that does
+            # not set it behaves exactly as before. It is HETEROepitaxy
+            # (SiGe on Si, say) that needs the grown layer to be its own
+            # material, and that was not expressible at all.
+            #
+            # NOTE this is the DEPOSITED material, which is a different
+            # thing from the "material" entries in `material_rates`
+            # below -- those name the SEED surfaces growth is selective
+            # to (e.g. grow on Si, not on the mask).
+            geometry.duplicateTopLevelSet(getattr(module.Material, recipe["material"]))
+
         # recipe["material_rates"]: list of {"material": "Si", "rate": 1.0}
         material_rates = [
             (getattr(module.Material, entry["material"]), entry["rate"])

@@ -20,6 +20,7 @@ from abc import ABC, abstractmethod
 from typing import Any, ClassVar, Dict, Optional
 
 from tcad.backends.viennaps import session
+from tcad.backends.viennaps.io import DEFAULT_FLOOR_DEPTH_UM
 
 #: Recipe keys that only describe how to build a *fresh* wafer. When a
 #: step inherits a domain from a previous step (process flow), these
@@ -131,9 +132,49 @@ class ProcessStep(ABC):
 
         Inherited case: returns the carried domain untouched — no new
         Domain, no new trench — and warns about any initial-geometry
-        recipe keys that therefore cannot apply.
+        recipe keys that therefore cannot apply. The one exception is
+        `remask_spans_um` (see below): it is not in
+        INITIAL_GEOMETRY_RECIPE_KEYS and is never ignored, because it
+        means something different from the fresh-wafer mask keys — a
+        NEW mask applied on top of the geometry that already exists.
         """
         if self._inherited_domain is not None:
+            # Real gate patterning (and any other "blanket layer, then
+            # re-mask, then etch it into a pattern" step) needs a mask
+            # applied to a domain that ALREADY has geometry on it, which
+            # is exactly what the fresh-wafer mask keys above cannot do
+            # once a wafer exists. `remask_spans_um` is the opt-in for
+            # that: purely additive (a chained step without this key
+            # takes the identical untouched-domain path as before).
+            remask_spans_um = recipe.get("remask_spans_um")
+            if remask_spans_um:
+                # grid_delta_um/x_extent_um/pr_thickness_um are genuinely
+                # CONSUMED here (by remask_domain), not ignored — excluded
+                # from the warning below so it doesn't misreport them.
+                ignored = [
+                    k for k in INITIAL_GEOMETRY_RECIPE_KEYS if k in recipe
+                    and k not in ("grid_delta_um", "x_extent_um", "pr_thickness_um")
+                ]
+                if ignored:
+                    warnings.warn(
+                        f"{type(self).__name__}: continuing from an inherited domain "
+                        f"with remask_spans_um set, so initial-geometry recipe keys "
+                        f"{ignored} are still ignored (they describe how to build a "
+                        f"FRESH wafer, not how to remask an existing one).",
+                        UserWarning,
+                        stacklevel=2,
+                    )
+                geometry = session.remask_domain(
+                    self._inherited_domain,
+                    grid_delta_um=recipe["grid_delta_um"],
+                    x_extent_um=recipe["x_extent_um"],
+                    spans_um=[tuple(span) for span in remask_spans_um],
+                    mask_height_um=max(recipe.get("pr_thickness_um", 0.0), 0.1),
+                    mask_material=recipe.get("mask_material", "Mask"),
+                )
+                self.last_domain = geometry
+                return geometry
+
             ignored = [k for k in INITIAL_GEOMETRY_RECIPE_KEYS if k in recipe]
             if ignored:
                 warnings.warn(
@@ -152,14 +193,51 @@ class ProcessStep(ABC):
         # the complement a MOSFET source/drain implant mask needs
         # (`open | opaque | open`). Purely additive: a recipe without
         # this key takes the identical MakeTrench path as before.
-        if recipe.get("mask_spans_um"):
+        #
+        # NO MASK AT ALL is also a real recipe, and it is the physically
+        # correct one for any BLANKET step -- a furnace oxidation or a
+        # blanket deposition is not preceded by lithography. Two ways to
+        # ask for it, both landing here:
+        #   * `mask_spans_um: []` -- an explicitly empty opaque set. This
+        #     is what mask_spans_from_openings() returns for a fully-open
+        #     mask, so the key is tested for PRESENCE, not truthiness;
+        #     the old truthiness test sent that empty list down to
+        #     MakeTrench and silently produced a masked wafer instead.
+        #   * no mask keys at all -- omitting mask_left_um/mask_right_um
+        #     used to be a KeyError in MakeTrench below, so nothing can
+        #     regress by giving it this meaning.
+        # make_mask_spans() inserts no mask level set for an empty span
+        # list, leaving a bare Si wafer, so neither case needs a new
+        # geometry path of its own.
+        spans_um = recipe.get("mask_spans_um")
+        if spans_um is None and not {"mask_left_um", "mask_right_um"} <= recipe.keys():
+            spans_um = []
+        if spans_um is not None:
             geometry = session.make_mask_spans(
                 grid_delta_um=recipe["grid_delta_um"],
                 x_extent_um=recipe["x_extent_um"],
                 y_extent_um=recipe["y_extent_um"],
-                spans_um=[tuple(span) for span in recipe["mask_spans_um"]],
-                mask_height_um=max(recipe["pr_thickness_um"], 0.1),
+                spans_um=[tuple(span) for span in spans_um],
+                # .get(): a bare-wafer recipe has no photoresist to
+                # describe. Unused when spans_um is empty (no mask level
+                # set is built), and identical to the old value for every
+                # recipe that does carry the key.
+                mask_height_um=max(recipe.get("pr_thickness_um", 0.0), 0.1),
                 mask_material=recipe.get("mask_material", "Mask"),
+                # Keep the substrate box's BOTTOM below the export floor.
+                # Unlike MakeTrench's semi-infinite substrate, this one is
+                # a finite box, so its bottom is a real surface that a
+                # GROWTH process advects: a blanket oxidation on the
+                # default 1.0um box grew SiO2 down to y=-1.056, i.e. a
+                # second oxide on the underside of the wafer. Pushing the
+                # bottom past the floor puts that face outside every
+                # exported mesh. Etch-only callers never saw this, and
+                # the one test covering this path happened to set its
+                # floor to exactly the old 1.0um default, clipping the
+                # artifact away by coincidence.
+                substrate_depth_um=recipe.get(
+                    "silicon_depth_um", DEFAULT_FLOOR_DEPTH_UM
+                ) + 1.0,
             )
             self.last_domain = geometry
             return geometry

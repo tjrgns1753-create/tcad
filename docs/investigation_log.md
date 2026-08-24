@@ -8253,3 +8253,501 @@ section for the C_ox side of this same fix.
 source (`GateStack.run()` now exposes the actual dimensions), and
 cross-validated by an independent real extraction, not just a second
 analytical guess.
+
+---
+
+## Architecture audit: lithography had no state, so every process step invented a photomask
+
+**Reported symptoms (four, from the user running the GUI):**
+1. Running PR Coating after an oxidation showed not a full blanket
+   coat but something that looked already masked/exposed/developed.
+2. Running a deposition added not just the film but a mask and
+   unexpected geometry.
+3. Running one process made the NEXT process's result appear.
+4. Each process seemed to build a new wafer/geometry.
+
+**What was tested.** The GUI (`tcad_2d_stagewise.py`, 5762 lines) and
+the process layer were audited by reading the code and then, for every
+claim, by executing the real recipe through real ViennaPS 4.6.2 and
+measuring each material's actual spatial extent in the exported mesh.
+CLAUDE.md's own "Completed"/"VERIFIED" claims were deliberately not
+treated as evidence.
+
+**Result — one root cause behind all four symptoms.** There was no
+resist state anywhere in the system. `Wafer` carried mask/PR
+*parameters* that always hold a value (`mask_openings_um` defaults to
+`[[3.5, 6.5]]`, `pr_thickness_um` to 1.0) and no field saying whether
+the user had ever performed lithography. Each process panel therefore
+had to guess whether a mask was intended, and guessed from those
+defaults.
+
+Measured, first deposition on a fresh wafer, no lithography performed:
+
+    materials present: ['Mask', 'Si', 'SiO2']
+      Mask   y=[-0.000, 1.000]        <- 1.0um resist nobody created
+      SiO2   x=[-1.500, 1.500]        <- blanket request, patterned film
+      under the Mask: SiO2 ABSENT
+
+Measured, oxidation -> PR COAT only (no align, no expose, no develop)
+-> deposition:
+
+    remask spans sent after a bare PR COAT: [[-5.0,-1.5], [1.5,5.0]]
+      Mask   present only OUTSIDE the openings   <- already developed
+      Si3N4  x=[-1.499, 1.499]                   <- patterned deposition
+
+So a bare coat behaved as coat+align+expose+develop in one click. The
+cause was `_mask_recipe_keys_for_current_step()`, which treated every
+litho stage from "pr_coated" through "developed" as fully developed
+and emitted the OPAQUE COMPLEMENT of the openings for all of them, and
+which on a first step emitted a mask built from the dataclass defaults
+regardless of what the user had done.
+
+**Notably, the identical defect had already been found and fixed — for
+oxidation only.** `run_oxidation` carries a comment describing exactly
+this measurement (SiO2 ending up on top of a Mask block, oxide floating
+rather than grown from silicon) and special-cases itself to send an
+empty mask span list when the LOCOS checkbox is clear. Because that fix
+lived in one panel rather than in the shared decision, etch and
+deposition kept the bug. This is the general lesson of the audit: the
+per-symptom fix left the mechanism in place.
+
+**The renderer had the same defect independently.** Two PR drawing
+paths existed. The pre-real-mesh placeholder drew a correct uniform
+film and opened it only on `wafer.developed`. The real-mesh overlay
+always drew resist only in the GAPS between openings — an already
+-developed pattern — as soon as `process_stage` was any litho value. So
+the same PR COAT click looked right on a fresh wafer and wrong after any
+real process step, which is precisely symptom 1 as reported.
+
+**Two more state bugs found in the same pass.** `wafer.developed` was
+set once by DEVELOP and cleared only by NEW WAFER, so
+coat -> develop -> strip -> coat left the fresh coat already patterned.
+And the SESSION STATE markers were driven by passing a RANGE:
+`run_oxidation` called `_activate_stages(0,1,2,3,4,5,6)`, lighting PR
+coat, Mask alignment, Exposure, Develop AND Etch after a single
+oxidation — symptom 3, in the one place where it is purely cosmetic.
+`run_process_flow` likewise set `wafer.etched = True` for any completed
+flow, including flows with no etching step in them.
+
+**What it proves.** Symptoms 1, 2 and 3 are one bug: mask/PR were
+process INPUT that leaked into wafer geometry and into the canvas
+without a lithography step having produced them. Symptom 4 is a
+separate, still-open issue (see below).
+
+**The fix.** One resist-state table, `_resist_spans_um()`, read by both
+the recipe builder and the canvas overlay so the preview cannot disagree
+with the simulation:
+
+    no resist               -> None (no mask at all, fresh or chained)
+    coated, not developed   -> ONE full-width opaque span (blanket film)
+    developed               -> opaque complement of the openings
+
+A blanket coat needed no new geometry code: `mask_spans_from_openings`
+with no openings already returns exactly one full-width span, which is
+its own documented behavior. `Wafer` gained `pr_present`; PR COAT sets
+it and clears `developed`/`stripped`; DEVELOP refuses (with a warning)
+when there is no resist; PR STRIP clears the resist and warns instead of
+returning silently. `_mark_stage_done()` replaced the range calls.
+
+Verified after the fix, same two reproductions:
+
+    B' first deposition, no lithography:
+      materials present: ['Si', 'SiO2']       <- no phantom Mask
+      SiO2 x=[-5.000, 5.000] uniform          <- genuinely blanket
+
+    C' oxidation -> PR COAT only -> deposition:
+      Mask x=[-5.000, 5.000] y=[0.060, 1.050] <- blanket, whole wafer
+      SiO2 preserved across the full width, Mask sits ON TOP of it
+      Si3N4 absent (a blanket resist masks everywhere — correct)
+
+**What remains uncertain / deliberately not done.**
+
+*PR STRIP is still a state transition only.* Resist already built into
+an earlier step's exported geometry stays in that mesh.
+`domain.removeMaterial()` does exist in ViennaPS 4.6.2 (verified by
+inspecting the Domain API), so a real strip step is implementable. The
+integration test asserts the CURRENT behavior, so the gap stays visible
+rather than being forgotten.
+
+*The replay architecture was not touched* — see OPEN item 3 in
+CLAUDE.md. Every RUN click still re-simulates the whole history from a
+bare wafer, which is symptom 4 and is O(N^2). It was left alone on
+purpose: mixing an execution-path rewrite into the same change would
+have made it impossible to attribute a regression.
+
+*Deposition after a fully-blanket resist deposits nothing*, because the
+GUI passes `mask_material="Mask"` and ViennaPS then blocks growth
+everywhere. That is the honest consequence of the recipe rather than a
+bug, but with no explanation it looks like the button did nothing, so
+`_confirm_if_blanket_resist()` now warns and lets the user proceed
+(warn, do not block).
+
+*Selective Epitaxy* remains the one deposition model with no material
+selector, and `mask_spans_um` is still not validated against the domain
+extent.
+
+**Tests added.**
+`tests/unit/test_gui_litho_lifecycle_mock.py` builds the REAL
+`TCADApplication` with the window withdrawn and clicks through the whole
+sequence, checking the recipe keys the next step would receive at each
+point (skips cleanly where Tk has no display).
+`tests/integration/test_litho_lifecycle_state_real.py` runs the same
+recipes through real ViennaPS and measures the geometry, and includes
+the full requested sequence
+Si -> oxidation -> PR coat -> mask -> exposure -> development -> etching
+-> PR strip -> deposition -> doping, where each check re-verifies every
+earlier step's own measurement on the new mesh.
+
+**Measurement traps worth reusing.** Two assertions had to be corrected
+after measuring rather than loosened on faith. (1) "the earlier
+oxidation's oxide is unchanged" cannot be asserted at 1e-6: re-exporting
+a level set after another step moved the oxide top AND the Si top by the
+same 0.001um on a 0.05um grid — a uniform re-discretization of the whole
+stack, not a change to the oxide. The assertion is now tied to a
+fraction of the grid delta and says why. (2) The window etch does not
+merely THIN the oxide in the opening, it removes it entirely and exposes
+bare Si; asserting "thinner" failed because there was no oxide left to
+measure. Measuring first turned a failing assertion into a stronger one.
+
+---
+
+## ViennaPS silently cannot open a non-ASCII path (5 pre-existing regression failures)
+
+**What was tested.** The regression suite was run to establish a
+baseline before making any change. It reported **32 passed, 5 failed** —
+not the "33 passed, 0 failed" CLAUDE.md claimed. Each failing test was
+then re-run at a clean HEAD in a separate `git worktree`, to determine
+whether the working tree's uncommitted changes had caused them.
+
+**Result.** All 5 failed at clean HEAD too, so none were caused by
+recent work. Two of them — `test_phase13_process_flow_real` and
+`test_phase14_flow_devsim_real` — failed identically inside
+`run_flow(..., reload_between_steps=True)`:
+
+    RuntimeError: Could not open file:
+    C:\Users\<non-ascii>\AppData\Local\Temp\...\01_oxidation\domain_state.vpsd
+
+The user's Windows account name is not ASCII, so `tempfile.gettempdir()`
+is not ASCII either. A direct two-case probe (same domain, one ASCII
+destination, one non-ASCII) isolated it:
+
+    ASCII path   -> file written: True,  reload: OK
+    KOREAN path  -> file written: False, save_domain_state returned normally
+
+and copying an ASCII-written file to a non-ASCII path and reading it
+back failed the same way with the file demonstrably present (1206
+bytes), proving the failure is in the path string, not the content.
+
+**What it proves.** `vps.Writer(...).apply()` reports failure by writing
+nothing rather than by raising. `save_domain_state()` therefore returned
+success, and the error surfaced one step later as a Reader failure —
+which is why this read as a load/flow bug rather than a save bug.
+
+**The fix.** `_ascii_io_path()` in
+`tcad/backends/viennaps/session.py`: when the requested path is not
+ASCII, do the I/O in an ASCII scratch directory and move the result to
+where the caller asked; when it is ASCII (the normal case) yield it
+unchanged and copy nothing. `save_domain_state()` additionally verifies
+a file appeared and raises if not, so a failed save can never again
+masquerade as a failed load.
+
+**Rejected first, worth not re-trying:** the usual Windows fix — an 8.3
+short path via `GetShortPathNameW` — does NOT work here. 8.3 name
+generation is disabled on this volume, so the call returns the long path
+unchanged. Verified directly before writing the scratch-directory
+version.
+
+**What remains uncertain.** The other three failures are all DevSim-side
+and were left alone. `test_device_lifecycle_repeat_real` asserts that
+two runs produce byte-equal I-V points and they differ in the 3rd
+significant digit at ~1e-27 A — solver noise around zero, i.e. the
+assertion is stricter than the solver is deterministic.
+`test_robust_iv_sweep_real` and `test_gui_measurement_doping_kinds_real`
+raise a real `Convergence failure!` and belong to OPEN item 2.
+
+**Also found:** `tests/run_regression.py` itself crashes with a
+`UnicodeEncodeError` while PRINTING a failing test's traceback under the
+Windows cp949 console, which aborts the whole run at the first failure.
+Run it with `PYTHONIOENCODING=utf-8` on Windows.
+
+---
+
+## Process CAD rebuild, phases 2-4: state accumulation, category structure, physical rules
+
+Continues the lithography-state audit above. The user set the order
+explicitly: finish the lithography state model first, then fix real
+process accumulation, then make the GUI a category-driven CAD, then
+verify the physical rules.
+
+### Phase 1 tail: oxidation and the resist
+
+The lithography fix covered etch and deposition. Oxidation was the
+remaining consumer, and it turned out NOT to be a case of "use the
+resist like the others do". Two measurements decided it:
+
+  * A chained fin-style oxidation on a domain that already carries
+    resist grows SiO2 ON TOP of the Mask — measured oxide
+    y=[0.994,1.059] sitting over Mask y=[0,0.994], with the resist
+    sandwiched between the oxide and the silicon it supposedly grew
+    from.
+  * Passing `mask_material` to stop that instead DESTROYS the resist:
+    the same 1.0um Mask collapsed to y=[-0.002,0.006]. That is this
+    project's own documented LOCOS mask-erosion failure — LOCOS
+    mechanics need a pad-oxide buffer under the mask, which spun-on
+    resist does not have.
+
+Both fail for the same physical reason: a furnace oxidation runs at
+900-1200 C and photoresist is gone far below that. Real masked
+oxidation uses a nitride hard mask, which is exactly what the LOCOS
+option already provides. So oxidation now REPORTS resist and ignores it
+(a confirm dialog, warn-don't-block) rather than silently producing
+either impossible geometry.
+
+### Phase 2: each RUN takes the previous result as its input
+
+**What was tested.** How the GUI gets from "the wafer as it is now" to
+"the wafer after this click".
+
+**Result.** It replayed. `_chained_flow_config()` sent
+`completed_steps + [recipe]` to a fresh `run_flow()` in a new
+subprocess, so the Nth click re-ran all N steps from a bare wafer. The
+resulting geometry was correct — this was never a correctness bug — but
+the cost is O(N^2) and every later click re-paid for the slowest step.
+
+**What it proves.** The user-reported "each process seems to build a new
+wafer" was literally true of the execution path, even though the
+geometry came out right.
+
+**The fix.** `run_flow` was already persisting each step's domain to a
+real `.vpsd` (`session.save_domain_state`) and nothing ever read it
+back. Three additive changes closed the loop: `run_flow` gained an
+`initial_domain=` parameter (default None, so every existing caller is
+untouched); the worker accepts `_resume_state` and returns
+`domain_state`; the GUI keeps it in `self.last_domain_state`, cleared
+by NEW WAFER. `completed_steps` survives as history and timeline data
+only.
+
+**Measured, driving the GUI's own `worker_main` four times and passing
+only the state file between them:**
+
+    RUN 1: oxidation                     ran 1 step(s)  ['Si','SiO2']
+    RUN 2: deposition Si3N4        0.3s  ran 1 step(s)  +Si3N4
+    RUN 3: etch (developed resist) 0.3s  ran 1 step(s)  +Mask
+    RUN 4: deposition W            0.3s  ran 1 step(s)  +W
+
+and the final stack, read under the resist and in the window:
+
+    under resist   Si -5.000..-0.005 | SiO2 ..0.060 | Si3N4 ..0.080
+                   | Mask ..1.100 | W ..1.112
+    in the window  Si -5.000..-0.005 | SiO2 ..0.059 | Si3N4 ABSENT
+                   | Mask ABSENT | W 0.059..0.071
+
+i.e. the nitride cleared only through the developed opening, the oxide
+under it untouched, and metal deposited both into the opening and on
+top of the resist — the textbook lift-off geometry.
+
+**LOCOS deliberately still replays.** `io.register_locos_export()` and
+`register_locos_unwrapped()` are keyed by `id(domain)`, and the latter
+holds live ViennaLS level-set objects, so neither survives a `.vpsd`
+round-trip; a following LOCOS-on-LOCOS would refuse outright
+(thermal.py raises NotImplementedError for exactly that). The scope was
+MEASURED rather than assumed: a LOCOS domain round-tripped through
+`.vpsd` still exports all three materials with the same extents as the
+live-domain export, so only LOCOS-after-LOCOS is affected.
+`_locos_in_history()` therefore falls back to replay for that case.
+Slower, but it does not trade a working feature away for speed.
+
+**What remains uncertain.** Each RUN still writes its output into a
+fresh `tempfile.mkdtemp()` that nothing cleans up, so a long session
+accumulates temp directories — pre-existing, unchanged, and now holding
+the `.vpsd` the next click depends on, which is why they cannot simply
+be deleted at the end of a step.
+
+### Phase 3: category -> method -> parameters -> RUN
+
+Most of this already existed (a category selector showing exactly one
+panel, each panel choosing its own model and showing only that model's
+fields, no order enforcement). The gap against the requested list was
+**Metallization**.
+
+It is implemented as a thin layer over the deposition registry:
+`run_metallization()` emits `_process_category: "deposition"`, so
+masking, chaining and state carry all go through the same verified code
+path and there is no second implementation to keep in sync. Its method
+list is the physically meaningful subset — sputter/PVD, conformal CVD,
+isotropic plating — because TEOS chemistries and selective epitaxy do
+not deposit metal. Its material list was checked entry by entry against
+ViennaPS 4.6.2's own `Material` enum; **there is no Al in that enum**,
+which is why the default is W.
+
+`_run_single_step()` was added as a NEW helper for metallization rather
+than refactoring `run_etch`/`run_oxidation`/`run_deposition` to share
+it. That duplication is deliberate: those three are individually
+verified working paths, and rewriting them would risk three known-good
+behaviors to remove duplication that is not causing a bug.
+
+Category order is now Oxidation / Lithography / Etching / Deposition /
+Metallization / Doping / Geometry / Device measurement.
+
+### Phase 4: the physical rules, pinned
+
+`tests/integration/test_physics_rules_real.py` states each rule as its
+own test, measured on a real exported mesh:
+
+1. PR coating is really blanket — resist present at every sampled x
+   across the wafer, not only outside the openings.
+2. Before develop, no mask pattern reaches the geometry — the resist
+   has no opening, and nothing is deposited through one.
+3. Selective etch AND selective deposition are possible only after
+   develop — the etch clears the oxide only inside the opening and
+   leaves it untouched under the resist; a deposition through the same
+   developed pattern lands only inside it.
+4. Every deposition model can name its material — asserted by
+   inspecting each REGISTERED model for `duplicateTopLevelSet`, so a
+   new model cannot be added without it.
+5. Doping leaves the Si geometry and material set bit-identical, keeps
+   Si as a material region (it must not become a "P" or "N" material),
+   carries P/N as a signed concentration, and the overlay colors are
+   P = #e0393e (red) / N = #2f6fed (blue).
+6. A Si -> +SiO2 -> +Si3N4 -> +W flow preserves every earlier layer.
+
+Rule 4 immediately found the last real gap: **Selective Epitaxy** was
+the one deposition model without `duplicateTopLevelSet()`, so an
+epitaxial layer could only merge into whatever material was on top.
+That is correct for HOMOepitaxy — Si grown on Si is the same crystal,
+not a new region — but it made HETEROepitaxy (SiGe on Si) inexpressible.
+Added with the same opt-in, default-off shape the other six models use,
+so a recipe without the key behaves exactly as before. Note the recipe
+now carries two different material meanings: `material_rates` names the
+SEED surfaces growth is selective to, `material` names what is grown.
+
+**Test-construction trap worth reusing.** Rule 2's first version failed
+for a reason that had nothing to do with the rule: it applied
+`remask_spans_um` to a FIRST step. That key is only honoured on an
+INHERITED domain, so on a fresh wafer it is silently dropped and the
+recipe builds a bare wafer with no resist at all — which then looks
+exactly like "the resist has an opening". A fresh step needs
+`mask_spans_um`; a chained one needs `remask_spans_um`. The helper in
+that test now takes them as two separate arguments and documents why.
+
+### Regression through the whole sequence
+
+Baseline before any of this work was 32 passed / 5 failed (not the
+"33 passed, 0 failed" CLAUDE.md claimed; all 5 confirmed failing at a
+clean HEAD in a separate worktree). After phase 1 + the non-ASCII path
+fix: 36/3. After phase 2: 37/3. The 3 remaining failures are unchanged
+DevSim-side pre-existing ones — see the non-ASCII entry above for what
+each is.
+
+---
+
+## Invariant audit: nothing may stand between a button press and the step running
+
+The user restated the project's central rule in its strongest form and
+asked for a full audit against it:
+
+    the user picks a process -> only that process runs
+      -> the current wafer is updated -> the user picks the next one
+
+with the explicit additions that no category may be gated behind
+another, that the program must never stop a user with "a previous step
+is required" or "run X first", and that LOCOS must be an independent
+option rather than a prerequisite, default, or modifier of ordinary
+oxidation.
+
+**What was tested.** Every messagebox call, every `state="disabled"`,
+and every early `return` in the GUI was enumerated and classified as
+"blocks the user" or "does not". Then the whole thing was driven with
+`tkinter.messagebox`'s blocking functions (`showwarning`, `askyesno`,
+`askokcancel`, `askquestion`, ...) replaced by traps that record the
+call and return False, so any surviving block fails loudly instead of
+waiting for a click that never comes.
+
+**Result — eight violations, several of them mine from earlier in this
+same session.**
+
+| where | violation |
+|---|---|
+| `run_doping` | refused with "Run a real process step (etch, oxidation, deposition, or gate stack) first" |
+| `doping_button` | greyed out until some other process had produced a mesh |
+| `measure_button` | greyed out until doping existed |
+| `process_develop` | dialog + `return` when no resist, and told the user to run PR COAT first |
+| `process_pr_strip` | dialog + `return` when no resist |
+| `process_exposure` | told the user to run PR COAT first |
+| etch / deposition / metallization | modal yes/no confirm before running under a blanket resist |
+| oxidation | modal yes/no confirm, plus advice to use LOCOS instead |
+
+**What it proves.** "Warn, do not block" is not satisfied by a confirm
+dialog. A modal that must be answered is a block, and a message that
+names the step to run instead is a prescribed sequence even when it
+does not technically prevent anything. Both readings had to be
+corrected.
+
+**The fixes.**
+
+*Blocks became results.* A step with nothing to act on now runs, changes
+nothing, and says so in the log — no dialog. Develop, expose and strip
+on a wafer with no resist are no-ops that report themselves, and
+critically they do NOT invent the state they were missing (verified:
+`wafer.developed` stays False after developing a resist-free wafer).
+
+*Confirms became log notes.* `_confirm_if_blanket_resist()` (which
+returned a bool the callers checked) became `_note_if_blanket_resist()`
+(which returns nothing and only logs). Same for the oxidation resist
+case, with the LOCOS advice removed from it entirely.
+
+*Doping's prerequisite was removed by making it unnecessary.* A wafer
+exists from the moment it is created, and doping virgin silicon is a
+real step, so refusing until some other process had run was never
+justified. `worker_main` gained a `_materialize_wafer` branch that
+exports the wafer AS IT IS, running no process at all, and
+`_materialize_current_wafer()` calls it when no mesh exists yet.
+Measured: `step_count: 0`, materials `['Si']` spanning the full width,
+a written `.vpsd`, and `apply_uniform_doping` attaching to it normally.
+It is explicitly not a process step — it appends nothing to
+`completed_steps`, marks no stage, and touches no resist state.
+
+*Measurement's message became a statement of fact.* It still cannot run
+without a doping profile — a drift-diffusion solve has no carriers
+without one — but it now says that instead of "apply doping first", and
+the button is no longer greyed out, so pressing it explains rather than
+doing nothing.
+
+**LOCOS isolation.** LOCOS was a checkbox on the thermal oxidation
+recipe, which made it read as a modifier of ordinary oxidation and let
+its special-case logic reach into the plain path. It is now a separate
+method (`oxidation_method`: "Thermal oxidation" | "LOCOS"), and
+`mask_material` plus every mask key exist ONLY inside the LOCOS branch.
+Verified by building the recipe three times in sequence — thermal,
+LOCOS, thermal again — and asserting the third is byte-identical in the
+relevant keys to the first (`mask_spans_um == []`, no `mask_material`),
+so selecting LOCOS once cannot contaminate the plain path afterwards.
+
+**Renderer.** The PR overlay label said "PR — patterned (next step is
+masked)", which names a step the user has not chosen. It now describes
+only the resist as it is.
+
+**Documentation.** CLAUDE.md gained a THE INVARIANT section at the top
+listing the concrete forms a violation takes, including the two that
+are easy to miss (a confirm dialog; advice about which step to run).
+The pre-existing "Preferred order" list was relabelled as development
+sequencing, not a process flow. Remaining example sequences were
+removed from prose, and the integration test that read as a canonical
+flow was renamed and now states that its order is arbitrary and that a
+different order must work equally well.
+
+**Pinned by** `tests/unit/test_gui_no_forced_order_mock.py`, which traps
+every blocking messagebox function and fails if one fires during
+ordinary use, asserts all 11 process buttons are enabled on a pristine
+wafer, asserts no-op steps invent no state, and asserts the LOCOS
+isolation above. `tests/integration/test_process_state_resume_real.py`
+gained a case pinning that a wafer with nothing run on it still exports
+a real, dopeable geometry with `step_count == 0`.
+
+**What remains uncertain.** The trap-based test covers the paths it
+drives; a blocking dialog added to a path it does not exercise would
+still slip through. Widening it as new panels appear is cheaper than
+re-deriving this audit.
+
+Regression: 39 passed / 3 failed, the same three pre-existing
+DevSim-side failures described in the non-ASCII path entry above.

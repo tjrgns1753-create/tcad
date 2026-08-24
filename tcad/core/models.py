@@ -48,6 +48,28 @@ class Wafer:
     exposure_dose: float = 100.0
     develop_time_s: float = 60.0
 
+    # --- resist state -------------------------------------------------
+    # What photoresist is ACTUALLY on the wafer right now, as opposed to
+    # the mask/PR *parameters* above, which always carry a value whether
+    # or not the user ever ran lithography.
+    #
+    # Keeping these apart is the difference between a Process CAD and a
+    # fixed recipe player. With only the parameters, every process step
+    # had to guess whether a mask was meant, and guessed from defaults:
+    # a plain deposition on a fresh wafer silently grew a 1.0um `Mask`
+    # solid and deposited only inside mask_openings_um -- a patterned
+    # film nobody asked for. Measured directly against real ViennaPS
+    # 4.6.2 before this field existed.
+    #
+    # pr_present : PR COAT has been run and the resist has not been
+    #     stripped. On its own this means a BLANKET film covering the
+    #     whole wafer -- coating is not patterning.
+    # developed  : DEVELOP has been run since the last coat, so the
+    #     resist now carries openings at mask_openings_um. This is the
+    #     FIRST point at which a resist opening becomes real geometry;
+    #     mask alignment and exposure change no geometry at all.
+    pr_present: bool = False
+
     developed: bool = False
     etched: bool = False
     stripped: bool = False

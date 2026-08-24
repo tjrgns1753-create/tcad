@@ -65,6 +65,41 @@ from tcad.physics.doping import (
 )
 
 # ============================================================
+# DESIGN TOKENS — industrial/scientific EDA look
+# ============================================================
+#
+# GUI-visual only: no value here is read by any process/physics code
+# path. A single source of truth so every widget across all panels
+# (litho/etch/oxidation/deposition/gate_stack/doping/measurement)
+# looks consistent without each one carrying its own style= kwargs --
+# none of them do today (verified: no widget in this file passes a
+# custom ttk `style=`), so retheming the DEFAULT ttk styles here
+# cascades everywhere automatically.
+#
+# Palette named for what it actually is in a fab, not generic UI
+# roles: ACCENT is "cleanroom yellow" -- real fabs light the areas
+# where photoresist is handled with yellow light because PR is
+# UV-sensitive, so an amber/yellow primary accent is not an arbitrary
+# brand color choice here.
+class Tokens:
+    BG_0 = "#17191C"       # outermost chrome: toolbar, status bar
+    BG_1 = "#1D2024"       # panel backgrounds (library, inspector, timeline)
+    BG_2 = "#121316"       # recessed fields: canvas, entries, log console
+    BG_3 = "#25282D"       # raised elements: buttons, selected rows
+    LINE = "#33373D"       # hairline dividers between regions
+    LINE_STRONG = "#43474E"
+    FG = "#D7D9DC"         # primary text
+    FG_MUTED = "#82868C"   # secondary labels, captions, units
+    FG_DIM = "#585C62"     # disabled / inactive
+    ACCENT = "#E8B23D"     # cleanroom yellow — selection, primary action
+    ACCENT_DIM = "#8A6B2E"
+    RUN = "#4FB477"        # success / converged / running
+    STOP = "#D6524B"       # error / non-convergence / destructive
+    FONT_UI = "Segoe UI"
+    FONT_DATA = "Consolas"  # parameter values, coordinates, log, timeline
+
+
+# ============================================================
 # VIENNAPS ETCH ENGINE
 # ============================================================
 #
@@ -76,6 +111,20 @@ from tcad.physics.doping import (
 
 # Canvas polygon cap for _draw_real_mesh_result -- see its use for why.
 _MAX_RENDERED_TRIANGLES = 2000
+
+
+def _nice_ruler_step(extent, target_ticks=8):
+    """A "nice" (1/2/5 * 10^n) tick spacing for a ruler spanning
+    `extent` units, aiming for roughly `target_ticks` labelled ticks.
+    GUI-display-only; no relation to any mesh/grid resolution."""
+    if extent <= 0:
+        return 1.0
+    raw = extent / max(1, target_ticks)
+    import math
+    exponent = math.floor(math.log10(raw))
+    base = raw / (10 ** exponent)
+    nice = 1.0 if base < 1.5 else 2.0 if base < 3.5 else 5.0 if base < 7.5 else 10.0
+    return nice * (10 ** exponent)
 
 
 def _material_boundary_loops(triangles):
@@ -148,7 +197,42 @@ def worker_main(config_file: str, result_file: str):
             )
         )
 
-        if config.get("_flow_steps"):
+        if config.get("_materialize_wafer"):
+            # Export the wafer AS IT IS, running no process at all.
+            #
+            # A wafer exists from the moment it is created, so a step
+            # that needs a mesh (doping attaches its profile to one)
+            # must not be gated behind "run some other process first" —
+            # that would be a prerequisite, and the user chooses the
+            # order. This gives that step the current wafer's real
+            # geometry instead.
+            from tcad.backends.viennaps import session as _session
+            from tcad.backends.viennaps.io import save_volume_mesh
+
+            domain = _session.make_mask_spans(
+                grid_delta_um=config["grid_delta_um"],
+                x_extent_um=config["x_extent_um"],
+                y_extent_um=config["y_extent_um"],
+                spans_um=[tuple(span) for span in config.get("mask_spans_um") or []],
+                mask_height_um=max(config.get("pr_thickness_um", 0.0), 0.1),
+                substrate_depth_um=config["silicon_depth_um"] + 1.0,
+            )
+            mesh_path = save_volume_mesh(
+                domain,
+                str(Path(config["output_dir"]) / "wafer"),
+                floor_depth_um=config["silicon_depth_um"],
+            )
+            state_path = str(Path(config["output_dir"]) / "domain_state.vpsd")
+            _session.save_domain_state(domain, state_path)
+            payload = {
+                "success": True,
+                "final_mesh": mesh_path,
+                "domain_state": state_path,
+                "step_count": 0,
+                "step_meshes": [],
+            }
+
+        elif config.get("_flow_steps"):
             # A user-composed process FLOW: several steps, in whatever
             # order the user queued them, each continuing from the
             # previous step's real geometry via
@@ -156,6 +240,20 @@ def worker_main(config_file: str, result_file: str):
             # 13/14 machinery this project already verified; the GUI
             # simply had no way in until now.
             from tcad.process.flow import FlowStep, run_flow
+
+            # Resume the real accumulated wafer instead of rebuilding it.
+            # Each GUI RUN click is its own subprocess, so a live domain
+            # cannot be held between clicks; without this the GUI had to
+            # re-run its ENTIRE history every click to get back to the
+            # current geometry (O(N^2), and it re-paid for the slowest
+            # step forever). The .vpsd written by the previous click
+            # carries that geometry directly.
+            initial_domain = None
+            resume_state = config.get("_resume_state")
+            if resume_state:
+                from tcad.backends.viennaps import session as _session
+
+                initial_domain = _session.load_domain_state(resume_state)
 
             results = run_flow(
                 [
@@ -167,13 +265,23 @@ def worker_main(config_file: str, result_file: str):
                     for step in config["_flow_steps"]
                 ],
                 config["output_dir"],
+                initial_domain=initial_domain,
             )
             # The LAST step's mesh is the finished device -- that is what
-            # doping and device measurement consume.
+            # doping and device measurement consume. step_meshes carries
+            # every INTERMEDIATE step's own mesh too (GUI-display only --
+            # run_flow already computed and exported all of them; this
+            # just serializes what was already there, so the Process
+            # Flow Timeline can show any step's geometry on click,
+            # instead of only the final one).
             payload = {
                 "success": True,
                 "final_mesh": results[-1].volume_mesh_path,
                 "step_count": len(results),
+                "step_meshes": [r.volume_mesh_path for r in results],
+                # The wafer's accumulated state, for the NEXT click to
+                # resume from (see "_resume_state" above).
+                "domain_state": results[-1].domain_state_path,
             }
         else:
             # Any registered category/model works here (Bosch included):
@@ -249,6 +357,48 @@ class TCADApplication(tk.Tk):
         # _show_panel_category).
         self._panel_frames = {}
 
+        # Which category's panel is currently shown in the Parameter
+        # Inspector (right column) -- holds a _PANEL_LABELS[...] display
+        # string, read by _show_panel_category()/add_current_step_to_flow().
+        # Created here (not in _make_control_panel, where it used to be
+        # created) because the Process Library tree's default selection
+        # (_make_process_panel, built first) fires <<TreeviewSelect>>
+        # synchronously and needs this to already exist.
+        self.panel_category = tk.StringVar(value=self._PANEL_LABELS["oxidation"])
+
+        # Per-flow-step result mesh paths, populated after a real
+        # RUN PROCESS FLOW (see run_process_flow / worker_main's
+        # "_flow_steps" branch) so the bottom timeline can show any
+        # step's own geometry on click, not just the final one.
+        self.flow_step_meshes = []
+
+        # Which completed step's geometry the viewer currently shows --
+        # None means "the real current wafer" (self.last_final_mesh);
+        # an index into flow_step_meshes means the user clicked that
+        # timeline chip (see _view_flow_step). Initialized here (not in
+        # _make_flow_panel, which builds the timeline that sets it)
+        # because redraw() can run earlier, during _make_control_panel's
+        # own construction (_make_lithography_panel's initial
+        # _refresh_openings_list() -> _on_opening_selected() -> redraw()).
+        self._viewing_step_index = None
+
+        # Per-x real-current-top-surface lookup, rebuilt by
+        # _draw_real_mesh_result() on every successful real-mesh render
+        # (see its own comment). Defaults to "the y=0 datum everywhere"
+        # so redraw()'s PR overlay has something safe to call before any
+        # real mesh has ever been drawn, or if a real-mesh draw attempt
+        # fails partway (meshio missing, corrupt file, etc.) -- rather
+        # than reading a stale lookup from a DIFFERENT, no-longer-
+        # current mesh, or crashing on a missing attribute.
+        self._real_mesh_top_um = lambda x_um: 0.0
+
+        # The .vpsd holding the wafer's ACCUMULATED geometry, written by
+        # the last successful run. The next RUN click resumes from this
+        # instead of re-running the whole history to rebuild it -- see
+        # _chained_flow_config(). None until a step succeeds, and reset
+        # by NEW WAFER.
+        self.last_domain_state = None
+
         # The user-composed process flow: a list of fully-built recipes,
         # run in the given order by tcad.process.flow.run_flow so each
         # step continues from the previous one's real geometry. This is
@@ -276,6 +426,11 @@ class TCADApplication(tk.Tk):
 
         self.history = []
 
+        # SESSION STATE markers actually reached, accumulated by
+        # _mark_stage_done(). Stage 0 ("Si wafer") is true from the
+        # moment a wafer exists, which is now.
+        self._stages_done = {0}
+
         # Explicit process-state machine.
         # The simulator never jumps from PR coat directly to develop.
         self.process_stage = "wafer"
@@ -292,245 +447,434 @@ class TCADApplication(tk.Tk):
     # --------------------------------------------------------
 
     def _make_style(self):
+        """Global ttk theme -- industrial/scientific EDA look.
+
+        Configures the DEFAULT style of every ttk widget class
+        (TFrame, TLabel, TButton, ...), not named per-widget styles, so
+        every existing panel (none of which pass a custom `style=`
+        kwarg -- confirmed by grep across this file) picks this up
+        automatically. A few named variants (Accent/Run/Danger.TButton,
+        Header/Section/Mono/Caption.TLabel, Toolbar/Inspector/Canvas
+        .TFrame) exist for the specific spots that need to stand out
+        from the base look; everything else inherits the base.
+        """
+        T = Tokens
+        self.configure(bg=T.BG_0)
 
         style = ttk.Style(self)
-
         try:
             style.theme_use("clam")
         except Exception:
             pass
+
+        style.configure(".", background=T.BG_1, foreground=T.FG,
+                        font=(T.FONT_UI, 9), bordercolor=T.LINE,
+                        darkcolor=T.BG_1, lightcolor=T.BG_1,
+                        troughcolor=T.BG_2, focuscolor=T.ACCENT)
+
+        style.configure("TFrame", background=T.BG_1)
+        style.configure("TLabel", background=T.BG_1, foreground=T.FG)
+        style.configure("TLabelframe", background=T.BG_1, bordercolor=T.LINE,
+                        relief="solid", borderwidth=1)
+        style.configure("TLabelframe.Label", background=T.BG_1,
+                        foreground=T.FG_MUTED, font=(T.FONT_UI, 9, "bold"))
+        style.configure("TSeparator", background=T.LINE)
+
+        style.configure("TButton", background=T.BG_3, foreground=T.FG,
+                        bordercolor=T.LINE_STRONG, relief="flat",
+                        font=(T.FONT_UI, 9), padding=(8, 5))
+        style.map("TButton",
+                   background=[("active", T.LINE_STRONG), ("disabled", T.BG_1)],
+                   foreground=[("disabled", T.FG_DIM)])
+
+        style.configure("TEntry", fieldbackground=T.BG_2, foreground=T.FG,
+                        insertcolor=T.ACCENT, bordercolor=T.LINE,
+                        font=(T.FONT_DATA, 9), padding=4)
+        style.map("TEntry", fieldbackground=[("disabled", T.BG_1)])
+
+        style.configure("TCombobox", fieldbackground=T.BG_2, background=T.BG_3,
+                        foreground=T.FG, arrowcolor=T.FG_MUTED,
+                        bordercolor=T.LINE, font=(T.FONT_DATA, 9), padding=4)
+        style.map("TCombobox", fieldbackground=[("readonly", T.BG_2)],
+                   foreground=[("readonly", T.FG)])
+        self.option_add("*TCombobox*Listbox.background", T.BG_2)
+        self.option_add("*TCombobox*Listbox.foreground", T.FG)
+        self.option_add("*TCombobox*Listbox.selectBackground", T.ACCENT_DIM)
+        self.option_add("*TCombobox*Listbox.font", (T.FONT_DATA, 9))
+
+        style.configure("TScrollbar", background=T.BG_3, troughcolor=T.BG_1,
+                        bordercolor=T.BG_1, arrowcolor=T.FG_MUTED)
+
+        style.configure("Treeview", background=T.BG_1, fieldbackground=T.BG_1,
+                        foreground=T.FG, bordercolor=T.LINE, relief="flat",
+                        font=(T.FONT_UI, 9), rowheight=26)
+        style.map("Treeview",
+                   background=[("selected", T.ACCENT_DIM)],
+                   foreground=[("selected", "#111111")])
+        style.configure("Treeview.Heading", background=T.BG_0,
+                        foreground=T.FG_MUTED, relief="flat",
+                        font=(T.FONT_UI, 8, "bold"))
+        style.layout("Treeview", [("Treeview.treearea", {"sticky": "nswe"})])
+
+        # --- named variants for spots that must stand apart -----------
+        style.configure("Toolbar.TFrame", background=T.BG_0)
+        style.configure("Inspector.TFrame", background=T.BG_1)
+        style.configure("Canvas.TFrame", background=T.BG_2)
+        style.configure("Status.TFrame", background=T.BG_0)
+
+        style.configure("Header.TLabel", background=T.BG_0, foreground=T.FG,
+                        font=(T.FONT_UI, 14, "bold"))
+        style.configure("SubHeader.TLabel", background=T.BG_0,
+                        foreground=T.FG_MUTED, font=(T.FONT_UI, 9))
+        style.configure("Section.TLabel", background=T.BG_1,
+                        foreground=T.FG_MUTED,
+                        font=(T.FONT_UI, 8, "bold"))
+        style.configure("Mono.TLabel", background=T.BG_1, foreground=T.FG,
+                        font=(T.FONT_DATA, 9))
+        style.configure("Caption.TLabel", background=T.BG_1,
+                        foreground=T.FG_MUTED, font=(T.FONT_UI, 8))
+        style.configure("Unit.TLabel", background=T.BG_1,
+                        foreground=T.FG_DIM, font=(T.FONT_DATA, 8))
+        style.configure("StatusText.TLabel", background=T.BG_0,
+                        foreground=T.FG_MUTED, font=(T.FONT_DATA, 8))
+
+        style.configure("Accent.TButton", background=T.ACCENT,
+                        foreground="#1A1400", font=(T.FONT_UI, 9, "bold"),
+                        bordercolor=T.ACCENT, padding=(10, 6))
+        style.map("Accent.TButton",
+                   background=[("active", "#F2C05C"), ("disabled", T.BG_3)],
+                   foreground=[("disabled", T.FG_DIM)])
+
+        style.configure("Run.TButton", background=T.RUN, foreground="#0C1F14",
+                        font=(T.FONT_UI, 9, "bold"), bordercolor=T.RUN,
+                        padding=(10, 6))
+        style.map("Run.TButton",
+                   background=[("active", "#63CC8E"), ("disabled", T.BG_3)],
+                   foreground=[("disabled", T.FG_DIM)])
+
+        style.configure("Danger.TButton", background=T.BG_1,
+                        foreground=T.STOP, bordercolor=T.STOP,
+                        font=(T.FONT_UI, 9), padding=(10, 6))
+        style.map("Danger.TButton",
+                   background=[("active", "#3A1F1E"), ("disabled", T.BG_1)],
+                   foreground=[("disabled", T.FG_DIM)])
+
+        style.configure("Toolbar.TButton", background=T.BG_0,
+                        foreground=T.FG_MUTED, bordercolor=T.BG_0,
+                        relief="flat", font=(T.FONT_UI, 9), padding=(9, 5))
+        style.map("Toolbar.TButton",
+                   background=[("active", T.BG_1)],
+                   foreground=[("active", T.FG), ("disabled", T.FG_DIM)])
+
+        # Viewer layer switch (GEOMETRY/DOPING/POTENTIAL/...): a
+        # Radiobutton group styled as a flat tab strip, not a checkbox
+        # list -- the ttk "selected" state (which tab is active) is what
+        # distinguishes it from a plain Toolbar.TButton, so it needs its
+        # own style+layout rather than reusing that one.
+        style.layout("LayerTab.TButton", style.layout("TButton"))
+        style.configure("LayerTab.TButton", background=T.BG_1,
+                        foreground=T.FG_MUTED, bordercolor=T.LINE,
+                        relief="flat", font=(T.FONT_UI, 8, "bold"),
+                        padding=(8, 4))
+        style.map("LayerTab.TButton",
+                   background=[("selected", T.ACCENT), ("active", T.BG_3)],
+                   foreground=[("selected", "#1A1400"), ("active", T.FG)])
+
+        # Same flat-toggle idea as LayerTab.TButton, but on the toolbar's
+        # own (darker) background -- used for MESH, the one checkbox-style
+        # toggle living in the top toolbar rather than the viewer strip.
+        style.layout("ToolbarToggle.TButton", style.layout("TButton"))
+        style.configure("ToolbarToggle.TButton", background=T.BG_0,
+                        foreground=T.FG_MUTED, bordercolor=T.BG_0,
+                        relief="flat", font=(T.FONT_UI, 9), padding=(9, 5))
+        style.map("ToolbarToggle.TButton",
+                   background=[("selected", T.ACCENT), ("active", T.BG_1)],
+                   foreground=[("selected", "#1A1400"), ("active", T.FG)])
+
+        self._toolbar_frame_style = "Toolbar.TFrame"
 
     # --------------------------------------------------------
     # HEADER
     # --------------------------------------------------------
 
     def _make_header(self):
+        T = Tokens
+        header = ttk.Frame(self, style="Toolbar.TFrame", padding=(14, 9))
+        header.pack(fill="x")
 
-        header = ttk.Frame(
-            self,
-            padding=(12, 10),
-        )
+        # --- brand block --------------------------------------------
+        brand = ttk.Frame(header, style="Toolbar.TFrame")
+        brand.pack(side="left")
+        ttk.Label(brand, text="TCAD", style="Header.TLabel").pack(side="left")
+        ttk.Label(brand, text="2D", style="Header.TLabel",
+                  foreground=T.ACCENT).pack(side="left", padx=(4, 0))
+        ttk.Label(brand, text="   PROCESS → MESH → DEVICE",
+                  style="SubHeader.TLabel").pack(side="left", padx=(6, 0))
 
-        header.pack(
-            fill="x"
-        )
+        def _vsep(parent):
+            ttk.Separator(parent, orient="vertical").pack(
+                side="left", fill="y", padx=14, pady=2)
 
-        ttk.Label(
-            header,
-            text="TCAD 2D",
-            font=(
-                "Segoe UI",
-                21,
-                "bold",
-            ),
-        ).pack(
-            side="left"
-        )
+        _vsep(header)
 
-        ttk.Label(
-            header,
-            text=(
-                "  REAL PROCESS FLOW / "
-                "LITHOGRAPHY + VIENNAPS"
-            ),
-            font=(
-                "Segoe UI",
-                10,
-            ),
-        ).pack(
-            side="left"
-        )
+        # --- PROJECT group --------------------------------------------
+        project = ttk.Frame(header, style="Toolbar.TFrame")
+        project.pack(side="left")
+        ttk.Label(project, text="PROJECT", style="Caption.TLabel").pack(
+            side="left", padx=(0, 6))
+        ttk.Button(project, text="NEW", style="Toolbar.TButton",
+                   command=self.reset).pack(side="left")
+        ttk.Button(project, text="SAVE", style="Toolbar.TButton",
+                   command=self.save_project).pack(side="left")
+        ttk.Button(project, text="LOAD", style="Toolbar.TButton",
+                   command=self.load_project).pack(side="left")
 
-        backend = (
-            "VIENNAPS READY"
-            if viennaps_session.is_available()
-            else "VIENNAPS NOT INSTALLED"
-        )
+        _vsep(header)
 
-        ttk.Label(
-            header,
-            text=backend,
-            foreground=(
-                "green"
-                if viennaps_session.is_available()
-                else "red"
-            ),
-            font=(
-                "Segoe UI",
-                10,
-                "bold",
-            ),
-        ).pack(
-            side="right"
+        # --- RUN group --------------------------------------------------
+        # Aliases onto the SAME handlers the bottom Process Flow Timeline's
+        # own buttons use (run_process_flow / run_measurement) -- no new
+        # execution path, just a toolbar shortcut to it.
+        run_group = ttk.Frame(header, style="Toolbar.TFrame")
+        run_group.pack(side="left")
+        ttk.Label(run_group, text="RUN", style="Caption.TLabel").pack(
+            side="left", padx=(0, 6))
+        self.toolbar_run_button = ttk.Button(
+            run_group, text="▶ FLOW", style="Run.TButton",
+            command=self.run_process_flow,
         )
+        self.toolbar_run_button.pack(side="left")
+        ttk.Button(run_group, text="SOLVE", style="Toolbar.TButton",
+                   command=self.run_measurement).pack(side="left", padx=(4, 0))
+        self.toolbar_stop_button = ttk.Button(
+            run_group, text="■ STOP", style="Danger.TButton",
+            state="disabled",
+        )
+        self.toolbar_stop_button.pack(side="left", padx=(4, 0))
+        # Execution today is a single blocking subprocess.run() call
+        # (run_process_flow / worker_main) with no cancellation hook --
+        # making STOP real needs a non-blocking execution model, which is
+        # an execution-architecture change, not a visual one. The button
+        # stays visible (so the control surface reads as complete) and
+        # disabled (so it never lies about what it can do); hovering
+        # explains why, in the same status bar every other hint uses.
+        for seq, text in (
+            ("<Enter>", "STOP is disabled: runs execute synchronously "
+                        "today and cannot be cancelled mid-solve."),
+            ("<Leave>", "Ready"),
+        ):
+            self.toolbar_stop_button.bind(
+                seq, lambda _e, t=text: self.status_var.set(t))
+
+        _vsep(header)
+
+        # --- MESH overlay toggle ----------------------------------------
+        # A view-only overlay (draw the real triangle edges on top of the
+        # material fill), independent of which layer (Geometry/Doping/...)
+        # is selected in the viewer's own layer strip -- see
+        # _make_cross_section. Purely additive to redraw()/
+        # _draw_real_mesh_result; no mesh DATA is changed by toggling it.
+        self.mesh_overlay_var = tk.BooleanVar(value=False)
+        mesh_btn = ttk.Checkbutton(
+            header, text="MESH", variable=self.mesh_overlay_var,
+            style="ToolbarToggle.TButton", command=self.redraw,
+        )
+        mesh_btn.pack(side="left")
+
+        # --- status (right) ----------------------------------------------
+        backend = ("VIENNAPS READY" if viennaps_session.is_available()
+                   else "VIENNAPS NOT INSTALLED")
+        ttk.Label(header, text=backend,
+                  foreground=T.RUN if viennaps_session.is_available() else T.STOP,
+                  background=T.BG_0, font=(T.FONT_UI, 9, "bold"),
+                  ).pack(side="right")
+
+        from tcad.device.devsim import backend as _devsim_backend
+        devsim_ready = _devsim_backend.is_available()
+        ttk.Label(header, text=("DEVSIM READY" if devsim_ready
+                                 else "DEVSIM NOT INSTALLED"),
+                  foreground=T.RUN if devsim_ready else T.FG_DIM,
+                  background=T.BG_0, font=(T.FONT_UI, 9, "bold"),
+                  ).pack(side="right", padx=(0, 16))
 
     # --------------------------------------------------------
     # STATUS BAR
     # --------------------------------------------------------
 
     def _make_status(self):
-        self.status_var = tk.StringVar(
-            value="Ready — TCAD_2D_REAL_REWRITE_V2"
-        )
-        ttk.Label(
-            self,
-            textvariable=self.status_var,
-            relief="sunken",
-            anchor="w",
-            padding=5,
-        ).pack(
-            fill="x",
-            side="bottom",
-        )
+        T = Tokens
+        self.status_var = tk.StringVar(value="Ready")
+        bar = ttk.Frame(self, style="Status.TFrame", padding=(10, 3))
+        bar.pack(fill="x", side="bottom")
+        ttk.Label(bar, textvariable=self.status_var, style="StatusText.TLabel",
+                  anchor="w").pack(side="left", fill="x", expand=True)
+        ttk.Label(bar, text="TCAD 2D · REAL PROCESS FLOW · V2",
+                  style="StatusText.TLabel").pack(side="right")
 
-        # --------------------------------------------------------
+    # --------------------------------------------------------
     # BODY
     # --------------------------------------------------------
 
     def _make_body(self):
+        T = Tokens
+        # Vertical split: main 3-column work area on top, Process Flow
+        # Timeline + Log console docked at the bottom -- the same
+        # arrangement a layout/schematic EDA tool uses (canvas + tool
+        # panels above a persistent bottom console dock).
+        outer = ttk.Frame(self)
+        outer.pack(fill="both", expand=True)
 
-        body = ttk.Frame(
-            self
-        )
+        main = ttk.Frame(outer)
+        main.pack(fill="both", expand=True)
 
-        body.pack(
-            fill="both",
-            expand=True,
-            padx=10,
-            pady=5,
-        )
+        self._make_process_panel(main)
+        self._make_cross_section(main)
+        self._make_control_panel(main)
 
-        self._make_process_panel(body)
-        self._make_cross_section(body)
-        self._make_control_panel(body)
+        ttk.Separator(outer).pack(fill="x")
+
+        dock = ttk.Frame(outer, style="Inspector.TFrame")
+        dock.pack(fill="x", side="bottom")
+        self._make_flow_panel(dock)
+        self._make_log_panel(dock)
 
     # --------------------------------------------------------
-    # PROCESS PANEL
+    # PROCESS LIBRARY (left column)
     # --------------------------------------------------------
 
-    def _make_process_panel(
-        self,
-        parent,
-    ):
+    #: (group label, key) -- key matches self._panel_frames / _PANEL_LABELS,
+    #: set by each _make_*_panel as it builds its own LabelFrame. Grouped
+    #: the way a real process library is organized: steps that build
+    #: geometry, then the steps that turn geometry into a measurable
+    #: device, then the one structural shortcut (gate_stack) that stands
+    #: apart from the rest (see gate_stack.py -- it is intentionally
+    #: terminal and does not chain like the others).
+    _LIBRARY_GROUPS = (
+        ("PROCESS", ("oxidation", "litho", "etch", "deposition",
+                     "metallization")),
+        ("DEVICE", ("doping", "measurement")),
+        ("STRUCTURES", ("gate_stack",)),
+    )
 
-        panel = ttk.LabelFrame(
-            parent,
-            text="Fabrication sequence",
-            padding=10,
-        )
+    def _make_process_panel(self, parent):
+        T = Tokens
+        panel = ttk.Frame(parent, style="Inspector.TFrame", width=230)
+        panel.pack(side="left", fill="y")
+        panel.pack_propagate(False)
 
-        panel.pack(
-            side="left",
-            fill="y",
-        )
+        # --- session state: the litho micro-step checklist -------------
+        # Kept from the previous single-column layout -- it tracks real
+        # process_stage progress (see _activate_stages, called from
+        # process_pr_coat/run_etch/... throughout this file) and is not
+        # itself a navigation control, so it sits above the Process
+        # Library tree rather than inside it.
+        state_box = ttk.Frame(panel, style="Inspector.TFrame", padding=(10, 10, 10, 4))
+        state_box.pack(fill="x")
+        ttk.Label(state_box, text="SESSION STATE", style="Section.TLabel").pack(anchor="w")
 
         stages = [
-            "Si wafer",
-            "Film / oxide",
-            "PR coat",
-            "Mask alignment",
-            "Exposure",
-            "Develop",
-            "Etch",
-            "PR strip",
+            "Si wafer", "Film / oxide", "PR coat", "Mask alignment",
+            "Exposure", "Develop", "Etch", "PR strip",
         ]
-
         self.stage_labels = []
-
         for index, name in enumerate(stages):
-
             label = ttk.Label(
-                panel,
-                text=(
-                    f"○ {index + 1:02d}  {name}"
-                ),
-                width=25,
-                padding=(
-                    3,
-                    7,
-                ),
+                state_box, text=f"○ {index + 1:02d}  {name}",
+                style="Caption.TLabel", padding=(2, 2),
             )
+            label.pack(anchor="w")
+            self.stage_labels.append(label)
 
-            label.pack(
-                anchor="w"
-            )
+        ttk.Separator(panel).pack(fill="x", pady=(6, 0))
 
-            self.stage_labels.append(
-                label
-            )
+        # --- Process Library tree ---------------------------------------
+        lib_box = ttk.Frame(panel, style="Inspector.TFrame", padding=(10, 8, 10, 10))
+        lib_box.pack(fill="both", expand=True)
+        ttk.Label(lib_box, text="PROCESS LIBRARY", style="Section.TLabel").pack(anchor="w")
 
-        ttk.Separator(
-            panel
-        ).pack(
-            fill="x",
-            pady=12,
-        )
+        tree = ttk.Treeview(lib_box, show="tree", selectmode="browse", height=14)
+        tree.pack(fill="both", expand=True, pady=(4, 0))
+        self.library_tree = tree
 
-        ttk.Button(
-            panel,
-            text="NEW WAFER",
-            command=self.reset,
-        ).pack(
-            fill="x",
-            pady=3,
-        )
+        self._library_tree_keys = {}
+        for group_label, keys in self._LIBRARY_GROUPS:
+            group_id = tree.insert("", "end", text=group_label, open=True, tags=("group",))
+            for key in keys:
+                item_id = tree.insert(group_id, "end", text=self._PANEL_LABELS[key])
+                self._library_tree_keys[item_id] = key
+        tree.tag_configure("group", foreground=T.FG_DIM)
 
-        ttk.Button(
-            panel,
-            text="SAVE PROJECT",
-            command=self.save_project,
-        ).pack(
-            fill="x",
-            pady=3,
-        )
+        def _on_tree_select(_event=None):
+            selection = tree.selection()
+            if not selection:
+                return
+            key = self._library_tree_keys.get(selection[0])
+            if key is None:
+                return  # a group header, not a selectable category
+            self.panel_category.set(self._PANEL_LABELS[key])
+            self._show_panel_category()
 
-        ttk.Button(
-            panel,
-            text="LOAD PROJECT",
-            command=self.load_project,
-        ).pack(
-            fill="x",
-            pady=3,
-        )
+        tree.bind("<<TreeviewSelect>>", _on_tree_select)
+
+        # Select the first real category by default (matches the old
+        # Combobox's initial value, "litho").
+        first_leaf = next(iter(self._library_tree_keys))
+        tree.selection_set(first_leaf)
 
     # --------------------------------------------------------
-    # CROSS SECTION
+    # CROSS SECTION (center viewer)
     # --------------------------------------------------------
 
-    def _make_cross_section(
-        self,
-        parent,
-    ):
+    #: Visualization layers for the center viewer. "geometry" and
+    #: "doping" read data this GUI already has on hand (the real mesh /
+    #: self.last_doped_result). "potential"/"electron"/"hole" need
+    #: node-level DevSim field data the measurement worker does not
+    #: serialize back today (only terminal currents) -- the toggle exists
+    #: so the surface is complete, but shows an honest placeholder rather
+    #: than fabricated field data until that plumbing exists.
+    _VIEWER_LAYERS = ("geometry", "doping", "potential", "electron", "hole")
+    _VIEWER_LAYER_LABELS = {
+        "geometry": "GEOMETRY", "doping": "DOPING", "potential": "POTENTIAL",
+        "electron": "ELECTRON", "hole": "HOLE",
+    }
 
-        frame = ttk.LabelFrame(
-            parent,
-            text="2D process cross-section",
-            padding=5,
-        )
+    def _make_cross_section(self, parent):
+        T = Tokens
+        frame = ttk.Frame(parent, style="Inspector.TFrame")
+        frame.pack(side="left", fill="both", expand=True, padx=1)
 
-        frame.pack(
-            side="left",
-            fill="both",
-            expand=True,
-            padx=10,
-        )
+        # --- viewer toolbar: title + layer switch ------------------------
+        vtool = ttk.Frame(frame, style="Inspector.TFrame", padding=(10, 6))
+        vtool.pack(fill="x")
+        ttk.Label(vtool, text="2D STRUCTURE / PROCESS VIEWER",
+                  style="Section.TLabel").pack(side="left")
+
+        layer_box = ttk.Frame(vtool, style="Inspector.TFrame")
+        layer_box.pack(side="right")
+        self.viewer_layer_var = tk.StringVar(value="geometry")
+        self._layer_buttons = {}
+        for layer in self._VIEWER_LAYERS:
+            btn = ttk.Radiobutton(
+                layer_box, text=self._VIEWER_LAYER_LABELS[layer],
+                value=layer, variable=self.viewer_layer_var,
+                style="LayerTab.TButton",
+                command=self.redraw,
+            )
+            btn.pack(side="left", padx=(0, 2))
+            self._layer_buttons[layer] = btn
+
+        ttk.Separator(frame).pack(fill="x")
+
+        # --- canvas --------------------------------------------------------
+        canvas_host = ttk.Frame(frame, style="Canvas.TFrame", padding=1)
+        canvas_host.pack(fill="both", expand=True, padx=10, pady=(6, 0))
 
         self.canvas = tk.Canvas(
-            frame,
-            bg="white",
-            highlightthickness=1,
-            highlightbackground="#777",
+            canvas_host, bg=T.BG_2, highlightthickness=0,
         )
+        self.canvas.pack(fill="both", expand=True)
 
-        self.canvas.pack(
-            fill="both",
-            expand=True,
-        )
-
-        self.canvas.bind(
-            "<Configure>",
-            lambda event: self.redraw(),
-        )
+        self.canvas.bind("<Configure>", lambda event: self.redraw())
 
         self._mask_drag_start_um = None
         self._mask_drag_rect_id = None
@@ -539,6 +883,51 @@ class TCADApplication(tk.Tk):
         self.canvas.bind("<B1-Motion>", self._on_mask_drag_move)
         self.canvas.bind("<ButtonRelease-1>", self._on_mask_drag_end)
 
+        # Live cursor coordinate readout -- the signature element: this
+        # domain is measured in microns, so a coordinate readout is what
+        # makes the viewer read as an instrument rather than a picture.
+        # Purely a display of the SAME x0/x1/surface_y/scale redraw()
+        # already computes each frame; stored on self so the motion
+        # handler (bound once, here) can reach the latest values without
+        # redraw() needing to know this readout exists.
+        self._viewer_scale = None  # set by redraw(): (x0, x_min, x_scale, surface_y, y_scale)
+        self.canvas.bind("<Motion>", self._on_canvas_motion)
+        self.canvas.bind("<Leave>", lambda _e: self.coord_var.set(""))
+
+        # --- coordinate / legend strip -------------------------------------
+        readout = ttk.Frame(frame, style="Canvas.TFrame", padding=(10, 3))
+        readout.pack(fill="x", padx=10, pady=(0, 8))
+        self.coord_var = tk.StringVar(value="")
+        ttk.Label(readout, textvariable=self.coord_var, style="Mono.TLabel",
+                  background=T.BG_2).pack(side="left")
+        self.legend_frame = ttk.Frame(readout, style="Canvas.TFrame")
+        self.legend_frame.pack(side="right")
+        # Static swatches from the single _MATERIAL_COLORS source of
+        # truth _draw_real_mesh_result() also fills from -- built once,
+        # not per-redraw, since the palette itself never changes.
+        for name, color in self._MATERIAL_COLORS.items():
+            chip = tk.Frame(self.legend_frame, width=10, height=10, bg=color,
+                             highlightthickness=1, highlightbackground=T.LINE_STRONG)
+            chip.pack(side="left", padx=(8, 2))
+            chip.pack_propagate(False)
+            ttk.Label(self.legend_frame, text=name, style="Caption.TLabel",
+                      background=T.BG_2).pack(side="left")
+
+    def _on_canvas_motion(self, event):
+        """Update the live X/Y (um) readout from the last scale redraw()
+        computed. GUI-only -- reads canvas pixel coords back through the
+        same linear map redraw() used, no new geometry math."""
+        if not self._viewer_scale:
+            self.coord_var.set("")
+            return
+        x0, x_min, x_scale, surface_y, y_scale = self._viewer_scale
+        if not x_scale or not y_scale:
+            self.coord_var.set("")
+            return
+        x_um = x_min + (event.x - x0) / x_scale
+        y_um = (surface_y - event.y) / y_scale
+        self.coord_var.set(f"X {x_um:+8.3f} µm   Y {y_um:+8.3f} µm")
+
     # --------------------------------------------------------
     # CONTROL PANEL
     # --------------------------------------------------------
@@ -546,22 +935,42 @@ class TCADApplication(tk.Tk):
     #: Category selector contents. Keys match self._panel_frames, set
     #: by each _make_*_panel as it builds its own LabelFrame.
     _PANEL_ORDER = (
+        "oxidation",
         "litho",
         "etch",
-        "oxidation",
         "deposition",
-        "gate_stack",
+        "metallization",
         "doping",
+        "gate_stack",
         "measurement",
     )
     _PANEL_LABELS = {
-        "litho": "Lithography / mask",
-        "etch": "Etching",
         "oxidation": "Oxidation",
+        "litho": "Lithography",
+        "etch": "Etching",
         "deposition": "Deposition",
-        "gate_stack": "Geometry (MOSFET gate stack)",
+        "metallization": "Metallization",
         "doping": "Doping",
+        "gate_stack": "Geometry (MOSFET gate stack)",
         "measurement": "Device measurement",
+    }
+
+    #: Single source of truth for material -> canvas color, shared by
+    #: _draw_real_mesh_result() (the fill) and _make_cross_section()'s
+    #: legend swatches (built once from this same dict), so they cannot
+    #: drift apart. Loosely follows real IC-layout layer-color
+    #: convention (diffusion greens/tans, poly red-orange, oxide blue,
+    #: metals distinct saturated hues) re-tuned to sit on a dark canvas,
+    #: not a literal reproduction of any one tool's palette.
+    _MATERIAL_COLORS = {
+        "Si": "#8A8F98",
+        "Mask": Tokens.ACCENT,       # cleanroom-yellow PR -- see Tokens' own docstring
+        "SiO2": "#5B8DBE",
+        "Polymer": "#C98A3D",
+        "PolySi": "#C1503F",         # real-fab poly convention: red/orange
+        "TiN": "#8B6BC9",
+        "W": "#D6A23D",
+        "Cu": "#C0632E",
     }
 
     # --------------------------------------------------------
@@ -587,41 +996,149 @@ class TCADApplication(tk.Tk):
         Phase 13/14 machinery this project already verified -- it simply
         had no way in from the GUI until now.
         """
-        frame = ttk.LabelFrame(parent, text="Process flow", padding=10)
-        frame.pack(fill="x", pady=(8, 0))
+        T = Tokens
+        frame = ttk.Frame(parent, style="Inspector.TFrame", padding=(10, 6))
+        frame.pack(fill="x")
 
-        ttk.Label(
-            frame,
-            text="Steps run top to bottom; each continues from the previous "
-                 "geometry.",
-            wraplength=320,
-            foreground="#555",
-        ).pack(anchor="w", pady=(0, 4))
+        ttk.Label(frame, text="PROCESS FLOW TIMELINE", style="Section.TLabel").pack(anchor="w")
 
-        self.flow_list = tk.Listbox(frame, height=6, exportselection=False)
-        self.flow_list.pack(fill="x")
+        # --- row 1: completed steps, as clickable chips -------------------
+        # Each chip shows that step's REAL geometry (its own exported
+        # mesh, see run_process_flow/run_etch/etc. populating
+        # self.flow_step_meshes alongside self.completed_steps) when
+        # clicked, instead of always showing only the latest state.
+        self.timeline_canvas = tk.Canvas(
+            frame, height=44, bg=T.BG_1, highlightthickness=0,
+        )
+        self.timeline_canvas.pack(fill="x", pady=(4, 6))
+        self._timeline_chip_hits = []  # [(x0, x1, step_index), ...]
+        self.timeline_canvas.bind("<Button-1>", self._on_timeline_click)
 
-        buttons = ttk.Frame(frame)
-        buttons.pack(fill="x", pady=(3, 0))
+        ttk.Separator(frame).pack(fill="x", pady=(0, 6))
 
-        for text, width, command in (
-            ("↑", 3, lambda: self._move_flow_step(-1)),
-            ("↓", 3, lambda: self._move_flow_step(1)),
-            ("Remove", 9, self.remove_flow_step),
-            ("Clear", 7, self.clear_flow),
+        # --- row 2: queued (not yet run) steps + reorder/run controls ----
+        queue_row = ttk.Frame(frame, style="Inspector.TFrame")
+        queue_row.pack(fill="x")
+
+        queue_left = ttk.Frame(queue_row, style="Inspector.TFrame")
+        queue_left.pack(side="left", fill="both", expand=True)
+        ttk.Label(queue_left, text="Queued (ADD TO FLOW to append; runs top "
+                                     "to bottom, each continuing from the "
+                                     "previous geometry):",
+                  style="Caption.TLabel").pack(anchor="w")
+
+        list_row = ttk.Frame(queue_left, style="Inspector.TFrame")
+        list_row.pack(fill="x", pady=(2, 0))
+        self.flow_list = tk.Listbox(
+            list_row, height=3, exportselection=False,
+            bg=T.BG_2, fg=T.FG, selectbackground=T.ACCENT_DIM,
+            selectforeground="#1A1400", highlightthickness=1,
+            highlightbackground=T.LINE, relief="flat",
+            font=(T.FONT_DATA, 9),
+        )
+        self.flow_list.pack(side="left", fill="both", expand=True)
+
+        btn_col = ttk.Frame(queue_row, style="Inspector.TFrame")
+        btn_col.pack(side="left", padx=(8, 0))
+        row1 = ttk.Frame(btn_col, style="Inspector.TFrame")
+        row1.pack(fill="x")
+        for text, command in (
+            ("↑", lambda: self._move_flow_step(-1)),
+            ("↓", lambda: self._move_flow_step(1)),
+            ("Remove", self.remove_flow_step),
+            ("Clear", self.clear_flow),
         ):
-            ttk.Button(
-                buttons, text=text, width=width, command=command
-            ).pack(side="left", padx=(0, 3))
+            ttk.Button(row1, text=text, style="Toolbar.TButton",
+                       command=command).pack(side="left", padx=(0, 3))
 
         self.run_flow_button = ttk.Button(
-            frame,
-            text="RUN PROCESS FLOW",
+            btn_col, text="▶ RUN PROCESS FLOW", style="Run.TButton",
             command=self.run_process_flow,
         )
-        self.run_flow_button.pack(fill="x", pady=(6, 0))
+        self.run_flow_button.pack(fill="x", pady=(4, 0))
 
         self._refresh_flow_list()
+        self._refresh_completed_timeline()
+
+    def _timeline_chip_label(self, index, recipe):
+        category = recipe.get("_process_category", "?")
+        model = recipe.get("_process_model_key", "?")
+        return f"{index + 1:02d}  {category}/{model}"
+
+    def _refresh_completed_timeline(self):
+        """Redraw the completed-steps chip strip from
+        self.completed_steps / self.flow_step_meshes. Read-only view of
+        already-computed state -- draws nothing that wasn't already
+        produced by a real run_flow()/ProcessStep.run() call."""
+        if not hasattr(self, "timeline_canvas"):
+            return
+        T = Tokens
+        canvas = self.timeline_canvas
+        canvas.delete("all")
+        self._timeline_chip_hits = []
+
+        if not self.completed_steps:
+            canvas.create_text(
+                10, 22, anchor="w", fill=T.FG_DIM, font=(T.FONT_UI, 9),
+                text="No steps run yet — build a recipe on the right and "
+                     "press RUN, or queue steps below and RUN PROCESS FLOW.",
+            )
+            return
+
+        x = 10
+        for index, recipe in enumerate(self.completed_steps):
+            label = self._timeline_chip_label(index, recipe)
+            text_w = 8 * len(label) + 20
+            x1 = x + text_w
+            viewing = self._viewing_step_index == index
+            fill = T.ACCENT if viewing else T.BG_3
+            outline = T.ACCENT if viewing else T.LINE_STRONG
+            text_color = "#1A1400" if viewing else T.FG
+            canvas.create_rectangle(x, 8, x1, 36, fill=fill, outline=outline)
+            canvas.create_text(
+                (x + x1) / 2, 22, text=label, fill=text_color,
+                font=(T.FONT_DATA, 9),
+            )
+            self._timeline_chip_hits.append((x, x1, index))
+            x = x1 + 6
+            if index < len(self.completed_steps) - 1:
+                canvas.create_text(x, 22, text="→", fill=T.FG_DIM,
+                                    font=(T.FONT_UI, 10))
+                x += 16
+
+        # "LIVE" chip: return to the actual latest state (self.last_final_mesh)
+        # after having clicked back to view an earlier step.
+        live_fill = T.RUN if self._viewing_step_index is None else T.BG_3
+        live_outline = T.RUN if self._viewing_step_index is None else T.LINE_STRONG
+        x1 = x + 60
+        canvas.create_rectangle(x, 8, x1, 36, fill=live_fill, outline=live_outline)
+        canvas.create_text((x + x1) / 2, 22, text="LIVE",
+                            fill="#0C1F14" if self._viewing_step_index is None else T.FG,
+                            font=(T.FONT_DATA, 9, "bold"))
+        self._timeline_chip_hits.append((x, x1, "live"))
+
+    def _on_timeline_click(self, event):
+        for x0, x1, target in self._timeline_chip_hits:
+            if x0 <= event.x <= x1:
+                self._view_flow_step(target)
+                return
+
+    def _view_flow_step(self, target):
+        """Show a specific completed step's own real geometry in the
+        viewer (target = an index into self.completed_steps), or
+        "live" to return to the actual latest state
+        (self.last_final_mesh, the real current wafer). Display-only:
+        does not re-run anything or change process state -- the same
+        mesh files run_flow already exported are just read again.
+        """
+        if target == "live":
+            self._viewing_step_index = None
+        elif 0 <= target < len(self.flow_step_meshes):
+            self._viewing_step_index = target
+        else:
+            return  # no mesh recorded for this step (older payload) -- ignore
+        self._refresh_completed_timeline()
+        self.redraw()
 
     def run_process_flow(self):
         """Run every queued step in order, chained through real geometry."""
@@ -647,7 +1164,17 @@ class TCADApplication(tk.Tk):
         # real current geometry too, not just from queued steps -- e.g.
         # RUN ETCH now, then ADD TO FLOW an oxidation and RUN PROCESS
         # FLOW, must oxidize the etched wafer, not a fresh one.
+        #
+        # `all_steps` stays the wafer's full HISTORY (what gets recorded
+        # and shown in the timeline). What actually RUNS is decided the
+        # same way a standalone click decides it: resume the accumulated
+        # .vpsd and run only the queued steps, or replay everything when
+        # resuming is not available -- see _chained_flow_config().
         all_steps = self.completed_steps + self.flow_steps
+        state = self.last_domain_state
+        can_resume = (
+            state and Path(state).exists() and not self._locos_in_history()
+        )
 
         output_dir = tempfile.mkdtemp(prefix="tcad2d_flow_")
         config_file = Path(output_dir) / "flow.json"
@@ -655,7 +1182,15 @@ class TCADApplication(tk.Tk):
 
         config_file.write_text(
             json.dumps(
-                {"_flow_steps": all_steps, "output_dir": output_dir},
+                (
+                    {
+                        "_flow_steps": self.flow_steps,
+                        "_resume_state": state,
+                        "output_dir": output_dir,
+                    }
+                    if can_resume
+                    else {"_flow_steps": all_steps, "output_dir": output_dir}
+                ),
                 ensure_ascii=False,
                 indent=2,
             ),
@@ -709,7 +1244,12 @@ class TCADApplication(tk.Tk):
 
         self.last_final_mesh = result.get("final_mesh")
         self.wafer.processed = True
-        self.wafer.etched = True
+        # `etched` means "this wafer has actually been etched" -- it
+        # gates the trench-opening placeholder in redraw(). Setting it
+        # for ANY completed flow claimed an etch that a flow of, say,
+        # oxidation + deposition never performed.
+        if any(step.get("_process_category") == "etching" for step in all_steps):
+            self.wafer.etched = True
         self.process_stage = "flow_done"
 
         self._log(
@@ -721,24 +1261,91 @@ class TCADApplication(tk.Tk):
         # a later standalone RUN click (or another RUN PROCESS FLOW)
         # continues from here instead of redoing/discarding them.
         self.completed_steps = all_steps
+        self.last_domain_state = result.get("domain_state")
+        # One mesh path per step in self.completed_steps, same order --
+        # lets the Process Flow Timeline show any step's own real
+        # geometry on click (see _on_timeline_step_click), not only the
+        # final one. Falls back to an empty list on an older worker
+        # payload rather than raising, so the timeline degrades to
+        # "final mesh only" instead of crashing.
+        #
+        # When resuming, the worker only ran the QUEUED steps, so its
+        # step_meshes cover just those; the earlier steps' meshes are
+        # the ones this session already recorded. Concatenating keeps
+        # the index-for-index alignment with completed_steps that the
+        # timeline depends on. (Replaying returns meshes for every step,
+        # so the previous list is replaced outright.)
+        step_meshes = result.get("step_meshes", [])
+        self.flow_step_meshes = (
+            self.flow_step_meshes + step_meshes if can_resume else step_meshes
+        )
         self.flow_steps = []
         self._refresh_flow_list()
 
         self._update_process_buttons()
         self.redraw()
 
+    def _locos_in_history(self):
+        """True if any step already run was a LOCOS oxidation.
+
+        LOCOS keeps per-domain bookkeeping that lives only in the
+        process that created it: `io.register_locos_export()` and
+        `register_locos_unwrapped()` are keyed by `id(domain)`, and the
+        unwrapped entry holds live ViennaLS level-set objects. A .vpsd
+        round-trip cannot carry either, so a resumed LOCOS domain
+        reports `is_locos_registered() == False` and a following
+        LOCOS-on-LOCOS oxidation would refuse outright (thermal.py
+        raises NotImplementedError for exactly this).
+
+        Measured, so the scope of the problem is known rather than
+        assumed: a LOCOS domain round-tripped through .vpsd still
+        EXPORTS all three materials correctly (Mask/Si/SiO2, same
+        extents as the live-domain export), so ordinary chaining after
+        LOCOS is fine — it is specifically LOCOS-after-LOCOS that needs
+        the live objects.
+
+        Rather than trade that away for speed, a history containing
+        LOCOS falls back to replaying the recipes, which is what the GUI
+        did for every step before state carry existed.
+        """
+        return any(
+            step.get("_process_category") == "oxidation"
+            and "mask_material" in step
+            for step in self.completed_steps
+        )
+
     def _chained_flow_config(self, recipe, output_dir):
-        """Wrap a single RUN-click recipe together with every step
-        already run this session, so it executes as one run_flow() call
-        that continues from the real current geometry via
-        ProcessStep(inherited_domain=...) -- the same chaining
-        RUN PROCESS FLOW already uses -- instead of silently rebuilding
-        a fresh wafer the way a standalone single-step run used to.
+        """Config for one RUN click, continuing the real current wafer.
+
+        Preferred path: hand the worker the .vpsd the PREVIOUS click
+        left behind, so this click runs exactly ONE step on the
+        accumulated geometry. That is what "each RUN takes the previous
+        result as its input" means literally.
+
+        Fallback path: replay `completed_steps + [recipe]` from a fresh
+        wafer. This is what every click used to do, and it is still
+        correct -- just O(N^2), because the Nth click re-runs all N
+        steps and therefore re-pays for the slowest one (a 30s
+        oxidation, say) on every subsequent click. It is kept for the
+        two cases where resuming cannot be trusted: no usable state file
+        yet, and a LOCOS history (see _locos_in_history).
 
         Called AFTER the ADD TO FLOW interception (self._pending_flow_add
         returns before this), so `recipe` here is always something about
         to run now, not merely queued.
         """
+        state = self.last_domain_state
+        can_resume = (
+            state
+            and Path(state).exists()
+            and not self._locos_in_history()
+        )
+        if can_resume:
+            return {
+                "_flow_steps": [recipe],
+                "_resume_state": state,
+                "output_dir": output_dir,
+            }
         return {
             "_flow_steps": self.completed_steps + [recipe],
             "output_dir": output_dir,
@@ -812,6 +1419,7 @@ class TCADApplication(tk.Tk):
             "etch": self.run_etch,
             "oxidation": self.run_oxidation,
             "deposition": self.run_deposition,
+            "metallization": self.run_metallization,
             "gate_stack": self.run_gate_stack,
         }
         key = next(
@@ -826,7 +1434,8 @@ class TCADApplication(tk.Tk):
         if builder is None:
             messagebox.showinfo(
                 "Process flow",
-                "Only Etching, Oxidation, Deposition and Geometry are real "
+                "Only Oxidation, Etching, Deposition, Metallization and Geometry "
+                "are real "
                 "ViennaPS process steps that can be queued into a flow.\n\n"
                 "Lithography defines the mask every queued step uses; Doping "
                 "and Device measurement run after the flow, on its final "
@@ -857,44 +1466,43 @@ class TCADApplication(tk.Tk):
         parent,
     ):
 
-        # GUI-only: the control panel is taller than most windows once
-        # the Etch recipe's fields are stacked, which previously pushed
-        # the START ETCH button and the whole Process log below the
-        # window edge with no way to reach them. Hosting the panel in a
-        # scrollable canvas keeps every widget reachable at any window
-        # height. No process/physics logic is affected -- `panel` is
-        # still the same ttk.Frame the sub-panels are built into.
-        scroll_host = ttk.Frame(parent)
-        scroll_host.pack(
-            side="right",
-            fill="y",
-        )
+        T = Tokens
+        # GUI-only: the inspector is taller than most windows once the
+        # Etch recipe's fields are stacked, which previously pushed the
+        # RUN button below the window edge with no way to reach it.
+        # Hosting it in a scrollable canvas keeps every widget reachable
+        # at any window height. No process/physics logic is affected --
+        # `panel` is still the same ttk.Frame the sub-panels build into.
+        scroll_host = ttk.Frame(parent, style="Inspector.TFrame", width=320)
+        scroll_host.pack(side="right", fill="y")
+        scroll_host.pack_propagate(False)
+
+        header = ttk.Frame(scroll_host, style="Inspector.TFrame", padding=(12, 8, 12, 6))
+        header.pack(fill="x")
+        ttk.Label(header, text="PARAMETER INSPECTOR", style="Section.TLabel").pack(anchor="w")
+        self.inspector_title_var = tk.StringVar(value=self.panel_category.get())
+        ttk.Label(header, textvariable=self.inspector_title_var,
+                  style="Header.TLabel", background=T.BG_1,
+                  font=(T.FONT_UI, 12, "bold")).pack(anchor="w")
+        ttk.Separator(scroll_host).pack(fill="x")
+
+        scroll_area = ttk.Frame(scroll_host, style="Inspector.TFrame")
+        scroll_area.pack(fill="both", expand=True)
 
         scroll_canvas = tk.Canvas(
-            scroll_host,
-            width=350,
-            highlightthickness=0,
-            borderwidth=0,
+            scroll_area, bg=T.BG_1, highlightthickness=0, borderwidth=0,
         )
         scrollbar = ttk.Scrollbar(
-            scroll_host,
-            orient="vertical",
-            command=scroll_canvas.yview,
+            scroll_area, orient="vertical", command=scroll_canvas.yview,
         )
         scroll_canvas.configure(yscrollcommand=scrollbar.set)
 
         scrollbar.pack(side="right", fill="y")
         scroll_canvas.pack(side="left", fill="both", expand=True)
 
-        panel = ttk.Frame(
-            scroll_canvas,
-            width=350,
-        )
+        panel = ttk.Frame(scroll_canvas, style="Inspector.TFrame", width=320)
         panel_window = scroll_canvas.create_window(
-            (0, 0),
-            window=panel,
-            anchor="nw",
-            width=350,
+            (0, 0), window=panel, anchor="nw", width=320,
         )
 
         def _on_panel_configure(event):
@@ -922,85 +1530,42 @@ class TCADApplication(tk.Tk):
         scroll_canvas.bind_all("<Button-4>", _on_mousewheel)
         scroll_canvas.bind_all("<Button-5>", _on_mousewheel)
 
-        # Category selector. Every category's panel is built once, into
-        # one fixed container, and exactly ONE is shown at a time --
-        # stacking all seven made the control panel several screens
-        # long, and most of it was irrelevant to whatever the user was
-        # actually doing. Each panel already picks its own MODEL and
-        # shows only that model's parameters (see e.g.
-        # _update_etch_field_visibility), so this adds the missing outer
-        # level: category -> model -> that model's parameters.
-        ttk.Label(
-            panel,
-            text="Process category",
-            font=("Segoe UI", 10, "bold"),
-        ).pack(anchor="w", pady=(8, 2))
-
-        self.panel_category = tk.StringVar(value=self._PANEL_LABELS["litho"])
-
-        ttk.Combobox(
-            panel,
-            textvariable=self.panel_category,
-            state="readonly",
-            values=[self._PANEL_LABELS[key] for key in self._PANEL_ORDER],
-        ).pack(fill="x")
-
+        # Category selection now comes from the Process Library tree
+        # (_make_process_panel) writing into self.panel_category; this
+        # panel only needs to react to it. Every category's panel is
+        # still built once into one fixed container with exactly one
+        # shown at a time (see _show_panel_category) -- stacking all
+        # seven made the inspector several screens long regardless of
+        # what the user was doing.
         self.panel_category.trace_add(
-            "write", lambda *_a: self._show_panel_category()
+            "write",
+            lambda *_a: self.inspector_title_var.set(self.panel_category.get()),
         )
 
         ttk.Button(
-            panel,
-            text="ADD TO FLOW  ▼",
+            panel, text="+ ADD TO FLOW", style="Accent.TButton",
             command=self.add_current_step_to_flow,
-        ).pack(fill="x", pady=(4, 0))
+        ).pack(fill="x", padx=12, pady=(10, 4))
 
-        panel_container = ttk.Frame(panel)
+        panel_container = ttk.Frame(panel, style="Inspector.TFrame")
         panel_container.pack(fill="x")
 
-        self._make_lithography_panel(
-            panel_container
-        )
-
-        self._make_etch_panel(
-            panel_container
-        )
-
-        self._make_oxidation_panel(
-            panel_container
-        )
-
-        self._make_deposition_panel(
-            panel_container
-        )
-
-        self._make_geometry_panel(
-            panel_container
-        )
-
-        self._make_doping_panel(
-            panel_container
-        )
-
-        self._make_measurement_panel(
-            panel_container
-        )
+        self._make_lithography_panel(panel_container)
+        self._make_etch_panel(panel_container)
+        self._make_oxidation_panel(panel_container)
+        self._make_deposition_panel(panel_container)
+        self._make_metallization_panel(panel_container)
+        self._make_geometry_panel(panel_container)
+        self._make_doping_panel(panel_container)
+        self._make_measurement_panel(panel_container)
 
         self._show_panel_category()
-
-        self._make_flow_panel(
-            panel
-        )
 
         # etch_button/oxidation_button/deposition_button (created above)
         # are required by _update_process_buttons(); call it only after
         # all panels exist so widget creation order / visual layout is
         # unchanged, only the timing of this refresh call moves.
         self._update_process_buttons()
-
-        self._make_log_panel(
-            panel
-        )
 
     # --------------------------------------------------------
     # LITHOGRAPHY
@@ -1044,8 +1609,13 @@ class TCADApplication(tk.Tk):
             frame,
             height=4,
             exportselection=False,
+            bg=Tokens.BG_2, fg=Tokens.FG,
+            selectbackground=Tokens.ACCENT_DIM,
+            selectforeground="#1A1400",
+            highlightthickness=1, highlightbackground=Tokens.LINE,
+            relief="flat", font=(Tokens.FONT_DATA, 9),
         )
-        self.openings_list.pack(fill="x")
+        self.openings_list.pack(fill="x", padx=12)
         self.openings_list.bind(
             "<<ListboxSelect>>",
             lambda _e: self._on_opening_selected(),
@@ -1326,10 +1896,12 @@ class TCADApplication(tk.Tk):
         self.etch_button = ttk.Button(
             frame,
             text="5. START ETCH — VIENNAPS",
+            style="Run.TButton",
             command=self.run_etch,
         )
         self.etch_button.pack(
             fill="x",
+            padx=12,
             pady=(12, 3),
         )
 
@@ -1419,26 +1991,39 @@ class TCADApplication(tk.Tk):
             0.5,
         )
 
-        self.locos_var = tk.BooleanVar(
-            value=False
-        )
+        # Thermal oxidation and LOCOS are INDEPENDENT choices, the same
+        # way each etch or deposition model is. LOCOS used to be a
+        # checkbox on the thermal recipe, which made it read as a
+        # modifier of ordinary oxidation and let its special-case logic
+        # (its own from-scratch pad-oxide+mask geometry, its mask
+        # material, its elastic contact mode) reach into the plain path.
+        # As a separate method, selecting "Thermal oxidation" cannot
+        # touch any of it -- see run_oxidation(), where the LOCOS branch
+        # is the only place mask keys are built at all.
+        self.oxidation_method = tk.StringVar(value="Thermal oxidation")
 
-        ttk.Checkbutton(
+        ttk.Label(
             frame,
-            text="LOCOS (mask present during oxidation)",
-            variable=self.locos_var,
-        ).pack(
-            anchor="w",
-            pady=(6, 0),
-        )
+            text="Oxidation process",
+            style="Caption.TLabel",
+        ).pack(anchor="w", pady=(6, 1))
+
+        ttk.Combobox(
+            frame,
+            textvariable=self.oxidation_method,
+            state="readonly",
+            values=["Thermal oxidation", "LOCOS"],
+        ).pack(fill="x")
 
         self.oxidation_button = ttk.Button(
             frame,
             text="5b. START OXIDATION — VIENNAPS",
+            style="Run.TButton",
             command=self.run_oxidation,
         )
         self.oxidation_button.pack(
             fill="x",
+            padx=12,
             pady=(12, 3),
         )
 
@@ -1478,13 +2063,56 @@ class TCADApplication(tk.Tk):
 
         try:
 
+            is_locos = self.oxidation_method.get() == "LOCOS"
+
+            # Plain thermal oxidation builds NO mask, ever. It oxidizes
+            # whatever surface the wafer currently has -- that is the
+            # whole step. `mask_spans_um: []` is this project's own
+            # "bare wafer, no lithography" convention (prepare_domain()),
+            # and on a chained run the inherited domain is used
+            # untouched.
+            #
+            # This used to send the lithography panel's mask window
+            # through unconditionally, which built a real Mask solid that
+            # plain oxidation never tells ViennaPS about -- measured, the
+            # oxide then grew across the whole top surface INCLUDING on
+            # top of that Mask (SiO2 at y +1.00..+1.10 over Mask at
+            # y -0.00..+0.96), oxide floating on a mask rather than grown
+            # from silicon.
+            #
+            # LOCOS builds its own pad-oxide-first geometry and its own
+            # mask; that is why the mask keys live in ITS branch only.
+            mask_keys = self._mask_recipe_keys() if is_locos else {"mask_spans_um": []}
+
+            # Photoresist on the wafer is REPORTED, never acted on and
+            # never blocked. Two measurements say why it cannot be used
+            # as an oxidation mask, neither guessed:
+            #   * oxidizing a domain that carries resist grows SiO2 ON
+            #     TOP of the Mask (oxide y=[0.994,1.059] over Mask
+            #     y=[0,0.994]) -- resist sandwiched between the oxide and
+            #     the silicon it supposedly grew from;
+            #   * passing mask_material to prevent that DESTROYS the
+            #     resist instead (a 1.0um Mask collapsed to
+            #     y=[-0.002,0.006]), this project's own documented
+            #     mask-erosion failure for a mask with no pad-oxide
+            #     buffer under it.
+            # The physical reason for both is that a furnace oxidation
+            # runs at 900-1200 C and photoresist is gone far below that.
+            # So: say what will happen, in the log, and run the step the
+            # user asked for.
+            if not is_locos and self._resist_spans_um() is not None:
+                self._log(
+                    "\nNOTE: photoresist is present on the wafer. It is not "
+                    "used as an oxidation mask — photoresist does not survive "
+                    "a furnace oxidation — so this step oxidizes the exposed "
+                    "surface.\n"
+                )
+
             recipe = {
                 "_process_category": "oxidation",
                 "_process_model_key": "thermal",
 
-                # Every mask opening, not just the first -- see
-                # _mask_recipe_keys().
-                **self._mask_recipe_keys(),
+                **mask_keys,
 
                 "pr_thickness_um":
                     self.wafer.pr_thickness_um,
@@ -1517,8 +2145,8 @@ class TCADApplication(tk.Tk):
                     ),
             }
 
-            if self.locos_var.get():
-                # Presence of this key is the fin (absent) vs LOCOS
+            if is_locos:
+                # Presence of this key is the plain (absent) vs LOCOS
                 # (present) switch -- see thermal.py's own docstring.
                 recipe["mask_material"] = "Mask"
 
@@ -1561,13 +2189,13 @@ class TCADApplication(tk.Tk):
             encoding="utf-8",
         )
 
-        model_label = "LOCOS" if self.locos_var.get() else "fin-style thermal oxidation"
+        model_label = "LOCOS" if is_locos else "thermal oxidation"
 
         self._log(
             f"\n================================\n"
             f"REAL VIENNAPS {model_label.upper()} START\n"
             f"================================\n"
-            f"1. {'Pad oxide + mask (LOCOS)' if self.locos_var.get() else 'MakeTrench'}\n"
+            f"1. {'Pad oxide + mask (LOCOS)' if is_locos else 'current wafer surface'}\n"
             f"2. {recipe['oxidant']} oxidation, "
             f"{recipe['temperature_c']}°C, {recipe['time_hours']}h\n"
         )
@@ -1636,16 +2264,15 @@ class TCADApplication(tk.Tk):
         self.process_stage = "oxidized"
         self.last_final_mesh = result.get("final_mesh")
         self.completed_steps.append(recipe)
+        self.last_domain_state = result.get("domain_state")
+        # Keep flow_step_meshes aligned index-for-index with
+        # completed_steps (see run_process_flow's own comment) so the
+        # bottom timeline can show this step's geometry on click even
+        # when it was run as a standalone RUN click, not via RUN
+        # PROCESS FLOW.
+        self.flow_step_meshes.append(self.last_final_mesh)
 
-        self._activate_stages(
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-        )
+        self._mark_stage_done(1)
 
         self.history.append(
             f"ViennaPS {model_label}"
@@ -1837,6 +2464,9 @@ class TCADApplication(tk.Tk):
             anchor="w",
             pady=(4, 0),
         )
+        self.dep_epitaxy_material_var = self._material_field(
+            epitaxy_frame, "Epitaxial material", "Si",
+        )
 
         trench_frame = ttk.Frame(deposition_params_container)
         self.dep_trench_reference_depth_var = self._field(
@@ -1892,10 +2522,12 @@ class TCADApplication(tk.Tk):
         self.deposition_button = ttk.Button(
             frame,
             text="5c. START DEPOSITION — VIENNAPS",
+            style="Run.TButton",
             command=self.run_deposition,
         )
         self.deposition_button.pack(
             fill="x",
+            padx=12,
             pady=(12, 3),
         )
 
@@ -1911,6 +2543,304 @@ class TCADApplication(tk.Tk):
             anchor="w",
             pady=5,
         )
+
+    #: Metallization method -> the deposition model that actually runs it.
+    #: Metallization IS deposition at the backend (a metal film grown on
+    #: the current surface), so this reuses the registered deposition
+    #: models rather than adding a parallel implementation. The subset is
+    #: the physically meaningful one: TEOS/PE-CVD are oxide chemistries
+    #: and selective epitaxy grows crystalline semiconductor, none of
+    #: which deposit metal.
+    _METALLIZATION_METHODS = {
+        "Sputter / PVD (directional)": "directional",
+        "CVD (conformal)": "single_particle_cvd",
+        "Plating / CVD (isotropic)": "isotropic",
+    }
+
+    #: Metals actually present in ViennaPS's own Material enum (verified
+    #: against the installed 4.6.2 enum, not assumed -- note there is no
+    #: Al, which is why the default is W).
+    _METAL_OPTIONS = [
+        "W", "Cu", "TiN", "Ti", "Ta", "TaN", "Co", "Ru", "Ni", "Pt",
+        "Mo", "Au", "Cr", "Metal",
+    ]
+
+    def _make_metallization_panel(self, parent):
+        """Metallization as its own category.
+
+        A real flow names this step separately from "deposition" (see
+        the PN-junction-diode sequence in CLAUDE.md: oxidation ->
+        lithography -> doping -> metallization -> lithography), and it
+        answers a different question -- WHICH METAL and by which
+        method -- so it gets its own category rather than being buried
+        as one material choice inside the deposition panel.
+
+        It is deliberately a thin layer over the deposition registry:
+        run_metallization() emits `_process_category: "deposition"`, so
+        every chaining, masking and state-carry behavior is the same
+        code path the deposition panel already uses, and there is no
+        second implementation to keep in sync.
+        """
+        frame = ttk.LabelFrame(parent, text="Metallization recipe", padding=10)
+        self._panel_frames["metallization"] = frame
+        frame.pack(fill="x", pady=10)
+
+        ttk.Label(frame, text="Metallization method").pack(anchor="w")
+        self.metal_method = tk.StringVar(value="Sputter / PVD (directional)")
+        ttk.Combobox(
+            frame,
+            textvariable=self.metal_method,
+            state="readonly",
+            values=list(self._METALLIZATION_METHODS),
+        ).pack(fill="x")
+
+        ttk.Label(frame, text="Metal", style="Caption.TLabel").pack(
+            anchor="w", padx=12, pady=(6, 1),
+        )
+        self.metal_material_var = tk.StringVar(value="W")
+        ttk.Combobox(
+            frame,
+            textvariable=self.metal_material_var,
+            state="readonly",
+            values=self._METAL_OPTIONS,
+        ).pack(fill="x", padx=12)
+
+        # Same defaults the deposition panel uses for the same two
+        # models, which tests/integration/test_phase3_deposition_real.py
+        # already exercises against real ViennaPS.
+        self.metal_rate_var = self._field(frame, "Rate (µm/s)", 0.05)
+        self.metal_time_var = self._field(frame, "Deposition time (s)", 0.5)
+        self.metal_grid_var = self._field(frame, "Grid delta (µm)", 0.05)
+
+        self.metallization_button = ttk.Button(
+            frame,
+            text="RUN METALLIZATION",
+            style="Run.TButton",
+            command=self.run_metallization,
+        )
+        self.metallization_button.pack(fill="x", padx=12, pady=(12, 3))
+
+        ttk.Label(
+            frame,
+            text=(
+                "Metal is deposited on the CURRENT surface. With a "
+                "developed resist present it lands in the openings and "
+                "on top of the resist (lift-off geometry)."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(anchor="w", pady=5)
+
+    def run_metallization(self):
+        """Deposit a metal film, through the deposition registry."""
+        model_key = self._METALLIZATION_METHODS.get(self.metal_method.get())
+        if model_key is None:
+            messagebox.showinfo("Backend status", "Unknown metallization method.")
+            return
+
+        if not viennaps_session.is_available():
+            messagebox.showerror(
+                "ViennaPS",
+                "ViennaPS is not installed.\n\nRun:\npython -m pip install ViennaPS",
+            )
+            return
+
+        self._note_if_blanket_resist("metallization")
+
+        try:
+            recipe = {
+                "_process_category": "deposition",
+                "_process_model_key": model_key,
+                **self._mask_recipe_keys_for_current_step(),
+                "pr_thickness_um": self.wafer.pr_thickness_um,
+                "silicon_depth_um": self.wafer.silicon_depth_um,
+                "grid_delta_um": float(self.metal_grid_var.get()),
+                "x_extent_um": self.wafer.width_um,
+                "y_extent_um": 8.0,
+                "deposition_time_s": float(self.metal_time_var.get()),
+                "mask_material": "Mask",
+                "material": self.metal_material_var.get(),
+            }
+            if model_key == "directional":
+                recipe["direction"] = [0.0, 1.0, 0.0]
+                recipe["directional_velocity"] = float(self.metal_rate_var.get())
+            else:
+                recipe["rate"] = float(self.metal_rate_var.get())
+            if model_key == "single_particle_cvd":
+                recipe["sticking_probability"] = 0.1
+        except ValueError:
+            messagebox.showerror(
+                "Metallization recipe", "All recipe values must be numeric."
+            )
+            return
+
+        if self._pending_flow_add:
+            self._append_flow_step(recipe)
+            return
+
+        self._run_single_step(
+            recipe,
+            start_log=(
+                f"\n================================\n"
+                f"REAL VIENNAPS METALLIZATION START\n"
+                f"================================\n"
+                f"{self.metal_method.get()} — "
+                f"{self.metal_material_var.get()}, "
+                f"{recipe['deposition_time_s']}s\n"
+            ),
+            done_log="REAL VIENNAPS METALLIZATION COMPLETE",
+            stage_index=1,
+            history_label=(
+                f"Metallization {self.metal_material_var.get()} "
+                f"({self.metal_method.get()})"
+            ),
+            process_stage="deposited",
+        )
+
+    def _materialize_current_wafer(self):
+        """Export the wafer as it is, running no process. True on success.
+
+        Only used when something needs a real mesh and none exists yet —
+        i.e. nothing has been run on this wafer. It is NOT a process
+        step: it appends nothing to completed_steps, marks no stage, and
+        changes no resist state. It just gives the current wafer a
+        geometry so the step the user actually asked for can proceed
+        instead of being refused.
+        """
+        if not viennaps_session.is_available():
+            messagebox.showerror(
+                "ViennaPS",
+                "ViennaPS is not installed.\n\nRun:\npython -m pip install ViennaPS",
+            )
+            return False
+
+        output_dir = tempfile.mkdtemp(prefix="tcad2d_wafer_")
+        config_file = Path(output_dir) / "wafer.json"
+        result_file = Path(output_dir) / "result.json"
+        config_file.write_text(
+            json.dumps({
+                "_materialize_wafer": True,
+                "output_dir": output_dir,
+                "grid_delta_um": float(self.grid_var.get()),
+                "x_extent_um": self.wafer.width_um,
+                "y_extent_um": 8.0,
+                "silicon_depth_um": self.wafer.silicon_depth_um,
+                "pr_thickness_um": self.wafer.pr_thickness_um,
+                # Whatever resist is really on the wafer right now, from
+                # the same single source every other consumer reads.
+                "mask_spans_um": self._resist_spans_um() or [],
+            }, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+        self._log("\nExporting the current wafer geometry (no process run)...\n")
+        self.update_idletasks()
+        try:
+            completed = subprocess.run(
+                [
+                    sys.executable, str(Path(__file__).resolve()),
+                    "--worker", str(config_file), str(result_file),
+                ],
+                capture_output=True, text=True, timeout=300,
+            )
+        except Exception as exc:
+            messagebox.showerror("ViennaPS", str(exc))
+            return False
+
+        if not result_file.exists():
+            messagebox.showerror(
+                "ViennaPS",
+                "Worker did not produce a result file.\n\n"
+                + completed.stderr[-4000:],
+            )
+            return False
+
+        result = json.loads(result_file.read_text(encoding="utf-8"))
+        if not result.get("success"):
+            messagebox.showerror(
+                "ViennaPS", result.get("error", "Unknown ViennaPS error.")
+            )
+            return False
+
+        self.last_final_mesh = result.get("final_mesh")
+        self.last_domain_state = result.get("domain_state")
+        self.wafer.processed = True
+        self.redraw()
+        return True
+
+    def _run_single_step(
+        self, recipe, start_log, done_log, stage_index, history_label,
+        process_stage,
+    ):
+        """Execute one built recipe the same way every RUN button does.
+
+        Deliberately a NEW helper used only by metallization rather than
+        a refactor of run_etch/run_oxidation/run_deposition: those three
+        are working, individually verified paths, and rewriting them to
+        share this would put three known-good behaviors at risk to save
+        duplication that is not currently causing a bug.
+        """
+        output_dir = tempfile.mkdtemp(prefix="tcad2d_metal_")
+        config_file = Path(output_dir) / "recipe.json"
+        result_file = Path(output_dir) / "result.json"
+
+        config_file.write_text(
+            json.dumps(
+                self._chained_flow_config(recipe, output_dir),
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        self._log(start_log)
+        self.update_idletasks()
+
+        try:
+            completed = subprocess.run(
+                [
+                    sys.executable, str(Path(__file__).resolve()),
+                    "--worker", str(config_file), str(result_file),
+                ],
+                capture_output=True, text=True, timeout=900,
+            )
+        except Exception as exc:
+            messagebox.showerror("ViennaPS", str(exc))
+            return
+
+        if not result_file.exists():
+            messagebox.showerror(
+                "ViennaPS",
+                "Worker did not produce a result file.\n\n"
+                + completed.stderr[-4000:],
+            )
+            return
+
+        result = json.loads(result_file.read_text(encoding="utf-8"))
+        if not result.get("success"):
+            messagebox.showerror(
+                "ViennaPS", result.get("error", "Unknown ViennaPS error.")
+            )
+            self._log("\nVIENNAPS FAILED\n")
+            return
+
+        self.wafer.processed = True
+        self.process_stage = process_stage
+        self.last_final_mesh = result.get("final_mesh")
+        self.completed_steps.append(recipe)
+        self.last_domain_state = result.get("domain_state")
+        self.flow_step_meshes.append(self.last_final_mesh)
+
+        self._mark_stage_done(stage_index)
+        self.history.append(history_label)
+        self._log(
+            f"\n================================\n"
+            f"{done_log}\n"
+            f"================================\n"
+            f"mesh: {self.last_final_mesh}\n"
+        )
+        self._update_process_buttons()
+        self.redraw()
 
     def _update_deposition_field_visibility(self):
         """Same mechanism as _update_etch_field_visibility(): show only
@@ -1951,6 +2881,8 @@ class TCADApplication(tk.Tk):
 
             return
 
+        self._note_if_blanket_resist("deposition")
+
         if not viennaps_session.is_available():
 
             messagebox.showerror(
@@ -1968,9 +2900,12 @@ class TCADApplication(tk.Tk):
                 "_process_category": "deposition",
                 "_process_model_key": model_key,
 
-                # Every mask opening, not just the first -- see
-                # _mask_recipe_keys().
-                **self._mask_recipe_keys(),
+                # Fresh wafer -> mask_left_um/mask_right_um/mask_spans_um
+                # (MakeTrench/make_mask_spans); chained onto an earlier
+                # step -> remask_spans_um instead, so a mask applied
+                # mid-flow (see _mask_recipe_keys_for_current_step) isn't
+                # silently ignored the way it used to be.
+                **self._mask_recipe_keys_for_current_step(),
 
                 "pr_thickness_um":
                     self.wafer.pr_thickness_um,
@@ -2043,10 +2978,13 @@ class TCADApplication(tk.Tk):
             elif model_key == "selective_epitaxy":
 
                 recipe.update({
+                    # "material_rates" names the SEED surface growth is
+                    # selective to; "material" is what gets grown.
                     "material_rates": [
                         {"material": "Si", "rate": float(self.dep_epitaxy_rate_var.get())},
                     ],
                     "deposition_time_s": float(self.dep_epitaxy_time_var.get()),
+                    "material": self.dep_epitaxy_material_var.get(),
                 })
 
             elif model_key == "geometric_trench":
@@ -2178,16 +3116,15 @@ class TCADApplication(tk.Tk):
         self.process_stage = "deposited"
         self.last_final_mesh = result.get("final_mesh")
         self.completed_steps.append(recipe)
+        self.last_domain_state = result.get("domain_state")
+        # Keep flow_step_meshes aligned index-for-index with
+        # completed_steps (see run_process_flow's own comment) so the
+        # bottom timeline can show this step's geometry on click even
+        # when it was run as a standalone RUN click, not via RUN
+        # PROCESS FLOW.
+        self.flow_step_meshes.append(self.last_final_mesh)
 
-        self._activate_stages(
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-        )
+        self._mark_stage_done(1)
 
         self.history.append(
             f"ViennaPS {model_label}"
@@ -2314,10 +3251,12 @@ class TCADApplication(tk.Tk):
         self.gate_stack_button = ttk.Button(
             frame,
             text="BUILD GATE STACK — VIENNAPS",
+            style="Run.TButton",
             command=self.run_gate_stack,
         )
         self.gate_stack_button.pack(
             fill="x",
+            padx=12,
             pady=(12, 3),
         )
 
@@ -2499,6 +3438,7 @@ class TCADApplication(tk.Tk):
         # pre-gate-stack history via _chained_flow_config() as if this
         # build had never happened.
         self.completed_steps = []
+        self.flow_step_meshes = []
 
         # Deliberately NOT calling self._activate_stages(...): this
         # build did not go through the 01-08 litho/process sequence at
@@ -2730,10 +3670,12 @@ class TCADApplication(tk.Tk):
         self.doping_button = ttk.Button(
             frame,
             text="APPLY DOPING",
+            style="Run.TButton",
             command=self.run_doping,
         )
         self.doping_button.pack(
             fill="x",
+            padx=12,
             pady=(12, 3),
         )
 
@@ -2750,19 +3692,15 @@ class TCADApplication(tk.Tk):
 
     def run_doping(self):
 
-        if not (
-            self.wafer.processed
-            and self.last_final_mesh
-            and Path(self.last_final_mesh).exists()
-        ):
-
-            messagebox.showwarning(
-                "Process order",
-                "Run a real process step (etch, oxidation, deposition, "
-                "or gate stack) first.",
-            )
-
-            return
+        # Doping runs on the wafer as it is. It used to refuse until some
+        # other process had run, which is exactly the kind of
+        # prerequisite the user must never meet: a wafer exists from the
+        # moment it is created, and doping virgin silicon is a real
+        # step. If no mesh has been produced yet, the current wafer is
+        # exported now and doped.
+        if not (self.last_final_mesh and Path(self.last_final_mesh).exists()):
+            if not self._materialize_current_wafer():
+                return
 
         kind = self.doping_kind.get()
 
@@ -3026,10 +3964,12 @@ class TCADApplication(tk.Tk):
         self.measure_button = ttk.Button(
             frame,
             text="MEASURE",
+            style="Run.TButton",
             command=self.run_measurement,
         )
         self.measure_button.pack(
             fill="x",
+            padx=12,
             pady=(12, 3),
         )
 
@@ -3102,12 +4042,16 @@ class TCADApplication(tk.Tk):
     def run_measurement(self):
 
         if self.last_doped_result is None:
-
-            messagebox.showwarning(
-                "Process order",
-                "Apply doping first (see the Doping panel above).",
+            # A statement of what is missing from the DEVICE, not an
+            # instruction about process order: a drift-diffusion solve
+            # needs a doping profile because without one there are no
+            # carriers to solve for.
+            messagebox.showinfo(
+                "Device measurement",
+                "This wafer carries no doping profile, so there is no device "
+                "to measure — a drift-diffusion solve has no carrier "
+                "concentrations without one.",
             )
-
             return
 
         from tcad.device.devsim import backend as devsim_backend
@@ -3305,32 +4249,26 @@ class TCADApplication(tk.Tk):
         parent,
     ):
 
-        frame = ttk.LabelFrame(
-            parent,
-            text="Process log",
-            padding=5,
-        )
-
-        frame.pack(
-            fill="both",
-            expand=True,
-        )
+        T = Tokens
+        frame = ttk.Frame(parent, style="Inspector.TFrame", padding=(10, 4, 10, 8))
+        frame.pack(fill="both", expand=True)
+        ttk.Label(frame, text="LOG / CONSOLE", style="Section.TLabel").pack(anchor="w")
 
         self.log = tk.Text(
             frame,
-            width=42,
-            height=10,
+            height=7,
             state="disabled",
-            font=(
-                "Consolas",
-                9,
-            ),
+            bg=T.BG_2, fg=T.FG,
+            insertbackground=T.FG,
+            selectbackground=T.ACCENT_DIM,
+            highlightthickness=1,
+            highlightbackground=T.LINE,
+            relief="flat",
+            padx=6, pady=4,
+            font=(T.FONT_DATA, 9),
         )
 
-        self.log.pack(
-            fill="both",
-            expand=True,
-        )
+        self.log.pack(fill="both", expand=True, pady=(2, 0))
 
     # --------------------------------------------------------
     # ETCH FIELD VISIBILITY
@@ -3363,13 +4301,19 @@ class TCADApplication(tk.Tk):
         label,
         value,
     ):
-
+        # Dense inspector row: small muted caption label, monospace
+        # value entry directly beneath it -- every one of the 7 category
+        # panels (litho/etch/oxidation/deposition/gate_stack/doping/
+        # measurement) builds its parameter rows through this ONE
+        # helper, so retheming it here restyles all of them at once.
         ttk.Label(
             parent,
             text=label,
+            style="Caption.TLabel",
         ).pack(
             anchor="w",
-            pady=(4, 0),
+            padx=12,
+            pady=(6, 1),
         )
 
         variable = tk.StringVar(
@@ -3380,7 +4324,8 @@ class TCADApplication(tk.Tk):
             parent,
             textvariable=variable,
         ).pack(
-            fill="x"
+            fill="x",
+            padx=12,
         )
 
         return variable
@@ -3391,8 +4336,14 @@ class TCADApplication(tk.Tk):
     #: or reference (SiO2, Si3N4, PolySi, W, TiN, Cu -- see
     #: gate_stack.py and material_colors in redraw()) plus a generic
     #: "Metal" for a sputter target with no specific alloy chosen.
+    #: Every entry verified present in ViennaPS 4.6.2's own Material
+    #: enum. Si/SiGe/aSi are here for selective epitaxy, which grows
+    #: semiconductor rather than a film: Si is homoepitaxy (and, being
+    #: the same material as the substrate, simply merges into it), SiGe
+    #: is the heteroepitaxial case that needs its own region.
     _DEPOSITION_MATERIAL_OPTIONS = [
-        "SiO2", "Si3N4", "PolySi", "W", "TiN", "Cu", "Metal", "Ta", "Ti",
+        "SiO2", "Si3N4", "PolySi", "Si", "SiGe", "aSi",
+        "W", "TiN", "Cu", "Metal", "Ta", "Ti",
     ]
 
     def _material_field(self, parent, label, default):
@@ -3406,9 +4357,11 @@ class TCADApplication(tk.Tk):
         ttk.Label(
             parent,
             text=label,
+            style="Caption.TLabel",
         ).pack(
             anchor="w",
-            pady=(4, 0),
+            padx=12,
+            pady=(6, 1),
         )
 
         variable = tk.StringVar(value=default)
@@ -3419,7 +4372,8 @@ class TCADApplication(tk.Tk):
             state="readonly",
             values=self._DEPOSITION_MATERIAL_OPTIONS,
         ).pack(
-            fill="x"
+            fill="x",
+            padx=12,
         )
 
         return variable
@@ -3563,6 +4517,134 @@ class TCADApplication(tk.Tk):
             ],
         }
 
+    def _mask_recipe_keys_for_current_step(self):
+        """Mask portion of a recipe, aware of whether the step about to
+        run will build a FRESH wafer or continue an already-processed
+        one -- a real fab flow masks, etches, oxidizes and deposits in
+        whatever order the design needs (see CLAUDE.md's PN-junction-diode
+        textbook flow: oxidation -> lithography -> doping ->
+        metallization -> lithography again), and each of those
+        lithography steps must apply to the ACTUAL current topology, not
+        just the original wafer.
+
+        `_mask_recipe_keys()` only ever produces mask_left_um/mask_right_um
+        /mask_spans_um, which `prepare_domain()` only honours when
+        building a FRESH domain -- on an inherited (chained) domain they
+        are silently ignored (with a warning). `remask_spans_um` is the
+        counterpart for that case (see session.remask_domain(), built
+        for gate patterning earlier and reused here verbatim: same
+        mechanism, same "apply a new mask on top of whatever geometry
+        already exists" need, no reason for etch/deposition to need a
+        second implementation of it).
+
+        Whether THIS step will be fresh or chained isn't known from the
+        step alone -- it depends on whether anything already ran or is
+        already queued ahead of it (self.completed_steps / self.flow_steps),
+        exactly the same condition _chained_flow_config() uses to decide
+        what a standalone RUN click continues from.
+
+        REAL BUG, found by the user actually running deposition after an
+        earlier step and getting a mask (and the shape of an earlier
+        step) they never asked for: this used to return remask_spans_um
+        UNCONDITIONALLY for any chained step, derived from
+        self.wafer.mask_openings_um -- a value that persists from
+        whatever it last was (GUI default, or a previous litho session)
+        and never clears itself. So every chained etch/deposition
+        silently re-masked using stale/default litho state, whether or
+        not the user had touched Lithography for THIS step. Worse,
+        deposition's own duplicateTopLevelSet() (see run_deposition())
+        duplicates the domain's CURRENT top level set -- which the
+        just-inserted mask now was -- so the "new" material's starting
+        shape was the mask box, not the real prior surface: this is
+        also why an unrelated earlier step's geometry appeared to
+        "come back."
+
+        Both questions are now answered from ONE place, `_resist_spans_um()`
+        -- the real resist state -- instead of each process panel deciding
+        for itself from GUI defaults. See that method for the table and
+        for what the defaults-driven version actually produced.
+        """
+        spans = self._resist_spans_um()
+        is_first_step = not (self.completed_steps or self.flow_steps)
+
+        if spans is None:
+            # No resist on the wafer. A process step is not a lithography
+            # step: it must not invent one. On a FRESH wafer that means
+            # the explicit bare-wafer recipe (`mask_spans_um: []`, this
+            # project's own convention -- see prepare_domain()); on an
+            # inherited domain it means no mask keys at all, which
+            # prepare_domain() already treats as "continue untouched".
+            return {"mask_spans_um": []} if is_first_step else {}
+
+        if is_first_step:
+            return {
+                "mask_left_um": self.wafer.mask_left_um,
+                "mask_right_um": self.wafer.mask_right_um,
+                "mask_spans_um": spans,
+            }
+        return {"remask_spans_um": spans}
+
+    def _note_if_blanket_resist(self, action: str) -> None:
+        """Record — never block — that a step will be masked everywhere.
+
+        An undeveloped blanket resist covers the whole wafer, so this
+        step is masked at every x and leaves the geometry unchanged.
+        That is the physically correct consequence, but with no
+        explanation it looks like the button did nothing.
+
+        This is a LOG note, not a dialog and not a return value. A modal
+        confirm is still a block, and telling the user to run a
+        different step first is still a prescribed order: the user picks
+        a process, that process runs on the current wafer, and the
+        result is whatever it physically is.
+        """
+        if self.wafer.pr_present and not self.wafer.developed:
+            self._log(
+                f"\nNOTE: an undeveloped blanket photoresist covers the whole "
+                f"wafer, so this {action} is masked everywhere and the wafer "
+                f"geometry will not change.\n"
+            )
+
+    def _resist_spans_um(self):
+        """The OPAQUE resist spans implied by the wafer's CURRENT resist
+        state, or None when the wafer carries no resist at all.
+
+        This is the single source of truth for "what is the resist doing
+        right now", read by both the recipe builder
+        (_mask_recipe_keys_for_current_step) and the canvas overlay
+        (redraw). Sharing it is the point: while the two derived resist
+        shape independently, what was drawn and what was simulated could
+        disagree, and did.
+
+            resist state            -> spans returned
+            ------------------------------------------------------------
+            no resist               -> None      (no mask at all)
+            coated, not developed   -> ONE full-width span (blanket film)
+            developed               -> opaque complement of the openings
+
+        The middle row is the one that was missing, and its absence is
+        what made PR COAT behave as coat+align+expose+develop in one
+        click. Verified against real ViennaPS 4.6.2 before this existed:
+        oxidation -> PR COAT (nothing else) -> deposition put `Mask` only
+        OUTSIDE mask_openings_um and deposited Si3N4 only INSIDE them --
+        an already-developed pattern produced by a bare coat.
+
+        A blanket coat needs no new geometry path: mask_spans_from_openings
+        with NO openings already returns exactly one span covering the
+        whole wafer (its own documented behavior, and what
+        tests/unit/test_mask_spans_from_openings_mock.py pins).
+        """
+        from tcad.process.base import mask_spans_from_openings
+
+        if not self.wafer.pr_present:
+            return None
+
+        openings = self.wafer.mask_openings_um if self.wafer.developed else []
+        return [
+            list(span)
+            for span in mask_spans_from_openings(openings, self.wafer.width_um)
+        ]
+
     def _read_lithography_fields(self):
         try:
             self.wafer.pr_thickness_um = float(self.pr_var.get())
@@ -3597,6 +4679,13 @@ class TCADApplication(tk.Tk):
     def _update_process_buttons(self):
         """Keep every process operation reachable.
 
+        Also refreshes the bottom Process Flow Timeline's completed-step
+        chips (see _refresh_completed_timeline) -- called here rather
+        than threaded through every individual run_*() success path
+        because this method is ALREADY called from every one of them,
+        plus reset(), so it is the one existing hook guaranteed to run
+        exactly when self.completed_steps changes.
+
         This used to enable exactly ONE button -- the next step of a
         single hard-wired sequence (litho -> etch OR oxidation OR
         deposition -> strip). That made whole classes of real device
@@ -3626,85 +4715,126 @@ class TCADApplication(tk.Tk):
         ):
             button.configure(state="normal")
 
-        # Doping is not part of the litho/process_stage sequence at
-        # all -- it attaches a DopingProfile to whatever real mesh was
-        # most recently produced (etch/oxidation/deposition/gate_stack
-        # all count), so it is gated on "a real mesh currently exists"
-        # rather than on process_stage, same condition redraw() already
-        # uses for real_mesh_available.
-        doping_ready = bool(
-            self.wafer.processed
-            and self.last_final_mesh
-            and Path(self.last_final_mesh).exists()
-        )
-        self.doping_button.configure(
-            state="normal" if doping_ready else "disabled"
-        )
+        # Doping is a process category like any other, so it is never
+        # greyed out. It used to be disabled until some other process
+        # had produced a mesh, which is a prerequisite by another name:
+        # the button simply looked broken, with no way to find out why.
+        # run_doping() now exports the current wafer itself when no mesh
+        # exists yet (see _materialize_current_wafer).
+        self.doping_button.configure(state="normal")
 
-        # Measurement needs doping already attached (self.last_doped_result),
-        # same "not part of the litho/process_stage sequence" reasoning
-        # as doping itself.
-        self.measure_button.configure(
-            state="normal" if self.last_doped_result is not None else "disabled"
-        )
+        # Device measurement is characterization, not a process step, and
+        # a solve genuinely has nothing to work with until a doping
+        # profile exists. It stays clickable so pressing it explains
+        # that (see run_measurement) instead of silently doing nothing.
+        self.measure_button.configure(state="normal")
+
+        if hasattr(self, "_refresh_completed_timeline"):
+            self._refresh_completed_timeline()
 
     def process_pr_coat(self):
-        if self.process_stage != "wafer":
-            return
+        # No stage gate -- see run_etch()'s own matching comment. This
+        # was the last of the litho micro-steps still hard-gated to
+        # "only from a pristine, untouched wafer" (process_stage ==
+        # "wafer" literally), so once ANY other step ran once, this
+        # button could never fire again -- silently, with no error, no
+        # log line, nothing -- exactly contradicting the same
+        # "processes work in any order" requirement etch/oxidation/
+        # deposition/PR strip were already relaxed for.
+        #
+        # This button is the ONLY thing that puts resist on the wafer,
+        # and resist is the only thing that lets a later step be masked
+        # (see _resist_spans_um()). What it puts there is a BLANKET
+        # film; mask_openings_um does not enter the picture until
+        # DEVELOP. Not clicking it means no mask, which is what makes a
+        # plain oxidation/deposition/etch blanket.
         if not self._read_lithography_fields():
             return
 
+        # Coating puts resist on the whole wafer and nothing else. The
+        # three flags below are the whole point: a coat must also CLEAR
+        # any leftover state from a previous lithography cycle, because
+        # `developed` used to be set once and never reset except by NEW
+        # WAFER -- so coat -> develop -> strip -> coat left the fresh
+        # coat already "developed", in the recipe and on the canvas.
+        self.wafer.pr_present = True
+        self.wafer.developed = False
+        self.wafer.stripped = False
+
         self.process_stage = "pr_coated"
         self.history.append("PR coat")
-        self._activate_stages(0, 1, 2)
+        self._mark_stage_done(2)
         self._log(
             "\nSTEP: PR COAT\n"
-            f"PR thickness = {self.wafer.pr_thickness_um} um"
+            f"PR thickness = {self.wafer.pr_thickness_um} um\n"
+            "Blanket resist over the whole wafer (no pattern yet -- "
+            "DEVELOP is what opens it)."
         )
         self._update_process_buttons()
         self.redraw()
 
     def process_mask_alignment(self):
-        if self.process_stage != "pr_coated":
-            return
         if not self._read_lithography_fields():
             return
 
+        # Aligning a photomask changes no wafer geometry and no resist
+        # state -- the mask is process INPUT, not something that gets
+        # added to the wafer. Only the selected window changes.
         self.process_stage = "aligned"
         self.history.append("Mask alignment")
-        self._activate_stages(0, 1, 2, 3)
+        self._mark_stage_done(3)
         self._log(
             "\nSTEP: MASK ALIGNMENT\n"
             f"Opening = "
-            f"{self.wafer.mask_right_um - self.wafer.mask_left_um} um"
+            f"{self.wafer.mask_right_um - self.wafer.mask_left_um} um\n"
+            "Mask is process input; wafer geometry unchanged."
         )
         self._update_process_buttons()
         self.redraw()
 
     def process_exposure(self):
-        if self.process_stage != "aligned":
-            return
         if not self._read_lithography_fields():
             return
 
+        if not self.wafer.pr_present:
+            # A result, not a refusal, and no instruction to run some
+            # other step first: the step ran against the wafer as it is
+            # and had nothing to act on.
+            self._log(
+                "\nSTEP: EXPOSURE\n"
+                "There is no photoresist on the wafer, so there is nothing "
+                "to expose. Nothing changed.\n"
+            )
+
+        # Exposure changes resist CHEMISTRY, not geometry: nothing is
+        # removed until DEVELOP.
         self.process_stage = "exposed"
         self.history.append("Exposure")
-        self._activate_stages(0, 1, 2, 3, 4)
+        self._mark_stage_done(4)
         self._log(
             "\nSTEP: EXPOSURE\n"
-            f"Dose = {self.wafer.exposure_dose}"
+            f"Dose = {self.wafer.exposure_dose}\n"
+            "Latent image only; resist geometry unchanged until develop."
         )
         self._update_process_buttons()
         self.redraw()
 
     def process_develop(self):
-        if self.process_stage != "exposed":
+        if not self.wafer.pr_present:
+            self._log(
+                "\nSTEP: DEVELOP\n"
+                "There is no photoresist on the wafer, so there is nothing "
+                "to develop. Nothing changed.\n"
+            )
+            self._update_process_buttons()
+            self.redraw()
             return
 
+        # First and only lithography step that changes resist GEOMETRY.
         self.wafer.developed = True
         self.process_stage = "developed"
         self.history.append("Develop")
-        self._activate_stages(0, 1, 2, 3, 4, 5)
+        self._mark_stage_done(5)
         self._log(
             "\nSTEP: DEVELOP\n"
             f"Develop time = {self.wafer.develop_time_s} s\n"
@@ -3714,16 +4844,29 @@ class TCADApplication(tk.Tk):
         self.redraw()
 
     def process_pr_strip(self):
-        if self.process_stage not in ("etched", "oxidized", "deposited"):
+        if not self.wafer.pr_present:
+            self._log(
+                "\nSTEP: PR STRIP\n"
+                "There is no photoresist on the wafer to strip. "
+                "Nothing changed.\n"
+            )
+            self._update_process_buttons()
+            self.redraw()
             return
 
+        self.wafer.pr_present = False
+        self.wafer.developed = False
         self.wafer.stripped = True
         self.process_stage = "stripped"
         self.history.append("PR strip")
-        self._activate_stages(0, 1, 2, 3, 4, 5, 6, 7)
+        self._mark_stage_done(7)
         self._log(
             "\nSTEP: PR STRIP\n"
-            "Photoresist removed after etch."
+            "Resist removed from the process state, so no further step "
+            "is masked by it.\n"
+            "NOTE: resist ALREADY built into a previous step's geometry "
+            "stays in that mesh -- stripping it out of the exported "
+            "geometry is not implemented yet."
         )
         self._update_process_buttons()
         self.redraw()
@@ -3758,6 +4901,8 @@ class TCADApplication(tk.Tk):
 
             return
 
+        self._note_if_blanket_resist("etch")
+
         if not viennaps_session.is_available():
 
             messagebox.showerror(
@@ -3775,9 +4920,12 @@ class TCADApplication(tk.Tk):
                 "_process_category": "etching",
                 "_process_model_key": model_key,
 
-                # Every mask opening, not just the first -- see
-                # _mask_recipe_keys().
-                **self._mask_recipe_keys(),
+                # Fresh wafer -> mask_left_um/mask_right_um/mask_spans_um
+                # (MakeTrench/make_mask_spans); chained onto an earlier
+                # step -> remask_spans_um instead, so a mask applied
+                # mid-flow (see _mask_recipe_keys_for_current_step) isn't
+                # silently ignored the way it used to be.
+                **self._mask_recipe_keys_for_current_step(),
 
                 "pr_thickness_um":
                     self.wafer.pr_thickness_um,
@@ -3996,16 +5144,15 @@ class TCADApplication(tk.Tk):
         self.process_stage = "etched"
         self.last_final_mesh = result.get("final_mesh")
         self.completed_steps.append(recipe)
+        self.last_domain_state = result.get("domain_state")
+        # Keep flow_step_meshes aligned index-for-index with
+        # completed_steps (see run_process_flow's own comment) so the
+        # bottom timeline can show this step's geometry on click even
+        # when it was run as a standalone RUN click, not via RUN
+        # PROCESS FLOW.
+        self.flow_step_meshes.append(self.last_final_mesh)
 
-        self._activate_stages(
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-        )
+        self._mark_stage_done(6)
 
         cycles_note = f" x {result['cycles']}" if "cycles" in result else ""
         self.history.append(
@@ -4041,13 +5188,20 @@ class TCADApplication(tk.Tk):
     # DRAW
     # --------------------------------------------------------
 
-    def _draw_real_mesh_result(self, canvas, x0, x1, surface_y, bottom_y):
-        """Draw the actual ViennaPS final_mesh (self.last_final_mesh, a
-        .vtu volume mesh), instead of the placeholder rectangle in
-        redraw(). Returns True on success; False if the mesh can't be
-        read (meshio/ViennaPS unavailable, file missing, no triangle
-        cells, degenerate bounds, etc.), so the caller falls back to
-        the placeholder in that case -- this must never raise.
+    def _draw_real_mesh_result(self, canvas, x0, x1, surface_y, bottom_y, mesh_path=None):
+        """Draw a real ViennaPS mesh (.vtu volume mesh) instead of the
+        placeholder rectangle in redraw(). Returns True on success;
+        False if the mesh can't be read (meshio/ViennaPS unavailable,
+        file missing, no triangle cells, degenerate bounds, etc.), so
+        the caller falls back to the placeholder in that case -- this
+        must never raise.
+
+        mesh_path : which mesh to draw. Defaults to self.last_final_mesh
+        (the real current wafer) when None -- every existing caller
+        keeps that behavior unchanged. The Process Flow Timeline (see
+        _view_flow_step) passes an EARLIER step's own mesh instead, so
+        clicking a timeline chip shows that step's real geometry without
+        touching self.last_final_mesh or any process state.
 
         Each material is drawn as its TRUE boundary silhouette (via
         _material_boundary_loops(), traced from every one of its
@@ -4071,7 +5225,8 @@ class TCADApplication(tk.Tk):
         (triangle block lookup, "Material" cell_data, vps.Material(tag)
         name lookup), rather than inventing a new one.
         """
-        if not self.last_final_mesh or not Path(self.last_final_mesh).exists():
+        mesh_path = mesh_path if mesh_path is not None else self.last_final_mesh
+        if not mesh_path or not Path(mesh_path).exists():
             return False
 
         try:
@@ -4081,7 +5236,7 @@ class TCADApplication(tk.Tk):
                 return False
             module = viennaps_session.require_viennaps()
 
-            mesh = meshio.read(self.last_final_mesh)
+            mesh = meshio.read(mesh_path)
             triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
             if triangle_block is None or "Material" not in mesh.cell_data:
                 return False
@@ -4114,19 +5269,12 @@ class TCADApplication(tk.Tk):
             if depth_above > 1e-9:
                 y_scale = min(y_scale, available_above / depth_above)
 
-            material_colors = {
-                "Si": "#c9c9c9",
-                "Mask": "#202020",
-                "SiO2": "#8fb8e8",
-                "Polymer": "#f2c14e",
-                # gate_stack.py's own default electrode/pad materials --
-                # otherwise fall back to the generic gray, which would
-                # make gate/source/drain indistinguishable from each
-                # other and from Si.
-                "TiN": "#7d3c98",
-                "W": "#f39c12",
-                "Cu": "#c0392b",
-            }
+            # Real mesh coordinates for the cursor readout (_on_canvas_motion)
+            # and the ruler (redraw()) -- overwrites the wafer-coordinate
+            # default redraw() set before calling this function.
+            self._viewer_scale = (x0, x_min, x_scale, surface_y, y_scale)
+
+            material_colors = self._MATERIAL_COLORS
             material_names = {}
 
             def to_canvas(node_idx):
@@ -4136,6 +5284,32 @@ class TCADApplication(tk.Tk):
             by_material = {}
             for idx, tag in enumerate(tags):
                 by_material.setdefault(tag, []).append(idx)
+
+            # Real current top surface, in wafer-x (um) -> mesh-y (um),
+            # binned coarsely (40 bins across the mesh width -- this is
+            # for POSITIONING a GUI guide overlay, not physics, so it
+            # doesn't need grid-cell resolution). redraw()'s mask-window
+            # guide uses this to sit the PR block on the ACTUAL current
+            # surface instead of the original y=0 datum -- using y=0
+            # unconditionally is what let a PR block draw partly
+            # overlapping/underneath real oxide that had already grown
+            # above y=0 (found by direct visual inspection, not assumed).
+            n_bins = 40
+            bin_top = [-1e18] * n_bins
+            bin_w = (x_max - x_min) / n_bins if x_max > x_min else 1.0
+            for tri in triangle_data:
+                for node_idx in tri:
+                    px, py = points[node_idx][0], points[node_idx][1]
+                    b = max(0, min(n_bins - 1, int((px - x_min) / bin_w)))
+                    if py > bin_top[b]:
+                        bin_top[b] = py
+
+            def _real_top_um(x_um):
+                b = max(0, min(n_bins - 1, int((x_um - x_min) / bin_w)))
+                v = bin_top[b]
+                return v if v > -1e17 else 0.0
+
+            self._real_mesh_top_um = _real_top_um
 
             # redraw() runs on every window resize (<Configure>, see
             # __init__), and each run rebuilds the whole canvas from
@@ -4201,13 +5375,38 @@ class TCADApplication(tk.Tk):
 
                     canvas.create_polygon(coords, fill=color, outline=color)
 
+            # MESH overlay (toolbar checkbox, see _make_header): the raw
+            # triangle edges on top of the material fill -- a display
+            # toggle only, drawn from the same triangle_data already
+            # read above, no new mesh data.
+            if self.mesh_overlay_var.get():
+                # Same decimation cap as the per-triangle fallback fill
+                # above -- an unrefined region can carry tens of
+                # thousands of triangles, and drawing every edge as its
+                # own canvas item would freeze the GUI, not just be slow.
+                for tag, indices in by_material.items():
+                    draw_indices = indices
+                    if len(draw_indices) > _MAX_RENDERED_TRIANGLES:
+                        draw_indices = rng.sample(draw_indices, _MAX_RENDERED_TRIANGLES)
+                    for i in draw_indices:
+                        coords = []
+                        for node_idx in triangle_data[i]:
+                            coords.extend(to_canvas(node_idx))
+                        canvas.create_polygon(
+                            coords, fill="", outline=Tokens.BG_0, width=1,
+                        )
+
             # p/n doping overlay: a translucent red (p-type, net
             # negative) / blue (n-type, net positive) tint over whatever
             # doped region(s) exist, so a doping change is visible on
             # screen instead of only in the log. Drawn last so it sits
             # on top of the material fill; stipple keeps the material
             # silhouette underneath legible rather than hiding it.
-            if self.last_doped_result is not None and getattr(
+            # Layer-gated: only the DOPING layer shows this tint (see
+            # the viewer's layer switch, _make_cross_section) -- GEOMETRY
+            # shows the bare material fill, matching what each layer
+            # name promises.
+            if self.viewer_layer_var.get() == "doping" and self.last_doped_result is not None and getattr(
                 self.last_doped_result, "doping", None
             ) is not None:
                 for region_name in {r.region for r in self.last_doped_result.doping.regions}:
@@ -4243,8 +5442,8 @@ class TCADApplication(tk.Tk):
             canvas.create_text(
                 x0 + 5, surface_y + 12,
                 text="REAL VIENNAPS MESH",
-                anchor="w", fill="#333",
-                font=("Segoe UI", 8, "italic"),
+                anchor="w", fill=Tokens.FG_DIM,
+                font=(Tokens.FONT_UI, 8, "italic"),
             )
             return True
         except Exception:
@@ -4435,20 +5634,20 @@ class TCADApplication(tk.Tk):
         surface_y = height * 0.48
         bottom_y = height - 60
 
-        canvas.create_text(
-            x0,
-            25,
-            text=(
-                "2D CROSS SECTION / "
-                "PROCESS STATE"
-            ),
-            anchor="w",
-            font=(
-                "Segoe UI",
-                13,
-                "bold",
-            ),
-        )
+        # Viewing-step indicator -- the viewer's own toolbar header
+        # (_make_cross_section) already carries the static title, so
+        # this line is reserved for what the old static title used to
+        # sit on top of: a note when the canvas is showing an EARLIER
+        # Process Flow Timeline step instead of the live wafer state
+        # (see _view_flow_step).
+        if self._viewing_step_index is not None:
+            step_no = self._viewing_step_index + 1
+            canvas.create_text(
+                x0, 14, anchor="w",
+                text=f"VIEWING STEP {step_no:02d} / {len(self.completed_steps):02d}"
+                     "  —  click LIVE on the timeline below to return",
+                fill=Tokens.ACCENT, font=(Tokens.FONT_UI, 9, "bold"),
+            )
 
         # Silicon placeholder -- drawn only when we do NOT expect the
         # real-mesh render below (_draw_real_mesh_result(), called
@@ -4461,10 +5660,20 @@ class TCADApplication(tk.Tk):
         # as if it were still intact Si. See CLAUDE.md's "GUI:
         # real-mesh render still shows intact Si under an isotropic
         # undercut" for the investigation this fixes.
+        # Which mesh the VIEWER shows -- the real current wafer, unless
+        # the user clicked an earlier Process Flow Timeline chip (see
+        # _view_flow_step), in which case that step's own real mesh is
+        # shown instead. Purely a display choice: self.last_final_mesh
+        # (what doping/measurement actually operate on) is untouched
+        # either way.
+        display_mesh = self.last_final_mesh
+        if self._viewing_step_index is not None and 0 <= self._viewing_step_index < len(self.flow_step_meshes):
+            display_mesh = self.flow_step_meshes[self._viewing_step_index]
+
         real_mesh_available = bool(
             self.wafer.processed
-            and self.last_final_mesh
-            and Path(self.last_final_mesh).exists()
+            and display_mesh
+            and Path(display_mesh).exists()
         )
 
         if not real_mesh_available:
@@ -4489,10 +5698,11 @@ class TCADApplication(tk.Tk):
         # no visible change. These flags drive the drawing below; none
         # of them alter process state or the ViennaPS recipe.
         stage = self.process_stage
-        pr_present = stage in (
-            "pr_coated", "aligned", "exposed", "developed", "etched", "oxidized",
-            "deposited",
-        )
+        # Resist comes from the wafer's real resist state, not from the
+        # stage string: a stage list said "resist exists" for `etched`/
+        # `oxidized`/`deposited` too, which is a guess about what the
+        # user did rather than a record of it.
+        pr_present = self.wafer.pr_present
         mask_present = stage in ("aligned", "exposed")
         exposed_now = stage == "exposed"
         opening_open = self.wafer.developed
@@ -4509,6 +5719,36 @@ class TCADApplication(tk.Tk):
         scale = (
             x1 - x0
         ) / self.wafer.width_um
+
+        # Default cursor-readout scale (wafer coords, 0..width_um) --
+        # _draw_real_mesh_result overwrites this with the real mesh's
+        # own (centred) coordinate system when it succeeds, later below.
+        self._viewer_scale = (x0, 0.0, scale, surface_y, scale)
+
+        # --- micron ruler (top edge) ---------------------------------
+        # Wafer-coordinate ticks (0..width_um) -- exact for the litho
+        # placeholder drawn below; a reasonable guide even once a real
+        # mesh is drawn on top (its own x_extent_um is normally the same
+        # value this wafer was built with). The cursor readout
+        # (_on_canvas_motion) is what needs to be numerically exact, and
+        # it always uses the real mesh's own scale once one exists.
+        T = Tokens
+        ruler_y = 34
+        canvas.create_line(x0, ruler_y, x1, ruler_y, fill=T.LINE_STRONG)
+        step_um = _nice_ruler_step(self.wafer.width_um)
+        tick = 0.0
+        while tick <= self.wafer.width_um + 1e-9:
+            tx = x0 + tick * scale
+            canvas.create_line(tx, ruler_y - 4, tx, ruler_y + 4, fill=T.LINE_STRONG)
+            canvas.create_text(
+                tx, ruler_y - 12, text=f"{tick:g}", fill=T.FG_DIM,
+                font=(T.FONT_DATA, 7), anchor="s",
+            )
+            tick += step_um
+        canvas.create_text(
+            x1, ruler_y - 12, text="µm", fill=T.FG_DIM,
+            font=(T.FONT_DATA, 7, "italic"), anchor="s",
+        )
 
         # Every mask opening in canvas pixels. The mask may pattern
         # several windows (see _make_lithography_panel), so the drawing
@@ -4537,7 +5777,18 @@ class TCADApplication(tk.Tk):
             - 45
         )
 
-        if pr_present and not opening_open:
+        # Litho-stage placeholder visuals (PR film / mask / opening) --
+        # gated on `not real_mesh_available`, same rule the flat Si
+        # placeholder rectangle already follows above. Pre-existing
+        # behavior before this redesign drew these UNCONDITIONALLY, so
+        # e.g. a real post-oxidation mesh (process_stage "oxidized" is
+        # in `pr_present`'s stage list) had a pink PR block floating
+        # over the real ViennaPS silhouette -- confirmed by actually
+        # running a real oxidation through the redesigned GUI, not
+        # assumed. Once a real mesh exists it already shows whatever
+        # PR/mask/oxide state is real, so the placeholder no longer
+        # applies, exactly like the Si rectangle's own case.
+        if not real_mesh_available and pr_present and not opening_open:
 
             # Uniform PR film: coated, and still uniform through
             # alignment and exposure (exposure changes chemistry, not
@@ -4577,7 +5828,7 @@ class TCADApplication(tk.Tk):
                     fill="#803252",
                 )
 
-        if mask_present:
+        if not real_mesh_available and mask_present:
 
             # Photomask held above the wafer during alignment/exposure.
             # Opaque wherever there is no opening -- drawn as the gaps
@@ -4637,7 +5888,7 @@ class TCADApplication(tk.Tk):
                     fill="#2e86de",
                 )
 
-        if opening_open:
+        if not real_mesh_available and opening_open:
 
             # After develop the exposed PR is removed, leaving a real
             # opening in the resist (this is the state the ViennaPS
@@ -4689,7 +5940,8 @@ class TCADApplication(tk.Tk):
         # ViennaPS surface, so this is a strict improvement, not a
         # behavior change for the case it can't apply to.
         if real_mesh_available:
-            if not self._draw_real_mesh_result(canvas, x0, x1, surface_y, bottom_y):
+            if not self._draw_real_mesh_result(canvas, x0, x1, surface_y, bottom_y,
+                                                mesh_path=display_mesh):
                 # real_mesh_available said a mesh file exists, but
                 # reading/rendering it failed anyway (meshio missing,
                 # corrupt file, ViennaPS unavailable, etc.). The flat
@@ -4756,9 +6008,151 @@ class TCADApplication(tk.Tk):
                 justify="center",
             )
 
+        # Current PR/mask, drawn as real solid material -- on top of the
+        # REAL mesh's ACTUAL current surface once one exists, not a
+        # fixed y=0 datum. This is the same "PR fills the gaps between
+        # mask openings" picture the pre-real-mesh placeholder above
+        # already draws (that block stays exactly as it was, still
+        # gated to "no real mesh yet"); this is its counterpart for
+        # once a real mesh IS on screen -- self.wafer.mask_openings_um
+        # is what any NEXT chained etch/deposition/masked-oxidation
+        # step actually reads (see _mask_recipe_keys_for_current_step()),
+        # so it needs to stay visible after a real mesh from an earlier
+        # step is showing, not just before the first real step.
+        #
+        # The ORIGINAL version of this drew PR at a FIXED height
+        # (surface_y, i.e. the y=0 datum) regardless of what the real
+        # mesh's own current top surface was -- fine on a bare wafer
+        # (nothing real to conflict with), but once real oxide had
+        # already grown ABOVE y=0, that fixed height let the PR block
+        # sit partly UNDER/overlapping the real oxide instead of on top
+        # of it (confirmed by direct visual inspection). Fixed by
+        # positioning each PR segment on self._real_mesh_top_um(), the
+        # per-x lookup _draw_real_mesh_result() builds from the actual
+        # mesh triangles, falling back to the y=0 datum when no real
+        # mesh exists yet (mirrors the placeholder block's own datum).
+        #
+        # Gated on the SAME `pr_present` litho-stage condition the
+        # pre-real-mesh placeholder uses (minus the "already through a
+        # real step" tail values) -- NOT merely on a mask window being
+        # configured. self.wafer.mask_openings_um keeps whatever value
+        # it last had regardless of what the user just clicked, so
+        # drawing PR from its presence alone made PR appear after ANY
+        # real step (oxidation, etch, ...) whether or not the user ever
+        # asked for lithography -- reading as "oxidizing now always
+        # implies PR comes next," the opposite of every other fix this
+        # session (order is the user's choice; clicking one step must
+        # not draw a DIFFERENT step the user never clicked). PR now
+        # shows only once the user has actually clicked through PR
+        # COAT (or a later litho stage) since the process_stage last
+        # changed -- exactly what they clicked, nothing implied.
+        #
+        # WHAT is drawn now comes from _resist_spans_um(), the same
+        # method the recipe builder reads, so the preview cannot disagree
+        # with the simulation again. It used to derive its own shape here
+        # -- always "resist in the gaps between the openings", i.e. an
+        # already-DEVELOPED pattern -- so a bare PR COAT (blanket film,
+        # no openings yet) was drawn as though it had also been aligned,
+        # exposed and developed. That is the same defect the recipe had,
+        # in the renderer.
+        #
+        # Still gated on process_stage, not on wafer.pr_present: this
+        # block previews resist that is NOT yet part of any geometry.
+        # Once a real step runs WITH resist, the resist is a genuine
+        # `Mask` material in the exported mesh and _draw_real_mesh_result
+        # already draws it -- drawing it again here would double it.
+        pr_pending = self.process_stage in (
+            "pr_coated", "aligned", "exposed", "developed",
+        )
+        resist_spans_um = self._resist_spans_um() if pr_pending else None
+        if resist_spans_um and real_mesh_available:
+            half_width = self.wafer.width_um / 2.0
+            _vx0, _vxmin, _vxs, _vsy, v_yscale = self._viewer_scale
+
+            def _pr_base_canvas_y(wafer_lo_um, wafer_hi_um):
+                # Highest real point spanned by this segment -- sitting
+                # the PR block there avoids clipping into real material
+                # even where the surface isn't flat (an etched step,
+                # say); a real spin-on would follow the dip too, but
+                # this is a GUI preview, not a re-simulation.
+                samples = [wafer_lo_um, (wafer_lo_um + wafer_hi_um) / 2, wafer_hi_um]
+                top_um = max(self._real_mesh_top_um(s - half_width) for s in samples)
+                return surface_y - top_um * v_yscale
+
+            pr_height_px = max(6.0, self.wafer.pr_thickness_um * v_yscale)
+            # _resist_spans_um() works in DOMAIN coordinates (centred on
+            # 0, the convention every recipe uses); this canvas block
+            # works in WAFER coordinates (0..width_um). Failing to
+            # convert is a documented trap in this project -- see
+            # CLAUDE.md's PN-diode entry, where the same mix-up put a
+            # junction 0.1um from the domain edge and still produced a
+            # plausible-looking result.
+            for lo_dom, hi_dom in resist_spans_um:
+                lo_um = lo_dom + half_width
+                hi_um = hi_dom + half_width
+                base_y = _pr_base_canvas_y(lo_um, hi_um)
+                canvas.create_rectangle(
+                    x0 + lo_um * scale, base_y - pr_height_px,
+                    x0 + hi_um * scale, base_y,
+                    fill="#e8a0bd", outline="#803252",
+                )
+            canvas.create_text(
+                x0 + 5, _pr_base_canvas_y(0.0, 0.0) - pr_height_px / 2 - 12,
+                anchor="w",
+                text=(
+                    # Describes the resist AS IT IS. It must not name or
+                    # predict a step the user has not chosen.
+                    "PR — developed (patterned)"
+                    if self.wafer.developed
+                    else "PR — blanket coat (not patterned)"
+                ),
+                fill="#803252", font=(Tokens.FONT_UI, 8),
+            )
+
+        # POTENTIAL / ELECTRON / HOLE layers need per-node DevSim field
+        # data (Potential/Electrons/Holes), which run_measurement's
+        # worker does not serialize back to the GUI today -- only
+        # terminal currents (see run_measurement / _make_measurement_panel).
+        # Rather than silently ignoring the layer switch or fabricating
+        # a fake field map, say plainly that the data isn't there yet.
+        # This is the one honest limitation flagged in the redesign plan.
+        selected_layer = self.viewer_layer_var.get()
+        if selected_layer in ("potential", "electron", "hole"):
+            T = Tokens
+            canvas.create_rectangle(
+                x0, surface_y - 20, x1, surface_y + 20,
+                fill=T.BG_1, outline=T.LINE_STRONG,
+            )
+            canvas.create_text(
+                (x0 + x1) / 2, surface_y,
+                text=f"{self._VIEWER_LAYER_LABELS[selected_layer]} field data not "
+                     "available — device measurement does not export per-node "
+                     "field values yet (terminal currents only).",
+                fill=T.FG_MUTED, font=(T.FONT_UI, 9), justify="center",
+                width=x1 - x0 - 40,
+            )
+
     # --------------------------------------------------------
     # STAGES
     # --------------------------------------------------------
+
+    def _mark_stage_done(self, *indices):
+        """Light up the SESSION STATE markers for steps that actually ran.
+
+        The markers used to be driven by passing a RANGE to
+        _activate_stages: running a single oxidation called
+        _activate_stages(0..6), which lit PR coat, Mask alignment,
+        Exposure, Develop AND Etch -- five steps the user never ran. That
+        is a leftover from when the GUI enforced one fixed sequence, and
+        it is exactly the "one step shows the next step's result"
+        complaint, in the one place where it is purely cosmetic.
+
+        Now each step marks only its own marker, accumulated in
+        self._stages_done, so the panel reports history instead of
+        predicting a recipe.
+        """
+        self._stages_done.update(indices)
+        self._activate_stages(*self._stages_done)
 
     def _activate_stages(
         self,
@@ -4832,10 +6226,16 @@ class TCADApplication(tk.Tk):
         # PREVIOUS wafer's geometry underneath whatever gets run next.
         self.flow_steps = []
         self.completed_steps = []
+        self.flow_step_meshes = []
+        # Must clear too: resuming a NEW wafer from the OLD wafer's
+        # accumulated geometry would silently keep building on it.
+        self.last_domain_state = None
         if hasattr(self, "_refresh_flow_list"):
             self._refresh_flow_list()
 
-        self._activate_stages()
+        # A fresh wafer exists, and nothing has been done to it yet.
+        self._stages_done = {0}
+        self._activate_stages(*self._stages_done)
 
         # The openings listbox is built from self.wafer, so a fresh
         # Wafer() has to be reflected there too -- otherwise NEW WAFER

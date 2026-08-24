@@ -14,12 +14,93 @@ module — it belongs to individual process implementations.
 
 from __future__ import annotations
 
+import os
+import shutil
+import tempfile
+from contextlib import contextmanager
 from typing import Any
 
 try:
     import viennaps as vps
 except Exception:
     vps = None
+
+
+def _ascii_scratch_dir() -> str:
+    """A writable directory whose path contains only ASCII characters.
+
+    ViennaPS's Writer/Reader hand the filename to a C++ narrow-char file
+    API, which on Windows cannot open a path containing non-ASCII
+    characters. Measured directly on a machine whose user name is not
+    ASCII (so `tempfile.gettempdir()` is
+    `C:\\Users\\<non-ascii>\\AppData\\Local\\Temp`):
+
+      * `Writer(domain, path).apply()` wrote NO file and raised NOTHING —
+        `save_domain_state()` returned normally and the caller only found
+        out one step later, when `Reader` failed with "Could not open
+        file".
+      * `Reader` failed the same way on a file that demonstrably existed
+        (copied there, 1206 bytes), so it is the path string, not the
+        file content.
+
+    The usual Windows workaround — an 8.3 short path via
+    GetShortPathNameW — was tried first and does NOT work here: 8.3 name
+    generation is disabled on this volume, so the call returns the long
+    path unchanged. Hence this: find an ASCII directory, do the I/O
+    there, and move the result to where the caller asked.
+
+    The candidates are tried in order and the first writable ASCII one
+    wins. `tempfile.gettempdir()` is first because on an ASCII-named
+    account it already qualifies, which makes this whole detour a no-op.
+    """
+    candidates = [
+        tempfile.gettempdir(),
+        os.environ.get("PUBLIC", ""),
+        os.path.join(os.environ.get("SystemDrive", "C:") + os.sep, "Temp"),
+        os.environ.get("SystemDrive", "C:") + os.sep,
+    ]
+    for base in candidates:
+        if not base or not base.isascii():
+            continue
+        try:
+            os.makedirs(base, exist_ok=True)
+            probe = tempfile.NamedTemporaryFile(dir=base, delete=True)
+            probe.close()
+            return base
+        except Exception:
+            continue
+    raise RuntimeError(
+        "No writable ASCII-only directory found for ViennaPS domain I/O. "
+        "ViennaPS cannot open a path containing non-ASCII characters; "
+        "tried: " + ", ".join(repr(c) for c in candidates if c)
+    )
+
+
+@contextmanager
+def _ascii_io_path(path: str, mode: str):
+    """Yield an ASCII path safe to hand to ViennaPS Writer/Reader.
+
+    mode "w": yields a scratch path; after the block the scratch file is
+    moved onto `path`. mode "r": copies `path` into scratch first and
+    yields that. When `path` is already ASCII, it is yielded unchanged
+    and nothing is copied — so an ASCII-named machine keeps exactly the
+    previous behavior and cost.
+    """
+    if path.isascii():
+        yield path
+        return
+
+    scratch_dir = tempfile.mkdtemp(prefix="tcad_vpsd_", dir=_ascii_scratch_dir())
+    scratch = os.path.join(scratch_dir, "domain_state.vpsd")
+    try:
+        if mode == "r":
+            shutil.copyfile(path, scratch)
+        yield scratch
+        if mode == "w":
+            os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+            shutil.move(scratch, path)
+    finally:
+        shutil.rmtree(scratch_dir, ignore_errors=True)
 
 
 def is_available() -> bool:
@@ -207,6 +288,105 @@ def make_mask_spans(
     # of substrate + mask, satisfying Advect's containment precondition
     # exactly as MakeTrench does.
     domain.insertNextLevelSetAsMaterial(substrate_ls, substrate, True)
+
+    return domain
+
+
+def remask_domain(
+    domain,
+    grid_delta_um: float,
+    x_extent_um: float,
+    spans_um,
+    mask_height_um: float,
+    mask_material: str = "Mask",
+):
+    """Add a NEW lithography mask on top of an ALREADY-PROCESSED domain.
+
+    `prepare_domain()`'s own mask construction (MakeTrench /
+    make_mask_spans, above) only ever builds a mask on a FRESH wafer.
+    Real gate patterning needs the fab step that comes after that: a
+    layer is blanket-deposited over existing geometry, THEN re-masked,
+    THEN etched into a pattern. This is that re-mask step, applied
+    in-place to a domain a previous process step already built.
+
+    domain : an existing ViennaPS Domain (e.g. `step.last_domain` from
+        a prior chained step) — mutated in place and also returned.
+    spans_um : opaque mask spans (same shape/convention as
+        `make_mask_spans`'s own `spans_um` — domain x coordinates,
+        merged if overlapping).
+    mask_height_um : mask thickness above the domain's current top.
+
+    CONFORMS TO TOPOGRAPHY. Photoresist is spun on: it fills whatever
+    steps, trenches and humps the previous steps left, rather than
+    hovering at one flat height. Getting this wrong is not cosmetic —
+    measured on a real 4-step chain (oxidation -> window etch -> metal
+    deposition -> remask + metal etch), a mask placed only at the
+    domain's single global top y left the LOW parts of a stepped
+    surface completely unprotected: the metal survived in the middle
+    (under a tall bump) and was etched away exactly where the mask was
+    supposed to be covering it — the inverse of the requested pattern,
+    with no warning. So each mask span is built as a full-height column
+    spanning from BELOW the lowest geometry up to `mask_height_um`
+    above the highest, and the wrapLowerLevelSet=True insert (a union
+    with everything already present) discards whatever part of that
+    column lies inside existing material, leaving exactly the
+    conformal, gap-filling resist a real spin-on leaves.
+
+    Mechanics, verified directly against real ViennaPS 4.6.2 (build a
+    domain, blanket-deposit a second material, remask, then run a real
+    IsotropicProcess etch with maskMaterial=<mask_material> — the
+    masked span survives, the rest clears, the material stack below is
+    otherwise undisturbed). Inserted with wrapLowerLevelSet=True,
+    which — per psDomain.hpp — unions the new level set with whatever
+    was the domain's previous last level set, making the mask the new
+    last entry and therefore satisfying ViennaLS Advect's "last level
+    set contains all others" precondition for any FURTHER process step
+    run on this domain. That same union is what lets each mask span be
+    built as a full-height column (see above) without displacing
+    anything: the part of the column already occupied by existing
+    material is absorbed by the union, leaving only the part standing
+    above the real surface.
+    """
+    module = require_viennaps()
+    import viennals as vls
+
+    from tcad.backends.viennaps.io import _union_bounding_box
+
+    bcs = domain.getBoundaryConditions()
+    # TRUE union extent across every level set, not
+    # domain.getBoundingBox() -- that returns only the LAST level set's
+    # own box on a multi-level-set domain (confirmed in io.py's own
+    # _union_bounding_box docstring), which is exactly the reading that
+    # put the mask at one flat height and left stepped topography
+    # unprotected.
+    _x_min, _x_max, y_min, top_y = _union_bounding_box(domain)
+    half_x = x_extent_um / 2.0
+    mask_mat = getattr(module.Material, mask_material)
+    # Start the column below ALL existing geometry so it fills every
+    # step/trench on the way up (spin-on resist behavior). The
+    # wrapLowerLevelSet=True insert below unions this with everything
+    # already in the domain, so the submerged part of the column is
+    # absorbed rather than displacing any existing material -- which is
+    # what makes going this far down safe rather than destructive.
+    box_bottom = y_min - 1.0
+    box_top = top_y + mask_height_um
+    bounds = [-half_x, half_x, box_bottom - 1.0, box_top + 1.0]
+
+    mask_ls = None
+    for lo, hi in spans_um:
+        box_ls = vls.Domain(bounds, bcs, grid_delta_um)
+        box = vls.MakeGeometry(box_ls, vls.Box([lo, box_bottom], [hi, box_top]))
+        # Full-width spans must reach the domain edge, same reason as
+        # make_mask_spans's own loop.
+        box.setIgnoreBoundaryConditions([False, True, False])
+        box.apply()
+        if mask_ls is None:
+            mask_ls = box_ls
+        else:
+            vls.BooleanOperation(mask_ls, box_ls, vls.BooleanOperationEnum.UNION).apply()
+
+    if mask_ls is not None:
+        domain.insertNextLevelSetAsMaterial(mask_ls, mask_mat, True)
 
     return domain
 
@@ -408,10 +588,21 @@ def save_domain_state(domain, path: str) -> str:
 
     Note this is NOT the same as saveLevelSets(), which writes separate
     per-layer .lvst files that vps.Reader does not accept.
+
+    Writes through _ascii_io_path() because ViennaPS cannot open a
+    non-ASCII path (see that helper), and verifies afterwards that a file
+    actually appeared: Writer reports failure by writing nothing rather
+    than by raising, which previously turned a failed save into a
+    confusing "Could not open file" from the NEXT step's Reader.
     """
     require_viennaps()
     module = require_viennaps()
-    module.Writer(domain, path).apply()
+    with _ascii_io_path(path, "w") as io_path:
+        module.Writer(domain, io_path).apply()
+        if not os.path.exists(io_path):
+            raise RuntimeError(
+                f"ViennaPS Writer did not produce a domain state file at {io_path!r}."
+            )
     return path
 
 
@@ -421,7 +612,8 @@ def load_domain_state(path: str):
     _ensure_units_set(module)
     module.setDimension(2)
     domain = module.Domain()
-    module.Reader(domain, path).apply()
+    with _ascii_io_path(path, "r") as io_path:
+        module.Reader(domain, io_path).apply()
     return domain
 
 

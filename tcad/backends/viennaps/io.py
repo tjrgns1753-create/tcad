@@ -418,6 +418,20 @@ def save_volume_mesh(
     ProcessStep inheriting a LOCOS-built domain export it correctly
     while still just calling save_volume_mesh() like every other step.
 
+    A domain that grows past 2 distinct materials WITHOUT an explicit
+    register_locos_export() call (e.g. a second remask after a
+    material-tagged deposition) can hit this same "topmost wins" loss
+    for a material that isn't LOCOS's own. A same-day attempt to
+    auto-detect and auto-register such domains here was REVERTED:
+    verified directly that its wrap_flags guess ("last level set wraps
+    everything, everything before it doesn't") is WRONG once a level
+    set was created by a ViennaPS-internal physics model (e.g.
+    Oxidation's own SiO2) rather than by this project's own explicit
+    insertNextLevelSetAsMaterial() calls -- it silently produced
+    geometry reaching all the way to the export floor instead of the
+    correct thin layer. That is worse than the honest warning below,
+    so still open; see CLAUDE.md before attempting a general fix again.
+
     After export, warns (does not raise) if a material present in
     `domain` has zero triangles in the written mesh — see
     `_warn_if_materials_missing_from_export` for why this can happen
