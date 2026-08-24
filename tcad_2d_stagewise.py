@@ -3273,6 +3273,18 @@ class TCADApplication(tk.Tk):
             pady=5,
         )
 
+    def _clear_state_for_gate_stack(self):
+        """Gate stack is terminal and builds its own geometry from
+        scratch, so nothing from the previous wafer may survive it.
+
+        last_domain_state is the one that was missed: it was added when
+        RUN clicks started resuming an accumulated .vpsd, and without
+        clearing it here the next RUN resumes the PRE-gate-stack wafer.
+        """
+        self.completed_steps = []
+        self.flow_step_meshes = []
+        self.last_domain_state = None
+
     def run_gate_stack(self):
 
         if not viennaps_session.is_available():
@@ -3437,8 +3449,7 @@ class TCADApplication(tk.Tk):
         # standalone RUN click from silently resurrecting the
         # pre-gate-stack history via _chained_flow_config() as if this
         # build had never happened.
-        self.completed_steps = []
-        self.flow_step_meshes = []
+        self._clear_state_for_gate_stack()
 
         # Deliberately NOT calling self._activate_stages(...): this
         # build did not go through the 01-08 litho/process sequence at
