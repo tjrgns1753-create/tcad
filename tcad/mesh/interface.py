@@ -125,6 +125,16 @@ class ProcessResult:
         structural state at the end of this step (materials present,
         level-set count, bounding box, grid spacing). Recorded by the
         process-flow layer so callers can see what each step changed.
+    physics_status : Optional; a plain dict reporting what a process
+        step's physics knew about its own parameters (Resolution /
+        Provenance per parameter). None until a step populates it —
+        purely additive, like domain_state_path/structure.
+    numerical_status : Optional; a plain dict reporting numerical
+        (mesh-resolution) concerns, e.g. under-resolved geometry. Kept
+        on its own key/axis, separate from physics_status, so a
+        "we don't know the physics" fact and a "the mesh may be too
+        coarse" fact never get merged together. None until a step
+        populates it.
     units : length unit the mesh coordinates are in.
     metadata : free-form extra info (e.g. process snapshots), not
         relied on by any Device backend.
@@ -138,3 +148,5 @@ class ProcessResult:
     metadata: Dict[str, Any] = field(default_factory=dict)
     domain_state_path: Optional[str] = None
     structure: Optional[Dict[str, Any]] = None
+    physics_status: Optional[dict] = None
+    numerical_status: Optional[dict] = None

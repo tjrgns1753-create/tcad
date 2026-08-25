@@ -91,4 +91,6 @@ def build_process_result(
         metadata={"snapshots": step_result.get("snapshots", [])},
         domain_state_path=domain_state_path,
         structure=structure,
+        physics_status=step_result.get("physics_status"),
+        numerical_status=step_result.get("numerical_status"),
     )

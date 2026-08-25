@@ -282,6 +282,12 @@ def worker_main(config_file: str, result_file: str):
                 # The wafer's accumulated state, for the NEXT click to
                 # resume from (see "_resume_state" above).
                 "domain_state": results[-1].domain_state_path,
+                # Physics status and the numerical (under-resolved)
+                # warning are separate axes and stay separate all the
+                # way to the GUI. Plain JSON only: this crosses a
+                # subprocess boundary.
+                "physics_status": results[-1].physics_status,
+                "numerical_status": results[-1].numerical_status,
             }
         else:
             # Any registered category/model works here (Bosch included):
@@ -398,6 +404,10 @@ class TCADApplication(tk.Tk):
         # _chained_flow_config(). None until a step succeeds, and reset
         # by NEW WAFER.
         self.last_domain_state = None
+        # Whatever the most recent step reported about its own physics
+        # knowledge (Resolution/Provenance) and mesh resolution. None
+        # until a step succeeds; nothing produces a real value yet.
+        self.last_physics_status = None
 
         # The user-composed process flow: a list of fully-built recipes,
         # run in the given order by tcad.process.flow.run_flow so each
@@ -2265,6 +2275,8 @@ class TCADApplication(tk.Tk):
         self.last_final_mesh = result.get("final_mesh")
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
+        self.last_physics_status = result.get("physics_status")
+        self._log_physics_status(result)
         # Keep flow_step_meshes aligned index-for-index with
         # completed_steps (see run_process_flow's own comment) so the
         # bottom timeline can show this step's geometry on click even
@@ -2829,6 +2841,8 @@ class TCADApplication(tk.Tk):
         self.last_final_mesh = result.get("final_mesh")
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
+        self.last_physics_status = result.get("physics_status")
+        self._log_physics_status(result)
         self.flow_step_meshes.append(self.last_final_mesh)
 
         self._mark_stage_done(stage_index)
@@ -3117,6 +3131,8 @@ class TCADApplication(tk.Tk):
         self.last_final_mesh = result.get("final_mesh")
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
+        self.last_physics_status = result.get("physics_status")
+        self._log_physics_status(result)
         # Keep flow_step_meshes aligned index-for-index with
         # completed_steps (see run_process_flow's own comment) so the
         # bottom timeline can show this step's geometry on click even
@@ -5186,6 +5202,8 @@ class TCADApplication(tk.Tk):
         self.last_final_mesh = result.get("final_mesh")
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
+        self.last_physics_status = result.get("physics_status")
+        self._log_physics_status(result)
         # Keep flow_step_meshes aligned index-for-index with
         # completed_steps (see run_process_flow's own comment) so the
         # bottom timeline can show this step's geometry on click even
@@ -6248,6 +6266,31 @@ class TCADApplication(tk.Tk):
             state="disabled"
         )
 
+    def _log_physics_status(self, result):
+        """Report what the physics did and did not know.
+
+        Never blocks and never hides: an UNKNOWN result still ran, and
+        the log says which parameter was unknown and what was passed
+        instead.
+        """
+        physics = result.get("physics_status")
+        if physics:
+            self._log(f"\nPHYSICS: {physics.get('resolution', 'UNKNOWN')}\n")
+            for entry in physics.get("entries", []):
+                self._log(
+                    f"  {entry.get('parameter')} [{entry.get('material')}]: "
+                    f"{entry.get('resolution')} / {entry.get('provenance')}"
+                    f" — {entry.get('note', '')}\n"
+                )
+        numerical = result.get("numerical_status")
+        if numerical and numerical.get("under_resolved_x"):
+            count = len(numerical["under_resolved_x"])
+            self._log(
+                f"\nNUMERICAL: {count} x positions carry a layer thinner than "
+                f"one grid cell; the geometry there is under-resolved. "
+                f"Reduce grid delta to resolve it.\n"
+            )
+
     # --------------------------------------------------------
     # RESET
     # --------------------------------------------------------
@@ -6271,6 +6314,7 @@ class TCADApplication(tk.Tk):
         # Must clear too: resuming a NEW wafer from the OLD wafer's
         # accumulated geometry would silently keep building on it.
         self.last_domain_state = None
+        self.last_physics_status = None
         if hasattr(self, "_refresh_flow_list"):
             self._refresh_flow_list()
 
