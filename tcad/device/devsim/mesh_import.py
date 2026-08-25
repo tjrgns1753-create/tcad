@@ -538,6 +538,108 @@ def derive_implant_windows_refinement(
     return predicates
 
 
+def derive_barrier_covered_windows(
+    volume_mesh_path: str,
+    doped_region: str,
+    barrier_material: str,
+    axis: str = "x",
+    min_barrier_thickness_um: float = 0.0,
+    bucket_width_um: Optional[float] = None,
+) -> List[Dict[str, float]]:
+    """Real-mesh-derived x (or y) ranges where `doped_region`'s real top
+    surface sits directly under >= min_barrier_thickness_um of
+    `barrier_material` -- so a doping call can exclude dopant there
+    instead of applying it uniformly regardless of what is stacked
+    above (see docs/investigation_log.md, "SiO2 doesn't block doping").
+
+    Derives windows from the ACTUAL exported mesh (same technique
+    already used for derive_implant_windows_refinement -- see
+    CLAUDE.md's Development Rules: "Prefer deriving refinement scale
+    from the doping profile programmatically ... over a caller
+    hand-picking one"), not from a caller's assumption about where the
+    barrier is.
+
+    Returns [{"min_um": float, "max_um": float}, ...] in the same
+    coordinate convention mask_spans_um/implant_windows already use.
+    Empty list if `doped_region` or `barrier_material` is absent from
+    the mesh, or nowhere sufficiently covered.
+    """
+    import meshio
+    from tcad.backends.viennaps import session
+
+    module = session.require_viennaps()
+    mesh = meshio.read(volume_mesh_path)
+    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
+    if triangle_block is None or "Material" not in mesh.cell_data:
+        return []
+    block_index = mesh.cells.index(triangle_block)
+    tags = mesh.cell_data["Material"][block_index]
+    points = mesh.points
+
+    axis_idx = 0 if axis == "x" else 1
+    depth_idx = 1 if axis == "x" else 0
+
+    doped_tag = int(getattr(module.Material, doped_region))
+    barrier_tag = int(getattr(module.Material, barrier_material))
+
+    doped_tris = [t for t, tag in zip(triangle_block.data, tags) if int(tag) == doped_tag]
+    barrier_tris = [t for t, tag in zip(triangle_block.data, tags) if int(tag) == barrier_tag]
+    if not doped_tris or not barrier_tris:
+        return []
+
+    axis_vals = [points[n][axis_idx] for t in doped_tris for n in t]
+    axis_min, axis_max = min(axis_vals), max(axis_vals)
+    if axis_max <= axis_min:
+        return []
+    if bucket_width_um is None:
+        bucket_width_um = max((axis_max - axis_min) / 200.0, 0.01)
+    n_buckets = max(1, int((axis_max - axis_min) / bucket_width_um) + 1)
+
+    def bucket_of(v: float) -> int:
+        idx = int((v - axis_min) / bucket_width_um)
+        return min(max(idx, 0), n_buckets - 1)
+
+    doped_top = [None] * n_buckets
+    for t in doped_tris:
+        for n in t:
+            b = bucket_of(points[n][axis_idx])
+            v = points[n][depth_idx]
+            if doped_top[b] is None or v > doped_top[b]:
+                doped_top[b] = v
+
+    barrier_top = [None] * n_buckets
+    barrier_bot = [None] * n_buckets
+    for t in barrier_tris:
+        for n in t:
+            b = bucket_of(points[n][axis_idx])
+            v = points[n][depth_idx]
+            if barrier_top[b] is None or v > barrier_top[b]:
+                barrier_top[b] = v
+            if barrier_bot[b] is None or v < barrier_bot[b]:
+                barrier_bot[b] = v
+
+    covered = []
+    for b in range(n_buckets):
+        if doped_top[b] is None or barrier_top[b] is None or barrier_bot[b] is None:
+            covered.append(False)
+            continue
+        thickness = barrier_top[b] - barrier_bot[b]
+        sits_above = barrier_bot[b] >= doped_top[b] - 1e-6
+        covered.append(sits_above and thickness >= min_barrier_thickness_um)
+
+    windows: List[Dict[str, float]] = []
+    start = None
+    for b in range(n_buckets):
+        if covered[b] and start is None:
+            start = axis_min + b * bucket_width_um
+        elif not covered[b] and start is not None:
+            windows.append({"min_um": start, "max_um": axis_min + b * bucket_width_um})
+            start = None
+    if start is not None:
+        windows.append({"min_um": start, "max_um": axis_max})
+    return windows
+
+
 def _derive_refine_from_doping(
     doping: DopingProfile, points: np.ndarray, triangles: np.ndarray
 ) -> Optional[Tuple[float, str, List[float]]]:
