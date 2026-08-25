@@ -3887,6 +3887,19 @@ class TCADApplication(tk.Tk):
         )
         self._update_doping_field_visibility()
 
+        # SiO2-barrier exclusion -- see docs/investigation_log.md,
+        # "SiO2 doesn't block doping". A REAL geometric threshold
+        # (measured directly from the mesh), not a fake energy-derived
+        # number -- see CLAUDE.md's "no fake physics parameters" rule.
+        # Default 0.0 = any measurable SiO2 above the doped region
+        # blocks doping there (the most conservative reading available
+        # without a real implant-energy model to compute an actual
+        # penetration depth). Shared across all 4 kinds -- lives on
+        # `frame` itself, not inside any per-kind frame.
+        self.dope_barrier_threshold_var = self._field(
+            frame, "SiO2 barrier min thickness (µm)", 0.0,
+        )
+
         self.doping_button = ttk.Button(
             frame,
             text="APPLY DOPING",
@@ -4365,7 +4378,7 @@ class TCADApplication(tk.Tk):
         region = doped_result.doping.regions[0].region
         kind = doped_result.doping.kind
 
-        from tcad.device.devsim.mesh_import import import_process_result
+        from tcad.device.devsim.mesh_import import import_process_result, derive_barrier_covered_windows
         from tcad.device.devsim.doping_mapping import apply_doping
         from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
         from tcad.characterization.robust_iv_sweep import (
@@ -4407,6 +4420,19 @@ class TCADApplication(tk.Tk):
                 "\n(No mesh refinement needed -- uniform doping has no "
                 "junction to resolve.)\n"
             )
+
+        exclude_windows = None
+        try:
+            exclude_windows = derive_barrier_covered_windows(
+                doped_result, doped_region=region,
+                barrier_material="SiO2", axis=axis,
+                min_barrier_thickness_um=float(self.dope_barrier_threshold_var.get()),
+            )
+        except Exception:
+            # Barrier detection is best-effort: if it fails (material
+            # absent, mesh unreadable), fall back to no exclusion --
+            # never let a diagnostic feature block the actual measurement.
+            exclude_windows = None
 
         imported = None
 
@@ -4465,6 +4491,7 @@ class TCADApplication(tk.Tk):
                 apply_doping(
                     imported.device, doped_result.doping,
                     length_scale_to_cm=length_scale_to_cm,
+                    exclude_windows=exclude_windows, exclude_axis=axis,
                 )
                 result = run_pn_junction_iv_sweep(
                     device=imported.device, region=region,
