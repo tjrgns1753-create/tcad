@@ -5533,6 +5533,50 @@ class TCADApplication(tk.Tk):
             self._viewer_depth_budget_um[key] = budget
         return max(budget, depth_um)
 
+    @staticmethod
+    def _material_surface_profile(triangle_data, points, tags, material_tag, x_min, x_max, n_buckets=60):
+        """Per-x (bucketed) (x_lo, x_hi, y_top, y_bot) for one material
+        tag, from real mesh triangle/point data. Pure function -- no
+        canvas, no Tk -- so it is unit-testable without a display and
+        reusable for both the doping-tint overlay and, later, any
+        other per-x-aware drawing.
+
+        Replaces computing ONE global (min, max) over every node of
+        the material and drawing a single rectangle across the WHOLE
+        x-range, which over-paints wherever the real surface height
+        varies across x (see docs/investigation_log.md, "renderer
+        draws doping color using a global bounding box").
+        """
+        if x_max <= x_min:
+            return []
+        bucket_width = (x_max - x_min) / n_buckets
+        tops = [None] * n_buckets
+        bots = [None] * n_buckets
+
+        def bucket_of(x):
+            idx = int((x - x_min) / bucket_width)
+            return min(max(idx, 0), n_buckets - 1)
+
+        for tri, tag in zip(triangle_data, tags):
+            if int(tag) != material_tag:
+                continue
+            for n in tri:
+                x, y = points[n][0], points[n][1]
+                b = bucket_of(x)
+                if tops[b] is None or y > tops[b]:
+                    tops[b] = y
+                if bots[b] is None or y < bots[b]:
+                    bots[b] = y
+
+        segments = []
+        for b in range(n_buckets):
+            if tops[b] is None:
+                continue
+            segments.append(
+                (x_min + b * bucket_width, x_min + (b + 1) * bucket_width, tops[b], bots[b])
+            )
+        return segments
+
     def _draw_real_mesh_result(self, canvas, x0, x1, surface_y, bottom_y, mesh_path=None):
         """Draw a real ViennaPS mesh (.vtu volume mesh) instead of the
         placeholder rectangle in redraw(). Returns True on success;
@@ -5776,28 +5820,33 @@ class TCADApplication(tk.Tk):
                     )
                     if region_tag is None:
                         continue
-                    node_idxs = {
-                        node for i in by_material.get(region_tag, [])
-                        for node in triangle_data[i]
-                    }
-                    if not node_idxs:
+                    profile = self._material_surface_profile(
+                        triangle_data, points, tags, region_tag, x_min, x_max,
+                    )
+                    if not profile:
                         continue
-                    region_y_top = max(points[n][1] for n in node_idxs)
-                    region_y_bot = min(points[n][1] for n in node_idxs)
-                    cy_top = surface_y - region_y_top * y_scale
-                    cy_bot = surface_y - region_y_bot * y_scale
 
                     for x_lo_um, x_hi_um, color in self._doping_color_segments(
                         region_name, x_min, x_max
                     ):
                         if x_hi_um <= x_lo_um:
                             continue
-                        cx_lo = x0 + (x_lo_um - x_min) * x_scale
-                        cx_hi = x0 + (x_hi_um - x_min) * x_scale
-                        canvas.create_rectangle(
-                            cx_lo, cy_top, cx_hi, cy_bot,
-                            fill=color, outline="", stipple="gray50",
-                        )
+                        for seg_x_lo, seg_x_hi, seg_y_top, seg_y_bot in profile:
+                            # Intersect this surface bucket with the
+                            # doping color segment's own x-range (e.g.
+                            # step_junction only tints one side).
+                            lo = max(seg_x_lo, x_lo_um)
+                            hi = min(seg_x_hi, x_hi_um)
+                            if hi <= lo:
+                                continue
+                            cx_lo = x0 + (lo - x_min) * x_scale
+                            cx_hi = x0 + (hi - x_min) * x_scale
+                            cy_top = surface_y - seg_y_top * y_scale
+                            cy_bot = surface_y - seg_y_bot * y_scale
+                            canvas.create_rectangle(
+                                cx_lo, cy_top, cx_hi, cy_bot,
+                                fill=color, outline="", stipple="gray50",
+                            )
 
             canvas.create_text(
                 x0 + 5, surface_y + 12,
