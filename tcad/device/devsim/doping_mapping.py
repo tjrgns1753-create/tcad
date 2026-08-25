@@ -64,8 +64,33 @@ nodes — see test_implant_windows_doping_real.py):
 
 from __future__ import annotations
 
+from typing import Dict, List, Optional
+
 from tcad.device.devsim import backend
 from tcad.mesh.interface import DopingProfile
+
+
+def _exclusion_factor_expr(
+    exclude_windows: Optional[List[Dict[str, float]]],
+    axis: str,
+    length_scale_to_cm: float,
+) -> str:
+    """DevSim equation string: 1 everywhere, 0 inside any exclusion
+    window. Windows are assumed non-overlapping (derive_barrier_covered_
+    windows() only ever emits merged, disjoint windows), so summing
+    each window's step()*step() indicator and subtracting from 1 is
+    safe -- same step()-based windowing mechanism implant_windows
+    already uses (see this module's own docstring), reused rather than
+    inventing a second one.
+    """
+    if not exclude_windows:
+        return "1"
+    terms = []
+    for w in exclude_windows:
+        lo = w["min_um"] * length_scale_to_cm
+        hi = w["max_um"] * length_scale_to_cm
+        terms.append(f"step({axis}-({lo}))*step(({hi})-{axis})")
+    return "(1 - (" + " + ".join(terms) + "))"
 
 
 def apply_doping(
@@ -73,6 +98,8 @@ def apply_doping(
     doping: DopingProfile,
     length_scale_to_cm: float = 1.0,
     window_scale: float = 1.0,
+    exclude_windows: Optional[List[Dict[str, float]]] = None,
+    exclude_axis: str = "x",
 ) -> None:
     """Register NetDoping (and, for step junctions, Donors/Acceptors)
     node models for every region named in `doping`.
@@ -100,11 +127,24 @@ def apply_doping(
         to its full 1e20 cm^-3 in one step, and converges reliably when
         ramped 1e17 -> 1e20 in five steps on the identical mesh.
 
+    exclude_windows : optional list of {"min_um": float, "max_um": float}
+        dicts marking x-ranges where doping should be excluded (zeroed by
+        multiplication with a step()-based exclusion factor). Used to
+        block doping under barrier materials like SiO2. When None (default),
+        no exclusion is applied and behavior is byte-identical to all
+        existing callers. See derive_barrier_covered_windows() in
+        tcad.device.devsim.mesh_import for how to derive these windows.
+
+    exclude_axis : coordinate axis ("x", "y", or "z") along which to apply
+        the exclusion windows. Default "x". Ignored when exclude_windows
+        is None.
+
     "uniform", "step_junction", "gaussian_implant", and
     "implant_windows" are implemented; any other DopingProfile.kind
     raises, so a future profile type can't be silently mishandled here.
     """
     module = backend.require_devsim()
+    exclusion = _exclusion_factor_expr(exclude_windows, exclude_axis, length_scale_to_cm)
 
     if doping.kind == "uniform":
         for region_doping in doping.regions:
@@ -112,7 +152,7 @@ def apply_doping(
                 device=device,
                 region=region_doping.region,
                 name="NetDoping",
-                equation=str(region_doping.net_doping_cm3),
+                equation=f"({region_doping.net_doping_cm3})*{exclusion}",
             )
     elif doping.kind == "step_junction":
         for region_doping in doping.regions:
@@ -128,19 +168,20 @@ def apply_doping(
             )
             module.node_model(
                 device=device, region=region_doping.region, name="NetDoping",
-                equation="Donors-Acceptors",
+                equation=f"(Donors-Acceptors)*{exclusion}",
             )
     elif doping.kind == "gaussian_implant":
         for region_doping in doping.regions:
             axis = region_doping.junction_axis
             position_native = region_doping.peak_position_um * length_scale_to_cm
             straggle_native = region_doping.straggle_um * length_scale_to_cm
+            gaussian_expr = (
+                f"{region_doping.peak_conc_cm3}*exp(-(({axis}-({position_native}))^2)"
+                f"/(2*({straggle_native})^2))"
+            )
             module.node_model(
                 device=device, region=region_doping.region, name="NetDoping",
-                equation=(
-                    f"{region_doping.peak_conc_cm3}*exp(-(({axis}-({position_native}))^2)"
-                    f"/(2*({straggle_native})^2))"
-                ),
+                equation=f"({gaussian_expr})*{exclusion}",
             )
     elif doping.kind == "implant_windows":
         for region_doping in doping.regions:
@@ -154,9 +195,10 @@ def apply_doping(
                     f"{window['conc_cm3'] * window_scale}*step({axis}-({lo_native}))"
                     f"*step(({hi_native})-{axis})"
                 )
+            windows_expr = " + ".join(terms)
             module.node_model(
                 device=device, region=region_doping.region, name="NetDoping",
-                equation=" + ".join(terms),
+                equation=f"({windows_expr})*{exclusion}",
             )
     else:
         raise NotImplementedError(

@@ -69,6 +69,37 @@ def main():
         print("derive_barrier_covered_windows() correctly separates the "
               "SiO2-covered region from the etched-open one.")
 
+        from tcad.physics.doping import apply_uniform_doping
+        from tcad.device.devsim import backend as devsim_backend
+        from tcad.device.devsim.mesh_import import import_process_result
+        from tcad.device.devsim.doping_mapping import apply_doping
+
+        doped = apply_uniform_doping(etch_result, {"Si": 1.0e17})
+
+        module_ds = devsim_backend.require_devsim()
+        imported = import_process_result(
+            doped, mesh_name="tbw_mesh", device_name="tbw_device",
+            contact_regions=["Si"], contact_axis="x",
+        )
+        apply_doping(imported.device, doped.doping, exclude_windows=windows)
+
+        node_x = module_ds.get_node_model_values(device="tbw_device", region="Si", name="x")
+        net = module_ds.get_node_model_values(device="tbw_device", region="Si", name="NetDoping")
+        covered_vals = [n for x, n in zip(node_x, net) if any(w["min_um"] <= x <= w["max_um"] for w in windows)]
+        open_vals = [n for x, n in zip(node_x, net) if not any(w["min_um"] <= x <= w["max_um"] for w in windows)]
+
+        module_ds.delete_device(device="tbw_device")
+        module_ds.delete_mesh(mesh="tbw_mesh")
+
+    assert covered_vals and max(abs(v) for v in covered_vals) < 1.0, (
+        f"NetDoping must be ~0 under the SiO2 barrier, got max |v|="
+        f"{max(abs(v) for v in covered_vals):.3e}")
+    assert open_vals and min(abs(v) for v in open_vals) > 1.0e16, (
+        f"NetDoping must still be the full 1e17 in the open window, got "
+        f"min |v|={min(abs(v) for v in open_vals):.3e}")
+    print("apply_doping(exclude_windows=...) correctly zeroes NetDoping "
+          "under the barrier while leaving the open window at 1e17.")
+
 
 if __name__ == "__main__":
     main()
