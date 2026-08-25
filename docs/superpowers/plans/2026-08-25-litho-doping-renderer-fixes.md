@@ -278,34 +278,44 @@ git commit -m "feat: derive real barrier-covered doping windows from mesh geomet
 
 - [ ] **Step 1: Add a failing assertion to the existing test**
 
-Append to `tests/integration/test_doping_barrier_windows_real.py`, inside `main()`, after the existing checks:
+Task 1's real implementation differs from this plan's original draft in two
+ways the appended code below already accounts for: `etch_result` (from
+`run_flow()`) is ALREADY a real `ProcessResult` — do not rebuild one via
+`build_process_result()`. And the whole test body runs inside
+`with tempfile.TemporaryDirectory() as tmp_dir:` (auto-deletes on exit), so
+this append MUST go INSIDE that block, at the same indentation as the
+existing lines, directly after the existing
+`print("derive_barrier_covered_windows() correctly separates ...")` call —
+`import_process_result()` below needs `etch_result.volume_mesh_path` to
+still exist on disk. Read the current file
+(`tests/integration/test_doping_barrier_windows_real.py`) before editing to
+confirm the exact indentation and the line to append after; do not assume
+this snippet's own indentation is correct without checking.
+
+Append to `tests/integration/test_doping_barrier_windows_real.py`, inside `main()`'s `with` block, after the existing checks:
 
 ```python
-    from tcad.mesh.viennaps_adapter import build_process_result
-    from tcad.physics.doping import apply_uniform_doping
-    from tcad.device.devsim import backend as devsim_backend
-    from tcad.device.devsim.mesh_import import import_process_result
-    from tcad.device.devsim.doping_mapping import apply_doping
+        from tcad.physics.doping import apply_uniform_doping
+        from tcad.device.devsim import backend as devsim_backend
+        from tcad.device.devsim.mesh_import import import_process_result
+        from tcad.device.devsim.doping_mapping import apply_doping
 
-    process_result = build_process_result(
-        {"final_mesh": etch_result["final_mesh"], "snapshots": []}
-    )
-    doped = apply_uniform_doping(process_result, {"Si": 1.0e17})
+        doped = apply_uniform_doping(etch_result, {"Si": 1.0e17})
 
-    module_ds = devsim_backend.require_devsim()
-    imported = import_process_result(
-        doped, mesh_name="tbw_mesh", device_name="tbw_device",
-        contact_regions=["Si"], contact_axis="x",
-    )
-    apply_doping(imported.device, doped.doping, exclude_windows=windows)
+        module_ds = devsim_backend.require_devsim()
+        imported = import_process_result(
+            doped, mesh_name="tbw_mesh", device_name="tbw_device",
+            contact_regions=["Si"], contact_axis="x",
+        )
+        apply_doping(imported.device, doped.doping, exclude_windows=windows)
 
-    node_x = module_ds.get_node_model_values(device="tbw_device", region="Si", name="x")
-    net = module_ds.get_node_model_values(device="tbw_device", region="Si", name="NetDoping")
-    covered_vals = [n for x, n in zip(node_x, net) if any(w["min_um"] <= x <= w["max_um"] for w in windows)]
-    open_vals = [n for x, n in zip(node_x, net) if not any(w["min_um"] <= x <= w["max_um"] for w in windows)]
+        node_x = module_ds.get_node_model_values(device="tbw_device", region="Si", name="x")
+        net = module_ds.get_node_model_values(device="tbw_device", region="Si", name="NetDoping")
+        covered_vals = [n for x, n in zip(node_x, net) if any(w["min_um"] <= x <= w["max_um"] for w in windows)]
+        open_vals = [n for x, n in zip(node_x, net) if not any(w["min_um"] <= x <= w["max_um"] for w in windows)]
 
-    module_ds.delete_device(device="tbw_device")
-    module_ds.delete_mesh(mesh="tbw_mesh")
+        module_ds.delete_device(device="tbw_device")
+        module_ds.delete_mesh(mesh="tbw_mesh")
 
     assert covered_vals and max(abs(v) for v in covered_vals) < 1.0, (
         f"NetDoping must be ~0 under the SiO2 barrier, got max |v|="
@@ -337,7 +347,7 @@ def apply_doping(
 ) -> None:
 ```
 
-(add `Optional`, `List`, `Dict` to the existing `from typing import ...` import if not already present — check the file's current imports first.)
+`doping_mapping.py` currently has no `typing` import at all (only `from __future__ import annotations`, `from tcad.device.devsim import backend`, `from tcad.mesh.interface import DopingProfile` — verified directly, do not assume otherwise) — add a new line `from typing import Dict, List, Optional` near the top, alongside the existing imports.
 
 Add a module-level helper right above `apply_doping`:
 
