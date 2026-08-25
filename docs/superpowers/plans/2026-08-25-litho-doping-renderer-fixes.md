@@ -615,7 +615,7 @@ git commit -m "fix: doping color overlay follows the real per-x surface, not a g
 
 - [ ] **Step 1: Add the threshold field to the doping panel**
 
-In `_make_doping_panel`, near the other shared (not per-kind) doping fields, add:
+In `_make_doping_panel`, `_field()` already renders its own caption label (verified directly: it packs a `ttk.Label` internally before the entry, so a caller never adds a separate one) — this field must be SHARED across all 4 doping kinds (not inside any per-kind frame that gets hidden/shown), so it goes on `frame` (the panel's own outer frame), not `doping_params_container` (which only holds the per-kind frames). Verified insertion point: between the existing `self._update_doping_field_visibility()` call and `self.doping_button = ttk.Button(...)` — read the current file to confirm these two lines are still adjacent before inserting between them.
 
 ```python
         # SiO2-barrier exclusion -- see docs/investigation_log.md,
@@ -625,27 +625,22 @@ In `_make_doping_panel`, near the other shared (not per-kind) doping fields, add
         # Default 0.0 = any measurable SiO2 above the doped region
         # blocks doping there (the most conservative reading available
         # without a real implant-energy model to compute an actual
-        # penetration depth).
-        ttk.Label(
-            doping_params_container, text="SiO2 barrier min thickness (µm)",
-            style="Caption.TLabel",
-        ).pack(anchor="w", padx=12, pady=(6, 1))
+        # penetration depth). Shared across all 4 kinds -- lives on
+        # `frame` itself, not inside any per-kind frame.
         self.dope_barrier_threshold_var = self._field(
-            doping_params_container, "SiO2 barrier min thickness (µm)", 0.0,
+            frame, "SiO2 barrier min thickness (µm)", 0.0,
         )
 ```
 
-(Remove the duplicate `ttk.Label` above if `_field()` already renders its own caption label — check `_field()`'s body, which it does per Task Group's earlier reading of the helper; drop the standalone `ttk.Label` call and keep only the `self._field(...)` call.)
-
 - [ ] **Step 2: Wire it into `run_measurement()`**
 
-In `run_measurement()`, right before the `try:` block that calls `import_process_result`, compute exclusion windows and pass them into the later `apply_doping()` call:
+In `run_measurement()`, right before `imported = None` / the `try:` block that calls `import_process_result` (both `region`, `axis`, and `doped_result` are already in scope by this point — `axis = self.meas_axis_var.get()` near the top of the function, `region`/`doped_result` set earlier in this same function, including the `implant_windows` kind's own reassignment to a refined `ProcessResult` at `doped_result = refined_result` — using `doped_result` here, not `self.last_final_mesh`, is REQUIRED so the barrier windows are derived from the SAME mesh that actually gets imported into DevSim a few lines later, not a possibly-different one), compute exclusion windows and pass them into the later `apply_doping()` call:
 
 ```python
         exclude_windows = None
         try:
             exclude_windows = derive_barrier_covered_windows(
-                self.last_final_mesh, doped_region=region,
+                doped_result, doped_region=region,
                 barrier_material="SiO2", axis=axis,
                 min_barrier_thickness_um=float(self.dope_barrier_threshold_var.get()),
             )
@@ -655,6 +650,8 @@ In `run_measurement()`, right before the `try:` block that calls `import_process
             # never let a diagnostic feature block the actual measurement.
             exclude_windows = None
 ```
+
+Note: `derive_barrier_covered_windows()` takes a `ProcessResult` as its first argument (Task 1's function signature, changed during Task 1's own fix round from an earlier raw-path design — `doped_result` IS already a `ProcessResult`, this is not a conversion, just passing the existing object). Do not rebuild one via `build_process_result()`.
 
 Add the import at the top of the function or module level (module-level preferred, alongside the other `from tcad.device.devsim...` imports already inside `run_measurement()`):
 
