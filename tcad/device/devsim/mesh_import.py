@@ -539,7 +539,7 @@ def derive_implant_windows_refinement(
 
 
 def derive_barrier_covered_windows(
-    volume_mesh_path: str,
+    result: ProcessResult,
     doped_region: str,
     barrier_material: str,
     axis: str = "x",
@@ -559,28 +559,37 @@ def derive_barrier_covered_windows(
     hand-picking one"), not from a caller's assumption about where the
     barrier is.
 
+    result : ProcessResult with volume_mesh_path and material_regions.
+    doped_region : material name (e.g., "Si") in result.material_regions.
+    barrier_material : material name (e.g., "SiO2") in result.material_regions.
+
     Returns [{"min_um": float, "max_um": float}, ...] in the same
     coordinate convention mask_spans_um/implant_windows already use.
     Empty list if `doped_region` or `barrier_material` is absent from
     the mesh, or nowhere sufficiently covered.
     """
     import meshio
-    from tcad.backends.viennaps import session
 
-    module = session.require_viennaps()
-    mesh = meshio.read(volume_mesh_path)
+    # Build name -> tag mapping from ProcessResult (backend-independent).
+    tag_to_name = {region.tag: region.name for region in result.material_regions}
+    name_to_tag = {region.name: region.tag for region in result.material_regions}
+
+    if doped_region not in name_to_tag or barrier_material not in name_to_tag:
+        return []
+
+    doped_tag = name_to_tag[doped_region]
+    barrier_tag = name_to_tag[barrier_material]
+
+    mesh = meshio.read(result.volume_mesh_path)
     triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
-    if triangle_block is None or "Material" not in mesh.cell_data:
+    if triangle_block is None or result.material_field not in mesh.cell_data:
         return []
     block_index = mesh.cells.index(triangle_block)
-    tags = mesh.cell_data["Material"][block_index]
+    tags = mesh.cell_data[result.material_field][block_index]
     points = mesh.points
 
     axis_idx = 0 if axis == "x" else 1
     depth_idx = 1 if axis == "x" else 0
-
-    doped_tag = int(getattr(module.Material, doped_region))
-    barrier_tag = int(getattr(module.Material, barrier_material))
 
     doped_tris = [t for t, tag in zip(triangle_block.data, tags) if int(tag) == doped_tag]
     barrier_tris = [t for t, tag in zip(triangle_block.data, tags) if int(tag) == barrier_tag]
@@ -591,8 +600,12 @@ def derive_barrier_covered_windows(
     axis_min, axis_max = min(axis_vals), max(axis_vals)
     if axis_max <= axis_min:
         return []
+
+    # Ground bucket_width_um in the actual mesh spacing, not domain extent.
     if bucket_width_um is None:
-        bucket_width_um = max((axis_max - axis_min) / 200.0, 0.01)
+        spacing_um = _estimate_mesh_spacing_um(points, triangle_block.data)
+        bucket_width_um = spacing_um  # ponytail: buckets match mesh density; finer if needed
+
     n_buckets = max(1, int((axis_max - axis_min) / bucket_width_um) + 1)
 
     def bucket_of(v: float) -> int:
@@ -633,10 +646,16 @@ def derive_barrier_covered_windows(
         if covered[b] and start is None:
             start = axis_min + b * bucket_width_um
         elif not covered[b] and start is not None:
-            windows.append({"min_um": start, "max_um": axis_min + b * bucket_width_um})
+            windows.append({
+                "min_um": float(start),
+                "max_um": float(axis_min + b * bucket_width_um),
+            })
             start = None
     if start is not None:
-        windows.append({"min_um": start, "max_um": axis_max})
+        windows.append({
+            "min_um": float(start),
+            "max_um": float(axis_max),
+        })
     return windows
 
 

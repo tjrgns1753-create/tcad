@@ -50,7 +50,7 @@ def main():
 
         etch_result = results[1]
         windows = derive_barrier_covered_windows(
-            etch_result.volume_mesh_path, doped_region="Si",
+            etch_result, doped_region="Si",
             barrier_material="SiO2", axis="x", min_barrier_thickness_um=0.01,
         )
         print("Barrier-covered windows:", windows)
