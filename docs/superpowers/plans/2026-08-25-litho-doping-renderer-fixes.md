@@ -50,7 +50,7 @@
 
 **회귀 위험**: LOW for `apply_doping()` (new param is optional, default `None`, every existing call site — `pn_junction_iv_sweep.py`, `robust_iv_sweep.py`, `test_phase7/8_*_real.py`, this session's `test_gui_doping_donor_acceptor_real.py` — passes it unset and is byte-identical). LOW-MEDIUM for the renderer rewrite (visual-only, no return value consumed elsewhere, but replaces the single-rectangle draw with a multi-segment loop — verify no perf regression on typical mesh sizes ~1-15k nodes, well within Tk canvas's normal draw budget). MEDIUM for the GUI wiring in `run_measurement()` (touches the doping/measurement path all 4 kinds share — must re-run `test_gui_doping_donor_acceptor_real.py` and `test_gui_measurement_doping_kinds_real.py`, the latter already a pre-existing-fail baseline so watch that it doesn't fail for a NEW reason).
 
-### Task 1.1: `derive_barrier_covered_windows()` + real regression test
+### Task 1: `derive_barrier_covered_windows()` + real regression test
 
 **Files:**
 - Modify: `tcad/device/devsim/mesh_import.py`
@@ -266,14 +266,14 @@ git commit -m "feat: derive real barrier-covered doping windows from mesh geomet
 
 ---
 
-### Task 1.2: Wire barrier exclusion into `apply_doping()`
+### Task 2: Wire barrier exclusion into `apply_doping()`
 
 **Files:**
 - Modify: `tcad/device/devsim/doping_mapping.py`
 - Test: Extend `tests/integration/test_doping_barrier_windows_real.py`
 
 **Interfaces:**
-- Consumes: `derive_barrier_covered_windows()` from Task 1.1 (same return shape).
+- Consumes: `derive_barrier_covered_windows()` from Task 1 (same return shape).
 - Produces: `apply_doping(device, doping, length_scale_to_cm=1.0, window_scale=1.0, exclude_windows: Optional[List[Dict[str, float]]] = None, exclude_axis: str = "x")` — when `exclude_windows` given, every kind's NetDoping equation is multiplied by `(1 - excluded_indicator)`.
 
 - [ ] **Step 1: Add a failing assertion to the existing test**
@@ -396,7 +396,7 @@ git commit -m "feat: apply_doping() can exclude NetDoping under a barrier materi
 
 ---
 
-### Task 1.3: Renderer per-x surface profile (fixes the global-bbox over-paint)
+### Task 3: Renderer per-x surface profile (fixes the global-bbox over-paint)
 
 **Files:**
 - Modify: `tcad_2d_stagewise.py` (`_draw_real_mesh_result`, new `_material_surface_profile`)
@@ -594,14 +594,14 @@ git commit -m "fix: doping color overlay follows the real per-x surface, not a g
 
 ---
 
-### Task 1.4: Wire barrier exclusion into the GUI's `run_measurement()` + threshold field
+### Task 4: Wire barrier exclusion into the GUI's `run_measurement()` + threshold field
 
 **Files:**
 - Modify: `tcad_2d_stagewise.py` (`_make_doping_panel`, `run_measurement`)
 - Test: `tests/integration/test_gui_doping_donor_acceptor_real.py` (extend)
 
 **Interfaces:**
-- Consumes: `derive_barrier_covered_windows()` (Task 1.1), `apply_doping(..., exclude_windows=...)` (Task 1.2).
+- Consumes: `derive_barrier_covered_windows()` (Task 1), `apply_doping(..., exclude_windows=...)` (Task 2).
 
 - [ ] **Step 1: Add the threshold field to the doping panel**
 
@@ -656,7 +656,7 @@ Then find the existing `apply_doping(imported.device, doped_result.doping, lengt
 
 - [ ] **Step 3: Extend the GUI regression test**
 
-Add to `tests/integration/test_gui_doping_donor_acceptor_real.py` a new scenario function (or extend `main()`) that: runs a real Oxidation, then a real windowed SiO2-clearing Etch (mirroring Task 1.1's fixture), then Uniform doping on `"Si"`, then MEASURE, and asserts (via `devsim.get_node_model_values`, reached the same way `test_gui_doping_donor_acceptor_real.py` already reaches into the DevSim device before `delete_device` is called in `run_measurement()`'s `finally`) that `NetDoping` differs meaningfully between the barrier-covered and open-window contact regions. Since `run_measurement()` deletes the device in `finally`, capture the values via a temporary monkeypatch of `devsim.solve` or by reading `get_node_model_values` from inside a wrapped `import_process_result`/`apply_doping` call before `run_measurement()`'s own cleanup — simplest: call the SAME sequence (`_materialize_current_wafer`-equivalent via the oxidation+etch fixture, `app.run_doping()`, then directly call `app.dope_barrier_threshold_var.set(0.0)` and invoke the barrier-derivation + `apply_doping` path manually as Task 1.2's test already does) rather than trying to intercept `run_measurement()`'s internal cleanup — reuse Task 1.2's test body almost verbatim, just start from the real GUI's `app.last_final_mesh`/`app.wafer` state instead of a hand-built recipe, to prove the GUI wiring (field read, `derive_barrier_covered_windows` call args) is correct end-to-end.
+Add to `tests/integration/test_gui_doping_donor_acceptor_real.py` a new scenario function (or extend `main()`) that: runs a real Oxidation, then a real windowed SiO2-clearing Etch (mirroring Task 1's fixture), then Uniform doping on `"Si"`, then MEASURE, and asserts (via `devsim.get_node_model_values`, reached the same way `test_gui_doping_donor_acceptor_real.py` already reaches into the DevSim device before `delete_device` is called in `run_measurement()`'s `finally`) that `NetDoping` differs meaningfully between the barrier-covered and open-window contact regions. Since `run_measurement()` deletes the device in `finally`, capture the values via a temporary monkeypatch of `devsim.solve` or by reading `get_node_model_values` from inside a wrapped `import_process_result`/`apply_doping` call before `run_measurement()`'s own cleanup — simplest: call the SAME sequence (`_materialize_current_wafer`-equivalent via the oxidation+etch fixture, `app.run_doping()`, then directly call `app.dope_barrier_threshold_var.set(0.0)` and invoke the barrier-derivation + `apply_doping` path manually as Task 2's test already does) rather than trying to intercept `run_measurement()`'s internal cleanup — reuse Task 2's test body almost verbatim, just start from the real GUI's `app.last_final_mesh`/`app.wafer` state instead of a hand-built recipe, to prove the GUI wiring (field read, `derive_barrier_covered_windows` call args) is correct end-to-end.
 
 - [ ] **Step 4: Run and verify**
 
@@ -687,7 +687,7 @@ git commit -m "feat: wire SiO2 barrier exclusion into the real MEASURE path"
 
 **회귀 위험**: LOW. The gate becomes MORE restrictive only in the specific new case (litho state changed since the last real mesh) — every other case (`real_mesh_available` already `False`, or litho never changed) is byte-identical to today. The 8 assignment-site edits are mechanical (add one line after an existing, already-confirmed-identical line at 8 locations) — verified via `grep -n "self\.last_final_mesh = "` before editing so no site is missed.
 
-### Task 2.1: `_litho_pending_since_last_mesh` flag + gate fix + PHS color
+### Task 5: `_litho_pending_since_last_mesh` flag + gate fix + PHS color
 
 **Files:**
 - Modify: `tcad_2d_stagewise.py`
@@ -894,9 +894,9 @@ git commit -m "fix: litho placeholder no longer hidden by an earlier unrelated r
 
 **테스트**: `tests/integration/test_oxidation_pr_etch_reaches_si_real.py`.
 
-**회귀 위험**: LOW. Purely additive logging; no existing return value, recipe, or physics call is touched. Worst case is a log-formatting exception, which must be caught so a diagnostic feature can never break a real etch run (mirrors Task 1.4's `try/except` around barrier detection).
+**회귀 위험**: LOW. Purely additive logging; no existing return value, recipe, or physics call is touched. Worst case is a log-formatting exception, which must be caught so a diagnostic feature can never break a real etch run (mirrors Task 4's `try/except` around barrier detection).
 
-### Task 3.1: `_log_etch_material_summary()` + wiring
+### Task 6: `_log_etch_material_summary()` + wiring
 
 **Files:**
 - Modify: `tcad_2d_stagewise.py`
@@ -991,7 +991,7 @@ In `run_etch()`, after `result = json.loads(result_file.read_text(encoding="utf-
             )
 ```
 
-Place this call AFTER `self._litho_pending_since_last_mesh = False` (Task 2.1 Step 3's new line) so both additions coexist cleanly at this site.
+Place this call AFTER `self._litho_pending_since_last_mesh = False` (Task 5 Step 3's new line) so both additions coexist cleanly at this site.
 
 - [ ] **Step 3: Write the test — verifies the LOG, not a physics change**
 
@@ -1162,7 +1162,7 @@ git commit -m "feat: log per-material etch progress in the open window (diagnost
 
 **회귀 위험**: LOW. Every new parameter is keyword-only with a default that preserves the exact current signature and behavior for every existing caller (`pn_junction_iv_sweep.py`, `robust_iv_sweep.py`, `test_phase7/8_*_real.py`, `test_gaussian_implant_doping_real.py`, `test_implant_windows_doping_real.py`, `test_physics_rules_real.py`). The GUI panel changes touch only the Gaussian Implant and Implant Windows frames — Uniform (already done this session) and Step Junction (already correct) are untouched.
 
-### Task 4.1: `DopingRegion` new fields + `doping.py` donor/acceptor parameters
+### Task 7: `DopingRegion` new fields + `doping.py` donor/acceptor parameters
 
 **Files:**
 - Modify: `tcad/mesh/interface.py`, `tcad/physics/doping.py`
@@ -1466,7 +1466,7 @@ git commit -m "feat: independent donor/acceptor input for all 4 doping kinds"
 
 ---
 
-### Task 4.2: GUI panel — donor/acceptor fields for Gaussian Implant and Implant Windows
+### Task 8: GUI panel — donor/acceptor fields for Gaussian Implant and Implant Windows
 
 **Files:**
 - Modify: `tcad_2d_stagewise.py` (`_make_doping_panel`, `run_doping`)
@@ -1619,15 +1619,15 @@ git commit -m "feat: GUI donor/acceptor input for Gaussian Implant and Implant W
 
 - **Implant energy, dose, beam voltage/current, tilt/rotation.** No real model in ViennaPS 4.6.2 or DevSim (confirmed by direct introspection). Adding these fields without real computation would either be decorative (violates YAGNI) or require inventing a fake formula (explicitly forbidden). If wanted later, this needs a SEPARATE investigation into whether an approximate textbook model (e.g. LSS-theory-derived Gaussian range/straggle from energy) is worth building as new, clearly-labeled approximate physics — not a backend capability that already exists.
 - **Diffusion temperature/time/ambient.** Same reasoning — no backend model. A real Fickian-diffusion approximation (erfc-based profile from D(T)*t) is mathematically implementable without ViennaPS/DevSim support, but is a new physics feature, not part of "donor/acceptor input expansion," and needs its own decision.
-- **`implant_windows`'s robust/ramped solve path** (`run_robust_pn_junction_iv_sweep`) does not receive barrier-exclusion windows in Task 1.4 — it registers NetDoping through its own doping-level-continuation mechanism, and threading exclusion through that ramp safely is separable follow-up work.
-- **Doping color overlay concentration-magnitude shading** (vs. today's binary N/P sign color) — not requested with enough specificity to design now; Task 1.3's per-x accuracy fix stands on its own value.
+- **`implant_windows`'s robust/ramped solve path** (`run_robust_pn_junction_iv_sweep`) does not receive barrier-exclusion windows in Task 4 — it registers NetDoping through its own doping-level-continuation mechanism, and threading exclusion through that ramp safely is separable follow-up work.
+- **Doping color overlay concentration-magnitude shading** (vs. today's binary N/P sign color) — not requested with enough specificity to design now; Task 3's per-x accuracy fix stands on its own value.
 
 ---
 
 ## Self-Review
 
-**Spec coverage:** All 4 numbered problems from the user's approval message have a task group. The 10 "중요한 구현 원칙" are satisfied: (1) plan-first, no code yet; (2) test convention confirmed (`tests/run_regression.py`, no pytest) and stated in Global Constraints; (3) no task touches `resolve.py`/`wafer_state.py`/`intent.py`; (4) no fake parameters — explicit scope-exclusion section; (5) every task group states 원인/수정파일/수정함수/테스트/회귀위험; (6) writing-plans skill used for this document; (7) tasks are single-commit sized; (8) every task ends with a real regression run distinguishing new failures from the 49/3 baseline; (9) every task separates "renders differently" from "geometry is different" — Task 1 has two SEPARATE tests (DevSim-level Task 1.2, renderer-level Task 1.3); Task 3's test measures raw mesh geometry independent of the log string; (10) this document is the plan-only deliverable, awaiting approval before execution.
+**Spec coverage:** All 4 numbered problems from the user's approval message have a task group. The 10 "중요한 구현 원칙" are satisfied: (1) plan-first, no code yet; (2) test convention confirmed (`tests/run_regression.py`, no pytest) and stated in Global Constraints; (3) no task touches `resolve.py`/`wafer_state.py`/`intent.py`; (4) no fake parameters — explicit scope-exclusion section; (5) every task group states 원인/수정파일/수정함수/테스트/회귀위험; (6) writing-plans skill used for this document; (7) tasks are single-commit sized; (8) every task ends with a real regression run distinguishing new failures from the 49/3 baseline; (9) every task separates "renders differently" from "geometry is different" — Task 1 has two SEPARATE tests (DevSim-level Task 2, renderer-level Task 3); Task 3's test measures raw mesh geometry independent of the log string; (10) this document is the plan-only deliverable, awaiting approval before execution.
 
-**Placeholder scan:** No TBD/TODO. Two spots explicitly ask the implementer to re-read current line numbers/variable names before editing (Task 2.1 Step 3, Task 4.2 Step 3) rather than assuming stale ones — this is intentional given the size of `tcad_2d_stagewise.py` and this session's own edits shifting line numbers repeatedly; it names exactly which grep/read to run, not "figure it out."
+**Placeholder scan:** No TBD/TODO. Two spots explicitly ask the implementer to re-read current line numbers/variable names before editing (Task 5 Step 3, Task 8 Step 3) rather than assuming stale ones — this is intentional given the size of `tcad_2d_stagewise.py` and this session's own edits shifting line numbers repeatedly; it names exactly which grep/read to run, not "figure it out."
 
-**Type consistency:** `derive_barrier_covered_windows()`'s return shape (`List[Dict[str,float]]` with `"min_um"/"max_um"` keys) is used identically in Tasks 1.1, 1.2, and 1.4. `_material_surface_profile()`'s tuple shape `(x_lo, x_hi, y_top, y_bot)` is used identically in its test and in Task 1.3's renderer integration. `apply_doping()`'s new `exclude_windows`/`exclude_axis` params match between Task 1.2's implementation and Task 1.4's call site. `DopingRegion`'s new field names (`donor_peak_conc_cm3`, etc.) match between Task 4.1's dataclass and its test.
+**Type consistency:** `derive_barrier_covered_windows()`'s return shape (`List[Dict[str,float]]` with `"min_um"/"max_um"` keys) is used identically in Tasks 1, 2, and 4. `_material_surface_profile()`'s tuple shape `(x_lo, x_hi, y_top, y_bot)` is used identically in its test and in Task 3's renderer integration. `apply_doping()`'s new `exclude_windows`/`exclude_axis` params match between Task 2's implementation and Task 4's call site. `DopingRegion`'s new field names (`donor_peak_conc_cm3`, etc.) match between Task 7's dataclass and its test.
