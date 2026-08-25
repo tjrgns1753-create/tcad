@@ -50,8 +50,19 @@ class IsotropicDeposition(ProcessStep):
             geometry.duplicateTopLevelSet(getattr(module.Material, recipe["material"]))
 
         model_kwargs: Dict[str, Any] = {"rate": recipe["rate"]}
-        if "mask_material" in recipe:
-            model_kwargs["maskMaterial"] = getattr(module.Material, recipe["mask_material"])
+        # Deliberately NOT keyed on "mask_material" -- that key is
+        # already claimed by prepare_domain() (what material tag
+        # inserted mask/resist geometry gets, set on every recipe that
+        # has a mask) and is unconditional there by design, including
+        # for deposition recipes. Growth-exclusion is a separate,
+        # user-chosen concept (blanket vs. selective/lift-off) and
+        # needs its own key so it isn't silently forced on whenever a
+        # mask/resist happens to exist -- see the deposition panel's
+        # "Deposition mode" toggle in tcad_2d_stagewise.py.
+        if "deposit_exclude_material" in recipe:
+            model_kwargs["maskMaterial"] = getattr(
+                module.Material, recipe["deposit_exclude_material"]
+            )
 
         model = module.IsotropicProcess(**model_kwargs)
 

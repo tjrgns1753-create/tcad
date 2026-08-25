@@ -8751,3 +8751,223 @@ re-deriving this audit.
 
 Regression: 39 passed / 3 failed, the same three pre-existing
 DevSim-side failures described in the non-ASCII path entry above.
+
+---
+
+## PR Strip removes nothing: not because Etching converts PR to Mask, but because PR never had real geometry to convert
+
+**What was tested.** A user report: after Etching, clicking PR STRIP
+does not visibly remove the resist, and the user's own hypothesis was
+that Etching converts the PR's material identity to Mask. Traced GUI →
+recipe → ProcessStep → ViennaPS Material → renderer, without changing
+any code, to find where in that chain "PR" becomes "Mask."
+
+**Result.** `process_pr_coat()` and `process_develop()`
+(`tcad_2d_stagewise.py`) were read directly: neither calls
+`subprocess.run`/`worker_main` — both are pure state transitions
+(`self.wafer.pr_present`/`.developed` flags only). Confirmed
+`vps.Material` (ViennaPS 4.6.2) has **no** resist/PR/photoresist entry
+at all (`[n for n in dir(vps.Material) if "resist" in n.lower() or
+n.lower() in ("pr","photoresist")]` → `[]`). Ran a direct registry-level
+etch (no GUI, no subprocess) on a fresh wafer with a developed opening
+(`mask_spans_um`): the FIRST real ViennaPS mesh this wafer ever has
+contains `['Mask', 'Si']` — there was no earlier real mesh with the
+resist tagged as anything else for Etching to have converted it from.
+
+**What it proves.** Litho (`PR COAT` → `DEVELOP`) never produces real
+ViennaPS geometry — it is 100% state until some process step consumes
+`mask_spans_um`/`remask_spans_um`. `make_mask_spans()`/`remask_domain()`
+(`tcad/backends/viennaps/session.py`) both default
+`mask_material="Mask"`, so the resist is tagged `Mask` from the
+**instant** it becomes real geometry, not "converted" into it later.
+"Etching converts PR to Mask" is therefore a misdiagnosis of the
+user-visible symptom, though the underlying complaint is correct: the
+real bug is in `process_pr_strip()` itself
+(`tcad_2d_stagewise.py`), which only clears
+`pr_present`/`developed`/sets `stripped=True` and never touches the
+exported mesh. Its own log line already says so honestly: "resist
+ALREADY built into a previous step's geometry stays in that mesh --
+stripping it out of the exported geometry is not implemented yet."
+
+**What remains uncertain.** `domain.removeMaterial()` exists in
+ViennaPS 4.6.2 (verified in an earlier session), so a real strip is
+implementable — but `Material.Mask` is also what LOCOS's own hard mask
+uses (`mask_material="Mask"` is the LOCOS default too), and there is
+currently no way to distinguish "Mask that represents strippable
+photoresist" from "Mask that represents a permanent LOCOS hard mask."
+A real fix needs that distinction before `removeMaterial()` can be
+called safely — calling it unconditionally on every `Mask` region would
+also strip a LOCOS mask that was never resist.
+
+**Next smallest experiment.** Decide how to tag "this Mask region came
+from resist" vs "this Mask region came from LOCOS" — e.g. a distinct
+recipe-level marker carried through to the exported mesh's material
+tag, or a parallel bookkeeping structure keyed the same way
+`io.register_locos_export()` already keys LOCOS-specific state — then
+make `process_pr_strip()` call `domain.removeMaterial()` only on
+regions carrying that marker, on the live domain
+(`self.last_domain_state`), not just the flags.
+
+---
+
+## Doping: five confirmed gaps, none requiring a code change to describe
+
+**What was tested.** A user report bundling five doping complaints:
+(1) only a single net-doping field, no independent donor/acceptor;
+(2) no dopant-species selection; (3) an error reading as "DevSim did
+not run" when doping; (4) doping not shown as a color overlay on
+geometry; (5) doping not preserved as state into the next process step.
+Traced GUI (`_make_doping_panel`/`run_doping`/`run_measurement`) →
+`tcad/physics/doping.py` → `DopingProfile` → `WaferState` → renderer.
+
+**Result, per item.**
+
+1. **Donor/acceptor.** `run_doping()`'s "Uniform" branch
+   (`tcad_2d_stagewise.py`) reads exactly one field,
+   `dope_uniform_conc_var`. "Step Junction" already accepts
+   `donor_conc_cm3`/`acceptor_conc_cm3` independently
+   (`apply_step_junction_doping`, `tcad/physics/doping.py`), but applies
+   them to **opposite sides of a spatial junction**, not simultaneously
+   to the same region with an internally-computed net. None of the 4
+   kinds (`DopingRegion`/`DopingProfile`, `tcad/mesh/interface.py`)
+   support same-region simultaneous donor+acceptor.
+2. **Dopant species.** No species (B/P/As/...) field or data anywhere in
+   the doping code path — only signed net concentration, which is what
+   DevSim's drift-diffusion continuity equations actually need, but
+   gives the user no way to record or select which species was used.
+3. **"DevSim did not run."** `run_doping()` shows
+   `messagebox.showinfo("Doping", "...No DevSim solve was run...")`
+   after every successful doping click (`tcad_2d_stagewise.py`, near the
+   end of the method) — a routine, by-design statement, but its exact
+   wording. Critically, `run_measurement()`'s stale-doping
+   re-attachment path (`if self._doping_is_stale(): ... if not
+   self.run_doping(): return`) calls the **same** `run_doping()`
+   internally — so the same "No DevSim solve was run" popup can appear
+   in the middle of a MEASURE click, i.e. exactly when the user is
+   trying to run DevSim and it is about to run a few lines later. This
+   is very likely the actual path that produces the reported "error."
+4. **Color overlay.** `_doping_color_segments` (P=`#e0393e`,
+   N=`#2f6fed`) is already implemented correctly and is drawn in
+   `redraw()` — but gated on `self.viewer_layer_var.get() == "doping"`,
+   and the viewer's default layer is `"geometry"`
+   (`self.viewer_layer_var = tk.StringVar(value="geometry")`). The
+   overlay is fully implemented and correctly colored; it is invisible
+   by default because the layer selector defaults away from it.
+5. **State preservation.** `grep "doping" tcad/physics/wafer_state.py`
+   returns nothing — `WaferState` (the type the physics resolver reads)
+   has no doping field at all. This is not an oversight: the
+   implementation plan for the WaferState/resolver work explicitly
+   deferred "wiring resolver into ... doping" to "stage 4+," which this
+   plan's 11 tasks never reached. `last_doped_result` remains a
+   GUI-side object attached to one mesh snapshot, re-attached only for
+   measurement (a separate, earlier fix), not visible to any process
+   step's physics resolution.
+
+**What it proves.** Items 3 and 4 are real, fixable implementation
+issues with clear, narrow causes (a reused dialog; a layer default).
+Items 1 and 2 are missing features, not bugs — the data model doesn't
+carry what the user is asking to input. Item 5 is a known, deliberately
+scoped-out gap from the physics-resolver work, not new.
+
+**What remains uncertain.** Whether the doping panel should offer
+donor+acceptor with a computed net for the "Uniform" kind specifically,
+or across all 4 kinds; whether dopant-species selection should be
+purely a UI/log label (since DevSim itself doesn't need it) or should
+also let a future physics table key interaction coefficients by
+species one day.
+
+**Next smallest experiment.** For item 3 (the most likely user-visible
+"error"): split `run_doping()`'s success dialog out of the function, or
+make it conditional on being invoked directly from the Doping panel
+button (not from `run_measurement()`'s internal re-attachment call).
+For item 4: consider defaulting `viewer_layer_var` to "doping"
+immediately after a successful `run_doping()` call, or add a log line
+telling the user which layer shows it.
+
+---
+
+## Deposition: renderer y-scale artifact, plus an unconditional mask exclusion that contradicts the project's own "lift-off" claim
+
+**What was tested.** A user report bundling two deposition complaints:
+long deposition times appear to erode the existing lower structure
+while only the top grows; and masked regions get no deposition at all,
+regardless of which deposition method was chosen. Traced GUI
+(`run_deposition`/`run_metallization`) → recipe (`mask_material`) →
+`IsotropicProcess(maskMaterial=...)` → renderer (`_draw_real_mesh_result`).
+
+**Result — erosion.** Built a fixed Si/SiO2 base stack once, then ran
+isotropic deposition for increasing durations on top of it, reading the
+**raw exported mesh** directly (not the renderer) at each duration:
+
+    t=0.2s  SiO2 y=[-0.003,0.108]  (thickness 0.111)
+    t=1.0s  SiO2 y=[-0.002,0.109]  (thickness 0.111)
+    t=3.0s  SiO2 y=[-0.001,0.110]  (thickness 0.111)
+    t=8.0s  SiO2 y=[-0.000,0.111]  (thickness 0.111)
+
+SiO2 thickness is unchanged (within ~0.003um numerical noise) across a
+40x increase in deposition time; the Si floor stays fixed at -5.000 in
+every case. The existing lower structure is **not** eroding. Read the
+renderer's y-scale computation (`tcad_2d_stagewise.py`,
+`_draw_real_mesh_result`):
+
+    y_scale = x_scale
+    if depth_above > 1e-9:
+        y_scale = min(y_scale, available_above / depth_above)
+
+`depth_above` is the whole structure's height above the datum. As
+deposition grows the top surface, `depth_above` grows, so `y_scale`
+shrinks for the **entire** drawing, uniformly compressing layers whose
+real thickness has not changed. This is a rendering artifact, not a
+geometry or physics bug.
+
+**Result — masked-region exclusion.** Confirmed directly against real
+ViennaPS that `maskMaterial=` blocks deposition (positive rate), not
+just etching (negative rate): an isotropic deposition with
+`maskMaterial="Mask"` on a wafer with a real developed mask produced W
+in the open window (`y=[0.006,0.105]`) and **zero** W anywhere under
+the mask — a real, deliberate ViennaPS semantic, not an accident.
+
+The bug is that the GUI applies this unconditionally: `run_deposition()`
+sets `"mask_material": "Mask"` for 3 of 7 deposition models
+(`isotropic`, `directional`, `single_particle_cvd`) regardless of user
+intent, while the other 4 (`teos`, `teos_pecvd`, `selective_epitaxy`,
+`geometric_trench`) never set it at all, so they are always blanket.
+Neither behavior is user-selectable for any model.
+
+This directly contradicts the project's **own** stated intent: the
+Metallization panel's help text (`tcad_2d_stagewise.py`, added earlier
+this project) reads "With a developed resist present it lands in the
+openings and on top of the resist (lift-off geometry)" — but
+`run_metallization()` sets the identical unconditional
+`"mask_material": "Mask"`, which makes metal **absent** everywhere the
+resist is, the opposite of lift-off (which requires metal to cover the
+resist too, so removing the resist afterward lifts the metal on top of
+it off).
+
+**What it proves.** Neither complaint is a ViennaPS physics bug. The
+erosion complaint is 100% a GUI rendering issue. The mask-exclusion
+complaint is real ViennaPS behavior applied by a GUI choice
+(unconditional `mask_material`) that the project's own written intent
+(the lift-off label) already says is wrong for at least the
+Metallization case.
+
+**What remains uncertain.** Whether the right fix is a per-recipe
+"selective vs blanket" toggle exposed to the user, or a model-intrinsic
+default (e.g. Metallization defaults to blanket/lift-off, plain
+Isotropic Deposition defaults to selective) with an override — and
+whether the 4 currently-always-blanket models should gain an opt-in
+`mask_material` too, for symmetry, or are correctly blanket-only given
+their real process chemistry (TEOS, PECVD, selective epitaxy already
+have their own, different selectivity mechanisms via `material_rates`).
+
+**Next smallest experiment.** For the renderer: either keep the
+y-extent fixed at wafer creation (not recomputed per redraw) so the
+scale doesn't shift as material grows, or show a visible scale
+indicator so a shrinking `y_scale` is legible instead of silent. For
+the mask exclusion: make `mask_material` an explicit, opt-in recipe key
+the GUI sets only when the user picks a selective mode, and change
+Metallization's default to NOT set it (matching its own lift-off
+claim) unless the user explicitly asks for selective deposition.
+
+Regression: unaffected — this was a read-only investigation, no code
+changed.

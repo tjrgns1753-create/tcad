@@ -120,8 +120,14 @@ class DirectionalDeposition(ProcessStep):
         }
         if "isotropic_velocity" in recipe:
             model_kwargs["isotropicVelocity"] = recipe["isotropic_velocity"]
-        if "mask_material" in recipe:
-            model_kwargs["maskMaterial"] = getattr(module.Material, recipe["mask_material"])
+        # See isotropic.py's matching comment: "deposit_exclude_material"
+        # (user-chosen growth exclusion) is deliberately distinct from
+        # "mask_material" (unconditional mask/resist geometry tagging,
+        # set by prepare_domain() on every recipe that has a mask).
+        if "deposit_exclude_material" in recipe:
+            model_kwargs["maskMaterial"] = getattr(
+                module.Material, recipe["deposit_exclude_material"]
+            )
         # Default False, not ViennaPS's own True: see module docstring
         # -- real-execution-verified to stall growth non-monotonically
         # for this project's flat-window/non-tilted-source geometry,

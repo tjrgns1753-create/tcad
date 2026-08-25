@@ -82,6 +82,7 @@ class _ResistProbe:
         self._mask_recipe_keys_for_current_step = (
             gui.TCADApplication._mask_recipe_keys_for_current_step.__get__(self)
         )
+        self._RESIST_MATERIAL = gui.TCADApplication._RESIST_MATERIAL
         self.wafer = Wafer()
         for key, value in wafer_state.items():
             setattr(self.wafer, key, value)
@@ -111,7 +112,10 @@ def test_a_resist_state_table():
 
     coated_chained = _ResistProbe(first_step=False, pr_present=True)
     assert coated_chained._mask_recipe_keys_for_current_step() == {
-        "remask_spans_um": [[-HALF, HALF]]
+        "remask_spans_um": [[-HALF, HALF]],
+        # Resist that becomes real geometry is tagged _RESIST_MATERIAL
+        # ("PHS"), not "Mask" -- see CLAUDE.md's Doping/PR-Strip fix.
+        "mask_material": coated_chained._RESIST_MATERIAL,
     }, "a bare PR COAT on an existing wafer must remask the FULL width"
 
     # --- Alignment and exposure change no geometry --------------------
@@ -286,7 +290,13 @@ def test_b2_bare_coat_is_blanket_not_patterned():
         "remask_spans_um": [[-HALF, HALF]],
         "rate": 0.05,
         "deposition_time_s": 0.5,
+        # "mask_material" only tags inserted mask geometry now; growth
+        # exclusion needs its own key (see
+        # tcad/process/deposition/isotropic.py's own comment) --
+        # this test's whole point is exercising exclusion through the
+        # resist, so both are set.
         "mask_material": "Mask",
+        "deposit_exclude_material": "Mask",
         "material": "Si3N4",
     }
     with tempfile.TemporaryDirectory() as tmp:
@@ -372,7 +382,10 @@ def test_b3_developed_resist_is_patterned():
         "remask_spans_um": [[-HALF, -1.5], [1.5, HALF]],
         "rate": 0.05,
         "deposition_time_s": 0.5,
+        # See test_b2's matching comment: both keys needed now that
+        # growth exclusion is decoupled from mask-geometry tagging.
         "mask_material": "Mask",
+        "deposit_exclude_material": "Mask",
         "material": "Si3N4",
     }
     with tempfile.TemporaryDirectory() as tmp:

@@ -28,6 +28,12 @@ has no memory between sessions and this came up once already.
 - There is no in-session reload command to pick up a change made in the
   web UI afterward (`/reload-plugins` doesn't exist here) — a browser
   refresh or a new session is the practical way to pick it up.
+- A background command's stdout is fully buffered until it exits when
+  redirected to a file — a real ViennaPS run can show 0 lines for
+  minutes and look hung. Wait for the exit notification, don't kill it.
+- A subagent cannot resume itself when its own background job
+  completes. Have the controller run expensive commands (full
+  regression, real ViennaPS flows) itself and relay the result.
 
 ## THE INVARIANT (read before changing anything in the GUI or process layer)
 
@@ -112,6 +118,9 @@ Process flow:
 
 Process → ViennaPS → ProcessResult → DevSim → device simulation
 
+Inside ProcessStep.run(): WaferState.query(domain) → resolve(intent,
+state) → ResolvedRecipe, between prepare_domain() and the model call.
+
 Process continuity uses explicit instance state:
 `ProcessStep(inherited_domain=...)`
 
@@ -142,7 +151,7 @@ MOS C-V, oxidation → etch → doping → DevSim).
 
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
-Current regression: `tests/run_regression.py` → **39 passed, 3 failed,
+Current regression: `tests/run_regression.py` → **49 passed, 3 failed,
 0 skipped**, measured on Windows with real ViennaPS 4.6.2 + DevSim.
 
 The 3 failures are pre-existing and were confirmed to fail at a clean
@@ -507,6 +516,19 @@ the Windows cp949 console, which truncates the whole run — use
   way, so it would not catch a polarity inversion — left unchanged,
   see the log entry. Search `docs/investigation_log.md` for "PN diode
   I-V looked broken".
+- **WaferState-driven physics resolution** (`tcad/physics/`:
+  values.py/wafer_state.py/intent.py/tables.py/resolve.py).
+  `resolve(intent, state, user_supplied=None)` has NO history parameter
+  — order can never affect a result. Physics reads
+  `state.exposed_materials()` (spatially present now), never
+  `state.materials` (merely declared — e.g. a fully-etched layer stays
+  declared at zero thickness). `Resolution`/`Provenance` are separate
+  axes; `INTERACTION_COEFFICIENTS` ships **empty on purpose** — UNKNOWN
+  never blocks execution, only gets reported. Wired onto the real path
+  for isotropic etching only; oxidation/deposition/metallization/doping
+  are not yet wired, and **doping is not in WaferState at all**
+  (deliberate, not an oversight). Design:
+  `docs/superpowers/specs/2026-08-25-wafer-state-physics-design.md`.
 
 ## OPEN issues (active — read before starting new work)
 
@@ -825,6 +847,47 @@ the Windows cp949 console, which truncates the whole run — use
    repeated re-entry (crude damping), or examine which NODES carry the
    diverging update (`get_node_model_values` on the update between
    iterations) to see whether it is localized to the sliver or global.
+
+3. **PR Strip / Doping / Deposition — three user-reported GUI issues,
+   ROOT-CAUSED, NOT YET FIXED.** Reproduced against real ViennaPS 4.6.2,
+   no code changed yet. Full writeups: search `docs/investigation_log.md`
+   for "PR Strip removes nothing", "Doping: five confirmed gaps", and
+   "Deposition: renderer y-scale artifact".
+
+   **PR Strip:** not "Etching converts PR to Mask" (litho never produces
+   real geometry — confirmed neither `process_pr_coat()` nor
+   `process_develop()` calls `subprocess.run`; ViennaPS 4.6.2's own
+   `Material` enum has no PR/photoresist entry at all). The real bug is
+   `process_pr_strip()` only clearing GUI flags, never calling
+   `domain.removeMaterial()` on the live domain — blocked on having no
+   way to tell resist-derived `Mask` apart from LOCOS's own hard mask,
+   which uses the identical material tag.
+
+   **Doping**, five items: (1) no independent donor+acceptor in the same
+   region for any of the 4 doping kinds; (2) no dopant-species field
+   anywhere; (3) **likely root cause of the "DevSim did not run" report**
+   — `run_measurement()`'s stale-doping re-attachment calls
+   `run_doping()` internally, which pops up "No DevSim solve was run"
+   in the middle of a MEASURE click, right before DevSim actually runs;
+   (4) the P/N color overlay is already correctly implemented but
+   invisible by default (`viewer_layer_var` defaults to `"geometry"`,
+   not `"doping"`); (5) `WaferState` carries no doping field at all —
+   known, deliberately deferred by the physics-resolver plan to a
+   "stage 4+" this project's 11-task plan never reached.
+
+   **Deposition**, two items, opposite causes: long deposition making
+   the lower structure look eroded is a **renderer artifact, not real
+   geometry** — raw mesh measurement showed SiO2 thickness unchanged
+   (0.111um) across a 40x deposition-time range while the renderer's
+   `y_scale` shrinks uniformly as the top grows
+   (`available_above / depth_above` in `_draw_real_mesh_result`).
+   Masked regions getting no deposition IS real, correct ViennaPS
+   physics (`maskMaterial=` blocks positive rate too, confirmed by
+   direct execution) applied **unconditionally** by the GUI to 3 of 7
+   models with no user choice — and it directly contradicts this
+   project's own Metallization panel text ("lands ... on top of the
+   resist (lift-off geometry)"), since `run_metallization()` sets the
+   same unconditional `mask_material` that excludes the resist entirely.
 
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):
@@ -1161,17 +1224,30 @@ live-verified through real ViennaPS):**
 
 ## Current Task
 
-Do not try to solve everything at once.
+Do not try to solve everything at once. One item at a time; regression
+before moving to the next. All three are root-caused already — see OPEN
+issue 3 and the cited `docs/investigation_log.md` entries for the full
+evidence before touching any code.
 
-First establish a physically correct flat 2D Si wafer / mask representation.
+1. **PR Strip.** Make it actually remove resist-derived `Mask` geometry
+   from the live domain (`domain.removeMaterial()`), gated on a way to
+   tell resist-derived `Mask` apart from LOCOS's own hard mask — see
+   `docs/investigation_log.md`, "PR Strip removes nothing".
 
-Then verify oxidation.
+2. **Doping ↔ WaferState.** Support independent donor+acceptor in the
+   same region, and wire doping into `WaferState` so a later process
+   step's physics resolution can see it — see
+   `docs/investigation_log.md`, "Doping: five confirmed gaps". The "No
+   DevSim solve was run" popup firing mid-MEASURE and the
+   invisible-by-default P/N color overlay are smaller fixes within the
+   same item.
 
-Then etch/isotropic etch.
-
-Then Bosch scalloping.
-
-Only after geometry is trustworthy should physical device benchmarks be performed.
+3. **Deposition renderer + mask policy.** Fix the renderer's `y_scale`
+   so unchanged lower layers stop looking eroded as the top grows, and
+   make the masked-vs-blanket choice explicit and consistent across all
+   7 deposition models (including Metallization, whose own "lift-off"
+   claim the current unconditional mask exclusion contradicts) — see
+   `docs/investigation_log.md`, "Deposition: renderer y-scale artifact".
 
 For each investigation report:
 1. What was tested

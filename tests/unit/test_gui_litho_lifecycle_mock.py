@@ -84,7 +84,11 @@ def main():
         app.process_develop()
         assert next_step_keys()["mask_spans_um"] == PATTERNED_SPANS
         assert next_step_keys(first_step=False) == {
-            "remask_spans_um": PATTERNED_SPANS
+            "remask_spans_um": PATTERNED_SPANS,
+            # Resist that becomes real geometry is tagged _RESIST_MATERIAL
+            # ("PHS"), not "Mask" -- see CLAUDE.md's Doping/PR-Strip fix;
+            # this key is now always present alongside real resist spans.
+            "mask_material": app._RESIST_MATERIAL,
         }, "a developed resist on an existing wafer must remask, not rebuild"
 
         # --- PR STRIP: no further step is masked -----------------------

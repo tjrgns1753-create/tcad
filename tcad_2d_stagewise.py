@@ -197,7 +197,36 @@ def worker_main(config_file: str, result_file: str):
             )
         )
 
-        if config.get("_materialize_wafer"):
+        if config.get("_strip_resist"):
+            # Actually remove resist-derived geometry from the current
+            # wafer, not just clear GUI flags. Safe to call whether or
+            # not resist ever became real geometry:
+            # domain.removeMaterial() on an ABSENT material is a
+            # confirmed no-op (measured directly against real ViennaPS
+            # 4.6.2 before this was written), and it removes ONLY the
+            # material named -- LOCOS's own hard mask stays "Mask",
+            # never "PHS" (see TCADApplication._RESIST_MATERIAL), so
+            # this can never strip a permanent hard mask by mistake.
+            from tcad.backends.viennaps import session as _session
+            from tcad.backends.viennaps.io import save_volume_mesh
+
+            domain = _session.load_domain_state(config["_resume_state"])
+            module = _session.require_viennaps()
+            domain.removeMaterial(getattr(module.Material, config["resist_material"]))
+            mesh_path = save_volume_mesh(
+                domain,
+                str(Path(config["output_dir"]) / "stripped"),
+                floor_depth_um=config["silicon_depth_um"],
+            )
+            state_path = str(Path(config["output_dir"]) / "domain_state.vpsd")
+            _session.save_domain_state(domain, state_path)
+            payload = {
+                "success": True,
+                "final_mesh": mesh_path,
+                "domain_state": state_path,
+            }
+
+        elif config.get("_materialize_wafer"):
             # Export the wafer AS IT IS, running no process at all.
             #
             # A wafer exists from the moment it is created, so a step
@@ -358,6 +387,14 @@ class TCADApplication(tk.Tk):
         # run_etch(), so redraw() can draw the actual geometry instead
         # of the placeholder rectangle. None until an etch succeeds.
         self.last_final_mesh = None
+
+        # Vertical view budget for _draw_real_mesh_result, keyed
+        # "above"/"below" -- see _quantized_depth_budget()'s own
+        # docstring for why this exists (renderer-only fix for the
+        # "long deposition erodes the substrate" illusion; the real
+        # mesh does not erode -- see docs/investigation_log.md,
+        # "Deposition: renderer y-scale artifact"). Reset on NEW WAFER.
+        self._viewer_depth_budget_um = {}
 
         # The ProcessResult (with DopingProfile attached) from the last
         # successful run_doping(), consumed by run_measurement() -- see
@@ -2554,6 +2591,34 @@ class TCADApplication(tk.Tk):
         )
         self._update_deposition_field_visibility()
 
+        # Blanket vs. selective/lift-off, user-chosen -- NOT forced by
+        # whether a mask happens to exist (see the collision this fixes
+        # in tcad/process/deposition/isotropic.py's own comment: this
+        # key used to be conflated with the mask/resist geometry's own
+        # material tag, which made growth-exclusion unconditional
+        # whenever a mask existed at all). Only Isotropic/Directional/
+        # Conformal CVD honor this -- the other 4 models have their own,
+        # different selectivity mechanism (material_rates) or none.
+        ttk.Label(
+            frame, text="Deposition mode", style="Caption.TLabel",
+        ).pack(anchor="w", padx=12, pady=(6, 1))
+        self.dep_mask_mode_var = tk.StringVar(value=self._DEPOSITION_MODE_BLANKET)
+        ttk.Combobox(
+            frame,
+            textvariable=self.dep_mask_mode_var,
+            state="readonly",
+            values=[self._DEPOSITION_MODE_BLANKET, self._DEPOSITION_MODE_SELECTIVE],
+        ).pack(fill="x", padx=12)
+        ttk.Label(
+            frame,
+            text=(
+                "Selective excludes growth from the current mask/resist "
+                "(Isotropic, Directional, Conformal CVD only)."
+            ),
+            foreground="#555",
+            wraplength=310,
+        ).pack(anchor="w", padx=12, pady=(1, 0))
+
         self.deposition_button = ttk.Button(
             frame,
             text="5c. START DEPOSITION — VIENNAPS",
@@ -2647,6 +2712,23 @@ class TCADApplication(tk.Tk):
         self.metal_time_var = self._field(frame, "Deposition time (s)", 0.5)
         self.metal_grid_var = self._field(frame, "Grid delta (µm)", 0.05)
 
+        # See the Deposition panel's matching toggle. Default Blanket
+        # here specifically matches this panel's OWN help text below
+        # ("lift-off geometry"), which unconditional mask_material used
+        # to contradict (metal was excluded from the mask, the opposite
+        # of lift-off) -- see docs/investigation_log.md, "Deposition:
+        # renderer y-scale artifact ... unconditional mask exclusion".
+        ttk.Label(
+            frame, text="Deposition mode", style="Caption.TLabel",
+        ).pack(anchor="w", padx=12, pady=(6, 1))
+        self.metal_mask_mode_var = tk.StringVar(value=self._DEPOSITION_MODE_BLANKET)
+        ttk.Combobox(
+            frame,
+            textvariable=self.metal_mask_mode_var,
+            state="readonly",
+            values=[self._DEPOSITION_MODE_BLANKET, self._DEPOSITION_MODE_SELECTIVE],
+        ).pack(fill="x", padx=12)
+
         self.metallization_button = ttk.Button(
             frame,
             text="RUN METALLIZATION",
@@ -2658,9 +2740,10 @@ class TCADApplication(tk.Tk):
         ttk.Label(
             frame,
             text=(
-                "Metal is deposited on the CURRENT surface. With a "
-                "developed resist present it lands in the openings and "
-                "on top of the resist (lift-off geometry)."
+                "Metal is deposited on the CURRENT surface. Blanket mode: "
+                "with a developed resist present, metal lands in the "
+                "openings AND on top of the resist (lift-off geometry). "
+                "Selective mode excludes the resist/mask instead."
             ),
             foreground="#555",
             wraplength=310,
@@ -2693,7 +2776,6 @@ class TCADApplication(tk.Tk):
                 "x_extent_um": self.wafer.width_um,
                 "y_extent_um": 8.0,
                 "deposition_time_s": float(self.metal_time_var.get()),
-                "mask_material": "Mask",
                 "material": self.metal_material_var.get(),
             }
             if model_key == "directional":
@@ -2703,6 +2785,8 @@ class TCADApplication(tk.Tk):
                 recipe["rate"] = float(self.metal_rate_var.get())
             if model_key == "single_particle_cvd":
                 recipe["sticking_probability"] = 0.1
+            if self.metal_mask_mode_var.get() == self._DEPOSITION_MODE_SELECTIVE:
+                recipe["deposit_exclude_material"] = recipe["mask_material"]
         except ValueError:
             messagebox.showerror(
                 "Metallization recipe", "All recipe values must be numeric."
@@ -2801,6 +2885,67 @@ class TCADApplication(tk.Tk):
         self.last_domain_state = result.get("domain_state")
         self.wafer.processed = True
         self.redraw()
+        return True
+
+    def _strip_resist_from_geometry(self):
+        """Actually remove resist-derived geometry. True on success.
+
+        Only called when a real domain already exists (last_domain_state
+        set) -- if none does, there is no real geometry to strip, and
+        process_pr_strip()'s state-only path already covers that case.
+        """
+        if not viennaps_session.is_available():
+            messagebox.showerror(
+                "ViennaPS",
+                "ViennaPS is not installed.\n\nRun:\npython -m pip install ViennaPS",
+            )
+            return False
+
+        output_dir = tempfile.mkdtemp(prefix="tcad2d_strip_")
+        config_file = Path(output_dir) / "strip.json"
+        result_file = Path(output_dir) / "result.json"
+        config_file.write_text(
+            json.dumps({
+                "_strip_resist": True,
+                "_resume_state": self.last_domain_state,
+                "output_dir": output_dir,
+                "silicon_depth_um": self.wafer.silicon_depth_um,
+                "resist_material": self._RESIST_MATERIAL,
+            }, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+        self._log("\nRemoving resist geometry from the wafer...\n")
+        self.update_idletasks()
+        try:
+            completed = subprocess.run(
+                [
+                    sys.executable, str(Path(__file__).resolve()),
+                    "--worker", str(config_file), str(result_file),
+                ],
+                capture_output=True, text=True, timeout=300,
+            )
+        except Exception as exc:
+            messagebox.showerror("ViennaPS", str(exc))
+            return False
+
+        if not result_file.exists():
+            messagebox.showerror(
+                "ViennaPS",
+                "Worker did not produce a result file.\n\n"
+                + completed.stderr[-4000:],
+            )
+            return False
+
+        result = json.loads(result_file.read_text(encoding="utf-8"))
+        if not result.get("success"):
+            messagebox.showerror(
+                "ViennaPS", result.get("error", "Unknown ViennaPS error.")
+            )
+            return False
+
+        self.last_final_mesh = result.get("final_mesh")
+        self.last_domain_state = result.get("domain_state")
         return True
 
     def _run_single_step(
@@ -2967,7 +3112,6 @@ class TCADApplication(tk.Tk):
                 recipe.update({
                     "rate": float(self.dep_isotropic_rate_var.get()),
                     "deposition_time_s": float(self.dep_isotropic_time_var.get()),
-                    "mask_material": "Mask",
                     "material": self.dep_isotropic_material_var.get(),
                 })
 
@@ -2977,7 +3121,6 @@ class TCADApplication(tk.Tk):
                     "direction": [0.0, 1.0, 0.0],
                     "directional_velocity": float(self.dep_directional_velocity_var.get()),
                     "deposition_time_s": float(self.dep_directional_time_var.get()),
-                    "mask_material": "Mask",
                     "material": self.dep_directional_material_var.get(),
                 })
 
@@ -2987,7 +3130,6 @@ class TCADApplication(tk.Tk):
                     "rate": float(self.dep_cvd_rate_var.get()),
                     "sticking_probability": float(self.dep_cvd_sticking_var.get()),
                     "deposition_time_s": float(self.dep_cvd_time_var.get()),
-                    "mask_material": "Mask",
                     "material": self.dep_cvd_material_var.get(),
                 })
 
@@ -3034,6 +3176,17 @@ class TCADApplication(tk.Tk):
                     "b_um": float(self.dep_trench_b_var.get()),
                     "material": self.dep_trench_material_var.get(),
                 })
+
+            # Only these 3 models honor deposit_exclude_material (see
+            # their own maskMaterial= wiring); exclude wherever the
+            # CURRENT recipe's own mask/resist geometry is tagged, so
+            # "Selective" always matches what's actually in the domain
+            # this run, not a hardcoded material name.
+            if (
+                model_key in ("isotropic", "directional", "single_particle_cvd")
+                and self.dep_mask_mode_var.get() == self._DEPOSITION_MODE_SELECTIVE
+            ):
+                recipe["deposit_exclude_material"] = recipe["mask_material"]
 
         except ValueError:
 
@@ -3630,8 +3783,19 @@ class TCADApplication(tk.Tk):
         self.dope_uniform_region_var = self._field(
             uniform_frame, "Region", "Si",
         )
-        self.dope_uniform_conc_var = self._field(
-            uniform_frame, "Net doping (cm^-3, signed)", 1.0e17,
+        # Donor and acceptor are independent, both non-negative inputs
+        # (e.g. Donor=1e16, Acceptor=5e15) -- net = donor - acceptor is
+        # computed in run_doping(), matching how apply_step_junction_doping
+        # already takes donor_conc_cm3/acceptor_conc_cm3 as two separate
+        # values rather than one pre-signed number. Only the resulting
+        # net value is ever passed to apply_uniform_doping()/DopingRegion
+        # -- this is a GUI-only change, doping.py's net-doping-only
+        # architecture is untouched.
+        self.dope_uniform_donor_var = self._field(
+            uniform_frame, "Donor conc. (cm^-3, >= 0)", 1.0e17,
+        )
+        self.dope_uniform_acceptor_var = self._field(
+            uniform_frame, "Acceptor conc. (cm^-3, >= 0)", 0.0,
         )
 
         step_frame = ttk.Frame(doping_params_container)
@@ -3759,7 +3923,20 @@ class TCADApplication(tk.Tk):
         attached = getattr(self.last_doped_result, "volume_mesh_path", None)
         return bool(attached and attached != self.last_final_mesh)
 
-    def run_doping(self):
+    def run_doping(self, silent: bool = False):
+        """Apply the selected doping kind. Returns True on success.
+
+        `silent` suppresses only the success POPUP -- the log line and
+        the auto-switch to the doping color overlay still happen either
+        way. Needed because run_measurement() calls this internally to
+        re-attach stale doping to the current mesh; without `silent`,
+        that internal call pops its own "Doping applied" dialog in the
+        middle of a MEASURE click, which reads as an error interrupting
+        the solve the user actually asked for (see
+        docs/investigation_log.md, "Doping: five confirmed gaps",
+        item 3). Whether DevSim itself then solves successfully is
+        reported separately, by run_measurement().
+        """
 
         # Doping runs on the wafer as it is. It used to refuse until some
         # other process had run, which is exactly the kind of
@@ -3782,11 +3959,16 @@ class TCADApplication(tk.Tk):
             if kind == "Uniform":
 
                 region = self.dope_uniform_region_var.get()
-                conc = float(self.dope_uniform_conc_var.get())
+                donor = float(self.dope_uniform_donor_var.get())
+                acceptor = float(self.dope_uniform_acceptor_var.get())
+                conc = donor - acceptor
                 doped_result = apply_uniform_doping(
                     process_result, {region: conc},
                 )
-                summary = f"region={region!r} net_doping_cm3={conc:.3e}"
+                summary = (
+                    f"region={region!r} donor={donor:.3e} "
+                    f"acceptor={acceptor:.3e} -> net_doping_cm3={conc:.3e}"
+                )
 
             elif kind == "Step Junction":
 
@@ -3896,12 +4078,22 @@ class TCADApplication(tk.Tk):
 
         self._update_process_buttons()
 
-        messagebox.showinfo(
-            "Doping",
-            f"Doping profile attached ({kind}).\n\n{summary}\n\n"
-            f"No DevSim solve was run -- this only attaches the "
-            f"DopingProfile object and reports it in the process log.",
-        )
+        # Show the result where the user can actually see it: the
+        # existing P/N color overlay (_doping_color_segments) was
+        # already implemented correctly but invisible by default,
+        # because the layer selector defaults to "geometry". Switch to
+        # it automatically instead of requiring the user to know the
+        # selector exists.
+        self.viewer_layer_var.set("doping")
+        self.redraw()
+
+        if not silent:
+            messagebox.showinfo(
+                "Doping",
+                f"Doping profile attached ({kind}).\n\n{summary}\n\n"
+                f"No DevSim solve was run -- this only attaches the "
+                f"DopingProfile object and reports it in the process log.",
+            )
 
         return True
 
@@ -4166,7 +4358,7 @@ class TCADApplication(tk.Tk):
                 "Re-applying the same doping to the current geometry before "
                 "measuring.\n"
             )
-            if not self.run_doping():
+            if not self.run_doping(silent=True):
                 return
             doped_result = self.last_doped_result
 
@@ -4432,6 +4624,40 @@ class TCADApplication(tk.Tk):
         "W", "TiN", "Cu", "Metal", "Ta", "Ti",
     ]
 
+    #: The material tag lithographic PHOTORESIST is represented as in
+    #: real ViennaPS geometry -- deliberately NOT "Mask". LOCOS's own
+    #: hard mask, and any other permanent mask, keeps using "Mask"
+    #: unchanged (see run_oxidation's `is_locos` branch, which sets
+    #: mask_material="Mask" explicitly AFTER _mask_recipe_keys() runs).
+    #:
+    #: Root cause this exists to fix, measured directly against real
+    #: ViennaPS 4.6.2 (see docs/investigation_log.md, "PR Strip removes
+    #: nothing"): resist and LOCOS's hard mask both used to be tagged
+    #: Material.Mask, so PR STRIP had no way to remove ONLY the resist
+    #: without also risking a permanent hard mask, and settled for
+    #: removing neither (state-flags only). "PHS" (polyhydroxystyrene,
+    #: a real photoresist base polymer -- confirmed present in ViennaPS
+    #: 4.6.2's own Material enum) was chosen over the more obvious
+    #: "Polymer" because Polymer is NOT free: Bosch DRIE
+    #: (bosch_drie.py) and Fluorocarbon etching (fluorocarbon.py) both
+    #: already use Material.Polymer for their OWN passivation chemistry
+    #: -- tagging resist as Polymer would silently collide with those
+    #: models' own bookkeeping. Confirmed PHS is used nowhere else in
+    #: this codebase before adopting it here.
+    _RESIST_MATERIAL = "PHS"
+
+    #: Deposition/Metallization "mode" toggle labels -- see
+    #: tcad/process/deposition/isotropic.py's own comment for why a
+    #: SEPARATE recipe key (deposit_exclude_material) was needed rather
+    #: than reusing mask_material for this. Blanket is the default for
+    #: both panels: it matches the physically common case (a film that
+    #: is later patterned by a SEPARATE etch, not one that already
+    #: excludes the mask during growth) and, for Metallization
+    #: specifically, matches its own existing help text's claim of
+    #: lift-off geometry.
+    _DEPOSITION_MODE_BLANKET = "Blanket (deposits over mask)"
+    _DEPOSITION_MODE_SELECTIVE = "Selective (masked regions excluded)"
+
     def _material_field(self, parent, label, default):
         """Same layout as _field(), but a readonly material combobox
         instead of a free-text numeric entry -- feeds the recipe's
@@ -4601,6 +4827,10 @@ class TCADApplication(tk.Tk):
                     self.wafer.mask_openings_um, self.wafer.width_um
                 )
             ],
+            # Resist, not a hard mask -- see _RESIST_MATERIAL. LOCOS's
+            # own branch (run_oxidation) overwrites this back to "Mask"
+            # for its real hard mask, so this default is safe for it.
+            "mask_material": self._RESIST_MATERIAL,
         }
 
     def _mask_recipe_keys_for_current_step(self):
@@ -4667,8 +4897,9 @@ class TCADApplication(tk.Tk):
                 "mask_left_um": self.wafer.mask_left_um,
                 "mask_right_um": self.wafer.mask_right_um,
                 "mask_spans_um": spans,
+                "mask_material": self._RESIST_MATERIAL,
             }
-        return {"remask_spans_um": spans}
+        return {"remask_spans_um": spans, "mask_material": self._RESIST_MATERIAL}
 
     def _note_if_blanket_resist(self, action: str) -> None:
         """Record — never block — that a step will be masked everywhere.
@@ -4940,6 +5171,15 @@ class TCADApplication(tk.Tk):
             self.redraw()
             return
 
+        # If resist ever became real geometry (some real step ran since
+        # it was coated -- see _RESIST_MATERIAL), remove it from the
+        # live domain too, not just the state flags below. Only PHS
+        # (resist) is targeted; LOCOS's own hard mask stays "Mask" and
+        # is never touched by this.
+        if self.last_domain_state and Path(self.last_domain_state).exists():
+            if not self._strip_resist_from_geometry():
+                return
+
         self.wafer.pr_present = False
         self.wafer.developed = False
         self.wafer.stripped = True
@@ -4948,11 +5188,8 @@ class TCADApplication(tk.Tk):
         self._mark_stage_done(7)
         self._log(
             "\nSTEP: PR STRIP\n"
-            "Resist removed from the process state, so no further step "
-            "is masked by it.\n"
-            "NOTE: resist ALREADY built into a previous step's geometry "
-            "stays in that mesh -- stripping it out of the exported "
-            "geometry is not implemented yet."
+            "Resist removed from the process state and, where it had "
+            "become real geometry, from the wafer itself.\n"
         )
         self._update_process_buttons()
         self.redraw()
@@ -5083,7 +5320,6 @@ class TCADApplication(tk.Tk):
                         -abs(float(
                             self.directional_rate_var.get()
                         )),
-                    "mask_material": "Mask",
                 })
 
             elif model_key == "isotropic":
@@ -5093,7 +5329,6 @@ class TCADApplication(tk.Tk):
                         -abs(float(
                             self.isotropic_rate_var.get()
                         )),
-                    "mask_material": "Mask",
                 })
 
             elif model_key == "sf6o2":
@@ -5276,6 +5511,28 @@ class TCADApplication(tk.Tk):
     # DRAW
     # --------------------------------------------------------
 
+    def _quantized_depth_budget(self, key, depth_um):
+        """Monotonically-non-decreasing, coarsely-quantized version of
+        a real mesh depth, used ONLY to pick the render scale.
+
+        `key` is "above" or "below" (self._viewer_depth_budget_um,
+        reset on NEW WAFER). The stored budget only grows, and only
+        when the real depth exceeds it by more than 5% -- and then it
+        grows with 20% headroom, not to the exact new depth -- so
+        small real fluctuations (sub-percent, or a one-off single-digit
+        percent growth) reuse the existing scale instead of triggering
+        a redraw-to-redraw rescale. A genuinely large growth still
+        rescales (correctly -- the drawing must compress to keep
+        fitting), just in coarse, infrequent steps instead of
+        continuously drifting. Always returns >= depth_um, so the
+        canvas can never overflow.
+        """
+        budget = self._viewer_depth_budget_um.get(key, 0.0)
+        if depth_um > budget * 1.05:
+            budget = depth_um * 1.2
+            self._viewer_depth_budget_um[key] = budget
+        return max(budget, depth_um)
+
     def _draw_real_mesh_result(self, canvas, x0, x1, surface_y, bottom_y, mesh_path=None):
         """Draw a real ViennaPS mesh (.vtu volume mesh) instead of the
         placeholder rectangle in redraw(). Returns True on success;
@@ -5351,6 +5608,21 @@ class TCADApplication(tk.Tk):
             depth_above = max(0.0, y_max)
             available_below = max(1.0, bottom_y - surface_y - 10)
             available_above = max(1.0, surface_y - 40)
+            # Use a QUANTIZED depth budget, not the raw mesh depth, so
+            # a real but tiny growth (this project measured SiO2
+            # thickness changing by ~0.003um -- numerical noise -- while
+            # y_max still crept up across a 40x deposition-time
+            # increase) doesn't silently rescale the WHOLE drawing on
+            # every redraw. A single shared y_scale maps both the
+            # growing top layer and the unchanged lower layers, so any
+            # rescale visually compresses layers that did not change --
+            # reading as "the substrate eroded" even though the raw
+            # mesh, checked directly, shows it did not (see
+            # docs/investigation_log.md, "Deposition: renderer y-scale
+            # artifact"). The physics/mesh are untouched; only which
+            # SCALE the renderer picks changes.
+            depth_below = self._quantized_depth_budget("below", depth_below)
+            depth_above = self._quantized_depth_budget("above", depth_above)
             y_scale = x_scale
             if depth_below > 1e-9:
                 y_scale = min(y_scale, available_below / depth_below)
@@ -6330,6 +6602,7 @@ class TCADApplication(tk.Tk):
         self.recipe = BoschRecipe()
         self.last_doped_result = None
         self.last_final_mesh = None
+        self._viewer_depth_budget_um = {}
         self.history = []
         self.process_stage = "wafer"
 

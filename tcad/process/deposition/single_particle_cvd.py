@@ -57,8 +57,14 @@ class SingleParticleCVDDeposition(ProcessStep):
         }
         if "source_exponent" in recipe:
             model_kwargs["sourceExponent"] = recipe["source_exponent"]
-        if "mask_material" in recipe:
-            model_kwargs["maskMaterial"] = getattr(module.Material, recipe["mask_material"])
+        # See isotropic.py's matching comment: "deposit_exclude_material"
+        # (user-chosen growth exclusion) is deliberately distinct from
+        # "mask_material" (unconditional mask/resist geometry tagging,
+        # set by prepare_domain() on every recipe that has a mask).
+        if "deposit_exclude_material" in recipe:
+            model_kwargs["maskMaterial"] = getattr(
+                module.Material, recipe["deposit_exclude_material"]
+            )
 
         model = module.SingleParticleProcess(**model_kwargs)
 

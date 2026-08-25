@@ -135,7 +135,12 @@ def main():
 
         try:
             app.dope_uniform_region_var.set("Si")
-            app.dope_uniform_conc_var.set("1e17")
+            # Donor/acceptor replaced the single net-concentration field
+            # this session (see CLAUDE.md's Doping fix) -- net = 1e17,
+            # same value this test always used; only the field names
+            # that carry it changed.
+            app.dope_uniform_donor_var.set("1e17")
+            app.dope_uniform_acceptor_var.set("0")
 
             # (1) run_doping()'s bool-return contract -- the one site
             # the finding calls out by name: a lost trailing

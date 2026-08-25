@@ -103,7 +103,17 @@ def _deposit(remask_spans, material="Si3N4", fresh_spans=None):
     recipe = {
         "_process_category": "deposition", "_process_model_key": "isotropic",
         **BASE, "rate": 0.05, "deposition_time_s": 0.4,
-        "mask_material": "Mask", "material": material,
+        # "mask_material" only tags inserted mask geometry
+        # (prepare_domain()); it no longer also switches deposition to
+        # selective (see tcad/process/deposition/isotropic.py's own
+        # comment on "deposit_exclude_material" -- that key used to be
+        # the same string, which meant ANY recipe that had a mask at
+        # all made deposition unconditionally selective, contradicting
+        # this project's own GUI toggle for blanket vs. selective).
+        # Both are set here because this helper's whole point (rules
+        # 2/3 below) is exercising the selective case explicitly.
+        "mask_material": "Mask", "deposit_exclude_material": "Mask",
+        "material": material,
     }
     if fresh_spans is not None:
         recipe["mask_spans_um"] = fresh_spans
