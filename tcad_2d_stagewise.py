@@ -1272,6 +1272,8 @@ class TCADApplication(tk.Tk):
         # continues from here instead of redoing/discarding them.
         self.completed_steps = all_steps
         self.last_domain_state = result.get("domain_state")
+        self.last_physics_status = result.get("physics_status")
+        self._log_physics_status(result)
         # One mesh path per step in self.completed_steps, same order --
         # lets the Process Flow Timeline show any step's own real
         # geometry on click (see _on_timeline_step_click), not only the
