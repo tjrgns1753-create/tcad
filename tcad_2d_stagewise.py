@@ -388,6 +388,15 @@ class TCADApplication(tk.Tk):
         # of the placeholder rectangle. None until an etch succeeds.
         self.last_final_mesh = None
 
+        # True from the moment a litho state changes (PR COAT / MASK
+        # ALIGNMENT / EXPOSURE / DEVELOP / PR STRIP) until the next
+        # REAL process step produces a mesh that reflects it. Litho
+        # methods are state-only (no ViennaPS call), so "a real mesh
+        # already exists" does NOT mean it shows the CURRENT litho
+        # state -- see docs/investigation_log.md, "Mask Alignment/
+        # Exposure placeholder disappears once any real mesh exists".
+        self._litho_pending_since_last_mesh = False
+
         # Vertical view budget for _draw_real_mesh_result, keyed
         # "above"/"below" -- see _quantized_depth_budget()'s own
         # docstring for why this exists (renderer-only fix for the
@@ -1025,6 +1034,7 @@ class TCADApplication(tk.Tk):
         "TiN": "#8B6BC9",
         "W": "#D6A23D",
         "Cu": "#C0632E",
+        "PHS": "#e8a0bd",         # photoresist -- same pink as the litho placeholder, see _RESIST_MATERIAL
     }
 
     # --------------------------------------------------------
@@ -1297,6 +1307,7 @@ class TCADApplication(tk.Tk):
             return
 
         self.last_final_mesh = result.get("final_mesh")
+        self._litho_pending_since_last_mesh = False
         self.wafer.processed = True
         # `etched` means "this wafer has actually been etched" -- it
         # gates the trench-opening placeholder in redraw(). Setting it
@@ -2333,6 +2344,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "oxidized"
         self.last_final_mesh = result.get("final_mesh")
+        self._litho_pending_since_last_mesh = False
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -2882,6 +2894,7 @@ class TCADApplication(tk.Tk):
             return False
 
         self.last_final_mesh = result.get("final_mesh")
+        self._litho_pending_since_last_mesh = False
         self.last_domain_state = result.get("domain_state")
         self.wafer.processed = True
         self.redraw()
@@ -2945,6 +2958,7 @@ class TCADApplication(tk.Tk):
             return False
 
         self.last_final_mesh = result.get("final_mesh")
+        self._litho_pending_since_last_mesh = False
         self.last_domain_state = result.get("domain_state")
         return True
 
@@ -3007,6 +3021,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = process_stage
         self.last_final_mesh = result.get("final_mesh")
+        self._litho_pending_since_last_mesh = False
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -3305,6 +3320,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "deposited"
         self.last_final_mesh = result.get("final_mesh")
+        self._litho_pending_since_last_mesh = False
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -3638,6 +3654,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "gate_stack"
         self.last_final_mesh = result.get("final_mesh")
+        self._litho_pending_since_last_mesh = False
 
         # Gate stack is standalone/terminal (see the module docstring in
         # tcad/process/geometry/gate_stack.py -- it refuses
@@ -5115,6 +5132,7 @@ class TCADApplication(tk.Tk):
             "DEVELOP is what opens it)."
         )
         self._update_process_buttons()
+        self._litho_pending_since_last_mesh = True
         self.redraw()
 
     def process_mask_alignment(self):
@@ -5134,6 +5152,7 @@ class TCADApplication(tk.Tk):
             "Mask is process input; wafer geometry unchanged."
         )
         self._update_process_buttons()
+        self._litho_pending_since_last_mesh = True
         self.redraw()
 
     def process_exposure(self):
@@ -5161,6 +5180,7 @@ class TCADApplication(tk.Tk):
             "Latent image only; resist geometry unchanged until develop."
         )
         self._update_process_buttons()
+        self._litho_pending_since_last_mesh = True
         self.redraw()
 
     def process_develop(self):
@@ -5185,6 +5205,7 @@ class TCADApplication(tk.Tk):
             "Developed PR opening is now the etch mask."
         )
         self._update_process_buttons()
+        self._litho_pending_since_last_mesh = True
         self.redraw()
 
     def process_pr_strip(self):
@@ -5491,6 +5512,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "etched"
         self.last_final_mesh = result.get("final_mesh")
+        self._litho_pending_since_last_mesh = False
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -6110,6 +6132,7 @@ class TCADApplication(tk.Tk):
             self.wafer.processed
             and display_mesh
             and Path(display_mesh).exists()
+            and not self._litho_pending_since_last_mesh
         )
 
         if not real_mesh_available:
@@ -6678,6 +6701,7 @@ class TCADApplication(tk.Tk):
         self.recipe = BoschRecipe()
         self.last_doped_result = None
         self.last_final_mesh = None
+        self._litho_pending_since_last_mesh = False
         self._viewer_depth_budget_um = {}
         self.history = []
         self.process_stage = "wafer"
