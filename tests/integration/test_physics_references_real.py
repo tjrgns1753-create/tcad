@@ -123,6 +123,14 @@ def test_t3b_transmission_only():
         f"value is not the value the backend applied")
     print(f"    rate 0 -> Si surface at {tops['Si']:+.4f} (unmoved)")
 
+    entries = result["physics_status"]["entries"]
+    si_entries = [e for e in entries if e["material"] == "Si"]
+    assert si_entries and si_entries[0]["value"] == 0.0, (
+        f"the resolver's OWN reported entry for Si must also read 0.0, "
+        f"not just the unmoved geometry: {entries}")
+    print(f"    resolver's own reported entry for Si: value="
+          f"{si_entries[0]['value']} (matches what was applied)")
+
 
 def main():
     test_t3a_stoichiometry()

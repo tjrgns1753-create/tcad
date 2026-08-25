@@ -288,6 +288,13 @@ def worker_main(config_file: str, result_file: str):
                 # subprocess boundary.
                 "physics_status": results[-1].physics_status,
                 "numerical_status": results[-1].numerical_status,
+                # Every step's own status, same order as step_meshes --
+                # results[-1] above only carries the LAST step's, so a
+                # non-final step's real status (e.g. an etch wired to
+                # the resolver, followed by a step that is not) would
+                # otherwise be silently dropped.
+                "step_physics_status": [r.physics_status for r in results],
+                "step_numerical_status": [r.numerical_status for r in results],
             }
         else:
             # Any registered category/model works here (Bosch included):
@@ -1274,6 +1281,20 @@ class TCADApplication(tk.Tk):
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
         self._log_physics_status(result)
+        # The above logs only the LAST step's status. A multi-step flow
+        # can have earlier steps with their own real status (e.g. an
+        # etch wired to the resolver, queued before a step that is not)
+        # -- log each step's own entry too, so nothing is silently lost.
+        step_physics = result.get("step_physics_status", [])
+        step_numerical = result.get("step_numerical_status", [])
+        for index, (physics, numerical) in enumerate(
+            zip(step_physics, step_numerical)
+        ):
+            if physics or numerical:
+                self._log(f"\n-- step {index + 1}/{len(all_steps)} --\n")
+                self._log_physics_status(
+                    {"physics_status": physics, "numerical_status": numerical}
+                )
         # One mesh path per step in self.completed_steps, same order --
         # lets the Process Flow Timeline show any step's own real
         # geometry on click (see _on_timeline_step_click), not only the
@@ -3295,13 +3316,19 @@ class TCADApplication(tk.Tk):
         """Gate stack is terminal and builds its own geometry from
         scratch, so nothing from the previous wafer may survive it.
 
-        last_domain_state is the one that was missed: it was added when
-        RUN clicks started resuming an accumulated .vpsd, and without
-        clearing it here the next RUN resumes the PRE-gate-stack wafer.
+        Four fields carry state across RUN clicks, and all four must be
+        cleared here: completed_steps/flow_step_meshes/last_domain_state
+        (added when RUN clicks started resuming an accumulated .vpsd —
+        without clearing last_domain_state the next RUN resumes the
+        PRE-gate-stack wafer) and last_physics_status, which was
+        overlooked in the same way — without clearing it, a status
+        panel or log read after a gate-stack build would still show the
+        PRE-gate-stack step's physics/numerical status.
         """
         self.completed_steps = []
         self.flow_step_meshes = []
         self.last_domain_state = None
+        self.last_physics_status = None
 
     def run_gate_stack(self):
 

@@ -17,7 +17,8 @@ from typing import Any, Mapping, Optional
 _NON_PHYSICAL_KEYS = frozenset({
     "_process_category", "_process_model_key", "chemistry", "material",
     "material_rates", "mask_spans_um", "remask_spans_um", "mask_left_um",
-    "mask_right_um",
+    "mask_right_um", "grid_delta_um", "x_extent_um", "y_extent_um",
+    "silicon_depth_um", "pr_thickness_um",
 })
 
 

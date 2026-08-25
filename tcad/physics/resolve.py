@@ -87,7 +87,20 @@ def resolve(intent: ProcessIntent, state: Any,
             notes=(f"no resolver mapping for category {intent.category!r}",),
         )
 
-    supplied_rates = dict((user_supplied or {}).get("material_rates") or {})
+    user_supplied = user_supplied or {}
+    supplied_rates = dict(user_supplied.get("material_rates") or {})
+    if not supplied_rates and "rate" in user_supplied:
+        # The GUI's actual etch/deposition shape: one blanket rate for
+        # everything exposed except the mask, which the model protects
+        # via its own maskMaterial= parameter rather than via a rate
+        # entry -- so the mask is deliberately excluded here, not
+        # silently given the same rate.
+        mask_material = user_supplied.get("mask_material")
+        supplied_rates = {
+            m: user_supplied["rate"]
+            for m in state.exposed_materials()
+            if m != mask_material
+        }
     rates: dict = {}
     entries = []
 
