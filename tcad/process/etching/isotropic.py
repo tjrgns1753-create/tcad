@@ -60,6 +60,27 @@ class IsotropicEtch(ProcessStep):
         # step is part of a process flow (see ProcessStep.prepare_domain).
         geometry = self.prepare_domain(recipe)
 
+        # Queried AFTER prepare_domain(): a remask inserts the resist
+        # level set, and the resist is part of the state physics must
+        # see. Once per step -- the domain is mutated in place, so a
+        # state held any longer would describe geometry that has since
+        # changed.
+        from tcad.physics.intent import intent_from
+        from tcad.physics.resolve import resolve
+        from tcad.physics.wafer_state import WaferState
+
+        state = WaferState.query(geometry)
+        # This step already knows its own category/model (the class
+        # attributes below) -- a hand-built recipe (every existing
+        # caller here) has no reason to repeat that bookkeeping, so it
+        # is filled in as a default rather than required from outside.
+        intent_recipe = {
+            "_process_category": self.category,
+            "_process_model_key": self.name,
+            **recipe,
+        }
+        resolved = resolve(intent_from(intent_recipe), state, user_supplied=recipe)
+
         if "material_rates" in recipe:
             # Per-material selectivity. Rates pass through UNCHANGED:
             # this overload's sign convention matches the single-rate
@@ -100,4 +121,6 @@ class IsotropicEtch(ProcessStep):
         return {
             "final_mesh": final_mesh_path,
             "snapshots": recorder.snapshots,
+            "physics_status": resolved.as_status_dict(),
+            "numerical_status": resolved.as_numerical_dict(),
         }
