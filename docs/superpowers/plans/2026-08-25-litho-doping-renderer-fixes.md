@@ -725,17 +725,36 @@ In `reset()` (NEW WAFER), alongside `self.last_final_mesh = None`:
 
 - [ ] **Step 2: Mark litho actions as pending**
 
-In each of `process_pr_coat`, `process_mask_alignment`, `process_exposure`, `process_develop`, `process_pr_strip`, add one line immediately before the trailing `self.redraw()` call:
+In `process_pr_coat`, `process_mask_alignment`, `process_exposure`, and `process_develop` (four methods, NOT `process_pr_strip` — see below), add one line immediately before the trailing `self.redraw()` call:
 
 ```python
         self._litho_pending_since_last_mesh = True
 ```
 
-(`process_exposure`'s no-resist early-return branch and `process_develop`'s/`process_pr_strip`'s no-resist early-return branches already `return` before reaching their own trailing `redraw()` — leave those unchanged; only add the line at each method's NORMAL, state-changing path, i.e. once per method, right before its own final `self.redraw()`.)
+(`process_exposure`'s no-resist early-return branch and `process_develop`'s no-resist early-return branch already `return` before reaching their own trailing `redraw()` — leave those unchanged; only add the line at each method's NORMAL, state-changing path, i.e. once per method, right before its own final `self.redraw()`.)
+
+**`process_pr_strip` is deliberately EXCLUDED from this step** — it is the
+one litho method that is NOT purely state-only. Read its current body
+before touching it: when `self.last_domain_state` exists, it calls
+`self._strip_resist_from_geometry()` BEFORE its own final `self.redraw()`
+— and that call, on success, is itself one of Step 3's 8
+real-mesh-producing sites, which already sets
+`self._litho_pending_since_last_mesh = False` because the strip's result
+genuinely IS a fresh, up-to-date mesh (real PHS geometry removal, not a
+state-only change). Adding `= True` right before `process_pr_strip`'s own
+trailing `redraw()` would immediately overwrite that correct `False` back
+to `True`, wrongly hiding the just-produced real mesh behind the flat
+Si-placeholder rectangle. In the branch where `self.last_domain_state`
+doesn't exist (no real mesh ever built), `real_mesh_available` is already
+`False` regardless of this flag's value (no mesh file exists to display),
+so the flag is inert there too — there is no code path in
+`process_pr_strip` where setting it would help, and one path where
+setting it would actively regress a fix Task 1-4 already shipped. Leave
+`process_pr_strip` untouched by this step entirely.
 
 - [ ] **Step 3: Clear the flag at every real-mesh-producing site**
 
-At each of the 8 locations found by `grep -n "self\.last_final_mesh = result.get(\"final_mesh\")" tcad_2d_stagewise.py` (lines 1299, 2335, 2884, 2947, 3009, 3307, 3640, 5466 as of this session — re-grep before editing since line numbers shift), add immediately below:
+At each of the 8 locations found by `grep -n "self\.last_final_mesh = result.get(\"final_mesh\")" tcad_2d_stagewise.py` (lines 1299, 2335, 2884, 2947, 3009, 3307, 3640, 5493 as of this session, one of which — around line 2947 — is inside `_strip_resist_from_geometry()` itself, the mechanism Step 2's note above depends on; re-grep before editing since line numbers shift), add immediately below:
 
 ```python
         self._litho_pending_since_last_mesh = False
