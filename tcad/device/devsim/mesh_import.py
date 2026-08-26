@@ -604,7 +604,7 @@ def derive_barrier_covered_windows(
     # Ground bucket_width_um in the actual mesh spacing, not domain extent.
     if bucket_width_um is None:
         spacing_um = _estimate_mesh_spacing_um(points, triangle_block.data)
-        bucket_width_um = spacing_um  # ponytail: buckets match mesh density; finer if needed
+        bucket_width_um = spacing_um if spacing_um > 0 else 0.01  # ponytail: buckets match mesh density; finer if needed
 
     n_buckets = max(1, int((axis_max - axis_min) / bucket_width_um) + 1)
 

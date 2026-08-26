@@ -56,6 +56,15 @@ def apply_uniform_doping(
     net_doping_cm3-only dict is a fallback for regions not covered by
     the donor/acceptor one, not a second independent source of truth).
     """
+    if (
+        doping_by_region_cm3 is None
+        and donor_by_region_cm3 is None
+        and acceptor_by_region_cm3 is None
+    ):
+        raise ValueError(
+            "apply_uniform_doping needs either doping_by_region_cm3 or "
+            "donor_by_region_cm3/acceptor_by_region_cm3"
+        )
     regions = [
         DopingRegion(region=name, net_doping_cm3=value)
         for name, value in (doping_by_region_cm3 or {}).items()
@@ -134,6 +143,15 @@ def apply_gaussian_implant_doping(
     when the donor/acceptor form is used, and is what every downstream
     consumer keeps reading.
     """
+    if (
+        peak_conc_cm3 is None
+        and donor_peak_conc_cm3 is None
+        and acceptor_peak_conc_cm3 is None
+    ):
+        raise ValueError(
+            "apply_gaussian_implant_doping needs either peak_conc_cm3 or "
+            "donor_peak_conc_cm3/acceptor_peak_conc_cm3"
+        )
     if donor_peak_conc_cm3 is not None or acceptor_peak_conc_cm3 is not None:
         donor = donor_peak_conc_cm3 or 0.0
         acceptor = acceptor_peak_conc_cm3 or 0.0

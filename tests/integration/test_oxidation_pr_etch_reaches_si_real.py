@@ -155,6 +155,42 @@ def main():
         combined = "".join(logged)
         assert "Si" in combined and "not yet reached" in combined, (
             f"insufficient-budget log must say Si was not reached: {combined!r}")
+
+        # --- Finding 1: run_etch()'s own "open windows" must come from
+        # the REAL current resist state (_resist_spans_um()), not from
+        # self.wafer.mask_openings_um (a parameter that always carries a
+        # value regardless of whether resist was ever developed). Coat
+        # resist WITHOUT developing it -- the whole wafer is blanket-
+        # covered, so nothing should be reported open, even though
+        # mask_openings_um still holds its GUI default (which would
+        # falsely suggest an opening at domain x=[-1.5, 1.5]).
+        ok = app._materialize_current_wafer()
+        assert ok, "materializing a real ViennaPS wafer failed"
+        app.process_pr_coat()
+        assert app.wafer.pr_present and not app.wafer.developed, (
+            "PR COAT alone must not also develop the resist")
+
+        captured_windows = {}
+        real_log_etch_summary = app._log_etch_material_summary
+
+        def spy_log_etch_summary(pre_mesh, post_mesh, open_windows_um):
+            captured_windows["windows"] = open_windows_um
+            return real_log_etch_summary(pre_mesh, post_mesh, open_windows_um)
+
+        app._log_etch_material_summary = spy_log_etch_summary
+        app.etch_model.set("Isotropic etch")
+        app.isotropic_rate_var.set(0.3)
+        app.etch_time_var.set(1.0)
+        app.run_etch()
+
+        assert captured_windows.get("windows") == [], (
+            f"a blanket (coated, not developed) resist must report NOTHING "
+            f"open, got {captured_windows.get('windows')!r} -- this must "
+            f"not be the stale mask_openings_um-derived default "
+            f"[[-1.5, 1.5]]")
+
+        print("Coated-not-developed etch correctly reports nothing open "
+              "(not the stale mask_openings_um default) -- Finding 1 fixed.")
     finally:
         app.destroy()
 

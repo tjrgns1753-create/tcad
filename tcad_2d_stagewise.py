@@ -4468,17 +4468,38 @@ class TCADApplication(tk.Tk):
             )
 
         exclude_windows = None
-        try:
-            exclude_windows = derive_barrier_covered_windows(
-                doped_result, doped_region=region,
-                barrier_material="SiO2", axis=axis,
-                min_barrier_thickness_um=float(self.dope_barrier_threshold_var.get()),
-            )
-        except Exception:
-            # Barrier detection is best-effort: if it fails (material
-            # absent, mesh unreadable), fall back to no exclusion --
-            # never let a diagnostic feature block the actual measurement.
-            exclude_windows = None
+        if kind != "implant_windows":
+            # implant_windows never reaches the apply_doping() call below
+            # that consumes exclude_windows (it routes through the robust
+            # solve path, which registers NetDoping itself) -- deriving
+            # barrier windows for it would be a wasted real mesh read.
+            try:
+                # Barrier stacking is always along y in this project's
+                # fixed 2D convention (x lateral, y depth/growth),
+                # regardless of which axis the user picked for the
+                # measurement CONTACTS -- so this must NOT reuse `axis`.
+                exclude_windows = derive_barrier_covered_windows(
+                    doped_result, doped_region=region,
+                    barrier_material="SiO2", axis="x",
+                    min_barrier_thickness_um=float(self.dope_barrier_threshold_var.get()),
+                )
+                if exclude_windows:
+                    total_excluded_um = sum(
+                        w["max_um"] - w["min_um"] for w in exclude_windows
+                    )
+                    self._log(
+                        f"\nSiO2 barrier exclusion: {len(exclude_windows)} "
+                        f"window(s) totaling {total_excluded_um:.4f}um excluded "
+                        f"from doping (min thickness "
+                        f"{float(self.dope_barrier_threshold_var.get()):.4f}um): "
+                        f"{exclude_windows}\n"
+                    )
+            except Exception as exc:
+                # Barrier detection is best-effort: if it fails (material
+                # absent, mesh unreadable), fall back to no exclusion --
+                # never let a diagnostic feature block the actual measurement.
+                exclude_windows = None
+                self._log(f"\n(Could not derive SiO2 barrier windows: {exc!r})\n")
 
         imported = None
 
@@ -4537,7 +4558,7 @@ class TCADApplication(tk.Tk):
                 apply_doping(
                     imported.device, doped_result.doping,
                     length_scale_to_cm=length_scale_to_cm,
-                    exclude_windows=exclude_windows, exclude_axis=axis,
+                    exclude_windows=exclude_windows, exclude_axis="x",
                 )
                 result = run_pn_junction_iv_sweep(
                     device=imported.device, region=region,
@@ -5617,13 +5638,17 @@ class TCADApplication(tk.Tk):
         # with no Material cell_data at all, so they cannot feed
         # _log_etch_material_summary()'s volume-mesh reader.
         pre_etch_mesh = self.last_final_mesh
+        resist_spans = self._resist_spans_um()
         self.last_final_mesh = result.get("final_mesh")
         self._litho_pending_since_last_mesh = False
         if pre_etch_mesh and result.get("final_mesh"):
-            half_width_um = self.wafer.width_um / 2.0
+            from tcad.physics.doping import implant_windows_from_mask_spans
             open_windows_domain_um = [
-                [lo - half_width_um, hi - half_width_um]
-                for lo, hi in self.wafer.mask_openings_um
+                [w["min_um"], w["max_um"]]
+                for w in implant_windows_from_mask_spans(
+                    resist_spans if resist_spans is not None else [],
+                    self.wafer.width_um, conc_cm3=0.0,
+                )
             ]
             self._log_etch_material_summary(
                 pre_etch_mesh, result["final_mesh"], open_windows_domain_um,

@@ -329,10 +329,14 @@ def main():
 
         doping_mapping_module.apply_doping = spy_apply_doping
         calls.clear()
+        logged = []
+        real_log = app._log
+        app._log = lambda msg: (logged.append(msg), real_log(msg))[0]
         try:
             app.run_measurement()
         finally:
             doping_mapping_module.apply_doping = real_apply_doping
+            app._log = real_log
 
         errors = [c for c in calls if c[0] == "showerror"]
         assert not errors, f"MEASURE reported an error: {errors}"
@@ -340,6 +344,12 @@ def main():
             f"run_measurement() must derive real barrier-covered windows "
             f"and pass them into apply_doping(), got "
             f"{captured.get('exclude_windows')!r}")
+
+        # Finding 2: exclusion must be user-visible, not silent.
+        combined_log = "".join(logged)
+        assert "SiO2 barrier exclusion" in combined_log, (
+            f"barrier exclusion must be logged so the user can see it "
+            f"happened, got log: {combined_log!r}")
 
         # run_measurement() imports with length_scale_to_cm=1.0e-4 (real
         # um -> cm physical scaling), so DevSim's own "x" node model is
@@ -381,6 +391,54 @@ def main():
               f"(max |v|={max(abs(v) for v in covered_vals):.3e}) under the "
               f"barrier and intact (min |v|="
               f"{min(abs(v) for v in open_vals):.3e}) in the open window.")
+
+        # ------------------------------------------------------------
+        # Finding 3: the barrier's own stacking direction (this
+        # project's fixed 2D convention: x lateral, y depth/growth)
+        # must NOT be confused with whichever axis the user picked for
+        # the MEASUREMENT CONTACTS. Switch the contact axis to "y" and
+        # confirm derive_barrier_covered_windows() is STILL called with
+        # axis="x" (hardcoded), not "y" (the contact axis) -- and that
+        # it still derives the same real barrier windows either way,
+        # proving the two are decoupled.
+        #
+        # This device's own Si top surface is mostly covered by SiO2
+        # (only the litho-opened strip is exposed), so deriving TWO
+        # real y-axis CONTACTS on it is a separate, physically distinct
+        # limitation unrelated to this fix -- the exclude_windows
+        # derivation itself runs, and is asserted on, before
+        # import_process_result()'s contact search even happens, so
+        # that unrelated limitation does not need to be worked around
+        # here.
+        import tcad.device.devsim.mesh_import as mesh_import_module
+        real_derive_barrier_windows = mesh_import_module.derive_barrier_covered_windows
+        captured_axis = {}
+
+        def spy_derive_barrier_windows(*args, **kwargs):
+            captured_axis["axis"] = kwargs.get("axis")
+            return real_derive_barrier_windows(*args, **kwargs)
+
+        mesh_import_module.derive_barrier_covered_windows = spy_derive_barrier_windows
+        app.meas_axis_var.set("y")
+        app.meas_source_pin.set("max")
+        app.meas_voltage_var.set(0.0)
+        calls.clear()
+        try:
+            app.run_measurement()
+        finally:
+            mesh_import_module.derive_barrier_covered_windows = real_derive_barrier_windows
+
+        assert captured_axis.get("axis") == "x", (
+            f"derive_barrier_covered_windows() must always be called with "
+            f"axis='x' (the barrier's own fixed stacking convention), "
+            f"never the user-editable measurement-contact axis, got "
+            f"{captured_axis.get('axis')!r}")
+
+        print("Barrier axis independence confirmed -> switching the "
+              "MEASUREMENT CONTACT axis to 'y' left "
+              "derive_barrier_covered_windows() called with axis='x', "
+              "proving the barrier's own x/y stacking convention is no "
+              "longer confused with the user-editable contact axis.")
     finally:
         app.destroy()
 
