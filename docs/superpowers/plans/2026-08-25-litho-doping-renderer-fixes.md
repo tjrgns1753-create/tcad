@@ -1076,17 +1076,39 @@ Add near `run_etch()` (directly above it):
 
 - [ ] **Step 2: Wire it into `run_etch()`'s success path**
 
-In `run_etch()`, after `result = json.loads(result_file.read_text(encoding="utf-8"))` and the existing success checks, right before (or right after) the `self.last_final_mesh = result.get("final_mesh")` line (Task 2's line 5466 area), add:
+In `run_etch()`, after `result = json.loads(result_file.read_text(encoding="utf-8"))` and the existing success checks, right after the `self.last_final_mesh = result.get("final_mesh")` / `self._litho_pending_since_last_mesh = False` lines (Task 5's addition — re-grep `self\.last_final_mesh = result\.get\("final_mesh"\)` to find the current line inside `run_etch()` specifically, since all 8 sites share this exact text), add:
 
 ```python
         pre_snapshots = result.get("snapshots") or []
         if pre_snapshots and result.get("final_mesh"):
+            half_width_um = self.wafer.width_um / 2.0
+            open_windows_domain_um = [
+                [lo - half_width_um, hi - half_width_um]
+                for lo, hi in self.wafer.mask_openings_um
+            ]
             self._log_etch_material_summary(
-                pre_snapshots[0], result["final_mesh"], self.wafer.mask_openings_um,
+                pre_snapshots[0], result["final_mesh"], open_windows_domain_um,
             )
 ```
 
-Place this call AFTER `self._litho_pending_since_last_mesh = False` (Task 5 Step 3's new line) so both additions coexist cleanly at this site.
+**Coordinate conversion is required and is NOT optional polish:**
+`self.wafer.mask_openings_um` is in WAFER coordinates (`0..width_um` —
+confirmed directly in `tcad/core/models.py`'s own field comment: "Every
+OPEN window in the photomask, in the same 0..width_um coordinates as
+mask_left_um/mask_right_um"), but the real exported mesh's own point
+x-coordinates are DOMAIN-CENTERED (e.g. a 10um-wide wafer meshes as
+x=-5..+5 — confirmed throughout this project, see
+docs/investigation_log.md's "PN diode I-V looked broken... Wafer vs.
+domain coordinates" for the exact same class of bug this fixes
+pre-emptively). Passing wafer-coordinate windows directly into a
+function that reads real mesh point x-coordinates would silently
+compare the wrong x-ranges. Verified against the GUI's own default
+(`mask_openings_um=[[3.5, 6.5]]`, `width_um=10.0` ->
+`half_width_um=5.0` -> converted window `[-1.5, 1.5]`) — this is
+exactly the domain-centered open-window range this project's own
+earlier ad-hoc investigation of this exact bug used
+(`OPEN_WINDOW = [-1.5, 1.5]` in the scratch reproduction that first
+found the etch-budget issue).
 
 - [ ] **Step 3: Write the test — verifies the LOG, not a physics change**
 
@@ -1125,6 +1147,21 @@ OPEN_WINDOW = [-1.5, 1.5]
 
 
 def _oxidize():
+    """Runs a real oxidation and returns its result dict PLUS a real
+    `.vpsd` domain_state -- needed because this test reuses the SAME
+    oxidized domain independently for two separate etch scenarios
+    (insufficient vs. sufficient budget), so each must load its OWN
+    fresh copy rather than share one mutable in-memory Domain object.
+
+    Raw ProcessStep.run() (unlike the GUI's worker_main() subprocess
+    wrapper) does NOT return a "domain_state" key -- this is the exact
+    bug Task 1's implementer found and fixed by switching to
+    run_flow() for a one-shot chain; here the domain needs to be
+    reused TWICE independently afterward, so the fix is instead to
+    capture the live Domain object via a prepare_domain() wrapper (the
+    same technique this project's own scratch investigations used) and
+    save it explicitly.
+    """
     oxidation = {
         "_process_category": "oxidation", "_process_model_key": "thermal",
         **BASE, "mask_spans_um": [],
@@ -1132,7 +1169,21 @@ def _oxidize():
     }
     tmp = tempfile.mkdtemp(prefix="etchsi_ox_")
     ox_step = registry.get("oxidation", "thermal")()
+
+    captured = {}
+    orig_prepare_domain = ox_step.prepare_domain
+
+    def capture_prepare_domain(recipe):
+        domain = orig_prepare_domain(recipe)
+        captured["domain"] = domain
+        return domain
+
+    ox_step.prepare_domain = capture_prepare_domain
     result = ox_step.run(oxidation, tmp)
+
+    domain_state_path = str(Path(tmp) / "after_oxidation.vpsd")
+    session.save_domain_state(captured["domain"], domain_state_path)
+    result["domain_state"] = domain_state_path
     return result
 
 
