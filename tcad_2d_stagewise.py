@@ -5246,6 +5246,75 @@ class TCADApplication(tk.Tk):
     # ETCH OPERATION
     # --------------------------------------------------------
 
+    def _log_etch_material_summary(self, pre_mesh_path, post_mesh_path, open_windows_um):
+        """Log, per material, how much moved in the OPEN (unmasked)
+        window(s) between two real exported meshes -- so the user can
+        see whether an etch reached a given material without having to
+        infer it from the render alone. Never changes what the etch
+        DID (see docs/investigation_log.md, "Etch is correct, GUI
+        gives no feedback about whether the target material was
+        reached") -- this is diagnostic only.
+        """
+        if not open_windows_um:
+            self._log("\n(No open window -- resist fully covers the wafer, nothing exposed to etch.)\n")
+            return
+        try:
+            import meshio
+
+            def read(path):
+                m = meshio.read(path)
+                tri = next(c for c in m.cells if c.type == "triangle")
+                tags = m.cell_data["Material"][m.cells.index(tri)]
+                names = {}
+                for attr in dir(viennaps_session.require_viennaps().Material):
+                    if attr.startswith("_"):
+                        continue
+                    v = getattr(viennaps_session.require_viennaps().Material, attr)
+                    if isinstance(v, viennaps_session.require_viennaps().Material):
+                        names[int(v)] = attr
+                pts = m.points
+                by_mat = {}
+                for t, tag in zip(tri.data, tags):
+                    by_mat.setdefault(names.get(int(tag), str(tag)), []).append(t)
+                return pts, by_mat
+
+            def top_in_window(pts, by_mat, material, lo, hi):
+                node_idxs = set()
+                for t in by_mat.get(material, []):
+                    node_idxs.update(t)
+                ys = [pts[n][1] for n in node_idxs if lo <= pts[n][0] <= hi]
+                return max(ys) if ys else None
+
+            pts_pre, by_mat_pre = read(pre_mesh_path)
+            pts_post, by_mat_post = read(post_mesh_path)
+            materials = sorted(set(by_mat_pre) | set(by_mat_post))
+            noise_floor_um = 0.001
+
+            lines = ["\nETCH RESULT BY MATERIAL (open window only):"]
+            for lo, hi in open_windows_um:
+                lines.append(f"  Window x=[{lo:.3f}, {hi:.3f}]:")
+                for material in materials:
+                    before = top_in_window(pts_pre, by_mat_pre, material, lo, hi)
+                    after = top_in_window(pts_post, by_mat_post, material, lo, hi)
+                    if before is None and after is None:
+                        continue
+                    if after is None:
+                        lines.append(f"    {material}: fully cleared (was present, now gone here)")
+                    elif before is None:
+                        lines.append(f"    {material}: newly exposed here (top={after:.4f})")
+                    else:
+                        moved = before - after
+                        if abs(moved) < noise_floor_um:
+                            status = "unchanged (not yet reached)" if material == "Si" else "unchanged"
+                            lines.append(f"    {material}: {status} (top={after:.4f})")
+                        else:
+                            lines.append(f"    {material}: etched {moved:.4f}um (top {before:.4f} -> {after:.4f})")
+            self._log("\n".join(lines) + "\n")
+        except Exception as exc:
+            # Diagnostic-only: never let this block or corrupt a real
+            # etch result.
+            self._log(f"\n(Could not compute the etch material summary: {exc!r})\n")
+
     def run_etch(self):
 
         # No litho-first gate -- see run_oxidation()'s matching comment.
@@ -5511,8 +5580,25 @@ class TCADApplication(tk.Tk):
         self.wafer.etched = True
         self.wafer.processed = True
         self.process_stage = "etched"
+        # Captured BEFORE being overwritten below: this is the real,
+        # per-material-tagged volume mesh the wafer had going INTO this
+        # etch (the previous step's export, or None on a fresh wafer's
+        # first-ever step). `result["snapshots"]` is deliberately NOT
+        # used here -- those are raw saveSurfaceMesh() .vtp snapshots
+        # with no Material cell_data at all, so they cannot feed
+        # _log_etch_material_summary()'s volume-mesh reader.
+        pre_etch_mesh = self.last_final_mesh
         self.last_final_mesh = result.get("final_mesh")
         self._litho_pending_since_last_mesh = False
+        if pre_etch_mesh and result.get("final_mesh"):
+            half_width_um = self.wafer.width_um / 2.0
+            open_windows_domain_um = [
+                [lo - half_width_um, hi - half_width_um]
+                for lo, hi in self.wafer.mask_openings_um
+            ]
+            self._log_etch_material_summary(
+                pre_etch_mesh, result["final_mesh"], open_windows_domain_um,
+            )
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
