@@ -149,9 +149,29 @@ flows correctly inherit previous geometry); ProcessResult → DevSim
 verified (oxidation → mesh, oxidation → doping → DevSim, oxidation →
 MOS C-V, oxidation → etch → doping → DevSim).
 
+### Litho/doping/renderer fixes (SDD, 8 tasks / 4 task groups)
+Four fixes shipped via subagent-driven-development, each independently
+task-reviewed plus a final whole-branch review (3 Important + 4 Minor
+findings, all fixed in one wave): (1) SiO2 no longer silently fails to
+block doping — `derive_barrier_covered_windows()` reads the real mesh
+and excludes covered windows from `apply_doping()`'s NetDoping
+equation; (2) Mask Alignment/Exposure/PR display no longer vanishes
+after an unrelated earlier real process — `_litho_pending_since_last_
+mesh` tracks whether a real mesh actually reflects the current resist
+state; (3) Oxidation→PR→Etch "Si doesn't get etched" is no longer
+mis-diagnosed as a physics bug — `_log_etch_material_summary()` logs
+real per-material before/after progress in the open window (diagnostic
+only, no physics change); (4) all 4 doping kinds now take independent
+donor+acceptor input (`DopingRegion` gained donor/acceptor peak-conc
+and label-only species fields; `apply_step_junction_doping` untouched
+by design). Commits `06720c4..1e043e2` (17 commits). Verified via a
+live-monitored full regression run at HEAD: 57 passed / 3 failed, same
+3 pre-existing DevSim-convergence failures as before this plan, zero
+new failures.
+
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
-Current regression: `tests/run_regression.py` → **49 passed, 3 failed,
+Current regression: `tests/run_regression.py` → **57 passed, 3 failed,
 0 skipped**, measured on Windows with real ViennaPS 4.6.2 + DevSim.
 
 The 3 failures are pre-existing and were confirmed to fail at a clean
@@ -864,8 +884,12 @@ the Windows cp949 console, which truncates the whole run — use
    which uses the identical material tag.
 
    **Doping**, five items: (1) no independent donor+acceptor in the same
-   region for any of the 4 doping kinds; (2) no dopant-species field
-   anywhere; (3) **likely root cause of the "DevSim did not run" report**
+   region for any of the 4 doping kinds — DONE, see Completed, "litho/
+   doping/renderer plan"; (2) no dopant-species field anywhere — a
+   `donor_species`/`acceptor_species` field now exists on `DopingRegion`
+   and is logged, but is label-only metadata, not yet consumed by the
+   DevSim NetDoping equation; (3) **likely root cause of the "DevSim did
+   not run" report**
    — `run_measurement()`'s stale-doping re-attachment calls
    `run_doping()` internally, which pops up "No DevSim solve was run"
    in the middle of a MEASURE click, right before DevSim actually runs;
@@ -1234,13 +1258,12 @@ evidence before touching any code.
    tell resist-derived `Mask` apart from LOCOS's own hard mask — see
    `docs/investigation_log.md`, "PR Strip removes nothing".
 
-2. **Doping ↔ WaferState.** Support independent donor+acceptor in the
-   same region, and wire doping into `WaferState` so a later process
-   step's physics resolution can see it — see
-   `docs/investigation_log.md`, "Doping: five confirmed gaps". The "No
-   DevSim solve was run" popup firing mid-MEASURE and the
-   invisible-by-default P/N color overlay are smaller fixes within the
-   same item.
+2. **Doping ↔ WaferState.** Independent donor+acceptor input for all 4
+   doping kinds is DONE (see Completed, "litho/doping/renderer plan").
+   Still open: wire doping into `WaferState` so a later process step's
+   physics resolution can see it, the "No DevSim solve was run" popup
+   firing mid-MEASURE, and the invisible-by-default P/N color overlay —
+   see `docs/investigation_log.md`, "Doping: five confirmed gaps".
 
 3. **Deposition renderer + mask policy.** Fix the renderer's `y_scale`
    so unchanged lower layers stop looking eroded as the top grows, and

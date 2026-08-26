@@ -1,5 +1,17 @@
 # Litho/Doping/Renderer Fixes Implementation Plan
 
+> **STATUS: COMPLETE.** All 8 tasks (4 task groups) implemented, each
+> independently task-reviewed, plus a final whole-branch review (3
+> Important + 4 Minor findings, all fixed in one wave, re-review clean).
+> Commit range `06720c4..1e043e2` (17 commits, fix wave is `1e043e2`).
+> Final regression at HEAD: 57 passed / 3 failed, 0 skipped — the same
+> 3 pre-existing failures as the baseline below, zero new failures. Full
+> task-by-task and finding-by-finding record is in the SDD ledger at
+> `.superpowers/sdd/2026-08-25-litho-doping-renderer-fixes/progress.md`;
+> per-task briefs/reports and review diffs are in the same directory.
+> Per-step checkboxes below were not toggled individually — the ledger
+> is this plan's source of truth for completion, not this file.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fix four independently-verified GUI/physics gaps in the TCAD project — SiO2 doesn't block doping, litho placeholder visuals disappear once any real mesh exists, Oxidation→PR→Etch gives no feedback about whether the target material was reached, and doping only accepts a single net concentration instead of independent donor/acceptor — without touching the WaferState → resolve() → ResolvedRecipe → ViennaPS architecture.
