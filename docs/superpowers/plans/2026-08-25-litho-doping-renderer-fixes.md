@@ -1344,8 +1344,13 @@ from tcad.physics.doping import (
 
 
 def _base_result():
+    # ProcessResult's real constructor fields (verified directly against
+    # tcad/mesh/interface.py -- an earlier draft of this test used
+    # final_mesh/snapshots, which are ProcessStep.run()'s raw dict keys,
+    # not ProcessResult's own fields): volume_mesh_path (required),
+    # material_field="Material" (default), material_regions=[] (default).
     return ProcessResult(
-        final_mesh="dummy.vtu", snapshots=[],
+        volume_mesh_path="dummy.vtu",
         material_regions=[MaterialRegion(name="Si", tag=1)],
     )
 
@@ -1647,32 +1652,54 @@ with:
 
 - [ ] **Step 2: Replace the Implant Windows panel's conc fields**
 
-In `windows_frame`, replace the "Background doping (cm^-3, signed)" field and the two "...window conc (cm^-3)" fields with donor/acceptor pairs (background, source, drain), mirroring Step 1's pattern:
+**Verified directly against the current file (do not trust the earlier draft
+of this step, which used the wrong variable-name prefix):** the panel's
+actual variable names use a `dope_win_` prefix, not `dope_iw_`, and `src`/
+`drn` abbreviations, not `source`/`drain` spelled out. Confirmed by reading
+`_make_doping_panel`'s `windows_frame` block directly (as of this session:
+lines 3852-3879) — the existing fields are `dope_win_region_var`,
+`dope_win_axis_var`, `dope_win_background_var` (being replaced by this
+step), `dope_win_src_min_var`, `dope_win_src_max_var`,
+`dope_win_src_conc_var` (being replaced), `dope_win_drn_min_var`,
+`dope_win_drn_max_var`, `dope_win_drn_conc_var` (being replaced). Re-grep
+`dope_win_` before editing in case another task touched this area, though
+none in this plan does.
+
+In `windows_frame`, replace `self.dope_win_background_var`,
+`self.dope_win_src_conc_var`, and `self.dope_win_drn_conc_var` (leave
+`dope_win_region_var`, `dope_win_axis_var`, `dope_win_src_min_var`,
+`dope_win_src_max_var`, `dope_win_drn_min_var`, `dope_win_drn_max_var`
+untouched) with donor/acceptor pairs, mirroring Step 1's pattern, inserted
+in place of each field they replace (keep the position fields' own
+surrounding order — this is just showing the 3 replacement blocks, not the
+whole frame):
 
 ```python
-        self.dope_iw_donor_bg_var = self._field(
+        self.dope_win_donor_bg_var = self._field(
             windows_frame, "Background donor conc (cm^-3, >= 0)", 0.0,
         )
-        self.dope_iw_acceptor_bg_var = self._field(
+        self.dope_win_acceptor_bg_var = self._field(
             windows_frame, "Background acceptor conc (cm^-3, >= 0)", 1.0e17,
         )
-        # (Source window position fields unchanged)
-        self.dope_iw_source_donor_var = self._field(
+        # (Source window min/max position fields, dope_win_src_min_var /
+        # dope_win_src_max_var, are UNCHANGED -- only dope_win_src_conc_var
+        # is being replaced, in its own existing position in the frame)
+        self.dope_win_src_donor_var = self._field(
             windows_frame, "Source window donor conc (cm^-3, >= 0)", 1.0e20,
         )
-        self.dope_iw_source_acceptor_var = self._field(
+        self.dope_win_src_acceptor_var = self._field(
             windows_frame, "Source window acceptor conc (cm^-3, >= 0)", 0.0,
         )
-        # (Drain window position fields unchanged)
-        self.dope_iw_drain_donor_var = self._field(
+        # (Drain window min/max position fields, dope_win_drn_min_var /
+        # dope_win_drn_max_var, are UNCHANGED -- only dope_win_drn_conc_var
+        # is being replaced, in its own existing position in the frame)
+        self.dope_win_drn_donor_var = self._field(
             windows_frame, "Drain window donor conc (cm^-3, >= 0)", 1.0e20,
         )
-        self.dope_iw_drain_acceptor_var = self._field(
+        self.dope_win_drn_acceptor_var = self._field(
             windows_frame, "Drain window acceptor conc (cm^-3, >= 0)", 0.0,
         )
 ```
-
-Read the exact current field names/order for the position fields (`Source window min/max`, `Drain window min/max`, lines ~3846-3861 as of this session) before editing, and keep them unchanged — only the three `*_conc_var` fields (background, source, drain) are being split into donor/acceptor pairs.
 
 - [ ] **Step 3: Update `run_doping()`'s Gaussian Implant and Implant Windows branches**
 
@@ -1702,28 +1729,37 @@ Gaussian branch — replace the single `conc = float(self.dope_gauss_conc_var.ge
                 )
 ```
 
-Implant Windows branch — replace the background/source/drain `conc` reads with donor/acceptor pairs, computing each window's `conc_cm3` for the summary string but passing the raw donor/acceptor into `apply_implant_windows_doping`:
+Implant Windows branch — **verified directly against the current file**
+(as of this session, this branch is at `tcad_2d_stagewise.py:4039-4059`,
+reading `dope_win_region_var`/`dope_win_axis_var`/`dope_win_background_var`/
+`dope_win_src_min_var`/`dope_win_src_max_var`/`dope_win_src_conc_var`/
+`dope_win_drn_min_var`/`dope_win_drn_max_var`/`dope_win_drn_conc_var` — NOT
+the `dope_iw_*` names an earlier draft of this step assumed). Replace the
+background/source/drain `conc` reads with donor/acceptor pairs (matching
+Step 2's new field names exactly), computing each window's `conc_cm3` for
+the summary string but passing the raw donor/acceptor into
+`apply_implant_windows_doping`:
 
 ```python
             elif kind == "Implant Windows":
 
-                region = self.dope_iw_region_var.get()
-                axis = self.dope_iw_axis_var.get()
-                donor_bg = float(self.dope_iw_donor_bg_var.get())
-                acceptor_bg = float(self.dope_iw_acceptor_bg_var.get())
-                source_min = float(self.dope_iw_source_min_var.get())
-                source_max = float(self.dope_iw_source_max_var.get())
-                source_donor = float(self.dope_iw_source_donor_var.get())
-                source_acceptor = float(self.dope_iw_source_acceptor_var.get())
-                drain_min = float(self.dope_iw_drain_min_var.get())
-                drain_max = float(self.dope_iw_drain_max_var.get())
-                drain_donor = float(self.dope_iw_drain_donor_var.get())
-                drain_acceptor = float(self.dope_iw_drain_acceptor_var.get())
+                region = self.dope_win_region_var.get()
+                axis = self.dope_win_axis_var.get()
+                donor_bg = float(self.dope_win_donor_bg_var.get())
+                acceptor_bg = float(self.dope_win_acceptor_bg_var.get())
+                src_min = float(self.dope_win_src_min_var.get())
+                src_max = float(self.dope_win_src_max_var.get())
+                src_donor = float(self.dope_win_src_donor_var.get())
+                src_acceptor = float(self.dope_win_src_acceptor_var.get())
+                drn_min = float(self.dope_win_drn_min_var.get())
+                drn_max = float(self.dope_win_drn_max_var.get())
+                drn_donor = float(self.dope_win_drn_donor_var.get())
+                drn_acceptor = float(self.dope_win_drn_acceptor_var.get())
                 windows = [
-                    {"min_um": source_min, "max_um": source_max,
-                     "donor_conc_cm3": source_donor, "acceptor_conc_cm3": source_acceptor},
-                    {"min_um": drain_min, "max_um": drain_max,
-                     "donor_conc_cm3": drain_donor, "acceptor_conc_cm3": drain_acceptor},
+                    {"min_um": src_min, "max_um": src_max,
+                     "donor_conc_cm3": src_donor, "acceptor_conc_cm3": src_acceptor},
+                    {"min_um": drn_min, "max_um": drn_max,
+                     "donor_conc_cm3": drn_donor, "acceptor_conc_cm3": drn_acceptor},
                 ]
                 doped_result = apply_implant_windows_doping(
                     process_result, region, axis,
@@ -1733,12 +1769,10 @@ Implant Windows branch — replace the background/source/drain `conc` reads with
                 summary = (
                     f"region={region!r} axis={axis!r} "
                     f"background_net={donor_bg - acceptor_bg:.3e} "
-                    f"source_net={source_donor - source_acceptor:.3e} "
-                    f"drain_net={drain_donor - drain_acceptor:.3e}"
+                    f"source_net={src_donor - src_acceptor:.3e} "
+                    f"drain_net={drn_donor - drn_acceptor:.3e}"
                 )
 ```
-
-Read the EXACT existing variable names for `dope_iw_region_var`/`dope_iw_axis_var`/`dope_iw_source_min_var`/etc. from the current `run_doping()` Implant Windows branch (lines ~4020-4050 as of this session) before writing this replacement, since this plan's names must match the panel's actual field-creation code from Step 2 (which reuses the existing position-field variable names unchanged).
 
 - [ ] **Step 4: Extend the GUI regression test**
 
@@ -1750,7 +1784,7 @@ Run: `PYTHONIOENCODING=utf-8 python tests/integration/test_gui_doping_donor_acce
 Expected: PASS, including the two new scenarios.
 
 Run: `PYTHONIOENCODING=utf-8 python tests/run_regression.py`
-Expected: baseline 49 (+ this plan's new tests) passed, same 3 pre-existing failures, zero new failures.
+Expected: 56+ passed (baseline was 49 before this plan started; Task Groups 1-3 already landed at 56), same 3 pre-existing failures, zero new failures. As with Tasks 4-6, the CONTROLLER runs this full suite, not the implementer — see this task's own dispatch instructions.
 
 - [ ] **Step 6: Commit**
 
