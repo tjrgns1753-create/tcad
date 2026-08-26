@@ -11,6 +11,18 @@
 > per-task briefs/reports and review diffs are in the same directory.
 > Per-step checkboxes below were not toggled individually — the ledger
 > is this plan's source of truth for completion, not this file.
+>
+> **Post-completion follow-up (NOT one of the 8 tasks above):** live
+> testing after this plan landed found that its own Task Group 2 fix
+> (`_litho_pending_since_last_mesh`) had a side effect — PR COAT/ALIGN/
+> EXPOSURE after an earlier real process (e.g. real oxidation) hid the
+> real mesh (SiO2, doping overlay) behind a flat placeholder, even
+> though nothing was actually lost. Fixed in `56870de` by separating
+> "does a real mesh exist" from "did litho state just change" into two
+> independent gates. Full regression after the fix: still 57 passed /
+> 3 failed, zero new failures. See the SDD ledger's own "Post-completion
+> follow-up fix" entry and `56870de`'s commit message for the full
+> investigation.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
