@@ -137,6 +137,99 @@ def main():
               "DevSim result still reports:", measurement_popups[0][1])
 
         # ------------------------------------------------------------
+        # Gaussian Implant: donor/acceptor input fields (Task 8). Same
+        # mesh as the Uniform scenario above -- this only checks the
+        # Python-level DopingRegion the panel builds, no new DevSim
+        # solve needed.
+        app.doping_kind.set("Gaussian Implant")
+        app.dope_gauss_region_var.set("Si")
+        app.dope_gauss_axis_var.set("x")
+        app.dope_gauss_position_var.set(0.0)
+        app.dope_gauss_straggle_var.set(0.5)
+        app.dope_gauss_donor_var.set(2.0e17)
+        app.dope_gauss_acceptor_var.set(3.0e16)
+        app.dope_gauss_donor_species_var.set("P")
+        app.dope_gauss_acceptor_species_var.set("B")
+        calls.clear()
+        assert app.run_doping() is True
+
+        gauss_region = app.last_doped_result.doping.regions[0]
+        expected_gauss_net = 2.0e17 - 3.0e16
+        assert abs(gauss_region.peak_conc_cm3 - expected_gauss_net) < 1.0, (
+            f"Gaussian Implant peak_conc_cm3 must equal donor - acceptor = "
+            f"{expected_gauss_net:.3e}, got {gauss_region.peak_conc_cm3:.3e}")
+        assert abs(gauss_region.donor_peak_conc_cm3 - 2.0e17) < 1.0, (
+            "raw donor_peak_conc_cm3 must be preserved on the DopingRegion "
+            f"(not just collapsed into peak_conc_cm3), got "
+            f"{gauss_region.donor_peak_conc_cm3!r}")
+        assert abs(gauss_region.acceptor_peak_conc_cm3 - 3.0e16) < 1.0, (
+            "raw acceptor_peak_conc_cm3 must be preserved on the "
+            f"DopingRegion, got {gauss_region.acceptor_peak_conc_cm3!r}")
+        assert gauss_region.donor_species == "P", gauss_region.donor_species
+        assert gauss_region.acceptor_species == "B", gauss_region.acceptor_species
+
+        print("Gaussian Implant donor/acceptor -> peak_conc_cm3="
+              f"{gauss_region.peak_conc_cm3:.3e} (donor - acceptor); raw "
+              f"donor={gauss_region.donor_peak_conc_cm3:.3e}({gauss_region.donor_species}) "
+              f"acceptor={gauss_region.acceptor_peak_conc_cm3:.3e}"
+              f"({gauss_region.acceptor_species}) preserved on the DopingRegion.")
+
+        # ------------------------------------------------------------
+        # Implant Windows: donor/acceptor background + per-window
+        # fields (Task 8). Same mesh, same reasoning as above.
+        app.doping_kind.set("Implant Windows")
+        app.dope_win_region_var.set("Si")
+        app.dope_win_axis_var.set("x")
+        app.dope_win_donor_bg_var.set(1.0e14)
+        app.dope_win_acceptor_bg_var.set(1.0e17)
+        app.dope_win_src_min_var.set(-1.6)
+        app.dope_win_src_max_var.set(-0.6)
+        app.dope_win_src_donor_var.set(1.0e20)
+        app.dope_win_src_acceptor_var.set(0.0)
+        app.dope_win_drn_min_var.set(0.6)
+        app.dope_win_drn_max_var.set(1.6)
+        app.dope_win_drn_donor_var.set(9.0e19)
+        app.dope_win_drn_acceptor_var.set(1.0e19)
+        calls.clear()
+        assert app.run_doping() is True
+
+        win_region = app.last_doped_result.doping.regions[0]
+        expected_bg_net = 1.0e14 - 1.0e17
+        assert abs(win_region.net_doping_cm3 - expected_bg_net) < 1.0, (
+            f"Implant Windows background net_doping_cm3 must equal donor - "
+            f"acceptor = {expected_bg_net:.3e}, got "
+            f"{win_region.net_doping_cm3:.3e}")
+        assert abs(win_region.donor_conc_cm3 - 1.0e14) < 1.0, (
+            "raw background donor_conc_cm3 must be preserved on the "
+            f"DopingRegion, got {win_region.donor_conc_cm3!r}")
+        assert abs(win_region.acceptor_conc_cm3 - 1.0e17) < 1.0, (
+            "raw background acceptor_conc_cm3 must be preserved on the "
+            f"DopingRegion, got {win_region.acceptor_conc_cm3!r}")
+
+        windows = win_region.implant_windows
+        assert windows is not None and len(windows) == 2, windows
+        src_window, drn_window = windows[0], windows[1]
+        expected_src_net = 1.0e20 - 0.0
+        expected_drn_net = 9.0e19 - 1.0e19
+        assert abs(src_window["conc_cm3"] - expected_src_net) < 1.0, src_window
+        assert abs(src_window["donor_conc_cm3"] - 1.0e20) < 1.0, (
+            "raw source window donor_conc_cm3 must be preserved, not just "
+            f"collapsed into conc_cm3, got {src_window!r}")
+        assert abs(src_window["acceptor_conc_cm3"] - 0.0) < 1.0, src_window
+        assert abs(drn_window["conc_cm3"] - expected_drn_net) < 1.0, drn_window
+        assert abs(drn_window["donor_conc_cm3"] - 9.0e19) < 1.0, (
+            "raw drain window donor_conc_cm3 must be preserved, not just "
+            f"collapsed into conc_cm3, got {drn_window!r}")
+        assert abs(drn_window["acceptor_conc_cm3"] - 1.0e19) < 1.0, drn_window
+
+        print("Implant Windows donor/acceptor -> background net="
+              f"{win_region.net_doping_cm3:.3e} (donor {win_region.donor_conc_cm3:.3e} "
+              f"- acceptor {win_region.acceptor_conc_cm3:.3e}); source "
+              f"conc_cm3={src_window['conc_cm3']:.3e}, drain "
+              f"conc_cm3={drn_window['conc_cm3']:.3e}; raw donor/acceptor "
+              "preserved on both region and window dicts.")
+
+        # ------------------------------------------------------------
         # SiO2-barrier exclusion, through the REAL run_measurement()
         # path -- see docs/investigation_log.md, "SiO2 doesn't block
         # doping". Mirrors Task 1's own fixture

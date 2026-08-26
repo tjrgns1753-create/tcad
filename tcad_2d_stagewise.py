@@ -3845,8 +3845,17 @@ class TCADApplication(tk.Tk):
         self.dope_gauss_straggle_var = self._field(
             gaussian_frame, "Straggle (µm)", 0.5,
         )
-        self.dope_gauss_conc_var = self._field(
-            gaussian_frame, "Peak conc (cm^-3, signed)", 1.0e17,
+        self.dope_gauss_donor_var = self._field(
+            gaussian_frame, "Donor peak conc (cm^-3, >= 0)", 1.0e17,
+        )
+        self.dope_gauss_acceptor_var = self._field(
+            gaussian_frame, "Acceptor peak conc (cm^-3, >= 0)", 0.0,
+        )
+        self.dope_gauss_donor_species_var = self._field(
+            gaussian_frame, "Donor species (label only, not used in the physics model)", "P",
+        )
+        self.dope_gauss_acceptor_species_var = self._field(
+            gaussian_frame, "Acceptor species (label only, not used in the physics model)", "B",
         )
 
         windows_frame = ttk.Frame(doping_params_container)
@@ -3856,8 +3865,11 @@ class TCADApplication(tk.Tk):
         self.dope_win_axis_var = self._field(
             windows_frame, "Axis (x/y)", "x",
         )
-        self.dope_win_background_var = self._field(
-            windows_frame, "Background doping (cm^-3, signed)", -1.0e17,
+        self.dope_win_donor_bg_var = self._field(
+            windows_frame, "Background donor conc (cm^-3, >= 0)", 0.0,
+        )
+        self.dope_win_acceptor_bg_var = self._field(
+            windows_frame, "Background acceptor conc (cm^-3, >= 0)", 1.0e17,
         )
         self.dope_win_src_min_var = self._field(
             windows_frame, "Source window min (µm)", -1.6,
@@ -3865,8 +3877,11 @@ class TCADApplication(tk.Tk):
         self.dope_win_src_max_var = self._field(
             windows_frame, "Source window max (µm)", -0.6,
         )
-        self.dope_win_src_conc_var = self._field(
-            windows_frame, "Source window conc (cm^-3)", 1.0e20,
+        self.dope_win_src_donor_var = self._field(
+            windows_frame, "Source window donor conc (cm^-3, >= 0)", 1.0e20,
+        )
+        self.dope_win_src_acceptor_var = self._field(
+            windows_frame, "Source window acceptor conc (cm^-3, >= 0)", 0.0,
         )
         self.dope_win_drn_min_var = self._field(
             windows_frame, "Drain window min (µm)", 0.6,
@@ -3874,8 +3889,11 @@ class TCADApplication(tk.Tk):
         self.dope_win_drn_max_var = self._field(
             windows_frame, "Drain window max (µm)", 1.6,
         )
-        self.dope_win_drn_conc_var = self._field(
-            windows_frame, "Drain window conc (cm^-3)", 1.0e20,
+        self.dope_win_drn_donor_var = self._field(
+            windows_frame, "Drain window donor conc (cm^-3, >= 0)", 1.0e20,
+        )
+        self.dope_win_drn_acceptor_var = self._field(
+            windows_frame, "Drain window acceptor conc (cm^-3, >= 0)", 0.0,
         )
         ttk.Label(
             windows_frame,
@@ -4024,43 +4042,54 @@ class TCADApplication(tk.Tk):
                 axis = self.dope_gauss_axis_var.get()
                 position = float(self.dope_gauss_position_var.get())
                 straggle = float(self.dope_gauss_straggle_var.get())
-                conc = float(self.dope_gauss_conc_var.get())
+                donor = float(self.dope_gauss_donor_var.get())
+                acceptor = float(self.dope_gauss_acceptor_var.get())
+                donor_species = self.dope_gauss_donor_species_var.get()
+                acceptor_species = self.dope_gauss_acceptor_species_var.get()
                 doped_result = apply_gaussian_implant_doping(
                     process_result, region=region, junction_axis=axis,
                     peak_position_um=position, straggle_um=straggle,
-                    peak_conc_cm3=conc,
+                    donor_peak_conc_cm3=donor, acceptor_peak_conc_cm3=acceptor,
+                    donor_species=donor_species, acceptor_species=acceptor_species,
                 )
                 summary = (
                     f"region={region!r} axis={axis!r} "
                     f"peak@{position}um straggle={straggle}um "
-                    f"peak_conc={conc:.3e}"
+                    f"donor={donor:.3e}({donor_species}) "
+                    f"acceptor={acceptor:.3e}({acceptor_species}) -> "
+                    f"peak_net_cm3={donor - acceptor:.3e}"
                 )
 
             elif kind == "Implant Windows":
 
                 region = self.dope_win_region_var.get()
                 axis = self.dope_win_axis_var.get()
-                background = float(self.dope_win_background_var.get())
+                donor_bg = float(self.dope_win_donor_bg_var.get())
+                acceptor_bg = float(self.dope_win_acceptor_bg_var.get())
+                src_min = float(self.dope_win_src_min_var.get())
+                src_max = float(self.dope_win_src_max_var.get())
+                src_donor = float(self.dope_win_src_donor_var.get())
+                src_acceptor = float(self.dope_win_src_acceptor_var.get())
+                drn_min = float(self.dope_win_drn_min_var.get())
+                drn_max = float(self.dope_win_drn_max_var.get())
+                drn_donor = float(self.dope_win_drn_donor_var.get())
+                drn_acceptor = float(self.dope_win_drn_acceptor_var.get())
                 windows = [
-                    {
-                        "min_um": float(self.dope_win_src_min_var.get()),
-                        "max_um": float(self.dope_win_src_max_var.get()),
-                        "conc_cm3": float(self.dope_win_src_conc_var.get()),
-                    },
-                    {
-                        "min_um": float(self.dope_win_drn_min_var.get()),
-                        "max_um": float(self.dope_win_drn_max_var.get()),
-                        "conc_cm3": float(self.dope_win_drn_conc_var.get()),
-                    },
+                    {"min_um": src_min, "max_um": src_max,
+                     "donor_conc_cm3": src_donor, "acceptor_conc_cm3": src_acceptor},
+                    {"min_um": drn_min, "max_um": drn_max,
+                     "donor_conc_cm3": drn_donor, "acceptor_conc_cm3": drn_acceptor},
                 ]
                 doped_result = apply_implant_windows_doping(
                     process_result, region=region, axis=axis,
-                    background_doping_cm3=background, windows=windows,
+                    donor_background_cm3=donor_bg, acceptor_background_cm3=acceptor_bg,
+                    windows=windows,
                 )
                 summary = (
                     f"region={region!r} axis={axis!r} "
-                    f"background={background:.3e} "
-                    f"windows={windows}"
+                    f"background_net={donor_bg - acceptor_bg:.3e} "
+                    f"source_net={src_donor - src_acceptor:.3e} "
+                    f"drain_net={drn_donor - drn_acceptor:.3e}"
                 )
 
             else:
