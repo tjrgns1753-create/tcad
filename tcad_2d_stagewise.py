@@ -388,15 +388,6 @@ class TCADApplication(tk.Tk):
         # of the placeholder rectangle. None until an etch succeeds.
         self.last_final_mesh = None
 
-        # True from the moment a litho state changes (PR COAT / MASK
-        # ALIGNMENT / EXPOSURE / DEVELOP / PR STRIP) until the next
-        # REAL process step produces a mesh that reflects it. Litho
-        # methods are state-only (no ViennaPS call), so "a real mesh
-        # already exists" does NOT mean it shows the CURRENT litho
-        # state -- see docs/investigation_log.md, "Mask Alignment/
-        # Exposure placeholder disappears once any real mesh exists".
-        self._litho_pending_since_last_mesh = False
-
         # Vertical view budget for _draw_real_mesh_result, keyed
         # "above"/"below" -- see _quantized_depth_budget()'s own
         # docstring for why this exists (renderer-only fix for the
@@ -1307,7 +1298,6 @@ class TCADApplication(tk.Tk):
             return
 
         self.last_final_mesh = result.get("final_mesh")
-        self._litho_pending_since_last_mesh = False
         self.wafer.processed = True
         # `etched` means "this wafer has actually been etched" -- it
         # gates the trench-opening placeholder in redraw(). Setting it
@@ -2344,7 +2334,6 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "oxidized"
         self.last_final_mesh = result.get("final_mesh")
-        self._litho_pending_since_last_mesh = False
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -2894,7 +2883,6 @@ class TCADApplication(tk.Tk):
             return False
 
         self.last_final_mesh = result.get("final_mesh")
-        self._litho_pending_since_last_mesh = False
         self.last_domain_state = result.get("domain_state")
         self.wafer.processed = True
         self.redraw()
@@ -2958,7 +2946,6 @@ class TCADApplication(tk.Tk):
             return False
 
         self.last_final_mesh = result.get("final_mesh")
-        self._litho_pending_since_last_mesh = False
         self.last_domain_state = result.get("domain_state")
         return True
 
@@ -3021,7 +3008,6 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = process_stage
         self.last_final_mesh = result.get("final_mesh")
-        self._litho_pending_since_last_mesh = False
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -3320,7 +3306,6 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "deposited"
         self.last_final_mesh = result.get("final_mesh")
-        self._litho_pending_since_last_mesh = False
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -3654,7 +3639,6 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "gate_stack"
         self.last_final_mesh = result.get("final_mesh")
-        self._litho_pending_since_last_mesh = False
 
         # Gate stack is standalone/terminal (see the module docstring in
         # tcad/process/geometry/gate_stack.py -- it refuses
@@ -5182,7 +5166,6 @@ class TCADApplication(tk.Tk):
             "DEVELOP is what opens it)."
         )
         self._update_process_buttons()
-        self._litho_pending_since_last_mesh = True
         self.redraw()
 
     def process_mask_alignment(self):
@@ -5202,7 +5185,6 @@ class TCADApplication(tk.Tk):
             "Mask is process input; wafer geometry unchanged."
         )
         self._update_process_buttons()
-        self._litho_pending_since_last_mesh = True
         self.redraw()
 
     def process_exposure(self):
@@ -5230,7 +5212,6 @@ class TCADApplication(tk.Tk):
             "Latent image only; resist geometry unchanged until develop."
         )
         self._update_process_buttons()
-        self._litho_pending_since_last_mesh = True
         self.redraw()
 
     def process_develop(self):
@@ -5255,7 +5236,6 @@ class TCADApplication(tk.Tk):
             "Developed PR opening is now the etch mask."
         )
         self._update_process_buttons()
-        self._litho_pending_since_last_mesh = True
         self.redraw()
 
     def process_pr_strip(self):
@@ -5640,7 +5620,6 @@ class TCADApplication(tk.Tk):
         pre_etch_mesh = self.last_final_mesh
         resist_spans = self._resist_spans_um()
         self.last_final_mesh = result.get("final_mesh")
-        self._litho_pending_since_last_mesh = False
         if pre_etch_mesh and result.get("final_mesh"):
             from tcad.physics.doping import implant_windows_from_mask_spans
             open_windows_domain_um = [
@@ -6268,11 +6247,19 @@ class TCADApplication(tk.Tk):
         if self._viewing_step_index is not None and 0 <= self._viewing_step_index < len(self.flow_step_meshes):
             display_mesh = self.flow_step_meshes[self._viewing_step_index]
 
+        # Whether a REAL PHYSICAL mesh exists to draw -- mesh existence
+        # only. This must never depend on lithography UI state (PR
+        # COAT/ALIGN/EXPOSURE/DEVELOP change wafer.pr_present/developed
+        # and process_stage, never last_final_mesh) -- conflating the
+        # two used to make PR COAT after a real process (e.g. real
+        # oxidation) hide the real SiO2/doping under a blank placeholder,
+        # even though nothing was actually lost. Litho-stage visuals
+        # (PR film / mask box / UV rays) are drawn independently, below,
+        # positioned on top of whatever real_mesh_available finds here.
         real_mesh_available = bool(
             self.wafer.processed
             and display_mesh
             and Path(display_mesh).exists()
-            and not self._litho_pending_since_last_mesh
         )
 
         if not real_mesh_available:
@@ -6664,49 +6651,137 @@ class TCADApplication(tk.Tk):
             "pr_coated", "aligned", "exposed", "developed",
         )
         resist_spans_um = self._resist_spans_um() if pr_pending else None
-        if resist_spans_um and real_mesh_available:
+
+        # Litho-stage visuals on top of a REAL mesh -- the on-real-mesh
+        # counterparts of the no-real-mesh placeholder blocks above (PR
+        # film / mask box / UV rays / exposed-PR highlight), positioned
+        # relative to the real current surface via _real_mesh_top_um()
+        # instead of a fixed y=0 datum. Gated on `real_mesh_available`
+        # alone (mesh existence), NOT on litho state -- lithography
+        # status display and physical mesh rendering are independent:
+        # neither hides the other. mask_present/exposed_now/resist_spans_um
+        # decide WHAT litho visual to draw, real_mesh_available decides
+        # WHERE (on the real surface vs. the fixed placeholder datum).
+        if real_mesh_available and (resist_spans_um or mask_present):
             half_width = self.wafer.width_um / 2.0
             _vx0, _vxmin, _vxs, _vsy, v_yscale = self._viewer_scale
 
-            def _pr_base_canvas_y(wafer_lo_um, wafer_hi_um):
+            def _real_top_canvas_y(wafer_lo_um, wafer_hi_um):
                 # Highest real point spanned by this segment -- sitting
-                # the PR block there avoids clipping into real material
-                # even where the surface isn't flat (an etched step,
-                # say); a real spin-on would follow the dip too, but
-                # this is a GUI preview, not a re-simulation.
+                # the PR/mask block there avoids clipping into real
+                # material even where the surface isn't flat (an etched
+                # step, say); a real spin-on / rigid mask would clear
+                # the highest point it spans, not the average.
                 samples = [wafer_lo_um, (wafer_lo_um + wafer_hi_um) / 2, wafer_hi_um]
                 top_um = max(self._real_mesh_top_um(s - half_width) for s in samples)
                 return surface_y - top_um * v_yscale
 
             pr_height_px = max(6.0, self.wafer.pr_thickness_um * v_yscale)
-            # _resist_spans_um() works in DOMAIN coordinates (centred on
-            # 0, the convention every recipe uses); this canvas block
-            # works in WAFER coordinates (0..width_um). Failing to
-            # convert is a documented trap in this project -- see
-            # CLAUDE.md's PN-diode entry, where the same mix-up put a
-            # junction 0.1um from the domain edge and still produced a
-            # plausible-looking result.
-            for lo_dom, hi_dom in resist_spans_um:
-                lo_um = lo_dom + half_width
-                hi_um = hi_dom + half_width
-                base_y = _pr_base_canvas_y(lo_um, hi_um)
-                canvas.create_rectangle(
-                    x0 + lo_um * scale, base_y - pr_height_px,
-                    x0 + hi_um * scale, base_y,
-                    fill="#e8a0bd", outline="#803252",
+
+            if resist_spans_um:
+                # _resist_spans_um() works in DOMAIN coordinates (centred
+                # on 0, the convention every recipe uses); this canvas
+                # block works in WAFER coordinates (0..width_um). Failing
+                # to convert is a documented trap in this project -- see
+                # CLAUDE.md's PN-diode entry, where the same mix-up put a
+                # junction 0.1um from the domain edge and still produced
+                # a plausible-looking result.
+                for lo_dom, hi_dom in resist_spans_um:
+                    lo_um = lo_dom + half_width
+                    hi_um = hi_dom + half_width
+                    base_y = _real_top_canvas_y(lo_um, hi_um)
+                    canvas.create_rectangle(
+                        x0 + lo_um * scale, base_y - pr_height_px,
+                        x0 + hi_um * scale, base_y,
+                        fill="#e8a0bd", outline="#803252",
+                    )
+
+                if exposed_now:
+                    # Exposed (soluble) PR under EVERY mask opening --
+                    # on-real-mesh counterpart of the no-real-mesh
+                    # `exposed_now` highlight above.
+                    for op_lo_um, op_hi_um in sorted(self.wafer.mask_openings_um):
+                        base_y = _real_top_canvas_y(op_lo_um, op_hi_um)
+                        canvas.create_rectangle(
+                            x0 + op_lo_um * scale, base_y - pr_height_px,
+                            x0 + op_hi_um * scale, base_y,
+                            fill="#f6dce7", outline="#803252", stipple="gray50",
+                        )
+                    canvas.create_text(
+                        (opening_x0 + opening_x1) / 2,
+                        _real_top_canvas_y(self.wafer.mask_left_um, self.wafer.mask_right_um)
+                        - pr_height_px / 2,
+                        text="EXPOSED PR", fill="#803252",
+                    )
+
+                canvas.create_text(
+                    x0 + 5, _real_top_canvas_y(0.0, 0.0) - pr_height_px / 2 - 12,
+                    anchor="w",
+                    text=(
+                        # Describes the resist AS IT IS. It must not name or
+                        # predict a step the user has not chosen.
+                        "PR — developed (patterned)"
+                        if self.wafer.developed
+                        else "PR — blanket coat (not patterned)"
+                    ),
+                    fill="#803252", font=(Tokens.FONT_UI, 8),
                 )
-            canvas.create_text(
-                x0 + 5, _pr_base_canvas_y(0.0, 0.0) - pr_height_px / 2 - 12,
-                anchor="w",
-                text=(
-                    # Describes the resist AS IT IS. It must not name or
-                    # predict a step the user has not chosen.
-                    "PR — developed (patterned)"
-                    if self.wafer.developed
-                    else "PR — blanket coat (not patterned)"
-                ),
-                fill="#803252", font=(Tokens.FONT_UI, 8),
-            )
+
+            if mask_present:
+                # Photomask held above the wafer during alignment/
+                # exposure -- opaque wherever there is no opening, sat
+                # a fixed gap above the real PR film's own top surface
+                # (a rigid mask does not conform to wafer topology; the
+                # no-real-mesh placeholder above uses the same fixed gap
+                # from its own y=0 datum).
+                mask_gap_px = 45
+                edge_um = 0.0
+                for op_lo_um, op_hi_um in sorted(self.wafer.mask_openings_um):
+                    if op_lo_um > edge_um:
+                        base_y = _real_top_canvas_y(edge_um, op_lo_um) - pr_height_px
+                        canvas.create_rectangle(
+                            x0 + edge_um * scale, base_y - mask_gap_px,
+                            x0 + op_lo_um * scale, base_y,
+                            fill="#202020", outline="#111",
+                        )
+                    edge_um = max(edge_um, op_hi_um)
+                if edge_um < self.wafer.width_um:
+                    base_y = _real_top_canvas_y(edge_um, self.wafer.width_um) - pr_height_px
+                    canvas.create_rectangle(
+                        x0 + edge_um * scale, base_y - mask_gap_px,
+                        x1, base_y,
+                        fill="#202020", outline="#111",
+                    )
+
+                for op_lo_um, op_hi_um in sorted(self.wafer.mask_openings_um):
+                    base_y = _real_top_canvas_y(op_lo_um, op_hi_um) - pr_height_px
+                    canvas.create_text(
+                        x0 + (op_lo_um + op_hi_um) / 2 * scale,
+                        base_y - mask_gap_px - 12,
+                        text="MASK OPENING", fill="#155ea8",
+                    )
+
+                if exposed_now:
+                    # UV illumination through the mask opening -- same
+                    # single "selected" opening the no-real-mesh
+                    # placeholder's UV rays use.
+                    ray_bottom_y = (
+                        _real_top_canvas_y(self.wafer.mask_left_um, self.wafer.mask_right_um)
+                        - pr_height_px
+                    )
+                    ray_top_y = ray_bottom_y - mask_gap_px
+                    for offset in range(5):
+                        ray_x = (
+                            opening_x0 + (offset + 0.5) * (opening_x1 - opening_x0) / 5
+                        )
+                        canvas.create_line(
+                            ray_x, ray_top_y, ray_x, ray_bottom_y,
+                            fill="#2e86de", arrow="last",
+                        )
+                    canvas.create_text(
+                        (opening_x0 + opening_x1) / 2, ray_top_y - 10,
+                        text="UV EXPOSURE", fill="#2e86de",
+                    )
 
         # POTENTIAL / ELECTRON / HOLE layers need per-node DevSim field
         # data (Potential/Electrons/Holes), which run_measurement's
@@ -6841,7 +6916,6 @@ class TCADApplication(tk.Tk):
         self.recipe = BoschRecipe()
         self.last_doped_result = None
         self.last_final_mesh = None
-        self._litho_pending_since_last_mesh = False
         self._viewer_depth_budget_um = {}
         self.history = []
         self.process_stage = "wafer"

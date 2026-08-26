@@ -6,9 +6,20 @@ just because an EARLIER, unrelated real process step already ran --
 see docs/investigation_log.md, "Mask Alignment/Exposure placeholder
 disappears once any real mesh exists". Drives the real TCADApplication
 (window withdrawn) through a real Oxidation, then Litho, checking the
-STATE FLAG that drives the rendering decision (the same technique
+CANVAS TEXT the litho visuals actually draw (the same technique
 tests/unit/test_gui_litho_lifecycle_mock.py already uses for the
-resist-spans state, extended here to the render-gate state).
+resist-spans state, extended here to the render output).
+
+Lithography UI state display and physical mesh rendering are
+independent (see redraw()'s own comment on `real_mesh_available`):
+a real mesh, once it exists, must ALWAYS render (materials, doping
+overlay) regardless of litho state, and litho visuals (PR film / mask
+box / UV rays) draw on top of whatever real surface is currently
+there. Neither one hides the other -- see docs/investigation_log.md,
+"PR COAT after real geometry hid the mesh" for the regression this
+fixes (a doping+oxidation session losing its SiO2/doping from the
+canvas the moment PR COAT was clicked, even though nothing was lost
+from the underlying mesh/domain state).
 """
 import os
 import sys
@@ -53,104 +64,100 @@ def main():
         app.withdraw()
         app.update_idletasks()
 
-        assert app._litho_pending_since_last_mesh is False, (
-            "a fresh wafer must not start with litho marked pending")
-
         ok = app._materialize_current_wafer()
         assert ok, "materializing a real ViennaPS wafer failed"
-        assert app._litho_pending_since_last_mesh is False
         assert app.wafer.processed is True
+
+        mesh_before_litho = app.last_final_mesh
+        domain_before_litho = app.last_domain_state
 
         # Litho actions AFTER a real mesh already exists -- this is
         # exactly the reported scenario (Oxidation, then PR Coat /
-        # Mask Alignment / Exposure).
+        # Mask Alignment / Exposure). None of these touch the real
+        # mesh/domain state -- they are pure state transitions.
         app.process_pr_coat()
-        assert app._litho_pending_since_last_mesh is True, (
-            "PR COAT after an earlier real mesh must mark litho pending "
-            "so the placeholder draws instead of the stale real mesh")
+        assert app.last_final_mesh == mesh_before_litho, (
+            "PR COAT must not change the real mesh")
+        assert app.last_domain_state == domain_before_litho, (
+            "PR COAT must not change the real domain state")
 
         app.process_mask_alignment()
-        assert app._litho_pending_since_last_mesh is True
 
-        # The gate itself: real_mesh_available must now be False even
-        # though wafer.processed is True and last_final_mesh exists.
-        real_mesh_available = bool(
-            app.wafer.processed
-            and app.last_final_mesh
-            and Path(app.last_final_mesh).exists()
-            and not app._litho_pending_since_last_mesh
-        )
-        assert real_mesh_available is False, (
-            "real_mesh_available must be False while litho is pending, "
-            "so the placeholder actually draws")
-
-        # Not just the flag -- process_mask_alignment() already called
-        # its own redraw(); confirm the mask placeholder ACTUALLY drew,
-        # matching the user's literal complaint ("Mask Alignment를 하면
-        # 마스크가 화면에 나타나야 하는데 나타나지 않음").
+        # process_mask_alignment() already called its own redraw();
+        # confirm the mask placeholder ACTUALLY drew, matching the
+        # user's literal complaint ("Mask Alignment를 하면 마스크가
+        # 화면에 나타나야 하는데 나타나지 않음") -- AND that the real
+        # mesh is still on screen at the same time (the regression this
+        # fixes: real geometry must not be hidden just because litho
+        # state changed).
         texts = _canvas_texts(app.canvas)
         assert any("MASK OPENING" in t for t in texts), (
             f"Mask Alignment after an earlier real process must draw the "
             f"mask on screen, got canvas texts: {texts}")
+        assert not any(t == "Si substrate" for t in texts), (
+            f"Mask Alignment after an earlier real process must NOT fall "
+            f"back to the flat placeholder -- the real mesh must still "
+            f"render, got canvas texts: {texts}")
 
         app.process_exposure()
-        assert app._litho_pending_since_last_mesh is True
 
         # Same check for Exposure: the user must be able to see WHICH
         # area was exposed ("Exposure를 하면... 노광된 부분이 시각적으로
-        # 구분되어야 함").
+        # 구분되어야 함") -- again with the real mesh still showing.
         texts = _canvas_texts(app.canvas)
         assert any("UV EXPOSURE" in t for t in texts), (
             f"Exposure must show which area was exposed, got: {texts}")
         assert any("EXPOSED PR" in t for t in texts), (
             f"Exposure must highlight the exposed PR region distinctly, "
             f"got: {texts}")
+        assert not any(t == "Si substrate" for t in texts), (
+            f"Exposure must NOT fall back to the flat placeholder, "
+            f"got: {texts}")
 
         app.process_develop()
-        assert app._litho_pending_since_last_mesh is True
+        assert app.last_final_mesh == mesh_before_litho, (
+            "PR COAT/ALIGN/EXPOSE/DEVELOP together must still not have "
+            "touched the real mesh -- litho is state-only until a real "
+            "process step runs")
 
-        # A REAL step (Etch) consumes the pending litho state.
+        # A REAL step (Etch) produces a genuinely new mesh. run_etch()
+        # has no explicit `return True` on its success path (every
+        # `return` in it is an early-failure bare `return`, pre-existing
+        # and out of this fix's scope) -- check the real signal instead:
+        # last_final_mesh actually changed.
         app.etch_model.set("Isotropic etch")
         app.grid_var.set(0.2)
         app.isotropic_rate_var.set(0.05)
         app.etch_time_var.set(1.0)
-        ok = app.run_etch()
-        assert app._litho_pending_since_last_mesh is False, (
-            "a real Etch must clear the pending flag -- it consumed "
-            "the current litho state into a new real mesh")
+        app.run_etch()
+        assert app.last_final_mesh != mesh_before_litho, (
+            "a real Etch must produce a new real mesh reflecting the "
+            "developed litho pattern")
 
         # PR STRIP must not regress into the SAME bug this task fixes:
-        # it is deliberately excluded from ever setting pending=True
-        # (see Step 2's own note), so its own real geometry mutation
-        # (_strip_resist_from_geometry(), verified separately by
-        # test_pr_strip_real.py) must still leave the mesh visibly
-        # up to date afterward, not hidden behind a stale placeholder.
+        # its own real geometry mutation (_strip_resist_from_geometry(),
+        # verified separately by test_pr_strip_real.py) must leave the
+        # mesh visibly up to date afterward, not hidden behind a stale
+        # placeholder.
         app.process_pr_coat()
         assert app.wafer.pr_present
         mesh_before_strip = app.last_final_mesh
         app.process_pr_strip()
-        assert app._litho_pending_since_last_mesh is False, (
-            "PR STRIP must never leave litho marked pending -- its own "
-            "real geometry mutation already produces an up-to-date mesh "
-            "(or, if no real mesh existed, there is nothing to be "
-            "pending against)")
-        real_mesh_available_after_strip = bool(
-            app.wafer.processed
-            and app.last_final_mesh
-            and Path(app.last_final_mesh).exists()
-            and not app._litho_pending_since_last_mesh
-        )
-        assert real_mesh_available_after_strip is True, (
-            "after a real PR STRIP, the real (stripped) mesh must render "
-            "normally, not fall back to the placeholder")
+        texts = _canvas_texts(app.canvas)
+        assert not any(t == "Si substrate" for t in texts), (
+            f"after a real PR STRIP, the real (stripped) mesh must "
+            f"render normally, not fall back to the placeholder, "
+            f"got: {texts}")
         assert app.last_final_mesh != mesh_before_strip, (
             "PR STRIP must have produced a genuinely new mesh (the "
             "stripped one), not left the pre-strip mesh in place")
 
-        print("Litho placeholder gate: pending after PR Coat/Align/"
-              "Expose/Develop even with an earlier real mesh present; "
-              "cleared by the next real process step; PR STRIP never "
-              "incorrectly marked pending, real mesh renders after it.")
+        print("Litho placeholder: PR Coat/Align/Expose/Develop draw "
+              "their visuals on top of the real mesh, which stays "
+              "visible throughout (never hidden by a litho UI state "
+              "change); a real process step still produces a genuinely "
+              "new mesh; PR STRIP's real mesh renders normally "
+              "afterward.")
     finally:
         app.destroy()
 
