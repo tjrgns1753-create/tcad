@@ -66,6 +66,19 @@ class DopingRegion:
         the real physical relationship (an implant adds dopant on top
         of whatever was already there), not a replacement. None for
         every other kind.
+    donor_peak_conc_cm3 / acceptor_peak_conc_cm3 : gaussian_implant
+        case, donor/acceptor input variant — both profiles share the
+        SAME peak_position_um/straggle_um (this project has no
+        implant-energy model to give them independently-derived
+        shapes; see CLAUDE.md's "no fake physics parameters" rule).
+        peak_conc_cm3 is computed as donor - acceptor and is what
+        every downstream consumer (doping_mapping.py, the renderer)
+        continues to read. None when the region was built from a
+        plain signed peak_conc_cm3 instead.
+    donor_species / acceptor_species : label-only metadata (e.g. "P",
+        "B", "As") for the process log and any future report — never
+        read by doping_mapping.py or ViennaPS/DevSim, since neither
+        backend has any species-dependent physics. None if unset.
     """
 
     region: str
@@ -78,6 +91,10 @@ class DopingRegion:
     peak_position_um: Optional[float] = None
     straggle_um: Optional[float] = None
     implant_windows: Optional[List[Dict[str, float]]] = None
+    donor_peak_conc_cm3: Optional[float] = None
+    acceptor_peak_conc_cm3: Optional[float] = None
+    donor_species: Optional[str] = None
+    acceptor_species: Optional[str] = None
 
 
 @dataclass

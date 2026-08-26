@@ -27,26 +27,52 @@ a change to ProcessResult or DopingProfile's `regions` shape.
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from tcad.mesh.interface import DopingProfile, DopingRegion, ProcessResult
 
 
 def apply_uniform_doping(
     result: ProcessResult,
-    doping_by_region_cm3: Dict[str, float],
+    doping_by_region_cm3: Optional[Dict[str, float]] = None,
+    *,
+    donor_by_region_cm3: Optional[Dict[str, float]] = None,
+    acceptor_by_region_cm3: Optional[Dict[str, float]] = None,
+    species_by_region: Optional[Dict[str, tuple]] = None,
 ) -> ProcessResult:
     """Return a new ProcessResult with uniform doping attached.
 
-    doping_by_region_cm3 : {region_name: net_doping_cm3}. Each key
-        should match a MaterialRegion.name already present on `result`
-        (not enforced here — DevSim-side mapping will simply skip
-        regions without a DopingRegion entry).
+    Two mutually additive input shapes, so every existing caller stays
+    unchanged:
+      - doping_by_region_cm3: {region_name: net_doping_cm3} (original
+        shape — net only, donor/acceptor stay None on the region).
+      - donor_by_region_cm3 / acceptor_by_region_cm3: {region_name:
+        concentration_cm3}, both >= 0. net_doping_cm3 is computed as
+        donor - acceptor and the raw donor/acceptor values are kept on
+        the DopingRegion. species_by_region, if given, is
+        {region_name: (donor_species, acceptor_species)} — label only.
+
+    A region present in BOTH dicts uses the donor/acceptor value (the
+    net_doping_cm3-only dict is a fallback for regions not covered by
+    the donor/acceptor one, not a second independent source of truth).
     """
     regions = [
         DopingRegion(region=name, net_doping_cm3=value)
-        for name, value in doping_by_region_cm3.items()
+        for name, value in (doping_by_region_cm3 or {}).items()
     ]
+    donor_regions = set(donor_by_region_cm3 or {}) | set(acceptor_by_region_cm3 or {})
+    regions = [r for r in regions if r.region not in donor_regions]
+    for name in donor_regions:
+        donor = (donor_by_region_cm3 or {}).get(name, 0.0)
+        acceptor = (acceptor_by_region_cm3 or {}).get(name, 0.0)
+        species = (species_by_region or {}).get(name, (None, None))
+        regions.append(
+            DopingRegion(
+                region=name, net_doping_cm3=donor - acceptor,
+                donor_conc_cm3=donor, acceptor_conc_cm3=acceptor,
+                donor_species=species[0], acceptor_species=species[1],
+            )
+        )
     doping = DopingProfile(kind="uniform", regions=regions)
     return replace(result, doping=doping)
 
@@ -86,21 +112,42 @@ def apply_gaussian_implant_doping(
     junction_axis: str,
     peak_position_um: float,
     straggle_um: float,
-    peak_conc_cm3: float,
+    peak_conc_cm3: Optional[float] = None,
+    *,
+    donor_peak_conc_cm3: Optional[float] = None,
+    acceptor_peak_conc_cm3: Optional[float] = None,
+    donor_species: Optional[str] = None,
+    acceptor_species: Optional[str] = None,
 ) -> ProcessResult:
     """Return a new ProcessResult with a 1D Gaussian implant doping
     profile attached to one region: net doping along `junction_axis`
     is peak_conc_cm3 * exp(-((axis - peak_position_um)^2) /
     (2*straggle_um^2)) — a simple implant/diffusion approximation, not a
-    full process simulation. peak_conc_cm3 sign follows net_doping_cm3's
-    convention (positive = net donor, negative = net acceptor).
+    full process simulation.
+
+    Either pass peak_conc_cm3 directly (original shape, signed net,
+    positive = net donor, negative = net acceptor), or
+    donor_peak_conc_cm3/acceptor_peak_conc_cm3 (both >= 0) -- both
+    profiles share peak_position_um/straggle_um (see DopingRegion's
+    own docstring for why: no implant-energy model exists to derive
+    independent shapes). peak_conc_cm3 is computed as donor - acceptor
+    when the donor/acceptor form is used, and is what every downstream
+    consumer keeps reading.
     """
+    if donor_peak_conc_cm3 is not None or acceptor_peak_conc_cm3 is not None:
+        donor = donor_peak_conc_cm3 or 0.0
+        acceptor = acceptor_peak_conc_cm3 or 0.0
+        peak_conc_cm3 = donor - acceptor
     doping_region = DopingRegion(
         region=region,
         junction_axis=junction_axis,
         peak_position_um=peak_position_um,
         straggle_um=straggle_um,
         peak_conc_cm3=peak_conc_cm3,
+        donor_peak_conc_cm3=donor_peak_conc_cm3,
+        acceptor_peak_conc_cm3=acceptor_peak_conc_cm3,
+        donor_species=donor_species,
+        acceptor_species=acceptor_species,
     )
     doping = DopingProfile(kind="gaussian_implant", regions=[doping_region])
     return replace(result, doping=doping)
@@ -161,33 +208,56 @@ def apply_implant_windows_doping(
     result: ProcessResult,
     region: str,
     axis: str,
-    background_doping_cm3: float,
-    windows: List[Dict[str, float]],
+    background_doping_cm3: Optional[float] = None,
+    windows: Optional[List[Dict[str, float]]] = None,
+    *,
+    donor_background_cm3: Optional[float] = None,
+    acceptor_background_cm3: Optional[float] = None,
 ) -> ProcessResult:
     """Return a new ProcessResult with a background doping plus zero or
     more laterally-windowed implants SUPERPOSED on top, all in one
     region: e.g. a body/channel background with source and drain
     implants laid out along `axis`.
 
+    Background: either background_doping_cm3 (original shape, signed
+    net) or donor_background_cm3/acceptor_background_cm3 (both >= 0,
+    net computed as donor - acceptor).
+
     windows : list of {"min_um": float, "max_um": float,
-        "conc_cm3": float}. Each window ADDS conc_cm3 (signed, same
-        convention as background_doping_cm3: positive = net donor,
-        negative = net acceptor) to the background wherever
-        min_um <= axis-coordinate <= max_um. Windows may overlap (their
-        contributions sum) — not validated here, since a caller may
-        deliberately want graded overlap; DevSim-side mapping applies
-        the windows exactly as given.
+        "conc_cm3": float} (original shape, signed net) OR
+        {"min_um": float, "max_um": float, "donor_conc_cm3": float,
+        "acceptor_conc_cm3": float} (both >= 0) -- "conc_cm3" is filled
+        in as donor - acceptor either way, so doping_mapping.py and the
+        renderer keep reading the same key unchanged. Each window ADDS
+        conc_cm3 (signed, same convention as background_doping_cm3:
+        positive = net donor, negative = net acceptor) to the
+        background wherever min_um <= axis-coordinate <= max_um.
+        Windows may overlap (their contributions sum) — not validated
+        here, since a caller may deliberately want graded overlap;
+        DevSim-side mapping applies the windows exactly as given.
 
     This models the real physical relationship between an implant and
     whatever doping already existed where it lands (superposition), not
     a replacement — the same reason `apply_gaussian_implant_doping`
     doesn't split its result into separate Donors/Acceptors models.
     """
+    if donor_background_cm3 is not None or acceptor_background_cm3 is not None:
+        background_doping_cm3 = (donor_background_cm3 or 0.0) - (acceptor_background_cm3 or 0.0)
+
+    resolved_windows = []
+    for window in windows or []:
+        window = dict(window)
+        if "donor_conc_cm3" in window or "acceptor_conc_cm3" in window:
+            window["conc_cm3"] = window.get("donor_conc_cm3", 0.0) - window.get("acceptor_conc_cm3", 0.0)
+        resolved_windows.append(window)
+
     doping_region = DopingRegion(
         region=region,
         net_doping_cm3=background_doping_cm3,
         junction_axis=axis,
-        implant_windows=[dict(window) for window in windows],
+        donor_conc_cm3=donor_background_cm3,
+        acceptor_conc_cm3=acceptor_background_cm3,
+        implant_windows=resolved_windows,
     )
     doping = DopingProfile(kind="implant_windows", regions=[doping_region])
     return replace(result, doping=doping)
