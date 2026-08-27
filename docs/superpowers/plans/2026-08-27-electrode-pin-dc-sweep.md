@@ -295,28 +295,34 @@ from tcad.device.devsim import backend as devsim_backend
 assert session.is_available(), "ViennaPS must be installed for this test"
 assert devsim_backend.is_available(), "DevSim must be installed for this test"
 
+import tcad.process.oxidation  # noqa: F401 -- registers thermal oxidation
+from tcad.process import registry
 from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.mesh.pin import Pin
 from tcad.device.devsim.contact_probe import (
     validate_pin_placement, PinPlacementError,
     REASON_OUTSIDE_MESH, REASON_ON_INSULATOR, REASON_INTERIOR_BULK,
 )
-from tcad.process.registry import get as get_step
 
 WIDTH_UM = 10.0
 GRID = 0.2
+#: Real, already-verified values (tests/integration/test_blanket_no_mask_real.py's
+#: own OXIDATION dict) -- oxide THICKNESS is an output of oxidant/
+#: temperature/time, not a direct recipe input; there is no
+#: "oxide_thickness_um" key on this process step.
+OXIDATION = {"oxidant": "Dry", "temperature_c": 1000.0, "time_hours": 0.5}
 
 
 def _oxidized_si_result(tmp):
     """A real thermal oxidation on a fresh wafer: Si body + a thin SiO2
     cap on top -- a real 2-material mesh with a real insulator, no
-    hand-built geometry."""
-    step_cls = get_step("oxidation", "thermal")
+    hand-built geometry. No mask_material key -> the fin-style (blanket,
+    no-mask) branch, not LOCOS."""
+    step_cls = registry.get("oxidation", "thermal")
     step = step_cls()
     recipe = {
         "grid_delta_um": GRID, "x_extent_um": WIDTH_UM, "y_extent_um": 8.0,
-        "silicon_depth_um": 3.0, "oxide_thickness_um": 0.3,
-        "oxidation_time_hr": 1.0,
+        **OXIDATION,
     }
     result = step.run(recipe, tmp)
     return build_process_result({"final_mesh": result["final_mesh"], "snapshots": []})
@@ -327,8 +333,13 @@ def main():
         process_result = _oxidized_si_result(tmp)
         contactable = {"Si"}
 
-        # Valid: bottom of the wafer, well inside Si's own real boundary.
-        valid_pin = Pin(name="Body", role="Body", x_um=WIDTH_UM / 2.0, y_um=-2.9)
+        # Valid: the wafer's own real bottom boundary. Measured directly
+        # against this exact recipe (grid_delta_um=0.2, no
+        # silicon_depth_um override -> the process step's own default
+        # floor depth): Si spans y=[-5.0, -0.00163], SiO2 spans
+        # y=[-0.00164, +0.20462] -- do not guess these numbers for a
+        # different recipe without re-measuring.
+        valid_pin = Pin(name="Body", role="Body", x_um=WIDTH_UM / 2.0, y_um=-5.0)
         region = validate_pin_placement(process_result, valid_pin, WIDTH_UM, contactable)
         assert region == "Si", f"expected Si, got {region}"
         print(f"[1/4] valid pin on Si boundary resolves: region={region}")
@@ -351,8 +362,10 @@ def main():
             assert exc.reason == REASON_ON_INSULATOR, exc.reason
             print(f"[3/4] on-insulator pin correctly rejected: {exc.detail}")
 
-        # Invalid: deep inside Si bulk, away from every real boundary.
-        bulk_pin = Pin(name="Buried", role="Body", x_um=WIDTH_UM / 2.0, y_um=-1.5)
+        # Invalid: deep inside Si bulk (roughly midway between the top
+        # Si/SiO2 boundary at y~0 and the bottom boundary at y=-5.0),
+        # away from every real boundary.
+        bulk_pin = Pin(name="Buried", role="Body", x_um=WIDTH_UM / 2.0, y_um=-2.5)
         try:
             validate_pin_placement(process_result, bulk_pin, WIDTH_UM, contactable, tolerance_um=0.05)
             assert False, "expected PinPlacementError for a point deep in Si bulk"
@@ -554,9 +567,10 @@ assert devsim_backend.is_available(), "DevSim must be installed for this test"
 
 devsim = devsim_backend.require_devsim()
 
+import tcad.process.etching  # noqa: F401 -- registers isotropic etch
+from tcad.process import registry
 from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.device.devsim.mesh_import import import_process_result
-from tcad.process.registry import get as get_step
 
 WIDTH_UM = 10.0
 GRID = 0.2
@@ -564,11 +578,14 @@ GRID = 0.2
 
 def main():
     with tempfile.TemporaryDirectory() as tmp:
-        step_cls = get_step("etching", "isotropic")
+        step_cls = registry.get("etching", "isotropic")
         step = step_cls()
         recipe = {
             "grid_delta_um": GRID, "x_extent_um": WIDTH_UM, "y_extent_um": 8.0,
-            "silicon_depth_um": 3.0, "etch_time_s": 1.0, "etch_rate_um_s": 0.05,
+            # "rate" (not "etch_rate_um_s") -- negative removes material,
+            # this module's own fixed etching convention (see
+            # tcad/process/etching/isotropic.py's module docstring).
+            "silicon_depth_um": 3.0, "etch_time_s": 1.0, "rate": -0.05,
         }
         result = step.run(recipe, tmp)
         process_result = build_process_result({"final_mesh": result["final_mesh"], "snapshots": []})
@@ -866,13 +883,14 @@ assert devsim_backend.is_available(), "DevSim must be installed for this test"
 
 devsim = devsim_backend.require_devsim()
 
+import tcad.process.etching  # noqa: F401 -- registers isotropic etch
+from tcad.process import registry
 from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.physics.doping import apply_step_junction_doping
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
 from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
 from tcad.device.devsim.voltage_probe import read_potential_at_point
-from tcad.process.registry import get as get_step
 
 WIDTH_UM = 4.0
 GRID = 0.1
@@ -881,11 +899,12 @@ LENGTH_SCALE_TO_CM = 1.0e-4
 
 def main():
     with tempfile.TemporaryDirectory() as tmp:
-        step_cls = get_step("etching", "isotropic")
+        step_cls = registry.get("etching", "isotropic")
         step = step_cls()
         recipe = {
             "grid_delta_um": GRID, "x_extent_um": WIDTH_UM, "y_extent_um": 3.0,
-            "silicon_depth_um": 1.0, "etch_time_s": 0.01, "etch_rate_um_s": 0.05,
+            # "rate" (not "etch_rate_um_s") -- negative removes material.
+            "silicon_depth_um": 1.0, "etch_time_s": 0.01, "rate": -0.05,
         }
         result = step.run(recipe, tmp)
         process_result = build_process_result({"final_mesh": result["final_mesh"], "snapshots": []})
@@ -1877,23 +1896,28 @@ assert devsim_backend.is_available(), "DevSim must be installed for this test"
 
 devsim = devsim_backend.require_devsim()
 
+import tcad.process.oxidation  # noqa: F401 -- registers thermal oxidation
+from tcad.process import registry
 from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.mesh.pin import Pin
 from tcad.device.devsim.contact_probe import validate_pin_placement, PinPlacementError, REASON_ON_INSULATOR, REASON_OUTSIDE_MESH
 from tcad.device.devsim.mesh_import import import_process_result
-from tcad.process.registry import get as get_step
 
 WIDTH_UM = 10.0
 GRID = 0.2
+#: Real, already-verified values (test_blanket_no_mask_real.py's own
+#: OXIDATION dict) -- see Task 2's test for why there is no direct
+#: "oxide_thickness_um" recipe key.
+OXIDATION = {"oxidant": "Dry", "temperature_c": 1000.0, "time_hours": 0.5}
 
 
 def main():
     with tempfile.TemporaryDirectory() as tmp:
-        step_cls = get_step("oxidation", "thermal")
+        step_cls = registry.get("oxidation", "thermal")
         step = step_cls()
         recipe = {
             "grid_delta_um": GRID, "x_extent_um": WIDTH_UM, "y_extent_um": 8.0,
-            "silicon_depth_um": 3.0, "oxide_thickness_um": 0.3, "oxidation_time_hr": 1.0,
+            **OXIDATION,
         }
         result = step.run(recipe, tmp)
         process_result = build_process_result({"final_mesh": result["final_mesh"], "snapshots": []})
