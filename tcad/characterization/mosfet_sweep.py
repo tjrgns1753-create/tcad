@@ -57,7 +57,7 @@ plain-oxide-equilibrium version each separately converge fine):
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Optional
 
 from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
 from tcad.device.devsim import backend
@@ -109,6 +109,8 @@ def run_mosfet_id_vgs_sweep(
     temperature_k: float = 300.0,
     relative_error: float = 1.0e-6,
     maximum_iterations: int = 100,
+    body_contact: Optional[str] = None,
+    body_voltage: float = 0.0,
 ) -> CharacterizationResult:
     """Solve Si+oxide equilibrium, enable Si drift-diffusion, ramp the
     drain bias, then sweep gate voltage — reading real source/drain
@@ -142,6 +144,8 @@ def run_mosfet_id_vgs_sweep(
     from devsim.python_packages.ramp import rampbias
 
     si_contacts = [source_contact, drain_contact]
+    if body_contact is not None:
+        si_contacts = si_contacts + [body_contact]
     no_op_callback = lambda _device: None  # noqa: E731 -- rampbias requires a callback; this sweep reads currents itself, per point, below
 
     # 1. Equilibrium: Si + oxide Poisson-only, coupled at the interface.
@@ -164,6 +168,10 @@ def run_mosfet_id_vgs_sweep(
         _RAMP_MAX_ITER, _DD_RELATIVE_ERROR, _DD_ABSOLUTE_ERROR, no_op_callback,
     )
 
+    if body_contact is not None:
+        from tcad.device.devsim.resistor_equation import set_bias
+        set_bias(device, body_contact, body_voltage)
+
     points: List[BiasPoint] = []
     for vg in gate_voltages:
         # 4. Ramp gate voltage to each target (see module docstring point 5).
@@ -174,6 +182,8 @@ def run_mosfet_id_vgs_sweep(
 
         currents = read_drift_diffusion_terminal_currents(device, si_contacts)
         voltages = {source_contact: 0.0, drain_contact: drain_voltage, gate_contact: vg}
+        if body_contact is not None:
+            voltages[body_contact] = body_voltage
 
         points.append(BiasPoint(voltages=voltages, currents=currents))
 
@@ -192,6 +202,8 @@ def run_mosfet_id_vgs_sweep(
             "interface": interface_name,
             "physics": "drift_diffusion",
             "current_convention": CURRENT_CONVENTION_NOTE,
+            "body_contact": body_contact,
+            "body_voltage": body_voltage,
         },
     )
 
@@ -209,6 +221,8 @@ def run_mosfet_id_vds_sweep(
     temperature_k: float = 300.0,
     relative_error: float = 1.0e-6,
     maximum_iterations: int = 100,
+    body_contact: Optional[str] = None,
+    body_voltage: float = 0.0,
 ) -> CharacterizationResult:
     """Solve Si+oxide equilibrium, enable Si drift-diffusion, ramp the
     gate bias to its fixed target, then sweep drain voltage -- reading
@@ -229,6 +243,8 @@ def run_mosfet_id_vds_sweep(
     from devsim.python_packages.ramp import rampbias
 
     si_contacts = [source_contact, drain_contact]
+    if body_contact is not None:
+        si_contacts = si_contacts + [body_contact]
     no_op_callback = lambda _device: None  # noqa: E731
 
     # 1. Equilibrium: Si + oxide Poisson-only, coupled at the interface.
@@ -251,6 +267,10 @@ def run_mosfet_id_vds_sweep(
         _RAMP_MAX_ITER, _DD_RELATIVE_ERROR, _DD_ABSOLUTE_ERROR, no_op_callback,
     )
 
+    if body_contact is not None:
+        from tcad.device.devsim.resistor_equation import set_bias
+        set_bias(device, body_contact, body_voltage)
+
     points: List[BiasPoint] = []
     for vd in drain_voltages:
         # 4. Ramp drain voltage to each target.
@@ -261,6 +281,8 @@ def run_mosfet_id_vds_sweep(
 
         currents = read_drift_diffusion_terminal_currents(device, si_contacts)
         voltages = {source_contact: 0.0, gate_contact: gate_voltage, drain_contact: vd}
+        if body_contact is not None:
+            voltages[body_contact] = body_voltage
 
         points.append(BiasPoint(voltages=voltages, currents=currents))
 
@@ -279,5 +301,7 @@ def run_mosfet_id_vds_sweep(
             "interface": interface_name,
             "physics": "drift_diffusion",
             "current_convention": CURRENT_CONVENTION_NOTE,
+            "body_contact": body_contact,
+            "body_voltage": body_voltage,
         },
     )
