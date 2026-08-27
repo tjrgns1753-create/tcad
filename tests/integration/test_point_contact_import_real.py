@@ -52,7 +52,7 @@ def main():
             ],
         )
         assert set(imported.contacts) == {"PinA", "PinB"}, imported.contacts
-        print(f"[1/3] two point contacts created: {imported.contacts}")
+        print(f"[1/4] two point contacts created: {imported.contacts}")
 
         for name in ("PinA", "PinB"):
             xs = devsim.get_node_model_values(device=imported.device, region="Si", name="x")
@@ -62,7 +62,7 @@ def main():
             # to solve otherwise) -- checked via get_contact_list().
         contact_list = devsim.get_contact_list(device=imported.device)
         assert set(contact_list) == {"PinA", "PinB"}, contact_list
-        print(f"[2/3] both contacts registered in DevSim: {sorted(contact_list)}")
+        print(f"[2/4] both contacts registered in DevSim: {sorted(contact_list)}")
 
         devsim.delete_device(device=imported.device)
         devsim.delete_mesh(mesh=imported.mesh)
@@ -74,9 +74,23 @@ def main():
             contact_regions=["Si"], contact_axis="x",
         )
         assert set(imported2.contacts) == {"Si_xmin", "Si_xmax"}, imported2.contacts
-        print(f"[3/3] existing contact_regions path unaffected: {imported2.contacts}")
+        print(f"[3/4] existing contact_regions path unaffected: {imported2.contacts}")
         devsim.delete_device(device=imported2.device)
         devsim.delete_mesh(mesh=imported2.mesh)
+
+        # extra_contacts: Si gets its normal x-axis contact_regions pair
+        # PLUS a y-axis contact for the SAME region in one call -- the
+        # exact shape a Body contact needs (Source/Drain on x, Body on y).
+        imported3 = import_process_result(
+            process_result, mesh_name="pc_mesh3", device_name="pc_device3",
+            contact_regions=["Si"], contact_axis="x",
+            extra_contacts=[{"name": "Si_ymin", "region": "Si", "axis": "y", "side": "min"}],
+        )
+        assert set(imported3.contacts) == {"Si_xmin", "Si_xmax", "Si_ymin"}, imported3.contacts
+        print(f"[4/4] extra_contacts adds a 2nd-axis contact alongside "
+              f"contact_regions': {sorted(imported3.contacts)}")
+        devsim.delete_device(device=imported3.device)
+        devsim.delete_mesh(mesh=imported3.mesh)
 
     print()
     print("point_contacts VERIFIED against real ViennaPS 4.6.2 + DevSim, "

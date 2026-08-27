@@ -746,6 +746,7 @@ def import_process_result(
     refine_levels: Optional[int] = None,
     auto_refine_from_doping: bool = False,
     point_contacts: Optional[List[Dict]] = None,
+    extra_contacts: Optional[List[Dict]] = None,
 ) -> ImportedDevice:
     """Import a ProcessResult's volume mesh into DevSim as a device.
 
@@ -920,6 +921,18 @@ def import_process_result(
         The two can be combined in one call (a region can get BOTH its
         axis-extreme contacts and one or more point contacts) -- they
         write into the same internal contact_defs list.
+    extra_contacts : optional list of {"name": str, "region": str,
+        "axis": str, "side": "min"|"max"} dicts -- one MORE
+        axis-extreme contact for `region`, on `axis`/`side`,
+        independent of that region's own contact_axis/contact_axes
+        entry in contact_regions. Needed once a device needs a SECOND
+        axis-extreme contact on the SAME region in one call (e.g. a
+        MOSFET's Body contact at Si's y-min, alongside Source/Drain at
+        Si's own x-min/x-max from contact_regions) -- today's
+        contact_regions loop derives at most ONE axis's min/max per
+        region per call. Uses the exact same region-local-extreme
+        boundary-edge derivation contact_regions already uses (see
+        that loop, just above) -- not a different mechanism.
     """
     module = backend.require_devsim()
 
@@ -1101,6 +1114,41 @@ def import_process_result(
             contact_name = spec["name"]
             idx = physical_index(contact_name)
             for edge in near_edges:
+                elements += [1, idx, int(edge[0]), int(edge[1])]
+            contact_defs.append((contact_name, region_name))
+
+    if extra_contacts:
+        for spec in extra_contacts:
+            region_name = spec["region"]
+            matching_tags = [t for t, n in tag_to_name.items() if n == region_name]
+            if not matching_tags:
+                continue
+            region_boundary = boundary_edges_by_tag.get(matching_tags[0], [])
+            if not region_boundary:
+                continue
+
+            axis_index = {"x": 0, "y": 1, "z": 2}[spec["axis"]]
+            coords_axis = points[:, axis_index]
+            region_node_ids = {n for edge in region_boundary for n in edge}
+            region_coords = coords_axis[list(region_node_ids)]
+            target_value = region_coords.min() if spec["side"] == "min" else region_coords.max()
+
+            def _edges_near(target, tol):
+                return [
+                    e for e in region_boundary
+                    if abs(coords_axis[e[0]] - target) < tol and abs(coords_axis[e[1]] - target) < tol
+                ]
+
+            edges = _edges_near(target_value, 1e-6)
+            if not edges:
+                span = region_coords.max() - region_coords.min()
+                edges = _edges_near(target_value, max(1e-6, 0.1 * span))
+            if not edges:
+                continue
+
+            contact_name = spec["name"]
+            idx = physical_index(contact_name)
+            for edge in edges:
                 elements += [1, idx, int(edge[0]), int(edge[1])]
             contact_defs.append((contact_name, region_name))
 
