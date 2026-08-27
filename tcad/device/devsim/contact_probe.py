@@ -190,3 +190,23 @@ def validate_pin_placement(
             f"which is not in the contactable set {sorted(contactable_materials)}",
         )
     return region_name
+
+
+def find_duplicate_pin_positions(pins: List[Pin], tolerance_um: float = 1e-6) -> List[Tuple[Pin, ...]]:
+    """Groups of 2+ pins whose (x_um, y_um) positions coincide within
+    tolerance_um -- a CAD-style "two electrodes at the same spot" error,
+    checked BEFORE any mesh lookup (this is a pure pin-vs-pin check,
+    independent of the real mesh). Returns a list of tuples, one tuple
+    per colliding group (empty list if every pin is at a distinct
+    position)."""
+    groups: List[List[Pin]] = []
+    for pin in pins:
+        placed = False
+        for group in groups:
+            if abs(group[0].x_um - pin.x_um) < tolerance_um and abs(group[0].y_um - pin.y_um) < tolerance_um:
+                group.append(pin)
+                placed = True
+                break
+        if not placed:
+            groups.append([pin])
+    return [tuple(g) for g in groups if len(g) > 1]
