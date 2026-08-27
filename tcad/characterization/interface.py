@@ -55,10 +55,17 @@ class BiasPoint:
     currents : PER UNIT DEPTH (DevSim's own 2D-device convention, not
         the total current of a real device with a specific physical
         width) — see this module's CURRENT_CONVENTION_NOTE.
+    converged : whether this point's own solve succeeded. Always True
+        today (every BiasPoint producer in this package raises on a
+        non-converging solve rather than recording a failed point --
+        see the sweep functions' own docstrings) -- present so a
+        future caller/consumer does not need a data-model migration
+        if that changes.
     """
 
     voltages: Dict[str, float]
     currents: Dict[str, float]
+    converged: bool = True
 
 
 @dataclass
