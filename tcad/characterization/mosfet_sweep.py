@@ -194,3 +194,90 @@ def run_mosfet_id_vgs_sweep(
             "current_convention": CURRENT_CONVENTION_NOTE,
         },
     )
+
+
+def run_mosfet_id_vds_sweep(
+    device: str,
+    si_region: str,
+    oxide_region: str,
+    source_contact: str,
+    drain_contact: str,
+    gate_contact: str,
+    interface_name: str,
+    drain_voltages: List[float],
+    gate_voltage: float,
+    temperature_k: float = 300.0,
+    relative_error: float = 1.0e-6,
+    maximum_iterations: int = 100,
+) -> CharacterizationResult:
+    """Solve Si+oxide equilibrium, enable Si drift-diffusion, ramp the
+    gate bias to its fixed target, then sweep drain voltage -- reading
+    real source/drain terminal current at every point. Mirrors
+    run_mosfet_id_vgs_sweep's own sequence exactly, with the gate and
+    drain roles swapped (gate is ramped ONCE, drain is the swept
+    variable) -- see that function's own docstring for why each
+    tolerance/ramp constant below is what it is; this sweep reuses the
+    identical values rather than re-deriving them, since it exercises
+    the same Si+oxide+interface device under the same drift-diffusion
+    equations.
+
+    One call per device -- same restriction run_mosfet_id_vgs_sweep
+    documents. Every current returned is PER UNIT DEPTH -- see
+    tcad.characterization.interface.CURRENT_CONVENTION_NOTE.
+    """
+    module = backend.require_devsim()
+    from devsim.python_packages.ramp import rampbias
+
+    si_contacts = [source_contact, drain_contact]
+    no_op_callback = lambda _device: None  # noqa: E731
+
+    # 1. Equilibrium: Si + oxide Poisson-only, coupled at the interface.
+    setup_mosfet_potential_equation(
+        device, si_region, oxide_region, si_contacts, gate_contact,
+        interface_name, temperature_k,
+    )
+    module.solve(type="dc", absolute_error=1.0, relative_error=relative_error, maximum_iterations=maximum_iterations)
+
+    # 2. Enable drift-diffusion transport in Si at the same equilibrium bias.
+    setup_drift_diffusion_equation(device, si_region, si_contacts)
+    module.solve(
+        type="dc", absolute_error=_DD_ABSOLUTE_ERROR, relative_error=_DD_RELATIVE_ERROR,
+        maximum_iterations=maximum_iterations,
+    )
+
+    # 3. Ramp the gate bias up to its fixed target.
+    rampbias(
+        device, gate_contact, gate_voltage, _RAMP_STEP_SIZE, _RAMP_MIN_STEP,
+        _RAMP_MAX_ITER, _DD_RELATIVE_ERROR, _DD_ABSOLUTE_ERROR, no_op_callback,
+    )
+
+    points: List[BiasPoint] = []
+    for vd in drain_voltages:
+        # 4. Ramp drain voltage to each target.
+        rampbias(
+            device, drain_contact, vd, _RAMP_STEP_SIZE, _RAMP_MIN_STEP,
+            _RAMP_MAX_ITER, _DD_RELATIVE_ERROR, _DD_ABSOLUTE_ERROR, no_op_callback,
+        )
+
+        currents = read_drift_diffusion_terminal_currents(device, si_contacts)
+        voltages = {source_contact: 0.0, gate_contact: gate_voltage, drain_contact: vd}
+
+        points.append(BiasPoint(voltages=voltages, currents=currents))
+
+    return CharacterizationResult(
+        name="mosfet_id_vds_sweep",
+        device=device,
+        region=si_region,
+        sweep_contact=drain_contact,
+        points=points,
+        metadata={
+            "temperature_k": temperature_k,
+            "oxide_region": oxide_region,
+            "source_contact": source_contact,
+            "gate_contact": gate_contact,
+            "gate_voltage": gate_voltage,
+            "interface": interface_name,
+            "physics": "drift_diffusion",
+            "current_convention": CURRENT_CONVENTION_NOTE,
+        },
+    )
