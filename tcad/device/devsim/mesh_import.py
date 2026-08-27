@@ -745,6 +745,7 @@ def import_process_result(
     refine_half_width_um: Optional[float] = None,
     refine_levels: Optional[int] = None,
     auto_refine_from_doping: bool = False,
+    point_contacts: Optional[List[Dict]] = None,
 ) -> ImportedDevice:
     """Import a ProcessResult's volume mesh into DevSim as a device.
 
@@ -905,6 +906,20 @@ def import_process_result(
         doping profile with more than one distinct junction (only the
         FIRST positioned region is used) — not yet a scenario this
         project's own recipes produce.
+    point_contacts : optional list of {"name": str, "region": str,
+        "x_domain_um": float, "y_um": float, "radius_um": float} dicts
+        -- each creates ONE contact named `name` from every boundary
+        edge of `region` whose midpoint falls within `radius_um` of
+        (x_domain_um, y_um). Already in mesh-space (domain-centered,
+        pre-length_scale_to_cm) coordinates -- the caller (see
+        tcad.device.devsim.contact_probe) owns the wafer-to-domain
+        conversion. Distinct from contact_regions/contact_axis/
+        contact_sides/contact_axes (region-axis-extreme contacts):
+        this is a free-form coordinate contact instead, for a
+        user-placed Pin rather than an auto-derived region boundary.
+        The two can be combined in one call (a region can get BOTH its
+        axis-extreme contacts and one or more point contacts) -- they
+        write into the same internal contact_defs list.
     """
     module = backend.require_devsim()
 
@@ -1056,6 +1071,38 @@ def import_process_result(
                 for edge in edges:
                     elements += [1, idx, int(edge[0]), int(edge[1])]
                 contact_defs.append((contact_name, region_name))
+
+    if point_contacts:
+        for spec in point_contacts:
+            region_name = spec["region"]
+            matching_tags = [t for t, n in tag_to_name.items() if n == region_name]
+            if not matching_tags:
+                continue
+            region_boundary = boundary_edges_by_tag.get(matching_tags[0], [])
+            if not region_boundary:
+                continue
+
+            target = np.array([spec["x_domain_um"], spec["y_um"]])
+            radius = spec["radius_um"]
+            near_edges = []
+            for edge in region_boundary:
+                # points has 3 columns (x, y, z) -- this project is 2D
+                # only, z is always 0 (real mesh confirmed: meshio's
+                # own volume_mesh_path always carries a z column here),
+                # so compare against the x/y plane only.
+                p0, p1 = points[edge[0]][:2], points[edge[1]][:2]
+                midpoint = (p0 + p1) / 2.0
+                if np.linalg.norm(midpoint - target) <= radius:
+                    near_edges.append(edge)
+
+            if not near_edges:
+                continue
+
+            contact_name = spec["name"]
+            idx = physical_index(contact_name)
+            for edge in near_edges:
+                elements += [1, idx, int(edge[0]), int(edge[1])]
+            contact_defs.append((contact_name, region_name))
 
     coordinates = points.flatten().tolist()
 
