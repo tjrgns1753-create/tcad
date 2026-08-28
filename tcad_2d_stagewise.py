@@ -4694,6 +4694,25 @@ class TCADApplication(tk.Tk):
             return
         self.add_electrode_pin(self.pin_name_var.get(), self.pin_role_var.get(), x_um, y_um)
 
+    def _cleanup_electrode_device(self):
+        """Delete self.last_electrode_import's real DevSim device/mesh,
+        if any, and clear the reference. Mirrors run_dc_operating_
+        point's own finally-block delete-then-clear pattern -- called
+        both there and here (RESOLVE re-clicked, or NEW WAFER/reset())
+        so a leaked device from an abandoned RESOLVE (no DC-OP click
+        ever reached) cannot poison a later, unrelated solve -- see
+        CLAUDE.md's own "leaked DevSim device" trap."""
+        if self.last_electrode_import is None:
+            return
+        from tcad.device.devsim import backend as devsim_backend
+        try:
+            module = devsim_backend.require_devsim()
+            module.delete_device(device=self.last_electrode_import.device)
+            module.delete_mesh(mesh=self.last_electrode_import.mesh)
+        except Exception:
+            pass
+        self.last_electrode_import = None
+
     def resolve_electrode_pins(self):
         """Validates every placed pin against the real current mesh,
         then imports them all as real DevSim point contacts in ONE
@@ -4716,6 +4735,11 @@ class TCADApplication(tk.Tk):
             messagebox.showinfo("Electrode", "No real mesh exists yet -- run a process step first.")
             return None
 
+        # A previous RESOLVE click's device (if the user never reached
+        # DC OPERATING POINT, or clicked RESOLVE again) would otherwise
+        # stay registered in DevSim and poison the next solve.
+        self._cleanup_electrode_device()
+
         from tcad.mesh.viennaps_adapter import build_process_result
         from tcad.device.devsim.contact_probe import (
             validate_pin_placement, find_duplicate_pin_positions, PinPlacementError,
@@ -4731,39 +4755,44 @@ class TCADApplication(tk.Tk):
             messagebox.showerror("Electrode", f"Pins at the same position: {names}")
             return None
 
-        import meshio
-        mesh = meshio.read(process_result.volume_mesh_path)
-        real_width_um = float(mesh.points[:, 0].max() - mesh.points[:, 0].min())
+        try:
+            import meshio
+            mesh = meshio.read(process_result.volume_mesh_path)
+            real_width_um = float(mesh.points[:, 0].max() - mesh.points[:, 0].min())
 
-        errors = []
-        point_contacts = []
-        half_width = real_width_um / 2.0
-        for pin in self.electrode_pins:
-            try:
-                region = validate_pin_placement(process_result, pin, real_width_um, contactable)
-                point_contacts.append({
-                    "name": pin.name, "region": region,
-                    "x_domain_um": pin.x_um - half_width, "y_um": pin.y_um,
-                    "radius_um": 0.1,
-                })
-            except PinPlacementError as exc:
-                errors.append(f"{exc.pin.name}: {exc.reason} -- {exc.detail}")
+            errors = []
+            point_contacts = []
+            half_width = real_width_um / 2.0
+            for pin in self.electrode_pins:
+                try:
+                    region = validate_pin_placement(process_result, pin, real_width_um, contactable)
+                    point_contacts.append({
+                        "name": pin.name, "region": region,
+                        "x_domain_um": pin.x_um - half_width, "y_um": pin.y_um,
+                        "radius_um": 0.1,
+                    })
+                except PinPlacementError as exc:
+                    errors.append(f"{exc.pin.name}: {exc.reason} -- {exc.detail}")
 
-        if errors:
-            messagebox.showerror("Electrode", "Invalid pin placement:\n\n" + "\n".join(errors))
+            if errors:
+                messagebox.showerror("Electrode", "Invalid pin placement:\n\n" + "\n".join(errors))
+                return None
+
+            imported = import_process_result(
+                process_result, mesh_name="gui_electrode_mesh", device_name="gui_electrode_device",
+                point_contacts=point_contacts, length_scale_to_cm=1.0e-4,
+                # Needed for setup_mosfet_potential_equation's own
+                # interface_name -- the Si/SiO2 interface tying the Si
+                # transport region to the oxide's potential-only region
+                # (see run_dc_operating_point). Harmless when either
+                # material is absent from this mesh (import_process_result
+                # skips a pair with no matching regions/shared edges).
+                interface_region_pairs=[("Si", "SiO2")],
+            )
+        except Exception as exc:
+            messagebox.showerror("Electrode", f"Pin resolution failed:\n\n{exc}")
             return None
 
-        imported = import_process_result(
-            process_result, mesh_name="gui_electrode_mesh", device_name="gui_electrode_device",
-            point_contacts=point_contacts, length_scale_to_cm=1.0e-4,
-            # Needed for setup_mosfet_potential_equation's own
-            # interface_name -- the Si/SiO2 interface tying the Si
-            # transport region to the oxide's potential-only region
-            # (see run_dc_operating_point). Harmless when either
-            # material is absent from this mesh (import_process_result
-            # skips a pair with no matching regions/shared edges).
-            interface_region_pairs=[("Si", "SiO2")],
-        )
         self.last_electrode_import = imported
         # Which real MaterialRegion each contact actually landed on --
         # read by run_dc_operating_point() to tell a contact that is
@@ -7253,6 +7282,17 @@ class TCADApplication(tk.Tk):
     # --------------------------------------------------------
 
     def reset(self):
+
+        # A device left over from a RESOLVE click that never reached DC
+        # OPERATING POINT would otherwise stay registered in DevSim and
+        # poison the next, unrelated solve -- delete it before clearing
+        # the electrode-panel state below (see CLAUDE.md's own "leaked
+        # DevSim device" trap).
+        self._cleanup_electrode_device()
+        self.electrode_pins = []
+        self._electrode_contact_regions = {}
+        if hasattr(self, "electrode_listbox"):
+            self.electrode_listbox.delete(0, "end")
 
         self.wafer = Wafer()
         self.recipe = BoschRecipe()

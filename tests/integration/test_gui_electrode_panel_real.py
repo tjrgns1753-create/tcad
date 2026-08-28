@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Drives the real TCADApplication (window withdrawn) through Pin
-placement -> RESOLVE -> DC operating point -> Id-Vgs sweep, on a real
-gate_stack device built via the existing GUI geometry panel."""
+placement -> RESOLVE -> DC operating point, on a real gate_stack
+device built via the existing GUI geometry panel."""
 import sys
 from pathlib import Path
 
@@ -85,13 +85,29 @@ def main():
         resolved = app.resolve_electrode_pins()
         assert resolved is not None, "pin resolution against the real mesh failed"
         assert set(resolved.contacts) >= {"Source", "Drain"}, resolved.contacts
-        print(f"[1/2] 4 pins resolved to real contacts: {sorted(resolved.contacts)}")
+        # This is the entire substance of this test's own deviation from
+        # the controller's original (metal-pad) pin table -- verify it
+        # actually stuck, not just that SOME contact got created. A
+        # converged, charge-conserving-LOOKING solve is not by itself
+        # proof the physics is right (see CLAUDE.md's own worst-bug
+        # case study: a 3.8e7x wrong MOSFET current that passed its own
+        # shipped regression test for exactly this reason).
+        assert app._electrode_contact_regions["Source"] == "Si", app._electrode_contact_regions
+        assert app._electrode_contact_regions["Drain"] == "Si", app._electrode_contact_regions
+        print(f"[1/2] 4 pins resolved to real contacts: {sorted(resolved.contacts)} "
+              f"(Source/Drain confirmed on region 'Si')")
 
         op_point = app.run_dc_operating_point(
             drain_voltage=0.1, gate_voltage=1.0, body_voltage=0.0,
         )
         assert op_point is not None
-        print(f"[2/2] DC operating point solved from the GUI: currents={op_point.currents}")
+        i_scale = max(abs(v) for v in op_point.currents.values()) or 1e-30
+        total = sum(op_point.currents.values())
+        assert abs(total) < 0.02 * i_scale, (
+            f"charge not conserved across Source+Drain+Body: currents={op_point.currents}"
+        )
+        print(f"[2/2] DC operating point solved from the GUI: currents={op_point.currents} "
+              f"(charge conserved)")
 
     finally:
         app.destroy()
