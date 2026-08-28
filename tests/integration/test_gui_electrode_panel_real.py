@@ -94,7 +94,7 @@ def main():
         # shipped regression test for exactly this reason).
         assert app._electrode_contact_regions["Source"] == "Si", app._electrode_contact_regions
         assert app._electrode_contact_regions["Drain"] == "Si", app._electrode_contact_regions
-        print(f"[1/2] 4 pins resolved to real contacts: {sorted(resolved.contacts)} "
+        print(f"[1/3] 4 pins resolved to real contacts: {sorted(resolved.contacts)} "
               f"(Source/Drain confirmed on region 'Si')")
 
         op_point = app.run_dc_operating_point(
@@ -106,8 +106,22 @@ def main():
         assert abs(total) < 0.02 * i_scale, (
             f"charge not conserved across Source+Drain+Body: currents={op_point.currents}"
         )
-        print(f"[2/2] DC operating point solved from the GUI: currents={op_point.currents} "
+        print(f"[2/3] DC operating point solved from the GUI: currents={op_point.currents} "
               f"(charge conserved)")
+
+        # Task 11: export wiring stores a 1-point CharacterizationResult
+        # on last_electrode_result -- checked here without driving the
+        # actual file-dialog-gated EXPORT button (see task-11-brief.md).
+        assert app.last_electrode_result is not None
+        import tempfile
+        from tcad.characterization.io import save_csv
+        with tempfile.TemporaryDirectory() as tmpdir:
+            csv_path = str(Path(tmpdir) / "dc_op.csv")
+            save_csv(app.last_electrode_result, csv_path)
+            lines = Path(csv_path).read_text().splitlines()
+            assert len(lines) == 2, f"expected a header row + 1 data row, got: {lines}"
+            assert lines[0].startswith("sweep_voltage_V,"), lines[0]
+            print(f"[3/3] last_electrode_result exported to CSV: {lines}")
 
     finally:
         app.destroy()

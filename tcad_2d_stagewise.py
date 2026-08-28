@@ -409,6 +409,7 @@ class TCADApplication(tk.Tk):
         self.electrode_pins = []
         self.last_electrode_import = None
         self._electrode_contact_regions = {}
+        self.last_electrode_result = None
 
         # Each category panel's LabelFrame, registered as it is built,
         # so the category selector can show exactly one at a time (see
@@ -4672,6 +4673,22 @@ class TCADApplication(tk.Tk):
             frame, text="DC OPERATING POINT", command=self._on_dc_operating_point_clicked,
         ).pack(fill="x", pady=(6, 2))
 
+        ttk.Button(
+            frame, text="EXPORT LAST RESULT (CSV)", command=self._on_export_result_clicked,
+        ).pack(fill="x", pady=(2, 2))
+
+    def _on_export_result_clicked(self):
+        if getattr(self, "last_electrode_result", None) is None:
+            messagebox.showinfo("Export", "No result to export yet.")
+            return
+        from tkinter import filedialog
+        from tcad.characterization.io import save_csv
+        path = filedialog.asksaveasfilename(defaultextension=".csv")
+        if not path:
+            return
+        save_csv(self.last_electrode_result, path)
+        self._log(f"\nResult exported to {path}\n")
+
     def add_electrode_pin(self, name, role, x_um, y_um, target_region=None):
         """Programmatic pin add (used by the GUI's own ADD PIN button
         and directly by tests). Duplicate NAMES are rejected here
@@ -4943,6 +4960,16 @@ class TCADApplication(tk.Tk):
             except Exception:
                 pass
             self.last_electrode_import = None
+
+        from tcad.characterization.interface import CharacterizationResult
+        self.last_electrode_result = CharacterizationResult(
+            name="dc_operating_point", device=imported.device, region="Si",
+            sweep_contact=drain_contact, points=[op_point],
+            metadata={
+                "drain_voltage": drain_voltage, "gate_voltage": gate_voltage,
+                "body_voltage": body_voltage,
+            },
+        )
 
         self._log(
             f"\n================================\n"
@@ -7291,6 +7318,7 @@ class TCADApplication(tk.Tk):
         self._cleanup_electrode_device()
         self.electrode_pins = []
         self._electrode_contact_regions = {}
+        self.last_electrode_result = None
         if hasattr(self, "electrode_listbox"):
             self.electrode_listbox.delete(0, "end")
 
