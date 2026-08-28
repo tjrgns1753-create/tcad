@@ -52,10 +52,6 @@ def main():
             donor_conc_cm3=1e16, acceptor_conc_cm3=1e14,
         )
 
-        mesh = meshio.read(doped.volume_mesh_path)
-        block = next(c for c in mesh.cells if c.type == "triangle")
-        raw_points = mesh.points
-
         imported = import_process_result(
             doped, mesh_name="probe_mesh", device_name="probe_device",
             contact_regions=["Si"], contact_axis="x",
@@ -71,7 +67,7 @@ def main():
         # Valid: center of the device, cross-checked against the nearest
         # node's OWN Potential value read directly via DevSim.
         v = read_potential_at_point(
-            imported.device, "Si", raw_points, x_domain_um=0.0, y_um=-0.5,
+            imported.device, "Si", x_domain_um=0.0, y_um=-0.5,
             length_scale_to_cm=LENGTH_SCALE_TO_CM,
         )
         assert v == v, "Potential must not be NaN"  # NaN != NaN
@@ -81,7 +77,7 @@ def main():
         # Invalid: far outside the mesh -- no node within tolerance.
         try:
             read_potential_at_point(
-                imported.device, "Si", raw_points, x_domain_um=1000.0, y_um=0.0,
+                imported.device, "Si", x_domain_um=1000.0, y_um=0.0,
                 length_scale_to_cm=LENGTH_SCALE_TO_CM,
             )
             assert False, "expected ValueError for a point far outside the mesh"

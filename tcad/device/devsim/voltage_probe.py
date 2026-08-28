@@ -26,7 +26,6 @@ from tcad.device.devsim import backend
 def read_potential_at_point(
     device: str,
     region: str,
-    raw_points: "np.ndarray",
     x_domain_um: float,
     y_um: float,
     length_scale_to_cm: float,
@@ -36,12 +35,9 @@ def read_potential_at_point(
     (x_domain_um, y_um) -- domain-centered coordinates, same convention
     tcad.device.devsim.contact_probe.validate_pin_placement uses.
 
-    raw_points : the mesh's own points array BEFORE length_scale_to_cm
-        was applied (i.e. straight from meshio.read(...).points, in
-        the same um units x_domain_um/y_um are given in) -- this
-        module does the cm conversion internally when comparing
-        against DevSim's own (cm-scale) node "x"/"y" node models, so a
-        caller never has to pre-scale its target point.
+    x_domain_um / y_um are given in um; the cm conversion against
+    DevSim's own (cm-scale) node "x"/"y" node models is done here, so a
+    caller never has to pre-scale its target point.
 
     Raises ValueError if no node of `region` is within tolerance_um,
     or if `region` has no "Potential" node model registered (i.e. no
