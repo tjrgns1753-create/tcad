@@ -1095,8 +1095,17 @@ def import_process_result(
             if not region_boundary:
                 continue
 
-            target = np.array([spec["x_domain_um"], spec["y_um"]])
-            radius = spec["radius_um"]
+            # `points` (used for p0/p1 below) was already scaled by
+            # length_scale_to_cm above -- spec's own coordinates are
+            # documented as "pre-length_scale_to_cm" (mesh-space um),
+            # so target/radius must be scaled the same way here, or the
+            # comparison silently finds nothing whenever
+            # length_scale_to_cm != 1.0 (confirmed by real execution:
+            # every point_contacts caller before this one only ever used
+            # the default length_scale_to_cm=1.0, where the missing
+            # scale is numerically a no-op and this never surfaced).
+            target = np.array([spec["x_domain_um"], spec["y_um"]]) * length_scale_to_cm
+            radius = spec["radius_um"] * length_scale_to_cm
             near_edges = []
             for edge in region_boundary:
                 # points has 3 columns (x, y, z) -- this project is 2D

@@ -402,6 +402,14 @@ class TCADApplication(tk.Tk):
         # succeeds.
         self.last_doped_result = None
 
+        # Electrode/Pin system (see tcad.mesh.pin.Pin) -- separate from
+        # the existing 2-terminal _make_measurement_panel's own
+        # region-extreme-only pins. None until resolve_electrode_pins()
+        # succeeds against a real mesh.
+        self.electrode_pins = []
+        self.last_electrode_import = None
+        self._electrode_contact_regions = {}
+
         # Each category panel's LabelFrame, registered as it is built,
         # so the category selector can show exactly one at a time (see
         # _show_panel_category).
@@ -806,7 +814,7 @@ class TCADApplication(tk.Tk):
     _LIBRARY_GROUPS = (
         ("PROCESS", ("oxidation", "litho", "etch", "deposition",
                      "metallization")),
-        ("DEVICE", ("doping", "measurement")),
+        ("DEVICE", ("doping", "measurement", "electrodes")),
         ("STRUCTURES", ("gate_stack",)),
     )
 
@@ -997,6 +1005,7 @@ class TCADApplication(tk.Tk):
         "doping",
         "gate_stack",
         "measurement",
+        "electrodes",
     )
     _PANEL_LABELS = {
         "oxidation": "Oxidation",
@@ -1007,6 +1016,7 @@ class TCADApplication(tk.Tk):
         "doping": "Doping",
         "gate_stack": "Geometry (MOSFET gate stack)",
         "measurement": "Device measurement",
+        "electrodes": "Electrodes (pin placement)",
     }
 
     #: Single source of truth for material -> canvas color, shared by
@@ -1629,6 +1639,7 @@ class TCADApplication(tk.Tk):
         self._make_geometry_panel(panel_container)
         self._make_doping_panel(panel_container)
         self._make_measurement_panel(panel_container)
+        self._make_electrode_panel(panel_container)
 
         self._show_panel_category()
 
@@ -3528,6 +3539,21 @@ class TCADApplication(tk.Tk):
                 "gate_oxide_thickness_um": float(self.gs_gate_oxide_var.get()),
                 "gate_height_um": float(self.gs_gate_height_var.get()),
                 "pad_height_um": float(self.gs_pad_height_var.get()),
+
+                # Si and SiO2 get genuinely shared (not merely
+                # coincident) mesh vertices at their boundary, needed
+                # for tcad.device.devsim.mesh_import.import_process_
+                # result's interface_region_pairs to find a real
+                # Si-SiO2 interface at all (see save_locos_volume_
+                # mesh's own dedupe_materials docstring: gate_stack's
+                # raw per-material export has ZERO shared indices
+                # between materials even where their coordinates
+                # coincide exactly). Restricted to Si+SiO2 only,
+                # exactly like the already-shipped gate C-V test's own
+                # usage -- deduping every touching pair (including the
+                # source/drain metal pads) is documented to crash
+                # DevSim's create_device() for this topology.
+                "dedupe_materials": ["Si", "SiO2"],
             }
 
         except ValueError:
@@ -4595,6 +4621,322 @@ class TCADApplication(tk.Tk):
             f"Multimeter ({gnd_contact}): 0.0000 V, "
             f"I = {gnd_i:.6e} A",
         )
+
+    # --------------------------------------------------------
+    # ELECTRODES (CAD pin placement, 4-terminal)
+    # --------------------------------------------------------
+
+    def _make_electrode_panel(self, parent):
+        """CAD-style electrode placement -- coordinate pins resolved to
+        real DevSim contacts via tcad.device.devsim.contact_probe,
+        distinct from _make_measurement_panel's own region-extreme-only
+        2-terminal flow (that panel is unmodified by this feature)."""
+        frame = ttk.LabelFrame(parent, text="Electrodes (CAD pin placement)", padding=10)
+        self._panel_frames["electrodes"] = frame
+        frame.pack(fill="x", pady=10)
+
+        ttk.Label(
+            frame,
+            text=(
+                "Place named pins at real wafer coordinates (um); RESOLVE "
+                "checks each against the real mesh before any DevSim "
+                "contact is created."
+            ),
+            foreground="#555", wraplength=310,
+        ).pack(anchor="w", pady=(0, 6))
+
+        self.electrode_listbox = tk.Listbox(frame, height=5)
+        self.electrode_listbox.pack(fill="x", pady=(0, 4))
+
+        pin_row = ttk.Frame(frame)
+        pin_row.pack(fill="x")
+        self.pin_name_var = self._field(pin_row, "Name", "Source")
+        self.pin_role_var = self._field(pin_row, "Role", "Source")
+        self.pin_x_var = self._field(pin_row, "X (um)", 1.0)
+        self.pin_y_var = self._field(pin_row, "Y (um)", 0.0)
+
+        ttk.Button(
+            frame, text="ADD PIN", command=self._on_add_pin_clicked,
+        ).pack(fill="x", pady=(4, 2))
+
+        ttk.Button(
+            frame, text="RESOLVE PINS", style="Run.TButton",
+            command=self._on_resolve_pins_clicked,
+        ).pack(fill="x", pady=(2, 2))
+
+        self.dc_drain_v_var = self._field(frame, "Drain V", 0.1)
+        self.dc_gate_v_var = self._field(frame, "Gate V", 1.0)
+        self.dc_body_v_var = self._field(frame, "Body V", 0.0)
+
+        ttk.Button(
+            frame, text="DC OPERATING POINT", command=self._on_dc_operating_point_clicked,
+        ).pack(fill="x", pady=(6, 2))
+
+    def add_electrode_pin(self, name, role, x_um, y_um, target_region=None):
+        """Programmatic pin add (used by the GUI's own ADD PIN button
+        and directly by tests). Duplicate NAMES are rejected here
+        (dict-like uniqueness); duplicate POSITIONS are caught later by
+        resolve_electrode_pins() via find_duplicate_pin_positions()."""
+        from tcad.mesh.pin import Pin
+        if any(p.name == name for p in self.electrode_pins):
+            messagebox.showerror("Electrode", f"A pin named {name!r} already exists.")
+            return False
+        self.electrode_pins.append(Pin(name=name, role=role, x_um=x_um, y_um=y_um, target_region=target_region))
+        self.electrode_listbox.insert("end", f"{name} ({role}) @ ({x_um:.3f}, {y_um:.3f}) um")
+        return True
+
+    def _on_add_pin_clicked(self):
+        try:
+            x_um = float(self.pin_x_var.get())
+            y_um = float(self.pin_y_var.get())
+        except ValueError:
+            messagebox.showerror("Electrode", "X/Y must be numeric.")
+            return
+        self.add_electrode_pin(self.pin_name_var.get(), self.pin_role_var.get(), x_um, y_um)
+
+    def resolve_electrode_pins(self):
+        """Validates every placed pin against the real current mesh,
+        then imports them all as real DevSim point contacts in ONE
+        import_process_result call. Returns the ImportedDevice on
+        success; None (with a messagebox reporting every collected
+        error) if any pin is invalid. Never raises to the caller.
+
+        Wafer->domain conversion deliberately does NOT use
+        self.wafer.width_um: gate_stack builds geometry from its own
+        independent gs_x_extent_var (self.wafer.width_um is never
+        updated by run_gate_stack -- unlike etch/oxidation/deposition,
+        which all read x_extent_um from self.wafer.width_um directly).
+        The real domain width is measured from the actual mesh instead,
+        matching this project's own centered-domain convention.
+        """
+        if not self.electrode_pins:
+            messagebox.showinfo("Electrode", "No pins placed yet.")
+            return None
+        if self.last_final_mesh is None:
+            messagebox.showinfo("Electrode", "No real mesh exists yet -- run a process step first.")
+            return None
+
+        from tcad.mesh.viennaps_adapter import build_process_result
+        from tcad.device.devsim.contact_probe import (
+            validate_pin_placement, find_duplicate_pin_positions, PinPlacementError,
+        )
+        from tcad.device.devsim.mesh_import import import_process_result
+
+        process_result = build_process_result({"final_mesh": self.last_final_mesh, "snapshots": []})
+        contactable = {r.name for r in process_result.material_regions if r.name not in ("SiO2", "Si3N4", "Mask")}
+
+        duplicates = find_duplicate_pin_positions(self.electrode_pins)
+        if duplicates:
+            names = ", ".join(" & ".join(p.name for p in group) for group in duplicates)
+            messagebox.showerror("Electrode", f"Pins at the same position: {names}")
+            return None
+
+        import meshio
+        mesh = meshio.read(process_result.volume_mesh_path)
+        real_width_um = float(mesh.points[:, 0].max() - mesh.points[:, 0].min())
+
+        errors = []
+        point_contacts = []
+        half_width = real_width_um / 2.0
+        for pin in self.electrode_pins:
+            try:
+                region = validate_pin_placement(process_result, pin, real_width_um, contactable)
+                point_contacts.append({
+                    "name": pin.name, "region": region,
+                    "x_domain_um": pin.x_um - half_width, "y_um": pin.y_um,
+                    "radius_um": 0.1,
+                })
+            except PinPlacementError as exc:
+                errors.append(f"{exc.pin.name}: {exc.reason} -- {exc.detail}")
+
+        if errors:
+            messagebox.showerror("Electrode", "Invalid pin placement:\n\n" + "\n".join(errors))
+            return None
+
+        imported = import_process_result(
+            process_result, mesh_name="gui_electrode_mesh", device_name="gui_electrode_device",
+            point_contacts=point_contacts, length_scale_to_cm=1.0e-4,
+            # Needed for setup_mosfet_potential_equation's own
+            # interface_name -- the Si/SiO2 interface tying the Si
+            # transport region to the oxide's potential-only region
+            # (see run_dc_operating_point). Harmless when either
+            # material is absent from this mesh (import_process_result
+            # skips a pair with no matching regions/shared edges).
+            interface_region_pairs=[("Si", "SiO2")],
+        )
+        self.last_electrode_import = imported
+        # Which real MaterialRegion each contact actually landed on --
+        # read by run_dc_operating_point() to tell a contact that is
+        # genuinely on Si/SiO2 apart from one that resolved onto a
+        # covering electrode (e.g. this device's own W/Cu/TiN pads),
+        # which needs different handling there.
+        self._electrode_contact_regions = {pc["name"]: pc["region"] for pc in point_contacts}
+        self._log(f"\nElectrodes resolved: {sorted(imported.contacts)}\n")
+        return imported
+
+    def _on_resolve_pins_clicked(self):
+        self.resolve_electrode_pins()
+
+    def run_dc_operating_point(self, drain_voltage, gate_voltage, body_voltage=0.0):
+        """Requires resolve_electrode_pins() to have already succeeded
+        this session, and a Source/Drain/Gate pin (Body optional) to be
+        among the resolved contacts. Contact names are the Pin names
+        themselves (point_contacts in resolve_electrode_pins names each
+        contact after its Pin's own `name` field)."""
+        if self.last_electrode_import is None:
+            messagebox.showinfo("Electrode", "Resolve pins first.")
+            return None
+
+        imported = self.last_electrode_import
+        contacts_by_role = {p.role: p.name for p in self.electrode_pins}
+        missing = [r for r in ("Source", "Drain", "Gate") if r not in contacts_by_role]
+        if missing:
+            messagebox.showerror(
+                "Electrode",
+                f"No pin with role {missing!r} among the resolved pins -- "
+                f"a DC operating point needs Source, Drain and Gate pins "
+                f"(Body optional).",
+            )
+            return None
+
+        source_contact = contacts_by_role["Source"]
+        drain_contact = contacts_by_role["Drain"]
+        gate_contact = contacts_by_role["Gate"]
+        body_contact = contacts_by_role.get("Body")
+        for name in (source_contact, drain_contact, gate_contact) + (
+            (body_contact,) if body_contact else ()
+        ):
+            if name not in imported.contacts:
+                messagebox.showerror(
+                    "Electrode",
+                    f"Pin {name!r} did not resolve to a real DevSim contact "
+                    f"(resolved contacts: {imported.contacts}).",
+                )
+                return None
+
+        # Source/Drain/Body carry full electron/hole drift-diffusion
+        # (solve_mosfet_dc_operating_point's own equilibrium+transport
+        # stages), which only exists on the real Si region in this
+        # project's device physics -- a pin that resolved onto a
+        # COVERING electrode (e.g. this device's own W/Cu source/drain
+        # pads) cannot be idealized around the way the gate below is:
+        # confirmed by direct execution that giving such a region its
+        # own potential-only equation gets it through the EQUILIBRIUM
+        # stage, then fails once transport turns on ("Cannot find
+        # equation index" for ElectronContinuityEquation) -- a metal
+        # has no Electrons/Holes continuity equation in this project's
+        # physics, so there is no complete fix, only a refusal that
+        # says why.
+        regions_by_name = self._electrode_contact_regions
+        si_role_contacts = [("Source", source_contact), ("Drain", drain_contact)]
+        if body_contact:
+            si_role_contacts.append(("Body", body_contact))
+        wrong_region = [
+            (role, contact, regions_by_name.get(contact))
+            for role, contact in si_role_contacts
+            if regions_by_name.get(contact) != "Si"
+        ]
+        if wrong_region:
+            detail = "; ".join(f"{role} ({contact!r}) is on {region!r}" for role, contact, region in wrong_region)
+            messagebox.showerror(
+                "Electrode",
+                f"A DC operating point needs Source/Drain/Body contacts "
+                f"directly on the silicon -- {detail}. Place these pins "
+                f"on an exposed Si surface (not on a covering electrode "
+                f"pad) and resolve again.",
+            )
+            return None
+
+        from tcad.device.devsim import backend as devsim_backend
+        from tcad.device.devsim.doping_mapping import apply_doping
+        from tcad.mesh.interface import DopingProfile, DopingRegion
+        from tcad.characterization.dc_operating_point import solve_mosfet_dc_operating_point
+
+        module = devsim_backend.require_devsim()
+
+        # A device this panel just built via resolve_electrode_pins()
+        # carries no doping unless the Doping panel was run first on
+        # the SAME mesh (its ProcessResult is rebuilt fresh from
+        # self.last_final_mesh, doping is not stored in the mesh file
+        # itself). CreateSiliconPotentialOnly's own equations reference
+        # NetDoping unconditionally, so a solve needs SOME NetDoping
+        # registered on the Si region -- if none was applied, this is
+        # honestly zero (intrinsic Si), not an invented dopant level.
+        doping = None
+        doped_result = self.last_doped_result
+        if (
+            doped_result is not None
+            and getattr(doped_result, "doping", None) is not None
+            and getattr(doped_result, "volume_mesh_path", None) == self.last_final_mesh
+        ):
+            doping = doped_result.doping
+        if doping is None:
+            doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=0.0)])
+            self._log("\n(No doping profile applied yet -- Si region treated as intrinsic, NetDoping=0, for this solve.)\n")
+
+        try:
+            apply_doping(imported.device, doping, length_scale_to_cm=1.0e-4)
+
+            gate_region = regions_by_name.get(gate_contact)
+            if gate_region != "SiO2":
+                # The Gate pin resolved to the real gate ELECTRODE (e.g.
+                # TiN) rather than the buried oxide beneath it -- expected:
+                # a real probe lands on the exposed metal, never on the
+                # oxide it covers. The gate is potential-only in every
+                # stage of this solve (no carrier transport, unlike
+                # Source/Drain/Body above), so extending the SAME
+                # idealized-contact treatment mosfet_equation.py already
+                # uses for the real oxide onto this region is a complete
+                # fix, not a partial one -- confirmed by direct execution
+                # that it converges through both the equilibrium AND
+                # drift-diffusion stages.
+                from devsim.python_packages.simple_physics import (
+                    SetOxideParameters, CreateOxidePotentialOnly, CreateOxideContact,
+                )
+                SetOxideParameters(imported.device, gate_region, 300.0)
+                CreateOxidePotentialOnly(imported.device, gate_region, "log_damp")
+                CreateOxideContact(imported.device, gate_region, gate_contact)
+
+            op_point = solve_mosfet_dc_operating_point(
+                device=imported.device, si_region="Si", oxide_region="SiO2",
+                source_contact=source_contact, drain_contact=drain_contact,
+                gate_contact=gate_contact, interface_name="Si_SiO2_interface",
+                drain_voltage=drain_voltage, gate_voltage=gate_voltage,
+                body_contact=body_contact, body_voltage=body_voltage,
+            )
+        except Exception as exc:
+            messagebox.showerror("Electrode", f"DC operating point solve failed:\n\n{exc}")
+            return None
+        finally:
+            try:
+                module.delete_device(device=imported.device)
+                module.delete_mesh(mesh=imported.mesh)
+            except Exception:
+                pass
+            self.last_electrode_import = None
+
+        self._log(
+            f"\n================================\n"
+            f"DC OPERATING POINT\n"
+            f"================================\n"
+            f"Vd={drain_voltage:+.4f}V Vg={gate_voltage:+.4f}V Vb={body_voltage:+.4f}V\n"
+            f"currents={op_point.currents}\n"
+        )
+        messagebox.showinfo(
+            "Electrode",
+            f"DC operating point solved.\n\ncurrents={op_point.currents}",
+        )
+        return op_point
+
+    def _on_dc_operating_point_clicked(self):
+        try:
+            vd = float(self.dc_drain_v_var.get())
+            vg = float(self.dc_gate_v_var.get())
+            vb = float(self.dc_body_v_var.get())
+        except ValueError:
+            messagebox.showerror("Electrode", "Drain/Gate/Body V must be numeric.")
+            return
+        self.run_dc_operating_point(drain_voltage=vd, gate_voltage=vg, body_voltage=vb)
 
     # --------------------------------------------------------
     # LOG
