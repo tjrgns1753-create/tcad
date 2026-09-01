@@ -4736,8 +4736,9 @@ class TCADApplication(tk.Tk):
         """Validates every placed pin against the real current mesh,
         then imports them all as real DevSim point contacts in ONE
         import_process_result call. Returns the ImportedDevice on
-        success; None (with a messagebox reporting every collected
-        error) if any pin is invalid. Never raises to the caller.
+        success; None (with a log message reporting the first invalid
+        pin's PinPlacementError) if any pin is invalid. Never raises
+        to the caller.
 
         Wafer->domain conversion deliberately does NOT use
         self.wafer.width_um: gate_stack builds geometry from its own

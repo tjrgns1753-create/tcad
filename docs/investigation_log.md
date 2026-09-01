@@ -8971,3 +8971,47 @@ claim) unless the user explicitly asks for selective deposition.
 
 Regression: unaffected — this was a read-only investigation, no code
 changed.
+
+## DevSim cross-solve sensitivity: an identical body-bias ramp converges as the first device in a process, diverges as the second
+
+Session: electrode/pin/DC-sweep plan, final-review fix round (Task: Fix 1,
+`body_voltage` never solved for).
+
+**What was tested.** `tests/integration/test_mosfet_body_bias_real.py` needed a
+converging -0.3V body-bias solve to prove `rampbias` (not `set_bias`) now really
+applies a non-zero body bias. The identical ramp (`rampbias(device, body_contact,
+-0.3, ...)` on the project's own verified 4-terminal MOSFET builder from
+`test_mosfet_body_contact_real.py`) was run twice in the same test file: once as the
+FIRST device built and solved in that process, once as the SECOND (after the first
+device's own solve, with proper `delete_device()` + `delete_mesh()` cleanup in
+between).
+
+**Result.** Converges cleanly as the first device. Diverges (`Convergence failure!`)
+as the second, with cleanup unchanged and physically identical geometry/doping/bias.
+
+**What it proves.** DevSim's solver state (or something reachable from it) is
+sensitive to solve HISTORY within a process in a way that `delete_device()` +
+`delete_mesh()` does not fully reset — this is a real, reproducible mechanism, not a
+one-off flake. It matches the general class of DevSim-lifecycle sensitivity this
+project has hit before (see the "GUI measurement: which doping kinds actually
+converge" entry above, where a leaked device corrupted an unrelated later solve) but
+this case shows the effect even with cleanup done correctly, so it is not simply
+"forgot to delete the device" — something else about solver/parameter state persists
+across devices.
+
+**What remains uncertain.** Whether the persisting state is a DevSim-global parameter
+default, a `SetOxideParameters`/mobility-model global registration from the first
+device's own build, matrix/Newton state cached at the C++ level, or something else.
+Not isolated further this session — the test works around it by ordering (run the
+biased case first; the `body_voltage=0.0` baseline case cannot fail this way because
+its ramp is `start == end` and never solves at all), so it was not blocking for the
+task at hand.
+
+**Next smallest experiment.** Build device A (any known-good recipe), solve it,
+clean it up, then build device B IDENTICAL to A (same recipe, not the body-bias
+device) and see whether B still solves correctly as a second device — if yes, the
+sensitivity is specific to the body-bias / extra-contact path; if no, it's a general
+second-device regression, which would be a much bigger finding affecting every
+existing multi-device test in the suite (and would need explaining why those all
+pass today). Also worth checking: does `devsim.reset_devsim()` (if it exists) between
+devices avoid it, or does the effect survive even that?

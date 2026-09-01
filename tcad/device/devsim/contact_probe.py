@@ -309,6 +309,9 @@ def resolve_pins_to_point_contacts(
     report every bad pin at once can call validate_pin_placement()
     per pin itself.
     """
+    if not pins:
+        return []
+
     duplicates = find_duplicate_pin_positions(pins)
     if duplicates:
         group = duplicates[0]
