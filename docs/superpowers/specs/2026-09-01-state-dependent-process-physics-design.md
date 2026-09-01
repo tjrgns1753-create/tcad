@@ -195,20 +195,31 @@ profiles, must:
 3. Introduce the new dopant's own profile with its own fresh
    `thermal_budget` starting from this step's conditions.
 
-**V1 scope boundary — stated explicitly, not left implicit.** Only
-process steps that are explicitly a diffusion/anneal doping kind
-contribute to `thermal_budget` bookkeeping in V1. **Thermal oxidation
-(1025 C in the reference case) does NOT, in V1, add to any existing
-dopant's `thermal_budget`**, even though it is real, significant
-thermal exposure that a real fab's dopants would also diffuse under.
-This is a known, real physical omission — reproducing it correctly
-would mean every thermally-significant process category (oxidation
-today; potentially others later) feeds the same shared budget
-mechanism, which is a materially larger integration than this pass
-takes on. It is recorded here as `UNSUPPORTED_BY_MODEL` for "dopant
-diffusion driven by a non-anneal thermal step," not silently absent.
-A future stage extending `thermal_budget` contribution to oxidation
-(and any other high-temperature category) is the natural next step
+**V1 scope boundary — stated explicitly, not left implicit, and NOT a
+claim that the excluded physics is unimportant.** Only process steps
+that are explicitly a diffusion/anneal doping kind contribute to
+`thermal_budget` bookkeeping in V1. **Thermal oxidation (1025 C in the
+reference case) does NOT, in V1, add to any existing dopant's
+`thermal_budget`.** This must not be read as "oxidation's thermal
+exposure doesn't matter physically" — a real 1025 C oxidation
+genuinely does redistribute whatever dopants already exist in the
+wafer at that moment, exactly like an explicit anneal would, and a
+real fab's thermal budget accounting has to include it. The scope
+limit here is purely that **this design does not yet implement the
+coupling model** that would let an oxidation step feed the same
+`thermal_budget` mechanism a diffusion/anneal step does — implementing
+it correctly means every thermally-significant process category
+(oxidation today; potentially others later) has to feed the same
+shared budget bookkeeping, which is a materially larger integration
+than this pass takes on. It is recorded here as `UNSUPPORTED_BY_MODEL`
+for "dopant redistribution driven by a non-anneal/non-diffusion
+thermal step" — a capability gap in this project's current model, not
+a physical judgment that the effect is negligible. Silently treating
+it as negligible (e.g. by not tracking it at all, or by mentioning it
+only in prose without the enum) would be exactly the kind of invented
+result this whole design exists to prevent. A future stage extending
+`thermal_budget` contribution to oxidation (and any other
+high-temperature category) is the natural next step
 once this V1 mechanism is proven on the anneal-only case.
 
 ---
@@ -701,6 +712,14 @@ Extends the base design's T1-T5 (unchanged, still apply as-is). One
 new category:
 
 ### T6 — order sensitivity where physically real
+
+**A reorderable GUI/CLI is not evidence this requirement is met.** The
+base design's GUI work already lets a user run any process category in
+any order — that was necessary but is not sufficient here. T6 exists
+because the freedom to choose an order is worthless if two genuinely
+different orders silently compute the same (wrong, order-blind) result
+underneath. T6 must assert on the ACTUAL COMPUTED PHYSICAL STATE, not
+on whether the button was clickable.
 
 Distinct from T2 (same state reached by different routes -> same
 result — a test that TWO paths CONVERGE). T6 asserts the opposite
