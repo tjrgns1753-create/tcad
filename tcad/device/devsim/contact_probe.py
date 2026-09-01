@@ -75,6 +75,53 @@ from typing import Dict, List, Set, Tuple
 import numpy as np
 
 
+def boundary_edges_by_tag(
+    triangles: "np.ndarray", tags: "np.ndarray",
+) -> Dict[int, List[tuple]]:
+    """{material tag: [real boundary edge, ...]} -- an edge touched by
+    exactly ONE triangle, the same definition
+    tcad.device.devsim.mesh_import.import_process_result already uses
+    for its own axis-extreme contacts. Pure geometry, no file I/O;
+    computed ONCE per mesh and shared by every pin in a batch (see
+    resolve_pins_to_point_contacts)."""
+    owners: Dict[tuple, List[int]] = defaultdict(list)
+    for tri, tag in zip(triangles, tags):
+        for edge in ((tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])):
+            key = tuple(sorted((int(edge[0]), int(edge[1]))))
+            owners[key].append(int(tag))
+
+    by_tag: Dict[int, List[tuple]] = defaultdict(list)
+    for edge, edge_owners in owners.items():
+        if len(edge_owners) == 1:
+            by_tag[edge_owners[0]].append(edge)
+    return by_tag
+
+
+def read_mesh_geometry(result) -> Dict:
+    """Everything this module needs from `result`'s REAL mesh, read
+    ONCE: {"points", "triangles", "tags", "tag_to_name",
+    "boundary_edges_by_tag"}. Passed to validate_pin_placement() so a
+    batch of pins costs one meshio.read + one edge-ownership pass
+    total, not one per pin."""
+    import meshio
+
+    mesh = meshio.read(result.volume_mesh_path)
+    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
+    if triangle_block is None:
+        return {}
+    block_index = mesh.cells.index(triangle_block)
+    triangles = triangle_block.data
+    tags = mesh.cell_data[result.material_field][block_index]
+    return {
+        # (x, y) -- drop any z from a 2D mesh's own convention
+        "points": mesh.points[:, :2],
+        "triangles": triangles,
+        "tags": tags,
+        "tag_to_name": {region.tag: region.name for region in result.material_regions},
+        "boundary_edges_by_tag": boundary_edges_by_tag(triangles, tags),
+    }
+
+
 def probe_mesh_at_point(
     points: "np.ndarray",
     triangles: "np.ndarray",
@@ -83,6 +130,7 @@ def probe_mesh_at_point(
     x_domain_um: float,
     y_um: float,
     tolerance_um: float,
+    edges_by_tag: Optional[Dict[int, List[tuple]]] = None,
 ) -> Optional[Tuple[str, float]]:
     """Nearest REAL BOUNDARY edge (touched by exactly one triangle,
     same definition tcad.device.devsim.mesh_import.import_process_result
@@ -92,43 +140,58 @@ def probe_mesh_at_point(
     tolerance. Pure geometry -- no file I/O, so Task 2's own test can
     exercise it directly against an in-memory mesh if ever needed,
     and validate_pin_placement() below stays a thin wrapper around it.
+
+    edges_by_tag : optional, already-computed boundary_edges_by_tag()
+        output -- pass it to skip recomputing the edge-ownership map
+        for every pin in a batch. Purely a cost optimization; the
+        result is identical either way.
     """
-    edge_owner_tags: Dict[tuple, List[int]] = defaultdict(list)
-    for tri, tag in zip(triangles, tags):
-        for edge in ((tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])):
-            key = tuple(sorted((int(edge[0]), int(edge[1]))))
-            edge_owner_tags[key].append(int(tag))
+    if edges_by_tag is None:
+        edges_by_tag = boundary_edges_by_tag(triangles, tags)
 
     target = np.array([x_domain_um, y_um])
     best_dist = None
     best_tag = None
-    for edge, owners in edge_owner_tags.items():
-        if len(owners) != 1:
-            continue  # interior edge, not a real boundary
-        p0, p1 = points[edge[0]], points[edge[1]]
-        seg = p1 - p0
-        seg_len_sq = float(np.dot(seg, seg))
-        if seg_len_sq == 0.0:
-            t = 0.0
-        else:
-            t = max(0.0, min(1.0, float(np.dot(target - p0, seg)) / seg_len_sq))
-        nearest = p0 + t * seg
-        dist = float(np.linalg.norm(target - nearest))
-        if best_dist is None or dist < best_dist:
-            best_dist = dist
-            best_tag = owners[0]
+    for tag, edges in edges_by_tag.items():
+        for edge in edges:
+            p0, p1 = points[edge[0]], points[edge[1]]
+            seg = p1 - p0
+            seg_len_sq = float(np.dot(seg, seg))
+            if seg_len_sq == 0.0:
+                t = 0.0
+            else:
+                t = max(0.0, min(1.0, float(np.dot(target - p0, seg)) / seg_len_sq))
+            nearest = p0 + t * seg
+            dist = float(np.linalg.norm(target - nearest))
+            if best_dist is None or dist < best_dist:
+                best_dist = dist
+                best_tag = tag
 
     if best_dist is None or best_dist > tolerance_um:
         return None
     return tag_to_name[best_tag], best_dist
 
 
+def pin_x_domain_um(pin: Pin, points: "np.ndarray") -> float:
+    """The single, shared WAFER -> DOMAIN x conversion.
+
+    Derived from the mesh's OWN minimum x, not from a caller-supplied
+    wafer width: this project's domains are centered, so the usual
+    `x_wafer - width/2` only agrees when the mesh happens to be exactly
+    symmetric about 0. It is not always -- a MakeTrench-derived wafer
+    with x_extent_um=4.0 really meshes as x=-2.1..+2.1 (CLAUDE.md
+    records this), where the two conventions place the same wafer
+    coordinate 0.1um apart. min-x + wafer offset is exact regardless of
+    centering or padding, so every caller uses this one function."""
+    return float(points[:, 0].min()) + pin.x_um
+
+
 def validate_pin_placement(
     result,
     pin: Pin,
-    width_um: float,
     contactable_materials: Set[str],
     tolerance_um: float = 0.05,
+    geometry: Optional[Dict] = None,
 ) -> str:
     """Resolve one Pin's WAFER-coordinate position to a real,
     contactable material region on `result`'s own mesh. Returns the
@@ -147,21 +210,20 @@ def validate_pin_placement(
         insulator (SiO2) or simply not one this caller wants to
         contact -- the distinction does not matter to the caller
         either way: neither should become a contact.
+
+    geometry : optional read_mesh_geometry(result) output. Passed by
+        resolve_pins_to_point_contacts() so a whole batch of pins
+        shares ONE mesh read; omitted (the default) this function
+        reads the mesh itself, exactly as before.
     """
-    import meshio
-
-    x_domain_um = pin.x_um - width_um / 2.0
-    y_um = pin.y_um
-
-    mesh = meshio.read(result.volume_mesh_path)
-    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
-    if triangle_block is None:
+    if geometry is None:
+        geometry = read_mesh_geometry(result)
+    if not geometry:
         raise PinPlacementError(pin, REASON_OUTSIDE_MESH, "mesh has no triangle cells")
-    block_index = mesh.cells.index(triangle_block)
-    triangles = triangle_block.data
-    tags = mesh.cell_data[result.material_field][block_index]
-    points = mesh.points[:, :2]  # (x, y) -- drop any z from a 2D mesh's own convention
-    tag_to_name = {region.tag: region.name for region in result.material_regions}
+
+    points = geometry["points"]
+    x_domain_um = pin_x_domain_um(pin, points)
+    y_um = pin.y_um
 
     x_min, x_max = points[:, 0].min(), points[:, 0].max()
     y_min, y_max = points[:, 1].min(), points[:, 1].max()
@@ -173,7 +235,10 @@ def validate_pin_placement(
             f"y=[{y_min:.4f},{y_max:.4f}] (domain coords)",
         )
 
-    found = probe_mesh_at_point(points, triangles, tags, tag_to_name, x_domain_um, y_um, tolerance_um)
+    found = probe_mesh_at_point(
+        points, geometry["triangles"], geometry["tags"], geometry["tag_to_name"],
+        x_domain_um, y_um, tolerance_um, geometry["boundary_edges_by_tag"],
+    )
     if found is None:
         raise PinPlacementError(
             pin, REASON_INTERIOR_BULK,
@@ -210,3 +275,84 @@ def find_duplicate_pin_positions(pins: List[Pin], tolerance_um: float = 1e-6) ->
         if not placed:
             groups.append([pin])
     return [tuple(g) for g in groups if len(g) > 1]
+
+
+def resolve_pins_to_point_contacts(
+    result,
+    pins: List[Pin],
+    contactable_materials: Set[str],
+    radius_um: float = 0.1,
+    tolerance_um: float = 0.05,
+) -> List[Dict]:
+    """A batch of Pins -> the `point_contacts` list
+    tcad.device.devsim.mesh_import.import_process_result expects, in
+    ONE pass over the real mesh.
+
+    The single source of truth for the whole wafer-coordinate -> real
+    DevSim contact conversion: duplicate-position check, wafer->domain
+    x conversion (pin_x_domain_um -- mesh min-x based, never a
+    caller-supplied width), per-pin boundary/contactability validation,
+    and the radius check import_process_result itself performs
+    SILENTLY. Every caller (the GUI's electrode panel, the end-to-end
+    tests) goes through here, so none of them can drift into its own
+    slightly-different copy of any of those steps.
+
+    radius_um : the same radius written into each returned spec, i.e.
+        how far from the pin's point a real boundary edge of its own
+        region may sit and still be bound into that contact. Checked
+        HERE (REASON_NO_BOUNDARY_NEARBY) rather than left to
+        import_process_result, which just `continue`s and silently
+        produces no contact at all for such a pin.
+
+    Raises PinPlacementError on the FIRST failing pin (a CAD-style
+    error naming the pin and the real reason); a caller wanting to
+    report every bad pin at once can call validate_pin_placement()
+    per pin itself.
+    """
+    duplicates = find_duplicate_pin_positions(pins)
+    if duplicates:
+        group = duplicates[0]
+        raise PinPlacementError(
+            group[0], REASON_DUPLICATE_POSITION,
+            f"pins {' & '.join(p.name for p in group)} are all at "
+            f"({group[0].x_um:.4f}, {group[0].y_um:.4f}) um (wafer coords) -- "
+            f"two electrodes cannot occupy the same position",
+        )
+
+    geometry = read_mesh_geometry(result)
+    if not geometry:
+        raise PinPlacementError(pins[0], REASON_OUTSIDE_MESH, "mesh has no triangle cells")
+    points = geometry["points"]
+    name_to_tag = {name: tag for tag, name in geometry["tag_to_name"].items()}
+
+    specs: List[Dict] = []
+    for pin in pins:
+        region = validate_pin_placement(
+            result, pin, contactable_materials, tolerance_um, geometry=geometry,
+        )
+        x_domain_um = pin_x_domain_um(pin, points)
+
+        # The same midpoint-within-radius test import_process_result's
+        # own point_contacts branch runs -- done here so "no boundary
+        # edge close enough" is a named error instead of a contact that
+        # silently never gets created.
+        target = np.array([x_domain_um, pin.y_um])
+        region_edges = geometry["boundary_edges_by_tag"].get(name_to_tag[region], [])
+        near = [
+            edge for edge in region_edges
+            if np.linalg.norm((points[edge[0]] + points[edge[1]]) / 2.0 - target) <= radius_um
+        ]
+        if not near:
+            raise PinPlacementError(
+                pin, REASON_NO_BOUNDARY_NEARBY,
+                f"no {region!r} boundary edge lies within radius_um={radius_um} of "
+                f"({pin.x_um:.4f}, {pin.y_um:.4f}) um (wafer coords) -- this pin "
+                f"would produce no DevSim contact at all",
+            )
+
+        specs.append({
+            "name": pin.name, "region": region,
+            "x_domain_um": x_domain_um, "y_um": pin.y_um,
+            "radius_um": radius_um,
+        })
+    return specs

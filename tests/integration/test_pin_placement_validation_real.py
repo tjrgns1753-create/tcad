@@ -60,14 +60,14 @@ def main():
         # y=[-0.00164, +0.20462] -- do not guess these numbers for a
         # different recipe without re-measuring.
         valid_pin = Pin(name="Body", role="Body", x_um=WIDTH_UM / 2.0, y_um=-5.0)
-        region = validate_pin_placement(process_result, valid_pin, WIDTH_UM, contactable)
+        region = validate_pin_placement(process_result, valid_pin, contactable)
         assert region == "Si", f"expected Si, got {region}"
         print(f"[1/4] valid pin on Si boundary resolves: region={region}")
 
         # Invalid: far outside the mesh entirely.
         outside_pin = Pin(name="Ghost", role="Drain", x_um=1000.0, y_um=0.0)
         try:
-            validate_pin_placement(process_result, outside_pin, WIDTH_UM, contactable)
+            validate_pin_placement(process_result, outside_pin, contactable)
             assert False, "expected PinPlacementError for a point outside the mesh"
         except PinPlacementError as exc:
             assert exc.reason == REASON_OUTSIDE_MESH, exc.reason
@@ -84,7 +84,7 @@ def main():
         # from the real top boundary, safely within tolerance.
         oxide_pin = Pin(name="BadGate", role="Gate", x_um=WIDTH_UM / 2.0, y_um=0.19)
         try:
-            validate_pin_placement(process_result, oxide_pin, WIDTH_UM, contactable)
+            validate_pin_placement(process_result, oxide_pin, contactable)
             assert False, "expected PinPlacementError for a point on SiO2"
         except PinPlacementError as exc:
             assert exc.reason == REASON_ON_INSULATOR, exc.reason
@@ -95,7 +95,7 @@ def main():
         # away from every real boundary.
         bulk_pin = Pin(name="Buried", role="Body", x_um=WIDTH_UM / 2.0, y_um=-2.5)
         try:
-            validate_pin_placement(process_result, bulk_pin, WIDTH_UM, contactable, tolerance_um=0.05)
+            validate_pin_placement(process_result, bulk_pin, contactable, tolerance_um=0.05)
             assert False, "expected PinPlacementError for a point deep in Si bulk"
         except PinPlacementError as exc:
             assert exc.reason == REASON_INTERIOR_BULK, exc.reason
