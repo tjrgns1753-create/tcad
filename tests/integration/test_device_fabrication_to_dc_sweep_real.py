@@ -32,7 +32,7 @@ from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.mesh.pin import Pin
 from tcad.physics.doping import apply_implant_windows_doping
 from tcad.device.devsim import backend as devsim_backend
-from tcad.device.devsim.contact_probe import validate_pin_placement, find_duplicate_pin_positions
+from tcad.device.devsim.contact_probe import find_duplicate_pin_positions, resolve_pins_to_point_contacts
 from tcad.device.devsim.mesh_import import derive_implant_windows_refinement, import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
 from tcad.device.devsim.mesh_refine import graded_refine_mesh_near
@@ -143,9 +143,17 @@ def main():
         duplicates = find_duplicate_pin_positions(pins)
         assert not duplicates, duplicates
         contactable = {"Si"}  # Gate resolves separately below, on SiO2's own y-max extreme
-        for pin in pins[:2] + [pins[3]]:
-            region = validate_pin_placement(process_result, pin, X_EXTENT, contactable)
-            assert region == "Si", f"{pin.name} resolved to {region}, expected Si"
+        # One shared resolver (duplicate check + wafer->domain x from the
+        # mesh's own min-x + per-pin validation + the radius check
+        # import_process_result itself does silently) -- the SAME
+        # function the GUI's electrode panel calls, so the two cannot
+        # drift into differing wafer-width conventions.
+        point_contacts = resolve_pins_to_point_contacts(
+            process_result, pins[:2] + [pins[3]], contactable, radius_um=0.15,
+        )
+        for spec in point_contacts:
+            region = spec["region"]
+            assert region == "Si", f"{spec['name']} resolved to {region}, expected Si"
         print(f"[2/9] Source/Drain/Body pins validated against the real mesh (Si boundary)")
 
         # 13: Import with point_contacts (Source/Drain/Body) + the
@@ -157,11 +165,7 @@ def main():
         imported = import_process_result(
             process_result, mesh_name="e2e_mesh", device_name="e2e_device",
             contact_regions=["SiO2"], contact_axes={"SiO2": "y"}, contact_sides={"SiO2": "max"},
-            point_contacts=[
-                {"name": "Source", "region": "Si", "x_domain_um": pins[0].x_um - half_width, "y_um": pins[0].y_um, "radius_um": 0.15},
-                {"name": "Drain", "region": "Si", "x_domain_um": pins[1].x_um - half_width, "y_um": pins[1].y_um, "radius_um": 0.15},
-                {"name": "Body", "region": "Si", "x_domain_um": pins[3].x_um - half_width, "y_um": pins[3].y_um, "radius_um": 0.15},
-            ],
+            point_contacts=point_contacts,
             interface_region_pairs=[("Si", "SiO2")],
             length_scale_to_cm=LENGTH_SCALE_TO_CM,
         )
