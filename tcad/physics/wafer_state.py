@@ -29,6 +29,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Optional, Tuple
 
+from tcad.physics.dopant_profile import DopantProfile
+
 
 @dataclass(frozen=True)
 class LayerInfo:
@@ -51,9 +53,10 @@ class WaferState:
     grid_delta_um: float
     _cells: Tuple[_Cell, ...]
     _thin_x: Tuple[float, ...]
+    dopant_profiles: Tuple[DopantProfile, ...] = ()
 
     @staticmethod
-    def query(domain: Any) -> "WaferState":
+    def query(domain: Any, dopant_profiles: Tuple[DopantProfile, ...] = ()) -> "WaferState":
         import viennals as vls
 
         material_map = domain.getMaterialMap()
@@ -94,6 +97,7 @@ class WaferState:
             grid_delta_um=grid,
             _cells=tuple(cells),
             _thin_x=WaferState._thin_layer_positions(domain, grid),
+            dopant_profiles=dopant_profiles,
         )
 
     @staticmethod
@@ -156,3 +160,21 @@ class WaferState:
 
     def under_resolved_x(self) -> Tuple[float, ...]:
         return self._thin_x
+
+    def donor_concentration_at(self, x_um: float, depth_um: float = 0.0) -> float:
+        return sum(
+            p.concentration_at(x_um, depth_um)
+            for p in self.dopant_profiles if p.polarity == "donor"
+        )
+
+    def acceptor_concentration_at(self, x_um: float, depth_um: float = 0.0) -> float:
+        return sum(
+            p.concentration_at(x_um, depth_um)
+            for p in self.dopant_profiles if p.polarity == "acceptor"
+        )
+
+    def net_doping_at(self, x_um: float, depth_um: float = 0.0) -> float:
+        """Derived, always -- never a stored field (spec 2026-09-01,
+        section 2: process-layer state stays donor/acceptor-separated;
+        only a query like this one collapses it to a signed net)."""
+        return self.donor_concentration_at(x_um, depth_um) - self.acceptor_concentration_at(x_um, depth_um)
