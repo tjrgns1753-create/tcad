@@ -169,6 +169,56 @@ live-monitored full regression run at HEAD: 57 passed / 3 failed, same
 3 pre-existing DevSim-convergence failures as before this plan, zero
 new failures.
 
+### Electrode/pin + DC sweep (SDD, 12 tasks)
+CAD-style electrode/pin placement + coordinate-to-mesh-boundary contact
+mapping + voltage probe + DC operating point + DC sweep (Id-Vgs, Id-Vds),
+extending the existing DevSim characterization infrastructure rather than
+replacing it. Plan: `docs/superpowers/plans/2026-08-27-electrode-pin-dc-sweep.md`.
+Each task independently task-reviewed, plus a final whole-branch review (1
+Critical + 7 Important findings, one consolidating fix round of 7 commits,
+verified by a scoped re-review, 4 residual Minor findings fixed directly).
+Commits `d66fff4..383889d` (24 commits total).
+
+Key pieces: `Pin`/`PinPlacementError` data model and coordinate-to-mesh-
+boundary resolution (`tcad/mesh/pin.py`, `tcad/device/devsim/contact_probe.py`);
+`point_contacts` (free-form pin placement) and `extra_contacts` (a second
+axis-extreme contact on one region, enabling a Body contact) added to
+`import_process_result` as purely additive, default-off parameters — every
+pre-existing caller's behavior is unchanged, confirmed under whole-branch
+review; `resolve_pins_to_point_contacts()` as the SINGLE wafer→domain pin
+conversion (duplicate check, mesh-derived `x_domain = mesh_min_x + pin.x_um`,
+per-pin boundary validation, radius check) shared by the GUI electrode panel
+and every test — earlier in the branch the GUI and the tests each had their
+own copy, and disagreed on how to compute wafer width when the mesh isn't
+symmetrically padded; a real DevSim device leak/lifecycle trap and an
+unramped-body-bias bug (`set_bias()` alone never solves — a non-zero
+`body_voltage` was silently NEVER applied whenever the swept contact's first
+voltage equaled its current bias, the common Vgs[0]=0/Vds[0]=0 case) were
+both found and fixed during review, not by design.
+
+**Known limitation, stated explicitly:** the body-effect-on-Vth is NOT
+verified anywhere in this project — `test_mosfet_body_bias_real.py`'s check
+had to fall back to an Ohm's-law current-ratio prediction because a -0.3V
+body bias makes this device's own gate ramp to Vgs=4V fail to converge (this
+recipe's implant windows are full-depth, so the body/drain share a resistive
+substrate path rather than isolating a threshold-shift regime). Also found,
+not yet independently investigated: an identical DevSim solve converges as
+the first device built in a process and diverges as the second, despite
+correct `delete_device()`+`delete_mesh()` cleanup — see
+`docs/investigation_log.md`, "DevSim cross-solve sensitivity".
+
+The end-to-end capstone (`test_device_fabrication_to_dc_sweep_real.py`) uses
+TWO separately-built devices, not one: real coordinate-placed contacts
+(including Body) need an exposed channel/pad gap that strong gate turn-on
+does not tolerate on this device family — confirmed by a real control
+comparison, not tuned. Device B (zero gap) reproduces the project's own
+already-verified `test_mosfet_id_vgs_real.py` turn-on ratio (2.58e7x vs.
+control 2.56e7x, 0.92% apart).
+
+Full regression after the fix round: 69 passed / 3 failed / 0 skipped, same
+3 pre-existing DevSim-convergence failures as every prior run this session,
+zero new failures.
+
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
 Current regression: `tests/run_regression.py` → **57 passed, 3 failed,
