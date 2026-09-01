@@ -57,7 +57,7 @@ def main():
         # REASON_ON_INSULATOR).
         drain_on_oxide = Pin(name="Drain", role="Drain", x_um=WIDTH_UM / 2.0, y_um=0.19)
         try:
-            validate_pin_placement(process_result, drain_on_oxide, WIDTH_UM, contactable)
+            validate_pin_placement(process_result, drain_on_oxide, contactable)
             assert False, "expected PinPlacementError for Drain on SiO2"
         except PinPlacementError as exc:
             assert exc.reason == REASON_ON_INSULATOR, exc.reason
@@ -66,7 +66,7 @@ def main():
         # Gate placed outside the mesh entirely.
         gate_outside = Pin(name="Gate", role="Gate", x_um=WIDTH_UM + 5.0, y_um=0.0)
         try:
-            validate_pin_placement(process_result, gate_outside, WIDTH_UM, contactable)
+            validate_pin_placement(process_result, gate_outside, contactable)
             assert False, "expected PinPlacementError for Gate outside the mesh"
         except PinPlacementError as exc:
             assert exc.reason == REASON_OUTSIDE_MESH, exc.reason
