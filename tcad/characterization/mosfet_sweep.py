@@ -168,9 +168,17 @@ def run_mosfet_id_vgs_sweep(
         _RAMP_MAX_ITER, _DD_RELATIVE_ERROR, _DD_ABSOLUTE_ERROR, no_op_callback,
     )
 
+    # 3b. Ramp the body bias to its target BEFORE the gate sweep begins.
+    # set_bias() alone only sets DevSim's bias PARAMETER and never
+    # solves -- and rampbias(gate) below does nothing at all when
+    # gate_voltages[0] equals the gate's current bias (its own loop is
+    # `while abs(last_bias - end_bias) > min_step`), so a non-zero body
+    # bias would otherwise be reported but never actually solved for.
     if body_contact is not None:
-        from tcad.device.devsim.resistor_equation import set_bias
-        set_bias(device, body_contact, body_voltage)
+        rampbias(
+            device, body_contact, body_voltage, _RAMP_STEP_SIZE, _RAMP_MIN_STEP,
+            _RAMP_MAX_ITER, _DD_RELATIVE_ERROR, _DD_ABSOLUTE_ERROR, no_op_callback,
+        )
 
     points: List[BiasPoint] = []
     for vg in gate_voltages:
@@ -267,9 +275,16 @@ def run_mosfet_id_vds_sweep(
         _RAMP_MAX_ITER, _DD_RELATIVE_ERROR, _DD_ABSOLUTE_ERROR, no_op_callback,
     )
 
+    # 3b. Ramp the body bias to its target BEFORE the drain sweep begins
+    # -- same reasoning as run_mosfet_id_vgs_sweep's own body ramp: a
+    # set_bias() alone never solves, and rampbias(drain) below does
+    # nothing at all when drain_voltages[0] equals the drain's current
+    # bias.
     if body_contact is not None:
-        from tcad.device.devsim.resistor_equation import set_bias
-        set_bias(device, body_contact, body_voltage)
+        rampbias(
+            device, body_contact, body_voltage, _RAMP_STEP_SIZE, _RAMP_MIN_STEP,
+            _RAMP_MAX_ITER, _DD_RELATIVE_ERROR, _DD_ABSOLUTE_ERROR, no_op_callback,
+        )
 
     points: List[BiasPoint] = []
     for vd in drain_voltages:
