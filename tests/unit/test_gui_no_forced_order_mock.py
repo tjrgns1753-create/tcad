@@ -73,6 +73,8 @@ def main():
             "PR strip": app.strip_button,
             "Doping": app.doping_button,
             "Device measurement": app.measure_button,
+            "Resolve pins": app.resolve_pins_button,
+            "DC operating point": app.dc_op_button,
         }
 
         # --- 1. nothing is greyed out on a pristine wafer -------------
@@ -94,8 +96,28 @@ def main():
         app.process_pr_strip()
         assert app.wafer.pr_present is False
         assert app.wafer.developed is False
-        print("[2] develop / expose / strip with no resist: no-ops, no state "
-              "invented")
+        # Electrode panel: both of these genuinely have nothing to act
+        # on here (no mesh, no resolved pins). That is a RESULT reported
+        # in the log, not a dialog naming the step to run first -- so
+        # showinfo/showerror are trapped across just these two calls
+        # (they are legitimate feedback on other paths, which is why
+        # they are not in the session-wide trap list above).
+        popped = []
+        originals = {n: getattr(gui.messagebox, n) for n in ("showinfo", "showerror")}
+        for name in originals:
+            setattr(gui.messagebox, name,
+                    lambda *a, _n=name, **k: popped.append((_n, a[:2])))
+        try:
+            assert app.resolve_electrode_pins() is None
+            assert app.run_dc_operating_point(drain_voltage=0.1, gate_voltage=1.0) is None
+        finally:
+            for name, fn in originals.items():
+                setattr(gui.messagebox, name, fn)
+        assert not popped, (
+            f"the electrode panel raised a dialog for a step with nothing to "
+            f"act on: {popped}")
+        print("[2] develop / expose / strip / resolve pins / DC op with nothing "
+              "to act on: no-ops, no state invented")
 
         # --- 3. and they did not disable anything on the way out ------
         disabled = [n for n, b in process_buttons.items()

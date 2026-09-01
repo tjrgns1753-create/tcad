@@ -4660,18 +4660,20 @@ class TCADApplication(tk.Tk):
             frame, text="ADD PIN", command=self._on_add_pin_clicked,
         ).pack(fill="x", pady=(4, 2))
 
-        ttk.Button(
+        self.resolve_pins_button = ttk.Button(
             frame, text="RESOLVE PINS", style="Run.TButton",
             command=self._on_resolve_pins_clicked,
-        ).pack(fill="x", pady=(2, 2))
+        )
+        self.resolve_pins_button.pack(fill="x", pady=(2, 2))
 
         self.dc_drain_v_var = self._field(frame, "Drain V", 0.1)
         self.dc_gate_v_var = self._field(frame, "Gate V", 1.0)
         self.dc_body_v_var = self._field(frame, "Body V", 0.0)
 
-        ttk.Button(
+        self.dc_op_button = ttk.Button(
             frame, text="DC OPERATING POINT", command=self._on_dc_operating_point_clicked,
-        ).pack(fill="x", pady=(6, 2))
+        )
+        self.dc_op_button.pack(fill="x", pady=(6, 2))
 
         ttk.Button(
             frame, text="EXPORT LAST RESULT (CSV)", command=self._on_export_result_clicked,
@@ -4742,14 +4744,15 @@ class TCADApplication(tk.Tk):
         independent gs_x_extent_var (self.wafer.width_um is never
         updated by run_gate_stack -- unlike etch/oxidation/deposition,
         which all read x_extent_um from self.wafer.width_um directly).
-        The real domain width is measured from the actual mesh instead,
-        matching this project's own centered-domain convention.
+        resolve_pins_to_point_contacts() derives it from the actual
+        mesh's own min-x instead -- the same single conversion every
+        other caller uses.
         """
         if not self.electrode_pins:
-            messagebox.showinfo("Electrode", "No pins placed yet.")
+            self._log("\nRESOLVE PINS: no pins placed yet -- nothing to resolve.\n")
             return None
         if self.last_final_mesh is None:
-            messagebox.showinfo("Electrode", "No real mesh exists yet -- run a process step first.")
+            self._log("\nRESOLVE PINS: no real mesh exists yet -- nothing to resolve.\n")
             return None
 
         # A previous RESOLVE click's device (if the user never reached
@@ -4759,40 +4762,23 @@ class TCADApplication(tk.Tk):
 
         from tcad.mesh.viennaps_adapter import build_process_result
         from tcad.device.devsim.contact_probe import (
-            validate_pin_placement, find_duplicate_pin_positions, PinPlacementError,
+            resolve_pins_to_point_contacts, PinPlacementError,
         )
         from tcad.device.devsim.mesh_import import import_process_result
 
         process_result = build_process_result({"final_mesh": self.last_final_mesh, "snapshots": []})
         contactable = {r.name for r in process_result.material_regions if r.name not in ("SiO2", "Si3N4", "Mask")}
 
-        duplicates = find_duplicate_pin_positions(self.electrode_pins)
-        if duplicates:
-            names = ", ".join(" & ".join(p.name for p in group) for group in duplicates)
-            messagebox.showerror("Electrode", f"Pins at the same position: {names}")
-            return None
-
         try:
-            import meshio
-            mesh = meshio.read(process_result.volume_mesh_path)
-            real_width_um = float(mesh.points[:, 0].max() - mesh.points[:, 0].min())
-
-            errors = []
-            point_contacts = []
-            half_width = real_width_um / 2.0
-            for pin in self.electrode_pins:
-                try:
-                    region = validate_pin_placement(process_result, pin, real_width_um, contactable)
-                    point_contacts.append({
-                        "name": pin.name, "region": region,
-                        "x_domain_um": pin.x_um - half_width, "y_um": pin.y_um,
-                        "radius_um": 0.1,
-                    })
-                except PinPlacementError as exc:
-                    errors.append(f"{exc.pin.name}: {exc.reason} -- {exc.detail}")
-
-            if errors:
-                messagebox.showerror("Electrode", "Invalid pin placement:\n\n" + "\n".join(errors))
+            try:
+                point_contacts = resolve_pins_to_point_contacts(
+                    process_result, self.electrode_pins, contactable, radius_um=0.1,
+                )
+            except PinPlacementError as exc:
+                messagebox.showerror(
+                    "Electrode",
+                    f"Invalid pin placement:\n\n{exc.pin.name}: {exc.reason} -- {exc.detail}",
+                )
                 return None
 
             imported = import_process_result(
@@ -4830,10 +4816,23 @@ class TCADApplication(tk.Tk):
         themselves (point_contacts in resolve_electrode_pins names each
         contact after its Pin's own `name` field)."""
         if self.last_electrode_import is None:
-            messagebox.showinfo("Electrode", "Resolve pins first.")
+            self._log("\nDC OPERATING POINT: pins not resolved yet -- nothing to solve.\n")
             return None
 
         imported = self.last_electrode_import
+        # import_process_result() SKIPS an interface_region_pairs entry
+        # whose two regions are missing or share no mesh edges (e.g. a
+        # plain etch with no oxide at all), silently. The DC-op solve
+        # below passes "Si_SiO2_interface" unconditionally, and would
+        # otherwise fail deep inside DevSim with an opaque error.
+        if "Si_SiO2_interface" not in imported.interfaces:
+            self._log(
+                "\nDC OPERATING POINT: this device has no Si/SiO2 interface "
+                "(interfaces found: {}) -- a DC operating point is solved across "
+                "a gate oxide, so nothing was solved.\n".format(sorted(imported.interfaces))
+            )
+            return None
+
         contacts_by_role = {p.role: p.name for p in self.electrode_pins}
         missing = [r for r in ("Source", "Drain", "Gate") if r not in contacts_by_role]
         if missing:
