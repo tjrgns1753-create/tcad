@@ -53,6 +53,20 @@ RECIPE = {
 }
 
 
+def _fresh_process_result():
+    """Run a fresh etch step in its own temp directory and build the
+    ProcessResult. Returns (result, temp_dir). Caller must cleanup temp_dir."""
+    step_cls = registry.get("etching", "isotropic")
+    tmp = tempfile.TemporaryDirectory()
+    try:
+        step_result = step_cls().run(RECIPE, tmp.name)
+        result = build_process_result(step_result)
+        return result, tmp
+    except:
+        tmp.cleanup()
+        raise
+
+
 def _check_one_kind(label, doped_result, boundaries=()):
     """Import into a fresh DevSim device, read real NetDoping, compare
     node-by-node against WaferState.net_doping_at built from the SAME
@@ -97,46 +111,51 @@ def _check_one_kind(label, doped_result, boundaries=()):
 
 
 def main():
-    with tempfile.TemporaryDirectory() as tmp:
-        step_cls = registry.get("etching", "isotropic")
-
-        # uniform, donor/acceptor split
-        step_result = step_cls().run(RECIPE, tmp)
-        result = build_process_result(step_result)
+    # uniform, donor/acceptor split
+    result, tmp = _fresh_process_result()
+    try:
         doped = apply_uniform_doping(
             result, donor_by_region_cm3={"Si": 1.0e16},
             acceptor_by_region_cm3={"Si": 3.0e15},
         )
         _check_one_kind("uniform", doped)
+    finally:
+        tmp.cleanup()
 
-        # step_junction
-        step_result = step_cls().run(RECIPE, tmp)
-        result = build_process_result(step_result)
+    # step_junction
+    result, tmp = _fresh_process_result()
+    try:
         doped = apply_step_junction_doping(
             result, region="Si", junction_axis="x", junction_position_um=0.0,
             donor_conc_cm3=1.0e18, acceptor_conc_cm3=1.0e18,
         )
         _check_one_kind("step_junction", doped, boundaries=[0.0])
+    finally:
+        tmp.cleanup()
 
-        # gaussian_implant, donor/acceptor split
-        step_result = step_cls().run(RECIPE, tmp)
-        result = build_process_result(step_result)
+    # gaussian_implant, donor/acceptor split
+    result, tmp = _fresh_process_result()
+    try:
         doped = apply_gaussian_implant_doping(
             result, region="Si", junction_axis="x",
             peak_position_um=0.0, straggle_um=0.5,
             donor_peak_conc_cm3=2.0e18, acceptor_peak_conc_cm3=1.0e17,
         )
         _check_one_kind("gaussian_implant", doped)
+    finally:
+        tmp.cleanup()
 
-        # implant_windows, background + one window
-        step_result = step_cls().run(RECIPE, tmp)
-        result = build_process_result(step_result)
+    # implant_windows, background + one window
+    result, tmp = _fresh_process_result()
+    try:
         doped = apply_implant_windows_doping(
             result, region="Si", axis="x",
             background_doping_cm3=-1.0e17,
             windows=[{"min_um": -1.6, "max_um": -0.6, "conc_cm3": 1.0e20}],
         )
         _check_one_kind("implant_windows", doped, boundaries=[-1.6, -0.6])
+    finally:
+        tmp.cleanup()
 
     assert devsim.get_device_list() == (), (
         "a device leaked past cleanup -- would poison a later, "
