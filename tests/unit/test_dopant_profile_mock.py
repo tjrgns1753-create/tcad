@@ -130,6 +130,21 @@ def test_unknown_kind_raises():
         pass
 
 
+def test_non_x_junction_axis_raises():
+    """junction_axis="y" is not yet supported -- evaluators work along x
+    only. A caller passing junction_axis="y" should get an immediate
+    NotImplementedError, not a silently incorrect result."""
+    doping = DopingProfile(kind="step_junction", regions=[
+        DopingRegion(region="Si", junction_axis="y", junction_position_um=1.0,
+                     donor_conc_cm3=1.0e18, acceptor_conc_cm3=1.0e18),
+    ])
+    try:
+        dopant_profiles_from_doping_profile(doping)
+        assert False, "expected NotImplementedError for junction_axis='y'"
+    except NotImplementedError as e:
+        assert "junction_axis" in str(e)
+
+
 def main():
     test_uniform_net_only_splits_by_sign()
     test_uniform_donor_acceptor_split_preserves_both()
@@ -137,6 +152,7 @@ def main():
     test_gaussian_implant_donor_acceptor_share_shape()
     test_implant_windows_background_plus_windows()
     test_unknown_kind_raises()
+    test_non_x_junction_axis_raises()
     print("DopantProfile conversion matches doping_mapping.py's real "
           "DevSim equations for all 4 doping kinds, in both net-only "
           "and donor/acceptor-split input forms.")

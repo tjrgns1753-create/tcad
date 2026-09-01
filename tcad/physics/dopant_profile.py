@@ -21,12 +21,15 @@ information at all, deliberately, per the base wafer-state design) can
 gain a doping query surface without touching the already-verified
 DevSim NetDoping construction path.
 
-Two things this module deliberately does NOT model, both belonging to
+Three things this module deliberately does NOT model, all belonging to
 the DEVICE layer rather than the declared process-layer profile:
 window_scale (doping_mapping.apply_doping's continuation-ramp
 multiplier -- a solve-strategy detail, not part of what the process
-declares) and barrier-covered-window exclusion (derived from the real
-mesh at DevSim import time, not from the DopingProfile alone).
+declares), barrier-covered-window exclusion (derived from the real
+mesh at DevSim import time, not from the DopingProfile alone), and
+length_scale_to_cm (a coordinate-scaling parameter applied only
+during DevSim NetDoping equation construction, not part of the
+profile's specification).
 """
 
 from __future__ import annotations
@@ -100,22 +103,25 @@ def dopant_profiles_from_doping_profile(
     _split_net() only where a caller used the original net-only input
     form.
     """
+    # Validate and dispatch kind once, before iterating regions.
+    if doping.kind == "uniform":
+        helper = _uniform_profiles
+    elif doping.kind == "step_junction":
+        helper = _step_junction_profiles
+    elif doping.kind == "gaussian_implant":
+        helper = _gaussian_implant_profiles
+    elif doping.kind == "implant_windows":
+        helper = _implant_windows_profiles
+    else:
+        raise NotImplementedError(
+            f"dopant_profiles_from_doping_profile supports kind in "
+            f"('uniform', 'step_junction', 'gaussian_implant', "
+            f"'implant_windows') so far, got {doping.kind!r}"
+        )
+
     profiles: List[DopantProfile] = []
     for region in doping.regions:
-        if doping.kind == "uniform":
-            profiles.extend(_uniform_profiles(region))
-        elif doping.kind == "step_junction":
-            profiles.extend(_step_junction_profiles(region))
-        elif doping.kind == "gaussian_implant":
-            profiles.extend(_gaussian_implant_profiles(region))
-        elif doping.kind == "implant_windows":
-            profiles.extend(_implant_windows_profiles(region))
-        else:
-            raise NotImplementedError(
-                f"dopant_profiles_from_doping_profile supports kind in "
-                f"('uniform', 'step_junction', 'gaussian_implant', "
-                f"'implant_windows') so far, got {doping.kind!r}"
-            )
+        profiles.extend(helper(region))
     return tuple(profiles)
 
 
@@ -140,6 +146,11 @@ def _uniform_profiles(region: DopingRegion) -> List[DopantProfile]:
 
 
 def _step_junction_profiles(region: DopingRegion) -> List[DopantProfile]:
+    if region.junction_axis not in (None, "x"):
+        raise NotImplementedError(
+            f"dopant_profiles_from_doping_profile evaluates along x only; "
+            f"got junction_axis={region.junction_axis!r}"
+        )
     position = region.junction_position_um
     donor = region.donor_conc_cm3 or 0.0
     acceptor = region.acceptor_conc_cm3 or 0.0
@@ -158,6 +169,11 @@ def _step_junction_profiles(region: DopingRegion) -> List[DopantProfile]:
 
 
 def _gaussian_implant_profiles(region: DopingRegion) -> List[DopantProfile]:
+    if region.junction_axis not in (None, "x"):
+        raise NotImplementedError(
+            f"dopant_profiles_from_doping_profile evaluates along x only; "
+            f"got junction_axis={region.junction_axis!r}"
+        )
     position = region.peak_position_um
     straggle = region.straggle_um
     if region.donor_peak_conc_cm3 is not None or region.acceptor_peak_conc_cm3 is not None:
@@ -182,6 +198,11 @@ def _gaussian_implant_profiles(region: DopingRegion) -> List[DopantProfile]:
 
 
 def _implant_windows_profiles(region: DopingRegion) -> List[DopantProfile]:
+    if region.junction_axis not in (None, "x"):
+        raise NotImplementedError(
+            f"dopant_profiles_from_doping_profile evaluates along x only; "
+            f"got junction_axis={region.junction_axis!r}"
+        )
     if region.donor_conc_cm3 is not None or region.acceptor_conc_cm3 is not None:
         bg_donor = region.donor_conc_cm3 or 0.0
         bg_acceptor = region.acceptor_conc_cm3 or 0.0

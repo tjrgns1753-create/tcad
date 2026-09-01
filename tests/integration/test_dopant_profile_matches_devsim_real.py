@@ -7,7 +7,7 @@ doping kind, at the real node coordinates DevSim itself reports --
 not a second, independently-plausible formula, but the exact same
 number the already-verified doping_mapping.py path produces.
 
-Per docs/superpowers/specs/2026-08-25-wafer-state-physics-design.md
+Per docs/superpowers/specs/2026-09-01-state-dependent-process-physics-design.md
 section 2, this is the proof that the new process-layer query surface
 and the existing device-layer NetDoping construction agree, without
 requiring doping_mapping.py to change at all.
@@ -90,7 +90,7 @@ def _check_one_kind(label, doped_result, boundaries=()):
         max_rel_error = 0.0
         n_checked = 0
         for x, dev_value in zip(x_values, actual):
-            if boundaries and min(abs(x - b) for b in boundaries) < 1e-6:
+            if boundaries and any(x == b for b in boundaries):
                 continue
             predicted = state.net_doping_at(x, 0.0)
             denom = max(abs(dev_value), 1.0)
