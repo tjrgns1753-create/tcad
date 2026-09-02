@@ -62,6 +62,7 @@ from tcad.physics.doping import (
     apply_step_junction_doping,
     apply_gaussian_implant_doping,
     apply_implant_windows_doping,
+    apply_thermal_anneal,
 )
 
 # ============================================================
@@ -3946,6 +3947,36 @@ class TCADApplication(tk.Tk):
             frame, "SiO2 barrier min thickness (µm)", 0.0,
         )
 
+        ttk.Label(
+            frame,
+            text="Anneal (widens every existing Gaussian implant term "
+                 "by its own species' real D(T) -- see Christensen et "
+                 "al. 2003)",
+            style="Caption.TLabel",
+            wraplength=310,
+        ).pack(
+            anchor="w",
+            padx=12,
+            pady=(10, 1),
+        )
+        self.anneal_temp_var = self._field(
+            frame, "Anneal temperature (°C)", 900.0,
+        )
+        self.anneal_time_var = self._field(
+            frame, "Anneal time (s)", 600.0,
+        )
+        self.anneal_button = ttk.Button(
+            frame,
+            text="ANNEAL",
+            style="Run.TButton",
+            command=self._on_thermal_anneal_clicked,
+        )
+        self.anneal_button.pack(
+            fill="x",
+            padx=12,
+            pady=(3, 3),
+        )
+
         self.doping_button = ttk.Button(
             frame,
             text="APPLY DOPING",
@@ -4057,18 +4088,34 @@ class TCADApplication(tk.Tk):
                 acceptor = float(self.dope_gauss_acceptor_var.get())
                 donor_species = self.dope_gauss_donor_species_var.get()
                 acceptor_species = self.dope_gauss_acceptor_species_var.get()
+                accumulate = (
+                    self.last_doped_result is not None
+                    and (self.last_doped_result.doping is None
+                         or self.last_doped_result.doping.kind == "gaussian_implant")
+                )
+                if self.last_doped_result is not None and not accumulate:
+                    self._log(
+                        "GAUSSIAN IMPLANT: the wafer's current doping is a "
+                        f"different kind ({self.last_doped_result.doping.kind!r}) "
+                        "-- this implant replaces it rather than superposing "
+                        "(adding a term on top of a different doping kind's "
+                        "representation is not supported)."
+                    )
                 doped_result = apply_gaussian_implant_doping(
                     process_result, region=region, junction_axis=axis,
                     peak_position_um=position, straggle_um=straggle,
                     donor_peak_conc_cm3=donor, acceptor_peak_conc_cm3=acceptor,
                     donor_species=donor_species, acceptor_species=acceptor_species,
+                    existing=self.last_doped_result if accumulate else None,
                 )
+                n_terms = len(doped_result.doping.regions[0].gaussian_terms or [1])
                 summary = (
                     f"region={region!r} axis={axis!r} "
                     f"peak@{position}um straggle={straggle}um "
                     f"donor={donor:.3e}({donor_species}) "
                     f"acceptor={acceptor:.3e}({acceptor_species}) -> "
-                    f"peak_net_cm3={donor - acceptor:.3e}"
+                    f"peak_net_cm3={donor - acceptor:.3e} "
+                    f"({n_terms} implant term(s) now on this wafer)"
                 )
 
             elif kind == "Implant Windows":
@@ -4166,6 +4213,61 @@ class TCADApplication(tk.Tk):
             )
 
         return True
+
+    def _on_thermal_anneal_clicked(self):
+        """Widens every existing Gaussian implant TERM (Task 4/plan
+        Stage B) by its own species' real, cited D(T) -- see
+        tcad.physics.diffusion_model. A real, honest no-op (logged, not
+        silent) when the current doping has no defined Gaussian shape."""
+
+        if self.last_doped_result is None or self.last_doped_result.doping is None:
+            self._log("ANNEAL: no doping applied yet -- nothing to anneal.")
+            return
+
+        try:
+            temperature_c = float(self.anneal_temp_var.get())
+            time_s = float(self.anneal_time_var.get())
+        except ValueError:
+            messagebox.showerror(
+                "Anneal",
+                "Temperature and time must be numeric.",
+            )
+            return
+
+        before = self.last_doped_result
+        after = apply_thermal_anneal(before, temperature_c, time_s)
+
+        if after is before:
+            self._log(
+                f"ANNEAL: {temperature_c:.0f} C / {time_s:.0f} s -- current "
+                f"doping ({before.doping.kind!r}) has no defined Gaussian "
+                f"shape to anneal; nothing changed."
+            )
+            return
+
+        self.last_doped_result = after
+        before_by_species = {
+            t["species"]: t for t in (before.doping.regions[0].gaussian_terms or [])
+        }
+        after_terms = after.doping.regions[0].gaussian_terms
+
+        self._log(
+            f"\n================================\n"
+            f"ANNEAL: {temperature_c:.0f} C / {time_s:.0f} s\n"
+            f"================================\n"
+            f"Applied to {len(after_terms)} existing implant term(s):"
+        )
+        for term in after_terms:
+            before_term = before_by_species.get(term["species"])
+            before_straggle = before_term["straggle_um"] if before_term else term["straggle_um"]
+            before_peak = before_term["peak_conc_cm3"] if before_term else term["peak_conc_cm3"]
+            self._log(
+                f"  {term['species'] or '(unlabeled)'} ({term['polarity']}): "
+                f"straggle {before_straggle:.4f} -> {term['straggle_um']:.4f} um, "
+                f"peak {before_peak:.3e} -> {term['peak_conc_cm3']:.3e} cm^-3"
+            )
+
+        self._update_process_buttons()
 
     def _make_measurement_panel(
         self,
