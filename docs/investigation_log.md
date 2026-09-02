@@ -9015,3 +9015,92 @@ second-device regression, which would be a much bigger finding affecting every
 existing multi-device test in the suite (and would need explaining why those all
 pass today). Also worth checking: does `devsim.reset_devsim()` (if it exists) between
 devices avoid it, or does the effect survive even that?
+
+## Bosch DRIE silently ignored a lithography-tagged resist mask
+
+Session: user reported a "strange" real-GUI result for oxidation ->
+lithography -> Bosch DRIE etch (all default panel values) -- the etched
+trench never seemed to form.
+
+**What was tested.** Reproduced the exact chain outside the GUI (real
+oxidation, real litho-state remask, real Bosch DRIE, default panel
+values) and inspected the real exported mesh directly (never trusted
+the GUI screenshot/log alone, per this project's own standing rule).
+Then isolated the cause with a decisive same-probe-location comparison:
+build the identical oxidation + masked-etch recipe twice, differing
+ONLY in `mask_material` ("Mask" vs "PHS"), and measure the masked
+(outside-window) region's real surface height after the same etch —
+run via `git stash`/`stash pop` so "before" and "after" the eventual
+fix used the exact same test code.
+
+**Result.** Before the fix: `mask_material="Mask"` left the masked
+probe location completely untouched (y=1.0499, i.e. the as-deposited
+resist height, zero erosion); `mask_material="PHS"` — the tag the
+real GUI's lithography state actually uses for a chained step
+(`tcad_2d_stagewise.py`'s `_RESIST_MATERIAL`) — measurably eroded the
+SAME masked location (y=1.038, ~0.06um removed) under the identical
+recipe. After the fix, both tags produce identical protection
+(y=1.0499 either way, within mesh-generation noise).
+
+**What it proves.** `tcad/process/etching/bosch_drie.py` hardcoded its
+mask-blocking logic (`polymer_breakthrough`'s `maskMaterial` kwarg, and
+`etch_rate()`'s zero-rate check) to `module.Material.Mask` literally,
+never reading `recipe.get("mask_material")` at all -- unlike
+`isotropic.py`/`directional.py`, which both already read it
+dynamically. `prepare_domain()`'s own `MakeTrench` path (used only on
+a FRESH, litho-less wafer) happens to always tag its mask "Mask", so a
+standalone Bosch DRIE run on a fresh wafer was never affected and every
+existing test (which all either pass `mask_material="Mask"` explicitly
+or omit the key, always resolving to "Mask") stayed green. But the
+GUI's real chained flow (oxidation -> lithography -> Bosch DRIE) always
+tags its resist "PHS" specifically to keep photoresist distinguishable
+from a hard mask (CLAUDE.md's own open PR-strip item depends on that
+distinction existing) -- and Bosch DRIE's hardcode made that tag
+invisible to its own masking logic, so the resist provided ZERO real
+protection whenever it was applied via lithography rather than
+MakeTrench. Silent, no crash, no warning -- exactly CLAUDE.md's
+documented 3.8e7x failure class.
+
+**Real physics grounding for the fix's correctness** (not just "masks
+should mask" asserted without a source): Osipov, Iankevich, Berezenko,
+Endiiarova, "Influence of operation parameters on BOSCH-process
+technological characteristics", Materials Today: Proceedings (2020) --
+measured real Si/photoresist etch selectivity around 38:1 (SF6/CHF3
+chemistry, ICP reactor) for exactly this cyclic passivation/etch
+process, confirming a photoresist mask genuinely, strongly blocks Bosch
+DRIE etching in reality. ViennaPS's own `maskMaterial` is a binary gate
+(0 or the full rate) rather than that finite ratio -- a known
+simplification already implicit in every other etch model in this
+project, not a new physics model introduced by this fix.
+
+**Fix.** `bosch_drie.py` now resolves `mask_material =
+getattr(module.Material, recipe.get("mask_material", "Mask"))` once,
+at the top of `run()`, and both mask-blocking sites reference that
+resolved value instead of the literal `module.Material.Mask` --
+mirroring the exact pattern `isotropic.py`/`directional.py` already use
+and this project has already verified. Default unchanged ("Mask"), so
+every existing caller (all of which use that default or set it
+explicitly) is byte-for-byte unaffected -- confirmed via
+`test_phase1_bosch_mock.py`, `test_phase2_etching_real.py` (all 11 etch
+models), and `test_locos_chaining_real.py`.
+
+**Confirmed no other etch model has the same hardcode**: grepped every
+file in `tcad/process/etching/` for a literal `Material.Mask` reference
+after the fix -- none remain outside this fix's own explanatory
+comments.
+
+**What remains uncertain.** Whether `faraday_cage.py` and `ion_beam.py`
+(both take a plural `mask_materials`/`maskMaterials` list rather than a
+single tag) correctly propagate a litho-tagged resist the same way --
+read only far enough to confirm neither hardcodes `Material.Mask`
+specifically; not independently verified against a real chained-litho
+run the way `bosch_drie.py` now is.
+
+**Next smallest experiment**, if this needs re-visiting: the same
+decisive Mask-vs-PHS same-probe comparison this fix used, applied to
+`faraday_cage.py`/`ion_beam.py`'s own masked-etch recipes.
+
+Regression: pinned by the new
+`tests/integration/test_bosch_drie_resist_mask_real.py`, confirmed via
+`git stash` to FAIL on the pre-fix code (real measured erosion) and
+PASS on the fix.

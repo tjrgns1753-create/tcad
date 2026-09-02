@@ -659,6 +659,41 @@ the Windows cp949 console, which truncates the whole run — use
   are not yet wired, and **doping is not in WaferState at all**
   (deliberate, not an oversight). Design:
   `docs/superpowers/specs/2026-08-25-wafer-state-physics-design.md`.
+- **Bosch DRIE silently ignored a lithography-tagged resist mask —
+  RESOLVED.** `bosch_drie.py`'s own mask-blocking logic (unlike
+  `isotropic.py`/`directional.py`, which both already read
+  `mask_material` dynamically) hardcoded `module.Material.Mask`
+  literally, never reading the recipe at all. Harmless on a FRESH wafer
+  (`MakeTrench` always tags its own mask "Mask"), but the GUI's real
+  chained flow (oxidation → lithography → Bosch DRIE) tags its resist
+  `"PHS"` specifically (kept distinct from ViennaPS's native "Mask" so
+  photoresist can be told apart from a hard mask) — so the resist gave
+  **zero real protection** whenever applied via lithography instead of
+  MakeTrench: no crash, no warning, exactly the 3.8e7x failure class
+  above. Found by reproducing a user-reported "strange result" outside
+  the GUI and inspecting the real exported mesh directly (never trusted
+  the screenshot/log). Isolated with a decisive same-probe-location
+  `mask_material="Mask"` vs `"PHS"` comparison under the real backend
+  (`git stash`/`stash pop` before/after): pre-fix, "Mask" left the
+  probe untouched while "PHS" measurably eroded the identical location
+  (~0.06um) under the identical recipe; post-fix both are identically
+  protected. Fixed by reading `recipe.get("mask_material", "Mask")`
+  dynamically — mirrors the exact, already-verified pattern
+  `isotropic.py`/`directional.py` use, not a new mechanism; default
+  unchanged, so every existing caller is byte-for-byte unaffected
+  (confirmed via `test_phase1_bosch_mock.py`,
+  `test_phase2_etching_real.py`'s all-11-models run, and
+  `test_locos_chaining_real.py`). Physical grounding: Osipov et al.,
+  "Influence of operation parameters on BOSCH-process technological
+  characteristics", Materials Today: Proceedings (2020) — measured real
+  Si/photoresist selectivity ~38:1 for this exact process, confirming a
+  photoresist mask genuinely blocks Bosch DRIE etching (ViennaPS's own
+  `maskMaterial` stays a binary gate, not that finite ratio — a known
+  simplification already implicit in every other etch model here).
+  Pinned by the new `test_bosch_drie_resist_mask_real.py`, confirmed via
+  `git stash` to fail on the pre-fix code and pass on the fix. Search
+  `docs/investigation_log.md` for "Bosch DRIE silently ignored" for the
+  full writeup.
 
 ## OPEN issues (active — read before starting new work)
 
