@@ -178,6 +178,21 @@ def _step_junction_profiles(region: DopingRegion) -> List[DopantProfile]:
 
 
 def _gaussian_implant_profiles(region: DopingRegion) -> List[DopantProfile]:
+    if region.gaussian_terms:
+        out: List[DopantProfile] = []
+        for term in region.gaussian_terms:
+            peak, position, straggle = (
+                term["peak_conc_cm3"], term["peak_position_um"], term["straggle_um"],
+            )
+            out.append(DopantProfile(
+                species=term["species"], polarity=term["polarity"],
+                concentration_at=lambda x, d, v=peak, p=position, s=straggle:
+                    v * _gaussian_shape(x, p, s),
+                thermal_budget=term.get("thermal_budget_cm2", 0.0),
+                peak_conc_cm3=peak, peak_position_um=position, straggle_um=straggle,
+            ))
+        return out
+
     if region.junction_axis not in (None, "x"):
         raise NotImplementedError(
             f"dopant_profiles_from_doping_profile evaluates along x only; "
@@ -196,12 +211,14 @@ def _gaussian_implant_profiles(region: DopingRegion) -> List[DopantProfile]:
             species=region.donor_species, polarity="donor",
             concentration_at=lambda x, d, v=donor_peak, p=position, s=straggle:
                 v * _gaussian_shape(x, p, s),
+            peak_conc_cm3=donor_peak, peak_position_um=position, straggle_um=straggle,
         ))
     if acceptor_peak:
         out.append(DopantProfile(
             species=region.acceptor_species, polarity="acceptor",
             concentration_at=lambda x, d, v=acceptor_peak, p=position, s=straggle:
                 v * _gaussian_shape(x, p, s),
+            peak_conc_cm3=acceptor_peak, peak_position_um=position, straggle_um=straggle,
         ))
     return out
 

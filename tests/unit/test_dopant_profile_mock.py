@@ -145,6 +145,53 @@ def test_non_x_junction_axis_raises():
         assert "junction_axis" in str(e)
 
 
+def test_gaussian_terms_produce_one_dopant_profile_each():
+    """Stage B: multiple implant terms in one region -> multiple
+    DopantProfiles, each carrying its OWN species/peak/straggle/
+    thermal_budget -- not collapsed into one."""
+    doping = DopingProfile(kind="gaussian_implant", regions=[
+        DopingRegion(
+            region="Si", junction_axis="x",
+            peak_position_um=0.0, straggle_um=0.2,  # legacy fields, unused when gaussian_terms is set
+            gaussian_terms=[
+                {"species": "B", "polarity": "acceptor", "peak_conc_cm3": 1.0e18,
+                 "peak_position_um": -1.0, "straggle_um": 0.2, "thermal_budget_cm2": 1.5e-11},
+                {"species": "P", "polarity": "donor", "peak_conc_cm3": 2.0e18,
+                 "peak_position_um": 1.0, "straggle_um": 0.15, "thermal_budget_cm2": 3.0e-12},
+            ],
+        ),
+    ])
+    profiles = dopant_profiles_from_doping_profile(doping)
+    assert len(profiles) == 2
+
+    by_species = {p.species: p for p in profiles}
+    print(f"B: polarity={by_species['B'].polarity}, "
+          f"peak_conc_cm3={by_species['B'].peak_conc_cm3:.3e}, "
+          f"peak_position_um={by_species['B'].peak_position_um}, "
+          f"straggle_um={by_species['B'].straggle_um}, "
+          f"thermal_budget={by_species['B'].thermal_budget:.3e}")
+    print(f"P: polarity={by_species['P'].polarity}, "
+          f"peak_conc_cm3={by_species['P'].peak_conc_cm3:.3e}, "
+          f"peak_position_um={by_species['P'].peak_position_um}, "
+          f"straggle_um={by_species['P'].straggle_um}, "
+          f"thermal_budget={by_species['P'].thermal_budget:.3e}")
+    assert by_species["B"].polarity == "acceptor"
+    assert by_species["B"].peak_conc_cm3 == 1.0e18
+    assert by_species["B"].peak_position_um == -1.0
+    assert by_species["B"].straggle_um == 0.2
+    assert by_species["B"].thermal_budget == 1.5e-11
+    assert by_species["P"].polarity == "donor"
+    assert by_species["P"].thermal_budget == 3.0e-12
+
+    import math
+    at_peak = by_species["B"].concentration_at(-1.0, 0.0)
+    far_from_peak = by_species["B"].concentration_at(-1.0 + 10.0, 0.0)
+    print(f"B concentration_at(peak=-1.0) = {at_peak:.6e} cm^-3, "
+          f"concentration_at(peak+10um) = {far_from_peak:.6e} cm^-3")
+    assert abs(at_peak - 1.0e18) < 1.0
+    assert far_from_peak < 1.0e-10  # far from peak
+
+
 def main():
     test_uniform_net_only_splits_by_sign()
     test_uniform_donor_acceptor_split_preserves_both()
@@ -153,6 +200,7 @@ def main():
     test_implant_windows_background_plus_windows()
     test_unknown_kind_raises()
     test_non_x_junction_axis_raises()
+    test_gaussian_terms_produce_one_dopant_profile_each()
     print("DopantProfile conversion matches doping_mapping.py's real "
           "DevSim equations for all 4 doping kinds, in both net-only "
           "and donor/acceptor-split input forms.")
