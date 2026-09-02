@@ -27,6 +27,8 @@ def test_phosphorus_matches_christensen_2003_in_window():
     """[Christensen2003]: P, D0=8e-4 cm^2/s, Ea=2.74 eV, 810-1100 C."""
     result = arrhenius_diffusivity("P", "Si", 900.0)
     expected = _expected_D(8e-4, 2.74, 900.0)
+    print(f"P in Si @ 900.0 C: D = {result.value:.6e} cm^2/s "
+          f"(expected {expected:.6e}), resolution = {result.resolution}")
     assert result.value is not None
     assert abs(result.value - expected) / expected < 1e-9
     assert result.resolution is Resolution.VERIFIED, (
@@ -39,6 +41,8 @@ def test_boron_matches_christensen_2003_in_window():
     """[Christensen2003]: B, D0=0.06 cm^2/s, Ea=3.12 eV, 810-1050 C."""
     result = arrhenius_diffusivity("B", "Si", 900.0)
     expected = _expected_D(0.06, 3.12, 900.0)
+    print(f"B in Si @ 900.0 C: D = {result.value:.6e} cm^2/s "
+          f"(expected {expected:.6e}), resolution = {result.resolution}")
     assert result.value is not None
     assert abs(result.value - expected) / expected < 1e-9
     assert result.resolution is Resolution.VERIFIED
@@ -51,6 +55,8 @@ def test_outside_measured_window_is_downgraded():
     citation used outside its stated window is UNVERIFIED, never
     silently treated as equally trustworthy."""
     result = arrhenius_diffusivity("P", "Si", 1200.0)
+    print(f"P in Si @ 1200.0 C (outside 810-1100 C window): "
+          f"D = {result.value:.6e} cm^2/s, resolution = {result.resolution}")
     assert result.value is not None
     assert result.resolution is Resolution.UNVERIFIED, (
         f"1200 C is outside [Christensen2003]'s 810-1100 C P window -- "
@@ -60,10 +66,14 @@ def test_outside_measured_window_is_downgraded():
 
 def test_unknown_species_or_host_returns_unknown():
     result = arrhenius_diffusivity("As", "Si", 900.0)
+    print(f"As in Si @ 900.0 C (no table entry): D = {result.value}, "
+          f"resolution = {result.resolution}")
     assert result.value is None
     assert result.resolution is Resolution.UNKNOWN
 
     result = arrhenius_diffusivity("P", "SiO2", 900.0)
+    print(f"P in SiO2 @ 900.0 C (no table entry): D = {result.value}, "
+          f"resolution = {result.resolution}")
     assert result.value is None
     assert result.resolution is Resolution.UNKNOWN
 
@@ -76,6 +86,11 @@ def test_thermal_budget_is_D_times_t_not_raw_time():
     10 min must not have the same diffusion effect") requires."""
     low = thermal_budget_contribution("P", "Si", 900.0, 600.0)
     high = thermal_budget_contribution("P", "Si", 1000.0, 600.0)
+    print(f"P in Si, 600.0 s anneal @ 900.0 C:  budget = {low.value:.6e} cm^2")
+    print(f"P in Si, 600.0 s anneal @ 1000.0 C: budget = {high.value:.6e} cm^2")
+    print(f"  -> same duration, higher T: budget increased by "
+          f"{high.value / low.value:.3f}x "
+          f"({'higher' if high.value > low.value else 'NOT higher'})")
     assert low.value is not None and high.value is not None
     assert high.value > low.value, (
         f"1000 C/600s budget ({high.value}) must exceed 900 C/600s "
