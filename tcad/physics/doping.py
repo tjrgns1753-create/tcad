@@ -30,6 +30,15 @@ from dataclasses import replace
 from typing import Dict, List, Optional
 
 from tcad.mesh.interface import DopingProfile, DopingRegion, ProcessResult
+from tcad.physics.diffusion_model import thermal_budget_contribution
+from tcad.physics.values import Resolution
+
+#: This project's own doping representation is defined along ONE
+#: lateral axis only (every existing kind -- uniform, step_junction,
+#: gaussian_implant, implant_windows -- has no depth/y variation at
+#: all). A real anneal also moves the junction DEPTH; this module does
+#: not compute that. Real, importable, testable -- not only a comment.
+DEPTH_EVOLUTION_RESOLUTION = Resolution.UNSUPPORTED_BY_MODEL
 
 
 def apply_uniform_doping(
@@ -370,3 +379,90 @@ def apply_implant_windows_doping(
     )
     doping = DopingProfile(kind="implant_windows", regions=[doping_region])
     return replace(result, doping=doping)
+
+
+def _normalize_gaussian_terms(region: DopingRegion) -> List[Dict]:
+    """A DopingRegion's implant content as a flat term list, regardless
+    of whether it already used gaussian_terms (Task 3) or only the
+    legacy single-profile fields. Shared by apply_thermal_anneal() here
+    and apply_gaussian_implant_doping's existing= path (Task 3) --
+    kept as ONE function so the two paths cannot drift apart."""
+    if region.gaussian_terms:
+        return list(region.gaussian_terms)
+    terms = []
+    if region.donor_peak_conc_cm3:
+        terms.append({
+            "species": region.donor_species, "polarity": "donor",
+            "peak_conc_cm3": region.donor_peak_conc_cm3,
+            "peak_position_um": region.peak_position_um,
+            "straggle_um": region.straggle_um, "thermal_budget_cm2": 0.0,
+        })
+    if region.acceptor_peak_conc_cm3:
+        terms.append({
+            "species": region.acceptor_species, "polarity": "acceptor",
+            "peak_conc_cm3": region.acceptor_peak_conc_cm3,
+            "peak_position_um": region.peak_position_um,
+            "straggle_um": region.straggle_um, "thermal_budget_cm2": 0.0,
+        })
+    if not terms and region.peak_conc_cm3 is not None:
+        polarity = "donor" if region.peak_conc_cm3 >= 0 else "acceptor"
+        terms.append({
+            "species": None, "polarity": polarity,
+            "peak_conc_cm3": abs(region.peak_conc_cm3),
+            "peak_position_um": region.peak_position_um,
+            "straggle_um": region.straggle_um, "thermal_budget_cm2": 0.0,
+        })
+    return terms
+
+
+def apply_thermal_anneal(
+    result: ProcessResult, temperature_c: float, time_s: float,
+) -> ProcessResult:
+    """Widen every EXISTING Gaussian implant term by its own species'
+    real, cited D(T) (tcad.physics.diffusion_model) -- independently,
+    never a species-pair interaction. Dose is conserved per term (see
+    tcad.physics.diffusion_model.anneal_profile's docstring for the
+    exact formula this reuses).
+
+    Real, honest no-op (returns `result` UNCHANGED, same object) when
+    result.doping has no defined Gaussian shape to widen -- this
+    function never invents a shape for uniform/step_junction/
+    implant_windows doping, which this project has no anneal physics
+    for.
+
+    Depth/junction-depth evolution is NOT computed -- see this module's
+    own DEPTH_EVOLUTION_RESOLUTION constant.
+    """
+    if result.doping is None or result.doping.kind != "gaussian_implant":
+        return result
+
+    region = result.doping.regions[0]
+    terms = _normalize_gaussian_terms(region)
+    if not terms:
+        return result
+
+    updated_terms = []
+    for term in terms:
+        if term["species"] is None:
+            updated_terms.append(term)
+            continue
+        contribution = thermal_budget_contribution(
+            term["species"], "Si", temperature_c, time_s,
+        )
+        if contribution.value is None:
+            updated_terms.append(term)
+            continue
+        dt_um2 = contribution.value * 1e8
+        old_straggle = term["straggle_um"]
+        new_straggle = (old_straggle ** 2 + 2.0 * dt_um2) ** 0.5
+        new_peak = term["peak_conc_cm3"] * (old_straggle / new_straggle)
+        updated_terms.append({
+            "species": term["species"], "polarity": term["polarity"],
+            "peak_conc_cm3": new_peak, "peak_position_um": term["peak_position_um"],
+            "straggle_um": new_straggle,
+            "thermal_budget_cm2": term["thermal_budget_cm2"] + contribution.value,
+        })
+
+    new_region = replace(region, gaussian_terms=updated_terms)
+    new_doping = DopingProfile(kind="gaussian_implant", regions=[new_region])
+    return replace(result, doping=new_doping)
