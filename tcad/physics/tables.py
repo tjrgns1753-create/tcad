@@ -22,8 +22,8 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Optional, Tuple
 
 from tcad.physics.values import (
-    Conditions, Coverage, PhysicalValue, Provenance, Resolution, Source,
-    UnknownPolicy,
+    Conditions, Coverage, PhysicalValue, Provenance, Range, Resolution,
+    Source, UnknownPolicy,
 )
 
 _NO_CONDITIONS = Conditions(notes="not applicable — intrinsic property")
@@ -46,8 +46,62 @@ MATERIAL_PROPERTIES: Dict[Tuple[str, str], PhysicalValue] = {
 }
 
 #: (material, chemistry, parameter) -> PhysicalValue.
-#: EMPTY ON PURPOSE. See the module docstring.
-INTERACTION_COEFFICIENTS: Dict[Tuple[str, str, str], PhysicalValue] = {}
+#: Populated only with real citations -- see each Source string for
+#: the exact paper. Everything else still resolves to UNKNOWN.
+INTERACTION_COEFFICIENTS: Dict[Tuple[str, str, str], PhysicalValue] = {
+    ("Si", "P", "diffusivity_D0_cm2_s"): PhysicalValue(
+        value=8e-4, unit="cm^2/s", material="Si", chemistry="P",
+        conditions=Conditions(temperature_c=Range(810.0, 1100.0),
+                               notes="intrinsic diffusivity, high-purity epitaxial Si"),
+        source=Source(
+            "Christensen, Radamson, Kuznetsov, Svensson, \"Phosphorus and "
+            "boron diffusion in silicon under equilibrium conditions\", "
+            "Appl. Phys. Lett. 82(14), 2254-2256 (2003), "
+            "DOI 10.1063/1.1566464",
+            Provenance.LITERATURE,
+        ),
+        resolution=Resolution.VERIFIED, provenance=Provenance.LITERATURE,
+    ),
+    ("Si", "P", "diffusivity_Ea_eV"): PhysicalValue(
+        value=2.74, unit="eV", material="Si", chemistry="P",
+        conditions=Conditions(temperature_c=Range(810.0, 1100.0),
+                               notes="intrinsic diffusivity, high-purity epitaxial Si"),
+        source=Source(
+            "Christensen, Radamson, Kuznetsov, Svensson, \"Phosphorus and "
+            "boron diffusion in silicon under equilibrium conditions\", "
+            "Appl. Phys. Lett. 82(14), 2254-2256 (2003), "
+            "DOI 10.1063/1.1566464",
+            Provenance.LITERATURE,
+        ),
+        resolution=Resolution.VERIFIED, provenance=Provenance.LITERATURE,
+    ),
+    ("Si", "B", "diffusivity_D0_cm2_s"): PhysicalValue(
+        value=0.06, unit="cm^2/s", material="Si", chemistry="B",
+        conditions=Conditions(temperature_c=Range(810.0, 1050.0),
+                               notes="intrinsic diffusivity, high-purity epitaxial Si"),
+        source=Source(
+            "Christensen, Radamson, Kuznetsov, Svensson, \"Phosphorus and "
+            "boron diffusion in silicon under equilibrium conditions\", "
+            "Appl. Phys. Lett. 82(14), 2254-2256 (2003), "
+            "DOI 10.1063/1.1566464",
+            Provenance.LITERATURE,
+        ),
+        resolution=Resolution.VERIFIED, provenance=Provenance.LITERATURE,
+    ),
+    ("Si", "B", "diffusivity_Ea_eV"): PhysicalValue(
+        value=3.12, unit="eV", material="Si", chemistry="B",
+        conditions=Conditions(temperature_c=Range(810.0, 1050.0),
+                               notes="intrinsic diffusivity, high-purity epitaxial Si"),
+        source=Source(
+            "Christensen, Radamson, Kuznetsov, Svensson, \"Phosphorus and "
+            "boron diffusion in silicon under equilibrium conditions\", "
+            "Appl. Phys. Lett. 82(14), 2254-2256 (2003), "
+            "DOI 10.1063/1.1566464",
+            Provenance.LITERATURE,
+        ),
+        resolution=Resolution.VERIFIED, provenance=Provenance.LITERATURE,
+    ),
+}
 
 #: What is passed to the backend when a value is unknown. Declared per
 #: parameter here, never decided at call time. Each option is itself a
