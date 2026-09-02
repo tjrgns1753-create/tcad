@@ -79,6 +79,21 @@ class DopingRegion:
         "B", "As") for the process log and any future report — never
         read by doping_mapping.py or ViennaPS/DevSim, since neither
         backend has any species-dependent physics. None if unset.
+    gaussian_terms : `gaussian_implant` case, MULTIPLE-implant variant —
+        a list of independent term dicts (`species`, `polarity`,
+        `peak_conc_cm3`, `peak_position_um`, `straggle_um`,
+        `thermal_budget_cm2`), each representing one implant call that
+        was ADDED rather than replacing what came before (see
+        `tcad.physics.doping.apply_gaussian_implant_doping`'s
+        `existing=` parameter). `None` for every region built from a
+        single implant call with no `existing=` — the plain
+        `peak_conc_cm3`/`peak_position_um`/`straggle_um` fields above
+        still carry that one profile, unchanged. When both this and
+        the plain fields are set, `gaussian_terms` is authoritative
+        (device-layer and process-layer readers that understand it use
+        it INSTEAD of the plain fields, which then describe only the
+        region's original single-implant form for any caller not yet
+        updated to read `gaussian_terms`).
     """
 
     region: str
@@ -95,6 +110,7 @@ class DopingRegion:
     acceptor_peak_conc_cm3: Optional[float] = None
     donor_species: Optional[str] = None
     acceptor_species: Optional[str] = None
+    gaussian_terms: Optional[List[Dict[str, Any]]] = None
 
 
 @dataclass
