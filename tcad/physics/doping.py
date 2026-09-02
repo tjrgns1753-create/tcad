@@ -444,8 +444,11 @@ def apply_thermal_anneal(
     see tcad.physics.diffusion_model.arrhenius_diffusivity) -- an
     out-of-window anneal still runs (the Arrhenius formula is physically
     continuous), it is just never presented as equally trustworthy as an
-    in-window one (Stage B final-review Important #3). None when no term
-    had a resolvable species (nothing to report).
+    in-window one (Stage B final-review Important #3). Left exactly as
+    `result` carried it in when no term had a resolvable species
+    (nothing new to report) -- physics_status is additive project-wide,
+    so an anneal step with nothing to say about D(T) resolution must
+    not erase an earlier step's real status.
     """
     if result.doping is None or result.doping.kind != "gaussian_implant":
         return result
