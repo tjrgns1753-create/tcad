@@ -178,6 +178,18 @@ def _step_junction_profiles(region: DopingRegion) -> List[DopantProfile]:
 
 
 def _gaussian_implant_profiles(region: DopingRegion) -> List[DopantProfile]:
+    # This model evaluates along x only -- checked ONCE, before either
+    # branch below, so a y/z-axis region can't reach the gaussian_terms
+    # branch and silently evaluate its terms along the wrong axis (see
+    # Stage B final-review Important #4: the legacy path below already
+    # raised this, but the newer gaussian_terms branch used to return
+    # before this guard ran).
+    if region.junction_axis not in (None, "x"):
+        raise NotImplementedError(
+            f"dopant_profiles_from_doping_profile evaluates along x only; "
+            f"got junction_axis={region.junction_axis!r}"
+        )
+
     if region.gaussian_terms:
         out: List[DopantProfile] = []
         for term in region.gaussian_terms:
@@ -193,11 +205,6 @@ def _gaussian_implant_profiles(region: DopingRegion) -> List[DopantProfile]:
             ))
         return out
 
-    if region.junction_axis not in (None, "x"):
-        raise NotImplementedError(
-            f"dopant_profiles_from_doping_profile evaluates along x only; "
-            f"got junction_axis={region.junction_axis!r}"
-        )
     position = region.peak_position_um
     straggle = region.straggle_um
     if region.donor_peak_conc_cm3 is not None or region.acceptor_peak_conc_cm3 is not None:

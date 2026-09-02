@@ -193,7 +193,6 @@ def apply_doping(
     elif doping.kind == "gaussian_implant":
         for region_doping in doping.regions:
             axis = region_doping.junction_axis
-            exclusion_for_region = exclusion
             if region_doping.gaussian_terms:
                 donor_terms = []
                 acceptor_terms = []
@@ -220,7 +219,7 @@ def apply_doping(
                 )
                 module.node_model(
                     device=device, region=region_doping.region, name="NetDoping",
-                    equation=f"(Donors-Acceptors)*{exclusion_for_region}",
+                    equation=f"(Donors-Acceptors)*{exclusion}",
                 )
                 continue
 
@@ -232,7 +231,7 @@ def apply_doping(
             )
             module.node_model(
                 device=device, region=region_doping.region, name="NetDoping",
-                equation=f"({gaussian_expr})*{exclusion_for_region}",
+                equation=f"({gaussian_expr})*{exclusion}",
             )
     elif doping.kind == "implant_windows":
         for region_doping in doping.regions:

@@ -145,6 +145,11 @@ def anneal_profile(
     return DopantProfile(
         species=profile.species, polarity=profile.polarity,
         concentration_at=new_shape, thermal_budget=new_thermal_budget,
-        source=profile.source, peak_conc_cm3=new_peak,
+        # The citation that just produced new_straggle/new_peak, not
+        # profile.source (Stage B final-review Minor #4) -- carrying
+        # profile.source forward silently drops the provenance of the
+        # D(T) actually used for THIS widening (contribution.source is
+        # real and available right here).
+        source=contribution.source, peak_conc_cm3=new_peak,
         peak_position_um=position, straggle_um=new_straggle,
     )

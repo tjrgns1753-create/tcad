@@ -192,6 +192,29 @@ def test_gaussian_terms_produce_one_dopant_profile_each():
     assert far_from_peak < 1.0e-10  # far from peak
 
 
+def test_gaussian_terms_non_x_axis_raises():
+    """Stage B final-review Important #4: the gaussian_terms branch used
+    to return BEFORE the junction_axis guard ran, so a y-axis region
+    with gaussian_terms silently evaluated its terms along x anyway
+    instead of raising -- same guard as the legacy single-profile path
+    (test_non_x_junction_axis_raises above), now hoisted to cover both."""
+    doping = DopingProfile(kind="gaussian_implant", regions=[
+        DopingRegion(
+            region="Si", junction_axis="y",
+            gaussian_terms=[
+                {"species": "B", "polarity": "acceptor", "peak_conc_cm3": 1.0e18,
+                 "peak_position_um": -1.0, "straggle_um": 0.2, "thermal_budget_cm2": 0.0},
+            ],
+        ),
+    ])
+    try:
+        dopant_profiles_from_doping_profile(doping)
+        assert False, "expected NotImplementedError for junction_axis='y' with gaussian_terms"
+    except NotImplementedError as e:
+        assert "junction_axis" in str(e)
+        print(f"gaussian_terms branch with junction_axis='y' raised as expected: {e}")
+
+
 def main():
     test_uniform_net_only_splits_by_sign()
     test_uniform_donor_acceptor_split_preserves_both()
@@ -201,6 +224,7 @@ def main():
     test_unknown_kind_raises()
     test_non_x_junction_axis_raises()
     test_gaussian_terms_produce_one_dopant_profile_each()
+    test_gaussian_terms_non_x_axis_raises()
     print("DopantProfile conversion matches doping_mapping.py's real "
           "DevSim equations for all 4 doping kinds, in both net-only "
           "and donor/acceptor-split input forms.")

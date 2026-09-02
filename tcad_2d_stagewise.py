@@ -63,6 +63,7 @@ from tcad.physics.doping import (
     apply_gaussian_implant_doping,
     apply_implant_windows_doping,
     apply_thermal_anneal,
+    _normalize_gaussian_terms,
 )
 
 # ============================================================
@@ -3951,7 +3952,9 @@ class TCADApplication(tk.Tk):
             frame,
             text="Anneal (widens every existing Gaussian implant term "
                  "by its own species' real D(T) -- see Christensen et "
-                 "al. 2003)",
+                 "al. 2003. Lateral (x) straggle only -- depth/"
+                 "junction-depth is NOT modeled, no matter what this "
+                 "profile's own axis is.)",
             style="Caption.TLabel",
             wraplength=310,
         ).pack(
@@ -4246,10 +4249,28 @@ class TCADApplication(tk.Tk):
             return
 
         self.last_doped_result = after
-        before_by_species = {
-            t["species"]: t for t in (before.doping.regions[0].gaussian_terms or [])
+        # Pair BEFORE/AFTER terms POSITIONALLY, not by species (Stage B
+        # final-review Important #1+#2): apply_thermal_anneal widens
+        # each existing term in place, in the same list order it was
+        # given, so the Nth normalized term always corresponds 1:1
+        # across before/after -- unlike a species-keyed dict, this is
+        # correct both for a fresh non-accumulated implant (gaussian_terms
+        # is None before the anneal; _normalize_gaussian_terms falls back
+        # to the legacy single-profile fields instead of an empty dict)
+        # and for two SAME-species implants accumulated via existing=
+        # (a species-keyed dict would collapse them into one entry).
+        before_terms = _normalize_gaussian_terms(before.doping.regions[0])
+        after_terms = _normalize_gaussian_terms(after.doping.regions[0])
+
+        # Which species (if any) used a D(T) extrapolated outside its
+        # own citation's measured temperature window -- surfaced by
+        # apply_thermal_anneal via the same physics_status convention
+        # every other process step already reports through (Stage B
+        # final-review Important #3).
+        unverified_species = {
+            entry["material"] for entry in (after.physics_status or {}).get("entries", [])
+            if entry["resolution"] == "UNVERIFIED"
         }
-        after_terms = after.doping.regions[0].gaussian_terms
 
         self._log(
             f"\n================================\n"
@@ -4257,16 +4278,19 @@ class TCADApplication(tk.Tk):
             f"================================\n"
             f"Applied to {len(after_terms)} existing implant term(s):"
         )
-        for term in after_terms:
-            before_term = before_by_species.get(term["species"])
-            before_straggle = before_term["straggle_um"] if before_term else term["straggle_um"]
-            before_peak = before_term["peak_conc_cm3"] if before_term else term["peak_conc_cm3"]
+        for before_term, term in zip(before_terms, after_terms):
+            flag = (
+                " (outside citation range -- UNVERIFIED)"
+                if term["species"] in unverified_species else ""
+            )
             self._log(
                 f"  {term['species'] or '(unlabeled)'} ({term['polarity']}): "
-                f"straggle {before_straggle:.4f} -> {term['straggle_um']:.4f} um, "
-                f"peak {before_peak:.3e} -> {term['peak_conc_cm3']:.3e} cm^-3"
+                f"straggle {before_term['straggle_um']:.4f} -> {term['straggle_um']:.4f} um, "
+                f"peak {before_term['peak_conc_cm3']:.3e} -> {term['peak_conc_cm3']:.3e} cm^-3"
+                f"{flag}"
             )
 
+        self.last_physics_status = after.physics_status
         self._update_process_buttons()
 
     def _make_measurement_panel(

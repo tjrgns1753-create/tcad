@@ -30,8 +30,9 @@ from dataclasses import replace
 from typing import Dict, List, Optional
 
 from tcad.mesh.interface import DopingProfile, DopingRegion, ProcessResult
-from tcad.physics.diffusion_model import thermal_budget_contribution
-from tcad.physics.values import Resolution
+from tcad.physics.diffusion_model import anneal_profile, thermal_budget_contribution
+from tcad.physics.dopant_profile import DopantProfile
+from tcad.physics.values import Resolution, combine
 
 #: This project's own doping representation is defined along ONE
 #: lateral axis only (every existing kind -- uniform, step_junction,
@@ -420,9 +421,13 @@ def apply_thermal_anneal(
 ) -> ProcessResult:
     """Widen every EXISTING Gaussian implant term by its own species'
     real, cited D(T) (tcad.physics.diffusion_model) -- independently,
-    never a species-pair interaction. Dose is conserved per term (see
-    tcad.physics.diffusion_model.anneal_profile's docstring for the
-    exact formula this reuses).
+    never a species-pair interaction. Dose is conserved per term: the
+    actual broadening math is tcad.physics.diffusion_model.
+    anneal_profile(), called once per term here so this function and
+    anneal_profile can never diverge (Stage B final-review Important
+    #5) -- each term is wrapped in a throwaway DopantProfile (its
+    concentration_at is never called by anneal_profile, only its
+    species/polarity/peak/position/straggle fields are read).
 
     Real, honest no-op (returns `result` UNCHANGED, same object) when
     result.doping has no defined Gaussian shape to widen -- this
@@ -432,6 +437,15 @@ def apply_thermal_anneal(
 
     Depth/junction-depth evolution is NOT computed -- see this module's
     own DEPTH_EVOLUTION_RESOLUTION constant.
+
+    result.physics_status is set to report, per widened species, whether
+    its D(T) fell inside or outside that species' own citation's
+    measured temperature window (Resolution.VERIFIED vs UNVERIFIED --
+    see tcad.physics.diffusion_model.arrhenius_diffusivity) -- an
+    out-of-window anneal still runs (the Arrhenius formula is physically
+    continuous), it is just never presented as equally trustworthy as an
+    in-window one (Stage B final-review Important #3). None when no term
+    had a resolvable species (nothing to report).
     """
     if result.doping is None or result.doping.kind != "gaussian_implant":
         return result
@@ -442,27 +456,67 @@ def apply_thermal_anneal(
         return result
 
     updated_terms = []
+    resolutions = []
+    physics_entries = []
     for term in terms:
-        if term["species"] is None:
-            updated_terms.append(term)
+        species = term["species"]
+        straggle_um = term.get("straggle_um")
+        # Un-widenable terms (no species label, so no citation-backed
+        # D(T) is possible; or a hand-built term missing straggle_um --
+        # Stage B final-review Minor #3, matching anneal_profile's own
+        # guard) are carried through unchanged -- as an independent
+        # COPY (Minor #2), never the same dict object the input's
+        # region still holds, so mutating the output can never mutate
+        # the input.
+        if species is None or straggle_um is None:
+            updated_terms.append(dict(term))
             continue
-        contribution = thermal_budget_contribution(
-            term["species"], "Si", temperature_c, time_s,
-        )
+
+        contribution = thermal_budget_contribution(species, "Si", temperature_c, time_s)
         if contribution.value is None:
-            updated_terms.append(term)
+            updated_terms.append(dict(term))
             continue
-        dt_um2 = contribution.value * 1e8
-        old_straggle = term["straggle_um"]
-        new_straggle = (old_straggle ** 2 + 2.0 * dt_um2) ** 0.5
-        new_peak = term["peak_conc_cm3"] * (old_straggle / new_straggle)
+
+        resolutions.append(contribution.resolution)
+        physics_entries.append({
+            "parameter": "diffusivity_D(T)", "material": species,
+            "value": contribution.value, "resolution": contribution.resolution.value,
+            "provenance": contribution.provenance.value,
+            "note": (
+                f"T={temperature_c:.0f}C, t={time_s:.0f}s" if
+                contribution.resolution is Resolution.VERIFIED else
+                f"T={temperature_c:.0f}C outside {species}'s citation "
+                f"window -- extrapolated"
+            ),
+        })
+
+        dopant = DopantProfile(
+            species=species, polarity=term["polarity"],
+            concentration_at=lambda x_um, depth_um: 0.0,  # unused by anneal_profile
+            peak_conc_cm3=term["peak_conc_cm3"],
+            peak_position_um=term["peak_position_um"],
+            straggle_um=straggle_um,
+        )
+        annealed = anneal_profile(dopant, temperature_c, time_s)
         updated_terms.append({
-            "species": term["species"], "polarity": term["polarity"],
-            "peak_conc_cm3": new_peak, "peak_position_um": term["peak_position_um"],
-            "straggle_um": new_straggle,
-            "thermal_budget_cm2": term["thermal_budget_cm2"] + contribution.value,
+            "species": annealed.species, "polarity": annealed.polarity,
+            "peak_conc_cm3": annealed.peak_conc_cm3,
+            "peak_position_um": annealed.peak_position_um,
+            "straggle_um": annealed.straggle_um,
+            "thermal_budget_cm2": term.get("thermal_budget_cm2", 0.0) + annealed.thermal_budget,
         })
 
     new_region = replace(region, gaussian_terms=updated_terms)
     new_doping = DopingProfile(kind="gaussian_implant", regions=[new_region])
-    return replace(result, doping=new_doping)
+    if not physics_entries:
+        # Nothing resolvable to report -- leave physics_status exactly
+        # as the incoming result carried it (physics_status is additive
+        # project-wide; an anneal step with nothing to say about D(T)
+        # resolution must not erase an earlier step's real status).
+        return replace(result, doping=new_doping)
+    physics_status = {
+        "resolution": combine(resolutions).value,
+        "entries": physics_entries,
+        "notes": [],
+    }
+    return replace(result, doping=new_doping, physics_status=physics_status)
