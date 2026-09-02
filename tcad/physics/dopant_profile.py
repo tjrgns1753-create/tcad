@@ -61,6 +61,12 @@ class DopantProfile:
         Always 0.0 out of this module; no process in this project's
         registry contributes to it yet (Stage B, not this stage).
     source : provenance, when known. None for every existing caller.
+    peak_conc_cm3 / peak_position_um / straggle_um : set together for a
+        Gaussian-shaped profile -- the extra structure `anneal_profile()`
+        (tcad.physics.diffusion_model) needs to re-broaden this profile
+        under further thermal budget. None for every profile with no
+        defined shape (this module's uniform/step_junction/
+        implant_windows conversions never set these).
     """
 
     species: Optional[str]
@@ -68,6 +74,9 @@ class DopantProfile:
     concentration_at: Callable[[float, float], float]
     thermal_budget: float = 0.0
     source: Optional[Source] = None
+    peak_conc_cm3: Optional[float] = None
+    peak_position_um: Optional[float] = None
+    straggle_um: Optional[float] = None
 
 
 def _step(z: float) -> float:

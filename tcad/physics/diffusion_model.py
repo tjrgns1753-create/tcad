@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import math
 
+from tcad.physics.dopant_profile import DopantProfile
 from tcad.physics.tables import INTERACTION_COEFFICIENTS
 from tcad.physics.values import (
     Conditions, Coverage, PhysicalValue, Provenance, Resolution,
@@ -101,4 +102,49 @@ def thermal_budget_contribution(
         material=diffusivity.material, chemistry=diffusivity.chemistry,
         conditions=diffusivity.conditions, source=diffusivity.source,
         resolution=diffusivity.resolution, provenance=diffusivity.provenance,
+    )
+
+
+def anneal_profile(
+    profile: DopantProfile, temperature_c: float, time_s: float,
+) -> DopantProfile:
+    """Real, dose-conserving Gaussian broadening under one isothermal
+    anneal step. See this module's own docstring for the thermal-budget
+    accumulation model.
+
+    Dose Q = peak_conc_cm3 * straggle_um * sqrt(2*pi) (this plan's own
+    1D convention) is conserved EXACTLY: sigma_new^2 = sigma_old^2 +
+    2*Dt (the real Green's-function result for Gaussian diffusion),
+    and peak_new = peak_old * (sigma_old / sigma_new) -- the unique
+    rescaling that keeps Q unchanged while sigma grows.
+
+    Returns the SAME profile, unchanged, when there is no defined shape
+    (straggle_um is None) or no species label (no citation-backed D(T)
+    is possible) -- never guesses.
+    """
+    if profile.straggle_um is None or profile.species is None:
+        return profile
+
+    contribution = thermal_budget_contribution(
+        profile.species, "Si", temperature_c, time_s,
+    )
+    if contribution.value is None:
+        return profile
+
+    dt_um2 = contribution.value * 1e8  # cm^2 -> um^2 (1 cm = 1e4 um)
+    new_straggle = math.sqrt(profile.straggle_um ** 2 + 2.0 * dt_um2)
+    new_peak = profile.peak_conc_cm3 * (profile.straggle_um / new_straggle)
+    new_thermal_budget = profile.thermal_budget + contribution.value
+
+    position = profile.peak_position_um
+
+    def new_shape(x_um: float, depth_um: float,
+                  peak=new_peak, pos=position, straggle=new_straggle) -> float:
+        return peak * math.exp(-((x_um - pos) ** 2) / (2.0 * straggle ** 2))
+
+    return DopantProfile(
+        species=profile.species, polarity=profile.polarity,
+        concentration_at=new_shape, thermal_budget=new_thermal_budget,
+        source=profile.source, peak_conc_cm3=new_peak,
+        peak_position_um=position, straggle_um=new_straggle,
     )
