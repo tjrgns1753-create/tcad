@@ -219,6 +219,66 @@ Full regression after the fix round: 69 passed / 3 failed / 0 skipped, same
 3 pre-existing DevSim-convergence failures as every prior run this session,
 zero new failures.
 
+### State-dependent process physics — Stage A (SDD, 3 tasks)
+First stage of a new architectural direction, user-initiated and user-scoped
+(not a Claude proposal): make each process step's physics genuinely depend on
+the CURRENT wafer state — materials, geometry, doping, thermal history — as
+that step's real initial/boundary condition, rather than an interaction-
+coefficient lookup keyed by process pairs. Design:
+`docs/superpowers/specs/2026-09-01-state-dependent-process-physics-design.md`
+(extends the base `2026-08-25-wafer-state-physics-design.md`). Reference
+validation case: a real, cited PN-diode fabrication paper
+(arXiv:2407.13705), decomposed step-by-step with an explicit causal
+explanation of WHY each prior step's result changes the next step's physics
+— used only as physical validation, never as a fixed recipe (THE INVARIANT
+still applies in full: no code introduced by this design may special-case
+that paper's step order, count, or values).
+
+Stage A itself is pure plumbing, zero physics-behavior change anywhere:
+`DopantProfile` (`tcad/physics/dopant_profile.py`) is a lossless,
+species/polarity-preserving adapter over the EXISTING `DopingProfile`/
+`DopingRegion` shape (already carries independent donor/acceptor/species
+per the earlier litho/doping/renderer plan — this stage did not need to
+touch `doping_mapping.py`, `mesh_import.py`, or any `apply_*_doping()`
+function at all, a real finding from investigation that narrowed the
+plan's own original scope before implementation). `WaferState` gained a
+`dopant_profiles` field plus `donor_concentration_at`/
+`acceptor_concentration_at`/`net_doping_at` (the last always DERIVED, never
+stored — process-layer state stays donor/acceptor-separated, DevSim's
+NetDoping stays a device-layer concept built exactly once, at import time,
+same as before). Verified against real, solved DevSim `NetDoping` node
+values for all 4 existing doping kinds at machine-epsilon agreement
+(`tests/integration/test_dopant_profile_matches_devsim_real.py`). A final
+whole-plan review (Opus) independently cross-checked all 4
+`concentration_at` formulas against `doping_mapping.py`'s real DevSim
+equation strings line by line and confirmed the zero-behavior-change
+guarantee by diff (exactly 5 files touched, none of the protected ones);
+its 1 Important finding (`junction_axis` silently assumed to be `"x"` —
+harmless today since every in-repo caller passes `"x"`, but a future
+`"y"`/`"z"` caller would get a silently wrong number) plus 4 bundled Minor
+findings were fixed in one wave and re-reviewed clean. Commits
+`ec023f2..586e79e` (9 commits: 2 spec-writing + 3 task + 1 task-level fix
+round + 1 final-review fix wave, plus 2 doc-clarification commits from
+user review of the spec itself). Full regression: 72 passed / 3 failed /
+0 skipped, same 3 pre-existing DevSim-convergence failures as every prior
+run this session, zero new failures.
+
+**Explicitly NOT done in this stage** (each stage's own boundary, not an
+oversight — see the design doc's §8 migration table): no `DiffusionModel`,
+no new doping kind, no metal-contact 3-axis work, no oxidation/etching-
+other-models/deposition/metallization wiring into `resolve()` (Stage A
+touched only the doping-state half of the design, §2; the base design's
+`resolve()`/`INTERACTION_COEFFICIENTS` machinery — already wired for
+isotropic etching only, per the earlier Completed entry — is unchanged by
+this stage). `thermal_budget` exists on `DopantProfile` but nothing sets it
+non-zero yet — a later stage's job. Next: Stage B (a pluggable diffusion-
+physics model, `AnalyticalDiffusionModel` v1 with a PDE-solver-ready seam,
+plus cumulative thermal-budget tracking across dopant profiles — the design
+doc's own §1, and its own explicit, non-obvious scope limit: oxidation's
+real thermal exposure does NOT feed the shared budget mechanism in V1, an
+honestly-recorded capability gap, not a claim the effect is physically
+unimportant).
+
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
 Current regression: `tests/run_regression.py` → **57 passed, 3 failed,
