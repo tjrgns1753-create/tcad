@@ -64,6 +64,31 @@ class BoschDRIEEtch(ProcessStep):
         # step is part of a process flow (see ProcessStep.prepare_domain).
         geometry = self.prepare_domain(recipe)
 
+        # Which material tag actually blocks etching here. Was hardcoded
+        # to module.Material.Mask -- correct for a FRESH wafer, where
+        # prepare_domain()'s own MakeTrench path always tags its mask
+        # "Mask". Wrong for a CHAINED step (prepare_domain() ->
+        # remask_domain()), where the GUI deliberately tags a real
+        # lithography resist "PHS" (tcad_2d_stagewise.py's own
+        # _RESIST_MATERIAL, kept distinct from ViennaPS's native "Mask"
+        # so photoresist can be told apart from a hard mask). With the
+        # hardcode, a real oxidation -> lithography -> Bosch DRIE chain
+        # silently ignored the resist entirely -- etch_rate() below never
+        # matched "PHS" against Material.Mask, so the masked region
+        # etched exactly like open silicon, with no error or warning.
+        # Confirmed a real, physical masking effect belongs here at all:
+        # Osipov et al., "Influence of operation parameters on
+        # BOSCH-process technological characteristics", Materials Today:
+        # Proceedings (2020) -- measured Si/photoresist etch selectivity
+        # around 38:1 (SF6/CHF3 chemistry, ICP reactor) for exactly this
+        # process. ViennaPS's own maskMaterial is a binary gate (0 or the
+        # full rate), not that finite ratio -- a known simplification
+        # already implicit in every other model here (isotropic.py,
+        # directional.py) that reads mask_material the same dynamic way;
+        # this fix brings bosch_drie.py in line with that same existing,
+        # already-verified convention, not a new physics model.
+        mask_material = getattr(module.Material, recipe.get("mask_material", "Mask"))
+
         # --------------------------------------------------------
         # Passivation
         # --------------------------------------------------------
@@ -81,7 +106,7 @@ class BoschDRIEEtch(ProcessStep):
             rate=-recipe["polymer_rate"],
             stickingProbability=1.0,
             sourceExponent=recipe["ion_source_exponent"],
-            maskMaterial=module.Material.Mask,
+            maskMaterial=mask_material,
         )
 
         # --------------------------------------------------------
@@ -100,7 +125,7 @@ class BoschDRIEEtch(ProcessStep):
         )
 
         def etch_rate(fluxes, material):
-            if material == module.Material.Mask:
+            if material == mask_material:
                 return 0.0
 
             rate = fluxes[1] * recipe["ion_rate"]
