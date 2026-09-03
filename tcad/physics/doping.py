@@ -136,7 +136,6 @@ def apply_gaussian_implant_doping(
     acceptor_peak_conc_cm3: Optional[float] = None,
     donor_species: Optional[str] = None,
     acceptor_species: Optional[str] = None,
-    existing: Optional[ProcessResult] = None,
 ) -> ProcessResult:
     """Return a new ProcessResult with a 1D Gaussian implant doping
     profile attached to one region: net doping along `junction_axis`
@@ -153,17 +152,10 @@ def apply_gaussian_implant_doping(
     when the donor/acceptor form is used, and is what every downstream
     consumer keeps reading.
 
-    existing : Optional prior ProcessResult from an earlier implant
-        call on the SAME region. When given, this call's term is ADDED
-        to whatever terms `existing.doping` already carried (its
-        legacy single-profile shape is normalized into a term first if
-        needed) — B implant then P implant leaves BOTH profiles
-        present, never just the latest one. `None` (the default) keeps
-        every current caller byte-identical to before this parameter
-        existed. Raises ValueError if `existing.doping.kind` is set to
-        anything other than "gaussian_implant" — superposing implant
-        terms onto a different doping kind's representation is out of
-        scope (see this project's Stage B plan, Global Constraints).
+    One implant call attaches one profile to `result`, replacing
+    whatever doping it carried before -- multi-implant accumulation
+    across calls is WaferState's job (dopant_profiles, Task 5), not
+    this function's.
     """
     if (
         peak_conc_cm3 is None
@@ -174,81 +166,6 @@ def apply_gaussian_implant_doping(
             "apply_gaussian_implant_doping needs either peak_conc_cm3 or "
             "donor_peak_conc_cm3/acceptor_peak_conc_cm3"
         )
-
-    new_terms = []
-    if donor_peak_conc_cm3:
-        new_terms.append({
-            "species": donor_species, "polarity": "donor",
-            "peak_conc_cm3": donor_peak_conc_cm3,
-            "peak_position_um": peak_position_um, "straggle_um": straggle_um,
-            "thermal_budget_cm2": 0.0,
-        })
-    if acceptor_peak_conc_cm3:
-        new_terms.append({
-            "species": acceptor_species, "polarity": "acceptor",
-            "peak_conc_cm3": acceptor_peak_conc_cm3,
-            "peak_position_um": peak_position_um, "straggle_um": straggle_um,
-            "thermal_budget_cm2": 0.0,
-        })
-    if not new_terms and peak_conc_cm3 is not None:
-        # net-only input form -- this project's own documented sign
-        # convention (positive net = donor, negative = acceptor),
-        # same as every other doping kind's net-only fallback.
-        polarity = "donor" if peak_conc_cm3 >= 0 else "acceptor"
-        new_terms.append({
-            "species": None, "polarity": polarity,
-            "peak_conc_cm3": abs(peak_conc_cm3),
-            "peak_position_um": peak_position_um, "straggle_um": straggle_um,
-            "thermal_budget_cm2": 0.0,
-        })
-
-    all_terms = list(new_terms)
-    if existing is not None:
-        prior_doping = existing.doping
-        if prior_doping is not None and prior_doping.kind != "gaussian_implant":
-            raise ValueError(
-                f"apply_gaussian_implant_doping's existing= only accepts a "
-                f"prior gaussian_implant result (or none yet); got kind="
-                f"{prior_doping.kind!r}. Superposing implant terms onto a "
-                f"different doping kind's representation is out of scope -- "
-                f"see this plan's Global Constraints."
-            )
-        if prior_doping is not None:
-            prior_region = prior_doping.regions[0]
-            if prior_region.gaussian_terms:
-                all_terms = list(prior_region.gaussian_terms) + new_terms
-            elif prior_region.peak_conc_cm3 is not None or \
-                    prior_region.donor_peak_conc_cm3 is not None or \
-                    prior_region.acceptor_peak_conc_cm3 is not None:
-                # legacy single-implant region -- normalize it into one
-                # or two terms (donor/acceptor) before appending the new one.
-                prior_terms = []
-                if prior_region.donor_peak_conc_cm3:
-                    prior_terms.append({
-                        "species": prior_region.donor_species, "polarity": "donor",
-                        "peak_conc_cm3": prior_region.donor_peak_conc_cm3,
-                        "peak_position_um": prior_region.peak_position_um,
-                        "straggle_um": prior_region.straggle_um,
-                        "thermal_budget_cm2": 0.0,
-                    })
-                if prior_region.acceptor_peak_conc_cm3:
-                    prior_terms.append({
-                        "species": prior_region.acceptor_species, "polarity": "acceptor",
-                        "peak_conc_cm3": prior_region.acceptor_peak_conc_cm3,
-                        "peak_position_um": prior_region.peak_position_um,
-                        "straggle_um": prior_region.straggle_um,
-                        "thermal_budget_cm2": 0.0,
-                    })
-                if not prior_terms and prior_region.peak_conc_cm3 is not None:
-                    polarity = "donor" if prior_region.peak_conc_cm3 >= 0 else "acceptor"
-                    prior_terms.append({
-                        "species": None, "polarity": polarity,
-                        "peak_conc_cm3": abs(prior_region.peak_conc_cm3),
-                        "peak_position_um": prior_region.peak_position_um,
-                        "straggle_um": prior_region.straggle_um,
-                        "thermal_budget_cm2": 0.0,
-                    })
-                all_terms = prior_terms + new_terms
 
     if donor_peak_conc_cm3 is not None or acceptor_peak_conc_cm3 is not None:
         donor = donor_peak_conc_cm3 or 0.0
@@ -265,7 +182,6 @@ def apply_gaussian_implant_doping(
         acceptor_peak_conc_cm3=acceptor_peak_conc_cm3,
         donor_species=donor_species,
         acceptor_species=acceptor_species,
-        gaussian_terms=all_terms if (existing is not None and all_terms) else None,
     )
     doping = DopingProfile(kind="gaussian_implant", regions=[doping_region])
     return replace(result, doping=doping)
@@ -379,40 +295,6 @@ def apply_implant_windows_doping(
     )
     doping = DopingProfile(kind="implant_windows", regions=[doping_region])
     return replace(result, doping=doping)
-
-
-def _normalize_gaussian_terms(region: DopingRegion) -> List[Dict]:
-    """A DopingRegion's implant content as a flat term list, regardless
-    of whether it already used gaussian_terms (Task 3) or only the
-    legacy single-profile fields. Shared by apply_thermal_anneal() here
-    and apply_gaussian_implant_doping's existing= path (Task 3) --
-    kept as ONE function so the two paths cannot drift apart."""
-    if region.gaussian_terms:
-        return list(region.gaussian_terms)
-    terms = []
-    if region.donor_peak_conc_cm3:
-        terms.append({
-            "species": region.donor_species, "polarity": "donor",
-            "peak_conc_cm3": region.donor_peak_conc_cm3,
-            "peak_position_um": region.peak_position_um,
-            "straggle_um": region.straggle_um, "thermal_budget_cm2": 0.0,
-        })
-    if region.acceptor_peak_conc_cm3:
-        terms.append({
-            "species": region.acceptor_species, "polarity": "acceptor",
-            "peak_conc_cm3": region.acceptor_peak_conc_cm3,
-            "peak_position_um": region.peak_position_um,
-            "straggle_um": region.straggle_um, "thermal_budget_cm2": 0.0,
-        })
-    if not terms and region.peak_conc_cm3 is not None:
-        polarity = "donor" if region.peak_conc_cm3 >= 0 else "acceptor"
-        terms.append({
-            "species": None, "polarity": polarity,
-            "peak_conc_cm3": abs(region.peak_conc_cm3),
-            "peak_position_um": region.peak_position_um,
-            "straggle_um": region.straggle_um, "thermal_budget_cm2": 0.0,
-        })
-    return terms
 
 
 def apply_thermal_anneal(

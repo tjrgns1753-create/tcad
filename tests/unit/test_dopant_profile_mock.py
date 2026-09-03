@@ -148,26 +148,27 @@ def test_non_x_junction_axis_raises():
         assert "junction_axis" in str(e)
 
 
-def test_gaussian_terms_non_x_axis_raises():
+def test_gaussian_implant_non_x_axis_raises():
     """The junction_axis guard in _gaussian_implant_profiles() fires
-    before anything else is read (including the now-unused
-    gaussian_terms field) -- a y-axis region still raises immediately,
-    same as every other doping kind's axis guard."""
+    before anything else is read -- a y-axis region still raises
+    immediately, same as every other doping kind's axis guard.
+    (2026-09-03 dopant-state-unification Task 4: DopingRegion no
+    longer has a gaussian_terms field at all -- this test used to
+    construct one to exercise the guard ahead of that field; the guard
+    fires ahead of peak_conc_cm3/peak_position_um/straggle_um instead,
+    which is the only content a gaussian_implant region carries now.)"""
     doping = DopingProfile(kind="gaussian_implant", regions=[
         DopingRegion(
             region="Si", junction_axis="y",
-            gaussian_terms=[
-                {"species": "B", "polarity": "acceptor", "peak_conc_cm3": 1.0e18,
-                 "peak_position_um": -1.0, "straggle_um": 0.2, "thermal_budget_cm2": 0.0},
-            ],
+            peak_conc_cm3=-1.0e18, peak_position_um=-1.0, straggle_um=0.2,
         ),
     ])
     try:
         dopant_profiles_from_doping_profile(doping)
-        assert False, "expected NotImplementedError for junction_axis='y' with gaussian_terms"
+        assert False, "expected NotImplementedError for junction_axis='y'"
     except NotImplementedError as e:
         assert "junction_axis" in str(e)
-        print(f"gaussian_terms branch with junction_axis='y' raised as expected: {e}")
+        print(f"gaussian_implant branch with junction_axis='y' raised as expected: {e}")
 
 
 def test_dopant_profile_has_no_gaussian_specific_top_level_fields():
@@ -215,7 +216,7 @@ def main():
     test_implant_windows_background_plus_windows()
     test_unknown_kind_raises()
     test_non_x_junction_axis_raises()
-    test_gaussian_terms_non_x_axis_raises()
+    test_gaussian_implant_non_x_axis_raises()
     test_dopant_profile_has_no_gaussian_specific_top_level_fields()
     test_gaussian_implant_profile_carries_model_tag_and_params()
     print("DopantProfile conversion matches doping_mapping.py's real "

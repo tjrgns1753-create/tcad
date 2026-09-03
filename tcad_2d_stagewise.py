@@ -63,7 +63,6 @@ from tcad.physics.doping import (
     apply_gaussian_implant_doping,
     apply_implant_windows_doping,
     apply_thermal_anneal,
-    _normalize_gaussian_terms,
 )
 
 # ============================================================

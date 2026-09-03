@@ -45,25 +45,10 @@ donor/acceptor pair the way a step junction is:
     devsim.node_model(device=, region=, name="NetDoping",
         equation=f"{peak}*exp(-(({axis}-({position}))^2)/(2*({straggle})^2))")
 
-When a region's DopingRegion instead carries `gaussian_terms` (multiple
-independently-added implants on the same region -- see
-apply_gaussian_implant_doping's `existing=` parameter, Stage B Task 3),
-NetDoping is built the SAME Donors/Acceptors/NetDoping way as
-step_junction above, generalized to N Gaussian terms: every
-donor-polarity term's own Gaussian expression is summed into Donors,
-every acceptor-polarity term's into Acceptors, and NetDoping is
-Donors-Acceptors -- so a B implant and a P implant added separately
-both stay present in the real solved device, instead of the second
-node_model() call silently overwriting the first's NetDoping
-registration (confirmed by direct execution:
-test_gaussian_implant_terms_devsim_real.py):
-
-    devsim.node_model(device=, region=, name="Donors",
-        equation=f"{donor_term_1} + {donor_term_2} + ...")
-    devsim.node_model(device=, region=, name="Acceptors",
-        equation=f"{acceptor_term_1} + {acceptor_term_2} + ...")
-    devsim.node_model(device=, region=, name="NetDoping",
-        equation="Donors-Acceptors")
+Multi-implant accumulation on the same region (e.g. B implant then P
+implant, both present) is WaferState's job (dopant_profiles, 2026-09-03
+dopant-state-unification Task 5), not this module's -- a DopingRegion
+here always carries exactly one Gaussian term.
 
 implant_windows sets NetDoping to a background constant plus zero or
 more `step()*step()` window terms SUMMED on top — real DevSim
@@ -193,36 +178,6 @@ def apply_doping(
     elif doping.kind == "gaussian_implant":
         for region_doping in doping.regions:
             axis = region_doping.junction_axis
-            if region_doping.gaussian_terms:
-                donor_terms = []
-                acceptor_terms = []
-                for term in region_doping.gaussian_terms:
-                    position_native = term["peak_position_um"] * length_scale_to_cm
-                    straggle_native = term["straggle_um"] * length_scale_to_cm
-                    expr = (
-                        f"{term['peak_conc_cm3']}*exp(-(({axis}-({position_native}))^2)"
-                        f"/(2*({straggle_native})^2))"
-                    )
-                    if term["polarity"] == "donor":
-                        donor_terms.append(expr)
-                    else:
-                        acceptor_terms.append(expr)
-                donors_expr = " + ".join(donor_terms) if donor_terms else "0"
-                acceptors_expr = " + ".join(acceptor_terms) if acceptor_terms else "0"
-                module.node_model(
-                    device=device, region=region_doping.region, name="Donors",
-                    equation=f"({donors_expr})",
-                )
-                module.node_model(
-                    device=device, region=region_doping.region, name="Acceptors",
-                    equation=f"({acceptors_expr})",
-                )
-                module.node_model(
-                    device=device, region=region_doping.region, name="NetDoping",
-                    equation=f"(Donors-Acceptors)*{exclusion}",
-                )
-                continue
-
             position_native = region_doping.peak_position_um * length_scale_to_cm
             straggle_native = region_doping.straggle_um * length_scale_to_cm
             gaussian_expr = (
