@@ -123,6 +123,78 @@ class WaferState:
         )
 
     @staticmethod
+    def from_process_result(
+        result: "ProcessResult", dopant_profiles: Tuple[DopantProfile, ...] = (),
+        last_step_category: Optional[str] = None,
+    ) -> "WaferState":
+        """Build WaferState geometry from a real exported mesh FILE via
+        ProcessResult (volume_mesh_path/material_field/material_regions)
+        instead of a live ViennaPS Domain -- the real construction path
+        for the GUI's doping flow (run_doping() never holds a live
+        domain; it only ever has a mesh file path, per this task's own
+        read of the real production code). Reuses the EXACT real
+        triangle-tag-to-name-resolution pattern
+        tcad/device/devsim/mesh_import.py's
+        derive_barrier_covered_windows() already uses.
+
+        SAFETY CONTRACT (user's own final review, point 1): this
+        constructor is GEOMETRY-ONLY -- it has no memory of any prior
+        WaferState and does NOT know about "the accumulated dopant
+        list" by itself. Calling it directly with the default
+        `dopant_profiles=()` silently produces a state with NO dopant
+        profiles at all, even if a real prior state existed. This is
+        safe ONLY for throwaway, geometry-only diagnostics (e.g.
+        checking exposed_material_at at some x) whose result is NEVER
+        assigned back to the real accumulating state variable
+        (`app.wafer_state`, or any `stateN` a test keeps building on).
+        The ONLY sanctioned way to build/advance the real accumulating
+        state is `advance_wafer_state()` (in
+        tcad/physics/wafer_state_accumulation.py), which explicitly
+        threads `prior_state.dopant_profiles + this_step_profiles`
+        through this constructor -- never call this constructor
+        directly for that purpose. (The tag->name resolution itself is
+        `tag_to_name = {region.tag: region.name for region in
+        result.material_regions}`, verbatim from that function.)
+        """
+        import meshio
+
+        tag_to_name = {region.tag: region.name for region in result.material_regions}
+        mesh = meshio.read(result.volume_mesh_path)
+        triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
+
+        cells = []
+        if triangle_block is not None and result.material_field in mesh.cell_data:
+            block_index = mesh.cells.index(triangle_block)
+            tags = mesh.cell_data[result.material_field][block_index]
+            points = mesh.points
+            for triangle, tag in zip(triangle_block.data, tags):
+                corners = points[triangle]
+                name = tag_to_name.get(int(tag), f"?{int(tag)}")
+                cells.append(_Cell(
+                    x_min=corners[:, 0].min(), x_max=corners[:, 0].max(),
+                    y_max=corners[:, 1].max(), material=name,
+                ))
+
+        materials = tuple(sorted({c.material for c in cells}))
+        return WaferState(
+            materials=materials,
+            stack=tuple(LayerInfo(m, i) for i, m in enumerate(materials)),
+            # grid_delta_um is not derivable from a bare exported mesh
+            # file (no recipe/domain object to read it from here) --
+            # confirmed by reading net_doping_at()/exposed_material_at()
+            # (Task 2): neither reads grid_delta_um at all, only
+            # _cells/dopant_profiles. 0.0 is a real, inert value for
+            # this construction path, not a guess standing in for
+            # missing logic -- _thin_layer_positions (the ONLY consumer
+            # of grid_delta_um) is a live-domain-only diagnostic and is
+            # never computed here (_thin_x=() below, matching that this
+            # constructor has no level-set access to derive it from).
+            grid_delta_um=0.0,
+            _cells=tuple(cells), _thin_x=(),
+            dopant_profiles=dopant_profiles, last_step_category=last_step_category,
+        )
+
+    @staticmethod
     def _thin_layer_positions(domain: Any, grid: float) -> Tuple[float, ...]:
         """x positions where some layer is thinner than one grid cell.
 

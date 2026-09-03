@@ -69,7 +69,7 @@ class IsotropicEtch(ProcessStep):
         from tcad.physics.resolve import resolve
         from tcad.physics.wafer_state import WaferState
 
-        state = WaferState.query(geometry)
+        state = WaferState.query(geometry, dopant_profiles=(), last_step_category="etching")
         # This step already knows its own category/model (the class
         # attributes below) -- a hand-built recipe (every existing
         # caller here) has no reason to repeat that bookkeeping, so it
