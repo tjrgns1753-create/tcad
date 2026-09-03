@@ -271,18 +271,100 @@ touched only the doping-state half of the design, §2; the base design's
 `resolve()`/`INTERACTION_COEFFICIENTS` machinery — already wired for
 isotropic etching only, per the earlier Completed entry — is unchanged by
 this stage). `thermal_budget` exists on `DopantProfile` but nothing sets it
-non-zero yet — a later stage's job. Next: Stage B (a pluggable diffusion-
-physics model, `AnalyticalDiffusionModel` v1 with a PDE-solver-ready seam,
-plus cumulative thermal-budget tracking across dopant profiles — the design
-doc's own §1, and its own explicit, non-obvious scope limit: oxidation's
-real thermal exposure does NOT feed the shared budget mechanism in V1, an
-honestly-recorded capability gap, not a claim the effect is physically
-unimportant).
+non-zero yet at the time — Stage B (below) fills this in.
+
+### State-dependent process physics — Stage B (SDD, 8 tasks)
+
+Second stage of the same architectural direction: a literature-cited,
+Arrhenius-based thermal-anneal model plus a genuine multi-profile
+`DopantProfile[]` state, so a new implant ADDS to whatever already
+exists on the wafer instead of overwriting it, and an anneal widens
+EVERY existing profile independently through its own species' D(T).
+Plan: `docs/superpowers/plans/2026-09-02-state-dependent-physics-stage-b.md`.
+Grounded in **Christensen, Radamson, Kuznetsov, Svensson, "Phosphorus
+and boron diffusion in silicon under equilibrium conditions", Appl.
+Phys. Lett. 82(14), 2254-2256 (2003), DOI 10.1063/1.1566464** — P:
+D0=8e-4 cm²/s, Ea=2.74±0.07eV, valid 810-1100°C; B: D0=0.06 cm²/s,
+Ea=3.12±0.04eV, valid 810-1050°C — the only new entries in
+`INTERACTION_COEFFICIENTS`.
+
+Each of the 8 tasks was independently task-reviewed (baseline behavior,
+multi-profile state extension, existing-behavior regression, real
+Arrhenius D(T) anneal, dose-conservation proof, independent per-species
+anneal proof, multi-profile DevSim NetDoping summation, real GUI
+integration), plus a final whole-branch review (Opus: 5 Important + 5
+Minor findings, ALL fixed in one consolidated wave — commit `c6e7f40`
+— followed by exactly one scoped re-review that independently
+re-derived the pre-fix bugs by hand and bit-compared the deduplicated
+broadening formula against the old inline math: verdict CLEAN, all 10
+findings confirmed ADDRESSED, zero regressions, zero new blocking
+issues). One trivial docstring/code mismatch the re-review turned up
+was fixed directly (commit `d76fc82`); two non-blocking residual
+observations were parked in the plan's own ledger (a term-list-length
+invariant that holds by construction but isn't asserted; a
+theoretical, practically-unreachable false-positive on the anneal's
+UNVERIFIED-citation-window flag).
+
+Key pieces: `tcad/physics/diffusion_model.py` — real per-step D(T) via
+`arrhenius_diffusivity()`, cumulative `thermal_budget_contribution()`
+(∫D(T)dt, not raw elapsed time — 900°C/10min and 1000°C/10min produce
+measurably different broadening), and `anneal_profile()`, the SINGLE
+dose-conserving Gaussian-broadening kernel (`sigma_new^2 = sigma_old^2
++ 2*Dt`, `peak_new = peak_old * sigma_old/sigma_new`) — `doping.py`'s
+`apply_thermal_anneal()` calls this once per term rather than keeping
+its own copy, specifically so the two can never diverge (a final-
+review finding, fixed by direct substitution rather than merely
+pinning the duplication with a test). `DopingRegion.gaussian_terms`
+(`tcad/mesh/interface.py`) holds an ordered list of independent implant
+terms; `apply_gaussian_implant_doping(..., existing=...)` appends a new
+term rather than overwriting, proven by a real regression test (B
+implant → P implant leaves both present, `test_gaussian_implant_terms_
+devsim_real.py`, max relative error vs an independently-summed formula
+5.139e-14 through REAL solved DevSim nodes — a real bug, second term
+silently discarded, was caught and fixed here: pre-fix error was
+14.64). NetDoping is summed from ALL terms only at the device layer
+(`doping_mapping.py`), never at the process layer. `Resolution.
+UNVERIFIED` is surfaced (never silently absorbed) whenever a
+user-chosen anneal temperature falls outside a species' own citation
+window — both in `ProcessResult.physics_status` and in the GUI's
+ANNEAL log line. `DEPTH_EVOLUTION_RESOLUTION = Resolution.
+UNSUPPORTED_BY_MODEL` (this model is lateral/x-only) is enforced by a
+single hoisted guard covering BOTH the legacy and the new
+`gaussian_terms` code paths in `dopant_profile.py` (a final-review
+finding: the new path used to skip the guard entirely). The GUI's
+Gaussian Implant control now accumulates via `existing=` and a new
+ANNEAL panel drives the real chain end-to-end — its own caption states
+the x-only scope limit explicitly, and the acceptance test
+(`test_gui_thermal_anneal_real.py`, driving the actual production
+`_on_thermal_anneal_clicked` handler) proves all 5 required
+GUI-observable sensitivities with real numbers: higher anneal
+temperature → more broadening, longer anneal time → more broadening,
+higher implant dose → higher concentration, B-then-P sequential
+implant → both present, and a second anneal → both B AND P widen
+again. No new empirical constants, no dopant-dopant interaction
+physics, no depth/junction-depth computation was added anywhere.
+
+**Explicitly NOT done in this stage, flagged for separate follow-up**:
+`mesh_import.py`'s `_derive_refine_from_doping` (auto mesh refinement)
+is still single-term-blind — with `gaussian_terms` set, it derives
+refinement rings from only the LAST implant call's peak/position, so
+an earlier implant's junction can go under-resolved (including a real
+"terms cancel to ≤0, zero refinement at all" failure mode) — exactly
+this project's own documented silent-wrong-current failure class (see
+Development Rules above). Explicitly ruled out of this plan's scope
+during final review; tracked as a standalone follow-up task, not fixed
+here.
+
+Full regression after the fix wave + docstring correction: **80
+passed / 3 failed / 0 skipped**, identical 3 pre-existing DevSim-
+convergence failures as every prior run this session, zero new
+failures.
 
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
-Current regression: `tests/run_regression.py` → **57 passed, 3 failed,
-0 skipped**, measured on Windows with real ViennaPS 4.6.2 + DevSim.
+Current regression: `tests/run_regression.py` → **80 passed, 3 failed,
+0 skipped**, measured on Windows with real ViennaPS 4.6.2 + DevSim
+(2026-09-03, post Stage B).
 
 The 3 failures are pre-existing and were confirmed to fail at a clean
 HEAD in a separate git worktree, so they are not caused by any recent
