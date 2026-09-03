@@ -7,6 +7,44 @@ Build a reliable 2D TCAD process → mesh → DevSim device simulation pipeline.
 - Prioritize physical correctness over feature count.
 - Use actual ViennaPS 4.6.2 / DevSim execution for validation.
 
+## Core Physics Requirement (read before claiming ANY feature complete)
+
+This project is not a process-visualization tool or a geometry editor.
+It must compute the real physical phenomena that occur during actual
+semiconductor fabrication, grounded in real physics equations and cited
+literature wherever possible; that computed result must feed into
+subsequent process steps and device physics; and the SAME real computed
+result — never a separate, GUI-only rendering — is what the GUI must
+display.
+
+**None of the following count as "done" on their own:**
+- adding a data structure with no real calculation behind it
+- a test that only exercises mock values
+- representing a physical phenomenon with an arbitrary constant or color
+- a GUI graphic disconnected from the actual computed result
+- an architecture that merely "could support" a feature later
+- treating "tests pass" as proof of physical correctness
+
+**Every major physics feature must, wherever possible, demonstrate the
+full chain:**
+
+    literature / physical equation -> real numeric calculation ->
+    WaferState change -> interaction with subsequent process steps ->
+    DevSim/ViennaPS result -> GUI display
+
+Every doping profile, PN junction, oxide thickness, etched geometry,
+deposited material, concentration, or surface position shown in the
+GUI must be read from the real simulation state/calculation — never a
+separate, renderer-only approximation.
+
+A phenomenon this project cannot yet model must be marked
+`UNSUPPORTED_BY_MODEL` (or the equivalent existing `Resolution` value)
+explicitly — never silently approximated or faked.
+
+**Before implementing anything, construct real physical counter-
+examples first and check whether the current abstraction survives
+them** — this is a required step, not optional due diligence.
+
 ## Claude Code environment notes (tooling, not TCAD physics)
 
 Not about this project's physics — carried here only because Claude
