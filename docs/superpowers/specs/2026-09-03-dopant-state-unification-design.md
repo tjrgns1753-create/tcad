@@ -116,16 +116,63 @@ for this document.
 just renamed for clarity now that it is a gating field on
 `DopantProfile` rather than a region label on `DopingRegion`.)
 
+**`concentration_at` is a runtime evaluation interface, not the
+canonical persistent representation.** The canonical, persistent facts
+about a profile are `species`, `polarity`, `host_material`, `model`,
+`model_params`, `thermal_history`, `source` — everything needed to
+RECONSTRUCT an equivalent `concentration_at` closure at any later time,
+by asking the `model`-tagged producing function to rebuild it from
+`model_params` (which must therefore carry whatever anchoring
+information the closure needs, e.g. an absolute position, per §5). A
+bare Python closure is never the sole source of truth for a profile —
+it must always be re-derivable from the persistent fields alone. (This
+is a design contract only; no serialization mechanism is implemented
+in this pass — it exists so one becomes possible later without a
+schema change.)
+
 ## §3 Geometry-gated evaluation
 
-```
-donor_concentration_at(x, y) = Σ [ profile.concentration_at(x, y)
-                                    if WaferState.exposed_material_at(x, y) == profile.host_material
-                                    else 0 (Geometry-gated zero, see §6) ]
-                                  over every donor-polarity profile
-```
-(`acceptor_concentration_at` analogous; `net_doping_at` = donor − acceptor,
-always DERIVED, never stored.)
+**This is a three-way test, not a two-way one — `material != host_material`
+does NOT by itself mean zero.** For a profile whose `host_material` is
+`M`, evaluated at `(x, y)`:
+
+1. **`exposed_material_at(x, y) == M`** — the profile genuinely
+   applies here. Return `profile.concentration_at(x, y)` (a real
+   calculation — itself possibly near-zero, §6 state B, but a real
+   computed value either way).
+2. **`exposed_material_at(x, y) != M`, and the change is a REMOVAL**
+   (the process category responsible only ever takes material away —
+   today, every registered etching model) → **Geometry-gated zero**
+   (§6 state A). `M` genuinely no longer exists there.
+3. **`exposed_material_at(x, y) != M`, and the change is a
+   CONVERSION** (the process category responsible turns `M` into a
+   DIFFERENT solid material in place — today, only oxidation's real
+   Si→SiO2 mechanism, directly confirmed by ViennaPS measurement,
+   evidence #2 below) → **`UNSUPPORTED_BY_MODEL`** (§6 state C),
+   **never returned as 0** — unless a real dopant-fate/segregation
+   model is registered for that specific `(M, new_material)`
+   conversion pair (none exists in this project today).
+
+**This is not computable from geometry alone.** `exposed_material_at`
+by itself cannot distinguish case 2 from case 3 — this is exactly
+§4's disclosed provenance limitation, restated at the query level.
+The removal-vs-conversion classification must come from which PROCESS
+CATEGORY most recently changed that location's material identity, not
+from a bare before/after material-tag comparison. The precise
+mechanism (e.g. a small, explicit per-category table —
+`{"etching": "removal", "oxidation": "conversion"}` — recorded onto
+`WaferState` by whichever code wires §9's
+`WaferState.query(domain, dopant_profiles=...)` call, so a later query
+can look it up without re-deriving it) is an implementation-plan
+decision. What this document fixes is that the three-way distinction
+is real and load-bearing: **no implementation may collapse case 3 into
+case 2's zero just because they look identical from raw geometry
+alone.**
+
+(`acceptor_concentration_at` analogous; `net_doping_at` = donor −
+acceptor, always DERIVED, never stored — see the partial-aggregate
+contract at the end of §6 for what "derived" means when some
+contributing profile is `UNSUPPORTED_BY_MODEL`.)
 
 **Real evidence, kept separate by kind (do not conflate)**:
 1. *Directly measured, real ViennaPS*: absolute domain-coordinate range
@@ -230,6 +277,31 @@ and textually distinct from both (A)/(B) and from "computation
 complete"** — never blend an unsupported physics result into the
 normal 0-concentration or done-state rendering. This follows directly
 from CLAUDE.md's Core Physics Requirement.
+
+**Partial-unsupported aggregate contract.** A doping query at `(x, y)`
+never returns a bare float. Conceptually it returns:
+
+```
+donor_concentration: float     # sum over only the profiles actually computable here (states A/B)
+acceptor_concentration: float  # same
+net_doping: float              # donor - acceptor, from the above
+physics_status: ...            # whether ANY contributing profile at this point was UNSUPPORTED_BY_MODEL (state C), and which
+```
+
+Example: at some `(x, y)`, a `P` profile is fully computable
+(`+3e18`) while a `B` profile at the same point is `UNSUPPORTED_BY_MODEL`
+(e.g. it sits in a region that underwent an unmodeled material
+conversion). The query MAY still report `donor_concentration = 3e18`
+as a real, computed partial sum — but `net_doping` at that point MUST
+NOT be presented, logged, or rendered as a complete answer: the
+`physics_status` for that point must say a contribution was skipped,
+and every consumer (GUI, §10's per-node DevSim conversion) must check
+`physics_status` before treating `net_doping` as ground truth there.
+A GUI showing a "completed" NetDoping map, or §10 silently writing
+`net_doping` into the DevSim node model, at a point with an
+unsupported contribution — without surfacing the gap — is exactly the
+"calculated as if computed" failure CLAUDE.md's Core Physics
+Requirement forbids.
 
 ## §7 Anneal/redistribution is per-model dispatch, not a single function
 
@@ -364,12 +436,16 @@ physical validation.
    swapping which species goes first flips the trench's net polarity
    entirely (a concrete, order-sensitive result, verified by
    construction against §3's mechanism).
-2. **N implant → oxidation → P diffusion**: oxidation consuming N's
-   region reads geometry-gated zero (§3, evidence #2) — but this is
-   NOT a physical claim that the consumed N is verified gone; §4/§6
-   require it be recorded as `UNSUPPORTED_BY_MODEL` for dopant fate
-   under material conversion, never silently presented as resolved
-   physics.
+2. **N implant → oxidation → P diffusion**: oxidation converts the Si
+   that N's profile lives in into SiO2 (§3, evidence #2 — a real,
+   directly-measured material-tag flip at a fixed coordinate). This is
+   a CONVERSION (§3 case 3), not a removal — N's dopant fate there is
+   `UNSUPPORTED_BY_MODEL`, never geometry-gated zero and never
+   silently presented as a resolved "0." (P, diffused afterward on the
+   current post-oxidation surface, is a separate, fully computable
+   profile — its own contribution is real per §3 case 1, and the
+   partial-aggregate contract at the end of §6 governs how the two
+   combine at any point where both would contribute.)
 3. **B implant → B implant → anneal**: already real-verified live
    (Stage B GUI screenshots, this session) — two same-species profiles
    never merge; both widen independently under dispatch (§7).
