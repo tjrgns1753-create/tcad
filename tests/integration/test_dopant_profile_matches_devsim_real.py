@@ -30,7 +30,7 @@ from tcad.physics.doping import (
     apply_implant_windows_doping,
 )
 from tcad.physics.dopant_profile import dopant_profiles_from_doping_profile
-from tcad.physics.wafer_state import WaferState
+from tcad.physics.wafer_state import WaferState, _Cell
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
@@ -84,15 +84,24 @@ def _check_one_kind(label, doped_result, boundaries=()):
         actual = devsim.get_node_model_values(device=imported.device, region="Si", name="NetDoping")
 
         profiles = dopant_profiles_from_doping_profile(doped_result.doping)
+        # A single wide 'Si' cell, not the real per-x mesh geometry: this
+        # test's checked nodes are drawn from devsim's own region="Si"
+        # (see import_process_result(..., contact_regions=["Si"]) above),
+        # so every x checked here is genuinely Si-exposed -- this is an
+        # accurate, minimal fixture for THAT fact, not a stand-in for
+        # WaferState.query()'s real per-x geometry (Task 3's
+        # from_process_result() is the general mesh-file-derived
+        # constructor; this test needs none of that generality).
         state = WaferState(materials=("Si",), stack=(), grid_delta_um=0.1,
-                            _cells=(), _thin_x=(), dopant_profiles=profiles)
+                            _cells=(_Cell(-1e9, 1e9, 1.0, "Si"),), _thin_x=(),
+                            dopant_profiles=profiles)
 
         max_rel_error = 0.0
         n_checked = 0
         for x, dev_value in zip(x_values, actual):
             if boundaries and any(x == b for b in boundaries):
                 continue
-            predicted = state.net_doping_at(x, 0.0)
+            predicted = state.net_doping_at(x, 0.0).net_doping
             denom = max(abs(dev_value), 1.0)
             rel_error = abs(predicted - dev_value) / denom
             max_rel_error = max(max_rel_error, rel_error)

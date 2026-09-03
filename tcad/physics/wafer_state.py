@@ -27,9 +27,28 @@ cell disagree — which is what under_resolved_x() reports.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from tcad.physics.dopant_profile import DopantProfile
+
+# Which material-change kind a process category's own physics is known to
+# perform, for the purpose of deciding a dopant's fate when its declared
+# host_material is no longer exposed at a query point (spec Sec3/Sec6).
+# A category absent from this table (e.g. "deposition", "doping", or
+# anything not yet classified) defaults to UNSUPPORTED_BY_MODEL, NEVER to
+# a silent zero -- see WaferState._polarity_sum.
+MATERIAL_CHANGE_KIND_BY_CATEGORY: Dict[str, str] = {
+    "etching": "removal",
+    "oxidation": "conversion",
+}
+
+
+@dataclass(frozen=True)
+class DopingQueryResult:
+    donor_concentration: float
+    acceptor_concentration: float
+    net_doping: float
+    physics_status: Optional[dict]
 
 
 @dataclass(frozen=True)
@@ -54,9 +73,11 @@ class WaferState:
     _cells: Tuple[_Cell, ...]
     _thin_x: Tuple[float, ...]
     dopant_profiles: Tuple[DopantProfile, ...] = ()
+    last_step_category: Optional[str] = None
 
     @staticmethod
-    def query(domain: Any, dopant_profiles: Tuple[DopantProfile, ...] = ()) -> "WaferState":
+    def query(domain: Any, dopant_profiles: Tuple[DopantProfile, ...] = (),
+              last_step_category: Optional[str] = None) -> "WaferState":
         import viennals as vls
 
         material_map = domain.getMaterialMap()
@@ -98,6 +119,7 @@ class WaferState:
             _cells=tuple(cells),
             _thin_x=WaferState._thin_layer_positions(domain, grid),
             dopant_profiles=dopant_profiles,
+            last_step_category=last_step_category,
         )
 
     @staticmethod
@@ -161,20 +183,59 @@ class WaferState:
     def under_resolved_x(self) -> Tuple[float, ...]:
         return self._thin_x
 
-    def donor_concentration_at(self, x_um: float, depth_um: float = 0.0) -> float:
-        return sum(
-            p.concentration_at(x_um, depth_um)
-            for p in self.dopant_profiles if p.polarity == "donor"
-        )
+    def _polarity_sum(self, x_um: float, depth_um: float, polarity: str) -> Tuple[float, List[dict]]:
+        total = 0.0
+        entries: List[dict] = []
+        change_kind = MATERIAL_CHANGE_KIND_BY_CATEGORY.get(self.last_step_category or "")
+        for p in self.dopant_profiles:
+            if p.polarity != polarity:
+                continue
+            if self.exposed_material_at(x_um) == p.host_material:
+                total += p.concentration_at(x_um, depth_um)
+                continue
+            # host_material absent here -- three-way test, spec Sec3.
+            if change_kind == "removal":
+                # A real, physically meaningful geometry-gated zero
+                # (spec Sec6 state A) -- ONLY for a category explicitly
+                # known to only ever take material away.
+                continue
+            # Default is UNSUPPORTED_BY_MODEL, not zero -- covers both
+            # "conversion" (oxidation) AND any category with no table
+            # entry at all. Never silently assume an unclassified
+            # category means removal; that would be exactly the kind
+            # of undisclosed guess CLAUDE.md's Core Physics Requirement
+            # forbids. A future category genuinely needing "removal"
+            # semantics gets added to MATERIAL_CHANGE_KIND_BY_CATEGORY
+            # explicitly, not by falling through a default.
+            entries.append({
+                "parameter": "dopant_fate_at_material_change",
+                "material": p.species, "resolution": "UNSUPPORTED_BY_MODEL",
+                "provenance": "DERIVED",
+                "note": f"{p.host_material} no longer exposed at this point "
+                        f"(category={self.last_step_category!r}, classified as "
+                        f"a {change_kind or 'UNCLASSIFIED'} material change) and "
+                        f"no dopant segregation/fate model is registered -- "
+                        f"contribution excluded, NOT zero",
+            })
+        return total, entries
 
-    def acceptor_concentration_at(self, x_um: float, depth_um: float = 0.0) -> float:
-        return sum(
-            p.concentration_at(x_um, depth_um)
-            for p in self.dopant_profiles if p.polarity == "acceptor"
+    def net_doping_at(self, x_um: float, depth_um: float = 0.0) -> DopingQueryResult:
+        """The ONE public doping query. Read .donor_concentration /
+        .acceptor_concentration / .net_doping / .physics_status off the
+        result -- there is no separate donor-only or acceptor-only
+        method (removed: their names promised a scalar float, but the
+        real computation and the UNSUPPORTED_BY_MODEL disclosure
+        requirement (spec Sec6) apply identically to every one of
+        those values, so splitting them apart either duplicates the
+        work or hides the same status three different callers would
+        otherwise have to remember to check separately)."""
+        donor, donor_gaps = self._polarity_sum(x_um, depth_um, "donor")
+        acceptor, acceptor_gaps = self._polarity_sum(x_um, depth_um, "acceptor")
+        entries = donor_gaps + acceptor_gaps
+        physics_status = None
+        if entries:
+            physics_status = {"resolution": "UNSUPPORTED_BY_MODEL", "entries": entries, "notes": []}
+        return DopingQueryResult(
+            donor_concentration=donor, acceptor_concentration=acceptor,
+            net_doping=donor - acceptor, physics_status=physics_status,
         )
-
-    def net_doping_at(self, x_um: float, depth_um: float = 0.0) -> float:
-        """Derived, always -- never a stored field (spec 2026-09-01,
-        section 2: process-layer state stays donor/acceptor-separated;
-        only a query like this one collapses it to a signed net)."""
-        return self.donor_concentration_at(x_um, depth_um) - self.acceptor_concentration_at(x_um, depth_um)
