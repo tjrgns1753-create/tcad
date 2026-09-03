@@ -33,11 +33,14 @@ def test_multiple_profiles_of_the_same_polarity_sum():
     documents (superposition, not replacement)."""
     profiles = (
         DopantProfile(species="P", polarity="donor",
-                      concentration_at=lambda x, d: 1.0e17),
+                      concentration_at=lambda x, d: 1.0e17,
+                      host_material="Si", model="uniform_v1"),
         DopantProfile(species="As", polarity="donor",
-                      concentration_at=lambda x, d: 2.0e16),
+                      concentration_at=lambda x, d: 2.0e16,
+                      host_material="Si", model="uniform_v1"),
         DopantProfile(species="B", polarity="acceptor",
-                      concentration_at=lambda x, d: 5.0e15),
+                      concentration_at=lambda x, d: 5.0e15,
+                      host_material="Si", model="uniform_v1"),
     )
     state = _bare_state(profiles)
     assert state.donor_concentration_at(0.0, 0.0) == 1.0e17 + 2.0e16

@@ -13,17 +13,19 @@ task of this same plan).
 
 thermal_budget_contribution() computes ONE isothermal step's own D*t
 contribution -- the v1 scope this plan implements. A profile's running
-thermal_budget (see DopantProfile, extended in a later task) is the
-SUM of these contributions across every anneal it has lived through:
-sum(D(T_i) * t_i) approximates the real integral ∫D(T(t))dt as a
-piecewise-constant (one temperature per step) integral. This is an
-explicit v1 simplification, not an architectural limit: a future
-caller with a continuous T(t) history could integrate that directly
-and still only ever needs to update the same single accumulated
-thermal_budget scalar this module already produces -- nothing here
-assumes temperature is constant for a profile's WHOLE lifetime, only
-that each individual anneal STEP is isothermal (true of every real
-furnace/RTA anneal this project's reference case describes).
+thermal budget is the SUM of these contributions across every anneal it
+has lived through: sum(D(T_i) * t_i) approximates the real integral
+∫D(T(t))dt as a piecewise-constant (one temperature per step) integral.
+This is an explicit v1 simplification, not an architectural limit: a
+future caller with a continuous T(t) history could integrate that
+directly instead. As of the 2026-09-03 dopant-state-unification plan,
+this cumulative budget is no longer stored as a scalar field on
+DopantProfile -- DopantProfile.thermal_history instead holds the RAW
+ThermalEvent sequence (temperature_c, time_s pairs), and any derived
+budget is computed FROM that history by whichever model needs it.
+Nothing here assumes temperature is constant for a profile's WHOLE
+lifetime, only that each individual anneal STEP is isothermal (true of
+every real furnace/RTA anneal this project's reference case describes).
 """
 
 from __future__ import annotations
@@ -109,8 +111,12 @@ def anneal_profile(
     profile: DopantProfile, temperature_c: float, time_s: float,
 ) -> DopantProfile:
     """Real, dose-conserving Gaussian broadening under one isothermal
-    anneal step. See this module's own docstring for the thermal-budget
-    accumulation model.
+    anneal step (unchanged formula from Stage B). Reads/writes
+    model_params now instead of top-level fields; does NOT touch
+    thermal_history -- appending this step's ThermalEvent is
+    apply_thermal_anneal()'s own job (Task 3), done identically for
+    EVERY profile regardless of whether a handler exists, so it must
+    not also happen here (that would double-append the same event).
 
     Dose Q = peak_conc_cm3 * straggle_um * sqrt(2*pi) (this plan's own
     1D convention) is conserved EXACTLY: sigma_new^2 = sigma_old^2 +
@@ -119,37 +125,44 @@ def anneal_profile(
     rescaling that keeps Q unchanged while sigma grows.
 
     Returns the SAME profile, unchanged, when there is no defined shape
-    (straggle_um is None) or no species label (no citation-backed D(T)
-    is possible) -- never guesses.
+    (model_params has no straggle_um) or no species label (no
+    citation-backed D(T) is possible) -- never guesses.
     """
-    if profile.straggle_um is None or profile.species is None:
+    straggle_um = profile.model_params.get("straggle_um")
+    if straggle_um is None or profile.species is None:
         return profile
 
+    # Real bug fixed here, enabled by this task's own schema change:
+    # the OLD version hardcoded "Si" instead of reading the profile's
+    # own host_material -- harmless while every profile WAS Si, wrong
+    # the instant host_material is a real, meaningful field.
     contribution = thermal_budget_contribution(
-        profile.species, "Si", temperature_c, time_s,
+        profile.species, profile.host_material, temperature_c, time_s,
     )
     if contribution.value is None:
         return profile
 
     dt_um2 = contribution.value * 1e8  # cm^2 -> um^2 (1 cm = 1e4 um)
-    new_straggle = math.sqrt(profile.straggle_um ** 2 + 2.0 * dt_um2)
-    new_peak = profile.peak_conc_cm3 * (profile.straggle_um / new_straggle)
-    new_thermal_budget = profile.thermal_budget + contribution.value
-
-    position = profile.peak_position_um
+    new_straggle = math.sqrt(straggle_um ** 2 + 2.0 * dt_um2)
+    peak_conc_cm3 = profile.model_params["peak_conc_cm3"]
+    new_peak = peak_conc_cm3 * (straggle_um / new_straggle)
+    position = profile.model_params["peak_position_um"]
 
     def new_shape(x_um: float, depth_um: float,
                   peak=new_peak, pos=position, straggle=new_straggle) -> float:
         return peak * math.exp(-((x_um - pos) ** 2) / (2.0 * straggle ** 2))
 
-    return DopantProfile(
-        species=profile.species, polarity=profile.polarity,
-        concentration_at=new_shape, thermal_budget=new_thermal_budget,
+    new_params = dict(profile.model_params)
+    new_params["peak_conc_cm3"] = new_peak
+    new_params["straggle_um"] = new_straggle
+
+    from dataclasses import replace
+    return replace(
+        profile, concentration_at=new_shape, model_params=new_params,
         # The citation that just produced new_straggle/new_peak, not
         # profile.source (Stage B final-review Minor #4) -- carrying
         # profile.source forward silently drops the provenance of the
         # D(T) actually used for THIS widening (contribution.source is
         # real and available right here).
-        source=contribution.source, peak_conc_cm3=new_peak,
-        peak_position_um=position, straggle_um=new_straggle,
+        source=contribution.source,
     )

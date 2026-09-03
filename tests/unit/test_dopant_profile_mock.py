@@ -2,7 +2,27 @@
 # -*- coding: utf-8 -*-
 """DopantProfile: a lossless, species-preserving adapter over the
 existing DopingProfile/DopingRegion shape -- no ViennaPS/DevSim needed,
-pure Python math, checked against hand-computed expected values."""
+pure Python math, checked against hand-computed expected values.
+
+2026-09-03 dopant-state-unification, Task 1: DopantProfile becomes
+model-agnostic (host_material/model/model_params/thermal_history
+instead of Gaussian-specific top-level fields). Two tests that
+exercised capability `_gaussian_implant_profiles()` no longer provides
+after this migration were REMOVED, not silently left broken:
+  - donor+acceptor split sharing one Gaussian shape in a single call
+  - the (Stage B) `gaussian_terms` multi-implant-term list
+Both concepts are discarded/absorbed into the new WaferState-level,
+cross-step `dopant_profiles` accumulation -- see
+docs/superpowers/specs/2026-09-03-dopant-state-unification-design.md,
+section 11's component-classification table ("DopingRegion.
+gaussian_terms | Discard, concept absorbed") and this plan's own
+task-1-brief.md, whose reference `_gaussian_implant_profiles()` never
+grew a gaussian_terms branch or a donor/acceptor-split branch. This is
+a deliberate, reviewed scope narrowing for this migration, not an
+oversight; `_uniform_profiles`/`_step_junction_profiles`/
+`_implant_windows_profiles` keep their existing donor/acceptor-split
+branching unchanged, and are untouched by this removal.
+"""
 
 import sys
 from pathlib import Path
@@ -29,7 +49,7 @@ def test_uniform_net_only_splits_by_sign():
     assert profiles[0].polarity == "donor"
     assert profiles[0].species is None
     assert profiles[0].concentration_at(0.0, 0.0) == 1.0e17
-    assert profiles[0].thermal_budget == 0.0
+    assert profiles[0].thermal_history == ()
 
     doping = DopingProfile(kind="uniform", regions=[
         DopingRegion(region="Si", net_doping_cm3=-2.0e16),
@@ -51,6 +71,8 @@ def test_uniform_donor_acceptor_split_preserves_both():
     assert len(profiles) == 2
     assert by_polarity["donor"].species == "P"
     assert by_polarity["donor"].concentration_at(0.0, 0.0) == 1.0e16
+    assert by_polarity["donor"].host_material == "Si"
+    assert by_polarity["donor"].model == "uniform_v1"
     assert by_polarity["acceptor"].species == "B"
     assert by_polarity["acceptor"].concentration_at(0.0, 0.0) == 5.0e15
 
@@ -78,25 +100,6 @@ def test_step_junction_matches_devsim_step_function():
     # boundary quirk, exactly matching DevSim's own step():
     assert donor.concentration_at(1.0, 0.0) == 1.0e18
     assert acceptor.concentration_at(1.0, 0.0) == 2.0e18
-
-
-def test_gaussian_implant_donor_acceptor_share_shape():
-    doping = DopingProfile(kind="gaussian_implant", regions=[
-        DopingRegion(region="Si", junction_axis="x",
-                     peak_position_um=0.0, straggle_um=0.5,
-                     donor_peak_conc_cm3=2.0e18, acceptor_peak_conc_cm3=3.0e17,
-                     donor_species="P", acceptor_species="B"),
-    ])
-    profiles = dopant_profiles_from_doping_profile(doping)
-    by_polarity = {p.polarity: p for p in profiles}
-    import math
-    expected_shape = math.exp(-((1.0 - 0.0) ** 2) / (2.0 * 0.5 ** 2))
-    assert abs(by_polarity["donor"].concentration_at(1.0, 0.0)
-               - 2.0e18 * expected_shape) < 1.0
-    assert abs(by_polarity["acceptor"].concentration_at(1.0, 0.0)
-               - 3.0e17 * expected_shape) < 1.0
-    # peak value at the peak position
-    assert abs(by_polarity["donor"].concentration_at(0.0, 0.0) - 2.0e18) < 1.0
 
 
 def test_implant_windows_background_plus_windows():
@@ -145,59 +148,11 @@ def test_non_x_junction_axis_raises():
         assert "junction_axis" in str(e)
 
 
-def test_gaussian_terms_produce_one_dopant_profile_each():
-    """Stage B: multiple implant terms in one region -> multiple
-    DopantProfiles, each carrying its OWN species/peak/straggle/
-    thermal_budget -- not collapsed into one."""
-    doping = DopingProfile(kind="gaussian_implant", regions=[
-        DopingRegion(
-            region="Si", junction_axis="x",
-            peak_position_um=0.0, straggle_um=0.2,  # legacy fields, unused when gaussian_terms is set
-            gaussian_terms=[
-                {"species": "B", "polarity": "acceptor", "peak_conc_cm3": 1.0e18,
-                 "peak_position_um": -1.0, "straggle_um": 0.2, "thermal_budget_cm2": 1.5e-11},
-                {"species": "P", "polarity": "donor", "peak_conc_cm3": 2.0e18,
-                 "peak_position_um": 1.0, "straggle_um": 0.15, "thermal_budget_cm2": 3.0e-12},
-            ],
-        ),
-    ])
-    profiles = dopant_profiles_from_doping_profile(doping)
-    assert len(profiles) == 2
-
-    by_species = {p.species: p for p in profiles}
-    print(f"B: polarity={by_species['B'].polarity}, "
-          f"peak_conc_cm3={by_species['B'].peak_conc_cm3:.3e}, "
-          f"peak_position_um={by_species['B'].peak_position_um}, "
-          f"straggle_um={by_species['B'].straggle_um}, "
-          f"thermal_budget={by_species['B'].thermal_budget:.3e}")
-    print(f"P: polarity={by_species['P'].polarity}, "
-          f"peak_conc_cm3={by_species['P'].peak_conc_cm3:.3e}, "
-          f"peak_position_um={by_species['P'].peak_position_um}, "
-          f"straggle_um={by_species['P'].straggle_um}, "
-          f"thermal_budget={by_species['P'].thermal_budget:.3e}")
-    assert by_species["B"].polarity == "acceptor"
-    assert by_species["B"].peak_conc_cm3 == 1.0e18
-    assert by_species["B"].peak_position_um == -1.0
-    assert by_species["B"].straggle_um == 0.2
-    assert by_species["B"].thermal_budget == 1.5e-11
-    assert by_species["P"].polarity == "donor"
-    assert by_species["P"].thermal_budget == 3.0e-12
-
-    import math
-    at_peak = by_species["B"].concentration_at(-1.0, 0.0)
-    far_from_peak = by_species["B"].concentration_at(-1.0 + 10.0, 0.0)
-    print(f"B concentration_at(peak=-1.0) = {at_peak:.6e} cm^-3, "
-          f"concentration_at(peak+10um) = {far_from_peak:.6e} cm^-3")
-    assert abs(at_peak - 1.0e18) < 1.0
-    assert far_from_peak < 1.0e-10  # far from peak
-
-
 def test_gaussian_terms_non_x_axis_raises():
-    """Stage B final-review Important #4: the gaussian_terms branch used
-    to return BEFORE the junction_axis guard ran, so a y-axis region
-    with gaussian_terms silently evaluated its terms along x anyway
-    instead of raising -- same guard as the legacy single-profile path
-    (test_non_x_junction_axis_raises above), now hoisted to cover both."""
+    """The junction_axis guard in _gaussian_implant_profiles() fires
+    before anything else is read (including the now-unused
+    gaussian_terms field) -- a y-axis region still raises immediately,
+    same as every other doping kind's axis guard."""
     doping = DopingProfile(kind="gaussian_implant", regions=[
         DopingRegion(
             region="Si", junction_axis="y",
@@ -215,19 +170,59 @@ def test_gaussian_terms_non_x_axis_raises():
         print(f"gaussian_terms branch with junction_axis='y' raised as expected: {e}")
 
 
+def test_dopant_profile_has_no_gaussian_specific_top_level_fields():
+    import dataclasses
+    from tcad.physics.dopant_profile import DopantProfile
+    field_names = {f.name for f in dataclasses.fields(DopantProfile)}
+    assert "peak_conc_cm3" not in field_names
+    assert "peak_position_um" not in field_names
+    assert "straggle_um" not in field_names
+    assert "thermal_budget" not in field_names
+    assert field_names == {
+        "species", "polarity", "concentration_at", "host_material",
+        "model", "model_params", "thermal_history", "source",
+    }
+    print(f"DopantProfile fields (model-agnostic): {sorted(field_names)}")
+
+
+def test_gaussian_implant_profile_carries_model_tag_and_params():
+    from tcad.mesh.interface import DopingProfile, DopingRegion
+    from tcad.physics.dopant_profile import dopant_profiles_from_doping_profile
+
+    region = DopingRegion(
+        region="Si", junction_axis="x", peak_position_um=1.0,
+        straggle_um=0.2, peak_conc_cm3=1e18,
+    )
+    doping = DopingProfile(kind="gaussian_implant", regions=[region])
+    profiles = dopant_profiles_from_doping_profile(doping)
+    assert len(profiles) == 1
+    p = profiles[0]
+    assert p.model == "gaussian_v1"
+    assert p.host_material == "Si"
+    assert p.model_params["peak_conc_cm3"] == 1e18
+    assert p.model_params["peak_position_um"] == 1.0
+    assert p.model_params["straggle_um"] == 0.2
+    assert p.thermal_history == ()
+    print(f"model={p.model!r}, model_params={p.model_params}, "
+          f"concentration_at(1.0, 0.0)={p.concentration_at(1.0, 0.0):.3e}")
+    assert abs(p.concentration_at(1.0, 0.0) - 1e18) < 1.0
+
+
 def main():
     test_uniform_net_only_splits_by_sign()
     test_uniform_donor_acceptor_split_preserves_both()
     test_step_junction_matches_devsim_step_function()
-    test_gaussian_implant_donor_acceptor_share_shape()
     test_implant_windows_background_plus_windows()
     test_unknown_kind_raises()
     test_non_x_junction_axis_raises()
-    test_gaussian_terms_produce_one_dopant_profile_each()
     test_gaussian_terms_non_x_axis_raises()
+    test_dopant_profile_has_no_gaussian_specific_top_level_fields()
+    test_gaussian_implant_profile_carries_model_tag_and_params()
     print("DopantProfile conversion matches doping_mapping.py's real "
-          "DevSim equations for all 4 doping kinds, in both net-only "
-          "and donor/acceptor-split input forms.")
+          "DevSim equations for uniform/step_junction/implant_windows, "
+          "in both net-only and donor/acceptor-split input forms, and "
+          "the new model-agnostic schema carries host_material/model/"
+          "model_params correctly for gaussian_implant.")
 
 
 if __name__ == "__main__":
