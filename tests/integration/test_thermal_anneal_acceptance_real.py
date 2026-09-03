@@ -11,6 +11,23 @@ D(T), anneal reaches every currently-existing profile, dose is
 conserved, and changing temperature/time produces a different real
 result. C's own final anneal must move BOTH the original B profile
 (already annealed once) and the newly-added P profile.
+
+2026-09-03 dopant-state-unification, Task 3: apply_thermal_anneal()'s
+signature changed from (ProcessResult, ...) -> ProcessResult to
+(Tuple[DopantProfile, ...], ...) -> (Tuple[DopantProfile, ...],
+Optional[dict]) -- profiles now live on WaferState, not
+ProcessResult.doping (spec Sec9; Task 5 wires the real per-step
+WaferState accumulation this multi-implant B/P scenario stands in
+for here). Each implant is still built with the real, unchanged
+apply_gaussian_implant_doping() against a real ViennaPS-produced
+ProcessResult, then converted to a DopantProfile via
+dopant_profiles_from_doping_profile() (Task 1) -- B and P become two
+independent profiles in one tuple rather than two gaussian_terms
+entries inside one DopingRegion (that old existing=/gaussian_terms
+accumulation mechanism is removed outright in Task 4). The anneal
+formula itself (tcad.physics.diffusion_model.anneal_profile) is
+UNCHANGED, so every straggle/peak number below is the same real
+number Stage B already established -- only the plumbing moved.
 """
 
 import math
@@ -25,6 +42,7 @@ from tcad.backends.viennaps import session as viennaps_session
 from tcad.process import registry
 from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.physics.doping import apply_gaussian_implant_doping, apply_thermal_anneal
+from tcad.physics.dopant_profile import dopant_profiles_from_doping_profile
 from tcad.device.devsim import backend as devsim_backend
 
 assert viennaps_session.is_available(), "ViennaPS must be installed for this test"
@@ -44,90 +62,105 @@ def _fresh_process_result():
         return build_process_result(step_result)
 
 
-def _dose(term):
-    return term["peak_conc_cm3"] * term["straggle_um"] * math.sqrt(2.0 * math.pi)
+def _dose(profile):
+    return (profile.model_params["peak_conc_cm3"]
+            * profile.model_params["straggle_um"] * math.sqrt(2.0 * math.pi))
 
 
-def _by_species(result):
-    return {t["species"]: t for t in result.doping.regions[0].gaussian_terms}
+def _species_profile(result):
+    """A gaussian_implant ProcessResult carries exactly ONE profile
+    (dopant_profiles_from_doping_profile no longer expands the retired
+    gaussian_terms/existing= multi-implant list, per Task 4's own
+    scope) -- convert and pull it out."""
+    profiles = dopant_profiles_from_doping_profile(result.doping)
+    assert len(profiles) == 1
+    return profiles[0]
+
+
+def _by_species(profiles):
+    return {p.species: p for p in profiles}
 
 
 def scenario_A():
-    b_implant = apply_gaussian_implant_doping(
+    b_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=0.0, straggle_um=0.2,
         acceptor_peak_conc_cm3=1.0e18, acceptor_species="B",
-    )
-    b_dose_before = b_implant.doping.regions[0].acceptor_peak_conc_cm3 * 0.2 * math.sqrt(2.0 * math.pi)
+    ))
+    b_dose_before = _dose(b_profile)
 
-    annealed = apply_thermal_anneal(b_implant, temperature_c=900.0, time_s=600.0)
-    b = _by_species(annealed)["B"]
+    updated, _ = apply_thermal_anneal((b_profile,), temperature_c=900.0, time_s=600.0)
+    b = updated[0]
 
-    assert b["straggle_um"] > 0.2, "[A] B must broaden"
+    assert b.model_params["straggle_um"] > 0.2, "[A] B must broaden"
     assert abs(_dose(b) - b_dose_before) / b_dose_before < 1e-6, "[A] dose must be conserved"
-    print(f"[A] B implant -> anneal: straggle 0.200 -> {b['straggle_um']:.4f} um, "
+    print(f"[A] B implant -> anneal: straggle 0.200 -> {b.model_params['straggle_um']:.4f} um, "
           f"dose conserved to {abs(_dose(b) - b_dose_before) / b_dose_before:.2e}")
 
 
 def scenario_B():
-    b_implant = apply_gaussian_implant_doping(
+    b_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=-1.0, straggle_um=0.2,
         acceptor_peak_conc_cm3=1.0e18, acceptor_species="B",
-    )
-    both = apply_gaussian_implant_doping(
+    ))
+    p_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=1.0, straggle_um=0.2,
         donor_peak_conc_cm3=1.0e18, donor_species="P",
-        existing=b_implant,
-    )
-    annealed = apply_thermal_anneal(both, temperature_c=900.0, time_s=600.0)
-    terms = _by_species(annealed)
+    ))
+    updated, _ = apply_thermal_anneal((b_profile, p_profile), temperature_c=900.0, time_s=600.0)
+    terms = _by_species(updated)
 
     assert "B" in terms and "P" in terms, "[B] neither profile may be destroyed"
-    assert terms["B"]["straggle_um"] > 0.2, "[B] B must broaden"
-    assert terms["P"]["straggle_um"] > 0.2, "[B] P must broaden"
-    assert abs(terms["B"]["straggle_um"] - terms["P"]["straggle_um"]) > 1e-6, (
+    assert terms["B"].model_params["straggle_um"] > 0.2, "[B] B must broaden"
+    assert terms["P"].model_params["straggle_um"] > 0.2, "[B] P must broaden"
+    assert abs(terms["B"].model_params["straggle_um"] - terms["P"].model_params["straggle_um"]) > 1e-6, (
         "[B] B and P must broaden by DIFFERENT amounts (different D(T))"
     )
     print(f"[B] B implant -> P implant -> anneal: both present, "
-          f"B={terms['B']['straggle_um']:.4f}um P={terms['P']['straggle_um']:.4f}um")
+          f"B={terms['B'].model_params['straggle_um']:.4f}um "
+          f"P={terms['P'].model_params['straggle_um']:.4f}um")
 
 
 def scenario_C():
-    b_implant = apply_gaussian_implant_doping(
+    b_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=-1.0, straggle_um=0.2,
         acceptor_peak_conc_cm3=1.0e18, acceptor_species="B",
-    )
-    b_annealed_once = apply_thermal_anneal(b_implant, temperature_c=900.0, time_s=600.0)
-    b_straggle_after_first_anneal = _by_species(b_annealed_once)["B"]["straggle_um"]
+    ))
+    (b_annealed_once,), _ = apply_thermal_anneal((b_profile,), temperature_c=900.0, time_s=600.0)
+    b_straggle_after_first_anneal = b_annealed_once.model_params["straggle_um"]
 
-    both = apply_gaussian_implant_doping(
+    p_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=1.0, straggle_um=0.2,
         donor_peak_conc_cm3=1.0e18, donor_species="P",
-        existing=b_annealed_once,
+    ))
+    updated, _ = apply_thermal_anneal(
+        (b_annealed_once, p_profile), temperature_c=900.0, time_s=600.0,
     )
-    final = apply_thermal_anneal(both, temperature_c=900.0, time_s=600.0)
-    terms = _by_species(final)
+    terms = _by_species(updated)
 
     assert "B" in terms and "P" in terms, "[C] neither profile may be destroyed"
-    assert terms["B"]["straggle_um"] > b_straggle_after_first_anneal, (
+    assert terms["B"].model_params["straggle_um"] > b_straggle_after_first_anneal, (
         "[C] the FINAL anneal must widen B FURTHER, beyond its own first anneal -- "
-        f"got {terms['B']['straggle_um']} vs {b_straggle_after_first_anneal} after anneal 1 alone"
+        f"got {terms['B'].model_params['straggle_um']} vs {b_straggle_after_first_anneal} "
+        f"after anneal 1 alone"
     )
-    assert terms["P"]["straggle_um"] > 0.2, "[C] P (introduced after B's first anneal) must also broaden"
+    assert terms["P"].model_params["straggle_um"] > 0.2, (
+        "[C] P (introduced after B's first anneal) must also broaden"
+    )
     print(f"[C] B implant -> anneal -> P implant -> anneal: B widened across "
           f"BOTH anneals ({0.2:.4f} -> {b_straggle_after_first_anneal:.4f} -> "
-          f"{terms['B']['straggle_um']:.4f} um), P widened by the final anneal alone "
-          f"({0.2:.4f} -> {terms['P']['straggle_um']:.4f} um)")
+          f"{terms['B'].model_params['straggle_um']:.4f} um), P widened by the final "
+          f"anneal alone ({0.2:.4f} -> {terms['P'].model_params['straggle_um']:.4f} um)")
 
 
 def scenario_temperature_dependence():
-    implant = apply_gaussian_implant_doping(
+    implant = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=0.0, straggle_um=0.2,
         donor_peak_conc_cm3=1.0e18, donor_species="P",
-    )
-    low = apply_thermal_anneal(implant, temperature_c=900.0, time_s=600.0)
-    high = apply_thermal_anneal(implant, temperature_c=1000.0, time_s=600.0)
-    low_s = _by_species(low)["P"]["straggle_um"]
-    high_s = _by_species(high)["P"]["straggle_um"]
+    ))
+    (low,), _ = apply_thermal_anneal((implant,), temperature_c=900.0, time_s=600.0)
+    (high,), _ = apply_thermal_anneal((implant,), temperature_c=1000.0, time_s=600.0)
+    low_s = low.model_params["straggle_um"]
+    high_s = high.model_params["straggle_um"]
     assert high_s != low_s
     assert high_s > low_s
     print(f"[T] 900C/10min -> {low_s:.4f}um, 1000C/10min -> {high_s:.4f}um "

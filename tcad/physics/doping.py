@@ -27,12 +27,11 @@ a change to ProcessResult or DopingProfile's `regions` shape.
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from tcad.mesh.interface import DopingProfile, DopingRegion, ProcessResult
-from tcad.physics.diffusion_model import anneal_profile, thermal_budget_contribution
 from tcad.physics.dopant_profile import DopantProfile
-from tcad.physics.values import Resolution, combine
+from tcad.physics.values import Resolution
 
 #: This project's own doping representation is defined along ONE
 #: lateral axis only (every existing kind -- uniform, step_junction,
@@ -417,109 +416,55 @@ def _normalize_gaussian_terms(region: DopingRegion) -> List[Dict]:
 
 
 def apply_thermal_anneal(
-    result: ProcessResult, temperature_c: float, time_s: float,
-) -> ProcessResult:
-    """Widen every EXISTING Gaussian implant term by its own species'
-    real, cited D(T) (tcad.physics.diffusion_model) -- independently,
-    never a species-pair interaction. Dose is conserved per term: the
-    actual broadening math is tcad.physics.diffusion_model.
-    anneal_profile(), called once per term here so this function and
-    anneal_profile can never diverge (Stage B final-review Important
-    #5) -- each term is wrapped in a throwaway DopantProfile (its
-    concentration_at is never called by anneal_profile, only its
-    species/polarity/peak/position/straggle fields are read).
+    profiles: Tuple[DopantProfile, ...], temperature_c: float, time_s: float,
+) -> Tuple[Tuple[DopantProfile, ...], Optional[dict]]:
+    """Dispatch every profile to its own model's anneal handler
+    (tcad.physics.dopant_models.ANNEAL_HANDLERS, keyed by profile.model)
+    rather than a single hardcoded Gaussian formula -- per-model
+    redistribution physics, not a species-pair interaction and not a
+    single formula assumed to fit every doping kind.
 
-    Real, honest no-op (returns `result` UNCHANGED, same object) when
-    result.doping has no defined Gaussian shape to widen -- this
-    function never invents a shape for uniform/step_junction/
-    implant_windows doping, which this project has no anneal physics
-    for.
+    Every profile ALWAYS gets a ThermalEvent(temperature_c, time_s)
+    appended to its thermal_history -- it really was exposed to this
+    anneal, whether or not this project has a handler that knows how to
+    redistribute its shape. A profile whose model has no registered
+    handler is returned with model_params UNCHANGED (never silently
+    skipped, never run through the wrong model's formula) and reported
+    UNSUPPORTED_BY_MODEL in physics_status -- e.g. uniform_v1/
+    step_junction_v1/implant_windows_v1 today, which this project has no
+    anneal physics for.
 
-    Depth/junction-depth evolution is NOT computed -- see this module's
-    own DEPTH_EVOLUTION_RESOLUTION constant.
+    Depth/junction-depth evolution is NOT computed by any handler this
+    project registers today -- see this module's own
+    DEPTH_EVOLUTION_RESOLUTION constant.
 
-    result.physics_status is set to report, per widened species, whether
-    its D(T) fell inside or outside that species' own citation's
-    measured temperature window (Resolution.VERIFIED vs UNVERIFIED --
-    see tcad.physics.diffusion_model.arrhenius_diffusivity) -- an
-    out-of-window anneal still runs (the Arrhenius formula is physically
-    continuous), it is just never presented as equally trustworthy as an
-    in-window one (Stage B final-review Important #3). Left exactly as
-    `result` carried it in when no term had a resolvable species
-    (nothing new to report) -- physics_status is additive project-wide,
-    so an anneal step with nothing to say about D(T) resolution must
-    not erase an earlier step's real status.
+    Operates on the profile tuple directly (signature changed from
+    (ProcessResult, ...) -> ProcessResult): profiles now live on
+    WaferState, not ProcessResult.doping, per spec 2026-09-03 Sec9.
     """
-    if result.doping is None or result.doping.kind != "gaussian_implant":
-        return result
+    from tcad.physics.dopant_models import ANNEAL_HANDLERS
+    from tcad.physics.dopant_profile import ThermalEvent
 
-    region = result.doping.regions[0]
-    terms = _normalize_gaussian_terms(region)
-    if not terms:
-        return result
-
-    updated_terms = []
-    resolutions = []
-    physics_entries = []
-    for term in terms:
-        species = term["species"]
-        straggle_um = term.get("straggle_um")
-        # Un-widenable terms (no species label, so no citation-backed
-        # D(T) is possible; or a hand-built term missing straggle_um --
-        # Stage B final-review Minor #3, matching anneal_profile's own
-        # guard) are carried through unchanged -- as an independent
-        # COPY (Minor #2), never the same dict object the input's
-        # region still holds, so mutating the output can never mutate
-        # the input.
-        if species is None or straggle_um is None:
-            updated_terms.append(dict(term))
-            continue
-
-        contribution = thermal_budget_contribution(species, "Si", temperature_c, time_s)
-        if contribution.value is None:
-            updated_terms.append(dict(term))
-            continue
-
-        resolutions.append(contribution.resolution)
-        physics_entries.append({
-            "parameter": "diffusivity_D(T)", "material": species,
-            "value": contribution.value, "resolution": contribution.resolution.value,
-            "provenance": contribution.provenance.value,
-            "note": (
-                f"T={temperature_c:.0f}C, t={time_s:.0f}s" if
-                contribution.resolution is Resolution.VERIFIED else
-                f"T={temperature_c:.0f}C outside {species}'s citation "
-                f"window -- extrapolated"
+    updated = []
+    entries = []
+    for profile in profiles:
+        with_event = replace(
+            profile, thermal_history=profile.thermal_history + (
+                ThermalEvent(temperature_c=temperature_c, time_s=time_s),
             ),
-        })
-
-        dopant = DopantProfile(
-            species=species, polarity=term["polarity"],
-            concentration_at=lambda x_um, depth_um: 0.0,  # unused by anneal_profile
-            peak_conc_cm3=term["peak_conc_cm3"],
-            peak_position_um=term["peak_position_um"],
-            straggle_um=straggle_um,
         )
-        annealed = anneal_profile(dopant, temperature_c, time_s)
-        updated_terms.append({
-            "species": annealed.species, "polarity": annealed.polarity,
-            "peak_conc_cm3": annealed.peak_conc_cm3,
-            "peak_position_um": annealed.peak_position_um,
-            "straggle_um": annealed.straggle_um,
-            "thermal_budget_cm2": term.get("thermal_budget_cm2", 0.0) + annealed.thermal_budget,
-        })
-
-    new_region = replace(region, gaussian_terms=updated_terms)
-    new_doping = DopingProfile(kind="gaussian_implant", regions=[new_region])
-    if not physics_entries:
-        # Nothing resolvable to report -- leave physics_status exactly
-        # as the incoming result carried it (physics_status is additive
-        # project-wide; an anneal step with nothing to say about D(T)
-        # resolution must not erase an earlier step's real status).
-        return replace(result, doping=new_doping)
-    physics_status = {
-        "resolution": combine(resolutions).value,
-        "entries": physics_entries,
-        "notes": [],
-    }
-    return replace(result, doping=new_doping, physics_status=physics_status)
+        handler = ANNEAL_HANDLERS.get(profile.model)
+        if handler is None:
+            entries.append({
+                "parameter": "anneal_redistribution", "material": profile.species,
+                "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED",
+                "note": f"no anneal/redistribution handler registered for model={profile.model!r}",
+            })
+            updated.append(with_event)
+            continue
+        updated.append(handler(with_event, temperature_c, time_s))
+    physics_status = (
+        {"resolution": "UNSUPPORTED_BY_MODEL", "entries": entries, "notes": []}
+        if entries else None
+    )
+    return tuple(updated), physics_status
