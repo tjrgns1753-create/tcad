@@ -34,6 +34,12 @@ has no memory between sessions and this came up once already.
 - A subagent cannot resume itself when its own background job
   completes. Have the controller run expensive commands (full
   regression, real ViennaPS flows) itself and relay the result.
+- A background Agent dispatch can terminate mid-run on a real API
+  rate/usage limit ("hit your session limit", HTTP 429) — a different
+  failure than a denied dispatch, and it can strike well after the
+  dispatch succeeded. It produced no verdict, so discard the attempt
+  (it doesn't count against a fix-loop round or a "one review" budget)
+  and simply redispatch the identical prompt once the limit clears.
 
 ## THE INVARIANT (read before changing anything in the GUI or process layer)
 
