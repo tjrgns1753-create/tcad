@@ -12,6 +12,14 @@ Build a reliable 2D TCAD process → mesh → DevSim device simulation pipeline.
 Not about this project's physics — carried here only because Claude
 has no memory between sessions and this came up once already.
 
+- Project Python lives one directory ABOVE the repo root, not in a
+  local `.venv` — real ViennaPS 4.6.2 + DevSim are installed there.
+  Full regression, PowerShell (primary shell here; verified working):
+  ```powershell
+  $env:PYTHONIOENCODING="utf-8"
+  ..\.venv\Scripts\python.exe tests\run_regression.py
+  ```
+  Bash/Git Bash equivalent: `PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe tests/run_regression.py`
 - This runs as a **remote/web Claude Code session** (managed cloud
   container), not a local CLI. Terminal-only slash commands —
   confirmed for `/plugin` and `/reload-plugins` — return "isn't
@@ -1128,9 +1136,12 @@ the Windows cp949 console, which truncates the whole run — use
    in the middle of a MEASURE click, right before DevSim actually runs;
    (4) the P/N color overlay is already correctly implemented but
    invisible by default (`viewer_layer_var` defaults to `"geometry"`,
-   not `"doping"`); (5) `WaferState` carries no doping field at all —
-   known, deliberately deferred by the physics-resolver plan to a
-   "stage 4+" this project's 11-task plan never reached.
+   not `"doping"`); (5) `WaferState` now HAS a doping field
+   (`dopant_profiles`, plus `donor_concentration_at`/
+   `acceptor_concentration_at`/`net_doping_at` — added and verified by
+   Stage A, see Completed). What's still missing: `resolve()` doesn't
+   yet read it for cross-step physics — the state exists, nothing
+   consumes it yet.
 
    **Deposition**, two items, opposite causes: long deposition making
    the lower structure look eroded is a **renderer artifact, not real
@@ -1298,6 +1309,11 @@ both applied successfully against the real etched mesh with the log
 confirming `build_process_result` read the real materials
 (`['Mask', 'Si']`) — not a stub — and NEW WAFER correctly disables the
 button again afterward.
+
+(Stage B additive update: Gaussian Implant clicks now ACCUMULATE via
+`existing=` instead of overwriting, and a new ANNEAL control widens
+every accumulated term by its own species' real D(T) — see Completed,
+"Stage B" for the physics and citation.)
 
 A 2-terminal device-measurement panel was added last, going beyond the
 GUI's own original inventory into actual DevSim device simulation for
@@ -1492,11 +1508,12 @@ evidence before touching any code.
    `docs/investigation_log.md`, "PR Strip removes nothing".
 
 2. **Doping ↔ WaferState.** Independent donor+acceptor input for all 4
-   doping kinds is DONE (see Completed, "litho/doping/renderer plan").
-   Still open: wire doping into `WaferState` so a later process step's
-   physics resolution can see it, the "No DevSim solve was run" popup
-   firing mid-MEASURE, and the invisible-by-default P/N color overlay —
-   see `docs/investigation_log.md`, "Doping: five confirmed gaps".
+   doping kinds, and `WaferState.dopant_profiles`, are DONE (see
+   Completed, "litho/doping/renderer plan" and "Stage A"). Still open:
+   wire that state into `resolve()` so a later process step's physics
+   can actually use it, the "No DevSim solve was run" popup firing
+   mid-MEASURE, and the invisible-by-default P/N color overlay — see
+   `docs/investigation_log.md`, "Doping: five confirmed gaps".
 
 3. **Deposition renderer + mask policy.** Fix the renderer's `y_scale`
    so unchanged lower layers stop looking eroded as the top grows, and
