@@ -71,7 +71,7 @@ from typing import Dict, List, Optional
 
 from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
 from tcad.device.devsim import backend
-from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.device.devsim.doping_mapping import apply_doping_symbolic
 from tcad.device.devsim.semiconductor_equation import (
     read_drift_diffusion_terminal_currents,
     setup_drift_diffusion_equation,
@@ -123,12 +123,16 @@ def ramp_doping_to_equilibrium(
 
     # NetDoping must exist before the potential equation is registered:
     # DevSim's CreateSiliconPotentialOnly references it at setup time.
-    apply_doping(device, doping, length_scale_to_cm, window_scale=ramp[0])
+    # Uses the OLD kind-based symbolic-equation writer, not the new
+    # per-node apply_doping() -- window_scale (a solve-strategy doping-
+    # level continuation multiplier) has no WaferState equivalent; see
+    # doping_mapping.py's own module docstring.
+    apply_doping_symbolic(device, doping, length_scale_to_cm, window_scale=ramp[0])
     setup_semiconductor_potential_equation(
         device, region, contacts or [], temperature_k
     )
     for scale in ramp:
-        apply_doping(device, doping, length_scale_to_cm, window_scale=scale)
+        apply_doping_symbolic(device, doping, length_scale_to_cm, window_scale=scale)
         module.solve(
             type="dc",
             absolute_error=_EQ_ABSOLUTE_ERROR,

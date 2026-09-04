@@ -52,6 +52,7 @@ from tcad.physics.doping import apply_step_junction_doping, apply_gaussian_impla
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
 
 assert viennaps_session.is_available(), "ViennaPS must be installed for this test"
@@ -108,7 +109,8 @@ def test_step_junction_auto_refine():
         print(f"[1/2] auto-refined DevSim import OK -> regions={imported.regions} "
               f"contacts={imported.contacts}")
 
-        apply_doping(imported.device, doped_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, doped_result, "doping")
+        apply_doping(imported.device, "Si", state, length_scale_to_cm=LENGTH_SCALE_TO_CM)
 
         result = run_pn_junction_iv_sweep(
             device=imported.device, region="Si", all_contacts=imported.contacts,
@@ -155,7 +157,8 @@ def test_gaussian_implant_auto_refine():
             contact_regions=["Si"], contact_axis="x",
             auto_refine_from_doping=True,
         )
-        apply_doping(imported.device, doped_result.doping)
+        state = advance_wafer_state(None, doped_result, "doping")
+        apply_doping(imported.device, "Si", state)
 
         x_values = devsim.get_node_model_values(device=imported.device, region="Si", name="x")
         net_doping_values = devsim.get_node_model_values(

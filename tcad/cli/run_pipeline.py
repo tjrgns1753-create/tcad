@@ -193,9 +193,12 @@ def _apply_device_doping(imported, process_result, cfg: Dict[str, Any] | None):
     if not cfg or process_result.doping is None:
         return
     from tcad.device.devsim.doping_mapping import apply_doping
+    from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
     length_scale_to_cm = _resolve_length_scale_to_cm(cfg, True)
-    apply_doping(imported.device, process_result.doping, length_scale_to_cm=length_scale_to_cm)
+    region = process_result.doping.regions[0].region
+    state = advance_wafer_state(None, process_result, "doping")
+    apply_doping(imported.device, region, state, length_scale_to_cm=length_scale_to_cm)
 
 
 def _run_characterization(imported, cfg: Dict[str, Any]):

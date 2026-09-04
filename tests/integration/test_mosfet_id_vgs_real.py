@@ -88,6 +88,7 @@ from tcad.device.devsim.mesh_import import (
     import_process_result,
 )
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.device.devsim.mesh_refine import graded_refine_mesh_near
 from tcad.characterization.mosfet_sweep import run_mosfet_id_vgs_sweep
 
@@ -191,7 +192,11 @@ def main():
         assert imported.interfaces == ["Si_SiO2_interface"], imported.interfaces
         print(f"[4/6] imported: contacts={imported.contacts} interfaces={imported.interfaces}")
 
-        apply_doping(imported.device, process_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, process_result, "doping")
+        apply_doping(
+            imported.device, process_result.doping.regions[0].region, state,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
 
         # Check 2: NetDoping matches the requested implant_windows profile.
         xs = devsim.get_node_model_values(device=imported.device, region="Si", name="x")

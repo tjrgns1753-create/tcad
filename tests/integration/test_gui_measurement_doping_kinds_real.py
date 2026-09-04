@@ -75,6 +75,7 @@ from tcad.device.devsim.mesh_import import (
     refine_process_result_for_implant_windows,
 )
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
 
 assert viennaps_session.is_available(), "ViennaPS must be installed for this test"
@@ -169,8 +170,9 @@ def measure_one_kind(kind, process_result):
         )
         assert len(imported.contacts) == 2, imported.contacts
 
+        state = advance_wafer_state(None, doped_result, "doping")
         apply_doping(
-            imported.device, doped_result.doping,
+            imported.device, REGION, state,
             length_scale_to_cm=LENGTH_SCALE_TO_CM,
         )
 

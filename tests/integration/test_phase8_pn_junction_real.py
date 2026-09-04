@@ -50,6 +50,7 @@ from tcad.physics.doping import apply_step_junction_doping
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
 from tcad.characterization.io import save_csv, save_json
 from tcad.characterization.plotting import save_iv_plot
@@ -118,7 +119,8 @@ def main():
         p_contact, n_contact = imported.contacts[0], imported.contacts[1]
         print(f"[4/6] DevSim import OK (um->cm) -> regions={imported.regions} contacts={imported.contacts}")
 
-        apply_doping(imported.device, doped_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, doped_result, "doping")
+        apply_doping(imported.device, "Si", state, length_scale_to_cm=LENGTH_SCALE_TO_CM)
 
         sweep_voltages = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4]
         result = run_pn_junction_iv_sweep(
@@ -164,7 +166,8 @@ def main():
             contact_regions=["Si"], contact_axis="x",
             length_scale_to_cm=LENGTH_SCALE_TO_CM,
         )
-        apply_doping(eq_probe.device, doped_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        eq_state = advance_wafer_state(None, doped_result, "doping")
+        apply_doping(eq_probe.device, "Si", eq_state, length_scale_to_cm=LENGTH_SCALE_TO_CM)
         from tcad.device.devsim.semiconductor_equation import setup_semiconductor_potential_equation
         setup_semiconductor_potential_equation(eq_probe.device, "Si", eq_probe.contacts, temperature_k=300.0)
         devsim.solve(type="dc", absolute_error=1.0, relative_error=1e-6, maximum_iterations=100)

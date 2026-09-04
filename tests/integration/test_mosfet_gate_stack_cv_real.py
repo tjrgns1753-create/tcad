@@ -161,6 +161,7 @@ from tcad.physics.doping import apply_implant_windows_doping
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import import_process_result, refine_process_result_for_mos_gate
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.characterization.cv_sweep import run_mos_cv_sweep
 
 devsim = devsim_backend.require_devsim()
@@ -240,7 +241,11 @@ def main():
         print(f"[3/5] imported: regions={imported.regions} contacts={imported.contacts} "
               f"interfaces={imported.interfaces}")
 
-        apply_doping(imported.device, process_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, process_result, "doping")
+        apply_doping(
+            imported.device, process_result.doping.regions[0].region, state,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
 
         # Check 2: NetDoping matches the requested implant_windows profile
         # node-by-node (same rigor as test_implant_windows_doping_real.py).

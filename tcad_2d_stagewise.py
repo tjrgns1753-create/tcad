@@ -4566,6 +4566,7 @@ class TCADApplication(tk.Tk):
         from tcad.characterization.robust_iv_sweep import (
             run_robust_pn_junction_iv_sweep,
         )
+        from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
         module = devsim_backend.require_devsim()
         device_name = "gui_measure_device"
@@ -4691,8 +4692,18 @@ class TCADApplication(tk.Tk):
                     fixed_contacts={gnd_contact: 0.0},
                 )
             else:
+                # A throwaway, single-call WaferState built ONLY from
+                # this measurement's own current doped_result -- not
+                # self.wafer_state (that cross-step accumulation
+                # mechanism doesn't exist on the GUI yet; wiring it in
+                # is Task 9's job, per 2026-09-03-dopant-state-
+                # unification). This preserves today's real behavior
+                # (a MEASURE reflects the single most-recently-applied
+                # doping call) while switching the write mechanism to
+                # the new per-node WaferState<->DevSim pipeline.
+                state = advance_wafer_state(None, doped_result, "doping")
                 apply_doping(
-                    imported.device, doped_result.doping,
+                    imported.device, region, state,
                     length_scale_to_cm=length_scale_to_cm,
                     exclude_windows=exclude_windows, exclude_axis="x",
                 )
@@ -5018,10 +5029,12 @@ class TCADApplication(tk.Tk):
             )
             return None
 
+        from dataclasses import replace as _dataclasses_replace
         from tcad.device.devsim import backend as devsim_backend
         from tcad.device.devsim.doping_mapping import apply_doping
         from tcad.mesh.interface import DopingProfile, DopingRegion
         from tcad.characterization.dc_operating_point import solve_mosfet_dc_operating_point
+        from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
         module = devsim_backend.require_devsim()
 
@@ -5041,12 +5054,25 @@ class TCADApplication(tk.Tk):
             and getattr(doped_result, "volume_mesh_path", None) == self.last_final_mesh
         ):
             doping = doped_result.doping
+            doping_process_result = doped_result
         if doping is None:
             doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=0.0)])
             self._log("\n(No doping profile applied yet -- Si region treated as intrinsic, NetDoping=0, for this solve.)\n")
+            # Same real-mesh-file construction resolve_electrode_pins()
+            # and run_doping()/run_measurement() already use -- not
+            # stored across those methods, so rebuilt here (cheap: a
+            # meshio read, no ViennaPS simulation) and paired with the
+            # synthetic intrinsic DopingProfile above via the same
+            # dataclasses.replace() pattern every apply_*_doping() in
+            # tcad/physics/doping.py already uses.
+            doping_process_result = _dataclasses_replace(
+                build_process_result({"final_mesh": self.last_final_mesh, "snapshots": []}),
+                doping=doping,
+            )
 
         try:
-            apply_doping(imported.device, doping, length_scale_to_cm=1.0e-4)
+            state = advance_wafer_state(None, doping_process_result, "doping")
+            apply_doping(imported.device, "Si", state, length_scale_to_cm=1.0e-4)
 
             gate_region = regions_by_name.get(gate_contact)
             if gate_region != "SiO2":

@@ -35,6 +35,7 @@ from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.contact_probe import find_duplicate_pin_positions, resolve_pins_to_point_contacts
 from tcad.device.devsim.mesh_import import derive_implant_windows_refinement, import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.device.devsim.mesh_refine import graded_refine_mesh_near
 from tcad.characterization.dc_operating_point import solve_mosfet_dc_operating_point
 from tcad.characterization.mosfet_sweep import run_mosfet_id_vgs_sweep, run_mosfet_id_vds_sweep
@@ -170,7 +171,11 @@ def main():
             length_scale_to_cm=LENGTH_SCALE_TO_CM,
         )
         assert set(imported.contacts) == {"Source", "Drain", "Body", "SiO2_ymax"}, imported.contacts
-        apply_doping(imported.device, process_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, process_result, "doping")
+        apply_doping(
+            imported.device, process_result.doping.regions[0].region, state,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
         print(f"[3/9] real DevSim contacts created from coordinate pins: {sorted(imported.contacts)}")
 
         # 14: DC operating point.
@@ -206,7 +211,11 @@ def main():
             length_scale_to_cm=LENGTH_SCALE_TO_CM,
         )
         assert set(imported2.contacts) == {"Si_xmin", "Si_xmax", "SiO2_ymax"}, imported2.contacts
-        apply_doping(imported2.device, sweep_process_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state2 = advance_wafer_state(None, sweep_process_result, "doping")
+        apply_doping(
+            imported2.device, sweep_process_result.doping.regions[0].region, state2,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
         gate_voltages = build_sweep_values(start=0.0, stop=8.0, step=2.0)
         assert len(gate_voltages) == sweep_point_count(0.0, 8.0, 2.0) == 5
         vgs_result = run_mosfet_id_vgs_sweep(
@@ -231,7 +240,11 @@ def main():
             length_scale_to_cm=LENGTH_SCALE_TO_CM,
         )
         assert set(imported3.contacts) == {"Si_xmin", "Si_xmax", "SiO2_ymax"}, imported3.contacts
-        apply_doping(imported3.device, sweep_process_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state3 = advance_wafer_state(None, sweep_process_result, "doping")
+        apply_doping(
+            imported3.device, sweep_process_result.doping.regions[0].region, state3,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
         drain_voltages = build_sweep_values(start=0.0, stop=0.3, step=0.1)
         vds_result = run_mosfet_id_vds_sweep(
             device=imported3.device, si_region="Si", oxide_region="SiO2",

@@ -317,10 +317,10 @@ def main():
         captured = {}
         real_apply_doping = doping_mapping_module.apply_doping
 
-        def spy_apply_doping(device, doping, **kwargs):
-            real_apply_doping(device, doping, **kwargs)
+        def spy_apply_doping(device, region, state, **kwargs):
+            real_apply_doping(device, region, state, **kwargs)
             captured["exclude_windows"] = kwargs.get("exclude_windows")
-            region_name = doping.regions[0].region
+            region_name = region
             module_ds = devsim_backend.require_devsim()
             captured["x"] = module_ds.get_node_model_values(
                 device=device, region=region_name, name="x")

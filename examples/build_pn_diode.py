@@ -61,6 +61,7 @@ from tcad.physics.doping import apply_step_junction_doping
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
 from tcad.characterization.io import save_csv, save_json
 from tcad.characterization.plotting import save_iv_plot
@@ -195,7 +196,8 @@ with tempfile.TemporaryDirectory() as tmp:
     print(f"  n-side (donors, x > junction) = {n_contact}   "
           f"p-side (acceptors) = {p_contact}")
 
-    apply_doping(imported.device, doped_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+    state = advance_wafer_state(None, doped_result, "doping")
+    apply_doping(imported.device, "Si", state, length_scale_to_cm=LENGTH_SCALE_TO_CM)
 
     # FORWARD BIAS = positive on the P side (V_diode = V_p - V_n). So the
     # swept contact is the P contact, and a positive swept value is a

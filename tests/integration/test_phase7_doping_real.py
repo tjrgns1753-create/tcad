@@ -24,6 +24,7 @@ from tcad.physics.doping import apply_uniform_doping
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.device.devsim.semiconductor_equation import setup_semiconductor_potential_equation
 from tcad.device.devsim.resistor_equation import set_bias
 
@@ -69,7 +70,8 @@ def run_one(device_name, mesh_name, net_doping_cm3):
             contact_regions=["Si"], contact_axis="x",
         )
 
-        apply_doping(imported.device, doped_result.doping)
+        state = advance_wafer_state(None, doped_result, "doping")
+        apply_doping(imported.device, "Si", state)
         setup_semiconductor_potential_equation(
             imported.device, "Si", imported.contacts, temperature_k=300.0,
         )

@@ -26,6 +26,7 @@ from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.physics.doping import apply_step_junction_doping
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
 from tcad.device.devsim.voltage_probe import read_potential_at_point
 
@@ -56,7 +57,8 @@ def main():
             contact_regions=["Si"], contact_axis="x",
             length_scale_to_cm=LENGTH_SCALE_TO_CM,
         )
-        apply_doping(imported.device, doped.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, doped, "doping")
+        apply_doping(imported.device, "Si", state, length_scale_to_cm=LENGTH_SCALE_TO_CM)
         run_pn_junction_iv_sweep(
             device=imported.device, region="Si", all_contacts=imported.contacts,
             sweep_contact="Si_xmax", sweep_voltages=[0.0],

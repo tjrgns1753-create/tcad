@@ -70,19 +70,26 @@ def _fresh_process_result():
 def _check_one_kind(label, doped_result, boundaries=()):
     """Import into a fresh DevSim device, read real NetDoping, compare
     node-by-node against WaferState.net_doping_at built from the SAME
-    DopingProfile via Task 1/2's new code. Boundary-adjacent nodes
-    (step() ambiguity, not the thing under test) are skipped, same
-    convention as test_implant_windows_doping_real.py."""
+    DopingProfile via Task 1/2's new code.
+
+    Task 8 (2026-09-03 dopant-state-unification) note: apply_doping()
+    itself now WRITES DevSim's NetDoping by evaluating this exact same
+    WaferState.net_doping_at() at every real node -- so `actual` and
+    `predicted` below are now the SAME underlying computation, not two
+    independently-derived formulas any more. This test still has real
+    value as a write/read PIPELINE check (does DevSim's own stored
+    NetDoping, read back after set_node_values, equal what was written,
+    to full precision, at real node coordinates) -- see
+    test_doping_mapping_per_node_real.py for the dedicated new coupling
+    test this task adds; this one is kept for its per-kind coverage.
+    Boundary-adjacent nodes (step() ambiguity, not the thing under
+    test) are skipped, same convention as
+    test_implant_windows_doping_real.py."""
     imported = import_process_result(
         doped_result, mesh_name=f"{label}_mesh", device_name=f"{label}_device",
         contact_regions=["Si"], contact_axis="x",
     )
     try:
-        apply_doping(imported.device, doped_result.doping)
-
-        x_values = devsim.get_node_model_values(device=imported.device, region="Si", name="x")
-        actual = devsim.get_node_model_values(device=imported.device, region="Si", name="NetDoping")
-
         profiles = dopant_profiles_from_doping_profile(doped_result.doping)
         # A single wide 'Si' cell, not the real per-x mesh geometry: this
         # test's checked nodes are drawn from devsim's own region="Si"
@@ -95,6 +102,11 @@ def _check_one_kind(label, doped_result, boundaries=()):
         state = WaferState(materials=("Si",), stack=(), grid_delta_um=0.1,
                             _cells=(_Cell(-1e9, 1e9, 1.0, "Si"),), _thin_x=(),
                             dopant_profiles=profiles)
+
+        apply_doping(imported.device, "Si", state)
+
+        x_values = devsim.get_node_model_values(device=imported.device, region="Si", name="x")
+        actual = devsim.get_node_model_values(device=imported.device, region="Si", name="NetDoping")
 
         max_rel_error = 0.0
         n_checked = 0

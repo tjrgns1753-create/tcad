@@ -44,6 +44,7 @@ from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.physics.doping import apply_implant_windows_doping
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.device.devsim.mesh_import import (
     import_process_result,
     refine_process_result_for_implant_windows,
@@ -113,7 +114,8 @@ def main():
         imported, doped = build_device(
             RECIPE_4x3, 1.0e20, "simple_dev", "simple_mesh", tmp)
         try:
-            apply_doping(imported.device, doped.doping,
+            state = advance_wafer_state(None, doped, "doping")
+            apply_doping(imported.device, REGION, state,
                          length_scale_to_cm=LENGTH_SCALE_TO_CM)
             gnd, src = imported.contacts[0], imported.contacts[1]
             simple = run_pn_junction_iv_sweep(

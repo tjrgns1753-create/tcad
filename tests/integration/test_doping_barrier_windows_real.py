@@ -73,6 +73,7 @@ def main():
         from tcad.device.devsim import backend as devsim_backend
         from tcad.device.devsim.mesh_import import import_process_result
         from tcad.device.devsim.doping_mapping import apply_doping
+        from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
         doped = apply_uniform_doping(etch_result, {"Si": 1.0e17})
 
@@ -81,7 +82,8 @@ def main():
             doped, mesh_name="tbw_mesh", device_name="tbw_device",
             contact_regions=["Si"], contact_axis="x",
         )
-        apply_doping(imported.device, doped.doping, exclude_windows=windows)
+        state = advance_wafer_state(None, doped, "doping")
+        apply_doping(imported.device, "Si", state, exclude_windows=windows)
 
         node_x = module_ds.get_node_model_values(device="tbw_device", region="Si", name="x")
         net = module_ds.get_node_model_values(device="tbw_device", region="Si", name="NetDoping")

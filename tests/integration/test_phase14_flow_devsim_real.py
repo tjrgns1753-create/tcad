@@ -34,6 +34,7 @@ from tcad.process.flow import FlowStep, run_flow
 from tcad.physics.doping import apply_uniform_doping
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.device.devsim.semiconductor_equation import setup_semiconductor_potential_equation
 from tcad.device.devsim.mos_equation import setup_mos_potential_equation
 from tcad.device.devsim.resistor_equation import set_bias
@@ -121,7 +122,11 @@ def test_2_flow_oxidation_doping_semiconductor_solve():
         )
         print(f"[DevSim import] regions={imported.regions} contacts={imported.contacts}")
 
-        apply_doping(imported.device, doped.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, doped, "doping")
+        apply_doping(
+            imported.device, doped.doping.regions[0].region, state,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
         setup_semiconductor_potential_equation(imported.device, "Si", imported.contacts, temperature_k=300.0)
         for c in imported.contacts:
             set_bias(imported.device, c, 0.0)
@@ -180,7 +185,11 @@ def test_3_flow_oxidation_mos_cv():
               f"interfaces={imported.interfaces}")
         assert imported.interfaces, "MOS structure needs a real Si-SiO2 interface"
 
-        apply_doping(imported.device, doped.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, doped, "doping")
+        apply_doping(
+            imported.device, doped.doping.regions[0].region, state,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
 
         substrate_contact = next(c for c in imported.contacts if c.startswith("Si_"))
         gate_contact = next(c for c in imported.contacts if c.startswith("SiO2_"))
@@ -249,7 +258,11 @@ def test_4_flow_oxidation_etch_doping_devsim():
         )
         print(f"[DevSim import] regions={imported.regions} contacts={imported.contacts}")
 
-        apply_doping(imported.device, doped.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, doped, "doping")
+        apply_doping(
+            imported.device, doped.doping.regions[0].region, state,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
         setup_semiconductor_potential_equation(imported.device, "Si", imported.contacts, temperature_k=300.0)
         for c in imported.contacts:
             set_bias(imported.device, c, 0.0)

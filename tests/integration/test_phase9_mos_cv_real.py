@@ -22,6 +22,7 @@ from tcad.physics.doping import apply_uniform_doping
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.characterization.cv_sweep import run_mos_cv_sweep
 from tcad.characterization.io import save_cv_csv, save_json
 from tcad.characterization.plotting import save_cv_plot
@@ -77,7 +78,11 @@ def main():
         print(f"[4/6] DevSim MOS import OK -> regions={imported.regions} "
               f"contacts={imported.contacts} interfaces={imported.interfaces}")
 
-        apply_doping(imported.device, doped_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, doped_result, "doping")
+        apply_doping(
+            imported.device, doped_result.doping.regions[0].region, state,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
 
         gate_voltages = [-1.0, -0.5, 0.0, 0.5, 1.0]
         result = run_mos_cv_sweep(

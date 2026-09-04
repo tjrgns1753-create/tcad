@@ -26,6 +26,7 @@ from tcad.physics.doping import apply_gaussian_implant_doping
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
 assert viennaps_session.is_available(), "ViennaPS must be installed for this test"
 assert devsim_backend.is_available(), "DevSim must be installed for this test"
@@ -69,7 +70,8 @@ def main():
             contact_regions=["Si"], contact_axis="x",
         )
 
-        apply_doping(imported.device, doped_result.doping)
+        state = advance_wafer_state(None, doped_result, "doping")
+        apply_doping(imported.device, "Si", state)
 
         x_values = devsim.get_node_model_values(device=imported.device, region="Si", name="x")
         net_doping_values = devsim.get_node_model_values(

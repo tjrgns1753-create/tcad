@@ -120,6 +120,7 @@ from tcad.device.devsim.mesh_import import (
     import_process_result,
 )
 from tcad.device.devsim.doping_mapping import apply_doping
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.device.devsim.mesh_refine import graded_refine_mesh_near
 from tcad.characterization.mosfet_sweep import run_mosfet_id_vgs_sweep
 from tcad.characterization.vth_extraction import extract_vth_from_result
@@ -242,7 +243,11 @@ def main():
         assert imported.interfaces == ["Si_SiO2_interface"], imported.interfaces
         print(f"[4/6] imported: contacts={imported.contacts} interfaces={imported.interfaces}")
 
-        apply_doping(imported.device, process_result.doping, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+        state = advance_wafer_state(None, process_result, "doping")
+        apply_doping(
+            imported.device, process_result.doping.regions[0].region, state,
+            length_scale_to_cm=LENGTH_SCALE_TO_CM,
+        )
 
         # Denser than test_mosfet_id_vgs_real.py's own [0,2,4,6,8] --
         # a linear-extrapolation fit needs several points actually past
