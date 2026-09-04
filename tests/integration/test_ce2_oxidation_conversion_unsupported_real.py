@@ -69,18 +69,44 @@ never bare Si -- confirmed directly (exposed_material_at reported
 "SiO2" there post-strip, not "Si"). Real LOCOS fab practice always
 follows mask removal with a timed HF dip that clears the (thin, known)
 pad oxide while barely touching the (much thicker) field oxide grown
-in the open window; a uniform, thickness-calibrated real ViennaPS etch
-was tried first here but rejected after measurement showed this
-recipe's own field oxide (~0.25um) is not comfortably thicker than its
-own pad oxide (~0.135um after growth-adjacent thinning) -- too little
-margin for a uniform-rate etch to clear the pad without risking the
-field oxide too. Implemented instead as a real ViennaLS boolean
-subtraction of the SiO2 level set, confined EXACTLY to the mask's own
-real span (the same x-bounds the LOCOS recipe itself used -- not a
-guessed region), representing that same real HF-dip fab step
-precisely rather than approximately. Verified directly: after this,
-X_CONVERTED (open window) still reads SiO2 (field oxide untouched) and
-X_PROTECTED (former mask span) reads genuine, exposed Si.
+in the open window. Implemented as a REAL, registered ViennaPS
+`IsotropicProcess` etch (SiO2-selective, Si rate 0), run BLANKET
+(no mask) across the whole wafer with a FIXED etch depth (0.19um,
+chosen ahead of time, not measured from this run's own result --
+see task-7-report.md) -- a real, standard mechanism (same
+material_rates pattern CE-1's own test and test_wafer_state_real.py's
+"etched through" case already use), and, being a real selective etch
+rather than a hand-drawn box, it is naturally surface-relative and
+self-limiting at the Si boundary exactly like a real HF dip: measured
+with a CORRECTLY re-registered LOCOS export (see the paragraph below --
+an earlier measurement using the un-re-registered, generic exporter
+was itself wrong, see task-7-report.md "fix round 2"), the real pad
+oxide is ~0.14um and the real field oxide, grown for long enough to
+get genuine separation from it (1100C/8.0hr, up from an initial
+1100C/2.0hr that left them too close together to trust -- see
+task-7-report.md), is ~0.36um -- comfortable margin on both sides of
+the fixed 0.19um cut (pad fully clears with ~0.05um to spare; ~0.16um
+of field oxide survives). Because the removal amount is FIXED rather
+than calibrated to what this run's mask happened to produce -- this is
+what an EARLIER version of this test got wrong (see task-7-report.md,
+"fix round 1") -- a mask that FAILED to protect X_PROTECTED (leaving
+full field-thickness oxide there instead of the thin pad) would NOT be
+fully cleared by this same fixed-depth etch, so `after_protected ==
+"Si"` genuinely has the power to catch that failure rather than always
+passing regardless of what the mask actually did.
+
+A REAL LOCOS export subtlety this step must also handle (also found
+only in review, see task-7-report.md, "fix round 1"): the LOCOS run
+above registers an export hint recording a 3-material stack ([Si,
+SiO2, Mask]); domain.removeMaterial(Mask) below drops that to 2
+materials without updating the hint, so io.py's own hint-mismatch
+guard would silently fall back to the generic WriteVisualizationMesh
+exporter -- exactly the "topmost wins" path save_locos_volume_mesh()
+exists to avoid for a wrapped (SiO2 wraps Si) stack like this one. The
+hint is explicitly re-registered with the real, current 2-material
+list before the etch runs (the etch step's own run() calls
+save_volume_mesh() internally at the end, using whatever hint is
+registered for that domain at that time).
 """
 import sys
 import tempfile
@@ -89,13 +115,26 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import tcad.process.oxidation  # noqa: F401 -- registers "oxidation"/"thermal"
+import tcad.process.etching  # noqa: F401 -- registers "etching"/"isotropic"
 from tcad.process import registry
 from tcad.physics.doping import apply_gaussian_implant_doping
 from tcad.physics.wafer_state import WaferState
 from tcad.physics.wafer_state_accumulation import advance_wafer_state
 from tcad.mesh.viennaps_adapter import build_process_result
 from tcad.backends.viennaps import session
-from tcad.backends.viennaps.io import save_volume_mesh
+from tcad.backends.viennaps.io import save_volume_mesh, register_locos_export
+
+#: Fixed, pre-chosen SiO2 etch depth (um) for the real post-LOCOS pad-oxide
+#: strip below -- NOT calibrated from any run's own measured result (that
+#: would make the "after_protected == Si" check unable to detect a mask
+#: that failed to protect the region -- see Problem 3, module docstring,
+#: and task-7-report.md's "fix round 1"). Measured once, ahead of time,
+#: against this exact recipe (with the LOCOS export hint correctly
+#: re-registered post-strip -- an earlier measurement without that fix
+#: was itself wrong, see task-7-report.md "fix round 2"): real pad oxide
+#: ~0.14um (comfortably cleared, ~0.05um/35% margin), real field oxide
+#: ~0.36um (~0.16um survives) with the 1100C/8.0hr growth below.
+PAD_STRIP_DEPTH_UM = 0.19
 
 GRID_UM = 0.2
 X_EXTENT_UM, Y_EXTENT_UM, SI_DEPTH_UM = 10.0, 8.0, 5.0
@@ -126,10 +165,12 @@ def _real_locos_oxidation_then_strip(tmp):
     "LOCOS-on-LOCOS -- RESOLVED") that genuinely grows field oxide in
     the OPEN window (covers X_CONVERTED) while a real mask blocks all
     growth in the OUTER span (covers X_PROTECTED) -- Problem 2, module
-    docstring. Then a real mask strip plus a real, mask-span-confined
-    pad-oxide clear (Problem 3, module docstring) so the protected span
-    ends up genuinely exposed Si again, exactly as a real LOCOS fab
-    flow leaves it after its own post-mask-removal HF dip."""
+    docstring. Then a real mask strip plus a real, registered, blanket
+    (no mask) SiO2-selective isotropic etch at a FIXED depth (Problem 3,
+    module docstring) so the protected span ends up genuinely exposed Si
+    again, exactly as a real LOCOS fab flow leaves it after its own
+    post-mask-removal HF dip -- and so that check genuinely can fail if
+    the mask did not do its job (see PAD_STRIP_DEPTH_UM's own comment)."""
     step0 = registry.get("oxidation", "thermal")()
     recipe0 = {
         "_process_category": "oxidation", "_process_model_key": "thermal",
@@ -141,8 +182,22 @@ def _real_locos_oxidation_then_strip(tmp):
     }
     step0.run(recipe0, tmp)
 
+    # NOTE (Minor finding, task-7 review): thermal.py's chained-LOCOS
+    # path deliberately does NOT re-apply mask_left_um/mask_right_um --
+    # it reuses the inherited, already-deformed mask from step0 as-is
+    # (see thermal.py's own run(), "is_chained_locos" branch). Copying
+    # them into recipe1 below is therefore inert for the geometry (the
+    # real window stays wherever step0's mask ended up, which is not
+    # exactly [-1.0, +1.0] once bird's-beak deformation is real) --
+    # harmless here since X_CONVERTED=0.0/X_PROTECTED=-3.5 sit far from
+    # that boundary either way, but WINDOW_HALF_UM below describes the
+    # NOMINAL window step0 asked for, not the real deformed edge.
     recipe1 = dict(recipe0)
-    recipe1["temperature_c"], recipe1["time_hours"] = 1100.0, 2.0
+    # 8.0hr (not the originally-tried 2.0hr): needed for the field oxide
+    # to grow genuinely thicker than the (fixed, un-grown) pad oxide --
+    # see PAD_STRIP_DEPTH_UM's own comment for the real measured numbers
+    # that drove this.
+    recipe1["temperature_c"], recipe1["time_hours"] = 1100.0, 8.0
     step1 = registry.get("oxidation", "thermal")(inherited_domain=step0.last_domain)
     step1.run(recipe1, tmp)
 
@@ -150,30 +205,26 @@ def _real_locos_oxidation_then_strip(tmp):
     domain = step1.last_domain
     domain.removeMaterial(module.Material.Mask)
 
-    import viennals as vls
+    # Re-register the LOCOS export hint for the post-strip 2-material
+    # stack (Important #2, task-7 review) -- see module docstring,
+    # Problem 3.
+    register_locos_export(domain, [module.Material.Si, module.Material.SiO2], [False, True])
 
-    bcs = domain.getBoundaryConditions()
-    half_x = X_EXTENT_UM / 2.0
-    bounds = [-half_x, half_x, -2.0, 3.0]
-    left_cut = vls.Domain(bounds, bcs, GRID_UM)
-    vls.MakeGeometry(left_cut, vls.Box([-half_x, -2.0], [-WINDOW_HALF_UM, 3.0])).apply()
-    right_cut = vls.Domain(bounds, bcs, GRID_UM)
-    vls.MakeGeometry(right_cut, vls.Box([WINDOW_HALF_UM, -2.0], [half_x, 3.0])).apply()
-    vls.BooleanOperation(left_cut, right_cut, vls.BooleanOperationEnum.UNION).apply()
+    # Real, registered ViennaPS etch standing in for the real HF dip a
+    # LOCOS flow performs after mask removal (Important #1/#3, task-7
+    # review) -- see module docstring, Problem 3, and
+    # PAD_STRIP_DEPTH_UM's own comment for why the depth is fixed ahead
+    # of time rather than measured from this run.
+    strip_step = registry.get("etching", "isotropic")(inherited_domain=domain)
+    strip_recipe = {
+        "material_rates": {"SiO2": -PAD_STRIP_DEPTH_UM, "Si": 0.0},
+        "default_rate": 0.0,
+        "etch_time_s": 1.0,
+        "silicon_depth_um": SI_DEPTH_UM,
+    }
+    strip_result = strip_step.run(strip_recipe, tmp)
 
-    level_sets = list(domain.getLevelSets())
-    assert len(level_sets) == 2, (
-        f"expected exactly [Si, SiO2] after the Mask level set was removed, got "
-        f"{len(level_sets)} level sets -- the pad-oxide subtraction below assumes "
-        f"index 1 is the oxide level set"
-    )
-    oxide_ls = level_sets[1]
-    vls.BooleanOperation(oxide_ls, left_cut, vls.BooleanOperationEnum.RELATIVE_COMPLEMENT).apply()
-
-    stripped_mesh = save_volume_mesh(
-        domain, str(Path(tmp) / "locos_stripped"), floor_depth_um=SI_DEPTH_UM,
-    )
-    return build_process_result({"final_mesh": stripped_mesh, "snapshots": []})
+    return build_process_result({"final_mesh": strip_result["final_mesh"], "snapshots": []})
 
 
 def main():
@@ -224,6 +275,10 @@ def main():
         q_converted = state2.net_doping_at(X_CONVERTED, 0.0)
         print(f"[X_CONVERTED] donor={q_converted.donor_concentration}, "
               f"physics_status={q_converted.physics_status}")
+        # Both halves of "never a silent zero" (spec Sec6): the raw
+        # number really is excluded (0.0, not some partial value) AND
+        # that exclusion is disclosed, not silent.
+        assert q_converted.donor_concentration == 0.0
         assert q_converted.physics_status is not None
         assert q_converted.physics_status["resolution"] == "UNSUPPORTED_BY_MODEL"
 
@@ -232,7 +287,10 @@ def main():
               f"acceptor={q_protected.acceptor_concentration:.3e}, "
               f"physics_status={q_protected.physics_status}")
         assert q_protected.physics_status is None
-        assert q_protected.acceptor_concentration > 0
+        # > 1e17, not just > 0: pins the real, near-peak value (the B
+        # profile is centered exactly at X_PROTECTED with a 1e18 cm^-3
+        # peak) rather than being satisfied by a negligible tail alone.
+        assert q_protected.acceptor_concentration > 1e17
 
         print("Oxidation's real Si->SiO2 conversion (at a fixed absolute x, mask-verified) "
               "correctly reports UNSUPPORTED_BY_MODEL for the consumed dopant's fate (never "
