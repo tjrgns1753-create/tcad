@@ -114,6 +114,14 @@ class Tokens:
 # Canvas polygon cap for _draw_real_mesh_result -- see its use for why.
 _MAX_RENDERED_TRIANGLES = 2000
 
+# Sentinel color returned by _doping_color_segments() for a bucket whose
+# WaferState.net_doping_at() reports physics_status is not None (an
+# UNSUPPORTED_BY_MODEL gap, spec Sec6) -- never a valid Tk color name,
+# so the caller (_draw_real_mesh_result) must special-case it rather
+# than pass it straight to canvas.create_rectangle(fill=...). Shared
+# between the two so they can never disagree on the marker string.
+_DOPING_UNSUPPORTED_MARKER = "#unsupported"
+
 
 def _nice_ruler_step(extent, target_ticks=8):
     """A "nice" (1/2/5 * 10^n) tick spacing for a ruler spanning
@@ -6637,9 +6645,19 @@ class TCADApplication(tk.Tk):
                             cx_hi = x0 + (hi - x_min) * x_scale
                             cy_top = surface_y - seg_y_top * y_scale
                             cy_bot = surface_y - seg_y_bot * y_scale
+                            # An UNSUPPORTED_BY_MODEL bucket (spec Sec6)
+                            # must never be blended into the normal n/p
+                            # blue/red convention -- rendered as a
+                            # distinct dim-gray hatch (sparser stipple
+                            # than the gray50 used for a real sign)
+                            # instead of passed as a literal Tk color.
+                            if color == _DOPING_UNSUPPORTED_MARKER:
+                                fill, stipple = Tokens.FG_DIM, "gray25"
+                            else:
+                                fill, stipple = color, "gray50"
                             canvas.create_rectangle(
                                 cx_lo, cy_top, cx_hi, cy_bot,
-                                fill=color, outline="", stipple="gray50",
+                                fill=fill, outline="", stipple=stipple,
                             )
 
             canvas.create_text(
@@ -6652,76 +6670,64 @@ class TCADApplication(tk.Tk):
         except Exception:
             return False
 
-    def _doping_color_segments(self, region_name, x_min_um, x_max_um):
-        """(x_lo_um, x_hi_um, color) segments for region_name's doping,
-        in real domain x coordinates, matching apply_doping()'s own
-        sign convention exactly (tcad/device/devsim/doping_mapping.py:
-        NetDoping = Donors-Acceptors for step_junction, background +
-        summed windows for implant_windows, etc.) so the overlay never
-        shows a p/n split that disagrees with what would actually be
-        solved. n-type (net doping >= 0) is blue, p-type (net doping
-        < 0) is red -- the standard convention the doping panel itself
-        already documents (net_doping_cm3: "positive = net donor
-        (n-type), negative = net acceptor (p-type)").
+    def _doping_color_segments(self, region_name, x_min_um, x_max_um, n_buckets=60):
+        """(x_lo_um, x_hi_um, color) segments covering [x_min_um,
+        x_max_um], reading self.wafer_state.net_doping_at() (Task 2) --
+        the real, per-bucket, cross-step-accumulated dopant state (Task
+        9) -- rather than the legacy region.peak_conc_cm3 /
+        region.net_doping_cm3 fields this method used to read directly
+        off self.last_doped_result.doping.regions.
 
-        Only "x"-axis doping is visualized (every doping kind this GUI
-        exposes defaults to axis="x"); a region doped along "y" is left
-        uncolored rather than drawn wrong.
+        That old approach only ever reflected the MOST RECENT
+        apply_doping() call: a second Gaussian Implant (e.g. a real
+        B-then-P sequential implant) replaces self.last_doped_result
+        wholesale, so a region carrying TWO accumulated DopantProfiles
+        on self.wafer_state was still painted with ONE flat, wrong
+        color end to end (confirmed live this session). Bucketing the
+        real query instead means each bucket's color reflects exactly
+        the dopants actually accumulated there, however many implants
+        produced them.
+
+        n-type (net doping >= 0) is blue, p-type (net doping < 0) is
+        red -- the standard convention the doping panel itself already
+        documents (net_doping_cm3: "positive = net donor (n-type),
+        negative = net acceptor (p-type)"). A bucket whose query
+        reports physics_status is not None (an UNSUPPORTED_BY_MODEL
+        gap -- e.g. the dopant's host_material is no longer exposed
+        there and no fate model is registered, spec Sec6) is NEVER
+        colored blue/red -- it gets _DOPING_UNSUPPORTED_MARKER instead,
+        which the caller (_draw_real_mesh_result) maps to a visually
+        distinct hatched-gray fill rather than blending it into the
+        normal p/n rendering.
+
+        region_name is accepted for call-site compatibility (the
+        caller derives it from self.last_doped_result.doping.regions to
+        decide WHICH material's surface profile to intersect these
+        segments with) but is not itself used to filter the query --
+        net_doping_at() already resolves each accumulated profile
+        against the REAL exposed material at that x internally, and any
+        bucket whose material doesn't match region_name is dropped by
+        the caller's own profile intersection regardless.
+
+        Only depth_um=0.0 (x-only) is queried, matching this model's
+        own x-only scope (Stage B, unchanged).
         """
-        doping = getattr(self.last_doped_result, "doping", None)
-        if doping is None:
+        if self.wafer_state is None:
             return []
 
         N_COLOR, P_COLOR = "#2f6fed", "#e0393e"
         segments = []
-
-        for region in doping.regions:
-            if region.region != region_name:
+        width_um = (x_max_um - x_min_um) / n_buckets
+        for i in range(n_buckets):
+            x_lo_um = x_min_um + i * width_um
+            x_hi_um = x_min_um + (i + 1) * width_um
+            center_um = (x_lo_um + x_hi_um) / 2.0
+            result = self.wafer_state.net_doping_at(center_um, 0.0)
+            if result.physics_status is not None:
+                segments.append((x_lo_um, x_hi_um, _DOPING_UNSUPPORTED_MARKER))
                 continue
-            axis = getattr(region, "junction_axis", None)
-
-            if doping.kind == "uniform":
-                color = N_COLOR if (region.net_doping_cm3 or 0.0) >= 0 else P_COLOR
-                segments.append((x_min_um, x_max_um, color))
-
-            elif doping.kind == "gaussian_implant":
-                if axis != "x":
-                    continue
-                color = N_COLOR if (region.peak_conc_cm3 or 0.0) >= 0 else P_COLOR
-                segments.append((x_min_um, x_max_um, color))
-
-            elif doping.kind == "step_junction":
-                if axis != "x":
-                    continue
-                position = region.junction_position_um
-                acceptor_color = (
-                    P_COLOR if (region.acceptor_conc_cm3 or 0.0) > 0 else N_COLOR
-                )
-                donor_color = (
-                    N_COLOR if (region.donor_conc_cm3 or 0.0) >= 0 else P_COLOR
-                )
-                segments.append((x_min_um, position, acceptor_color))
-                segments.append((position, x_max_um, donor_color))
-
-            elif doping.kind == "implant_windows":
-                if axis != "x":
-                    continue
-                background = region.net_doping_cm3 or 0.0
-                bg_color = N_COLOR if background >= 0 else P_COLOR
-                windows = sorted(
-                    region.implant_windows or [], key=lambda w: w["min_um"]
-                )
-                cursor = x_min_um
-                for window in windows:
-                    lo = max(x_min_um, window["min_um"])
-                    hi = min(x_max_um, window["max_um"])
-                    if lo > cursor:
-                        segments.append((cursor, lo, bg_color))
-                    net = background + window["conc_cm3"]
-                    segments.append((lo, hi, N_COLOR if net >= 0 else P_COLOR))
-                    cursor = max(cursor, hi)
-                if cursor < x_max_um:
-                    segments.append((cursor, x_max_um, bg_color))
+            color = N_COLOR if result.net_doping >= 0 else P_COLOR
+            segments.append((x_lo_um, x_hi_um, color))
 
         return segments
 
