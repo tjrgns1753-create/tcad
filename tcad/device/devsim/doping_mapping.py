@@ -171,10 +171,20 @@ def apply_doping(
         module's own docstring for why this stays a parameter here
         rather than being folded into WaferState.
 
+    Writes exactly ONE region per call (unlike apply_doping_symbolic()
+    below, which loops over every `doping.regions` entry) -- safe today
+    because every real DopingProfile in this project has exactly one
+    region (confirmed by grep), but a future multi-region profile would
+    need one apply_doping() call per region, not a single call.
+
     Returns the aggregated `physics_status` dict across every node that
-    had an UNSUPPORTED_BY_MODEL gap (see WaferState.net_doping_at), or
-    None if none did -- mirrors the existing project convention of
-    surfacing `physics_status` from a doping-application call.
+    had a GENUINELY unresolved UNSUPPORTED_BY_MODEL gap (see
+    WaferState.net_doping_at), or None if none did -- mirrors the
+    existing project convention of surfacing `physics_status` from a
+    doping-application call. A gap that the RECOVERY step below actually
+    resolved (host_material == region) is never included here -- it
+    would be factually wrong to flag a contribution as excluded when it
+    was, in fact, written to the device.
     """
     module = backend.require_devsim()
 
@@ -185,6 +195,32 @@ def apply_doping(
     acceptors: List[float] = []
     nets: List[float] = []
     all_entries: List[dict] = []
+
+    # Any gap entry whose note reports THIS region as no-longer-exposed
+    # is, by construction (see the RECOVERY loop below: it recovers
+    # every profile with host_material == region whenever the exposure
+    # gate excluded it -- the exact same condition net_doping_at() uses
+    # to decide whether to emit such an entry in the first place), ALWAYS
+    # recovered at that same node. Used only to drop those now-stale
+    # entries (Important #2) -- an entry about some OTHER host_material
+    # (a profile this call site cannot recover, since it never targets
+    # `region`) is left untouched, since that one really is unresolved.
+    region_gap_prefix = f"{region} no longer exposed"
+
+    # Memoized across the whole node loop (Important #3):
+    # state.exposed_material_at(x_um) depends only on x_um, not on which
+    # profile is being checked, and is itself a linear scan over every
+    # WaferState._Cell (one per mesh triangle -- tens of thousands on a
+    # refined device). The old code called it once per (node, profile)
+    # pair inside the RECOVERY loop below; hoisting it here computes it
+    # once per DISTINCT x_um for the entire call. Keyed on a rounded x
+    # rather than the raw float: many real DevSim mesh nodes down one
+    # column share the same x, but this module has no guarantee their
+    # float64 bit patterns are identical (an unstructured triangulation,
+    # not a structured grid), so round to 9 decimals -- this project's
+    # own established mesh-coordinate precision (see prepare_domain()'s
+    # trenchWidth rounding, tcad/backends/viennaps/session.py).
+    exposed_cache: Dict[float, Optional[str]] = {}
 
     for x_native, y_native in zip(xs_native, ys_native):
         x_um = x_native / length_scale_to_cm
@@ -199,8 +235,13 @@ def apply_doping(
         result = state.net_doping_at(x_um, y_um)
         donor = result.donor_concentration
         acceptor = result.acceptor_concentration
-        if result.physics_status is not None:
-            all_entries.extend(result.physics_status["entries"])
+
+        cache_key = round(x_um, 9)
+        if cache_key in exposed_cache:
+            exposed = exposed_cache[cache_key]
+        else:
+            exposed = state.exposed_material_at(x_um)
+            exposed_cache[cache_key] = exposed
 
         # RECOVERY, found necessary by real execution, not guessed:
         # every node here comes from devsim.get_node_model_values(...,
@@ -237,13 +278,21 @@ def apply_doping(
         for p in state.dopant_profiles:
             if p.host_material != region:
                 continue
-            if state.exposed_material_at(x_um) == p.host_material:
+            if exposed == p.host_material:
                 continue  # net_doping_at() already included this one
             magnitude = p.concentration_at(x_um, y_um)
             if p.polarity == "donor":
                 donor += magnitude
             else:
                 acceptor += magnitude
+
+        # Important #2: drop any gap entry that RECOVERY (just above)
+        # actually resolved -- see region_gap_prefix's own comment.
+        if result.physics_status is not None:
+            all_entries.extend(
+                e for e in result.physics_status["entries"]
+                if not e.get("note", "").startswith(region_gap_prefix)
+            )
 
         donors.append(donor)
         acceptors.append(acceptor)
