@@ -37,7 +37,7 @@ import random
 import subprocess
 import sys
 import tempfile
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -64,6 +64,7 @@ from tcad.physics.doping import (
     apply_implant_windows_doping,
     apply_thermal_anneal,
 )
+from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
 # ============================================================
 # DESIGN TOKENS — industrial/scientific EDA look
@@ -402,6 +403,16 @@ class TCADApplication(tk.Tk):
         # _make_measurement_panel()'s own docstring. None until doping
         # succeeds.
         self.last_doped_result = None
+
+        # The real, cross-step accumulating WaferState (Task 9,
+        # dopant-state-unification) -- every DopantProfile ever applied
+        # via run_doping(), PLUS the current real geometry, kept current
+        # by _sync_wafer_state_geometry() after every process step
+        # (doping or not). Unlike last_doped_result (one call's own
+        # ProcessResult, for mesh-reading), this is the canonical
+        # accumulated state a measurement's apply_doping() should read.
+        # None until the first real process step or doping call.
+        self.wafer_state = None
 
         # Electrode/Pin system (see tcad.mesh.pin.Pin) -- separate from
         # the existing 2-terminal _make_measurement_panel's own
@@ -1310,6 +1321,11 @@ class TCADApplication(tk.Tk):
             return
 
         self.last_final_mesh = result.get("final_mesh")
+        # A flow has no single recipe -- last_step_category reflects the
+        # LAST queued step (the operation that most recently touched
+        # this mesh), matching WaferState's own "most recent step"
+        # semantics; all_steps is non-empty here (guarded above).
+        self._sync_wafer_state_geometry(all_steps[-1], result)
         self.wafer.processed = True
         # `etched` means "this wafer has actually been etched" -- it
         # gates the trench-opening placeholder in redraw(). Setting it
@@ -2347,6 +2363,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "oxidized"
         self.last_final_mesh = result.get("final_mesh")
+        self._sync_wafer_state_geometry(recipe, result)
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -2896,6 +2913,11 @@ class TCADApplication(tk.Tk):
             return False
 
         self.last_final_mesh = result.get("final_mesh")
+        # No real process ran here (see this method's own docstring) --
+        # no recipe/_process_category exists, so last_step_category
+        # becomes None (unclassified), matching WaferState's own
+        # default for "nothing has been done to this wafer yet".
+        self._sync_wafer_state_geometry({}, result)
         self.last_domain_state = result.get("domain_state")
         self.wafer.processed = True
         self.redraw()
@@ -2959,6 +2981,10 @@ class TCADApplication(tk.Tk):
             return False
 
         self.last_final_mesh = result.get("final_mesh")
+        # No registered-process recipe here either (this strips resist
+        # geometry only, see this method's own docstring) -- same
+        # category=None reasoning as _materialize_current_wafer above.
+        self._sync_wafer_state_geometry({}, result)
         self.last_domain_state = result.get("domain_state")
         return True
 
@@ -3021,6 +3047,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = process_stage
         self.last_final_mesh = result.get("final_mesh")
+        self._sync_wafer_state_geometry(recipe, result)
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -3319,6 +3346,7 @@ class TCADApplication(tk.Tk):
         self.wafer.processed = True
         self.process_stage = "deposited"
         self.last_final_mesh = result.get("final_mesh")
+        self._sync_wafer_state_geometry(recipe, result)
         self.completed_steps.append(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
@@ -3483,19 +3511,29 @@ class TCADApplication(tk.Tk):
         """Gate stack is terminal and builds its own geometry from
         scratch, so nothing from the previous wafer may survive it.
 
-        Four fields carry state across RUN clicks, and all four must be
+        Five fields carry state across RUN clicks, and all five must be
         cleared here: completed_steps/flow_step_meshes/last_domain_state
         (added when RUN clicks started resuming an accumulated .vpsd —
         without clearing last_domain_state the next RUN resumes the
-        PRE-gate-stack wafer) and last_physics_status, which was
+        PRE-gate-stack wafer), last_physics_status, which was
         overlooked in the same way — without clearing it, a status
         panel or log read after a gate-stack build would still show the
-        PRE-gate-stack step's physics/numerical status.
+        PRE-gate-stack step's physics/numerical status -- and
+        wafer_state (Task 9): GateStack.__init__ refuses inherited_
+        domain outright, so its mesh is a genuinely fresh device, not
+        a continuation. Its own DopantProfiles use ABSOLUTE coordinates
+        (Task 1/spec Sec5), so carrying an old wafer_state forward would
+        evaluate stale profiles against an unrelated device's geometry
+        at whatever x happens to coincide -- a real correctness risk,
+        not just stale bookkeeping. Set to None here so the very next
+        _sync_wafer_state_geometry() call rebuilds it from scratch
+        against the fresh gate-stack mesh, with zero prior profiles.
         """
         self.completed_steps = []
         self.flow_step_meshes = []
         self.last_domain_state = None
         self.last_physics_status = None
+        self.wafer_state = None
 
     def run_gate_stack(self):
 
@@ -3677,6 +3715,13 @@ class TCADApplication(tk.Tk):
         # pre-gate-stack history via _chained_flow_config() as if this
         # build had never happened.
         self._clear_state_for_gate_stack()
+        # Called AFTER the clear above (not immediately after the mesh
+        # assignment, unlike every other site) so this builds a BRAND
+        # NEW WaferState (prior_state=None, per _clear_state_for_gate_
+        # stack's own reasoning) against this fresh, unrelated device,
+        # instead of carrying the pre-gate-stack wafer's DopantProfiles
+        # forward onto geometry that never inherited from it.
+        self._sync_wafer_state_geometry(recipe, result)
 
         # Deliberately NOT calling self._activate_stages(...): this
         # build did not go through the 01-08 litho/process sequence at
@@ -3949,11 +3994,13 @@ class TCADApplication(tk.Tk):
 
         ttk.Label(
             frame,
-            text="Anneal (widens every existing Gaussian implant term "
-                 "by its own species' real D(T) -- see Christensen et "
-                 "al. 2003. Lateral (x) straggle only -- depth/"
-                 "junction-depth is NOT modeled, no matter what this "
-                 "profile's own axis is.)",
+            text="Anneal (widens every accumulated dopant profile by its "
+                 "own species' real D(T) -- see Christensen et al. "
+                 "2003. Only Gaussian implant profiles have a "
+                 "registered anneal model today; other kinds are left "
+                 "unchanged and reported UNSUPPORTED_BY_MODEL. Lateral "
+                 "(x) straggle only -- depth/junction-depth is NOT "
+                 "modeled, no matter what this profile's own axis is.)",
             style="Caption.TLabel",
             wraplength=310,
         ).pack(
@@ -4015,7 +4062,20 @@ class TCADApplication(tk.Tk):
         attached = getattr(self.last_doped_result, "volume_mesh_path", None)
         return bool(attached and attached != self.last_final_mesh)
 
-    def run_doping(self, silent: bool = False):
+    def _sync_wafer_state_geometry(self, recipe, result):
+        """Keep self.wafer_state's GEOMETRY current after any real process
+        step, doping or not -- preserving every already-accumulated
+        DopantProfile unchanged (this ProcessResult carries no .doping, so
+        advance_wafer_state's this_step_profiles is empty; prior_profiles
+        passes through untouched)."""
+        final_mesh = result.get("final_mesh")
+        if not final_mesh:
+            return
+        process_result = build_process_result({"final_mesh": final_mesh, "snapshots": []})
+        category = recipe.get("_process_category")
+        self.wafer_state = advance_wafer_state(self.wafer_state, process_result, category)
+
+    def run_doping(self, silent: bool = False, reattach: bool = False):
         """Apply the selected doping kind. Returns True on success.
 
         `silent` suppresses only the success POPUP -- the log line and
@@ -4028,6 +4088,16 @@ class TCADApplication(tk.Tk):
         docs/investigation_log.md, "Doping: five confirmed gaps",
         item 3). Whether DevSim itself then solves successfully is
         reported separately, by run_measurement().
+
+        `reattach` is for that SAME internal re-attach call only: it
+        refreshes self.last_doped_result (needed for mesh-reading)
+        WITHOUT appending a second, duplicate copy of the same profile
+        to self.wafer_state.dopant_profiles -- the profile is already
+        correctly recorded there from whichever earlier call actually
+        applied it, and it stays correctly geometry-gated against
+        whatever the CURRENT mesh is via WaferState's own exposure
+        gating, with no need to recreate it just because the mesh file
+        path changed underneath it.
         """
 
         # Doping runs on the wafer as it is. It used to refuse until some
@@ -4090,34 +4160,22 @@ class TCADApplication(tk.Tk):
                 acceptor = float(self.dope_gauss_acceptor_var.get())
                 donor_species = self.dope_gauss_donor_species_var.get()
                 acceptor_species = self.dope_gauss_acceptor_species_var.get()
-                accumulate = (
-                    self.last_doped_result is not None
-                    and (self.last_doped_result.doping is None
-                         or self.last_doped_result.doping.kind == "gaussian_implant")
-                )
-                if self.last_doped_result is not None and not accumulate:
-                    self._log(
-                        "GAUSSIAN IMPLANT: the wafer's current doping is a "
-                        f"different kind ({self.last_doped_result.doping.kind!r}) "
-                        "-- this implant replaces it rather than superposing "
-                        "(adding a term on top of a different doping kind's "
-                        "representation is not supported)."
-                    )
+                # Multi-implant accumulation (formerly this branch's own
+                # `existing=`/`gaussian_terms` mechanism) is now
+                # WaferState's job -- every kind, not just Gaussian
+                # Implant, accumulates via self.wafer_state below.
                 doped_result = apply_gaussian_implant_doping(
                     process_result, region=region, junction_axis=axis,
                     peak_position_um=position, straggle_um=straggle,
                     donor_peak_conc_cm3=donor, acceptor_peak_conc_cm3=acceptor,
                     donor_species=donor_species, acceptor_species=acceptor_species,
-                    existing=self.last_doped_result if accumulate else None,
                 )
-                n_terms = len(doped_result.doping.regions[0].gaussian_terms or [1])
                 summary = (
                     f"region={region!r} axis={axis!r} "
                     f"peak@{position}um straggle={straggle}um "
                     f"donor={donor:.3e}({donor_species}) "
                     f"acceptor={acceptor:.3e}({acceptor_species}) -> "
-                    f"peak_net_cm3={donor - acceptor:.3e} "
-                    f"({n_terms} implant term(s) now on this wafer)"
+                    f"peak_net_cm3={donor - acceptor:.3e}"
                 )
 
             elif kind == "Implant Windows":
@@ -4181,6 +4239,9 @@ class TCADApplication(tk.Tk):
 
         self.last_doped_result = doped_result
 
+        if not reattach:
+            self.wafer_state = advance_wafer_state(self.wafer_state, doped_result, "doping")
+
         self.history.append(
             f"Doping: {kind}"
         )
@@ -4192,6 +4253,8 @@ class TCADApplication(tk.Tk):
             f"{summary}\n"
             f"Materials in mesh: "
             f"{[r.name for r in doped_result.material_regions]}\n"
+            f"Accumulated dopant profile(s) on this wafer: "
+            f"{len(self.wafer_state.dopant_profiles) if self.wafer_state else 0}\n"
             f"(DopingProfile attached only -- no DevSim solve run.)\n"
         )
 
@@ -4217,12 +4280,17 @@ class TCADApplication(tk.Tk):
         return True
 
     def _on_thermal_anneal_clicked(self):
-        """Widens every existing Gaussian implant TERM (Task 4/plan
-        Stage B) by its own species' real, cited D(T) -- see
-        tcad.physics.diffusion_model. A real, honest no-op (logged, not
-        silent) when the current doping has no defined Gaussian shape."""
+        """Widens every accumulated DopantProfile in self.wafer_state by
+        its own species' real, cited D(T) -- see
+        tcad.physics.dopant_models/tcad.physics.doping.apply_thermal_anneal.
+        Dispatch-based, per-profile (Task 3): a profile whose model has
+        no registered anneal handler is left with model_params
+        UNCHANGED and reported UNSUPPORTED_BY_MODEL, never silently
+        skipped and never run through the wrong model's formula. A
+        real, honest no-op (logged, not silent) when nothing has been
+        doped yet."""
 
-        if self.last_doped_result is None or self.last_doped_result.doping is None:
+        if self.wafer_state is None or not self.wafer_state.dopant_profiles:
             self._log("ANNEAL: no doping applied yet -- nothing to anneal.")
             return
 
@@ -4236,60 +4304,47 @@ class TCADApplication(tk.Tk):
             )
             return
 
-        before = self.last_doped_result
-        after = apply_thermal_anneal(before, temperature_c, time_s)
+        before_profiles = self.wafer_state.dopant_profiles
+        updated_profiles, physics_status = apply_thermal_anneal(
+            before_profiles, temperature_c, time_s,
+        )
+        self.wafer_state = replace(self.wafer_state, dopant_profiles=updated_profiles)
 
-        if after is before:
-            self._log(
-                f"ANNEAL: {temperature_c:.0f} C / {time_s:.0f} s -- current "
-                f"doping ({before.doping.kind!r}) has no defined Gaussian "
-                f"shape to anneal; nothing changed."
-            )
-            return
-
-        self.last_doped_result = after
-        # Pair BEFORE/AFTER terms POSITIONALLY, not by species (Stage B
-        # final-review Important #1+#2): apply_thermal_anneal widens
-        # each existing term in place, in the same list order it was
-        # given, so the Nth normalized term always corresponds 1:1
-        # across before/after -- unlike a species-keyed dict, this is
-        # correct both for a fresh non-accumulated implant (gaussian_terms
-        # is None before the anneal; _normalize_gaussian_terms falls back
-        # to the legacy single-profile fields instead of an empty dict)
-        # and for two SAME-species implants accumulated via existing=
-        # (a species-keyed dict would collapse them into one entry).
-        before_terms = _normalize_gaussian_terms(before.doping.regions[0])
-        after_terms = _normalize_gaussian_terms(after.doping.regions[0])
-
-        # Which species (if any) used a D(T) extrapolated outside its
-        # own citation's measured temperature window -- surfaced by
-        # apply_thermal_anneal via the same physics_status convention
-        # every other process step already reports through (Stage B
-        # final-review Important #3).
-        unverified_species = {
-            entry["material"] for entry in (after.physics_status or {}).get("entries", [])
-            if entry["resolution"] == "UNVERIFIED"
+        # Positional pairing (same principle as the Stage B final-review
+        # Important #1/#2 fix, now at the WaferState.dopant_profiles
+        # level instead of DopingRegion.gaussian_terms -- apply_thermal_
+        # anneal (Task 3) preserves order, never reorders/drops, so zip
+        # is correct).
+        unsupported_species = {
+            entry["material"] for entry in (physics_status or {}).get("entries", [])
+            if entry["resolution"] == "UNSUPPORTED_BY_MODEL"
         }
 
         self._log(
             f"\n================================\n"
             f"ANNEAL: {temperature_c:.0f} C / {time_s:.0f} s\n"
             f"================================\n"
-            f"Applied to {len(after_terms)} existing implant term(s):"
+            f"Applied to {len(updated_profiles)} existing profile(s):"
         )
-        for before_term, term in zip(before_terms, after_terms):
+        for before_p, after_p in zip(before_profiles, updated_profiles):
             flag = (
-                " (outside citation range -- UNVERIFIED)"
-                if term["species"] in unverified_species else ""
+                " (UNSUPPORTED_BY_MODEL -- no anneal handler registered, or out of citation range)"
+                if before_p.species in unsupported_species else ""
             )
-            self._log(
-                f"  {term['species'] or '(unlabeled)'} ({term['polarity']}): "
-                f"straggle {before_term['straggle_um']:.4f} -> {term['straggle_um']:.4f} um, "
-                f"peak {before_term['peak_conc_cm3']:.3e} -> {term['peak_conc_cm3']:.3e} cm^-3"
-                f"{flag}"
-            )
+            before_straggle = before_p.model_params.get("straggle_um")
+            after_straggle = after_p.model_params.get("straggle_um")
+            if before_straggle is not None and after_straggle is not None:
+                self._log(
+                    f"  {before_p.species or '(unlabeled)'} ({before_p.polarity}): "
+                    f"straggle {before_straggle:.4f} -> {after_straggle:.4f} um{flag}"
+                )
+            else:
+                self._log(
+                    f"  {before_p.species or '(unlabeled)'} ({before_p.polarity}): "
+                    f"no defined shape to anneal{flag}"
+                )
 
-        self.last_physics_status = after.physics_status
+        self.last_physics_status = physics_status
         self._update_process_buttons()
 
     def _make_measurement_panel(
@@ -4553,7 +4608,7 @@ class TCADApplication(tk.Tk):
                 "Re-applying the same doping to the current geometry before "
                 "measuring.\n"
             )
-            if not self.run_doping(silent=True):
+            if not self.run_doping(silent=True, reattach=True):
                 return
             doped_result = self.last_doped_result
 
@@ -4692,16 +4747,25 @@ class TCADApplication(tk.Tk):
                     fixed_contacts={gnd_contact: 0.0},
                 )
             else:
-                # A throwaway, single-call WaferState built ONLY from
-                # this measurement's own current doped_result -- not
-                # self.wafer_state (that cross-step accumulation
-                # mechanism doesn't exist on the GUI yet; wiring it in
-                # is Task 9's job, per 2026-09-03-dopant-state-
-                # unification). This preserves today's real behavior
-                # (a MEASURE reflects the single most-recently-applied
-                # doping call) while switching the write mechanism to
-                # the new per-node WaferState<->DevSim pipeline.
-                state = advance_wafer_state(None, doped_result, "doping")
+                # The real, cross-step accumulated WaferState (Task 9)
+                # -- every DopantProfile ever applied via run_doping(),
+                # kept geometry-current by _sync_wafer_state_geometry()
+                # after every process step. Using this instead of a
+                # throwaway single-profile state means a MEASURE click
+                # now reflects the wafer's FULL doping history (e.g.
+                # doping -> etch -> doping), not just the single most-
+                # recently-applied call. self.wafer_state is expected to
+                # be non-None here (the guard at the top of this method
+                # already requires self.last_doped_result, which is only
+                # ever set inside run_doping() alongside self.wafer_state
+                # -- the very first such call can never be reattach=True,
+                # so wafer_state is populated by then); the throwaway
+                # fallback below only guards a startup path this method
+                # should never actually reach.
+                state = (
+                    self.wafer_state if self.wafer_state is not None
+                    else advance_wafer_state(None, doped_result, "doping")
+                )
                 apply_doping(
                     imported.device, region, state,
                     length_scale_to_cm=length_scale_to_cm,
@@ -5038,40 +5102,52 @@ class TCADApplication(tk.Tk):
 
         module = devsim_backend.require_devsim()
 
-        # A device this panel just built via resolve_electrode_pins()
-        # carries no doping unless the Doping panel was run first on
-        # the SAME mesh (its ProcessResult is rebuilt fresh from
-        # self.last_final_mesh, doping is not stored in the mesh file
-        # itself). CreateSiliconPotentialOnly's own equations reference
-        # NetDoping unconditionally, so a solve needs SOME NetDoping
-        # registered on the Si region -- if none was applied, this is
-        # honestly zero (intrinsic Si), not an invented dopant level.
-        doping = None
-        doped_result = self.last_doped_result
-        if (
-            doped_result is not None
-            and getattr(doped_result, "doping", None) is not None
-            and getattr(doped_result, "volume_mesh_path", None) == self.last_final_mesh
-        ):
-            doping = doped_result.doping
-            doping_process_result = doped_result
-        if doping is None:
-            doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=0.0)])
-            self._log("\n(No doping profile applied yet -- Si region treated as intrinsic, NetDoping=0, for this solve.)\n")
-            # Same real-mesh-file construction resolve_electrode_pins()
-            # and run_doping()/run_measurement() already use -- not
-            # stored across those methods, so rebuilt here (cheap: a
-            # meshio read, no ViennaPS simulation) and paired with the
-            # synthetic intrinsic DopingProfile above via the same
-            # dataclasses.replace() pattern every apply_*_doping() in
-            # tcad/physics/doping.py already uses.
-            doping_process_result = _dataclasses_replace(
-                build_process_result({"final_mesh": self.last_final_mesh, "snapshots": []}),
-                doping=doping,
-            )
-
         try:
-            state = advance_wafer_state(None, doping_process_result, "doping")
+            # self.wafer_state (Task 9) is the real, cross-step
+            # accumulated doping+geometry state -- already reflects
+            # EVERY DopantProfile ever applied via run_doping(),
+            # geometry-gated against the CURRENT mesh regardless of
+            # whether self.last_doped_result itself still matches
+            # self.last_final_mesh (that staleness only matters for
+            # last_doped_result's own mesh-reading role -- see
+            # _sync_wafer_state_geometry()). Zero accumulated profiles
+            # already means net_doping_at() reports 0 everywhere
+            # (nothing to sum), which IS the correct "intrinsic Si"
+            # behavior -- no separate synthetic DopingProfile is needed
+            # for that case any more.
+            if self.wafer_state is not None:
+                state = self.wafer_state
+                if not state.dopant_profiles:
+                    self._log(
+                        "\n(No doping profile applied yet -- Si region "
+                        "treated as intrinsic, NetDoping=0, for this solve.)\n"
+                    )
+            else:
+                # Defensive fallback only -- should be unreachable in
+                # practice: resolve_electrode_pins() already requires
+                # self.last_final_mesh, and every one of this GUI's 8
+                # real mesh-producing sites populates self.wafer_state
+                # via _sync_wafer_state_geometry() before this method
+                # can ever run. Kept so a startup-order surprise fails
+                # softly (intrinsic Si) instead of crashing.
+                doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=0.0)])
+                self._log(
+                    "\n(No doping profile applied yet -- Si region "
+                    "treated as intrinsic, NetDoping=0, for this solve.)\n"
+                )
+                # Same real-mesh-file construction resolve_electrode_pins()
+                # and run_doping()/run_measurement() already use -- not
+                # stored across those methods, so rebuilt here (cheap: a
+                # meshio read, no ViennaPS simulation) and paired with the
+                # synthetic intrinsic DopingProfile above via the same
+                # dataclasses.replace() pattern every apply_*_doping() in
+                # tcad/physics/doping.py already uses.
+                doping_process_result = _dataclasses_replace(
+                    build_process_result({"final_mesh": self.last_final_mesh, "snapshots": []}),
+                    doping=doping,
+                )
+                state = advance_wafer_state(None, doping_process_result, "doping")
+
             apply_doping(imported.device, "Si", state, length_scale_to_cm=1.0e-4)
 
             gate_region = regions_by_name.get(gate_contact)
@@ -6169,6 +6245,7 @@ class TCADApplication(tk.Tk):
         pre_etch_mesh = self.last_final_mesh
         resist_spans = self._resist_spans_um()
         self.last_final_mesh = result.get("final_mesh")
+        self._sync_wafer_state_geometry(recipe, result)
         if pre_etch_mesh and result.get("final_mesh"):
             from tcad.physics.doping import implant_windows_from_mask_spans
             open_windows_domain_um = [
@@ -7476,6 +7553,7 @@ class TCADApplication(tk.Tk):
         self.wafer = Wafer()
         self.recipe = BoschRecipe()
         self.last_doped_result = None
+        self.wafer_state = None
         self.last_final_mesh = None
         self._viewer_depth_budget_um = {}
         self.history = []

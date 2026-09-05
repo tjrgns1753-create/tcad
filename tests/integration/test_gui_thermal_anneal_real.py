@@ -1,17 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """GUI: two Gaussian Implant clicks accumulate into two independent
-DopantProfile terms on the real wafer state, and ANNEAL widens both --
-by their own, DIFFERENT species' real D(T) -- with the change directly
-observable in the log. Real TCADApplication (window withdrawn), real
-ViennaPS.
+DopantProfiles on the real, cross-step WaferState (Task 9,
+dopant-state-unification), and ANNEAL widens both -- by their own,
+DIFFERENT species' real D(T) -- with the change directly observable in
+the log. Real TCADApplication (window withdrawn), real ViennaPS.
+
+REWRITTEN for the new architecture: multi-implant accumulation is no
+longer DopingRegion.gaussian_terms / apply_gaussian_implant_doping's
+own `existing=` kwarg (both removed, Task 4) -- it is now
+self.wafer_state.dopant_profiles, populated by advance_wafer_state()
+inside run_doping() (Task 9). apply_thermal_anneal() (Task 3) now
+dispatches per-profile and operates on a profile tuple directly
+(returning (updated_profiles, physics_status)), not a ProcessResult.
 
 Also demonstrates, with real printed numbers read from real function
 results (not a separate fabricated display):
   - higher anneal temperature alone -> more broadening (isolated,
-    same starting profile, same time, only T varied)
+    same starting profiles, same time, only T varied)
   - longer anneal time alone -> more broadening (isolated, same
-    starting profile, same temperature, only t varied)
+    starting profiles, same temperature, only t varied)
   - higher implant dose -> higher recorded peak concentration
   - a SECOND anneal (via a second real GUI click) further widens BOTH
     the B and the P profile already on the wafer -- neither is reset
@@ -68,15 +76,11 @@ def main():
         app.dope_gauss_donor_species_var.set("")
         app.dope_gauss_acceptor_species_var.set("B")
         assert app.run_doping(silent=True)
-        # A single, non-accumulated implant legitimately keeps
-        # gaussian_terms == None (apply_gaussian_implant_doping's own
-        # documented legacy shape -- confirmed against
-        # tests/unit/test_gaussian_implant_terms_mock.py, which asserts
-        # exactly this for a first call with existing=None); "1 term"
-        # is read the same way run_doping()'s own summary line does.
-        after_first = app.last_doped_result.doping.regions[0].gaussian_terms or [1]
-        assert len(after_first) == 1
-        print(f"[1/6] first implant (B) applied: {len(after_first)} term")
+
+        assert app.wafer_state is not None
+        assert len(app.wafer_state.dopant_profiles) == 1
+        print(f"[1/6] first implant (B) applied via advance_wafer_state: "
+              f"{len(app.wafer_state.dopant_profiles)} profile(s)")
 
         # Second implant: P (donor) -- must ADD, not replace
         app.dope_gauss_position_var.set(1.0)
@@ -86,23 +90,22 @@ def main():
         app.dope_gauss_donor_species_var.set("P")
         app.dope_gauss_acceptor_species_var.set("")
         assert app.run_doping(silent=True)
-        terms = app.last_doped_result.doping.regions[0].gaussian_terms
-        species_present = {t["species"] for t in terms}
+        species_present = {p.species for p in app.wafer_state.dopant_profiles}
         assert species_present == {"B", "P"}, (
-            f"second implant must ADD a term, not replace -- got species "
+            f"second implant must ADD a profile, not replace -- got species "
             f"{species_present}"
         )
         print(f"[2/6] second implant (P) added: both B and P present, "
-              f"{len(terms)} terms total")
+              f"{len(app.wafer_state.dopant_profiles)} profiles total")
 
         # -- higher implant dose -> higher recorded peak concentration --
         # B was implanted at 1.0e18 cm^-3, P at 2.0e18 cm^-3 (set above).
-        # Both land in the SAME real DopantProfile term list read back
-        # from the real result -- this is the real dose each term
+        # Both land as independent DopantProfiles in the real,
+        # accumulated wafer_state -- this is the real dose each profile
         # carries, not a re-derived or fabricated number.
-        by_species = {t["species"]: t for t in terms}
-        dose_b = by_species["B"]["peak_conc_cm3"]
-        dose_p = by_species["P"]["peak_conc_cm3"]
+        by_species = {p.species: p for p in app.wafer_state.dopant_profiles}
+        dose_b = by_species["B"].model_params["peak_conc_cm3"]
+        dose_p = by_species["P"].model_params["peak_conc_cm3"]
         assert dose_p > dose_b, (
             f"higher implant dose (P, 2.0e18) must record a higher peak "
             f"concentration than the lower dose (B, 1.0e18) -- got "
@@ -111,20 +114,18 @@ def main():
         print(f"[3/6] higher implant dose -> higher recorded concentration: "
               f"B(dose 1.0e18)={dose_b:.3e} cm^-3 < P(dose 2.0e18)={dose_p:.3e} cm^-3")
 
-        pre_anneal_result = app.last_doped_result  # stable snapshot; apply_thermal_anneal never mutates in place
+        # Stable snapshot; apply_thermal_anneal never mutates in place --
+        # it returns a brand new tuple of profiles each call.
+        pre_anneal_profiles = app.wafer_state.dopant_profiles
 
         # -- anneal temperature increase alone -> more broadening --
-        # (same starting profile, same time, only T varied -- isolates
+        # (same starting profiles, same time, only T varied -- isolates
         # the temperature effect from the time effect, both real calls
         # through the exact function the ANNEAL button itself calls)
-        lower_t = apply_thermal_anneal(pre_anneal_result, 700.0, 600.0)
-        higher_t = apply_thermal_anneal(pre_anneal_result, 1100.0, 600.0)
-        lower_t_straggle = {
-            t["species"]: t["straggle_um"] for t in lower_t.doping.regions[0].gaussian_terms
-        }
-        higher_t_straggle = {
-            t["species"]: t["straggle_um"] for t in higher_t.doping.regions[0].gaussian_terms
-        }
+        lower_t, _ = apply_thermal_anneal(pre_anneal_profiles, 700.0, 600.0)
+        higher_t, _ = apply_thermal_anneal(pre_anneal_profiles, 1100.0, 600.0)
+        lower_t_straggle = {p.species: p.model_params["straggle_um"] for p in lower_t}
+        higher_t_straggle = {p.species: p.model_params["straggle_um"] for p in higher_t}
         assert higher_t_straggle["B"] > lower_t_straggle["B"]
         assert higher_t_straggle["P"] > lower_t_straggle["P"]
         print(f"[4/6] higher anneal temperature alone -> more broadening (t=600s fixed): "
@@ -132,30 +133,29 @@ def main():
               f"P straggle @700C={lower_t_straggle['P']:.4f}um < @1100C={higher_t_straggle['P']:.4f}um")
 
         # -- anneal time increase alone -> more broadening --
-        # (same starting profile, same temperature, only t varied)
-        shorter_t = apply_thermal_anneal(pre_anneal_result, 900.0, 60.0)
-        longer_t = apply_thermal_anneal(pre_anneal_result, 900.0, 3600.0)
-        shorter_straggle = {
-            t["species"]: t["straggle_um"] for t in shorter_t.doping.regions[0].gaussian_terms
-        }
-        longer_straggle = {
-            t["species"]: t["straggle_um"] for t in longer_t.doping.regions[0].gaussian_terms
-        }
+        # (same starting profiles, same temperature, only t varied)
+        shorter_t, _ = apply_thermal_anneal(pre_anneal_profiles, 900.0, 60.0)
+        longer_t, _ = apply_thermal_anneal(pre_anneal_profiles, 900.0, 3600.0)
+        shorter_straggle = {p.species: p.model_params["straggle_um"] for p in shorter_t}
+        longer_straggle = {p.species: p.model_params["straggle_um"] for p in longer_t}
         assert longer_straggle["B"] > shorter_straggle["B"]
         assert longer_straggle["P"] > shorter_straggle["P"]
         print(f"[5/6] longer anneal time alone -> more broadening (T=900C fixed): "
               f"B straggle @60s={shorter_straggle['B']:.4f}um < @3600s={longer_straggle['B']:.4f}um, "
               f"P straggle @60s={shorter_straggle['P']:.4f}um < @3600s={longer_straggle['P']:.4f}um")
 
-        straggle_before = {t["species"]: t["straggle_um"] for t in terms}
+        straggle_before = {
+            p.species: p.model_params["straggle_um"] for p in app.wafer_state.dopant_profiles
+        }
 
         # First real GUI anneal click -- must widen BOTH, by DIFFERENT amounts (real, different D(T))
         app.anneal_temp_var.set(900.0)
         app.anneal_time_var.set(600.0)
         app._on_thermal_anneal_clicked()
 
-        terms_after = app.last_doped_result.doping.regions[0].gaussian_terms
-        straggle_after = {t["species"]: t["straggle_um"] for t in terms_after}
+        straggle_after = {
+            p.species: p.model_params["straggle_um"] for p in app.wafer_state.dopant_profiles
+        }
 
         assert straggle_after["B"] > straggle_before["B"], "B must broaden"
         assert straggle_after["P"] > straggle_before["P"], "P must broaden"
@@ -172,9 +172,10 @@ def main():
         app.anneal_time_var.set(300.0)
         app._on_thermal_anneal_clicked()
 
-        terms_after_2 = app.last_doped_result.doping.regions[0].gaussian_terms
-        species_after_2 = {t["species"] for t in terms_after_2}
-        straggle_after_2 = {t["species"]: t["straggle_um"] for t in terms_after_2}
+        species_after_2 = {p.species for p in app.wafer_state.dopant_profiles}
+        straggle_after_2 = {
+            p.species: p.model_params["straggle_um"] for p in app.wafer_state.dopant_profiles
+        }
 
         assert species_after_2 == {"B", "P"}, (
             f"a second anneal must not drop either species -- got {species_after_2}"
@@ -195,11 +196,11 @@ def main():
         print("both species' before/after straggle values are in the real log, "
               "for both the first and the second anneal")
 
-        print("\nGUI: Gaussian Implant clicks accumulate real DopantProfile "
-              "terms on the wafer, and ANNEAL produces a real, "
+        print("\nGUI: Gaussian Implant clicks accumulate real DopantProfiles "
+              "on self.wafer_state, and ANNEAL produces a real, "
               "species-dependent, log-observable physical change -- "
               "monotonic in temperature, monotonic in time, repeatable, "
-              "and never erases an existing term.")
+              "and never erases an existing profile.")
     finally:
         app.destroy()
 
