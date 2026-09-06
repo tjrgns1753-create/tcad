@@ -405,7 +405,145 @@ an earlier implant's junction can go under-resolved (including a real
 this project's own documented silent-wrong-current failure class (see
 Development Rules above). Explicitly ruled out of this plan's scope
 during final review; tracked as a standalone follow-up task, not fixed
-here.
+here. **Still not fixed** after the dopant-state-unification plan below
+(explicitly out of that plan's scope too) — and now reachable through
+ALL FOUR doping kinds via real cross-step accumulation, not just
+Gaussian Implant, since accumulation is no longer Gaussian-specific.
+
+**Superseded by the dopant-state-unification plan (see Completed,
+below): `gaussian_terms`/`existing=` were retired entirely.** Multi-
+profile accumulation moved from a Gaussian-Implant-only,
+`DopingRegion`-level list to `WaferState.dopant_profiles`, a real,
+cross-step state threaded through every process step (any doping kind,
+not just Gaussian) via `advance_wafer_state()`. The `UNVERIFIED`-
+citation-window disclosure this stage established was migrated forward
+(not dropped) into the new architecture's own `physics_status`
+mechanism — see below for the real, load-bearing gap this migration
+briefly introduced and how it was found and fixed.
+
+### Dopant-state-unification (SDD, 11 tasks + one final-review fix wave)
+
+User-initiated architectural replacement of Stage A/B's own doping
+mechanism, triggered by a real, live-GUI observation ("doping renders as
+vertical stripes, not a depth gradient") that led to a much bigger
+finding: `ProcessResult.doping` was a per-step declaration, never a real
+cross-step state, so process ORDER couldn't genuinely affect a final
+device the way it does in a real fab. Design:
+`docs/superpowers/specs/2026-09-03-dopant-state-unification-design.md`
+(supersedes only §2 of the 2026-08-25 base design). Plan:
+`docs/superpowers/plans/2026-09-03-dopant-state-unification.md`. Adds
+**THE STATE INVARIANT** as a project-level rule alongside THE INVARIANT
+above: `WaferState(t) -> Process Physics -> WaferState(t+1)` — every
+physical quantity is either preserved (physical-state preservation, not
+verbatim data copy) or transformed by real physics when a step touches
+it. Also the direct origin of this file's own "Core Physics Requirement"
+section near the top (added during this plan's own brainstorming,
+applies project-wide, not just to doping).
+
+Central mechanism: `WaferState.net_doping_at(x, y)` is a real THREE-WAY
+dispatch, never a two-way `material != host_material -> 0`: (1) apply
+the profile's real `concentration_at()` if `host_material` is currently
+EXPOSED at that x (`exposed_material_at()`, a column-max-at-x surface
+check); (2) a real, physically-meaningful geometry-gated ZERO if the
+responsible category is classified `"removal"` (etching — a fully-
+removed column has no exposed material there at all); (3)
+`UNSUPPORTED_BY_MODEL` — never a silent zero — for a `"conversion"`
+category (oxidation, Si->SiO2) or any UNCLASSIFIED category (the
+default, deliberately, per this project's own "never silently decide"
+rule). `DopantProfile` became model-agnostic
+(species/polarity/concentration_at/host_material/model/model_params/
+thermal_history/source); `apply_thermal_anneal()` became a per-model
+dispatch registry (`ANNEAL_HANDLERS`, `gaussian_v1` the only registered
+model); `advance_wafer_state(prior_state, result, category)` +
+`WaferState.from_process_result()` is the real, MESH-FILE-based (not
+live-domain — the GUI never holds one across clicks) accumulator; the
+device layer's `apply_doping()` writes real per-node DevSim `NetDoping`
+via `get_node_model_values`/`set_node_values`, replacing symbolic
+per-kind equation strings entirely; the GUI's `self.wafer_state` is now
+the real, persistent, cross-step-accumulating attribute every real
+process step keeps current
+(`_sync_wafer_state_geometry()`, all 8 real geometry-producing sites).
+
+**Three real ViennaPS/DevSim acceptance tests prove the architecture,
+strictly x-only (this Gaussian model still ignores `depth_um`
+everywhere — no depth/junction-depth claim anywhere in any of them):**
+CE-1 (`test_ce1_order_sensitive_geometry_real.py`) — whichever species
+existed at a REAL, mesh-verified etched location is erased there
+regardless of order, while a different species placed elsewhere
+afterward determines that location's final polarity. CE-2
+(`test_ce2_oxidation_conversion_unsupported_real.py`) — a real LOCOS
+oxidation's Si->SiO2 conversion reports `UNSUPPORTED_BY_MODEL` at a
+fixed, mesh-verified coordinate, never a silent 0, while a mask-
+protected coordinate elsewhere stays fully computable (the partial-
+aggregate contract). CE-3
+(`test_ce3_implant_anneal_etch_implant_real.py`) — the full capstone:
+implant -> anneal -> etch -> second implant, through the REAL production
+GUI's own doping/anneal handlers (not stand-ins), ending in a real
+per-node DevSim cross-check (132 real nodes, zero mismatches) confirming
+the final device reflects both profiles.
+
+Each of the 11 tasks was independently task-reviewed; 2 needed a fix
+round (CE-2's own first draft used a boolean geometry cut with ZERO
+detection power for a failed mask — fixed with a real, registered,
+fixed-depth etch, verified by a decisive negative-control run that
+widened the mask and confirmed the fixed check now genuinely fails
+there; Task 8's device-layer rewrite needed 3 fixes: `physics_status`
+falsely flagging a profile its own RECOVERY mechanism had just
+resolved, zero committed test coverage for that RECOVERY mechanism, and
+a real, measured O(nodes×cells×profiles) performance cost). A final
+whole-branch review (Opus, 4 passes over the full 14-commit range) found
+the deeper, cross-cutting pattern no single task's own review could see:
+**the real `UNSUPPORTED_BY_MODEL` disclosure contract was enforced
+rigorously INSIDE `WaferState`, then quietly eroded at every boundary it
+crossed on the way to a user** — 9 Important findings, one consolidated
+fix wave (commit `7854c85`), one scoped re-review (verdict: all findings
+addressed; found 2 more Minor issues, one fixed directly — commit
+`56c492f` — one parked as genuinely-inert-today debt). Concretely fixed
+in the wave: Stage B's own `UNVERIFIED` disclosure had been silently
+lost in the schema migration (restored, kept genuinely distinct from
+`UNSUPPORTED_BY_MODEL`, never conflated); `apply_doping()`'s RECOVERY
+mechanism was silently converting a real oxidation CONVERSION into a
+full, unflagged apply (narrowed to only suppress the disclosure for a
+genuine REMOVAL, never a conversion); `apply_doping()`'s returned
+`physics_status` was discarded by every GUI caller (now captured into
+`self.last_physics_status`); the GUI's Implant Windows measurement
+(which deliberately still bypasses `WaferState` for its own, separately-
+verified 1e20 cm⁻³ convergence solution) now logs which OTHER
+accumulated profiles the canvas overlay shows but this specific solve
+does not include; the color overlay was painting a genuine geometry-
+gated zero (CE-1's own proven real erasure) as n-type blue (now a third,
+distinct marker); `net_doping_at()`'s real O(n_profiles) redundancy was
+hoisted (11x-77x measured speedup, byte-identical real DevSim values).
+
+Full regression after the fix wave + re-review fix: 89 passed, 4 failed.
+3 are the long-documented pre-existing failures below. The 4th,
+`test_mosfet_body_bias_real.py`, is NEW to that list but was
+independently investigated by BOTH the controller and the fix-wave's own
+implementer, in isolation and against the pre-fix-wave commit — passed
+cleanly every time except once, embedded in the full sequential suite —
+concluded a recurrence of this project's own already-open "DevSim
+cross-solve sensitivity" item below, not a regression this plan
+introduced. Add it to that same watch list.
+
+**Real, disclosed limitations this plan does NOT solve, carried forward
+as OPEN items below rather than silently left only in a task's own SDD
+report:** `WaferState.exposed_material_at()`'s column-max-at-x surface
+check has no y-awareness at all, and — unlike `apply_doping()`, which
+has a DevSim-node-membership rescue available for free — the GUI's own
+color overlay (Task 10) has NO such rescue, so a leftover, never-
+stripped litho Mask (a separate, pre-existing gap, item 1 below) can
+make the ENTIRE overlay render as "unsupported" gray-hatch even though
+the real device would solve correctly. `WaferState.last_step_category`
+is a single FLAT field (the most-recently-run step's category only, not
+per-location provenance) — CE-1's own test found this, and the final
+review confirmed real GUI usage (etch, then dope elsewhere, then view)
+makes it materially more significant than a test-scoping question: a
+user gets a real, safe, but information-losing `UNSUPPORTED_BY_MODEL`
+for an etched location once ANY later unclassified-category step (e.g.
+another doping call) runs, with no way to query the intermediate state
+the way CE-1's own test could. Both now carry a real docstring at their
+own definition site (`tcad/physics/wafer_state.py`) in addition to this
+entry.
 
 Full regression after the fix wave + docstring correction: **80
 passed / 3 failed / 0 skipped**, identical 3 pre-existing DevSim-
@@ -414,9 +552,9 @@ failures.
 
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
-Current regression: `tests/run_regression.py` → **80 passed, 3 failed,
+Current regression: `tests/run_regression.py` → **89 passed, 3 failed,
 0 skipped**, measured on Windows with real ViennaPS 4.6.2 + DevSim
-(2026-09-03, post Stage B).
+(2026-09-07, post dopant-state-unification).
 
 The 3 failures are pre-existing and were confirmed to fail at a clean
 HEAD in a separate git worktree, so they are not caused by any recent
@@ -426,7 +564,13 @@ I-V points; they differ in the 3rd significant digit at ~1e-27 A, i.e.
 solver noise around zero, so the assertion is stricter than the solver
 is deterministic), `test_robust_iv_sweep_real` and
 `test_gui_measurement_doping_kinds_real` (real `Convergence failure!`,
-OPEN item 2 territory).
+OPEN item 2 territory). A 4th, `test_mosfet_body_bias_real.py`, has been
+observed to intermittently join this list when run embedded in the full
+suite (real `RuntimeError: Minimum step size too small` after 1400+s of
+real solving) while passing cleanly every time it's been run standalone
+or against a clean commit — treat it as the same class of marginal-
+convergence flakiness as the other 3 (see "DevSim cross-solve
+sensitivity" below) if it shows up, not a fresh regression to chase.
 
 **Do not quote an earlier "33 passed, 0 failed" from this file as
 evidence that the suite is green** — that number was written from a
@@ -1195,6 +1339,59 @@ the Windows cp949 console, which truncates the whole run — use
    resist (lift-off geometry)"), since `run_metallization()` sets the
    same unconditional `mask_material` that excludes the resist entirely.
 
+4. **`WaferState.exposed_material_at()`'s surface heuristic has no
+   DevSim-node rescue outside `apply_doping()` — the GUI's own color
+   overlay is exposed.** Found during the dopant-state-unification
+   plan's own final whole-branch review (see Completed, "Dopant-state-
+   unification"), not fixed there (correctly parked — the mechanism
+   itself would need a real `_Cell` schema change, e.g. adding `y_min`,
+   to Task 2's own already-approved file). `exposed_material_at(x)` picks
+   whichever cell has the greatest `y_max` at that x — a real "what's on
+   top" check, with NO y-awareness at all (it cannot tell "bulk Si
+   30um below a thin leftover Mask" from "this whole column is Mask").
+   `apply_doping()` (the DevSim device layer) has a rescue available for
+   free: every node it iterates is DEFINITIONALLY a member of the real
+   DevSim region being written, which is strictly stronger, node-exact
+   ground truth than the heuristic — confirmed sound, real evidence,
+   `test_doping_mapping_recovery_real.py`. The GUI's `_doping_color_
+   segments()` (Task 10) has NO such rescue: it queries `WaferState.
+   net_doping_at()` directly, with no DevSim node iteration underneath
+   it. Confirmed by real measurement (same test file): a leftover litho
+   Mask over bulk Si makes `exposed_material_at()` report "Mask", not
+   "Si", at every x in that column — so ANY blanket-mask scenario (e.g.
+   a plain oxidation's own native-oxide seed, which covers the WHOLE
+   wafer — see the "MOSFET buildout"/oxidation entries above) can make
+   the ENTIRE overlay render as "unsupported" gray-hatch, even though
+   the real device (via `apply_doping()`'s own rescue) would solve
+   correctly. This is a real, live risk for GUI rendering specifically,
+   not a DevSim-solve risk — root cause is the leftover, never-stripped
+   litho Mask itself (item 3 above, "PR Strip removes nothing" — the
+   REAL fix is making PR Strip remove resist-derived Mask geometry, not
+   patching the overlay's own heuristic).
+
+5. **`WaferState.last_step_category` is a single FLAT field — real
+   provenance is lost once ANY later unclassified-category step runs.**
+   Also found during dopant-state-unification's final review (same
+   entry as above); disclosed at the field's own definition site
+   (`tcad/physics/wafer_state.py`) and in
+   `test_ce1_order_sensitive_geometry_real.py`'s own "Problem 3" section,
+   both added by that plan. The field records only "the category of the
+   MOST RECENTLY run process step" — not a per-location/per-profile
+   provenance history. A real, permanent removal (a genuine etch) is
+   only legible as a geometry-gated zero while `last_step_category` is
+   still `"etching"`; the moment ANY later unclassified-category step
+   runs (including a completely unrelated doping call elsewhere on the
+   wafer), a query against the etched location reports
+   `UNSUPPORTED_BY_MODEL` instead — safe (never a silently-wrong value)
+   but information-losing (the model genuinely knew the answer a moment
+   ago and no longer does). Confirmed materially significant for real
+   GUI usage, not just a test-scoping artifact: a user who etches, then
+   dopes elsewhere, then views the canvas hits this with no way to query
+   the intermediate state the way CE-1's own test could. Would need a
+   real per-location/per-profile provenance model to fix — a materially
+   bigger change than this plan's own scope, tracked here as a
+   standalone follow-up, not attempted.
+
 Minor/uncertain threads (not blocking, see investigation_log.md for
 each item's own "what remains uncertain" section if you need it):
 `pad_oxide_thickness_um`'s default only verified at one grid
@@ -1348,10 +1545,12 @@ confirming `build_process_result` read the real materials
 (`['Mask', 'Si']`) — not a stub — and NEW WAFER correctly disables the
 button again afterward.
 
-(Stage B additive update: Gaussian Implant clicks now ACCUMULATE via
-`existing=` instead of overwriting, and a new ANNEAL control widens
-every accumulated term by its own species' real D(T) — see Completed,
-"Stage B" for the physics and citation.)
+(Stage B added a real, cited D(T) ANNEAL control — see Completed,
+"Stage B" for the physics and citation. Its own `existing=`-based
+accumulation was Gaussian-Implant-only and has since been RETIRED —
+every doping kind now accumulates via `self.wafer_state.dopant_profiles`,
+kept current across every real process step; see Completed, "Dopant-
+state-unification".)
 
 A 2-terminal device-measurement panel was added last, going beyond the
 GUI's own original inventory into actual DevSim device simulation for
@@ -1545,12 +1744,20 @@ evidence before touching any code.
    tell resist-derived `Mask` apart from LOCOS's own hard mask — see
    `docs/investigation_log.md`, "PR Strip removes nothing".
 
-2. **Doping ↔ WaferState.** Independent donor+acceptor input for all 4
-   doping kinds, and `WaferState.dopant_profiles`, are DONE (see
-   Completed, "litho/doping/renderer plan" and "Stage A"). Still open:
-   wire that state into `resolve()` so a later process step's physics
-   can actually use it, the "No DevSim solve was run" popup firing
-   mid-MEASURE, and the invisible-by-default P/N color overlay — see
+2. **Doping ↔ WaferState — substantially DONE.** Independent
+   donor+acceptor input for all 4 doping kinds, `WaferState.
+   dopant_profiles` as the one real cross-step canonical state (not just
+   present but fully WIRED — GUI, device-layer DevSim writes, and the
+   color overlay all read from it now), and the P/N overlay's own
+   correctness are DONE (see Completed, "litho/doping/renderer plan",
+   "Stage A", and "Dopant-state-unification"). The overlay is still
+   invisible BY DEFAULT (`viewer_layer_var` defaults to `"geometry"`) —
+   that specific default-visibility question was never in scope for any
+   of those plans and remains open. Still open, confirmed unrelated to
+   the above: wiring doping state into `resolve()` so ETCH-RATE physics
+   can condition on doping level (a different physics question — current
+   etch models don't model dopant-dependent etch rate at all), and the
+   "No DevSim solve was run" popup firing mid-MEASURE — see
    `docs/investigation_log.md`, "Doping: five confirmed gaps".
 
 3. **Deposition renderer + mask policy.** Fix the renderer's `y_scale`
