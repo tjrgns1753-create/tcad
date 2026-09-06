@@ -103,6 +103,31 @@ def test_unregistered_model_is_flagged_not_silently_modified():
     assert any(e["material"] == "As" for e in physics_status["entries"])
 
 
+def test_unverified_out_of_citation_window_is_surfaced():
+    """Final-review Fix 1: a profile WAS widened by a registered handler
+    (gaussian_v1), but the temperature requested falls outside that
+    species' own cited D0/Ea validity window (Christensen et al. 2003:
+    P is valid 810-1100C) -- this must produce a distinct UNVERIFIED
+    entry, not be silently absorbed the way an unregistered-handler gap
+    is (that case is UNSUPPORTED_BY_MODEL, a different, already-tested
+    situation above)."""
+    p = _gaussian("P", "donor", 1.0e18, 1.0, 0.2)
+    updated, physics_status = apply_thermal_anneal((p,), temperature_c=1200.0, time_s=600.0)
+    p2 = updated[0]
+
+    print(f"P annealed @ 1200C (outside 810-1100C citation window): "
+          f"straggle 0.2 -> {p2.model_params['straggle_um']:.6f} um")
+    print(f"physics_status: {physics_status}")
+
+    assert p2.model_params["straggle_um"] > 0.2, "the anneal still runs (Arrhenius is continuous)"
+    assert physics_status is not None, "an out-of-window anneal must be disclosed, not silent"
+    assert physics_status["resolution"] == "UNVERIFIED"
+    entries = physics_status["entries"]
+    assert any(
+        e["material"] == "P" and e["resolution"] == "UNVERIFIED" for e in entries
+    ), f"expected a real UNVERIFIED entry for P, got {entries}"
+
+
 def test_900c_and_1000c_give_different_results():
     implant = _gaussian("P", "donor", 1.0e18, 0.0, 0.2)
     (low,), _ = apply_thermal_anneal((implant,), temperature_c=900.0, time_s=600.0)
@@ -119,12 +144,14 @@ def main():
     test_anneal_widens_every_profile_by_its_own_species_D()
     test_original_profile_untouched()
     test_unregistered_model_is_flagged_not_silently_modified()
+    test_unverified_out_of_citation_window_is_surfaced()
     test_900c_and_1000c_give_different_results()
     print("apply_thermal_anneal() dispatches each profile to its own "
           "model's registered anneal handler, widens every gaussian_v1 "
           "profile by its own species' real D(T) independently, flags "
           "(never silently skips or misapplies) an unregistered model, "
-          "and 900C != 1000C.")
+          "surfaces an out-of-citation-window anneal as UNVERIFIED "
+          "(final-review Fix 1), and 900C != 1000C.")
 
 
 if __name__ == "__main__":

@@ -27,6 +27,19 @@ Proves, with real printed evidence:
      across the whole node loop, even with 2 accumulated profiles --
      proving the hoist-and-memoize fix (Important #3), not merely
      "still passes".
+
+Final-review Fix 2 adds a SECOND, separate scenario
+(scenario_conversion_entry_survives, below): a real LOCOS oxidation
+(Si->SiO2 CONVERSION, not removal) genuinely consumes Si at a fixed x,
+while a real DevSim "Si" region node still exists there (bulk Si below
+the new oxide). RECOVERY still WRITES the real value there (unchanged
+behavior) -- but unlike the removal-shadowing scenario above (category
+"doping", UNCLASSIFIED, entries stay suppressed, physics_status stays
+None), this scenario's category is real "oxidation" (classified
+"conversion" in MATERIAL_CHANGE_KIND_BY_CATEGORY), so the entry must now
+SURVIVE into apply_doping()'s returned physics_status -- whether dopant
+segregated during real oxide growth is genuinely unknown, and RECOVERY
+writing a value does not resolve that uncertainty.
 """
 import sys
 import tempfile
@@ -35,14 +48,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import tcad.process.etching  # noqa: F401 -- registers etch models
+import tcad.process.oxidation  # noqa: F401 -- registers "oxidation"/"thermal"
 from tcad.backends.viennaps import session as viennaps_session
 from tcad.process import registry
 from tcad.mesh.viennaps_adapter import build_process_result
-from tcad.physics.doping import apply_uniform_doping
+from tcad.physics.doping import apply_uniform_doping, apply_gaussian_implant_doping
 from tcad.device.devsim import backend as devsim_backend
 from tcad.device.devsim.mesh_import import import_process_result
 from tcad.device.devsim.doping_mapping import apply_doping
 from tcad.physics.wafer_state_accumulation import advance_wafer_state
+from tcad.backends.viennaps.io import save_volume_mesh, register_locos_export
 
 assert viennaps_session.is_available(), "ViennaPS must be installed for this test"
 assert devsim_backend.is_available(), "DevSim must be installed for this test"
@@ -144,33 +159,34 @@ def main():
             net = devsim.get_node_model_values(device=imported.device, region="Si", name="NetDoping")
 
             distinct_x = len({round(x, 9) for x in xs})
-            # WaferState.net_doping_at() ITSELF (wafer_state.py, out of
-            # this task's scope, untouched) calls self.exposed_material_at
-            # once per matching-polarity profile inside _polarity_sum --
-            # i.e. len(state.dopant_profiles) calls per node, UNAVOIDABLY,
-            # every time apply_doping() calls state.net_doping_at(x_um,
-            # y_um) (once per node, unchanged by this fix). That baseline
-            # is subtracted out below so what remains isolates ONLY
-            # apply_doping()'s OWN call site (the RECOVERY loop's hoisted
-            # lookup) -- which the fix must bring down to at most once per
-            # DISTINCT x, from the old once-per-(node,profile).
-            baseline_from_net_doping_at = len(xs) * len(state.dopant_profiles)
+            # WaferState.net_doping_at() ITSELF calls self.exposed_material_at
+            # ONCE per node (final-review Fix 6 hoisted this OUT of the
+            # per-profile _polarity_sum loop, where it used to be called
+            # once per matching-polarity profile -- i.e. len(state.
+            # dopant_profiles) calls per node -- so this baseline is now
+            # len(xs), not len(xs) * len(state.dopant_profiles)). That
+            # baseline is subtracted out below so what remains isolates
+            # ONLY apply_doping()'s OWN call site (the RECOVERY loop's
+            # hoisted lookup, Important #3, unaffected by Fix 6) -- which
+            # must stay at most once per DISTINCT x.
+            baseline_from_net_doping_at = len(xs)
             own_calls = len(call_log) - baseline_from_net_doping_at
             print(f"[5/5] exposed_material_at called {len(call_log)} times total "
-                  f"({baseline_from_net_doping_at} unavoidably from WaferState's "
-                  f"OWN net_doping_at(), out of this task's scope) -> "
+                  f"({baseline_from_net_doping_at} from WaferState's OWN "
+                  f"net_doping_at(), now once per node after Fix 6's hoist) -> "
                   f"{own_calls} calls attributable to apply_doping()'s own RECOVERY "
                   f"loop, across {len(xs)} nodes x {len(state.dopant_profiles)} "
                   f"profiles ({len(xs) * len(state.dopant_profiles)} node-profile "
                   f"pairs the OLD, unhoisted code would have called it for there); "
                   f"distinct x values = {distinct_x}")
-            assert own_calls <= distinct_x, (
+            assert 0 <= own_calls <= distinct_x, (
                 f"apply_doping()'s own exposed_material_at lookup must be memoized "
                 f"to at most once per distinct x ({distinct_x}), but accounted for "
                 f"{own_calls} calls"
             )
-            assert own_calls < len(xs) * len(state.dopant_profiles), (
-                "must be strictly fewer calls than the old once-per-(node,profile) count"
+            assert len(call_log) < len(xs) * len(state.dopant_profiles), (
+                "must be strictly fewer TOTAL calls than the old once-per-(node,profile) "
+                "count from BOTH net_doping_at() and apply_doping()'s own RECOVERY loop"
             )
 
             # --- (3) the real, solved DevSim NetDoping at the bulk
@@ -222,5 +238,133 @@ def main():
               "per distinct x rather than recomputed per (node, profile).")
 
 
+# --- Final-review Fix 2: a SEPARATE, real CONVERSION scenario --------
+# Same real LOCOS oxidation+strip technique as Task 7's own
+# test_ce2_oxidation_conversion_unsupported_real.py (reused, not
+# re-derived -- each real integration test in this project keeps its
+# own copy of this helper, matching
+# test_gui_doping_color_overlay_real.py's own established pattern).
+CONV_GRID_UM = 0.2
+CONV_X_EXTENT_UM, CONV_Y_EXTENT_UM, CONV_SI_DEPTH_UM = 10.0, 8.0, 5.0
+CONV_WINDOW_HALF_UM = 1.0     # LOCOS open (growth) window is x in [-1.0, +1.0]
+CONV_X_UM = 0.0               # inside the open window -- genuinely converts to SiO2
+CONV_PAD_STRIP_DEPTH_UM = 0.19  # fixed ahead of time -- see the CE-2 test's own comment
+
+
+def _real_locos_oxidation_then_strip(tmp):
+    """Real LOCOS oxidation (masked, open window |x|<=1.0) followed by a
+    real mask + pad-oxide strip -- converts the open window's Si to
+    SiO2 permanently while restoring real Si everywhere else. Identical
+    recipe/technique to the CE-2 test (task-7)."""
+    step0 = registry.get("oxidation", "thermal")()
+    recipe0 = {
+        "_process_category": "oxidation", "_process_model_key": "thermal",
+        "mask_left_um": -CONV_WINDOW_HALF_UM, "mask_right_um": CONV_WINDOW_HALF_UM,
+        "mask_material": "Mask", "pr_thickness_um": 1.0,
+        "silicon_depth_um": CONV_SI_DEPTH_UM, "grid_delta_um": CONV_GRID_UM,
+        "x_extent_um": CONV_X_EXTENT_UM, "y_extent_um": CONV_Y_EXTENT_UM,
+        "oxidant": "Dry", "temperature_c": 900.0, "time_hours": 0.01,
+    }
+    step0.run(recipe0, tmp)
+
+    recipe1 = dict(recipe0)
+    recipe1["temperature_c"], recipe1["time_hours"] = 1100.0, 8.0
+    step1 = registry.get("oxidation", "thermal")(inherited_domain=step0.last_domain)
+    step1.run(recipe1, tmp)
+
+    module = viennaps_session.require_viennaps()
+    domain = step1.last_domain
+    domain.removeMaterial(module.Material.Mask)
+    register_locos_export(domain, [module.Material.Si, module.Material.SiO2], [False, True])
+
+    strip_step = registry.get("etching", "isotropic")(inherited_domain=domain)
+    strip_recipe = {
+        "material_rates": {"SiO2": -CONV_PAD_STRIP_DEPTH_UM, "Si": 0.0},
+        "default_rate": 0.0, "etch_time_s": 1.0,
+        "silicon_depth_um": CONV_SI_DEPTH_UM,
+    }
+    strip_result = strip_step.run(strip_recipe, tmp)
+    return {"final_mesh": strip_result["final_mesh"], "snapshots": []}
+
+
+def scenario_conversion_entry_survives():
+    with tempfile.TemporaryDirectory() as tmp:
+        # A real bare-Si wafer (no mask, no oxide) carrying a real
+        # Gaussian donor implant centered exactly at CONV_X_UM.
+        domain = viennaps_session.make_mask_spans(
+            grid_delta_um=CONV_GRID_UM, x_extent_um=CONV_X_EXTENT_UM,
+            y_extent_um=CONV_Y_EXTENT_UM, spans_um=[], mask_height_um=0.1,
+            substrate_depth_um=CONV_SI_DEPTH_UM + 1.0,
+        )
+        base_mesh = save_volume_mesh(domain, str(Path(tmp) / "base"), floor_depth_um=CONV_SI_DEPTH_UM)
+        base = build_process_result({"final_mesh": base_mesh, "snapshots": []})
+
+        doped = apply_gaussian_implant_doping(
+            base, region="Si", junction_axis="x", peak_position_um=CONV_X_UM,
+            straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P",
+        )
+        state1 = advance_wafer_state(None, doped, "doping")
+
+        oxidized = build_process_result(_real_locos_oxidation_then_strip(tmp))
+        state2 = advance_wafer_state(state1, oxidized, "oxidation")
+
+        converted = state2.exposed_material_at(CONV_X_UM)
+        print(f"[conversion scenario] exposed_material_at({CONV_X_UM}) after real "
+              f"LOCOS oxidation = {converted!r} (must NOT be 'Si' -- real field-oxide "
+              f"growth in the open window)")
+        assert converted != "Si", (
+            "fixture is broken: expected the real LOCOS open window to genuinely "
+            f"convert Si -> SiO2 at x={CONV_X_UM}, got exposed={converted!r}"
+        )
+
+        imported = import_process_result(
+            oxidized, mesh_name="conversion_mesh", device_name="conversion_device",
+            contact_regions=["Si"], contact_axis="x",
+        )
+        try:
+            physics_status = apply_doping(imported.device, "Si", state2)
+
+            xs = devsim.get_node_model_values(device=imported.device, region="Si", name="x")
+            ys = devsim.get_node_model_values(device=imported.device, region="Si", name="y")
+            net = devsim.get_node_model_values(device=imported.device, region="Si", name="NetDoping")
+
+            # RECOVERY still WRITES the real value at the real DevSim
+            # "Si" node closest to CONV_X_UM, unchanged behavior -- only
+            # the DISCLOSURE differs (Fix 2 is additive to the returned
+            # physics_status, never a change to what gets written).
+            idx = min(range(len(xs)), key=lambda i: abs(xs[i] - CONV_X_UM))
+            print(f"[conversion scenario] closest real Si node: x={xs[idx]:.4f}, "
+                  f"y={ys[idx]:.4f}, DevSim NetDoping={net[idx]:.6e}")
+            assert net[idx] != 0.0, (
+                "RECOVERY must still write a real, non-zero value here -- Fix 2 "
+                "changes disclosure only, never the write"
+            )
+
+            print(f"[conversion scenario] apply_doping()'s returned physics_status "
+                  f"= {physics_status}")
+            assert physics_status is not None, (
+                "Fix 2: a CONVERSION-caused gap (real oxidation, Si no longer "
+                "exposed at this x) must SURVIVE into the returned physics_status, "
+                "not be silently suppressed the way a removal-caused gap is"
+            )
+            assert physics_status["resolution"] == "UNSUPPORTED_BY_MODEL"
+            assert any(
+                e["note"].startswith("Si no longer exposed")
+                and "conversion" in e["note"]
+                for e in physics_status["entries"]
+            ), f"expected a real conversion-classified gap entry, got {physics_status['entries']}"
+        finally:
+            devsim.delete_device(device=imported.device)
+            devsim.delete_mesh(mesh=imported.mesh)
+
+        print()
+        print("CONVERSION scenario VERIFIED (final-review Fix 2): RECOVERY still writes "
+              "the real value at a genuinely-existing DevSim node below newly-grown "
+              "oxide, but the UNSUPPORTED_BY_MODEL disclosure now correctly survives "
+              "to apply_doping()'s own returned physics_status instead of being "
+              "silently dropped just because a value was written.")
+
+
 if __name__ == "__main__":
     main()
+    scenario_conversion_entry_survives()

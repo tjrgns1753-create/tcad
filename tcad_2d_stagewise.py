@@ -122,6 +122,18 @@ _MAX_RENDERED_TRIANGLES = 2000
 # between the two so they can never disagree on the marker string.
 _DOPING_UNSUPPORTED_MARKER = "#unsupported"
 
+# Sentinel color for a bucket that IS fully computable (physics_status
+# is None) AND whose net_doping is genuinely, exactly 0.0 -- e.g. a
+# geometry-gated zero (a real etch erased this dopant here, CE-1) or
+# simply a location nothing was ever doped at. Final-review Fix 5:
+# before this, such a bucket fell into `N_COLOR if net_doping >= 0`,
+# rendering it identically to a real, non-zero n-type signal -- "we
+# know it's genuinely zero" is a different fact than "we know it's
+# n-type", and must look different on screen. Distinct from
+# _DOPING_UNSUPPORTED_MARKER ("we don't know") -- this one means "we
+# know, and it's zero".
+_DOPING_ZERO_MARKER = "#zero"
+
 
 def _nice_ruler_step(extent, target_ticks=8):
     """A "nice" (1/2/5 * 10^n) tick spacing for a ruler spanning
@@ -4327,6 +4339,14 @@ class TCADApplication(tk.Tk):
             entry["material"] for entry in (physics_status or {}).get("entries", [])
             if entry["resolution"] == "UNSUPPORTED_BY_MODEL"
         }
+        # Final-review Fix 1: this used to be unreachable (apply_thermal_
+        # anneal had no path to emit an UNVERIFIED entry at all) --
+        # doping.py now surfaces it whenever a registered handler's own
+        # D(T) had to extrapolate outside that species' cited window.
+        unverified_species = {
+            entry["material"] for entry in (physics_status or {}).get("entries", [])
+            if entry["resolution"] == "UNVERIFIED"
+        }
 
         self._log(
             f"\n================================\n"
@@ -4335,10 +4355,16 @@ class TCADApplication(tk.Tk):
             f"Applied to {len(updated_profiles)} existing profile(s):"
         )
         for before_p, after_p in zip(before_profiles, updated_profiles):
-            flag = (
-                " (UNSUPPORTED_BY_MODEL -- no anneal handler registered, or out of citation range)"
-                if before_p.species in unsupported_species else ""
-            )
+            # Two distinct situations (Core Physics Requirement: never
+            # blur two different kinds of uncertainty into one label) --
+            # no handler at all for this model, vs. a handler that DID
+            # run but whose D(T) is only an extrapolation.
+            if before_p.species in unsupported_species:
+                flag = " (UNSUPPORTED_BY_MODEL -- no anneal handler registered for this model)"
+            elif before_p.species in unverified_species:
+                flag = " (outside citation range -- UNVERIFIED)"
+            else:
+                flag = ""
             before_straggle = before_p.model_params.get("straggle_um")
             after_straggle = after_p.model_params.get("straggle_um")
             if before_straggle is not None and after_straggle is not None:
@@ -4746,6 +4772,41 @@ class TCADApplication(tk.Tk):
                     "continuation + DevSim's own drift-diffusion "
                     "tolerances + restoring bias ramp).\n"
                 )
+                # Final-review Fix 4: this solve reflects ONLY
+                # doped_result.doping (the single most-recent doping
+                # call) -- deliberately, this project's real 1e20 cm^-3
+                # convergence solution is not rewired to read the full
+                # self.wafer_state.dopant_profiles list. But Task 10's
+                # canvas color overlay DOES read that full accumulated
+                # list, so a wafer with e.g. an earlier Gaussian Implant
+                # PLUS this Implant Windows call would show both colors
+                # on screen while only the latter is actually solved --
+                # name that divergence honestly rather than let it go
+                # unremarked.
+                if self.wafer_state is not None:
+                    from tcad.physics.dopant_profile import dopant_profiles_from_doping_profile
+
+                    current_profiles = dopant_profiles_from_doping_profile(doped_result.doping)
+
+                    def _profile_identity(p):
+                        return (p.species, p.polarity, p.host_material, p.model, p.model_params)
+
+                    current_identities = [_profile_identity(p) for p in current_profiles]
+                    other_profiles = [
+                        p for p in self.wafer_state.dopant_profiles
+                        if _profile_identity(p) not in current_identities
+                    ]
+                    if other_profiles:
+                        species_list = ", ".join(
+                            p.species or "(unlabeled)" for p in other_profiles
+                        )
+                        self._log(
+                            f"NOTE: Implant Windows measurement reflects only its "
+                            f"own doping profile; {len(other_profiles)} other "
+                            f"accumulated profile(s) on this wafer (species: "
+                            f"{species_list}) are shown on the canvas overlay but "
+                            f"not included in this solve.\n"
+                        )
                 result = run_robust_pn_junction_iv_sweep(
                     device=imported.device, region=region,
                     all_contacts=imported.contacts,
@@ -4774,7 +4835,13 @@ class TCADApplication(tk.Tk):
                     self.wafer_state if self.wafer_state is not None
                     else advance_wafer_state(None, doped_result, "doping")
                 )
-                apply_doping(
+                # Final-review Fix 3: capture the returned physics_status
+                # (same self.last_physics_status attribute the anneal
+                # handler already uses) instead of discarding it -- a
+                # doping-mapping gap (e.g. a CONVERSION-caused RECOVERY,
+                # Fix 2) must be visible the same way every other real
+                # process step's physics_status already is.
+                self.last_physics_status = apply_doping(
                     imported.device, region, state,
                     length_scale_to_cm=length_scale_to_cm,
                     exclude_windows=exclude_windows, exclude_axis="x",
@@ -5156,7 +5223,10 @@ class TCADApplication(tk.Tk):
                 )
                 state = advance_wafer_state(None, doping_process_result, "doping")
 
-            apply_doping(imported.device, "Si", state, length_scale_to_cm=1.0e-4)
+            # Final-review Fix 3: same capture as run_measurement() above.
+            self.last_physics_status = apply_doping(
+                imported.device, "Si", state, length_scale_to_cm=1.0e-4,
+            )
 
             gate_region = regions_by_name.get(gate_contact)
             if gate_region != "SiO2":
@@ -6650,9 +6720,17 @@ class TCADApplication(tk.Tk):
                             # blue/red convention -- rendered as a
                             # distinct dim-gray hatch (sparser stipple
                             # than the gray50 used for a real sign)
-                            # instead of passed as a literal Tk color.
+                            # instead of passed as a literal Tk color. A
+                            # genuinely-zero bucket (final-review Fix 5)
+                            # is a DIFFERENT fact ("known, and zero" vs
+                            # "unknown") and gets its own distinct token
+                            # (FG_MUTED, not FG_DIM) and an even sparser
+                            # stipple so the three cases are all
+                            # visually distinguishable at a glance.
                             if color == _DOPING_UNSUPPORTED_MARKER:
                                 fill, stipple = Tokens.FG_DIM, "gray25"
+                            elif color == _DOPING_ZERO_MARKER:
+                                fill, stipple = Tokens.FG_MUTED, "gray12"
                             else:
                                 fill, stipple = color, "gray50"
                             canvas.create_rectangle(
@@ -6698,7 +6776,11 @@ class TCADApplication(tk.Tk):
         colored blue/red -- it gets _DOPING_UNSUPPORTED_MARKER instead,
         which the caller (_draw_real_mesh_result) maps to a visually
         distinct hatched-gray fill rather than blending it into the
-        normal p/n rendering.
+        normal p/n rendering. A bucket that IS fully computable but
+        whose net_doping is exactly 0.0 (a real geometry-gated erasure,
+        or simply never doped -- a different fact from "unknown") gets
+        _DOPING_ZERO_MARKER instead, its own distinct fill (final-review
+        Fix 5, 2026-09-03 dopant-state-unification).
 
         region_name is accepted for call-site compatibility (the
         caller derives it from self.last_doped_result.doping.regions to
@@ -6725,6 +6807,17 @@ class TCADApplication(tk.Tk):
             result = self.wafer_state.net_doping_at(center_um, 0.0)
             if result.physics_status is not None:
                 segments.append((x_lo_um, x_hi_um, _DOPING_UNSUPPORTED_MARKER))
+                continue
+            # Final-review Fix 5: a fully-computable, genuinely-zero
+            # bucket (a real geometry-gated erasure, or simply never
+            # doped) is a THIRD, distinct fact from either a real n-type
+            # or p-type signal -- must not render as blue just because
+            # 0 >= 0. Exact float compare is correct here (unlike an
+            # UNSUPPORTED gap, which is a status flag, a geometry-gated
+            # zero from _polarity_sum's "removal" branch is a literal
+            # Python 0.0, never a computed near-zero).
+            if result.net_doping == 0.0:
+                segments.append((x_lo_um, x_hi_um, _DOPING_ZERO_MARKER))
                 continue
             color = N_COLOR if result.net_doping >= 0 else P_COLOR
             segments.append((x_lo_um, x_hi_um, color))

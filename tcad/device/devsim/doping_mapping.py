@@ -118,6 +118,7 @@ from typing import Dict, List, Optional, TYPE_CHECKING
 
 from tcad.device.devsim import backend
 from tcad.mesh.interface import DopingProfile
+from tcad.physics.wafer_state import MATERIAL_CHANGE_KIND_BY_CATEGORY
 
 if TYPE_CHECKING:
     from tcad.physics.wafer_state import WaferState
@@ -182,9 +183,16 @@ def apply_doping(
     WaferState.net_doping_at), or None if none did -- mirrors the
     existing project convention of surfacing `physics_status` from a
     doping-application call. A gap that the RECOVERY step below actually
-    resolved (host_material == region) is never included here -- it
-    would be factually wrong to flag a contribution as excluded when it
-    was, in fact, written to the device.
+    resolved (host_material == region) is dropped from here for a
+    "removal" (or unclassified) `state.last_step_category` -- it would be
+    factually wrong to flag a contribution as excluded when it was, in
+    fact, written to the device, and a genuinely removed column has no
+    DevSim node here to iterate over in the first place. For a
+    "conversion" category (e.g. oxidation), the same value IS still
+    written, but the entry SURVIVES (final-review Fix 2): whether dopant
+    segregated during the real material conversion is genuinely unknown,
+    and that uncertainty must reach the caller even though RECOVERY wrote
+    its best-available value.
     """
     module = backend.require_devsim()
 
@@ -201,11 +209,26 @@ def apply_doping(
     # every profile with host_material == region whenever the exposure
     # gate excluded it -- the exact same condition net_doping_at() uses
     # to decide whether to emit such an entry in the first place), ALWAYS
-    # recovered at that same node. Used only to drop those now-stale
-    # entries (Important #2) -- an entry about some OTHER host_material
-    # (a profile this call site cannot recover, since it never targets
-    # `region`) is left untouched, since that one really is unresolved.
+    # recovered at that same node -- i.e. RECOVERY always WRITES a real
+    # value there. Used to drop those now-stale entries (Important #2),
+    # but only for a "removal" (or otherwise unclassified) category:
+    # final-review Fix 2 found that unconditionally dropping them was
+    # wrong for a CONVERSION category (oxidation, Si->SiO2) -- there, a
+    # real DevSim node genuinely still exists in the "Si" region below
+    # newly-grown oxide, RECOVERY correctly writes the best-available
+    # lateral value into it, but WHETHER dopant segregated during that
+    # oxide growth is genuinely unknown -- net_doping_at()'s own
+    # UNSUPPORTED_BY_MODEL flag for that case must survive to the
+    # caller, not be silently absorbed just because a value was written.
+    # For "removal" (etching), the old suppression stays correct: a
+    # fully-removed column has no DevSim node here to iterate over at
+    # all, so this path is never even reached for a real removal case --
+    # suppression there is a no-op safety net, not the load-bearing
+    # logic. An entry about some OTHER host_material (a profile this
+    # call site cannot recover, since it never targets `region`) is left
+    # untouched either way, since that one really is unresolved.
     region_gap_prefix = f"{region} no longer exposed"
+    change_kind = MATERIAL_CHANGE_KIND_BY_CATEGORY.get(state.last_step_category or "")
 
     # Memoized across the whole node loop (Important #3):
     # state.exposed_material_at(x_um) depends only on x_um, not on which
@@ -286,12 +309,18 @@ def apply_doping(
             else:
                 acceptor += magnitude
 
-        # Important #2: drop any gap entry that RECOVERY (just above)
-        # actually resolved -- see region_gap_prefix's own comment.
+        # Important #2 (narrowed by final-review Fix 2): drop any gap
+        # entry that RECOVERY (just above) actually resolved -- UNLESS
+        # the reason it was excluded is a "conversion" (this state's own
+        # last_step_category classified as such, e.g. oxidation), in
+        # which case RECOVERY's write is still real but genuinely
+        # UNCERTAIN and the disclosure must survive -- see
+        # region_gap_prefix's own comment.
         if result.physics_status is not None:
             all_entries.extend(
                 e for e in result.physics_status["entries"]
-                if not e.get("note", "").startswith(region_gap_prefix)
+                if change_kind == "conversion"
+                or not e.get("note", "").startswith(region_gap_prefix)
             )
 
         donors.append(donor)

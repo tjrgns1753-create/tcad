@@ -73,6 +73,19 @@ class WaferState:
     _cells: Tuple[_Cell, ...]
     _thin_x: Tuple[float, ...]
     dopant_profiles: Tuple[DopantProfile, ...] = ()
+    # The MOST RECENTLY run process step's category only -- NOT a
+    # per-location/per-profile provenance record (final-review Fix 7,
+    # 2026-09-03 dopant-state-unification). Consequence: if an
+    # unclassified-category step (e.g. "doping", which has no entry in
+    # MATERIAL_CHANGE_KIND_BY_CATEGORY) runs AFTER a removal-causing
+    # etch, a query against THIS state cannot recall that the earlier
+    # removal is still real and permanent -- _polarity_sum() will report
+    # UNSUPPORTED_BY_MODEL for that profile instead of the correct
+    # "genuinely removed, zero" (safe/conservative, never silently
+    # wrong, but it does lose real information). First characterized in
+    # tests/integration/test_ce1_order_sensitive_geometry_real.py's own
+    # "Problem 3" docstring section -- see that test for the fuller
+    # writeup.
     last_step_category: Optional[str] = None
 
     @staticmethod
@@ -255,14 +268,23 @@ class WaferState:
     def under_resolved_x(self) -> Tuple[float, ...]:
         return self._thin_x
 
-    def _polarity_sum(self, x_um: float, depth_um: float, polarity: str) -> Tuple[float, List[dict]]:
+    def _polarity_sum(
+        self, x_um: float, depth_um: float, polarity: str, exposed: Optional[str],
+    ) -> Tuple[float, List[dict]]:
+        """`exposed` is `self.exposed_material_at(x_um)`, computed ONCE
+        by the caller (net_doping_at, final-review Fix 6) -- it depends
+        only on x_um, not on which profile/polarity is being checked, so
+        recomputing it per profile (the old behavior) meant up to
+        2 * len(dopant_profiles) redundant full linear scans over
+        self._cells per net_doping_at() call. Passed in, never
+        recomputed here."""
         total = 0.0
         entries: List[dict] = []
         change_kind = MATERIAL_CHANGE_KIND_BY_CATEGORY.get(self.last_step_category or "")
         for p in self.dopant_profiles:
             if p.polarity != polarity:
                 continue
-            if self.exposed_material_at(x_um) == p.host_material:
+            if exposed == p.host_material:
                 total += p.concentration_at(x_um, depth_um)
                 continue
             # host_material absent here -- three-way test, spec Sec3.
@@ -301,8 +323,12 @@ class WaferState:
         those values, so splitting them apart either duplicates the
         work or hides the same status three different callers would
         otherwise have to remember to check separately)."""
-        donor, donor_gaps = self._polarity_sum(x_um, depth_um, "donor")
-        acceptor, acceptor_gaps = self._polarity_sum(x_um, depth_um, "acceptor")
+        # Computed ONCE here, not once per profile inside _polarity_sum
+        # (final-review Fix 6) -- exposed_material_at() is a full linear
+        # scan over self._cells and depends only on x_um.
+        exposed = self.exposed_material_at(x_um)
+        donor, donor_gaps = self._polarity_sum(x_um, depth_um, "donor", exposed)
+        acceptor, acceptor_gaps = self._polarity_sum(x_um, depth_um, "acceptor", exposed)
         entries = donor_gaps + acceptor_gaps
         physics_status = None
         if entries:

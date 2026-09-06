@@ -31,7 +31,7 @@ from typing import Dict, List, Optional, Tuple
 
 from tcad.mesh.interface import DopingProfile, DopingRegion, ProcessResult
 from tcad.physics.dopant_profile import DopantProfile
-from tcad.physics.values import Resolution
+from tcad.physics.values import Resolution, combine
 
 #: This project's own doping representation is defined along ONE
 #: lateral axis only (every existing kind -- uniform, step_junction,
@@ -316,6 +316,19 @@ def apply_thermal_anneal(
     step_junction_v1/implant_windows_v1 today, which this project has no
     anneal physics for.
 
+    A profile that WAS widened by a registered handler, but whose real
+    D(T) computation (tcad.physics.diffusion_model.arrhenius_diffusivity)
+    had to extrapolate outside that species' own cited validity window
+    (e.g. Christensen et al. 2003's measured 810-1100C range for P), is
+    separately reported UNVERIFIED (final-review Fix 1,
+    2026-09-03 dopant-state-unification) -- the anneal still runs (the
+    Arrhenius formula is physically continuous), it is just never
+    presented as equally trustworthy as an in-window result. Both
+    resolutions can appear together in one returned physics_status,
+    distinguished by each entry's own "resolution" field -- exactly how
+    WaferState.net_doping_at() already reports its own two distinct gap
+    reasons.
+
     Depth/junction-depth evolution is NOT computed by any handler this
     project registers today -- see this module's own
     DEPTH_EVOLUTION_RESOLUTION constant.
@@ -344,9 +357,20 @@ def apply_thermal_anneal(
             })
             updated.append(with_event)
             continue
-        updated.append(handler(with_event, temperature_c, time_s))
-    physics_status = (
-        {"resolution": "UNSUPPORTED_BY_MODEL", "entries": entries, "notes": []}
-        if entries else None
-    )
+        annealed_profile, anneal_resolution = handler(with_event, temperature_c, time_s)
+        updated.append(annealed_profile)
+        if anneal_resolution is Resolution.UNVERIFIED:
+            entries.append({
+                "parameter": "anneal_diffusivity_D(T)", "material": profile.species,
+                "resolution": "UNVERIFIED", "provenance": "LITERATURE",
+                "note": (
+                    f"T={temperature_c:.0f}C outside {profile.species}'s "
+                    f"citation validity window -- D(T) extrapolated, not "
+                    f"verified in-window"
+                ),
+            })
+    if not entries:
+        return tuple(updated), None
+    resolutions = [Resolution(e["resolution"]) for e in entries]
+    physics_status = {"resolution": combine(resolutions).value, "entries": entries, "notes": []}
     return tuple(updated), physics_status

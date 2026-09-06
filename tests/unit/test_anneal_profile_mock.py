@@ -14,6 +14,16 @@ test_exact_broadening_matches_the_real_formula/
 test_cumulative_across_two_anneal_calls are dropped; the straggle/dose
 broadening assertions (this function's actual job) are unchanged and
 still hold via model_params.
+
+Final-review Fix 1 (2026-09-03 dopant-state-unification): anneal_profile()
+now returns (profile, resolution) instead of a bare profile, so this
+project can surface an out-of-citation-window (UNVERIFIED) anneal instead
+of silently discarding it (tcad.physics.doping.apply_thermal_anneal reads
+the second element). Every call below unpacks the tuple; the resolution
+itself is exercised directly by test_resolution_is_verified_in_window_
+and_unverified_outside_it below, and by
+tests/unit/test_thermal_anneal_mock.py's own UNVERIFIED-window test at
+the apply_thermal_anneal() level.
 """
 
 import math
@@ -52,7 +62,8 @@ def test_broadens_and_conserves_dose():
     profile = _gaussian_profile("P", "donor", peak=1e19, position=0.0, straggle=0.1)
     dose_before = _dose(profile)
 
-    annealed = anneal_profile(profile, temperature_c=900.0, time_s=600.0)
+    annealed, resolution = anneal_profile(profile, temperature_c=900.0, time_s=600.0)
+    assert resolution is not None, "a real D(T) was computed -- must report a resolution"
 
     dose_after = _dose(annealed)
     old_straggle = profile.model_params["straggle_um"]
@@ -84,7 +95,8 @@ def test_exact_broadening_matches_the_real_formula():
     contribution = thermal_budget_contribution("B", "Si", 950.0, 300.0)
     assert contribution.value is not None
 
-    annealed = anneal_profile(profile, temperature_c=950.0, time_s=300.0)
+    annealed, resolution = anneal_profile(profile, temperature_c=950.0, time_s=300.0)
+    assert resolution is not None
 
     # Dt is in cm^2; straggle_um is in um -- 1 cm^2 = 1e8 um^2.
     expected_straggle_um2 = (0.2 ** 2) + 2.0 * contribution.value * 1e8
@@ -99,8 +111,8 @@ def test_higher_temperature_broadens_more():
     profile_a = _gaussian_profile("P", "donor", peak=1e19, position=0.0, straggle=0.1)
     profile_b = _gaussian_profile("P", "donor", peak=1e19, position=0.0, straggle=0.1)
 
-    low = anneal_profile(profile_a, temperature_c=900.0, time_s=600.0)
-    high = anneal_profile(profile_b, temperature_c=1000.0, time_s=600.0)
+    low, _ = anneal_profile(profile_a, temperature_c=900.0, time_s=600.0)
+    high, _ = anneal_profile(profile_b, temperature_c=1000.0, time_s=600.0)
 
     low_straggle = low.model_params["straggle_um"]
     high_straggle = high.model_params["straggle_um"]
@@ -122,17 +134,18 @@ def test_no_shape_or_no_species_is_unchanged():
     no_shape = DopantProfile(species="P", polarity="donor",
                               concentration_at=lambda x, d: 1e17,
                               host_material="Si", model="uniform_v1")
-    result = anneal_profile(no_shape, temperature_c=900.0, time_s=600.0)
+    result, resolution = anneal_profile(no_shape, temperature_c=900.0, time_s=600.0)
     print(f"no-shape profile (no straggle_um) annealed @ 900.0 C, 600.0 s: "
-          f"returned same object = {result is no_shape}")
+          f"returned same object = {result is no_shape}, resolution = {resolution}")
     assert result is no_shape or result == no_shape
+    assert resolution is None, "nothing was computed -- no resolution to report"
 
     no_species = DopantProfile(
         species=None, polarity="donor", concentration_at=lambda x, d: 1e19,
         host_material="Si", model="gaussian_v1",
         model_params={"peak_conc_cm3": 1e19, "peak_position_um": 0.0, "straggle_um": 0.1},
     )
-    result = anneal_profile(no_species, temperature_c=900.0, time_s=600.0)
+    result, resolution = anneal_profile(no_species, temperature_c=900.0, time_s=600.0)
     old_straggle = no_species.model_params["straggle_um"]
     new_straggle = result.model_params["straggle_um"]
     print(f"no-species profile (species=None) annealed @ 900.0 C, 600.0 s: "
@@ -141,6 +154,7 @@ def test_no_shape_or_no_species_is_unchanged():
     assert new_straggle == old_straggle, (
         "no species label -- no citation-backed D(T) exists -- must not guess one"
     )
+    assert resolution is None, "nothing was computed -- no resolution to report"
 
 
 def test_cumulative_across_two_anneal_calls():
@@ -149,8 +163,8 @@ def test_cumulative_across_two_anneal_calls():
     exact sum of both steps' own D(T)*t (each step's OWN temperature)."""
     profile = _gaussian_profile("P", "donor", peak=1e19, position=0.0, straggle=0.1)
 
-    once = anneal_profile(profile, temperature_c=900.0, time_s=600.0)
-    twice = anneal_profile(once, temperature_c=1000.0, time_s=300.0)
+    once, _ = anneal_profile(profile, temperature_c=900.0, time_s=600.0)
+    twice, _ = anneal_profile(once, temperature_c=1000.0, time_s=300.0)
 
     c1 = thermal_budget_contribution("P", "Si", 900.0, 600.0)
     c2 = thermal_budget_contribution("P", "Si", 1000.0, 300.0)
@@ -183,10 +197,12 @@ def test_anneal_profile_reads_model_params_and_uses_real_host_material():
         host_material="Si", model="gaussian_v1",
         model_params={"peak_conc_cm3": 1e18, "peak_position_um": 0.0, "straggle_um": 0.2},
     )
-    widened = anneal_profile(profile, 900.0, 600.0)
+    widened, resolution = anneal_profile(profile, 900.0, 600.0)
     print(f"straggle {profile.model_params['straggle_um']:.4f} -> "
-          f"{widened.model_params['straggle_um']:.4f} um (host_material=Si)")
+          f"{widened.model_params['straggle_um']:.4f} um (host_material=Si), "
+          f"resolution={resolution}")
     assert widened.model_params["straggle_um"] > profile.model_params["straggle_um"]
+    assert resolution is not None
 
     unknown_host = DopantProfile(
         species="B", polarity="acceptor",
@@ -195,12 +211,34 @@ def test_anneal_profile_reads_model_params_and_uses_real_host_material():
         model="gaussian_v1",
         model_params={"peak_conc_cm3": 1e18, "peak_position_um": 0.0, "straggle_um": 0.2},
     )
-    unchanged = anneal_profile(unknown_host, 900.0, 600.0)
+    unchanged, resolution = anneal_profile(unknown_host, 900.0, 600.0)
     print(f"host_material=SiGe (no citation): straggle unchanged = "
-          f"{unchanged.model_params['straggle_um'] == unknown_host.model_params['straggle_um']}")
+          f"{unchanged.model_params['straggle_um'] == unknown_host.model_params['straggle_um']}, "
+          f"resolution={resolution}")
     assert unchanged.model_params["straggle_um"] == unknown_host.model_params["straggle_um"], (
         "must NOT silently reuse Si's D(T) for a different host_material -- UNKNOWN, not guessed"
     )
+    assert resolution is None, "no table entry -- nothing computed -- no resolution to report"
+
+
+def test_resolution_is_verified_in_window_and_unverified_outside_it():
+    """Final-review Fix 1: anneal_profile()'s second return value must
+    distinguish an in-window D(T) from an out-of-window (extrapolated)
+    one -- Christensen et al. 2003's own measured window for P is
+    810-1100C."""
+    from tcad.physics.values import Resolution
+
+    profile_in_window = _gaussian_profile("P", "donor", peak=1e18, position=0.0, straggle=0.2)
+    _, in_window_resolution = anneal_profile(profile_in_window, temperature_c=900.0, time_s=600.0)
+    print(f"P @ 900C (inside 810-1100C citation window): resolution = {in_window_resolution}")
+    assert in_window_resolution is Resolution.VERIFIED
+
+    profile_out_of_window = _gaussian_profile("P", "donor", peak=1e18, position=0.0, straggle=0.2)
+    _, out_of_window_resolution = anneal_profile(
+        profile_out_of_window, temperature_c=1200.0, time_s=600.0,
+    )
+    print(f"P @ 1200C (outside 810-1100C citation window): resolution = {out_of_window_resolution}")
+    assert out_of_window_resolution is Resolution.UNVERIFIED
 
 
 def main():
@@ -210,11 +248,14 @@ def main():
     test_no_shape_or_no_species_is_unchanged()
     test_cumulative_across_two_anneal_calls()
     test_anneal_profile_reads_model_params_and_uses_real_host_material()
+    test_resolution_is_verified_in_window_and_unverified_outside_it()
     print("anneal_profile() conserves dose exactly, matches the real "
           "Gaussian-diffusion broadening formula, is genuinely "
           "temperature-dependent (not just elapsed time), accumulates "
           "correctly across repeated anneal calls, and uses the "
-          "profile's own host_material (not a hardcoded 'Si') for D(T).")
+          "profile's own host_material (not a hardcoded 'Si') for D(T). "
+          "Its resolution channel correctly reports VERIFIED in-window "
+          "and UNVERIFIED out-of-window (final-review Fix 1).")
 
 
 if __name__ == "__main__":

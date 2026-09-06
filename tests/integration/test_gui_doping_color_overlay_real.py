@@ -58,6 +58,12 @@ from tcad.process import registry
 from tcad.backends.viennaps.io import register_locos_export
 
 N_COLOR, P_COLOR, UNSUPPORTED_MARKER = "#2f6fed", "#e0393e", "#unsupported"
+# Final-review Fix 5: a fully-computable, genuinely-zero bucket (real
+# geometry-gated erasure, or simply never doped -- as most of this
+# test's own domain is, far from all 3 narrow implants) must render as
+# its own distinct marker, never blended into N_COLOR just because
+# 0.0 >= 0. Matches tcad_2d_stagewise._DOPING_ZERO_MARKER exactly.
+ZERO_MARKER = "#zero"
 
 # Same real, already-proven geometry/recipe constants as
 # test_ce2_oxidation_conversion_unsupported_real.py (Task 7) -- reused,
@@ -211,7 +217,7 @@ def main():
         print(f"{len(segments)} real segments returned")
 
         mismatches = []
-        unsupported_seen = supported_seen = 0
+        unsupported_seen = supported_seen = zero_seen = 0
         for x_lo, x_hi, color in segments:
             bucket_center = (x_lo + x_hi) / 2.0
             result = app.wafer_state.net_doping_at(bucket_center, 0.0)
@@ -223,6 +229,19 @@ def main():
                         f"rendered color={color!r} (expected {UNSUPPORTED_MARKER!r})"
                     )
                 continue
+            # Final-review Fix 5: a genuinely-zero, fully-computable
+            # bucket (real here for most of this domain -- far from all
+            # 3 narrow implants, each profile's own Gaussian tail
+            # underflows to an exact 0.0) must render as ZERO_MARKER,
+            # never blended into N_COLOR.
+            if result.net_doping == 0.0:
+                zero_seen += 1
+                if color != ZERO_MARKER:
+                    mismatches.append(
+                        f"bucket@{bucket_center:.3f}um: net_doping is exactly 0.0 but "
+                        f"rendered color={color!r} (expected {ZERO_MARKER!r})"
+                    )
+                continue
             supported_seen += 1
             expected = N_COLOR if result.net_doping >= 0 else P_COLOR
             if color != expected:
@@ -232,7 +251,7 @@ def main():
                 )
 
         print(f"buckets checked: {len(segments)} (supported={supported_seen}, "
-              f"unsupported={unsupported_seen})")
+              f"zero={zero_seen}, unsupported={unsupported_seen})")
         for m in mismatches:
             print(f"  MISMATCH: {m}")
         assert not mismatches, (
@@ -244,13 +263,27 @@ def main():
             "UNSUPPORTED_BY_MODEL bucket -- got none, the oxidation/strip recipe "
             "may need re-tuning"
         )
+        # NOTE: this fixture does not reliably produce a genuinely-zero
+        # bucket (measured: every x here is either near one of the 3
+        # narrow implants' own real, non-negligible tail -- the domain
+        # is only +-5um and the implants sit close to its edges -- or
+        # inside the oxidation-converted zone, which is UNSUPPORTED_BY_
+        # MODEL, not zero). zero_seen is printed for information; the
+        # dedicated, deterministic zero-marker proof is
+        # `scenario_zero_marker()` below, using CE-1's own real
+        # etch-erasure technique on a SEPARATE, simpler fixture
+        # (last_step_category is a single flat field -- see CE-1's own
+        # "Problem 3" -- so mixing a removal-caused zero into THIS
+        # oxidation-classified state would incorrectly reclassify the
+        # UNSUPPORTED entries checked above as zero instead).
 
-        colors = {c for _, _, c in segments if c != UNSUPPORTED_MARKER}
+        colors = {c for _, _, c in segments if c not in (UNSUPPORTED_MARKER, ZERO_MARKER)}
         assert len(colors) >= 2, "B(acceptor) and P(donor) regions must render as genuinely different colors"
         print(f"distinct real colors rendered: {colors}; every bucket's color matches its real "
               f"WaferState.net_doping_at() sign/status, none inferred or assumed -- including "
               f"{unsupported_seen} bucket(s) genuinely reporting UNSUPPORTED_BY_MODEL (real "
-              f"oxidation-converted Si), rendered as the distinct marker, never blended into "
+              f"oxidation-converted Si) and {zero_seen} bucket(s) genuinely reporting net_doping="
+              f"0.0 (undoped), each rendered as its own distinct marker, never blended into "
               f"blue/red.")
 
         print("\nGUI P/N doping color overlay reads REAL per-bucket "
@@ -258,6 +291,97 @@ def main():
               "bucket's own true sign, and a real oxidation-converted region "
               "(UNSUPPORTED_BY_MODEL) renders as a visibly distinct marker, never "
               "blended into the normal blue/red convention.")
+
+        # --- Final-review Fix 5: a DETERMINISTIC genuinely-zero bucket,
+        # on its own SEPARATE, small fixture (see the NOTE above for why
+        # it cannot share the oxidation scenario's own state). Reuses
+        # CE-1's own real etch-erasure technique
+        # (test_ce1_order_sensitive_geometry_real.py): a real, blanket
+        # isotropic etch (Si exposed everywhere) -> a real Gaussian
+        # Implant AT a fixed x -> a real, MASKED isotropic etch that
+        # removes Si COMPLETELY at that same x, queried immediately
+        # (last_step_category="etching") -- a real, physically
+        # meaningful geometry-gated zero, not UNSUPPORTED_BY_MODEL.
+        ZERO_WIDTH_UM, ZERO_Y_EXTENT_UM, ZERO_SI_DEPTH_UM, ZERO_GRID_UM = 10.0, 8.0, 1.0, 0.1
+        ERASE_X_UM = 0.0
+        ZERO_WINDOW_HALF_UM = 1.0
+        ZERO_HALF_DOMAIN_UM = ZERO_WIDTH_UM / 2.0
+
+        with tempfile.TemporaryDirectory() as tmp2:
+            base_step = registry.get("etching", "isotropic")()
+            base_recipe = {
+                "_process_category": "etching", "_process_model_key": "isotropic",
+                "rate": -0.02, "etch_time_s": 5.0,
+                "silicon_depth_um": ZERO_SI_DEPTH_UM, "grid_delta_um": ZERO_GRID_UM,
+                "x_extent_um": ZERO_WIDTH_UM, "y_extent_um": ZERO_Y_EXTENT_UM,
+                "mask_spans_um": [],
+            }
+            base_result = base_step.run(base_recipe, tmp2)
+            base = build_process_result({"final_mesh": base_result["final_mesh"], "snapshots": []})
+
+            from tcad.physics.doping import apply_gaussian_implant_doping
+            implanted = apply_gaussian_implant_doping(
+                base, region="Si", junction_axis="x", peak_position_um=ERASE_X_UM,
+                straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="As",
+            )
+            zero_state1 = advance_wafer_state(None, implanted, "doping")
+
+            module = viennaps_session.require_viennaps()
+            erase_step = registry.get("etching", "isotropic")(inherited_domain=base_step.last_domain)
+            erase_recipe = {
+                "_process_category": "etching", "_process_model_key": "isotropic",
+                "remask_spans_um": [
+                    [-ZERO_HALF_DOMAIN_UM, -ZERO_WINDOW_HALF_UM],
+                    [ZERO_WINDOW_HALF_UM, ZERO_HALF_DOMAIN_UM],
+                ],
+                "mask_material": "Mask",
+                "grid_delta_um": ZERO_GRID_UM, "x_extent_um": ZERO_WIDTH_UM, "pr_thickness_um": 0.3,
+                "rate": -0.5, "etch_time_s": 3.0,
+                "silicon_depth_um": ZERO_SI_DEPTH_UM,
+            }
+            erase_step.run(erase_recipe, tmp2)
+            erase_step.last_domain.removeMaterial(module.Material.Mask)
+            from tcad.backends.viennaps.io import save_volume_mesh
+            stripped_mesh = save_volume_mesh(
+                erase_step.last_domain, str(Path(tmp2) / "zero_marker_stripped"),
+                floor_depth_um=ZERO_SI_DEPTH_UM,
+            )
+            stripped = build_process_result({"final_mesh": stripped_mesh, "snapshots": []})
+            zero_state2 = advance_wafer_state(zero_state1, stripped, "etching")
+
+            exposed_after = zero_state2.exposed_material_at(ERASE_X_UM)
+            print(f"\n[zero-marker scenario] exposed_material_at({ERASE_X_UM}) after "
+                  f"real masked etch = {exposed_after!r} (must NOT be 'Si')")
+            assert exposed_after != "Si", (
+                "fixture is broken: the etch must remove Si completely at ERASE_X_UM"
+            )
+
+            q = zero_state2.net_doping_at(ERASE_X_UM, 0.0)
+            print(f"[zero-marker scenario] net_doping_at({ERASE_X_UM}) = {q.net_doping}, "
+                  f"physics_status={q.physics_status}")
+            assert q.net_doping == 0.0 and q.physics_status is None, (
+                f"fixture is broken: expected a genuine geometry-gated zero (removal), "
+                f"got net_doping={q.net_doping}, physics_status={q.physics_status}"
+            )
+
+            app.wafer_state = zero_state2
+            zero_segments = app._doping_color_segments(
+                "Si", x_min_um=-1.0, x_max_um=1.0, n_buckets=10,
+            )
+            erased_bucket = next(
+                (seg for seg in zero_segments if seg[0] <= ERASE_X_UM <= seg[1]), None,
+            )
+            assert erased_bucket is not None, "no bucket covers ERASE_X_UM -- adjust n_buckets/range"
+            print(f"[zero-marker scenario] app._doping_color_segments() rendered color "
+                  f"at the erased bucket: {erased_bucket[2]!r} (expected {gui._DOPING_ZERO_MARKER!r})")
+            assert erased_bucket[2] == gui._DOPING_ZERO_MARKER, (
+                f"Fix 5: a genuinely-zero (erased) bucket must render as the ZERO "
+                f"marker, got {erased_bucket[2]!r}"
+            )
+
+        print("\nFix 5 VERIFIED against the real GUI: a real geometry-gated zero "
+              "(dopant erased by a real, registered etch) renders as its own "
+              "distinct marker, never blended into N_COLOR just because 0.0 >= 0.")
     finally:
         app.destroy()
 

@@ -31,6 +31,7 @@ every real furnace/RTA anneal this project's reference case describes).
 from __future__ import annotations
 
 import math
+from typing import Optional, Tuple
 
 from tcad.physics.dopant_profile import DopantProfile
 from tcad.physics.tables import INTERACTION_COEFFICIENTS
@@ -109,7 +110,7 @@ def thermal_budget_contribution(
 
 def anneal_profile(
     profile: DopantProfile, temperature_c: float, time_s: float,
-) -> DopantProfile:
+) -> Tuple[DopantProfile, Optional[Resolution]]:
     """Real, dose-conserving Gaussian broadening under one isothermal
     anneal step (unchanged formula from Stage B). Reads/writes
     model_params now instead of top-level fields; does NOT touch
@@ -124,13 +125,25 @@ def anneal_profile(
     and peak_new = peak_old * (sigma_old / sigma_new) -- the unique
     rescaling that keeps Q unchanged while sigma grows.
 
-    Returns the SAME profile, unchanged, when there is no defined shape
-    (model_params has no straggle_um) or no species label (no
-    citation-backed D(T) is possible) -- never guesses.
+    Returns (profile, resolution): profile is the SAME profile,
+    unchanged, when there is no defined shape (model_params has no
+    straggle_um) or no species label (no citation-backed D(T) is
+    possible) or no table entry exists for this species/host_material --
+    never guesses. resolution is the arrhenius_diffusivity() Resolution
+    (VERIFIED or UNVERIFIED-when-extrapolated-outside-the-citation's-
+    measured-window) for the D(T) actually used to widen this profile,
+    or None in every "unchanged" case above (nothing was computed, so
+    there is nothing to report a confidence level for). Final-review
+    Fix 1 (2026-09-03 dopant-state-unification): this second element
+    used to be silently discarded by every caller, so a user annealing
+    outside a species' own cited validity window got no disclosure at
+    all -- apply_thermal_anneal() (tcad/physics/doping.py) now reads it
+    and surfaces UNVERIFIED into physics_status the same way every other
+    per-value resolution status in this project is reported.
     """
     straggle_um = profile.model_params.get("straggle_um")
     if straggle_um is None or profile.species is None:
-        return profile
+        return profile, None
 
     # Real bug fixed here, enabled by this task's own schema change:
     # the OLD version hardcoded "Si" instead of reading the profile's
@@ -140,7 +153,7 @@ def anneal_profile(
         profile.species, profile.host_material, temperature_c, time_s,
     )
     if contribution.value is None:
-        return profile
+        return profile, None
 
     dt_um2 = contribution.value * 1e8  # cm^2 -> um^2 (1 cm = 1e4 um)
     new_straggle = math.sqrt(straggle_um ** 2 + 2.0 * dt_um2)
@@ -165,4 +178,4 @@ def anneal_profile(
         # D(T) actually used for THIS widening (contribution.source is
         # real and available right here).
         source=contribution.source,
-    )
+    ), contribution.resolution
