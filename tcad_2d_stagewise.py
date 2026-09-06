@@ -65,6 +65,7 @@ from tcad.physics.doping import (
     apply_thermal_anneal,
 )
 from tcad.physics.wafer_state_accumulation import advance_wafer_state
+from tcad.physics.dopant_models import ANNEAL_HANDLERS
 
 # ============================================================
 # DESIGN TOKENS — industrial/scientific EDA look
@@ -4358,8 +4359,19 @@ class TCADApplication(tk.Tk):
             # Two distinct situations (Core Physics Requirement: never
             # blur two different kinds of uncertainty into one label) --
             # no handler at all for this model, vs. a handler that DID
-            # run but whose D(T) is only an extrapolation.
-            if before_p.species in unsupported_species:
+            # run but whose D(T) is only an extrapolation. Discriminate
+            # on before_p.model directly (not species-set membership):
+            # physics_status entries are keyed by species only, so two
+            # profiles sharing a species but different models (e.g. a
+            # Uniform "P" alongside a Gaussian Implant "P") would
+            # otherwise both match unsupported_species/unverified_species
+            # regardless of which one the entry actually describes --
+            # confirmed by this project's own scoped re-review, which
+            # reproduced a real gaussian_v1 profile getting mislabeled
+            # "no anneal handler registered" purely because a same-
+            # species uniform_v1 profile (which genuinely has none) was
+            # annealed alongside it.
+            if before_p.model not in ANNEAL_HANDLERS:
                 flag = " (UNSUPPORTED_BY_MODEL -- no anneal handler registered for this model)"
             elif before_p.species in unverified_species:
                 flag = " (outside citation range -- UNVERIFIED)"
