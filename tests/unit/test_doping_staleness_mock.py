@@ -86,6 +86,20 @@ def main():
         # ------------------------------------------------------------
         real_build_process_result = gui.build_process_result
         real_apply_uniform_doping = gui.apply_uniform_doping
+        # dopant-state-unification (Task 9): run_doping()'s success path
+        # now also calls advance_wafer_state(), which -- unlike the
+        # already-stubbed build_process_result/apply_uniform_doping --
+        # reads the doped_result's volume_mesh_path as a REAL mesh file
+        # via meshio (WaferState.from_process_result()). mesh_a/mesh_b
+        # below are stand-in paths that exist on disk but are not real
+        # meshes (this test's own long-standing design: run_doping()'s
+        # guard only checks the path EXISTS, nothing before Task 9 ever
+        # read it as a mesh) -- so advance_wafer_state joins the same
+        # "genuine ViennaPS/DevSim boundary" this test already stubs,
+        # rather than becoming a second, accidental real-mesh dependency
+        # this unit test was never meant to carry.
+        real_advance_wafer_state = gui.advance_wafer_state
+        gui.advance_wafer_state = lambda prior_state, result, category: prior_state
         mesh_a = str(Path(__file__).resolve())
         mesh_b = sys.executable
 
@@ -222,6 +236,7 @@ def main():
         finally:
             gui.build_process_result = real_build_process_result
             gui.apply_uniform_doping = real_apply_uniform_doping
+            gui.advance_wafer_state = real_advance_wafer_state
             mesh_import_mod.import_process_result = real_import_process_result
             gui.messagebox = real_messagebox
     finally:
