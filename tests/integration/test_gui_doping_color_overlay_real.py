@@ -86,9 +86,12 @@ def _real_locos_oxidation_then_strip(tmp):
     cleared). Identical recipe to the Task 7 CE-2 test."""
     from tcad.backends.viennaps import session as vps_session
 
-    step0 = registry.get("oxidation", "thermal")()
+    # 2026-09-08: LOCOS split out of ThermalOxidation into its own
+    # registry entry ("oxidation", "locos") -- tcad/process/oxidation/
+    # locos.py. Both steps below genuinely run LOCOS (mask_material set).
+    step0 = registry.get("oxidation", "locos")()
     recipe0 = {
-        "_process_category": "oxidation", "_process_model_key": "thermal",
+        "_process_category": "oxidation", "_process_model_key": "locos",
         "mask_left_um": -WINDOW_HALF_UM, "mask_right_um": WINDOW_HALF_UM,
         "mask_material": "Mask", "pr_thickness_um": 1.0,
         "silicon_depth_um": SI_DEPTH_UM, "grid_delta_um": GRID_UM,
@@ -99,7 +102,7 @@ def _real_locos_oxidation_then_strip(tmp):
 
     recipe1 = dict(recipe0)
     recipe1["temperature_c"], recipe1["time_hours"] = 1100.0, 8.0
-    step1 = registry.get("oxidation", "thermal")(inherited_domain=step0.last_domain)
+    step1 = registry.get("oxidation", "locos")(inherited_domain=step0.last_domain)
     step1.run(recipe1, tmp)
 
     module = vps_session.require_viennaps()
@@ -161,7 +164,7 @@ def main():
         # solved geometry (not assumed symmetric around the nominal
         # +-1.0um mask window): a real, measured finding this session
         # is that the chained-LOCOS recipe below reuses step0's
-        # already-deformed mask AS-IS for step1 (thermal.py's own
+        # already-deformed mask AS-IS for step1 (locos.py's own
         # documented behavior, also flagged -- but not measured -- by
         # test_ce2_oxidation_conversion_unsupported_real.py), so the
         # real converted (SiO2) span ends up ASYMMETRIC: measured via a

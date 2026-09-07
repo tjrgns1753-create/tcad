@@ -9104,3 +9104,390 @@ Regression: pinned by the new
 `tests/integration/test_bosch_drie_resist_mask_real.py`, confirmed via
 `git stash` to FAIL on the pre-fix code (real measured erosion) and
 PASS on the fix.
+
+### LOCOS split out of ThermalOxidation into its own Advanced/Optional ProcessStep (2026-09-08, per explicit user instruction -- LOCOS must be a sibling of Thermal Oxidation, never a special case reached through it)
+
+**What was tested.** Whether the existing, single-class LOCOS
+implementation (`ThermalOxidation`, dispatched internally on whether
+the recipe carried `mask_material`) could be split into two
+independent `ProcessStep`s/registry entries -- `("oxidation",
+"thermal")` staying CORE (plain fin-style, no mask concept at all) and
+a new `("oxidation", "locos")` carrying every mask/mechanics/pad-oxide-
+geometry/export-hint piece -- without changing either one's real
+physics, and with every existing LOCOS-invoking test still passing
+under its own (corrected) registry name.
+
+**Result.** `tcad/process/oxidation/thermal.py` and the new
+`tcad/process/oxidation/locos.py` (see that file's own module
+docstring for the full physics/API history, migrated verbatim from
+thermal.py, not rewritten). All LOCOS-specific logic --
+`_locos_stack_spec`, `_build_locos_geometry`, `_make_locos_domain_
+chainable`, the `is_fresh_locos`/`is_chained_locos` control flow, the
+`setMaskMaterial`+mechanics block -- moved without modification; only
+the class/file/registry-name boundary changed. The GUI's own
+`_process_model_key` was found to be a REAL, pre-existing bug during
+this work: both "Thermal oxidation" and "LOCOS" GUI selections sent
+`"_process_model_key": "thermal"` unconditionally (`tcad_2d_
+stagewise.py` line ~2234), contradicting an adjacent comment already
+claiming the two were "INDEPENDENT choices" -- selecting "Thermal
+oxidation" could not previously reach LOCOS's own code (the recipe
+simply lacked `mask_material`), but the class actually instantiated was
+always `ThermalOxidation` regardless, which is what let this drift
+unnoticed. Fixed as part of this same change (`"locos" if is_locos else
+"thermal"`).
+
+Six test files genuinely invoke LOCOS (pass `mask_material` to what was
+`registry.get("oxidation", "thermal")`) and were updated to
+`registry.get("oxidation", "locos")` at exactly those call sites, never
+at a file's OTHER, genuinely-plain-fin-style call sites in the same
+file: `test_locos_chaining_real.py`, `test_locos_contact_mode_fix_
+real.py`, `test_locos_devsim_import_real.py`, `test_ce2_oxidation_
+conversion_unsupported_real.py`, `test_doping_mapping_recovery_
+real.py`, `test_gui_doping_color_overlay_real.py`. Two more genuinely
+needed the fix despite not having "locos" in their filename:
+`test_etch_selectivity_real.py` (its own `BASE_RECIPE` carries
+`mask_material` -- LOCOS used purely as fixture setup for an unrelated
+etch-selectivity check) and `test_phase4_oxidation_real.py` (the
+original Phase-4 smoke test, explicitly exercising both variants
+through the same class -- now updated to look each variant up under
+its own registry name). Every file that calls
+`registry.get("oxidation", "thermal")` was individually inspected for
+whether `mask_material` reaches that specific call (not assumed from
+filename or a blanket grep) -- `test_bosch_drie_resist_mask_real.py`,
+`test_cad_negative_validation_real.py`, `test_oxidation_pr_etch_
+reaches_si_real.py`, `test_phase9_mos_cv_real.py`, `test_physics_
+references_real.py`, `test_pin_placement_validation_real.py`, and
+`test_gate_patterning_remask_real.py` (whose own `mask_material` is for
+an unrelated ETCH remask, not oxidation at all) were all confirmed
+genuinely fin-style-only and left untouched.
+
+All individually-run affected tests pass post-split, real ViennaPS
+4.6.2: `test_locos_chaining_real.py` (all 9/9 checks, including the
+staleness-refusal and LOCOS-on-LOCOS-direct-chain checks), `test_locos_
+contact_mode_fix_real.py`, `test_locos_devsim_import_real.py`,
+`test_ce2_oxidation_conversion_unsupported_real.py`, `test_doping_
+mapping_recovery_real.py`, `test_gui_doping_color_overlay_real.py`,
+`test_etch_selectivity_real.py`, `test_phase4_oxidation_real.py`.
+
+**What it proves.** The two-class split is behavior-preserving for
+every scenario the existing test suite already covers -- fresh LOCOS,
+LOCOS chained directly onto a prior LOCOS step (including the
+staleness-refusal case), LOCOS's own export chained forward into
+etch/deposition/Bosch/fin-oxidation, and fin-style oxidation
+unaffected by anything LOCOS-specific.
+
+**What remains uncertain / new finding this session:** see the next
+entry -- chaining LOCOS onto a domain LOCOS itself did NOT build (the
+user's own requested "Pad Oxide -> Si3N4 Deposition -> pattern -> LOCOS"
+sequence) surfaced two distinct, real, reproducible failures, neither
+previously exercised by any existing test.
+
+### LOCOS chained onto a foreign-built mask (not LOCOS's own pad-oxide+mask stack) -- TWO REAL FAILURES FOUND, NOT FIXED (2026-09-08, discovered while validating THE STATE INVARIANT for the user's own requested chain: Pad Oxide -> Si3N4 Deposition -> pattern -> LOCOS -> Nitride Strip -> Gate Oxide)
+
+**What was tested.** `LocosOxidation.run()`'s own "third case" --
+`self._inherited_domain is not None`, `mask_material` in the recipe,
+but `is_locos_registered(self._inherited_domain)` is False (the
+inherited domain was built by ordinary process steps, never by LOCOS
+itself) -- is real, existing, unmodified code (`elif not is_chained_
+locos: geometry = self.prepare_domain(recipe)`, then `setMaskMaterial`
++ mechanics on it directly), but had NO existing test coverage. Two
+real scenarios were tried, both through the actual production registry
+entry points, real ViennaPS 4.6.2:
+
+1. The user's own example chain: `registry.get("oxidation", "thermal")`
+   (thin pad oxide, 900C/0.02hr) -> `registry.get("deposition",
+   "isotropic")` (blanket Si3N4, `material="Si3N4"`) ->
+   `registry.get("etching", "isotropic")` (`remask_spans_um` protecting
+   everything but a 1.0um window, `material_rates={"Si3N4": -0.4,
+   "SiO2": 0.0, "Si": 0.0}` to clear only the nitride) ->
+   `registry.get("oxidation", "locos")` chained on top,
+   `mask_material="Si3N4"` (0.1s recipe, 4.0x3.0um domain, gd=0.1,
+   1000C/0.3hr dry).
+2. A simpler isolation: `registry.get("etching", "isotropic")` (bare
+   Si, no-op) -> a second `isotropic` etch with `remask_spans_um` (plain
+   `"Mask"` tag, no deposition/patterning involved) -> `registry.get(
+   "oxidation", "locos")` chained on top, `mask_material="Mask"` (same
+   species the remask itself used).
+
+**Result — two DIFFERENT real failures, not one:**
+
+- **Scenario 1 (Si3N4 mask):** the oxidation SOLVE itself produced
+  `WARNING: OxidationDiffusion: no oxide nodes found after buildNodes().
+  Verify that the reaction and ambient level sets enclose a non-empty
+  oxide band.`, immediately followed by a `LOCOS: mask/oxide coupling
+  converged in 2 iterations` line reporting an absurd, clearly-invalid
+  `displacement` value (~3e308 um -- a 300+-digit number, i.e. a
+  floating-point overflow/garbage value) while `maxDisplacement=0.000000`
+  in the SAME log line -- an internal ViennaPS inconsistency, not
+  merely a slow/non-converged solve. Despite the warning, material
+  AREAS still changed (SiO2 0.400->1.224, a real change) and the export
+  itself then ALSO warned: `the exported mesh is missing 1 material(s)
+  that ARE present in the domain (material tag(s) [0])` -- material 0
+  is `Mask`, the etch step's OWN remask tag (distinct from the Si3N4
+  LOCOS mask), left over in the domain from step 3 and silently dropped
+  by the plain `save_volume_mesh()` export path this "third case" uses
+  (NOT `save_locos_volume_mesh()`, which only fires for `is_fresh_
+  locos`/`is_chained_locos` -- exactly the same "topmost wins" material-
+  dropping limitation `save_locos_volume_mesh()` exists to fix for
+  LOCOS's own self-built stack, but unprotected here).
+- **Scenario 2 (plain "Mask" mask, no Si3N4/deposition involved):** the
+  oxidation SOLVE converged cleanly this time (no bogus displacement, no
+  "no oxide nodes" warning -- ViennaPS auto-seeded a 0.1um native oxide
+  since none existed, and the mask/oxide coupling converged normally in
+  2 iterations with a genuine near-zero displacement). The failure here
+  is instead at EXPORT time: `IndexError: invalid vector subscript`
+  inside `tcad.backends.viennaps.io._floored_copy_for_export`'s own
+  `vls.BooleanOperation(ls, box, ...INTERSECT).apply()` call -- the
+  exact class of crash that function's own docstring already documents
+  and works around with a `vls.Expand(ls, 3).apply()` pre-treatment
+  ("found necessary... for a level set that comes out of Process()
+  narrower than 2 layers wide... crashes inside the subsequent
+  BooleanOperation... if not pre-expanded explicitly here first") --
+  except that existing pre-treatment does NOT cover whatever narrow-
+  level-set topology THIS specific chained-into-LOCOS geometry produces.
+
+**What it proves.** Chaining LOCOS onto a domain LOCOS did not itself
+build is a genuinely different, and currently FRAGILE, code path from
+either of the two scenarios the existing test suite already covers
+robustly (LOCOS building its own fresh pad-oxide+mask stack; LOCOS
+chained directly onto a PRIOR LOCOS step's own output). Both new
+failures are real and reproducible, not solver noise -- confirmed by
+running each scenario standalone, isolated from the other. Neither is
+LOCOS-specific in its root mechanism: the export crash is in shared
+`_floored_copy_for_export()` infrastructure (used by every process
+category's `save_volume_mesh()` call, not just oxidation), and the
+oxide-band-detection failure is inside ViennaPS's own C++ `Oxidation`
+model reacting to a level-set stacking order this project's own
+`remask_domain()`/deposition/etch chain produced -- neither is
+something LOCOS's own recipe logic did wrong.
+
+**What remains uncertain.** Whether the two failures share one root
+cause (a level-set ordering/wrapping property that both `_floored_
+copy_for_export` and `vps.Oxidation()`'s internal oxide-band detection
+are sensitive to) or are coincidentally two separate issues triggered
+by the same test scenario; whether a DIFFERENT construction of the
+"prior steps build the mask" chain (different deposition model,
+different remask mechanism, explicit re-wrapping before handing the
+domain to LOCOS) avoids either failure; whether this affects any
+NON-LOCOS chained-oxidation scenario too (both failure sites are shared
+infrastructure, not LOCOS-exclusive code).
+
+**Deliberately NOT fixed this session** -- per the user's own explicit
+priority ordering (Priority 1: core stability; Priority 3: LOCOS is
+optional; "if implementing LOCOS would require a large change to the
+general oxidation architecture, shrink the LOCOS implementation and
+keep the core architecture, not the reverse") and explicit instruction
+not to force a fix or hide a real negative result. `_floored_copy_for_
+export()` and `vps.Oxidation()`'s own internal solve are shared
+infrastructure well outside LOCOS's own appropriately-minimal scope;
+changing either to chase this down risks exactly the kind of core-
+architecture churn the user asked this task to avoid. The reliable,
+already-tested chaining paths (`test_locos_chaining_real.py`'s 9
+checks: LOCOS's own fresh build chaining forward into etch/deposition/
+Bosch/fin-oxidation/a second direct LOCOS) remain the evidence for THE
+STATE INVARIANT holding across a LOCOS step -- "chain LOCOS onto a
+foreign-built mask" stays a known, open, real limitation, not silently
+papered over.
+
+**Next smallest experiment, if this needs re-visiting:** reproduce
+Scenario 2 (the simpler, EXPORT-time-only failure) with `vls.Expand`
+applied at increasing widths (`Expand(ls, 5)`, `Expand(ls, 8)`, ...) to
+see whether a wider pre-expand alone resolves the IndexError, which
+would isolate it as a magnitude/parameter issue in the existing
+work-around rather than a structurally different topology; separately,
+dump `domain.getLevelSets()` point counts and each level set's own
+material tag immediately before the failing LOCOS call in both
+scenarios, to see whether the "third case" domain actually violates
+ViennaLS Advect's own "last level set contains all others" precondition
+(every other geometry in this project satisfies this via `MakeTrench`
+inserting the substrate last and wrapped; `remask_domain()`/deposition's
+own insertion order was never checked against that precondition
+specifically for a THEN-oxidized domain).
+
+### `vps.Oxidation().saveVolumeMesh()` (native LOCOS volume-mesh export) A/B tested against `save_locos_volume_mesh()` -- NEEDS-FURTHER-VALIDATION, current custom exporter KEPT (2026-09-08, per explicit user instruction to A/B test on the REAL production recipe before touching `save_locos_volume_mesh()`, not just the smaller scratch geometry an earlier same-session investigation used)
+
+**What was tested.** An earlier investigation this same session (before
+any LOCOS code was touched) found, on a small, non-production, no-floor
+scratch geometry, that `vps.Oxidation().saveVolumeMesh(domain,
+baseName)` preserves all 3 materials where `Domain.saveVolumeMesh()`
+drops Si -- a real, promising signal, but explicitly NOT yet the real
+production recipe/depth the user asked to be checked before acting on
+it. This entry is that real check: the EXACT production LOCOS
+regression recipe (`test_locos_chaining_real.py`'s own recipe: gd=0.2,
+4.0x3.0um, mask 1.5-2.5, `silicon_depth_um` OMITTED so the project's
+real `DEFAULT_FLOOR_DEPTH_UM=5.0` applies), run through the real
+`LocosOxidation.run()` up to (not including) its own export call
+(captured via a monkeypatch on `locos.save_locos_volume_mesh`, so A/B/C
+below all export the SAME post-oxidation domain and model object, not
+three independent solves), then three exports compared:
+  A. the current `save_locos_volume_mesh()` (production, ground truth).
+  B. `model.saveVolumeMesh(geometry, baseName)` directly -- the SAME
+     `model` instance `run()` actually used (already had `setMask
+     Material`/`setMaskParameters` etc. applied to it -- a FRESH,
+     unconfigured `vps.Oxidation()` instance was tried first and
+     genuinely drops the Mask material entirely; using the real,
+     already-configured instance is the fair comparison).
+  C. `model.saveVolumeMesh(floored, baseName)`, `floored` = the SAME
+     `_floored_copy_for_export(geometry, 5.0)` the current exporter
+     already calls internally -- i.e. native export PLUS the existing
+     floor pre-processing, the realistic "if we adopted this" design.
+
+**Result.**
+  - B (native, no floor): all 3 materials present (confirmed fixing the
+    earlier "fresh unconfigured model" methodology mistake), but Si only
+    extends to y=-0.40 (== 2*gridDelta, the exact narrow-band artifact
+    `DEFAULT_FLOOR_DEPTH_UM`/`_floored_copy_for_export` exist to fix) --
+    NOT usable as-is; would silently reintroduce this project's own
+    first-ever documented bug ("Si floor / mesh export").
+  - C (native + existing floor): all 3 materials present, correct floor
+    depth (y=[-5.0, 0.70], matching A exactly), and per-material areas
+    agree with A to 0.04% (Si), 0.13% (SiO2), 2.30% (Mask) -- close, but
+    the Mask discrepancy is not yet explained (A's own Python-level
+    per-material reconstruction vs. the native "mathematically wrapped"
+    surface extraction are different algorithms; not assumed to be
+    equivalent to sub-percent without checking WHY they differ where
+    they do). Real downstream check: C's mesh was fed through the ACTUAL
+    production `build_process_result()` -> `import_process_result()` ->
+    real DevSim pipeline (not a mock) -- succeeded, correct regions
+    (`['Mask', 'Si', 'SiO2']`), correct contacts
+    (`['Si_xmin', 'Si_xmax']`), sane per-region node counts.
+
+**What it proves.** The native exporter is NOT a safe drop-in one-line
+replacement (confirmed twice: an unconfigured model drops Mask
+entirely; even correctly configured, it has no floor treatment on its
+own) -- both of the "looks simple" naive versions would have shipped a
+real regression. Combined WITH the existing floor pre-processing,
+though, it produces a mesh that matches the current exporter closely
+and imports correctly through the real DevSim pipeline -- genuinely
+promising, not rejected.
+
+**What remains uncertain / NOT tested this session** (why this is
+NEEDS-FURTHER-VALIDATION, not ADOPTED): the user's own A/B checklist
+item-by-item -- NetDoping mapping through this path (would need a real
+`apply_doping()` + WaferState call, not done); LOCOS-on-LOCOS chained
+export through the native path (only a single fresh LOCOS export was
+compared); `filter_mesh_materials`/`dedupe_materials` compatibility;
+the root cause of the 2.30% Mask-area discrepancy; whether this
+generalizes across other grid/pad-thickness/recipe combinations. Item
+"process chaining"/"LOCOS -> next process" from the user's checklist
+turned out to be STRUCTURALLY INVARIANT to which exporter is used --
+`_make_locos_domain_chainable()` (the re-wrap + export-hint
+registration that makes a LOCOS domain safe to hand to the NEXT
+`ProcessStep`) operates on the live ViennaPS domain object, never on
+the exported mesh FILE, so switching exporters cannot affect chaining
+either way; recorded here so this item is not silently skipped, but it
+did not need a check because there is nothing for the exporter choice
+to break there.
+
+**Decision: KEEP the current `save_locos_volume_mesh()` implementation
+in production.** Per the user's own explicit instruction ("결과가
+다르거나 downstream regression이 발생하면 억지로 교체하지 마라... KEEP
+CURRENT IMPLEMENTATION으로 판단") -- not because C failed (it mostly
+didn't), but because several required checklist items remain untested
+and the one real discrepancy found (Mask area, 2.30%) is unexplained.
+`tcad/backends/viennaps/io.py` was NOT modified by this investigation.
+
+**Next smallest experiment, if this needs re-visiting:** explain the
+2.30% Mask-area gap first (compare A's and C's Mask region triangle
+count/topology directly, not just total area); then add a real
+`apply_doping()` + NetDoping node-value comparison on C's mesh against
+A's, the same node-for-node bit-identical standard `test_doping_
+mapping_recovery_real.py`'s own RECOVERY mechanism was held to.
+
+### Full regression after the LOCOS split -- one real 4th failure found and fixed, NOT solver-noise flake (2026-09-08)
+
+**What was tested:** `tests/run_regression.py`, full suite, on the
+repo state with the LOCOS split (`thermal.py`/`locos.py`), all 8
+migrated test files, the new `test_locos_birds_beak_real.py`, and the
+GUI `_process_model_key` fix already in place. (The first attempt at
+this same run was lost outright to an unrelated infrastructure hang --
+`run_regression.py`'s own double-nested subprocess capture of
+`test_gui_doping_survives_geometry_steps_real.py` deadlocked on pipe
+buffering; confirmed via a 20-second real CPU-delta measurement showing
+exactly 0.0s growth, then confirmed the test itself is fine by running
+it standalone with a bounded timeout, where it passed cleanly in 7.3s.
+Not a LOCOS-related failure; not investigated further since it did not
+recur on the re-run.)
+
+**Result:** `90 passed, 4 failed, 0 skipped`. Three failures exactly
+match this file's own already-documented pre-existing DevSim failures,
+same test names, same symptom class (`test_device_lifecycle_repeat_real`
+-- solver noise at ~1e-27A, the assertion is stricter than the solver
+is deterministic; `test_gui_measurement_doping_kinds_real` and
+`test_robust_iv_sweep_real` -- real `Convergence failure!`, OPEN item 2
+territory in CLAUDE.md). The 4th failure was NEW and NOT a member of
+either the "3 pre-existing" set or the previously-documented "4th slot"
+flake class (`test_mosfet_body_bias_real`/`test_bosch_drie_resist_mask_real`,
+both real-ViennaPS, both timing/order-sensitive) -- it was
+`test_gui_no_forced_order_mock.py`, a pure MOCK test with no ViennaPS
+or DevSim involved at all, so it could not possibly be solver noise:
+
+```
+AssertionError: LOCOS lost its mask material
+  File "tests/unit/test_gui_no_forced_order_mock.py", line 155, in main
+    assert locos.get("mask_material") == "Mask", "LOCOS lost its mask material"
+```
+
+Root cause: this test (which exists specifically to pin "LOCOS is an
+independent choice, never a modifier of ordinary oxidation" -- THE
+INVARIANT, applied to LOCOS) drives the real GUI combobox with
+`app.oxidation_method.set("LOCOS")`. The split's own GUI fix changed
+the combobox's actual value string from `"LOCOS"` to
+`"LOCOS (Advanced)"` (see the "LOCOS split" section above) and updated
+`is_locos = ... == "LOCOS (Advanced)"` to match everywhere the split's
+own author had touched -- except this test, which still set the OLD
+string. `"LOCOS" != "LOCOS (Advanced)"`, so `is_locos` silently
+evaluated `False`, the recipe built with no `mask_material` at all, and
+the test's own assertion (written to catch exactly this class of bug)
+caught it.
+
+Why the split's own test-migration pass missed this file: that pass
+found its 8 target files by grepping for
+`registry.get("oxidation", "thermal")` call sites -- a different call
+shape than `app.oxidation_method.set(<value>)`/`.get() == <value>`,
+which is how a GUI-driving test selects LOCOS rather than calling the
+registry directly. A repo-wide grep for the two `oxidation_method`
+call shapes turned up exactly this one additional site, confirming the
+search is now complete (`grep -rn 'oxidation_method\.set\(\["\x27]LOCOS\["\x27]\)\|oxidation_method\.get\(\) == \["\x27]LOCOS\["\x27]\)'`
+finds only the one line, already fixed).
+
+Fix: one-line string update,
+`app.oxidation_method.set("LOCOS")` -> `app.oxidation_method.set("LOCOS (Advanced)")`,
+matching the exact same combobox value the split's own GUI code now
+uses. No production code touched.
+
+**What it proves:** the split's GUI-facing rename was real and
+correctly wired (production `tcad_2d_stagewise.py` already used the
+new string consistently; only this one test lagged), and the fix
+carries zero risk to anything else -- it touches a test file only, one
+line, one string literal, with no production-code dependency. Re-run
+standalone: passes cleanly (`[1]` through `[7]`, all checks). Re-run of
+the full `tests/unit` mock suite (21 files, all mock, no ViennaPS/DevSim):
+21/21 PASS, confirming no other mock test was affected by anything in
+this session's diff. Since no production code changed between the full
+run above and this fix, the full suite's real-ViennaPS/DevSim portion
+(all 90 passing + all 3 pre-existing failures) is unaffected by
+definition and was not re-run in full (would cost another ~60-90
+minutes for zero expected new information) -- the mock-suite re-run is
+the correct-scoped verification for a test-file-only, one-line fix,
+not a shortcut around verification.
+
+**Final regression state, this session's LOCOS work, complete:**
+**91 passed, 3 failed, 0 skipped** (94 total: 21 unit + 73 integration).
+Zero new failures survive; the 3 failures are the exact same 3
+pre-existing DevSim-convergence/solver-noise tests this file has
+documented since before this session, unchanged in symptom or message.
+
+**What remains uncertain:** whether this project has OTHER GUI-driving
+tests (not just the oxidation-method combobox) that assert against a
+string value the split, or some future rename, could silently
+invalidate the same way -- this session checked only the one call shape
+implicated here, not a general audit of every combobox-value-comparison
+test in the suite.
+
+**Next smallest experiment:** none needed for this finding specifically
+(closed, fixed, verified). If a future session renames another GUI
+combobox value, grep for `<var>.set("<old value>")` AND
+`<var>.get() == "<old value>"` as two separate patterns before
+declaring the migration complete -- a single call-shape grep is not
+sufficient, as this session's own miss demonstrates.

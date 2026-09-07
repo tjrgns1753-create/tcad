@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Phase 4 real-backend verification: run the Thermal Oxidation model
-against the actually-installed ViennaPS 4.6.2, both without and with
-mask_material (fin-style vs LOCOS-style), on a small grid.
+Phase 4 real-backend verification: run both oxidation models against
+the actually-installed ViennaPS 4.6.2 on a small grid -- Thermal
+Oxidation (CORE, fin-style, no mask) and LOCOS (ADVANCED/OPTIONAL,
+mask_material set).
+
+2026-09-08: LOCOS split out of ThermalOxidation into its own
+ProcessStep/registry entry ("oxidation", "locos") -- see
+tcad/process/oxidation/locos.py. This test used to run both variants
+through the SAME class (mask_material was the only thing telling them
+apart); it now looks each variant up under its own registry name,
+which is what this split's own registry/GUI separation claims.
 """
 
 import sys
@@ -31,16 +39,15 @@ BASE_RECIPE = {
 }
 
 VARIANTS = {
-    "thermal_fin_style_no_mask": {},
-    "thermal_locos_style_with_mask": {"mask_material": "Mask"},
+    "thermal_fin_style_no_mask": ("thermal", {}),
+    "locos_style_with_mask": ("locos", {"mask_material": "Mask"}),
 }
 
 
 def main():
-    step_cls = registry.get("oxidation", "thermal")
-
-    for variant_name, overrides in VARIANTS.items():
+    for variant_name, (model_name, overrides) in VARIANTS.items():
         recipe = {**BASE_RECIPE, **overrides}
+        step_cls = registry.get("oxidation", model_name)
 
         with tempfile.TemporaryDirectory() as tmp:
             result = step_cls().run(recipe, tmp)
@@ -56,7 +63,7 @@ def main():
         print(f"[{variant_name}] real ViennaPS run OK -> {result['final_mesh']}")
 
     print()
-    print("THERMAL OXIDATION (fin-style + LOCOS-style) RAN AGAINST REAL VIENNAPS 4.6.2 SUCCESSFULLY")
+    print("THERMAL OXIDATION (CORE) + LOCOS (ADVANCED) BOTH RAN AGAINST REAL VIENNAPS 4.6.2 SUCCESSFULLY")
 
 
 if __name__ == "__main__":

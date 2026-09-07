@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LOCOS mask-retention fix — DevSim import, real ViennaPS 4.6.2 + DevSim
-2.10.1, through the actual production entry points (registry ->
-ThermalOxidation.run() -> build_process_result() -> import_process_result()),
+LOCOS mask-retention fix — DevSim import, real ViennaPS 4.6.2 + DevSim,
+through the actual production entry points (registry ->
+LocosOxidation.run() -> build_process_result() -> import_process_result()),
 not an isolated probe.
 
+2026-09-08: LOCOS split out of ThermalOxidation into its own registry
+entry ("oxidation", "locos") -- tcad/process/oxidation/locos.py. This
+test's registry lookup was updated accordingly; the geometry/export fix
+itself is unchanged, only moved.
+
 This is the real bar the pad-oxide-first LOCOS geometry fix
-(tcad/process/oxidation/thermal.py) and its matching export function
+(tcad/process/oxidation/locos.py) and its matching export function
 (tcad.backends.viennaps.io.save_locos_volume_mesh) both had to clear
 before shipping: fixing mask retention is worthless if the resulting
 mesh can't be imported into DevSim, and the earlier (superseded)
@@ -17,9 +22,9 @@ mask erosion" section, for the full investigation this test's fix
 resolves).
 
 Checks:
-  1. ThermalOxidation.run() with mask_material completes without error
-     and produces a mesh containing Si, SiO2, AND the mask material —
-     all three, not just two (Si vanishing was the specific bug).
+  1. LocosOxidation.run() completes without error and produces a mesh
+     containing Si, SiO2, AND the mask material — all three, not just
+     two (Si vanishing was the specific bug).
   2. build_process_result() (the real Process -> ProcessResult adapter,
      never LOCOS-aware itself) reads the LOCOS mesh correctly.
   3. import_process_result() (the real ProcessResult -> DevSim adapter)
@@ -65,12 +70,12 @@ RECIPE = {
 
 def main():
     module = viennaps_session.require_viennaps()
-    step_cls = registry.get("oxidation", "thermal")
+    step_cls = registry.get("oxidation", "locos")
 
     with tempfile.TemporaryDirectory() as tmp:
         step_result = step_cls().run(dict(RECIPE), tmp)
         assert Path(step_result["final_mesh"]).exists()
-        print(f"[1/4] ThermalOxidation.run() (LOCOS) OK -> {step_result['final_mesh']}")
+        print(f"[1/4] LocosOxidation.run() OK -> {step_result['final_mesh']}")
 
         mesh = meshio.read(step_result["final_mesh"])
         triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
@@ -127,7 +132,7 @@ def main():
 
     print()
     print("LOCOS MASK-RETENTION FIX: DEVSIM IMPORT VERIFIED THROUGH THE REAL "
-          "PRODUCTION ENTRY POINTS (registry -> ThermalOxidation.run() -> "
+          "PRODUCTION ENTRY POINTS (registry -> LocosOxidation.run() -> "
           "build_process_result() -> import_process_result())")
 
 

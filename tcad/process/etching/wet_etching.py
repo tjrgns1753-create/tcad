@@ -217,10 +217,12 @@ class WetEtch(ProcessStep):
             # Crystallographic (orientation-dependent) overload — see
             # module docstring for the real-data provenance and the 2D
             # verification. Presence of direction100 is the switch,
-            # mirroring how "mask_material" switches fin vs LOCOS in
-            # thermal.py; the other 5 crystallographic keys are
-            # required alongside it (a plain KeyError below if any is
-            # missing, same as every other recipe key in this project).
+            # the same optional-recipe-key pattern `mask_material`
+            # uses elsewhere in this project (e.g. selecting LOCOS,
+            # tcad/process/oxidation/locos.py); the other 5
+            # crystallographic keys are required alongside it (a plain
+            # KeyError below if any is missing, same as every other
+            # recipe key in this project).
             model = module.WetEtching(
                 direction100=recipe["direction100"],
                 direction010=recipe["direction010"],

@@ -256,9 +256,12 @@ def _real_locos_oxidation_then_strip(tmp):
     real mask + pad-oxide strip -- converts the open window's Si to
     SiO2 permanently while restoring real Si everywhere else. Identical
     recipe/technique to the CE-2 test (task-7)."""
-    step0 = registry.get("oxidation", "thermal")()
+    # 2026-09-08: LOCOS split out of ThermalOxidation into its own
+    # registry entry ("oxidation", "locos") -- tcad/process/oxidation/
+    # locos.py. Both steps below genuinely run LOCOS (mask_material set).
+    step0 = registry.get("oxidation", "locos")()
     recipe0 = {
-        "_process_category": "oxidation", "_process_model_key": "thermal",
+        "_process_category": "oxidation", "_process_model_key": "locos",
         "mask_left_um": -CONV_WINDOW_HALF_UM, "mask_right_um": CONV_WINDOW_HALF_UM,
         "mask_material": "Mask", "pr_thickness_um": 1.0,
         "silicon_depth_um": CONV_SI_DEPTH_UM, "grid_delta_um": CONV_GRID_UM,
@@ -269,7 +272,7 @@ def _real_locos_oxidation_then_strip(tmp):
 
     recipe1 = dict(recipe0)
     recipe1["temperature_c"], recipe1["time_hours"] = 1100.0, 8.0
-    step1 = registry.get("oxidation", "thermal")(inherited_domain=step0.last_domain)
+    step1 = registry.get("oxidation", "locos")(inherited_domain=step0.last_domain)
     step1.run(recipe1, tmp)
 
     module = viennaps_session.require_viennaps()

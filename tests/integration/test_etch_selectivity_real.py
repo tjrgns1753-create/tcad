@@ -87,9 +87,13 @@ def areas_by_material(mesh_path):
 
 def oxidize(tmp, label):
     """A real oxide-on-Si stack with a masked window, via the real
-    production entry point. Its own `last_domain` is what the etch
-    steps below chain from."""
-    step = registry.get("oxidation", "thermal")()
+    production entry point (BASE_RECIPE carries mask_material, so this
+    is genuinely a LOCOS run -- used here purely as fixture setup for
+    the etch-selectivity checks below, not testing LOCOS itself; see
+    tcad/process/oxidation/locos.py, split out of ThermalOxidation
+    2026-09-08). Its own `last_domain` is what the etch steps below
+    chain from."""
+    step = registry.get("oxidation", "locos")()
     result = step.run(dict(BASE_RECIPE), str(Path(tmp) / label))
     return step, areas_by_material(result["final_mesh"])
 

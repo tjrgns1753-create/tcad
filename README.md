@@ -133,7 +133,7 @@ result = run_iv_sweep(
 save_csv(result, "/tmp/out/iv.csv")
 ```
 
-## Supported Process models (20)
+## Supported Process models (21)
 
 | Category | Model (`registry` name) | ViennaPS class |
 |---|---|---|
@@ -155,8 +155,31 @@ save_csv(result, "/tmp/out/iv.csv")
 | Deposition | `directional` | `DirectionalProcess` |
 | Deposition | `isotropic` | `IsotropicProcess` |
 | Deposition | `geometric_trench` | `GeometricTrenchDeposition` (one-shot geometric stamp, not a rate×time simulation — see `tcad/process/deposition/geometric_trench.py`'s module docstring) |
-| Oxidation | `thermal` | `Oxidation` (fin-style and LOCOS-style, via `mask_material`) |
+| Oxidation | `thermal` | `Oxidation` (plain fin-style — CORE process; part of this simulator's basic process flow, no mask concept at all) |
+| Oxidation | `locos` | `Oxidation` (masked, real elastic mask/oxide contact mechanics — **ADVANCED / OPTIONAL** process; see below) |
 | Geometry | `gate_stack` | none (plain ViennaLS box construction, no `Process()` call — see `tcad/process/geometry/gate_stack.py`'s module docstring). Builds a MOSFET-shaped 5-material stack: Si body, a gate oxide + electrode confined to a channel window, and separate source/drain pads. **Terminal geometry only** — do not chain a further process step onto it (verified to silently corrupt the export; see the module docstring). |
+
+**Thermal Oxidation vs. LOCOS.** Both run the same real ViennaPS
+`Oxidation` engine and are independently selectable, the same way any
+two etch or deposition models are — neither is a prerequisite for the
+other, and the core process flow (wafer → litho → etch → deposition →
+oxidation → doping → anneal → metallization → DevSim) is complete and
+fully functional with LOCOS never touched:
+
+- **Thermal Oxidation — CORE.** Grows oxide on whatever Si surface is
+  currently exposed. No mask, no mask/oxide mechanics.
+- **LOCOS — ADVANCED / OPTIONAL.** A selective-oxidation recipe using a
+  real elastic mask/oxide contact-mechanics model (`setMaskMaterial`,
+  `contactMode=2`) on top of the same oxidation engine — an educational
+  example of the Si3N4-masked process real fabs use to grow field oxide
+  while protecting active-area Si, including a real, coordinate
+  -measured bird's-beak (lateral oxide encroachment under the mask
+  edge — see `tests/integration/test_locos_birds_beak_real.py` and
+  `docs/investigation_log.md`). Not required by, and does not modify,
+  Thermal Oxidation or any other process model — see
+  `tcad/process/oxidation/locos.py`'s own module docstring for the full
+  physics and API details, and `tcad/process/oxidation/thermal.py`'s
+  for confirmation that nothing LOCOS-specific reaches the core path.
 
 ```python
 from tcad.process import registry

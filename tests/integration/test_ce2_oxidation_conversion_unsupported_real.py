@@ -59,7 +59,7 @@ on top of an un-grown pad oxide there; the open window's oxide
 genuinely thickens with real time/temperature).
 
 Problem 3 (new finding, not pre-flagged): LOCOS's own pad-oxide-first
-construction (module docstring, tcad/process/oxidation/thermal.py)
+construction (module docstring, tcad/process/oxidation/locos.py)
 means a REAL, resolvable oxide layer sits across the ENTIRE wafer --
 masked span included -- from the moment the geometry is built, before
 any growth. So even after stripping the mask (domain.removeMaterial,
@@ -114,7 +114,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-import tcad.process.oxidation  # noqa: F401 -- registers "oxidation"/"thermal"
+import tcad.process.oxidation  # noqa: F401 -- registers "oxidation"/"thermal" and "oxidation"/"locos"
 import tcad.process.etching  # noqa: F401 -- registers "etching"/"isotropic"
 from tcad.process import registry
 from tcad.physics.doping import apply_gaussian_implant_doping
@@ -171,9 +171,13 @@ def _real_locos_oxidation_then_strip(tmp):
     again, exactly as a real LOCOS fab flow leaves it after its own
     post-mask-removal HF dip -- and so that check genuinely can fail if
     the mask did not do its job (see PAD_STRIP_DEPTH_UM's own comment)."""
-    step0 = registry.get("oxidation", "thermal")()
+    # 2026-09-08: LOCOS split out of ThermalOxidation into its own
+    # registry entry ("oxidation", "locos") -- tcad/process/oxidation/
+    # locos.py. Both steps below genuinely run LOCOS (mask_material is
+    # set), so both now use that registry name.
+    step0 = registry.get("oxidation", "locos")()
     recipe0 = {
-        "_process_category": "oxidation", "_process_model_key": "thermal",
+        "_process_category": "oxidation", "_process_model_key": "locos",
         "mask_left_um": -WINDOW_HALF_UM, "mask_right_um": WINDOW_HALF_UM,
         "mask_material": "Mask", "pr_thickness_um": 1.0,
         "silicon_depth_um": SI_DEPTH_UM, "grid_delta_um": GRID_UM,
@@ -182,10 +186,10 @@ def _real_locos_oxidation_then_strip(tmp):
     }
     step0.run(recipe0, tmp)
 
-    # NOTE (Minor finding, task-7 review): thermal.py's chained-LOCOS
+    # NOTE (Minor finding, task-7 review): locos.py's chained-LOCOS
     # path deliberately does NOT re-apply mask_left_um/mask_right_um --
     # it reuses the inherited, already-deformed mask from step0 as-is
-    # (see thermal.py's own run(), "is_chained_locos" branch). Copying
+    # (see locos.py's own run(), "is_chained_locos" branch). Copying
     # them into recipe1 below is therefore inert for the geometry (the
     # real window stays wherever step0's mask ended up, which is not
     # exactly [-1.0, +1.0] once bird's-beak deformation is real) --
@@ -198,7 +202,7 @@ def _real_locos_oxidation_then_strip(tmp):
     # see PAD_STRIP_DEPTH_UM's own comment for the real measured numbers
     # that drove this.
     recipe1["temperature_c"], recipe1["time_hours"] = 1100.0, 8.0
-    step1 = registry.get("oxidation", "thermal")(inherited_domain=step0.last_domain)
+    step1 = registry.get("oxidation", "locos")(inherited_domain=step0.last_domain)
     step1.run(recipe1, tmp)
 
     module = session.require_viennaps()

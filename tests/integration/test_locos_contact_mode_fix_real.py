@@ -4,18 +4,19 @@
 LOCOS mask/oxide elastic-coupling fix — real-backend physical sanity
 check, real ViennaPS 4.6.2.
 
-Regression test for the fix in tcad/process/oxidation/thermal.py: the
-LOCOS mask segfault's real root cause was ViennaPS's
-OxidationMaskParameters defaulting to contactMode=1 ("oneway"), which
-diverges for this project's trench geometry; setting contactMode=2
-("twoway", the same mode the official ViennaPS locosOxidation.py
-example uses) fixes it. NOTE: the ORIGINAL (MakeTrench-based, mask
-directly on bare Si) geometry this comment used to describe as
-"unchanged" has since been REPLACED for the fresh-wafer LOCOS path by
-a pad-oxide-first construction (see thermal.py's module docstring,
-"LOCOS mask erosion — root cause found, fixed, and SHIPPED") — that
-geometry change is what fixed mask erosion; contactMode=2 alone still
-only fixes the segfault, unchanged from when this test was written.
+Regression test for the fix in tcad/process/oxidation/locos.py (moved
+out of thermal.py 2026-09-08, see that module's docstring): the LOCOS
+mask segfault's real root cause was ViennaPS's OxidationMaskParameters
+defaulting to contactMode=1 ("oneway"), which diverges for this
+project's trench geometry; setting contactMode=2 ("twoway", the same
+mode the official ViennaPS locosOxidation.py example uses) fixes it.
+NOTE: the ORIGINAL (MakeTrench-based, mask directly on bare Si)
+geometry this comment used to describe as "unchanged" has since been
+REPLACED for the fresh-wafer LOCOS path by a pad-oxide-first
+construction (see locos.py's module docstring, "LOCOS mask erosion —
+root cause found, fixed, and SHIPPED") — that geometry change is what
+fixed mask erosion; contactMode=2 alone still only fixes the segfault,
+unchanged from when this test was written.
 
 This test locks in what was actually verified:
   1. no crash (implicit: the test process itself would die otherwise)
@@ -122,13 +123,19 @@ def _si_window_width(mesh_path, module):
 
 def main():
     module = session.require_viennaps()
-    step_cls = registry.get("oxidation", "thermal")
+    # 2026-09-08: LOCOS split out of ThermalOxidation into its own
+    # registry entry ("oxidation", "locos") -- see
+    # tcad/process/oxidation/locos.py. Fin-style still goes through
+    # "thermal"; LOCOS-style now goes through "locos" explicitly,
+    # instead of both sharing one class keyed off mask_material.
+    thermal_cls = registry.get("oxidation", "thermal")
+    locos_cls = registry.get("oxidation", "locos")
 
     tmp_fin = tempfile.mkdtemp()
-    fin_result = step_cls().run(dict(BASE_RECIPE), tmp_fin)
+    fin_result = thermal_cls().run(dict(BASE_RECIPE), tmp_fin)
     tmp_locos = tempfile.mkdtemp()
     locos_recipe = {**BASE_RECIPE, "mask_material": "Mask"}
-    locos_result = step_cls().run(locos_recipe, tmp_locos)
+    locos_result = locos_cls().run(locos_recipe, tmp_locos)
 
     print("[1/5] both fin-style and LOCOS-style runs completed without crashing "
           "(reaching this line proves it)")
@@ -156,15 +163,22 @@ def main():
     )
     grid = BASE_RECIPE["grid_delta_um"]
 
-    for label, recipe, result in (
-        ("fin-style", BASE_RECIPE, fin_result),
-        ("LOCOS-style", locos_recipe, locos_result),
+    for label, recipe, result, cls in (
+        ("fin-style", BASE_RECIPE, fin_result, thermal_cls),
+        ("LOCOS-style", locos_recipe, locos_result, locos_cls),
     ):
         with tempfile.TemporaryDirectory() as tmp:
             # Re-run just prepare_domain() to inspect the BEFORE geometry
             # directly (result["final_mesh"] is post-oxidation for LOCOS,
             # which already moved the mask boundary via growth).
-            step = step_cls()
+            # prepare_domain() itself is the SAME inherited ProcessStep
+            # method for both classes (neither overrides it -- LOCOS's
+            # own pad-oxide-first construction is a separate method,
+            # _build_locos_geometry(), only reached by run()), so this
+            # measures the same plain MakeTrench window either way; `cls`
+            # is threaded through for clarity, not because it changes
+            # what runs.
+            step = cls()
             geometry = step.prepare_domain(dict(recipe))
             from tcad.backends.viennaps.io import save_volume_mesh
             before_path = save_volume_mesh(geometry, Path(tmp) / "before")
@@ -188,12 +202,12 @@ def main():
     assert retention > 0.90, (
         f"mask retention regressed: {retention:.4f} (area={after['Mask']['area']:.6f} vs "
         f"expected pre-oxidation {expected_pre_mask_area:.6f}) -- root cause fix "
-        "(pad-oxide-first geometry, see thermal.py) previously measured ~98% retention "
+        "(pad-oxide-first geometry, see locos.py) previously measured ~98% retention "
         "at this recipe"
     )
     print(f"[5/5] mask retention = {100*retention:.2f}% "
           f"(area={after['Mask']['area']:.6f} of expected pre-oxidation "
-          f"{expected_pre_mask_area:.6f}) -- root cause fixed, see thermal.py module "
+          f"{expected_pre_mask_area:.6f}) -- root cause fixed, see locos.py module "
           f"docstring and CLAUDE.md for the full investigation")
 
     print()

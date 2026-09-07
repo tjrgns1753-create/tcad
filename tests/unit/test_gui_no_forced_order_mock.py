@@ -150,7 +150,7 @@ def main():
             f"plain thermal oxidation builds a mask: {plain['mask_spans_um']}")
 
         # --- 6. LOCOS is independent and does not contaminate it ------
-        app.oxidation_method.set("LOCOS")
+        app.oxidation_method.set("LOCOS (Advanced)")
         locos = queued(app.run_oxidation)
         assert locos.get("mask_material") == "Mask", "LOCOS lost its mask material"
         assert locos["mask_spans_um"], "LOCOS lost its mask"

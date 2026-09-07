@@ -1414,7 +1414,7 @@ class TCADApplication(tk.Tk):
         unwrapped entry holds live ViennaLS level-set objects. A .vpsd
         round-trip cannot carry either, so a resumed LOCOS domain
         reports `is_locos_registered() == False` and a following
-        LOCOS-on-LOCOS oxidation would refuse outright (thermal.py
+        LOCOS-on-LOCOS oxidation would refuse outright (locos.py
         raises NotImplementedError for exactly this).
 
         Measured, so the scope of the problem is known rather than
@@ -2066,7 +2066,7 @@ class TCADApplication(tk.Tk):
 
         frame = ttk.LabelFrame(
             parent,
-            text="Oxidation recipe (thermal / LOCOS)",
+            text="Oxidation recipe (Thermal Oxidation [Core] / LOCOS [Advanced])",
             padding=10,
         )
 
@@ -2113,14 +2113,20 @@ class TCADApplication(tk.Tk):
         )
 
         # Thermal oxidation and LOCOS are INDEPENDENT choices, the same
-        # way each etch or deposition model is. LOCOS used to be a
-        # checkbox on the thermal recipe, which made it read as a
-        # modifier of ordinary oxidation and let its special-case logic
-        # (its own from-scratch pad-oxide+mask geometry, its mask
-        # material, its elastic contact mode) reach into the plain path.
-        # As a separate method, selecting "Thermal oxidation" cannot
-        # touch any of it -- see run_oxidation(), where the LOCOS branch
-        # is the only place mask keys are built at all.
+        # way each etch or deposition model is -- CORE (thermal.py,
+        # registry name "thermal") vs ADVANCED/OPTIONAL (locos.py,
+        # registry name "locos"), two separate ProcessStep classes since
+        # 2026-09-08. LOCOS used to be a checkbox on the thermal recipe,
+        # both keying the SAME registry entry ("thermal") regardless of
+        # which was picked -- selecting "Thermal oxidation" could not
+        # reach LOCOS's own geometry/mask/mechanics code (see
+        # run_oxidation(), where the LOCOS branch is the only place mask
+        # keys are built at all), but it still ran through
+        # ThermalOxidation, which carried that code internally. Now the
+        # two are separate classes/files: `is_locos` below also selects
+        # which registry name run_oxidation() sends to the worker, so
+        # "Thermal oxidation" cannot import, instantiate, or execute a
+        # single line of locos.py.
         self.oxidation_method = tk.StringVar(value="Thermal oxidation")
 
         ttk.Label(
@@ -2133,7 +2139,7 @@ class TCADApplication(tk.Tk):
             frame,
             textvariable=self.oxidation_method,
             state="readonly",
-            values=["Thermal oxidation", "LOCOS"],
+            values=["Thermal oxidation", "LOCOS (Advanced)"],
         ).pack(fill="x")
 
         self.oxidation_button = ttk.Button(
@@ -2151,12 +2157,17 @@ class TCADApplication(tk.Tk):
         ttk.Label(
             frame,
             text=(
-                "LOCOS grows oxide under a real elastic mask/oxide "
-                "contact model; unchecked grows oxide on the exposed "
-                "(fin) silicon with no mask physics."
+                "Thermal oxidation [Core]: grows oxide on whatever Si is "
+                "currently exposed, no mask physics -- part of the "
+                "simulator's basic process flow.\n"
+                "LOCOS [Advanced]: an optional, educational recipe for "
+                "the Si3N4-masked selective-oxidation process real fabs "
+                "use, grown under a real elastic mask/oxide contact "
+                "model -- not required for anything else here."
             ),
             foreground="#555",
             wraplength=310,
+            justify="left",
         ).pack(
             anchor="w",
             pady=5,
@@ -2184,7 +2195,7 @@ class TCADApplication(tk.Tk):
 
         try:
 
-            is_locos = self.oxidation_method.get() == "LOCOS"
+            is_locos = self.oxidation_method.get() == "LOCOS (Advanced)"
 
             # Plain thermal oxidation builds NO mask, ever. It oxidizes
             # whatever surface the wafer currently has -- that is the
@@ -2231,7 +2242,12 @@ class TCADApplication(tk.Tk):
 
             recipe = {
                 "_process_category": "oxidation",
-                "_process_model_key": "thermal",
+                # CORE ("thermal") vs ADVANCED/OPTIONAL ("locos") --
+                # two independently registered ProcessStep classes (see
+                # tcad/process/oxidation/{thermal,locos}.py). Selecting
+                # "Thermal oxidation" always dispatches to "thermal",
+                # regardless of any mask key below.
+                "_process_model_key": "locos" if is_locos else "thermal",
 
                 **mask_keys,
 

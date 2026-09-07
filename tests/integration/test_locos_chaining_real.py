@@ -2,11 +2,17 @@
 # -*- coding: utf-8 -*-
 """
 LOCOS process-flow chaining — real ViennaPS 4.6.2, through the actual
-production entry points (registry -> ThermalOxidation.run() ->
+production entry points (registry -> LocosOxidation.run() ->
 DirectionalEtch(inherited_domain=...).run()), the same way
 tcad.process.flow.run_flow() chains any two steps.
 
-Guards the fix in ThermalOxidation._make_locos_domain_chainable() and
+2026-09-08: LOCOS split out of ThermalOxidation into its own
+tcad/process/oxidation/locos.py ("oxidation"/"locos" registry entry) --
+this test's own registry lookups were updated accordingly; the LOCOS
+logic itself (and every number this test checks) is unchanged, only
+moved.
+
+Guards the fix in LocosOxidation._make_locos_domain_chainable() and
 tcad.backends.viennaps.io.register_locos_export(). Before it, chaining
 ANY further step onto fresh-LOCOS geometry silently destroyed the Si
 and SiO2 level sets outright (both dropping to zero points during the
@@ -143,7 +149,7 @@ def main():
 
     with tempfile.TemporaryDirectory() as tmp:
         # ---- step 1: LOCOS oxidation, the real production entry point ----
-        step1 = registry.get("oxidation", "thermal")()
+        step1 = registry.get("oxidation", "locos")()
         result1 = step1.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step1"))
         areas1 = areas_by_material(result1["final_mesh"])
 
@@ -235,8 +241,9 @@ def main():
         # ---- 7: fin-style oxidation on a LOCOS domain DOES work ----
         fin_recipe = {k: v for k, v in OXIDATION_RECIPE.items()
                       if k != "mask_material"}
-        ox_cls = registry.get("oxidation", "thermal")
-        step5 = ox_cls(inherited_domain=step4.last_domain)
+        thermal_cls = registry.get("oxidation", "thermal")
+        locos_cls = registry.get("oxidation", "locos")
+        step5 = thermal_cls(inherited_domain=step4.last_domain)
         result5 = step5.run(fin_recipe, str(Path(tmp) / "step5"))
         areas5 = areas_by_material(result5["final_mesh"])
 
@@ -258,7 +265,7 @@ def main():
         # longer describe it -- rebuilding from them would discard
         # everything steps 2-5 did. (A second LOCOS chained DIRECTLY onto
         # a LOCOS step does work; that is check 9.)
-        step6 = ox_cls(inherited_domain=step5.last_domain)
+        step6 = locos_cls(inherited_domain=step5.last_domain)
         try:
             step6.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step6"))
         except NotImplementedError as exc:
@@ -279,7 +286,7 @@ def main():
         # The domain cannot be oxidized as-is (the chainable re-wrap
         # unioned the mask into the oxide, and vps.Oxidation()'s
         # oxide-band detection needs a distinct band -- it hangs), so
-        # thermal.py rebuilds an unwrapped-mask domain from the copies
+        # locos.py rebuilds an unwrapped-mask domain from the copies
         # stashed just before that union. Expectations here are the
         # step's OWN measured before/after, not fabricated numbers.
         #
@@ -296,11 +303,11 @@ def main():
         # these same production entry points. Raising this check's own
         # time would make the whole suite materially slower for a
         # property already measured.
-        fresh = ox_cls()
+        fresh = locos_cls()
         fresh_result = fresh.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step7"))
         areas_first = areas_by_material(fresh_result["final_mesh"])
 
-        second = ox_cls(inherited_domain=fresh.last_domain)
+        second = locos_cls(inherited_domain=fresh.last_domain)
         second_result = second.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step8"))
         areas_second = areas_by_material(second_result["final_mesh"])
 
