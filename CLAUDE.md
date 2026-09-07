@@ -564,13 +564,18 @@ I-V points; they differ in the 3rd significant digit at ~1e-27 A, i.e.
 solver noise around zero, so the assertion is stricter than the solver
 is deterministic), `test_robust_iv_sweep_real` and
 `test_gui_measurement_doping_kinds_real` (real `Convergence failure!`,
-OPEN item 2 territory). A 4th, `test_mosfet_body_bias_real.py`, has been
-observed to intermittently join this list when run embedded in the full
-suite (real `RuntimeError: Minimum step size too small` after 1400+s of
-real solving) while passing cleanly every time it's been run standalone
-or against a clean commit — treat it as the same class of marginal-
-convergence flakiness as the other 3 (see "DevSim cross-solve
-sensitivity" below) if it shows up, not a fresh regression to chase.
+OPEN item 2 territory). A 4th slot has been observed to intermittently join this list when run
+embedded in the full suite — a DIFFERENT test each time so far
+(`test_mosfet_body_bias_real.py`: real `RuntimeError: Minimum step size
+too small` after 1400+s of real solving; `test_bosch_drie_resist_mask_real.py`:
+a real geometry measurement landing 0.0004um outside its own 0.005um
+tolerance) — while EACH has passed cleanly every time it's been run
+standalone or against a clean commit. Treat any single, non-reproducing
+4th failure as this same class of marginal, order/timing-sensitive noise
+(see "DevSim cross-solve sensitivity" below), not a fresh regression to
+chase — but always re-run the specific failing test in isolation before
+assuming that, and stay alert if the SAME test starts failing
+repeatedly, or more than one extra test fails at once.
 
 **Do not quote an earlier "33 passed, 0 failed" from this file as
 evidence that the suite is green** — that number was written from a
