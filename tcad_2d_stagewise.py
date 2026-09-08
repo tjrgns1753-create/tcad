@@ -1032,7 +1032,34 @@ class TCADApplication(tk.Tk):
             return
         x_um = x_min + (event.x - x0) / x_scale
         y_um = (surface_y - event.y) / y_scale
-        self.coord_var.set(f"X {x_um:+8.3f} µm   Y {y_um:+8.3f} µm")
+        readout = f"X {x_um:+8.3f} µm   Y {y_um:+8.3f} µm"
+        readout += self._doping_unsupported_hover_note(x_um)
+        self.coord_var.set(readout)
+
+    def _doping_unsupported_hover_note(self, x_um: float) -> str:
+        """Empty normally; a real explanation appended to the
+        coordinate readout when hovering the doping overlay over an
+        UNSUPPORTED_BY_MODEL bucket -- so a user does not read the gray
+        hatch (_DOPING_UNSUPPORTED_MARKER, see _doping_color_segments())
+        as "doping is gone". Reuses net_doping_at()'s own real
+        physics_status note verbatim (the same computed fact the
+        overlay itself and _log_physics_status() already surface),
+        never a separately-worded approximation -- see
+        WaferState._polarity_sum()'s own note text, which already says
+        the dopant is preserved and excluded rather than zeroed.
+        """
+        if self.viewer_layer_var.get() != "doping" or self.wafer_state is None:
+            return ""
+        try:
+            result = self.wafer_state.net_doping_at(x_um)
+        except Exception:
+            return ""
+        if not result.physics_status:
+            return ""
+        notes = [e.get("note", "") for e in result.physics_status.get("entries", []) if e.get("note")]
+        if not notes:
+            return ""
+        return "   [UNSUPPORTED: " + "; ".join(notes) + "]"
 
     # --------------------------------------------------------
     # CONTROL PANEL
