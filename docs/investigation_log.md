@@ -10029,3 +10029,87 @@ of which one it is or what precedes it, that would be strong evidence
 for "any subprocess dispatch from this GUI is unreliable right now"
 over a scenario-specific explanation, and would unify A and B (and
 likely C, see below) under one investigation rather than three.
+
+### Investigation C: Bosch second masked step -- CORRECTS the earlier "GUI subprocess dispatch, Bosch exonerated" conclusion. Root cause CONFIRMED: cycle-time granularity (many short cycles) numerically degenerates the level-set, independent of chaining and independent of the GUI (2026-09-08, same day, per the user's explicit instruction to investigate C last, with a hard requirement to inspect real geometry/rayTrace-input state and not assume the GUI subprocess boundary without direct comparison)
+
+**This section CORRECTS the earlier "Bosch DRIE as a second masked
+step" entry above** (and the Completed-section summary in CLAUDE.md
+that cites it), which concluded Bosch's own geometry/physics logic was
+"exonerated" via `bosch_debug_v3.py`'s own STEP C ("direct-in-process
+= OK"). That STEP C only exercised `run_bosch_phase1_only()`, a
+DELIBERATELY SIMPLIFIED single-phase silicon-etch call (one
+`MultiParticleProcess().apply()`), NOT the real, full, multi-cycle
+Bosch alternating polymer-deposition/etch process the production
+`BoschDRIEEtch.run()` actually performs. That simplification is what
+let the earlier investigation pass cleanly -- it never ran the real
+code path.
+
+**What was tested, this round, each script real ViennaPS, no mocking:**
+
+| # | Script | Scenario | Result |
+|---|---|---|---|
+| C, trial 1 | `exp_c2_bosch_after_etch.py` | Doping->Litho->Isotropic(1s)->Bosch(2nd masked step), via REAL GUI subprocess dispatch, GUI-default params (`grid=0.05, cycles=10`, `etch_time_s=1`) | No hang, no exception -- but a SILENTLY BROKEN mesh: 8 nodes, 8 triangles, ONLY "Si" material (PHS/mask gone), a tiny disconnected fragment at x=[-0.77,-0.69] |
+| C, trial 2 | same script, re-run | same recipe | Same broken SHAPE (8 nodes, 8 triangles, Si-only) but at a DIFFERENT location (x=[3.44,3.52]) -- reproducible pattern, not identical output |
+| C, direct in-process | `C_direct_full_export.py` | THE SAME chained scenario (isotropic 1s, THEN Bosch with identical params), but calling `IsotropicEtch().run()`/`BoschDRIEEtch().run()` DIRECTLY, no GUI, no subprocess at all | **`RuntimeError: No geometry was passed to rayTrace. Aborting.`** -- the ORIGINAL reported error, reproduced with zero GUI/subprocess involvement. Preceded by 2004 `WARNING: CalculateNormalVectors: Vector of length 0` messages and `WARNING: Writing empty mesh.` from an intermediate Bosch phase |
+| C, fresh-domain control | `C_fresh_domain_control.py` | Bosch alone on a FRESH (never-etched) masked wafer, SAME params (`etch_time_s=1.0, cycles=10`) -- isolates domain chaining as a variable | **ALSO degenerate**: 20 nodes, 24 triangles, PHS-only (no Si at all), tiny fragment -- plus a NEW warning: `save_volume_mesh(): the exported mesh is missing 1 material(s) that ARE present in the domain` (a KNOWN, already-documented ViennaLS `WriteVisualizationMesh` limitation, see CLAUDE.md's LOCOS section) |
+| C, safe-params control | `C_safe_params_control.py` | Bosch alone on the SAME fresh masked wafer, but with `etch_time_s=0.3, cycles=1` -- the EXACT parameters `test_bosch_drie_resist_mask_real.py` (a real, passing, already-shipped regression test) uses | **PASS -- a real, complete, correct mesh**: 24541 nodes, 48305 triangles, BOTH `PHS` and `Si` present, correct bbox (`x=[-5,5] y=[-5,1.025]`), matching the wafer's real geometry |
+
+**What it proves, with high confidence.** (1) Domain chaining is NOT
+the trigger -- a completely fresh, never-etched wafer with the failing
+parameters degenerates identically to the chained scenario. (2) GUI
+subprocess dispatch is NOT the trigger -- the exact same failure
+(the literal, original `RuntimeError`) reproduces with a plain, direct,
+in-process `.run()` call, no subprocess anywhere. (3) The real,
+load-bearing variable is **per-cycle etch time**: `etch_time_s=1.0`
+divided across `cycles=10` gives 0.1s of etch time per Bosch cycle,
+which the underlying ViennaLS level-set advection cannot sustain
+without developing zero-length surface normals and eventually an
+effectively empty level-set band; `etch_time_s=0.3` with `cycles=1`
+(0.3s, no sub-division) does not exhibit this failure on the identical
+wafer/mask setup. (4) **The GUI's own default Bosch panel value is
+`cycles=10`** (confirmed directly from a live GUI dispatch trial's own
+printed state: `cycles_var=10`) -- meaning a user who runs Bosch DRIE
+from the GUI with its own stock defaults, at a short total etch time,
+is running exactly the parameter combination now confirmed to
+degenerate the geometry. This is why the bug was first noticed via the
+GUI (it uses the unsafe default) and why an EARLIER, independently
+-authored regression test never caught it (it happens to use safer,
+explicitly-chosen parameters).
+
+**What remains uncertain.** The exact numerical threshold between
+"safe" and "degenerate" per-cycle time was not mapped -- only two
+points are known (0.1s/cycle: degenerate; 0.3s/cycle single-cycle:
+safe), so whether the boundary is closer to 0.1s or closer to 0.3s, and
+whether `cycles` count itself (independent of per-cycle duration) is
+also a factor, is not determined. The precise internal ViennaLS
+mechanism that produces a zero-length normal vector under short-cycle
+advection (a CFL-like stability condition, an insufficient level-set
+narrow-band width for the velocity field's own magnitude, or something
+else) was not identified at the library-internals level -- consistent
+with this project's own precedent for the KOH self-limiting
+investigation, which reached a similarly deep but library-internal
+boundary without a full first-principles explanation. Whether SAFE
+parameters (e.g. `etch_time_s=0.3, cycles=1`) would also succeed on a
+domain that HAS been previously etched/masked (the true "second masked
+step" scenario, not the fresh-wafer control used here) was not
+directly tested -- a reasonable but unconfirmed inference, since the
+fresh-wafer result already shows chaining is not required for the
+failure, but the converse (chaining plus safe params) was not verified.
+
+**Fix status: NOT FIXED**, per the user's explicit instruction to
+report investigation results before any Bosch code change, even where
+(unlike A and B) a concrete, well-evidenced, actionable root cause now
+exists. No production code was modified. A minimal, targeted fix is
+now plausible in principle (e.g. clamping/validating a minimum
+per-cycle etch time, or changing the GUI's own default `cycles`) but
+was deliberately NOT attempted this round -- it needs the threshold
+mapped more precisely first (see above), and the user asked for the
+investigation report before deciding whether/how to proceed.
+
+**Next smallest experiment, if a fix is later authorized.** Map the
+safe/unsafe boundary with a few more per-cycle-duration trials (e.g.
+0.05s, 0.15s, 0.2s cycles) on the fresh-wafer control to find roughly
+where degeneracy starts; separately confirm chaining-plus-safe-params
+succeeds (the one still-untested combination) before concluding a fix
+that only changes GUI defaults would fully resolve the originally
+-reported "second masked step" scenario.

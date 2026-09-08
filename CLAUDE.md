@@ -450,13 +450,25 @@ Also investigated the same session, real ViennaPS/DevSim throughout:
 **Bosch DRIE as a second masked step** — the earlier NaN-mesh
 corruption is gone post-fix, but a `RuntimeError('No geometry was
 passed to rayTrace. Aborting.')` (or, on retry, an outright hang)
-remains, confirmed NOT a Bosch-specific bug (the identical geometry,
-reproduced directly with no subprocess boundary, ray-traces
-successfully every time) and NOT deterministically isolated to a single
-line — evidence points at the GUI's own `subprocess.run` dispatch
-layer being intermittently unreliable, affecting more than one process
-category. **Not fixed** — no correctable line was found; search
-`docs/investigation_log.md` for "Bosch DRIE as a second masked step".
+remains. **CORRECTED, later session (2026-09-08): this IS a real,
+confirmed, well-characterized Bosch-parameter bug, not a GUI-dispatch
+issue.** The earlier "not a Bosch-specific bug" claim rested on a
+direct-in-process test (`bosch_debug_v3.py`) that only exercised a
+simplified single-phase silicon-etch call, never the real multi-cycle
+`BoschDRIEEtch.run()`. Re-tested with the REAL full Bosch run, no GUI
+or subprocess involved at all: the identical `RuntimeError` reproduces
+directly in-process, and the root cause is **per-cycle etch time** —
+the GUI's own default `cycles=10` combined with a short total
+`etch_time_s` (e.g. 1.0s, i.e. 0.1s/cycle) numerically degenerates
+ViennaLS's level-set advection (2004+ zero-length-normal warnings,
+ending in an empty level-set); `etch_time_s=0.3, cycles=1` (the
+already-shipped `test_bosch_drie_resist_mask_real.py`'s own params) is
+unaffected on the identical wafer/mask setup, with or without prior
+chaining. **Still not fixed** (the user asked for the investigation
+reported before any Bosch code change), but the root cause is now
+confirmed, not merely suspected — search `docs/investigation_log.md`
+for "Investigation C: Bosch second masked step" for the full evidence
+chain and the still-open threshold-mapping question.
 **PR Strip** — re-verified genuinely correct (real mesh, PHS fully
 removed, Si unchanged); OPEN issue 3's old claim otherwise was stale,
 corrected above. **Doping -> Oxidation -> MEASURE** — confirmed the
