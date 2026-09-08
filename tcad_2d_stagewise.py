@@ -490,6 +490,16 @@ class TCADApplication(tk.Tk):
         # _chained_flow_config(). None until a step succeeds, and reset
         # by NEW WAFER.
         self.last_domain_state = None
+        # Whether the CURRENT resist (since the last PR COAT) has already
+        # been baked into real domain geometry by an earlier chained step
+        # -- via prepare_domain()'s fresh-build mask or one
+        # session.remask_domain() call. See
+        # _mask_recipe_keys_for_current_step() for why this exists: a
+        # mask must be built into the geometry EXACTLY ONCE per resist
+        # cycle, never once per process step. Reset by process_pr_coat()
+        # (a new coat invalidates whatever was baked from the previous
+        # cycle) and by NEW WAFER.
+        self._resist_baked_since_coat = False
         # Whatever the most recent step reported about its own physics
         # knowledge (Resolution/Provenance) and mesh resolution. None
         # until a step succeeds; nothing produces a real value yet.
@@ -1318,6 +1328,8 @@ class TCADApplication(tk.Tk):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=1800,
             )
         except Exception as exc:
@@ -2353,6 +2365,8 @@ class TCADApplication(tk.Tk):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=900,
             )
 
@@ -2928,7 +2942,8 @@ class TCADApplication(tk.Tk):
                     sys.executable, str(Path(__file__).resolve()),
                     "--worker", str(config_file), str(result_file),
                 ],
-                capture_output=True, text=True, timeout=300,
+                capture_output=True, text=True,
+                encoding="utf-8", errors="replace", timeout=300,
             )
         except Exception as exc:
             messagebox.showerror("ViennaPS", str(exc))
@@ -2996,7 +3011,8 @@ class TCADApplication(tk.Tk):
                     sys.executable, str(Path(__file__).resolve()),
                     "--worker", str(config_file), str(result_file),
                 ],
-                capture_output=True, text=True, timeout=300,
+                capture_output=True, text=True,
+                encoding="utf-8", errors="replace", timeout=300,
             )
         except Exception as exc:
             messagebox.showerror("ViennaPS", str(exc))
@@ -3059,7 +3075,8 @@ class TCADApplication(tk.Tk):
                     sys.executable, str(Path(__file__).resolve()),
                     "--worker", str(config_file), str(result_file),
                 ],
-                capture_output=True, text=True, timeout=900,
+                capture_output=True, text=True,
+                encoding="utf-8", errors="replace", timeout=900,
             )
         except Exception as exc:
             messagebox.showerror("ViennaPS", str(exc))
@@ -3086,6 +3103,7 @@ class TCADApplication(tk.Tk):
         self.last_final_mesh = result.get("final_mesh")
         self._sync_wafer_state_geometry(recipe, result)
         self.completed_steps.append(recipe)
+        self._mark_resist_baked_if_masked(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
         self._log_physics_status(result)
@@ -3336,6 +3354,8 @@ class TCADApplication(tk.Tk):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=900,
             )
 
@@ -3385,6 +3405,7 @@ class TCADApplication(tk.Tk):
         self.last_final_mesh = result.get("final_mesh")
         self._sync_wafer_state_geometry(recipe, result)
         self.completed_steps.append(recipe)
+        self._mark_resist_baked_if_masked(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
         self._log_physics_status(result)
@@ -3695,6 +3716,8 @@ class TCADApplication(tk.Tk):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=900,
             )
 
@@ -5666,23 +5689,54 @@ class TCADApplication(tk.Tk):
         step alone -- it depends on whether anything already ran or is
         already queued ahead of it (self.completed_steps / self.flow_steps),
         exactly the same condition _chained_flow_config() uses to decide
-        what a standalone RUN click continues from.
+        what a standalone RUN click continues from. It ALSO depends on
+        whether a real domain already exists from something OUTSIDE that
+        history -- run_doping()'s own _materialize_current_wafer() sets
+        self.last_domain_state without touching completed_steps/
+        flow_steps (by design: it is not a process step -- see its own
+        docstring), so a real regression existed here: the FIRST real
+        process step after Doping was misjudged as "fresh wafer" even
+        though it was chaining onto a real, already-exported mesh.
+        prepare_domain() then silently ignored the fresh-style mask keys
+        entirely (an inherited domain can't honour them -- see its own
+        docstring), so that first masked step ran as a full blanket
+        etch/deposition/metallization, mask completely ignored. Found by
+        real reproduction (real ViennaPS, real exported mesh read back):
+        Doping -> Lithography -> Isotropic etch produced a mesh with NO
+        resist material at all and a uniformly-etched Si surface, exactly
+        matching an unmasked blanket etch. `has_resumable_domain` below
+        closes this gap the same way _chained_flow_config()'s own
+        `can_resume` already does.
 
-        REAL BUG, found by the user actually running deposition after an
-        earlier step and getting a mask (and the shape of an earlier
-        step) they never asked for: this used to return remask_spans_um
-        UNCONDITIONALLY for any chained step, derived from
-        self.wafer.mask_openings_um -- a value that persists from
-        whatever it last was (GUI default, or a previous litho session)
-        and never clears itself. So every chained etch/deposition
-        silently re-masked using stale/default litho state, whether or
-        not the user had touched Lithography for THIS step. Worse,
-        deposition's own duplicateTopLevelSet() (see run_deposition())
-        duplicates the domain's CURRENT top level set -- which the
-        just-inserted mask now was -- so the "new" material's starting
-        shape was the mask box, not the real prior surface: this is
-        also why an unrelated earlier step's geometry appeared to
-        "come back."
+        REAL BUG (found earlier, still fixed the same way): this used to
+        return remask_spans_um UNCONDITIONALLY for any chained step,
+        derived from self.wafer.mask_openings_um -- a value that persists
+        from whatever it last was (GUI default, or a previous litho
+        session) and never clears itself. So every chained etch/
+        deposition silently re-masked using stale/default litho state,
+        whether or not the user had touched Lithography for THIS step.
+
+        REAL BUG (found in the SAME reproduction as the one above, a
+        second, distinct defect): even once mask_material et al. are
+        correct, calling session.remask_domain() MORE THAN ONCE for the
+        same resist cycle is itself wrong -- remask_domain() always
+        builds a new mask column `mask_height_um` ABOVE THE DOMAIN'S
+        CURRENT TOP, and once one remask call has run, that current top
+        already includes the mask it just added. A second chained masked
+        step (no intervening PR COAT) therefore stacks a SECOND
+        mask_height_um column on top of the first, unboundedly, once per
+        call. Measured directly: after one remask, the resist geometry
+        was ~0.999um tall (matching pr_thickness_um); after a second
+        chained masked etch with no recoat in between, ~1.999um -- a
+        full extra mask_height_um added, exactly as the mechanism
+        predicts. `self._resist_baked_since_coat` (reset by
+        process_pr_coat(), the only thing that invalidates baked-in mask
+        geometry) makes "build/remask the mask into geometry" happen
+        AT MOST ONCE per resist cycle, regardless of how many further
+        steps chain onto that domain afterward -- matching what
+        session.remask_domain()'s own docstring says it is FOR (turning
+        a freshly-deposited layer into a patterned one), not "run this
+        again on every later step".
 
         Both questions are now answered from ONE place, `_resist_spans_um()`
         -- the real resist state -- instead of each process panel deciding
@@ -5690,7 +5744,8 @@ class TCADApplication(tk.Tk):
         for what the defaults-driven version actually produced.
         """
         spans = self._resist_spans_um()
-        is_first_step = not (self.completed_steps or self.flow_steps)
+        has_resumable_domain = bool(self.last_domain_state) and Path(self.last_domain_state).exists()
+        is_first_step = not (self.completed_steps or self.flow_steps or has_resumable_domain)
 
         if spans is None:
             # No resist on the wafer. A process step is not a lithography
@@ -5702,13 +5757,56 @@ class TCADApplication(tk.Tk):
             return {"mask_spans_um": []} if is_first_step else {}
 
         if is_first_step:
+            # Building a genuinely fresh domain -- the mask is part of
+            # that initial construction (MakeTrench/make_mask_spans).
+            # A caller that actually RUNS this recipe successfully marks
+            # self._resist_baked_since_coat True itself (see run_etch()/
+            # run_deposition()/_run_single_step()) -- this method stays a
+            # pure query with no side effect of its own, since it is also
+            # called just to PREVIEW what a recipe would look like
+            # (tests/unit/test_gui_litho_lifecycle_mock.py's own
+            # next_step_keys() helper does exactly this), and a query
+            # mutating state on every call is wrong regardless of what
+            # the mutation happened to be for.
             return {
                 "mask_left_um": self.wafer.mask_left_um,
                 "mask_right_um": self.wafer.mask_right_um,
                 "mask_spans_um": spans,
                 "mask_material": self._RESIST_MATERIAL,
             }
-        return {"remask_spans_um": spans, "mask_material": self._RESIST_MATERIAL}
+
+        if not self._resist_baked_since_coat:
+            # First chained step since the current resist was coated --
+            # bake it into the inherited domain's real geometry now, via
+            # remask_domain(). mask_material is still needed too: every
+            # masked etch/deposition/metallization model reads it
+            # directly to know what to protect, baked-in or not.
+            return {"remask_spans_um": spans, "mask_material": self._RESIST_MATERIAL}
+
+        # The mask was already baked into this domain's geometry by an
+        # earlier chained step THIS SAME resist cycle -- remasking again
+        # would stack another full mask_height_um column on top (see
+        # docstring above). The inherited domain already carries it;
+        # only mask_material is still needed so this step's own model
+        # knows what to protect.
+        return {"mask_material": self._RESIST_MATERIAL}
+
+    def _mark_resist_baked_if_masked(self, recipe) -> None:
+        """Call ONLY after a recipe from _mask_recipe_keys_for_current_step()
+        has actually been RUN and SUCCEEDED (run_etch()/run_deposition()/
+        _run_single_step()'s own success paths, right where they already
+        append to self.completed_steps). Marks the current resist cycle's
+        mask as baked into real geometry, so the NEXT chained masked step
+        asks for neither mask_spans_um nor remask_spans_um -- only a
+        further remask_domain() call would stack another full
+        mask_height_um column (see _mask_recipe_keys_for_current_step()'s
+        own docstring for the measured numbers). Deliberately NOT done
+        inside _mask_recipe_keys_for_current_step() itself: that method is
+        also called to PREVIEW a recipe without running it (see its own
+        docstring), so it must stay a pure query.
+        """
+        if "remask_spans_um" in recipe or recipe.get("mask_spans_um"):
+            self._resist_baked_since_coat = True
 
     def _note_if_blanket_resist(self, action: str) -> None:
         """Record — never block — that a step will be masked everywhere.
@@ -5886,6 +5984,10 @@ class TCADApplication(tk.Tk):
         self.wafer.pr_present = True
         self.wafer.developed = False
         self.wafer.stripped = False
+        # A fresh coat invalidates whatever mask geometry an earlier
+        # chained step baked in for the PREVIOUS resist cycle -- the next
+        # masked step must remask for real, not assume it's already there.
+        self._resist_baked_since_coat = False
 
         self.process_stage = "pr_coated"
         self.history.append("PR coat")
@@ -6294,6 +6396,8 @@ class TCADApplication(tk.Tk):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=900,
             )
 
@@ -6365,6 +6469,7 @@ class TCADApplication(tk.Tk):
                 pre_etch_mesh, result["final_mesh"], open_windows_domain_um,
             )
         self.completed_steps.append(recipe)
+        self._mark_resist_baked_if_masked(recipe)
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
         self._log_physics_status(result)
@@ -7697,6 +7802,7 @@ class TCADApplication(tk.Tk):
         # accumulated geometry would silently keep building on it.
         self.last_domain_state = None
         self.last_physics_status = None
+        self._resist_baked_since_coat = False
         if hasattr(self, "_refresh_flow_list"):
             self._refresh_flow_list()
 

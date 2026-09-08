@@ -139,6 +139,25 @@ prose. Describe what a step does to the wafer it is given instead.
 - Do not refactor unrelated code.
 - Report uncertainty honestly.
 - Work slowly and one subsystem at a time.
+- Verifying a GUI-facing fix or feature is not done at the mesh/backend
+  level alone — check that the GUI's own canvas rendering
+  (`redraw()`/`_draw_real_mesh_result()`) actually displays the
+  corrected result, and judge whether what's shown is physically
+  plausible using literature/physics this project has already
+  established (re-derive from a citation only when the existing
+  knowledge genuinely doesn't cover the case). A mesh-level check
+  proving the underlying data is correct is necessary but not
+  sufficient — it does not by itself prove the user sees the right
+  picture. Concretely: `app.canvas.find_all()` +
+  `app.canvas.itemcget(item_id, "fill")` finds the polygons for a given
+  material (`TCADApplication._MATERIAL_COLORS`), and their canvas-pixel
+  bounding box converts back to real wafer micrometers via
+  `app._viewer_scale` (`(x0, x_min, x_scale, surface_y, y_scale)`,
+  `canvas_y = surface_y - mesh_y * y_scale`) — that is what should be
+  compared against the already-verified real mesh data, not assumed
+  from it. First stated as an explicit correction after a mask-geometry
+  bug fix was verified thoroughly at the mesh level (real `.vtu` files
+  read directly) but never checked against the actual rendered canvas.
 - When adding a new DevSim characterization/sweep (a new contact, a new
   measured quantity, a new device region), size any local mesh
   refinement near it from the CONCENTRATION/REGION ACTUALLY BEING

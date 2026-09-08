@@ -64,6 +64,20 @@ def main():
         app.withdraw()
         app.update_idletasks()
 
+        # Set the grid BEFORE any real domain exists, not after: once
+        # _materialize_current_wafer() below builds one, its level sets
+        # are fixed at whatever grid_delta_um was current then. Changing
+        # grid_var afterward used to have no visible effect here (the
+        # eventual masked etch's is_first_step bug -- see
+        # _mask_recipe_keys_for_current_step()'s own docstring -- meant
+        # remask_domain() was never actually reached, so this
+        # inconsistency was silently never exercised); now that the
+        # first masked step after a materialized wafer genuinely
+        # remasks, ViennaLS itself enforces it (real, reproduced error:
+        # "Grid delta of Level-Set does not match domain grid delta.").
+        # 0.2um keeps this test's own mesh small/fast, same as before.
+        app.grid_var.set(0.2)
+
         ok = app._materialize_current_wafer()
         assert ok, "materializing a real ViennaPS wafer failed"
         assert app.wafer.processed is True
@@ -126,7 +140,7 @@ def main():
         # and out of this fix's scope) -- check the real signal instead:
         # last_final_mesh actually changed.
         app.etch_model.set("Isotropic etch")
-        app.grid_var.set(0.2)
+        # grid_var is already 0.2 (set above, before materializing).
         app.isotropic_rate_var.set(0.05)
         app.etch_time_var.set(1.0)
         app.run_etch()

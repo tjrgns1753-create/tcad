@@ -88,6 +88,15 @@ class _ResistProbe:
             setattr(self.wafer, key, value)
         self.completed_steps = [] if first_step else [{"_process_category": "oxidation"}]
         self.flow_steps = []
+        # 2026-09-08 fix: _mask_recipe_keys_for_current_step() also reads
+        # these two now (has_resumable_domain / whether the current
+        # resist was already baked into geometry by an earlier chained
+        # step) -- see that method's own docstring. This probe has no
+        # real domain/run history, so both default to "nothing has run
+        # yet", matching every scenario this test constructs by hand via
+        # completed_steps/first_step above.
+        self.last_domain_state = None
+        self._resist_baked_since_coat = False
 
 
 def test_a_resist_state_table():
