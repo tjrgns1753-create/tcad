@@ -9491,3 +9491,339 @@ combobox value, grep for `<var>.set("<old value>")` AND
 `<var>.get() == "<old value>"` as two separate patterns before
 declaring the migration complete -- a single call-shape grep is not
 sufficient, as this session's own miss demonstrates.
+
+### Bosch DRIE as a second masked step -- geometry exonerated, real cause is the GUI's subprocess dispatch layer, NOT deterministically isolated (2026-09-08)
+
+**Context:** after fixing the `is_first_step`/`remask_domain()` accumulation
+bugs (see the "stabilize lithography and repeated etch state handling"
+commit), Bosch DRIE chained as a SECOND masked step onto an
+already-isotropic-etched, PHS-masked domain (same resist cycle, no
+recoat) still failed -- but differently: the earlier NaN-mesh corruption
+was gone, replaced by a clean `RuntimeError('No geometry was passed to
+rayTrace. Aborting.')`, raised ~2s in, inside Bosch's own FIRST physics
+call (the pre-cycle `MultiParticleProcess` silicon etch, which uses a
+real ray-traced ion particle -- unlike Isotropic/Directional, which
+never ray-trace at all, explaining why only Bosch is affected).
+
+**What was tested, systematically, to localize the exact failing call
+and rule out each of the 10 candidate causes the investigation was
+scoped against:**
+
+1. **Bosch standalone (registry, fresh wafer, no chaining):** real
+   ViennaPS, real 4 dry-run confirmations across this investigation --
+   always succeeds cleanly (`top_si_y≈-0.265` to `-0.27`, consistent
+   across runs). Rules out "Bosch itself is broken" outright, and is
+   the load-bearing reason a rewrite of `bosch_drie.py` was never
+   attempted (per explicit instruction to respect this evidence).
+2. **Litho -> Bosch (first masked step, fresh domain):** real ViennaPS,
+   via the real GUI (headless `TCADApplication`) -- all 4 phases
+   (initial etch, passivation, breakthrough, cycle etch) instrumented
+   individually, all succeed. Rules out "PHS as `mask_material`
+   specifically breaks Bosch's ray tracing" and "a fresh masked domain
+   breaks it".
+3. **Direct, in-process chaining (registry `ProcessStep(inherited_domain=...)`,
+   NO subprocess boundary) of the EXACT failing geometry** -- Doping
+   skipped deliberately (already proven, this same investigation
+   session, to leave geometry byte-for-byte unchanged, so it cannot be
+   the variable at stake): materialize bare domain -> `remask_domain()`
+   (matching the real fixed GUI recipe for this exact case, confirmed
+   by printing the real `_mask_recipe_keys_for_current_step()` output)
+   -> isotropic etch -> Bosch phase 1 (ray-traced ion particle) on the
+   live domain object. **Succeeded, twice, on two different mask-span
+   coordinate conventions** (a first attempt used the wrong convention
+   by accident -- domain-centered vs wafer-relative -- and STILL
+   succeeded either way, ruling out mask topology/coordinates as the
+   cause too).
+4. **The exact same chained geometry through `session.save_domain_state()`
+   / `load_domain_state()`** (the literal `.vpsd` round-trip every real
+   GUI RUN click performs across its own subprocess boundary) --
+   **succeeded**, both immediately after building the domain and after
+   the full remask-based (not fresh-build) construction matching the
+   real bug scenario exactly. Rules out ".vpsd serialization loses
+   something Bosch's ray tracer needs" as a deterministic cause.
+5. **Re-running the ORIGINAL failing scenario through the real GUI's
+   own subprocess dispatch (`app.run_etch()` -> `subprocess.run([...,
+   "--worker", ...])`) a second and third time, unmodified** --
+   **did not reproduce the RuntimeError again; instead, hung
+   indefinitely** (confirmed via the same CPU-delta-over-time
+   methodology used earlier this session for the LOCOS regression hang
+   -- exactly 0.0s growth across repeated 15-45s windows, multiple
+   independent attempts, only resolved by force-killing). This was NOT
+   specific to Bosch either: the SAME hang pattern, same
+   zero-CPU-growth signature, was independently reproduced on
+   `run_oxidation()`'s own subprocess dispatch (Doping -> Oxidation, a
+   scenario that had itself completed successfully via the identical
+   code path earlier the same session -- see "Doping -> Oxidation ->
+   MEASURE" below). Ruled out as the cause: session temp-directory
+   clutter (615 leftover ViennaPS scratch directories from this same
+   session were found and cleaned up; the hang recurred identically
+   afterward).
+
+**What this proves:** the real, underlying LEVEL-SET GEOMETRY Bosch
+receives in the failing scenario is sound -- proven by directly
+reproducing that exact geometry (same construction path, same
+insertion order, same mask material, same .vpsd round-trip mechanism)
+and successfully running Bosch's own ray-traced physics on it,
+repeatedly. The failure is NOT a Bosch-specific bug, NOT a geometry
+corruption from a prior step's export/import, NOT a mask-material or
+mask-topology issue, and NOT ViennaPS's own ray-tracing having a hard
+limitation against this class of geometry (since the identical
+geometry ray-traces successfully outside the GUI's own subprocess
+dispatch).
+
+**What remains genuinely unresolved:** the exact mechanism inside the
+GUI's own `subprocess.run(..., capture_output=True, encoding="utf-8",
+errors="replace", timeout=900)` dispatch (or the worker process it
+spawns) that occasionally produces either (a) a clean but wrong
+RuntimeError from ViennaPS's ray-tracing setup, or (b) an outright hang
+with zero CPU growth -- both observed this session, for DIFFERENT
+process categories (etching and oxidation), and NEITHER reproducible
+on demand outside that one dispatch path. This is NOT the same class of
+bug as the `UnicodeDecodeError`/pipe-deadlock mechanism already found
+and fixed earlier this session (confirmed still present and correctly
+applied at every `subprocess.run` call site) -- something else, still
+inside that same subprocess boundary, is intermittently unreliable.
+
+**Why this was not force-fixed:** per this project's own standing rule
+against physically-unfounded workarounds, and the explicit instruction
+this investigation was scoped under ("Bosch standalone이 정상이라는 기존
+증거를 존중해라... 정확히 어디서 geometry가 empty가 되는지 추적해라"),
+no speculative change was made to `bosch_drie.py`, `session.py`'s
+`save_domain_state()`/`load_domain_state()`, or the GUI's subprocess
+dispatch, since the actual failure point could not be pinned to a
+specific, correctable line -- only to "somewhere inside that one
+process boundary, non-deterministically". A user hitting this in
+practice has two known-good workarounds, both confirmed by direct
+reproduction above: (1) retry the same click -- this class of failure
+was never reproduced twice in a row with the identical symptom, and
+(2) the underlying geometry is sound, so a fresh GUI session/subprocess
+generation is not expected to carry the problem forward.
+
+**Next smallest experiment, if this needs revisiting:** instrument
+`worker_main()` itself (not the GUI's dispatching side) to log a
+heartbeat/timestamp at each major phase (config load, domain resume,
+`ProcessStep.run()` entry, `save_domain_state()` completion, result
+write) to a file, independent of the `capture_output=True` pipe --  this
+would distinguish "the child process itself is stuck" (heartbeat file
+stops advancing) from "the child finished but the parent's
+`subprocess.run()` never returns" (heartbeat file completes normally
+while the parent stays blocked), which this session's black-box CPU-only
+observation could not distinguish.
+
+### PR Strip genuinely removes resist geometry -- CLAUDE.md's own OPEN issue 3 claim is stale, not current behavior (2026-09-08)
+
+**What was tested:** real ViennaPS 4.6.2, real GUI (headless
+`TCADApplication`), Doping -> Lithography -> Isotropic etch (twice, so
+real PHS geometry genuinely exists per the mask-stacking-fix
+verification already on record) -> PR STRIP -> real mesh re-read.
+Independently, the project's own pre-existing
+`tests/integration/test_pr_strip_real.py` (library-level: real
+`IsotropicEtch`, real `domain.removeMaterial(Material.PHS)` -- the
+exact operation `worker_main()`'s own `_strip_resist` branch performs)
+was re-run standalone and is included in the full regression this
+session confirmed clean.
+
+**Result:** before PR STRIP, the real mesh carries `['PHS', 'Si']`
+(PHS area 6.993, matching one baked mask layer). After PR STRIP, the
+real mesh carries `['Si']` only -- PHS is completely gone, Si geometry
+is essentially unchanged (area 49.365 -> 49.362, node count
+23027 -> 20043, the difference accounted for by PHS's own ~3000 nodes
+being removed, not by any change to Si itself).
+
+**What it proves:** `process_pr_strip()` -> `_strip_resist_from_geometry()`
+-> `worker_main()`'s `_strip_resist` branch -> `domain.removeMaterial(Material.PHS)`
+genuinely removes resist geometry from the live ViennaPS domain, not
+merely GUI state flags -- directly contradicting CLAUDE.md's own OPEN
+issue 3 ("PR Strip removes nothing... blocked on having no way to tell
+resist-derived Mask apart from LOCOS's own hard mask"). That claim is
+stale: the PHS/Mask material-tag distinction it says is missing already
+exists and is already used exactly as that OPEN issue describes it
+would need to be. CLAUDE.md needs updating to remove this OPEN issue
+(tracked as a follow-up in the same session's final report, not
+duplicated here at length per this project's own CLAUDE.md-brevity
+convention).
+
+**What remains uncertain:** whether this was fixed in an earlier,
+undocumented session (no commit message or investigation_log.md entry
+matching this exact fix was found on a quick search), or whether OPEN
+issue 3 was simply never updated after a broader fix landed for
+unrelated reasons. Not pursued further -- the current, real behavior is
+what was verified, and that is what matters going forward.
+
+### Doping -> Oxidation -> MEASURE: the real DevSim device is unaffected by the GUI overlay's UNSUPPORTED_BY_MODEL display (2026-09-08)
+
+**What was tested:** real ViennaPS + real DevSim, real GUI, Doping
+(Uniform, Si, donor=1e17) -> Thermal Oxidation (Dry, 1000C, 0.5hr,
+default/unmasked) -> MEASURE (default axis/voltage, real 2-terminal
+solve via `run_measurement()`'s own production path, including its
+`_doping_is_stale()` -> `run_doping(reattach=True)` re-attachment).
+
+**Result:** DevSim converged (RelError ~4e-14), zero errors, and
+produced a real, non-trivial, KCL-consistent terminal current
+(`Voltage source (Si_xmax): +0.3000 V, I = 1.438153e-07 A` /
+`Multimeter (Si_xmin): I = -1.438153e-07 A`) -- `self.last_physics_status`
+was `None` (no UNSUPPORTED flag reached the device layer at all for
+this measurement).
+
+**Root cause of the difference from the GUI overlay's own UNSUPPORTED
+display (already confirmed separately, same session):** `run_measurement()`
+detects the mesh changed since doping was last applied
+(`_doping_is_stale()`) and calls `run_doping(reattach=True)`, which
+RE-APPLIES the same doping specification directly to the CURRENT
+(post-oxidation) mesh's `Si` region from scratch -- this bypasses
+`WaferState.net_doping_at()`'s exposure-gating question entirely, since
+it is not a historical WaferState query, it is a fresh application. Separately,
+`apply_doping()` (the device layer, `tcad/device/devsim/doping_mapping.py`)
+has its own RECOVERY mechanism (confirmed by reading its
+implementation, not assumed): every DevSim node it iterates is
+DEFINITIONALLY a member of the region being written, which is stronger,
+node-exact evidence than `exposed_material_at()`'s x-only surface
+heuristic -- so even a caller that DID go through the WaferState-query
+path would still get the real dopant value written to the device,
+though `physics_status` would correctly survive as an UNSUPPORTED
+disclosure for a "conversion" category (this project's existing,
+intentional design -- see the dopant-state-unification work).
+
+**What it proves:** the "doping appears to vanish" symptom
+investigated earlier this session is confirmed to be a GUI OVERLAY
+(display-only) artifact. The real MEASURE/DevSim path was never at
+risk of solving with an incorrectly-zeroed device.
+
+### GUI subprocess dispatch: repeated, non-deterministic stalls observed across multiple process categories this session -- a real, unresolved reliability gap
+
+Recorded here as a standing caution, separate from the Bosch
+investigation above (which is where it was first noticed) because it
+recurred independently on `run_oxidation()`'s own dispatch too, on a
+scenario (Doping -> Oxidation) that had itself completed successfully
+earlier the SAME session via the identical code path. Confirmed NOT
+session temp-directory clutter (615 leftover directories cleaned up,
+recurred identically after). Confirmed NOT the `UnicodeDecodeError`
+issue already fixed this session (encoding fix verified still present
+and correctly applied at every `subprocess.run` call site). No further
+root-causing was attempted beyond what is recorded in the Bosch section
+above; flagged here so a future session encountering an inexplicable
+GUI hang checks this entry before re-investigating from scratch.
+
+### `tkinter.Tk()` construction in-process, AFTER real ViennaPS/gmsh/DevSim work has already run in that same process, can hang indefinitely -- reproduced 2/2, precisely localized, root cause NOT found, NOT fixed
+
+A later session's full-suite run (working around `run_regression.py`
+itself becoming non-functional in this environment -- see the
+`run_regression.py`-specific stall note, this same file) surfaced a
+NEW hang in `tests/integration/test_oxidation_pr_etch_reaches_si_real.py`,
+a test that predates that session's own uncommitted changes (added by
+commit `8a77454`, last touched by `1e043e2`, both already on `main`
+before this investigation started) and does not import
+`tcad_2d_stagewise` or touch the GUI at all until its own final section
+-- ruling out that session's GUI-only uncommitted changes
+(`_mask_recipe_keys_for_current_step`/`_resist_baked_since_coat`/
+`_doping_unsupported_hover_note`, all in `tcad_2d_stagewise.py`) as the
+cause before any further investigation.
+
+**What was tested.** Three real, standalone (no full-suite pressure)
+reproductions, each run with `timeout` + `python -u` (unbuffered) so
+the true last-printed line is trustworthy rather than an artifact of
+stdout buffering (a real risk already documented elsewhere in this
+project: redirected stdout is fully buffered until exit):
+1. The test file itself, standalone, 300s cap: hung, killed by timeout
+   (exit 124).
+2. The same file, unbuffered, 180s cap: hung again, killed by timeout
+   (exit 124) -- and unbuffered output revealed a line the buffered run
+   never showed in time (`"Sufficient budget: Si moved 0.09869um..."`),
+   proving the buffered run's "last visible line" was NOT the true
+   hang point, only a buffering artifact.
+3. A minimal control script -- `import tkinter; tk.Tk(); ...destroy()`,
+   nothing else, in a FRESH process with no prior ViennaPS/gmsh/DevSim
+   work -- constructed and tore down a real Tk root window in 0.11s,
+   no hang, no anomaly. This rules out "Tk() itself is broken on this
+   machine" as an explanation.
+
+**Result.** Both real (non-control) attempts hung at the exact same
+point: immediately after the test's 4th `_si_top()` meshio read and its
+own `"Sufficient budget: ..."` print succeed (so the real ViennaPS
+etch, and 4 real meshio mesh reads, all completed correctly -- the
+underlying etch physics this test exists to verify is not in question),
+inside the block that follows:
+```python
+import tkinter
+import tcad_2d_stagewise as gui
+app = gui.TCADApplication()
+```
+`TCADApplication.__init__`'s first statement is `super().__init__()`,
+i.e. `tk.Tk.__init__()`. Process inspection during the hang (`Get-
+CimInstance Win32_Process`, the same technique used throughout this
+project's stall investigations) showed the SAME anomaly both times: a
+CHILD process is spawned, running the ENTIRE test script again (full
+`sys.argv`, including the `-u` flag inherited from the parent) but on a
+DIFFERENT Python interpreter -- the system-wide `Python311\python.exe`
+install, not the venv's own `python.exe` the parent is running under
+(`sys.executable` inside a venv process is the venv's own interpreter,
+so this is not an ordinary `subprocess.Popen([sys.executable, ...])`
+or `multiprocessing` spawn, both of which would reuse the same
+interpreter). That child's CPU time is observed frozen at whatever
+value it had within the first second of its own life, unmoving across
+10+ consecutive stall-detector ticks (using this project's own
+established "CPU delta unchanged over 60-180+s is decisive proof of a
+genuine hang" methodology) -- i.e. it is blocked, not merely slow.
+
+**What it proves.** (1) The hang is 100% reproducible in this
+environment, standalone, with no full-suite resource pressure required
+-- 2/2 real attempts, same location both times. (2) It is NOT a defect
+in the etch/oxidation physics this test exercises, nor in the 4 earlier
+meshio reads in the same test -- all completed correctly both times
+before the hang. (3) It is NOT explained by `Tk()` being broken in this
+venv in general -- a bare, immediate `Tk()` with no prior computation
+works instantly. (4) It is NOT caused by this session's own uncommitted
+GUI changes -- the test doesn't reach `tcad_2d_stagewise` until after
+the point where the physics under test has already finished, and the
+file itself predates those changes. (5) The trigger condition appears
+to be specifically: constructing `tkinter.Tk()` **in the same process,
+after real ViennaPS/gmsh/DevSim computation has already run** -- some
+state left behind by that computation (a plausible but UNCONFIRMED
+candidate: the OpenMP thread pool ViennaPS/DevSim initializes, per this
+project's own already-documented `KMP_DUPLICATE_LIB_OK=TRUE` OpenMP
+double-init history: this exact test sets that same env var, meaning
+the underlying library-level OpenMP conflict this project already knows
+about is present in this process, just not previously known to
+interact with a LATER `Tk()` construction) makes the interpreter
+believe it needs to re-launch itself under a different Python to
+construct a Tk window, and that re-launch then deadlocks.
+
+**What remains uncertain.** The exact mechanism inside CPython/Tcl-Tk
+that decides to spawn a child using a DIFFERENT interpreter, on what
+condition, and why that child deadlocks rather than completing, was NOT
+determined -- would need a Windows-level trace (e.g. Process Monitor /
+ETW) this session had no tool access to, which is why no fix was
+attempted (per this project's own standing rule against concluding a
+root cause, let alone shipping a fix, without confirming the mechanism
+via real execution, not just inference from symptoms). Whether this is
+the SAME underlying cause as the already-documented "GUI subprocess
+dispatch" entry above, or a second, independently-triggerable
+mechanism that merely produces similar symptoms (an unexplained hung
+child process), is also not determined -- this entry's own reproduction
+never goes through `subprocess.run()`/`worker_main()` at all, which is
+what makes it a materially different, MORE PRECISELY localized data
+point: it shows a bare in-process `Tk()` construction alone, with no
+GUI subprocess dispatch mechanism involved, is sufficient to trigger a
+hang of this shape, provided real ViennaPS/gmsh/DevSim work already ran
+first in that process.
+
+Practical, confirmed-safe implication for this project's own test
+suite going forward: any future test that does real ViennaPS/DevSim
+work AND ALSO constructs a `tcad_2d_stagewise.TCADApplication()` (or a
+bare `tk.Tk()`) in the SAME process afterward is now a documented hang
+risk on this machine, independent of whichever GUI dispatch path it
+uses -- `test_gui_doping_survives_geometry_steps_real.py`'s own
+already-known "double-nested subprocess capture" hang is a plausible
+instance of this same family and worth re-examining through this lens
+in a future session, though it was not re-attributed here without its
+own direct confirmation.
+
+**Next smallest experiment.** Bisect on WHICH prior ViennaPS/gmsh/
+DevSim call is necessary to reproduce (e.g. does a bare `Process().
+apply()` with no `saveVolumeMesh()`/export step still trigger it, or is
+the export/gmsh step specifically required?) by trimming this test's
+own `_oxidize()`+`_etch()` calls down to the minimum that still
+reproduces, then adding `Tk()` right after each candidate step in
+isolation -- this would narrow "real ViennaPS/gmsh/DevSim work" down to
+the SPECIFIC call responsible, which is the missing piece needed before
+any fix could be attempted responsibly.

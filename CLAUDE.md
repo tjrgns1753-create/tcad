@@ -412,6 +412,62 @@ validation/exporter-comparison tables, and the exact per-file line
 accounting: search `docs/investigation_log.md` for "LOCOS split out of
 ThermalOxidation".
 
+### State/architecture bugs in the shared masked-recipe builder, and a real litho→etch chain stabilized
+
+User-reported "Isotropic 1s -> 1s -> 2s produces broken geometry" and
+"Bosch DRIE doesn't run", investigated by real reproduction (headless
+`TCADApplication`, real ViennaPS, real mesh/canvas readback). Two real,
+distinct bugs found in `_mask_recipe_keys_for_current_step()` (shared by
+`run_etch()`/`run_deposition()`/`run_metallization()`), fixed, and
+verified at BOTH the mesh level and the GUI canvas-rendering level (not
+mesh-only — see the new Development Rules entry on this): (1)
+`is_first_step` never accounted for `self.last_domain_state` existing
+without `completed_steps`/`flow_steps` (the case `run_doping()`'s own
+`_materialize_current_wafer()` creates), so the first masked step after
+Doping ran fully unmasked; (2) once masked, `session.remask_domain()`
+was called on every subsequent chained step with no memory of "already
+baked this resist cycle in", stacking the resist mask a full
+`pr_thickness_um` taller per call. Fixed with
+`self._resist_baked_since_coat`, mutated ONLY in a real run's own
+success path (`_mark_resist_baked_if_masked()`), never inside the
+recipe-key query itself — a first version set it as a query side
+effect and broke a real preview-call test
+(`test_gui_litho_lifecycle_mock.py`). Also fixed along the way: all 8
+`subprocess.run(capture_output=True, text=True, ...)` call sites in
+`tcad_2d_stagewise.py` had no explicit encoding, crashing with
+`UnicodeDecodeError` on this Windows/cp949 console on every masked
+process step (real, reproduced) — a dead reader thread can stop
+draining the pipe, and enough further worker output then blocks the
+child forever, a plausible mechanism for "a step just doesn't finish".
+Fixed with `encoding="utf-8", errors="replace"` at all 8 sites.
+
+Fixing this exposed 3 test regressions, each independently root-caused
+and fixed on its own terms, not by loosening an assertion to match the
+new behavior — see `docs/investigation_log.md`. Full regression: 91
+passed, 3 failed (the same pre-existing 3), 0 skipped.
+
+Also investigated the same session, real ViennaPS/DevSim throughout:
+**Bosch DRIE as a second masked step** — the earlier NaN-mesh
+corruption is gone post-fix, but a `RuntimeError('No geometry was
+passed to rayTrace. Aborting.')` (or, on retry, an outright hang)
+remains, confirmed NOT a Bosch-specific bug (the identical geometry,
+reproduced directly with no subprocess boundary, ray-traces
+successfully every time) and NOT deterministically isolated to a single
+line — evidence points at the GUI's own `subprocess.run` dispatch
+layer being intermittently unreliable, affecting more than one process
+category. **Not fixed** — no correctable line was found; search
+`docs/investigation_log.md` for "Bosch DRIE as a second masked step".
+**PR Strip** — re-verified genuinely correct (real mesh, PHS fully
+removed, Si unchanged); OPEN issue 3's old claim otherwise was stale,
+corrected above. **Doping -> Oxidation -> MEASURE** — confirmed the
+real DevSim device is unaffected by the "doping looks gone" GUI-overlay
+symptom (`apply_doping()`'s own RECOVERY mechanism, plus
+`run_measurement()`'s doping-reattachment path, both bypass the
+overlay's exposure-gating query); a minimal hover-tooltip UX fix
+(`_doping_unsupported_hover_note()`, reusing the real, already-computed
+`physics_status` note text verbatim) now surfaces the real reason on
+the canvas instead of leaving the gray hatch unexplained.
+
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
 Current regression: `tests/run_regression.py` → **91 passed, 3 failed,
@@ -1169,20 +1225,22 @@ the Windows cp949 console, which truncates the whole run — use
    diverging update (`get_node_model_values` on the update between
    iterations) to see whether it is localized to the sliver or global.
 
-3. **PR Strip / Doping / Deposition — three user-reported GUI issues,
-   ROOT-CAUSED, NOT YET FIXED.** Reproduced against real ViennaPS 4.6.2,
-   no code changed yet. Full writeups: search `docs/investigation_log.md`
-   for "PR Strip removes nothing", "Doping: five confirmed gaps", and
-   "Deposition: renderer y-scale artifact".
+3. **Doping / Deposition — two user-reported GUI issues, ROOT-CAUSED,
+   NOT YET FIXED.** Reproduced against real ViennaPS 4.6.2, no code
+   changed yet. Full writeups: search `docs/investigation_log.md` for
+   "Doping: five confirmed gaps" and "Deposition: renderer y-scale
+   artifact".
 
-   **PR Strip:** not "Etching converts PR to Mask" (litho never produces
-   real geometry — confirmed neither `process_pr_coat()` nor
-   `process_develop()` calls `subprocess.run`; ViennaPS 4.6.2's own
-   `Material` enum has no PR/photoresist entry at all). The real bug is
-   `process_pr_strip()` only clearing GUI flags, never calling
-   `domain.removeMaterial()` on the live domain — blocked on having no
-   way to tell resist-derived `Mask` apart from LOCOS's own hard mask,
-   which uses the identical material tag.
+   **PR Strip — RESOLVED, this claim was stale.** Real re-verification
+   (2026-09-08, real ViennaPS, real GUI): `process_pr_strip()` DOES call
+   `domain.removeMaterial(Material.PHS)` on the live domain via
+   `_strip_resist_from_geometry()`, and resist-derived geometry already
+   uses `PHS`, distinct from LOCOS's own `Mask` tag — the exact
+   distinction this item used to say was missing. Before/after real
+   mesh comparison: PHS completely absent after strip, Si unchanged.
+   Also covered by the pre-existing `tests/integration/test_pr_strip_real.py`.
+   Search `docs/investigation_log.md` for "PR Strip genuinely removes
+   resist geometry" for the full writeup.
 
    **Doping**, five items: (1) no independent donor+acceptor in the same
    region for any of the 4 doping kinds — DONE, see Completed, "litho/
@@ -1242,10 +1300,19 @@ the Windows cp949 console, which truncates the whole run — use
    the ENTIRE overlay render as "unsupported" gray-hatch, even though
    the real device (via `apply_doping()`'s own rescue) would solve
    correctly. This is a real, live risk for GUI rendering specifically,
-   not a DevSim-solve risk — root cause is the leftover, never-stripped
-   litho Mask itself (item 3 above, "PR Strip removes nothing" — the
-   REAL fix is making PR Strip remove resist-derived Mask geometry, not
-   patching the overlay's own heuristic).
+   not a DevSim-solve risk. **Update, 2026-09-08:** PR Strip itself is
+   confirmed NOT the cause of this risk anymore (it already removes
+   resist-derived `PHS` geometry — see Completed, item 3's own
+   correction above) — the still-live trigger is a plain OXIDATION's own
+   unmasked native-oxide seed (Thermal Oxidation has no mask concept at
+   all), confirmed by real measurement to make `exposed_materials()`
+   report `{'SiO2'}` across the ENTIRE wafer regardless of where doping
+   was applied, and confirmed separately that the real DevSim device is
+   unaffected (`apply_doping()`'s own RECOVERY) — only this GUI overlay
+   heuristic is exposed. Search `docs/investigation_log.md` for "Doping
+   -> Oxidation -> MEASURE" for the full writeup; a minimal hover-tooltip
+   UX fix (surfacing the real, computed reason instead of leaving the
+   gray hatch unexplained) has since been added, see Completed below.
 
 5. **`WaferState.last_step_category` is a single FLAT field — real
    provenance is lost once ANY later unclassified-category step runs.**
@@ -1613,16 +1680,15 @@ live-verified through real ViennaPS):**
 ## Current Task
 
 Do not try to solve everything at once. One item at a time; regression
-before moving to the next. All three are root-caused already — see OPEN
-issue 3 and the cited `docs/investigation_log.md` entries for the full
-evidence before touching any code.
+before moving to the next. Root-caused already — see OPEN issue 3 and
+the cited `docs/investigation_log.md` entries for the full evidence
+before touching any code.
 
-1. **PR Strip.** Make it actually remove resist-derived `Mask` geometry
-   from the live domain (`domain.removeMaterial()`), gated on a way to
-   tell resist-derived `Mask` apart from LOCOS's own hard mask — see
-   `docs/investigation_log.md`, "PR Strip removes nothing".
+**PR Strip is no longer on this list — RESOLVED, 2026-09-08** (real
+mesh geometry removal confirmed via re-verification; see Completed and
+OPEN issue 3's own correction above).
 
-2. **Doping ↔ WaferState — substantially DONE.** Independent
+1. **Doping ↔ WaferState — substantially DONE.** Independent
    donor+acceptor input for all 4 doping kinds, `WaferState.
    dopant_profiles` as the one real cross-step canonical state (not just
    present but fully WIRED — GUI, device-layer DevSim writes, and the
@@ -1638,7 +1704,7 @@ evidence before touching any code.
    "No DevSim solve was run" popup firing mid-MEASURE — see
    `docs/investigation_log.md`, "Doping: five confirmed gaps".
 
-3. **Deposition renderer + mask policy.** Fix the renderer's `y_scale`
+2. **Deposition renderer + mask policy.** Fix the renderer's `y_scale`
    so unchanged lower layers stop looking eroded as the top grows, and
    make the masked-vs-blanket choice explicit and consistent across all
    7 deposition models (including Metallization, whose own "lift-off"
