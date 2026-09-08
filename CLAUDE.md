@@ -457,18 +457,32 @@ direct-in-process test (`bosch_debug_v3.py`) that only exercised a
 simplified single-phase silicon-etch call, never the real multi-cycle
 `BoschDRIEEtch.run()`. Re-tested with the REAL full Bosch run, no GUI
 or subprocess involved at all: the identical `RuntimeError` reproduces
-directly in-process, and the root cause is **per-cycle etch time** —
-the GUI's own default `cycles=10` combined with a short total
-`etch_time_s` (e.g. 1.0s, i.e. 0.1s/cycle) numerically degenerates
-ViennaLS's level-set advection (2004+ zero-length-normal warnings,
-ending in an empty level-set); `etch_time_s=0.3, cycles=1` (the
-already-shipped `test_bosch_drie_resist_mask_real.py`'s own params) is
-unaffected on the identical wafer/mask setup, with or without prior
-chaining. **Still not fixed** (the user asked for the investigation
-reported before any Bosch code change), but the root cause is now
-confirmed, not merely suspected — search `docs/investigation_log.md`
-for "Investigation C: Bosch second masked step" for the full evidence
-chain and the still-open threshold-mapping question.
+directly in-process, and the root cause is **`cycles` count**, NOT
+`etch_time_s` — a follow-up, more carefully isolated sweep (reading
+`bosch_drie.py`'s own source: `etch_time_s` is applied IN FULL at every
+cycle, never divided by `cycles`) found `cycles<=2` safe in every trial
+regardless of `etch_time_s` (0.3 or 1.0), and `cycles>=3` unsafe in
+every trial through three different failure modes — including
+`cycles=10, etch_time_s=0.3` (the exact params the ORIGINAL comparison
+called "safe") also degenerating, proving `etch_time_s` was never the
+real variable. **FIXED and shipped, later same session, per explicit
+user authorization**: `BoschRecipe.cycles` default `10 -> 2` (the
+largest confirmed-safe value); a log-only risk disclosure,
+`_note_if_bosch_cycles_risky()`, when a user raises it above 2 (per
+THE INVARIANT — never blocks the step, matches
+`_note_if_blanket_resist()`'s own established pattern exactly); a new
+real-ViennaPS regression test,
+`tests/integration/test_bosch_cycle_safety_real.py`. GUI end-to-end
+canvas verification (`app.canvas`/`_viewer_scale` vs the real mesh's
+own bbox) matched to **exactly 0.000um** in every dimension. Full
+regression clean (22/22 unit + all etch-adjacent integration tests
+checked). Search `docs/investigation_log.md` for "CORRECTION to
+Investigation C" for the full evidence table and the fix's own
+disclosed limitations (the cycles<=2 boundary was only measured at
+this recipe's own grid/domain scale, and capping cycles this low means
+the GUI's Bosch default can no longer show real scalloped-sidewall
+profiles — an honest tradeoff, not claimed to be physically
+representative of real fabrication).
 **PR Strip** — re-verified genuinely correct (real mesh, PHS fully
 removed, Si unchanged); OPEN issue 3's old claim otherwise was stale,
 corrected above. **Doping -> Oxidation -> MEASURE** — confirmed the

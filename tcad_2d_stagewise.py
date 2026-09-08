@@ -5856,6 +5856,45 @@ class TCADApplication(tk.Tk):
                 f"geometry will not change.\n"
             )
 
+    #: Largest Bosch cycle count this project's own real ViennaPS
+    #: testing confirmed produces a complete geometry, at this GUI's
+    #: own default grid/domain scale -- see BOSCH_SAFE_MAX_CYCLES's
+    #: sibling comment in tcad.core.models.BoschRecipe and
+    #: docs/investigation_log.md, "Investigation C". Measured evidence
+    #: at ONE scale, not a claimed universal physical limit -- a
+    #: different grid_delta_um/x_extent_um was not tested here.
+    _BOSCH_SAFE_MAX_CYCLES = 2
+
+    def _note_if_bosch_cycles_risky(self, cycles: int) -> None:
+        """Record — never block — that this cycle count has been
+        observed, via real ViennaPS execution, to numerically degrade
+        the Bosch DRIE level-set.
+
+        This is a LOG note, not a dialog and not a return value --
+        same reasoning as _note_if_blanket_resist() just above: a
+        modal confirm is still a block, and refusing to run (or
+        silently clamping the value the user typed) is still a
+        prescribed order the user did not ask for. The step runs with
+        EXACTLY the cycle count requested; this only makes the risk
+        visible in the log before it does, since some failure modes
+        here do not raise an error at all (a silently near-empty
+        exported mesh) and would otherwise look like a working etch
+        that merely produced boring geometry.
+        """
+        if cycles > self._BOSCH_SAFE_MAX_CYCLES:
+            self._log(
+                f"\nNOTE: Bosch cycles={cycles} exceeds "
+                f"{self._BOSCH_SAFE_MAX_CYCLES}, the largest value this "
+                f"project's own real ViennaPS testing confirmed produces a "
+                f"complete geometry at this domain/grid scale. Very short "
+                f"per-cycle passivation/etch iterations, repeated many "
+                f"times, have been observed to numerically degrade the "
+                f"level-set (an incomplete or missing exported mesh, or a "
+                f"solver error) -- see docs/investigation_log.md, "
+                f"\"Investigation C\". Running the requested {cycles} "
+                f"cycles anyway; inspect the resulting geometry carefully.\n"
+            )
+
     def _resist_spans_um(self):
         """The OPAQUE resist spans implied by the wafer's CURRENT resist
         state, or None when the wafer carries no resist at all.
@@ -6318,6 +6357,8 @@ class TCADApplication(tk.Tk):
                             self.neutral_stick_var.get()
                         ),
                 })
+
+                self._note_if_bosch_cycles_risky(recipe["cycles"])
 
             elif model_key == "directional":
 

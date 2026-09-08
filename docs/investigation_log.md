@@ -10113,3 +10113,105 @@ where degeneracy starts; separately confirm chaining-plus-safe-params
 succeeds (the one still-untested combination) before concluding a fix
 that only changes GUI defaults would fully resolve the originally
 -reported "second masked step" scenario.
+
+### CORRECTION to Investigation C above, and the fix it enabled: `etch_time_s` was NEVER the driver -- `cycles` count is. Fixed and shipped, per explicit user authorization (2026-09-08, same day)
+
+**Reading `tcad/process/etching/bosch_drie.py`'s own source directly**
+(not inferred from symptoms) shows `etch_time_s` is applied IN FULL at
+every Bosch cycle -- never divided by `cycles` -- and `cycles` is a
+loop count of complete passivation(1.0s hardcoded) -> breakthrough
+(1.0s hardcoded) -> silicon-etch(`etch_time_s`) ->
+`removeTopLevelSet()`/`removeStrayPoints()` iterations. The earlier
+Investigation C entry's "0.1s/cycle" framing was therefore wrong --
+`cycles=10, etch_time_s=1.0` does NOT mean 0.1s per cycle; it means 10
+FULL cycles at 1.0s Si-etch each.
+
+**A proper independent sweep** (fresh masked wafer each time, real
+ViennaPS, `mesh_probe`-verified node counts/materials, not just
+exception-or-not) isolates the two variables correctly:
+
+| cycles | etch_time_s | trials | result |
+|---|---|---|---|
+| 1 | 1.0 | 1 | OK, 24514 nodes |
+| 2 | 1.0 | 3 | OK, 1848-2163 nodes (all 3) |
+| 2 | 0.3 | 1 | OK, 24241 nodes |
+| 3 | 1.0 | 2 | unsafe both times, but a DIFFERENT failure each time (`ValueError('need at least one array to concatenate')`, then a 17-node degenerate mesh) |
+| 4 | 1.0 | 1 | `ValueError('need at least one array to concatenate')` |
+| 5 | 1.0 | 1 | degenerate, 14 nodes |
+| 10 | 0.3 | 1 | degenerate, 8 nodes -- **the "safe" `etch_time_s` from the ORIGINAL comparison, at cycles=10, is NOT safe** |
+| 10 | 1.0 | 1 | `RuntimeError: No geometry was passed to rayTrace.` (the original reported error) |
+
+**Conclusion: `cycles` count is the real, load-bearing variable.**
+`etch_time_s` does not matter within the range tested (0.3 and 1.0
+both succeed at cycles<=2, both fail at cycles>=3-ish). The original
+"safe params" control (`etch_time_s=0.3, cycles=1`) worked because of
+`cycles=1`, not because of `etch_time_s=0.3` -- confirmed directly by
+`cycles=10, etch_time_s=0.3` failing just as badly as
+`cycles=10, etch_time_s=1.0`. cycles<=2 was safe in every trial (4
+total, both etch_time_s values); cycles>=3 was unsafe in every trial
+(5 total), through three distinct failure modes depending on the exact
+count -- consistent with a real, accumulating numerical degeneration
+across repeated `duplicateTopLevelSet()`/`removeTopLevelSet()`/
+`removeStrayPoints()` operations, not a single clean threshold.
+
+**Fixed, per explicit user authorization** ("Bosch 기본 파라미터를 실제
+ViennaPS level-set 계산이 안정적으로 수행되는 값으로 수정하고, 위험한
+파라미터 조합을 사전에 검증/차단하며... end-to-end로 검증한다"):
+
+- `tcad/core/models.py`: `BoschRecipe.cycles` default `10 -> 2` -- the
+  largest value confirmed safe across all trials, with a comment
+  citing this evidence table directly (not a guessed number).
+- `tcad_2d_stagewise.py`: `_note_if_bosch_cycles_risky()`, called from
+  `run_etch()`'s Bosch branch right after the recipe's `cycles` value
+  is read. Per THE INVARIANT (a modal confirm before a step runs is a
+  block, and CLAUDE.md's own explicit rule is "note it in the log and
+  run what was asked" -- the exact pattern this project's own
+  `_note_if_blanket_resist()` already uses one function above it) this
+  is a LOG-ONLY note: the requested cycle count always runs, exactly
+  as asked, with the risk disclosed beforehand -- necessary because
+  the degenerate-mesh failure mode raises NO exception at all and would
+  otherwise look like an ordinary, if boring, successful etch.
+- `tests/integration/test_bosch_cycle_safety_real.py` (new, real
+  ViennaPS throughout, no mocking): asserts the `BoschRecipe`/GUI
+  default is within the confirmed-safe range AND produces a real,
+  complete mesh (>1000 nodes) through the full GUI dispatch path with
+  no risk note logged; separately asserts `cycles=3` (deliberately NOT
+  asserting what the resulting geometry looks like, since the exact
+  failure mode varies between trials) DOES log the risk note, and that
+  the step still ran rather than being blocked.
+
+**GUI end-to-end canvas verification** (this project's own established
+technique -- `app.canvas.find_all()`/`itemcget('fill')` polygons,
+inverted back to real wafer micrometers via `app._viewer_scale`,
+compared against the real mesh's own bbox read directly via meshio):
+ran a real fresh-wafer Bosch DRIE etch, with a real litho-coated mask,
+through the complete GUI dispatch path at the new safe default
+(`cycles=2`). Both materials present (`Si`: 117912 mesh points,
+`PHS`: 7641 mesh points) and both canvas bboxes matched the real mesh
+bboxes to **exactly 0.000um delta in every dimension (x and y, both
+materials)** -- the rendered canvas is the real ViennaPS geometry, not
+a placeholder or an independently-computed shape.
+
+**Regression, all real, no mocking**: 22/22 unit tests pass (all
+files, not just Bosch-adjacent ones -- confirms the `BoschRecipe`
+default change breaks nothing elsewhere); the pre-existing
+`test_bosch_drie_resist_mask_real.py` (its own `cycles=1`, already
+within the safe range) still passes unchanged; `test_phase2_etching_real.py`,
+`test_etch_selectivity_real.py`, `test_locos_chaining_real.py`,
+`test_locos_birds_beak_real.py` (etch-adjacent, to catch any wider
+blast radius from touching `tcad/core/models.py`) all pass.
+
+**What remains uncertain, unchanged from the entry above**: the exact
+internal ViennaLS mechanism (why repeated duplicate/remove-level-set
+operations accumulate this specific degeneration) was not identified
+at the library-internals level; whether the cycles<=2 boundary holds
+at a different grid_delta_um/domain size was not tested -- the fix's
+own comments say so explicitly rather than claiming a universal
+physical limit. A real Bosch DRIE process ordinarily wants many cycles
+to produce its characteristic scalloped sidewall profile; capping the
+safe default at 2 is honest about what real ViennaPS 4.6.2 can
+currently sustain on this exact recipe/domain, not a claim that 2
+cycles is physically representative of real Bosch fabrication -- a
+future session wanting deeper scalloped trenches would need to
+revisit this same investigation at whatever new grid/domain scale it
+needs, not assume the boundary transfers unchanged.

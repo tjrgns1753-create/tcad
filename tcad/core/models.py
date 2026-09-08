@@ -83,7 +83,19 @@ class Wafer:
 
 @dataclass
 class BoschRecipe:
-    cycles: int = 10
+    # Real ViennaPS testing (docs/investigation_log.md, "Investigation
+    # C") found cycles > 2 reproducibly degenerates the level-set at
+    # this dataclass's own grid/domain scale (grid_delta_um=0.05,
+    # x_extent_um=10.0) -- a silently near-empty exported mesh, a
+    # ValueError during export, or a RuntimeError from ViennaPS's own
+    # ray tracer, depending on the exact cycle count -- while
+    # cycles<=2 produced a complete, correct mesh in every trial (4+
+    # trials at cycles=1-2, both etch_time_s=0.3 and 1.0). The old
+    # default (10) was never actually verified against a real ViennaPS
+    # run; 2 is the largest value confirmed safe. See
+    # tcad_2d_stagewise.py's _note_if_bosch_cycles_risky() for the
+    # matching GUI-side disclosure when a user raises this above 2.
+    cycles: int = 2
 
     grid_delta_um: float = 0.05
     x_extent_um: float = 10.0
