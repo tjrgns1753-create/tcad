@@ -9934,3 +9934,98 @@ Given no fix can be responsibly attempted without first identifying
 what is actually being waited on, this project's own standing rule
 against concluding a root cause without confirming the real mechanism
 applies in full here -- NOT FIXED, by design, pending that evidence.
+
+### Investigation B: `test_gui_doping_survives_geometry_steps_real.py` hang -- the hang POINT itself moves between attempts, evidence points to the SAME broad class as Finding A (each GUI subprocess dispatch carries some independent per-attempt failure probability), not a fixed single-call bug (2026-09-08, same day, per the user's explicit instruction to investigate B next using the same minimal-repro/isolate-cause discipline)
+
+**Correction to this file's own earlier characterization of this test:**
+the test does NOT loop over "4 doping kinds" -- it applies ONE doping
+call (Gaussian Implant, species B) twice, at 4 numbered CHECKPOINTS
+around 2 real geometry-changing steps: `[1/4]` doping, `[2/4]` after a
+real etch, `[3/4]` after real oxidation, `[4/4]` after a second real
+doping call (P) plus a silent reattach check. Confirmed by reading the
+file directly (`tests/integration/test_gui_doping_survives_geometry_steps_real.py`),
+not assumed from an earlier summary.
+
+**What was tested.** `run_doping()` is confirmed (per this project's
+own GUI section: "runs directly on the Tk main thread rather than
+through worker_main()'s subprocess pattern") to be a pure in-process
+call with NO subprocess dispatch of its own -- so this test's only real
+subprocess dispatches are `_materialize_current_wafer()`,
+`run_etch()`, and `run_oxidation()`, three separate calls. A minimal
+repro (`B1_minimal_to_hang_point.py`) trims the test down to Tk() +
+dispatch #1 (`_materialize_current_wafer`) + in-process `run_doping()`
++ dispatch #2 (`run_etch()`), dropping the oxidation/2nd-doping/
+reattach tail.
+
+| Attempt | Script | Result |
+|---|---|---|
+| B, trial 1 (original file, this session's earlier round) | unmodified | HANG, right after `[1/4]` printed (before `[2/4]`) |
+| B1, trial 1 | minimal repro (Tk + dispatch #1 + doping + dispatch #2) | PASS, dispatch #2 (run_etch) 2.34s |
+| B1, trial 2 | same | PASS, dispatch #2 (run_etch) 3.34s |
+| B, trial 2 (original file) | unmodified | **HANG, but at a DIFFERENT point** -- `[1/4]` AND `[2/4]` both printed this time (so dispatch #1 AND dispatch #2/run_etch both succeeded), then hung somewhere between `[2/4]` and `[3/4]` (i.e. inside dispatch #3, `run_oxidation()`) |
+
+**What it proves.** The hang point is NOT fixed at any single dispatch
+call -- trial 1 hung at (or immediately after) the SECOND real dispatch
+(`run_etch`), while trial 2 got past that exact same call cleanly and
+instead hung at the THIRD (`run_oxidation`). A deterministic bug
+localized to one specific function would not move like this between
+otherwise-identical runs of the unmodified file. This is the same
+qualitative signature Finding A's own bisection converged on
+(composition alone does not explain it; the same content passes and
+hangs on different attempts) -- consistent with, though not proven
+identical to, a per-dispatch-attempt failure probability rather than a
+bug in any one of `_materialize_current_wafer`/`run_etch`/
+`run_oxidation` specifically. `run_doping()` itself (the ONE
+non-subprocess, pure in-process call in the chain) has never been
+observed to be where the hang occurs in either B trial -- consistent
+with real subprocess dispatch, not in-process WaferState computation,
+being the common factor across A and B.
+
+**Same or different from Finding A?** Best-supported answer: **the
+same BROAD class of failure (real subprocess dispatch under this
+machine's current resource conditions is unreliable), not confirmed to
+be the identical mechanism.** A genuine structural difference from A is
+worth flagging: A's own test never dispatches a subprocess at all in
+its hang-triggering sequence (up through the point A2g reproduced
+functionally) -- A's hang was only ever observed in the UNMODIFIED
+file, which DOES reach `_materialize_current_wafer()`/second
+`run_etch()` in its own tail, matching B's shape exactly. In other
+words, once GUI subprocess dispatch enters the picture (which A's own
+functional-composition testing under-covered, since A2d/A2c/A2b
+deliberately stayed dispatch-free to isolate the ViennaPS-work
+question), both A and B show the same instability. This raises the
+possibility that A's "non-deterministic" finding and B's finding are
+in fact the SAME mechanism, and that A's own earlier composition tests
+(A2-A2d) simply never touched the actual faulty code path (no
+subprocess dispatch at all) -- while A2f/A2g, which DID include
+dispatch calls, both happened to pass by chance, consistent with the
+same failure rate estimated for A overall (~67% hang, so a two-dispatch
+script passing both times has roughly (1-0.67)^2 ≈ 11% a priori
+likelihood under a NAIVE independent-per-attempt model -- not
+impossible, and not strong enough to rule out A2f/A2g's own passes
+being genuine, but noted honestly as a real gap in A's own
+"exonerated" framing for A2f/A2g specifically).
+
+**What remains uncertain.** Whether B's underlying mechanism is
+IDENTICAL to A's, merely SIMILAR (same broad class, e.g. "any
+`subprocess.run()` dispatch from this GUI has a background failure
+rate on this machine right now"), or has its own additional
+contributing factor specific to the doping/geometry-survival scenario,
+was not determined. No Windows-level trace was available to observe
+the actual blocked syscall in either investigation.
+
+**Not fixed**, for the same reason as A: no confirmed mechanism, no
+responsible target for a minimal fix. `subprocess.run()` was NOT
+removed or replaced with an in-process workaround (explicitly
+prohibited by the user's own instruction for this investigation), and
+no timeout was increased as a stand-in for a real fix.
+
+**Next smallest experiment, if resumed.** Run 10+ trials of `_materialize_current_wafer()`/
+`run_etch()`/`run_oxidation()` called back-to-back in a tight loop
+(same process, no Tk, no doping in between) purely to measure each
+individual dispatch call's own failure rate in isolation -- if all
+three show a similar, non-zero, roughly constant hang rate independent
+of which one it is or what precedes it, that would be strong evidence
+for "any subprocess dispatch from this GUI is unreliable right now"
+over a scenario-specific explanation, and would unify A and B (and
+likely C, see below) under one investigation rather than three.
