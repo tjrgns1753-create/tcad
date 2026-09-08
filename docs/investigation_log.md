@@ -9827,3 +9827,110 @@ reproduces, then adding `Tk()` right after each candidate step in
 isolation -- this would narrow "real ViennaPS/gmsh/DevSim work" down to
 the SPECIFIC call responsible, which is the missing piece needed before
 any fix could be attempted responsibly.
+
+### CORRECTION to the section above: the "Tk()-after-ViennaPS" composition hypothesis was WRONG -- systematic bisection (A1-A7d) shows the hang is genuinely non-deterministic, not tied to any specific call sequence (2026-09-08, later same day, per explicit user instruction to narrow root cause further with strict "minimal repro -> isolate cause -> gather evidence -> fix only if needed" discipline and a ban on speculative fixes)
+
+The prior section's own framing ("AFTER real ViennaPS/gmsh/DevSim work
+has already run... can hang") implied a reproducible causal composition:
+do X, then Y, and Y hangs. A systematic bisection disproves this. gmsh
+is not even installed as a Python package in this venv (`ModuleNotFoundError:
+No module named 'gmsh'`) and no `tcad/` module imports it -- every
+"gmsh" log line seen anywhere in this project (Physical group names,
+Lines/Points/Tetrahedra counts) is DevSim's OWN native `create_gmsh_mesh`/
+`add_gmsh_region` API, named after the gmsh file-format convention, not
+the separate gmsh library. `test_oxidation_pr_etch_reaches_si_real.py`
+touches neither gmsh nor DevSim at all -- only ViennaPS (in-process,
+direct `ProcessStep.run()` calls) and `meshio` (pure Python).
+
+**Reproduction matrix, each script real ViennaPS/DevSim, no mocking:**
+
+| # | Script | Real work before Tk() | Result |
+|---|---|---|---|
+| A1 | `tk_isolation_test.py` | none (fresh process) | PASS, 0.11s |
+| A2 | `A2_viennaps_then_tk.py` | 1 real oxidation, in-process | PASS, Tk 0.79s |
+| A2b | `A2b_ox_etch1_tk.py` | oxidation + 1 masked etch | PASS, Tk 0.15s |
+| A2c | `A2c_ox_etch2_tk.py` | oxidation + 2 masked etches (Case 1+2, same `.vpsd` reused) | PASS, Tk 0.15s |
+| A2d | `A2d_full_repro_minus_asserts.py` | + 4x real `meshio.read()` (`_si_top()`), identical physics numbers to the real failing run (`0.09869um` moved) | PASS, Tk 0.15s |
+| A2f | `A2f_ox_etch2_tk_then_dispatch.py` | oxidation + 2 etches + `TCADApplication()` + `app._materialize_current_wafer()` (1st real GUI subprocess dispatch) | PASS, dispatch 1.44s |
+| A2g | `A2g_full_functional_repro.py` | THE COMPLETE original sequence: oxidation, 2 etches, 4 meshio reads, `TCADApplication()`, `_log_etch_material_summary()`, `_materialize_current_wafer()`, `process_pr_coat()`, a SECOND `app.run_etch()` dispatch -- every real call the original test makes, functionally | PASS, all steps completed, longest single step 6.29s |
+| A7 (original file, trial 1-2) | `test_oxidation_pr_etch_reaches_si_real.py` unmodified | (same as A2g, this IS the original) | **HANG** (300s cap, then 180s cap, both timeout-killed) |
+| A7 (original file, trial 3) | same, re-run "right now" for a timing control | same | **HANG** (180s) |
+| A7 (original file, trial 4) | same | same | **HANG** (180s) |
+| A7 (original file, trial 5) | same | same | **PASS**, completed cleanly |
+| A7c | byte-identical copy, same directory, different filename (`zzz_temp_copy_test.py`) | same | PASS, completed cleanly |
+| A7d | byte-identical copy, same directory, a 2nd different filename (`zzz_temp_copy_test2.py`) | same | PASS, completed cleanly |
+
+**What this proves.** (1) No single library call in isolation
+reproduces the hang -- ViennaPS alone, ViennaPS+meshio, ViennaPS+Tk,
+and even a byte-for-byte FUNCTIONAL replica of the entire original test
+(A2g, every real call the original makes, same physics results) all
+completed successfully, every time. (2) The original, unmodified,
+correctly-named test file hung on 4 of 5 direct attempts (trials 1-4),
+then passed cleanly on the 5th, with NOTHING changed between attempts
+except wall-clock time. (3) A filename/module-identity-specific
+explanation was checked and ruled out at the SOURCE level: every
+`Path(__file__)` in `tcad_2d_stagewise.py` (the file with the real
+subprocess-dispatch logic) resolves `tcad_2d_stagewise.py`'s OWN
+location as the re-invoked worker script, never the calling test
+script's name -- confirmed by direct grep, 8 occurrences, all consistent.
+It was also checked empirically: two byte-identical copies of the
+FAILING file, placed in the correct directory under different names,
+passed 2/2, while the ORIGINAL name hung 4/5 -- a pattern that looked
+compelling at n=6 but broke the moment a 5th original-name trial was
+run and passed, which is the correct falsification of that hypothesis,
+not evidence for it (a real filename-based cause would not spontaneously
+stop applying to the same file). (4) No leaked/orphaned child processes
+from earlier timeout-killed hangs were found lingering afterward
+(`Get-CimInstance Win32_Process` showed a clean process list, only the
+long-running Serena MCP server remained) -- ruling out "my own earlier
+hangs' orphans accumulating and worsening the next attempt" as the
+mechanism, at least for the exact window checked.
+
+**Conclusion: this hang is non-deterministic / probabilistic under
+current conditions on this machine, not a deterministic function of
+test content, file identity, or any composition of real library calls
+tested.** Combined tally across all real (non-mock) attempts of this
+exact test content, any filename: **6 hangs / 9 attempts (~67%)** this
+session. The most likely (UNCONFIRMED) explanation, consistent with
+this session's own already-documented, independently-observed severe
+and sustained memory pressure (as low as 2.31-2.83GB free of 15.73GB
+total, measured directly during this investigation, consistent with
+the original "GUI subprocess dispatch" entry's own unresolved
+non-determinism) is transient resource contention -- e.g. a race in
+process/thread creation, DLL loading, or the same OpenMP-runtime
+double-init class of issue this project has already root-caused once
+before (`KMP_DUPLICATE_LIB_OK`) -- rather than anything specific to
+Tk, gmsh, or file identity. This is stated as a hypothesis, explicitly
+NOT a confirmed mechanism: no Windows-level trace (Process Monitor/ETW)
+was available in this environment to observe the actual blocked
+syscall, so the exact resource and the exact race remain undetermined.
+
+**What remains uncertain.** The precise blocked call inside the hang
+window was never directly observed (only inferred from "last printed
+line" under `-u` unbuffered stdout, itself already shown to be an
+incomplete signal once in this same investigation -- see the original
+section above, where a buffered run's "last visible line" undersold
+how far execution had actually gotten). Whether the ~67% figure is
+stable, or itself drifts with time-of-day/system load (all 4 early
+hangs clustered together in wall-clock time, all 3 late passes also
+clustered together, consistent with -- but not proof of -- a
+slowly-varying background load rather than instantaneous randomness),
+was not measured on a longer timescale. `test_gui_doping_survives_geometry_steps_real.py`'s
+own hang (see below) was NOT re-attributed to this same non-deterministic
+mechanism without its own direct confirmation, since it fails at a
+DIFFERENT point in its own sequence (a second real GUI subprocess
+dispatch, not Tk() construction) and has its own, older, narrower
+documented trigger ("double-nested subprocess capture").
+
+**Next smallest experiment, if resumed.** Since composition doesn't
+explain it, the productive next step is temporal, not structural: run
+the exact same script 10-20 times back to back with memory/CPU sampled
+at 1s resolution throughout (not just at trial boundaries), to see
+whether hangs correlate with a measurable dip in some specific OS
+resource (free RAM, handle count, thread count) crossing a threshold,
+versus appearing uncorrelated with anything measurable (which would
+point toward a genuine OS-level race rather than resource exhaustion).
+Given no fix can be responsibly attempted without first identifying
+what is actually being waited on, this project's own standing rule
+against concluding a root cause without confirming the real mechanism
+applies in full here -- NOT FIXED, by design, pending that evidence.
