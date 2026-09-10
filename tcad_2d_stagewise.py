@@ -1279,7 +1279,7 @@ class TCADApplication(tk.Tk):
     def run_process_flow(self):
         """Run every queued step in order, chained through real geometry."""
         if not self.flow_steps:
-            messagebox.showinfo(
+            self._notify_info(
                 "Process flow",
                 "No steps queued. Pick a category, set its parameters, and "
                 "press ADD TO FLOW.",
@@ -1287,7 +1287,7 @@ class TCADApplication(tk.Tk):
             return
 
         if not viennaps_session.is_available():
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "ViennaPS is not installed.\n\n"
                 "Run:\n"
@@ -1360,11 +1360,11 @@ class TCADApplication(tk.Tk):
                 timeout=1800,
             )
         except Exception as exc:
-            messagebox.showerror("ViennaPS", str(exc))
+            self._notify_error("ViennaPS", str(exc))
             return
 
         if not result_file.exists():
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "Worker did not produce a result file.\n\n"
                 + completed.stderr[-4000:],
@@ -1374,7 +1374,7 @@ class TCADApplication(tk.Tk):
         result = json.loads(result_file.read_text(encoding="utf-8"))
 
         if not result.get("success"):
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS", result.get("error", "Unknown ViennaPS error.")
             )
             self._log("\nPROCESS FLOW FAILED\n")
@@ -1591,7 +1591,7 @@ class TCADApplication(tk.Tk):
         )
         builder = builders.get(key)
         if builder is None:
-            messagebox.showinfo(
+            self._notify_info(
                 "Process flow",
                 "Only Oxidation, Etching, Deposition, Metallization and Geometry "
                 "are real "
@@ -2223,7 +2223,7 @@ class TCADApplication(tk.Tk):
         # needs, only used to refuse to run anyway.
         if not viennaps_session.is_available():
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "ViennaPS is not installed.\n\n"
                 "Run:\n"
@@ -2328,7 +2328,7 @@ class TCADApplication(tk.Tk):
 
         except ValueError:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Oxidation recipe",
                 "All recipe values must be numeric.",
             )
@@ -2399,7 +2399,7 @@ class TCADApplication(tk.Tk):
 
         except Exception as exc:
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 str(exc),
             )
@@ -2408,7 +2408,7 @@ class TCADApplication(tk.Tk):
 
         if not result_file.exists():
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "Worker did not produce a result file.\n\n"
                 + completed.stderr[-4000:],
@@ -2424,7 +2424,7 @@ class TCADApplication(tk.Tk):
 
         if not result.get("success"):
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 result.get(
                     "error",
@@ -2478,7 +2478,7 @@ class TCADApplication(tk.Tk):
 
         self.redraw()
 
-        messagebox.showinfo(
+        self._notify_info(
             "ViennaPS",
             f"ViennaPS {model_label} simulation complete.\n\n"
             f"Final mesh:\n{result['final_mesh']}",
@@ -2862,11 +2862,11 @@ class TCADApplication(tk.Tk):
         """Deposit a metal film, through the deposition registry."""
         model_key = self._METALLIZATION_METHODS.get(self.metal_method.get())
         if model_key is None:
-            messagebox.showinfo("Backend status", "Unknown metallization method.")
+            self._notify_info("Backend status", "Unknown metallization method.")
             return
 
         if not viennaps_session.is_available():
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "ViennaPS is not installed.\n\nRun:\npython -m pip install ViennaPS",
             )
@@ -2897,7 +2897,7 @@ class TCADApplication(tk.Tk):
             if self.metal_mask_mode_var.get() == self._DEPOSITION_MODE_SELECTIVE:
                 recipe["deposit_exclude_material"] = recipe["mask_material"]
         except ValueError:
-            messagebox.showerror(
+            self._notify_error(
                 "Metallization recipe", "All recipe values must be numeric."
             )
             return
@@ -2936,7 +2936,7 @@ class TCADApplication(tk.Tk):
         instead of being refused.
         """
         if not viennaps_session.is_available():
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "ViennaPS is not installed.\n\nRun:\npython -m pip install ViennaPS",
             )
@@ -2973,11 +2973,11 @@ class TCADApplication(tk.Tk):
                 encoding="utf-8", errors="replace", timeout=300,
             )
         except Exception as exc:
-            messagebox.showerror("ViennaPS", str(exc))
+            self._notify_error("ViennaPS", str(exc))
             return False
 
         if not result_file.exists():
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "Worker did not produce a result file.\n\n"
                 + completed.stderr[-4000:],
@@ -2986,7 +2986,7 @@ class TCADApplication(tk.Tk):
 
         result = json.loads(result_file.read_text(encoding="utf-8"))
         if not result.get("success"):
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS", result.get("error", "Unknown ViennaPS error.")
             )
             return False
@@ -3010,7 +3010,7 @@ class TCADApplication(tk.Tk):
         process_pr_strip()'s state-only path already covers that case.
         """
         if not viennaps_session.is_available():
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "ViennaPS is not installed.\n\nRun:\npython -m pip install ViennaPS",
             )
@@ -3042,11 +3042,11 @@ class TCADApplication(tk.Tk):
                 encoding="utf-8", errors="replace", timeout=300,
             )
         except Exception as exc:
-            messagebox.showerror("ViennaPS", str(exc))
+            self._notify_error("ViennaPS", str(exc))
             return False
 
         if not result_file.exists():
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "Worker did not produce a result file.\n\n"
                 + completed.stderr[-4000:],
@@ -3055,7 +3055,7 @@ class TCADApplication(tk.Tk):
 
         result = json.loads(result_file.read_text(encoding="utf-8"))
         if not result.get("success"):
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS", result.get("error", "Unknown ViennaPS error.")
             )
             return False
@@ -3106,11 +3106,11 @@ class TCADApplication(tk.Tk):
                 encoding="utf-8", errors="replace", timeout=900,
             )
         except Exception as exc:
-            messagebox.showerror("ViennaPS", str(exc))
+            self._notify_error("ViennaPS", str(exc))
             return
 
         if not result_file.exists():
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "Worker did not produce a result file.\n\n"
                 + completed.stderr[-4000:],
@@ -3119,7 +3119,7 @@ class TCADApplication(tk.Tk):
 
         result = json.loads(result_file.read_text(encoding="utf-8"))
         if not result.get("success"):
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS", result.get("error", "Unknown ViennaPS error.")
             )
             self._log("\nVIENNAPS FAILED\n")
@@ -3179,7 +3179,7 @@ class TCADApplication(tk.Tk):
 
         if model_key is None:
 
-            messagebox.showinfo(
+            self._notify_info(
                 "Backend status",
                 "Unknown deposition model selected.",
             )
@@ -3190,7 +3190,7 @@ class TCADApplication(tk.Tk):
 
         if not viennaps_session.is_available():
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "ViennaPS is not installed.\n\n"
                 "Run:\n"
@@ -3313,7 +3313,7 @@ class TCADApplication(tk.Tk):
 
         except ValueError:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Deposition recipe",
                 "All recipe values must be numeric.",
             )
@@ -3388,7 +3388,7 @@ class TCADApplication(tk.Tk):
 
         except Exception as exc:
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 str(exc),
             )
@@ -3397,7 +3397,7 @@ class TCADApplication(tk.Tk):
 
         if not result_file.exists():
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "Worker did not produce a result file.\n\n"
                 + completed.stderr[-4000:],
@@ -3413,7 +3413,7 @@ class TCADApplication(tk.Tk):
 
         if not result.get("success"):
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 result.get(
                     "error",
@@ -3463,7 +3463,7 @@ class TCADApplication(tk.Tk):
 
         self.redraw()
 
-        messagebox.showinfo(
+        self._notify_info(
             "ViennaPS",
             f"ViennaPS {model_label} simulation complete.\n\n"
             f"Final mesh:\n{result['final_mesh']}",
@@ -3624,7 +3624,7 @@ class TCADApplication(tk.Tk):
 
         if not viennaps_session.is_available():
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "ViennaPS is not installed.\n\n"
                 "Run:\n"
@@ -3683,7 +3683,7 @@ class TCADApplication(tk.Tk):
 
         except ValueError:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Gate stack recipe",
                 "All recipe values must be numeric.",
             )
@@ -3750,7 +3750,7 @@ class TCADApplication(tk.Tk):
 
         except Exception as exc:
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 str(exc),
             )
@@ -3759,7 +3759,7 @@ class TCADApplication(tk.Tk):
 
         if not result_file.exists():
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "Worker did not produce a result file.\n\n"
                 + completed.stderr[-4000:],
@@ -3775,7 +3775,7 @@ class TCADApplication(tk.Tk):
 
         if not result.get("success"):
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 result.get(
                     "error",
@@ -3836,7 +3836,7 @@ class TCADApplication(tk.Tk):
 
         self.redraw()
 
-        messagebox.showinfo(
+        self._notify_info(
             "ViennaPS",
             f"ViennaPS gate stack build complete.\n\n"
             f"Final mesh:\n{result['final_mesh']}",
@@ -4299,7 +4299,7 @@ class TCADApplication(tk.Tk):
 
             else:
 
-                messagebox.showinfo(
+                self._notify_info(
                     "Doping",
                     "Unknown doping kind selected.",
                 )
@@ -4308,7 +4308,7 @@ class TCADApplication(tk.Tk):
 
         except ValueError:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Doping recipe",
                 "All numeric recipe values must be numeric.",
             )
@@ -4317,7 +4317,7 @@ class TCADApplication(tk.Tk):
 
         except Exception as exc:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Doping",
                 str(exc),
             )
@@ -4357,7 +4357,7 @@ class TCADApplication(tk.Tk):
         self.redraw()
 
         if not silent:
-            messagebox.showinfo(
+            self._notify_info(
                 "Doping",
                 f"Doping profile attached ({kind}).\n\n{summary}\n\n"
                 f"No DevSim solve was run -- this only attaches the "
@@ -4385,7 +4385,7 @@ class TCADApplication(tk.Tk):
             temperature_c = float(self.anneal_temp_var.get())
             time_s = float(self.anneal_time_var.get())
         except ValueError:
-            messagebox.showerror(
+            self._notify_error(
                 "Anneal",
                 "Temperature and time must be numeric.",
             )
@@ -4637,7 +4637,7 @@ class TCADApplication(tk.Tk):
 
             if refined_result is None:
 
-                messagebox.showerror(
+                self._notify_error(
                     "Measurement",
                     "Could not derive mesh refinement from this "
                     "implant_windows profile, and this doping kind is "
@@ -4657,7 +4657,7 @@ class TCADApplication(tk.Tk):
 
         except Exception as exc:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Measurement",
                 f"Mesh refinement for implant_windows failed:\n\n{exc}",
             )
@@ -4671,7 +4671,7 @@ class TCADApplication(tk.Tk):
             # instruction about process order: a drift-diffusion solve
             # needs a doping profile because without one there are no
             # carriers to solve for.
-            messagebox.showinfo(
+            self._notify_info(
                 "Device measurement",
                 "This wafer carries no doping profile, so there is no device "
                 "to measure — a drift-diffusion solve has no carrier "
@@ -4691,7 +4691,7 @@ class TCADApplication(tk.Tk):
             try:
                 devsim_backend.require_devsim()
             except RuntimeError as exc:
-                messagebox.showerror("DevSim", str(exc))
+                self._notify_error("DevSim", str(exc))
 
             return
 
@@ -4701,7 +4701,7 @@ class TCADApplication(tk.Tk):
             voltage = float(self.meas_voltage_var.get())
         except ValueError:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Measurement recipe",
                 "Source voltage must be numeric.",
             )
@@ -4818,7 +4818,7 @@ class TCADApplication(tk.Tk):
 
             if len(imported.contacts) != 2:
 
-                messagebox.showerror(
+                self._notify_error(
                     "Measurement",
                     f"Expected exactly 2 contacts for region "
                     f"{region!r}, got {imported.contacts}.",
@@ -4933,7 +4933,7 @@ class TCADApplication(tk.Tk):
 
         except Exception as exc:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Measurement",
                 str(exc),
             )
@@ -4968,7 +4968,7 @@ class TCADApplication(tk.Tk):
             f"-> I = {gnd_i:.6e} A\n"
         )
 
-        messagebox.showinfo(
+        self._notify_info(
             "Measurement",
             f"Voltage source ({source_contact}): {voltage:+.4f} V, "
             f"I = {source_i:.6e} A\n\n"
@@ -5034,7 +5034,7 @@ class TCADApplication(tk.Tk):
 
     def _on_export_result_clicked(self):
         if getattr(self, "last_electrode_result", None) is None:
-            messagebox.showinfo("Export", "No result to export yet.")
+            self._notify_info("Export", "No result to export yet.")
             return
         from tkinter import filedialog
         from tcad.characterization.io import save_csv
@@ -5051,7 +5051,7 @@ class TCADApplication(tk.Tk):
         resolve_electrode_pins() via find_duplicate_pin_positions()."""
         from tcad.mesh.pin import Pin
         if any(p.name == name for p in self.electrode_pins):
-            messagebox.showerror("Electrode", f"A pin named {name!r} already exists.")
+            self._notify_error("Electrode", f"A pin named {name!r} already exists.")
             return False
         self.electrode_pins.append(Pin(name=name, role=role, x_um=x_um, y_um=y_um, target_region=target_region))
         self.electrode_listbox.insert("end", f"{name} ({role}) @ ({x_um:.3f}, {y_um:.3f}) um")
@@ -5062,7 +5062,7 @@ class TCADApplication(tk.Tk):
             x_um = float(self.pin_x_var.get())
             y_um = float(self.pin_y_var.get())
         except ValueError:
-            messagebox.showerror("Electrode", "X/Y must be numeric.")
+            self._notify_error("Electrode", "X/Y must be numeric.")
             return
         self.add_electrode_pin(self.pin_name_var.get(), self.pin_role_var.get(), x_um, y_um)
 
@@ -5129,7 +5129,7 @@ class TCADApplication(tk.Tk):
                     process_result, self.electrode_pins, contactable, radius_um=0.1,
                 )
             except PinPlacementError as exc:
-                messagebox.showerror(
+                self._notify_error(
                     "Electrode",
                     f"Invalid pin placement:\n\n{exc.pin.name}: {exc.reason} -- {exc.detail}",
                 )
@@ -5147,7 +5147,7 @@ class TCADApplication(tk.Tk):
                 interface_region_pairs=[("Si", "SiO2")],
             )
         except Exception as exc:
-            messagebox.showerror("Electrode", f"Pin resolution failed:\n\n{exc}")
+            self._notify_error("Electrode", f"Pin resolution failed:\n\n{exc}")
             return None
 
         self.last_electrode_import = imported
@@ -5190,7 +5190,7 @@ class TCADApplication(tk.Tk):
         contacts_by_role = {p.role: p.name for p in self.electrode_pins}
         missing = [r for r in ("Source", "Drain", "Gate") if r not in contacts_by_role]
         if missing:
-            messagebox.showerror(
+            self._notify_error(
                 "Electrode",
                 f"No pin with role {missing!r} among the resolved pins -- "
                 f"a DC operating point needs Source, Drain and Gate pins "
@@ -5206,7 +5206,7 @@ class TCADApplication(tk.Tk):
             (body_contact,) if body_contact else ()
         ):
             if name not in imported.contacts:
-                messagebox.showerror(
+                self._notify_error(
                     "Electrode",
                     f"Pin {name!r} did not resolve to a real DevSim contact "
                     f"(resolved contacts: {imported.contacts}).",
@@ -5237,7 +5237,7 @@ class TCADApplication(tk.Tk):
         ]
         if wrong_region:
             detail = "; ".join(f"{role} ({contact!r}) is on {region!r}" for role, contact, region in wrong_region)
-            messagebox.showerror(
+            self._notify_error(
                 "Electrode",
                 f"A DC operating point needs Source/Drain/Body contacts "
                 f"directly on the silicon -- {detail}. Place these pins "
@@ -5334,7 +5334,7 @@ class TCADApplication(tk.Tk):
                 body_contact=body_contact, body_voltage=body_voltage,
             )
         except Exception as exc:
-            messagebox.showerror("Electrode", f"DC operating point solve failed:\n\n{exc}")
+            self._notify_error("Electrode", f"DC operating point solve failed:\n\n{exc}")
             return None
         finally:
             try:
@@ -5361,7 +5361,7 @@ class TCADApplication(tk.Tk):
             f"Vd={drain_voltage:+.4f}V Vg={gate_voltage:+.4f}V Vb={body_voltage:+.4f}V\n"
             f"currents={op_point.currents}\n"
         )
-        messagebox.showinfo(
+        self._notify_info(
             "Electrode",
             f"DC operating point solved.\n\ncurrents={op_point.currents}",
         )
@@ -5373,7 +5373,7 @@ class TCADApplication(tk.Tk):
             vg = float(self.dc_gate_v_var.get())
             vb = float(self.dc_body_v_var.get())
         except ValueError:
-            messagebox.showerror("Electrode", "Drain/Gate/Body V must be numeric.")
+            self._notify_error("Electrode", "Drain/Gate/Body V must be numeric.")
             return
         self.run_dc_operating_point(drain_voltage=vd, gate_voltage=vg, body_voltage=vb)
 
@@ -5611,7 +5611,7 @@ class TCADApplication(tk.Tk):
         if placed is None and width - cursor >= 0.3:
             placed = [cursor + 0.1, min(width - 0.1, cursor + 1.1)]
         if placed is None:
-            messagebox.showinfo(
+            self._notify_info(
                 "Mask openings",
                 "No free space left on the mask for another opening.",
             )
@@ -5626,7 +5626,7 @@ class TCADApplication(tk.Tk):
 
     def remove_mask_opening(self):
         if len(self.wafer.mask_openings_um) <= 1:
-            messagebox.showinfo(
+            self._notify_info(
                 "Mask openings",
                 "A mask needs at least one opening — otherwise no part "
                 "of the wafer is exposed and no process step would do "
@@ -5647,10 +5647,10 @@ class TCADApplication(tk.Tk):
             lo = float(self.left_var.get())
             hi = float(self.right_var.get())
         except ValueError:
-            messagebox.showerror("Mask openings", "Opening edges must be numeric.")
+            self._notify_error("Mask openings", "Opening edges must be numeric.")
             return
         if hi <= lo:
-            messagebox.showerror(
+            self._notify_error(
                 "Mask openings", "Opening right edge must be larger than left edge."
             )
             return
@@ -5944,21 +5944,21 @@ class TCADApplication(tk.Tk):
             self.wafer.exposure_dose = float(self.dose_var.get())
             self.wafer.develop_time_s = float(self.develop_var.get())
         except ValueError:
-            messagebox.showerror(
+            self._notify_error(
                 "Lithography",
                 "Lithography values must be numeric.",
             )
             return False
 
         if self.wafer.mask_right_um <= self.wafer.mask_left_um:
-            messagebox.showerror(
+            self._notify_error(
                 "Mask",
                 "Opening right edge must be larger than left edge.",
             )
             return False
 
         if self.wafer.silicon_depth_um <= 0.0:
-            messagebox.showerror(
+            self._notify_error(
                 "Si substrate depth",
                 "Si substrate depth must be positive.",
             )
@@ -6263,7 +6263,7 @@ class TCADApplication(tk.Tk):
 
         if model_key is None:
 
-            messagebox.showinfo(
+            self._notify_info(
                 "Backend status",
                 "Unknown etch model selected.",
             )
@@ -6274,7 +6274,7 @@ class TCADApplication(tk.Tk):
 
         if not viennaps_session.is_available():
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "ViennaPS is not installed.\n\n"
                 "Run:\n"
@@ -6389,7 +6389,7 @@ class TCADApplication(tk.Tk):
 
         except ValueError:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Etch recipe",
                 "All recipe values must be numeric.",
             )
@@ -6471,7 +6471,7 @@ class TCADApplication(tk.Tk):
 
         except Exception as exc:
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 str(exc),
             )
@@ -6480,7 +6480,7 @@ class TCADApplication(tk.Tk):
 
         if not result_file.exists():
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 "Worker did not produce a result file.\n\n"
                 + completed.stderr[-4000:],
@@ -6496,7 +6496,7 @@ class TCADApplication(tk.Tk):
 
         if not result.get("success"):
 
-            messagebox.showerror(
+            self._notify_error(
                 "ViennaPS",
                 result.get(
                     "error",
@@ -6574,7 +6574,7 @@ class TCADApplication(tk.Tk):
 
         self.redraw()
 
-        messagebox.showinfo(
+        self._notify_info(
             "ViennaPS",
             f"ViennaPS {self.etch_model.get()} simulation complete.\n\n"
             f"Final mesh:\n{result['final_mesh']}",
@@ -7807,6 +7807,37 @@ class TCADApplication(tk.Tk):
             state="disabled"
         )
 
+    def _notify_info(self, title, message):
+        """Report a successful step. Always logged, never a modal --
+        forcing a user (or, in a headless/automated session, nobody at
+        all) to dismiss a popup just to be told a step it already ran
+        worked is not feedback, it is friction (or, headless, a
+        permanent hang: THE INVARIANT already forbids a process from
+        waiting on input it does not need). See
+        docs/handoffs/gui-modal-hang-fix.md -- this replaced an
+        unconditional tkinter.messagebox.showinfo() call that blocked
+        the Tk main thread forever in every headless
+        run_oxidation()/run_etch()/etc. call, confirmed by a live
+        py-spy stack trace."""
+        self._log(f"{title}: {message}")
+
+    def _notify_error(self, title, message):
+        """Report a failure. Always logged. Also shown as a real
+        tkinter.messagebox.showerror() -- but ONLY while a real person
+        is watching right now (self.winfo_viewable(): False for a
+        withdrawn root, True once mapped/deiconified) -- a
+        headless/automated session always stays log-only, so a worker
+        failure is recorded and inspectable but can never hang the
+        process waiting for a click that will never come. Deliberately
+        a LIVE check, not a latched flag set once by withdraw(): a
+        real user who withdraws the window and later deiconifies it
+        (e.g. minimize/restore) must keep seeing real error dialogs,
+        not silently lose them because withdraw() was ever called
+        once. See docs/handoffs/gui-modal-hang-fix.md."""
+        self._log(f"ERROR — {title}: {message}")
+        if self.winfo_viewable():
+            messagebox.showerror(title, message)
+
     def _log_physics_status(self, result):
         """Report what the physics did and did not know.
 
@@ -7984,7 +8015,7 @@ class TCADApplication(tk.Tk):
 
         except Exception as exc:
 
-            messagebox.showerror(
+            self._notify_error(
                 "Load project",
                 str(exc),
             )

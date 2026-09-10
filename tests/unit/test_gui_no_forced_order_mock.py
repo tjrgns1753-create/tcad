@@ -46,8 +46,9 @@ def main():
         return
 
     blocked = []
-    for name in ("showwarning", "askyesno", "askokcancel", "askquestion",
-                 "askretrycancel", "askyesnocancel"):
+    for name in ("showinfo", "showwarning", "showerror", "askyesno",
+                 "askokcancel", "askquestion", "askretrycancel",
+                 "askyesnocancel"):
         if not hasattr(gui.messagebox, name):
             continue
 
@@ -98,24 +99,20 @@ def main():
         assert app.wafer.developed is False
         # Electrode panel: both of these genuinely have nothing to act
         # on here (no mesh, no resolved pins). That is a RESULT reported
-        # in the log, not a dialog naming the step to run first -- so
-        # showinfo/showerror are trapped across just these two calls
-        # (they are legitimate feedback on other paths, which is why
-        # they are not in the session-wide trap list above).
-        popped = []
-        originals = {n: getattr(gui.messagebox, n) for n in ("showinfo", "showerror")}
-        for name in originals:
-            setattr(gui.messagebox, name,
-                    lambda *a, _n=name, **k: popped.append((_n, a[:2])))
-        try:
-            assert app.resolve_electrode_pins() is None
-            assert app.run_dc_operating_point(drain_voltage=0.1, gate_voltage=1.0) is None
-        finally:
-            for name, fn in originals.items():
-                setattr(gui.messagebox, name, fn)
-        assert not popped, (
+        # in the log, not a dialog naming the step to run first --
+        # showinfo/showerror are already part of the session-wide trap
+        # above (see docs/handoffs/gui-modal-hang-fix.md: they are no
+        # longer "legitimate feedback on other paths" in production
+        # code either -- both were replaced by log-only notifiers), so
+        # a dialog here is caught the same way as anywhere else in this
+        # test; this just narrows the failure message to these two
+        # calls specifically.
+        blocked_before = len(blocked)
+        assert app.resolve_electrode_pins() is None
+        assert app.run_dc_operating_point(drain_voltage=0.1, gate_voltage=1.0) is None
+        assert len(blocked) == blocked_before, (
             f"the electrode panel raised a dialog for a step with nothing to "
-            f"act on: {popped}")
+            f"act on: {blocked[blocked_before:]}")
         print("[2] develop / expose / strip / resolve pins / DC op with nothing "
               "to act on: no-ops, no state invented")
 

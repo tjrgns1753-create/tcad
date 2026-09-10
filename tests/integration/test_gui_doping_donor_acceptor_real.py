@@ -89,15 +89,25 @@ def main():
 
         assert app.viewer_layer_var.get() == "geometry"
         calls.clear()
+        log_before = app.log.get("1.0", "end")
         assert app.run_doping() is True
 
         assert app.viewer_layer_var.get() == "doping", (
             "a successful doping apply must auto-switch the color-overlay "
             f"layer, got {app.viewer_layer_var.get()!r}")
+        # See docs/handoffs/gui-modal-hang-fix.md: a direct click's own
+        # success no longer pops a modal (it hung the Tk main thread
+        # forever in any headless/automated session with nobody present
+        # to dismiss it) -- it is reported in the real GUI log panel
+        # instead, unconditionally, via _notify_info().
         doping_popups = [c for c in calls if c[0] == "showinfo" and c[1][0] == "Doping"]
-        assert len(doping_popups) == 1, (
-            f"a direct doping click must still show its result popup, "
+        assert not doping_popups, (
+            f"a direct doping click must stay log-only, no modal -- "
             f"got {doping_popups}")
+        log_delta = app.log.get("1.0", "end")[len(log_before):]
+        assert "Doping: Doping profile attached" in log_delta, (
+            f"a direct doping click must still report its result in the "
+            f"log panel, got: {log_delta!r}")
 
         net = app.last_doped_result.doping.regions[0].net_doping_cm3
         assert abs(net - 5.0e15) < 1.0, (
@@ -113,8 +123,15 @@ def main():
         app.meas_source_pin.set("max")
         app.meas_voltage_var.set(0.3)
         calls.clear()
+        meas_log_before = app.log.get("1.0", "end")
         app.run_measurement()
 
+        # See docs/handoffs/gui-modal-hang-fix.md: NEITHER the internal
+        # stale-doping re-attachment NOR the real DevSim solve's own
+        # result pops a modal anymore -- both stay log-only, always
+        # (not just while silent=True), so this session should never
+        # have recorded a single messagebox call across the whole
+        # MEASURE click.
         stale_popups = [c for c in calls if c[0] == "showinfo" and c[1][0] == "Doping"]
         assert not stale_popups, (
             f"MEASURE's internal stale-doping re-attachment must stay silent, "
@@ -124,17 +141,22 @@ def main():
         measurement_popups = [
             c for c in calls if c[0] == "showinfo" and c[1][0] == "Measurement"
         ]
-        assert len(measurement_popups) == 1, (
-            f"a real DevSim solve must still report its own result, "
+        assert not measurement_popups, (
+            f"a real DevSim solve must stay log-only, no modal -- "
             f"got {measurement_popups}")
+        meas_log_delta = app.log.get("1.0", "end")[len(meas_log_before):]
+        assert "Measurement: Voltage source" in meas_log_delta, (
+            f"a real DevSim solve must still report its own result in the "
+            f"log panel, got: {meas_log_delta!r}")
         assert not app._doping_is_stale(), (
             "doping must be re-attached to the new mesh after MEASURE, not "
             "left stale")
 
         print("Donor/Acceptor doping -> correct net concentration; color "
-              "layer auto-switches; a direct click still pops up; MEASURE's "
-              "internal re-attachment stays silent while its own real "
-              "DevSim result still reports:", measurement_popups[0][1])
+              "layer auto-switches; a direct click stays log-only (no "
+              "modal); MEASURE's internal re-attachment stays silent while "
+              "its own real DevSim result still logs:",
+              meas_log_delta.strip().splitlines()[-1] if meas_log_delta.strip() else "")
 
         # ------------------------------------------------------------
         # Gaussian Implant: donor/acceptor input fields (Task 8). Same
