@@ -21,6 +21,27 @@ PROFILES = {
         "outputs": [],                      # [{"glob": "relative/glob", "max_mb": N}, ...] uploaded if within budget
         "regenerate": "Rerun this profile; the test writes only to a temp directory and produces no artifact.",
     },
+    "d3_precision_mirror": {
+        "description": "Batch 7H-D3: P0/P12/P4 precision pair on M2/D0 h=0.005 um and corrected mirror re-check (11 small runs + analysis).",
+        "entry": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/run_d3.py",
+        "args": [],
+        "params": {},
+        "timeout_s": 3600,
+        "inputs": [
+            "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/PLAN.md",
+            "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/PLAN.sha256",
+            "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/PLAN_ERRATA.md",
+            "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/run_d3.py",
+            "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/worker_d3.py",
+            "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/analyze_d3.py",
+            "docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixtures_d1.json",
+            "docs/audits/2026-09-23-batch7h-d2-current-precision/scripts/worker_d2.py",
+            "docs/audits/2026-09-23-batch7h-d2-current-precision/scripts/common_d2.py",
+            "docs/audits/2026-09-23-batch7h-d2-current-precision/data/fixed_d2.json",
+        ],
+        "outputs": [{"glob": "d3_out/**/*.json", "max_mb": 50}, {"glob": "d3_out/**/*.md", "max_mb": 5}],
+        "regenerate": "Rerun the profile (about 10 small runs, minutes). Nothing is omitted: every run JSON and the analysis are uploaded.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.

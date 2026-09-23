@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "phase5-smoke-001",
- "profile": "phase5_smoke",
+ "request_id": "d3-precision-mirror-001",
+ "profile": "d3_precision_mirror",
  "params": {},
- "note": "Re-run of the already verified small test through the reusable runner."
+ "note": "Batch 7H-D3: PLAN fixed in commit 959581c000a7873ff594f14b093330f9bc48e157 before this request."
 }
