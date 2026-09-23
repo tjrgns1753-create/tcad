@@ -75,7 +75,7 @@ def main():
         from tcad.device.devsim.doping_mapping import apply_doping
         from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
-        doped = apply_uniform_doping(etch_result, {"Si": 1.0e17})
+        doped = apply_uniform_doping(etch_result, {"Si": 1.0e17}, chemical_state="ACTIVE")
 
         module_ds = devsim_backend.require_devsim()
         imported = import_process_result(

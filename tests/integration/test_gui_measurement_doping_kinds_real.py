@@ -103,17 +103,17 @@ REGION = "Si"
 def dope_with_panel_defaults(kind, process_result):
     """The doping panel's own default field values, verbatim."""
     if kind == "uniform":
-        return apply_uniform_doping(process_result, {REGION: 1.0e17})
+        return apply_uniform_doping(process_result, {REGION: 1.0e17}, chemical_state="ACTIVE")
     if kind == "step_junction":
         return apply_step_junction_doping(
             process_result, region=REGION, junction_axis="x",
             junction_position_um=0.0,
-            donor_conc_cm3=1.0e18, acceptor_conc_cm3=1.0e18,
+            donor_conc_cm3=1.0e18, acceptor_conc_cm3=1.0e18, chemical_state="ACTIVE",
         )
     if kind == "gaussian_implant":
         return apply_gaussian_implant_doping(
             process_result, region=REGION, junction_axis="x",
-            peak_position_um=0.0, straggle_um=0.5, peak_conc_cm3=1.0e17,
+            peak_position_um=0.0, straggle_um=0.5, peak_conc_cm3=1.0e17, chemical_state="ACTIVE",
         )
     if kind == "implant_windows":
         return apply_implant_windows_doping(
@@ -122,7 +122,7 @@ def dope_with_panel_defaults(kind, process_result):
             windows=[
                 {"min_um": -1.6, "max_um": -0.6, "conc_cm3": 1.0e20},
                 {"min_um": 0.6, "max_um": 1.6, "conc_cm3": 1.0e20},
-            ],
+            ], chemical_state="ACTIVE",
         )
     raise AssertionError(f"unknown kind {kind!r}")
 

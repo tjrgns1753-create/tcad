@@ -123,6 +123,17 @@ def run_flow(
             )
         )
 
+        transition = step_result.get("state_transition") or {}
+        if transition.get("kind") == "unsupported":
+            # Tier 1-2 Phase 1 fail-closed contract (P0-1): stop the
+            # flow at the FIRST unsupported step. No later queued step
+            # is looked up in the registry, constructed, or run() --
+            # its solver call count for the remainder of `steps` is
+            # unconditionally zero. The caller (tcad_2d_stagewise.py's
+            # worker_main) derives requested/executed counts from
+            # len(steps) vs len(results).
+            break
+
         carried_domain = (
             session.load_domain_state(state_path) if reload_between_steps else domain
         )

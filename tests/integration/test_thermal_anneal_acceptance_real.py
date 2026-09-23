@@ -84,7 +84,7 @@ def _by_species(profiles):
 def scenario_A():
     b_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=0.0, straggle_um=0.2,
-        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B",
+        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B", chemical_state="CHEMICAL",
     ))
     b_dose_before = _dose(b_profile)
 
@@ -100,11 +100,11 @@ def scenario_A():
 def scenario_B():
     b_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=-1.0, straggle_um=0.2,
-        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B",
+        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B", chemical_state="CHEMICAL",
     ))
     p_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=1.0, straggle_um=0.2,
-        donor_peak_conc_cm3=1.0e18, donor_species="P",
+        donor_peak_conc_cm3=1.0e18, donor_species="P", chemical_state="CHEMICAL",
     ))
     updated, _ = apply_thermal_anneal((b_profile, p_profile), temperature_c=900.0, time_s=600.0)
     terms = _by_species(updated)
@@ -123,14 +123,14 @@ def scenario_B():
 def scenario_C():
     b_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=-1.0, straggle_um=0.2,
-        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B",
+        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B", chemical_state="CHEMICAL",
     ))
     (b_annealed_once,), _ = apply_thermal_anneal((b_profile,), temperature_c=900.0, time_s=600.0)
     b_straggle_after_first_anneal = b_annealed_once.model_params["straggle_um"]
 
     p_profile = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=1.0, straggle_um=0.2,
-        donor_peak_conc_cm3=1.0e18, donor_species="P",
+        donor_peak_conc_cm3=1.0e18, donor_species="P", chemical_state="CHEMICAL",
     ))
     updated, _ = apply_thermal_anneal(
         (b_annealed_once, p_profile), temperature_c=900.0, time_s=600.0,
@@ -155,7 +155,7 @@ def scenario_C():
 def scenario_temperature_dependence():
     implant = _species_profile(apply_gaussian_implant_doping(
         _fresh_process_result(), "Si", "x", peak_position_um=0.0, straggle_um=0.2,
-        donor_peak_conc_cm3=1.0e18, donor_species="P",
+        donor_peak_conc_cm3=1.0e18, donor_species="P", chemical_state="CHEMICAL",
     ))
     (low,), _ = apply_thermal_anneal((implant,), temperature_c=900.0, time_s=600.0)
     (high,), _ = apply_thermal_anneal((implant,), temperature_c=1000.0, time_s=600.0)

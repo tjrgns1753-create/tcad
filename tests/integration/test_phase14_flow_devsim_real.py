@@ -110,7 +110,7 @@ def test_2_flow_oxidation_doping_semiconductor_solve():
         )
         final = results[-1]
 
-        doped = apply_uniform_doping(final, {"Si": 1.0e17})
+        doped = apply_uniform_doping(final, {"Si": 1.0e17}, chemical_state="ACTIVE")
         print(f"[Doping] kind={doped.doping.kind} "
               f"regions={[(d.region, d.net_doping_cm3) for d in doped.doping.regions]}")
         assert final.doping is None, "doping must not mutate the flow's ProcessResult"
@@ -172,7 +172,7 @@ def test_3_flow_oxidation_mos_cv():
         )
         final = results[-1]
 
-        doped = apply_uniform_doping(final, {"Si": -1.0e15})
+        doped = apply_uniform_doping(final, {"Si": -1.0e15}, chemical_state="ACTIVE")
 
         imported = import_process_result(
             doped, mesh_name="p14t3_mesh", device_name="p14t3_device",
@@ -249,7 +249,7 @@ def test_4_flow_oxidation_etch_doping_devsim():
             "step 2 must still carry the oxide grown in step 1 (continuity)"
         )
 
-        doped = apply_uniform_doping(final, {"Si": 1.0e17})
+        doped = apply_uniform_doping(final, {"Si": 1.0e17}, chemical_state="ACTIVE")
 
         imported = import_process_result(
             doped, mesh_name="p14t4_mesh", device_name="p14t4_device",

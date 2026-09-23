@@ -88,7 +88,10 @@ def build_process_result(
         material_regions=material_regions,
         doping=None,
         units="um",
-        metadata={"snapshots": step_result.get("snapshots", [])},
+        metadata={
+            "snapshots": step_result.get("snapshots", []),
+            "state_transition": step_result.get("state_transition"),
+        },
         domain_state_path=domain_state_path,
         structure=structure,
         physics_status=step_result.get("physics_status"),

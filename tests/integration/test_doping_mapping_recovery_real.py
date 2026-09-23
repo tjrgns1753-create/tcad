@@ -106,7 +106,7 @@ def main():
         doped_result = apply_uniform_doping(
             process_result,
             donor_by_region_cm3={"Si": DONOR_CM3},
-            acceptor_by_region_cm3={"Si": ACCEPTOR_CM3},
+            acceptor_by_region_cm3={"Si": ACCEPTOR_CM3}, chemical_state="ACTIVE",
         )
         state = advance_wafer_state(None, doped_result, "doping")
 
@@ -304,7 +304,7 @@ def scenario_conversion_entry_survives():
 
         doped = apply_gaussian_implant_doping(
             base, region="Si", junction_axis="x", peak_position_um=CONV_X_UM,
-            straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P",
+            straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P", chemical_state="ACTIVE",
         )
         state1 = advance_wafer_state(None, doped, "doping")
 

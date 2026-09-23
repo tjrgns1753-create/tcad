@@ -325,7 +325,7 @@ def main():
             from tcad.physics.doping import apply_gaussian_implant_doping
             implanted = apply_gaussian_implant_doping(
                 base, region="Si", junction_axis="x", peak_position_um=ERASE_X_UM,
-                straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="As",
+                straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="As", chemical_state="ACTIVE",
             )
             zero_state1 = advance_wafer_state(None, implanted, "doping")
 

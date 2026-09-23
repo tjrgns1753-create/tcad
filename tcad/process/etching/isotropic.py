@@ -69,16 +69,14 @@ class IsotropicEtch(ProcessStep):
         from tcad.physics.resolve import resolve
         from tcad.physics.wafer_state import WaferState
 
-        # dopant_profiles=() is the SAME default WaferState.query()'s own
-        # signature already carries -- passing it explicitly here is a
-        # byte-identical no-op, not itself a fix (this call site has no
-        # access to any prior accumulated state; see
-        # wafer_state_accumulation.py's own module docstring for why).
-        # The real, behavioral fix is last_step_category="etching": this
-        # call previously never passed it at all (always defaulting to
-        # None/UNCLASSIFIED), which is what a "no dopant fate model" gap
-        # at this call site would have incorrectly reported.
-        state = WaferState.query(geometry, dopant_profiles=(), last_step_category="etching")
+        # This call site has no access to any prior accumulated dopant
+        # state (see wafer_state_accumulation.py), and `resolve()` below
+        # reads only `state.exposed_materials()` / `under_resolved_x()` --
+        # both purely geometric. The WaferState v2 migration removed the
+        # old per-call process-category argument here: the
+        # removal-vs-conversion dopant-fate decision now lives in
+        # tcad.physics.wafer_state_v2 (SpatialEvent / GeometryTransform).
+        state = WaferState.query(geometry, dopant_profiles=())
         # This step already knows its own category/model (the class
         # attributes below) -- a hand-built recipe (every existing
         # caller here) has no reason to repeat that bookkeeping, so it

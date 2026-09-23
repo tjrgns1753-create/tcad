@@ -62,10 +62,12 @@ from tcad.physics.doping import (
     apply_step_junction_doping,
     apply_gaussian_implant_doping,
     apply_implant_windows_doping,
-    apply_thermal_anneal,
 )
-from tcad.physics.wafer_state_accumulation import advance_wafer_state
-from tcad.physics.dopant_models import ANNEAL_HANDLERS
+from tcad.physics.wafer_state_accumulation import (
+    advance_wafer_state, canonical_doping_request_matches,
+    is_canonical_fresh_zero_duration_materialization,
+    is_canonical_inherited_zero_duration_identity,
+)
 
 # ============================================================
 # DESIGN TOKENS — industrial/scientific EDA look
@@ -326,10 +328,68 @@ def worker_main(config_file: str, result_file: str):
             # just serializes what was already there, so the Process
             # Flow Timeline can show any step's geometry on click,
             # instead of only the final one).
+            requested_step_count = len(config["_flow_steps"])
+            executed_step_count = len(results)
+            last_transition = results[-1].metadata.get("state_transition") or {}
+            # run_flow() breaks its own loop the instant a step comes
+            # back "unsupported" (P0-1), so whenever it stopped early
+            # the LAST result appended is always that unsupported step
+            # -- this is never true "false", only unreached, when the
+            # flow actually completed every requested step.
+            stopped_unsupported = last_transition.get("kind") == "unsupported"
+
+            # WaferStateV2 sequencing (per-step, not final-step-only):
+            # `results` is index-aligned with the PREFIX of
+            # config["_flow_steps"] that actually ran -- run_flow()
+            # only ever breaks early, never reorders or skips ahead, so
+            # zip() here pairs each executed step with its OWN recipe
+            # (never a later/earlier one). This is the one place a
+            # caller (TCADApplication.run_process_flow) can reconstruct
+            # the exact per-step category/state_transition sequence
+            # without inferring anything from a mesh comparison or a
+            # material name. Top-level `final_mesh`/`state_transition`/
+            # `physics_status` above stay as compatibility fields for
+            # existing single-step callers (run_oxidation() etc.) --
+            # they describe only the LAST executed step and must never
+            # be used as the source of truth for WaferState sequencing.
+            step_results = [
+                {
+                    "index": i,
+                    "category": step_cfg.get("_process_category"),
+                    "model_key": step_cfg.get("_process_model_key"),
+                    "final_mesh": r.volume_mesh_path,
+                    "state_transition": r.metadata.get("state_transition"),
+                    "physics_status": r.physics_status,
+                    "numerical_status": r.numerical_status,
+                    "executed": True,
+                }
+                for i, (step_cfg, r) in enumerate(zip(config["_flow_steps"], results))
+            ]
+
             payload = {
                 "success": True,
                 "final_mesh": results[-1].volume_mesh_path,
                 "step_count": len(results),
+                # Tier 1-2 Phase 1 (P0-1): lets the GUI tell "every
+                # queued step ran" apart from "the flow stopped early on
+                # an UNSUPPORTED_BY_MODEL step" without having to
+                # re-derive it from state_transition alone.
+                "requested_step_count": requested_step_count,
+                "executed_step_count": executed_step_count,
+                "stopped_unsupported": stopped_unsupported,
+                "stopped_step_index": (
+                    executed_step_count - 1 if stopped_unsupported else None
+                ),
+                # The LATEST step's own transition, same as final_mesh/
+                # physics_status just below -- not gated on step_count.
+                # Was `results[0]...if len(results)==1 else None`, which
+                # silently dropped a real zero-duration/unsupported
+                # oxidation transition on any RUN click after the first
+                # (i.e. every _chained_flow_config() call once
+                # completed_steps is non-empty -- the normal case, not an
+                # edge case). Harmless for the single-step callers that
+                # already existed (results[0] is results[-1] there).
+                "state_transition": results[-1].metadata.get("state_transition"),
                 "step_meshes": [r.volume_mesh_path for r in results],
                 # The wafer's accumulated state, for the NEXT click to
                 # resume from (see "_resume_state" above).
@@ -347,6 +407,10 @@ def worker_main(config_file: str, result_file: str):
                 # otherwise be silently dropped.
                 "step_physics_status": [r.physics_status for r in results],
                 "step_numerical_status": [r.numerical_status for r in results],
+                # Source of truth for WaferStateV2 sequencing (see
+                # comment above) -- JSON-serializable only, same index
+                # order as step_meshes/step_physics_status.
+                "step_results": step_results,
             }
         else:
             # Any registered category/model works here (Bosch included):
@@ -380,6 +444,367 @@ def worker_main(config_file: str, result_file: str):
         ),
         encoding="utf-8",
     )
+
+
+def advance_wafer_state_sequence(prior_state, step_entries):
+    """Advance `prior_state` through `step_entries` ONE STEP AT A TIME,
+    in the exact order given -- never collapsed to only the last step's
+    category.
+
+    A multi-step flow used to sync WaferState only ONCE per RUN PROCESS
+    FLOW click, using the LAST executed step's category/state_transition
+    (`_sync_wafer_state_geometry(last_executed_recipe, result)`). That
+    silently dropped every EARLIER step's own SpatialEvent/category from
+    the accumulated history even though it genuinely ran -- e.g.
+    etch -> deposition -> oxidation(unsupported) left WaferState with
+    only the oxidation transition, losing the etch-ran-first /
+    deposition-ran-second provenance entirely. This calls
+    advance_wafer_state() once PER real executed step, in order, so the
+    resulting event history matches the real execution order exactly.
+
+    `step_entries` is an iterable of `(category, process_result)` pairs
+    -- each `process_result` an already-built `tcad.mesh.interface.
+    ProcessResult` (real, via `_step_results_to_entries()` below for
+    production worker JSON, or a directly-constructed one for a test).
+    This function itself never reads a mesh file or touches ViennaPS --
+    it only calls `advance_wafer_state()`, in order, chaining state --
+    so the pure per-step ORDERING guarantee is testable with no real
+    ViennaPS/mesh dependency at all. No GeometryTransform is ever built
+    here from a mesh comparison or a material name -- every entry with
+    none (the only kind any caller in this project builds today) fails
+    closed on its own, exactly like a single-step advance_wafer_state()
+    call already does. zero-duration oxidation's identity contract is
+    unaffected: advance_wafer_state()'s own exact dict-equality check
+    against IDENTITY_TRANSITION still returns `prior_state` completely
+    unchanged for that one entry, contributing no new event and
+    consuming no index gap in what follows.
+    """
+    state = prior_state
+    for category, process_result in step_entries:
+        state = advance_wafer_state(state, process_result, category)
+    return state
+
+
+def _step_results_to_entries(step_results):
+    """Convert worker_main's `step_results` JSON (a list of
+    {"category", "final_mesh", "state_transition", ...} dicts, one per
+    REAL executed step, in execution order) into `(category,
+    ProcessResult)` entries for `advance_wafer_state_sequence()`.
+
+    This is the one place that reads each step's real exported mesh
+    (via `build_process_result()`, same real-mesh-read pattern
+    `_sync_wafer_state_geometry()` already used for a single step) --
+    kept separate from `advance_wafer_state_sequence()` itself so that
+    function's own per-step ordering guarantee stays testable without a
+    real ViennaPS mesh. `physics_status`/`numerical_status` are carried
+    through into each ProcessResult unchanged (never dropped) -- neither
+    is ever inferred from the mesh itself.
+
+    Codex correction: a missing/malformed entry used to be silently
+    `continue`d past, which is exactly the "invent a plausible history
+    from the last mesh" failure mode this task exists to close off.
+    Every entry here must be structurally sound or this function raises
+    -- it never silently drops or guesses. This is deliberately STRICTER
+    about individual-field validity than about `index` alignment to a
+    list POSITION: a caller may legitimately pass a SUFFIX of the full
+    step_results array (e.g. run_process_flow()'s resume/replay
+    dedup slicing), where `entry["index"]` is the step's real index in
+    the FULL array, not its position in this shorter list -- so `index`
+    is checked for being a real, strictly-increasing non-negative
+    integer across entries, never for `== position in this list`. The
+    full-array `index == position` invariant belongs to
+    `validate_step_results()`, which always sees the unsliced array.
+    """
+    entries = []
+    prev_index = None
+    for pos, step_result in enumerate(step_results):
+        idx = step_result.get("index")
+        if not isinstance(idx, int) or idx < 0:
+            raise ValueError(
+                f"_step_results_to_entries: entry at list position {pos} "
+                f"has a malformed index {idx!r} -- refusing to guess "
+                f"intent: {step_result!r}")
+        if prev_index is not None and idx <= prev_index:
+            raise ValueError(
+                f"_step_results_to_entries: entry at list position {pos} "
+                f"has index {idx!r} not strictly greater than the "
+                f"previous entry's index {prev_index!r} -- refusing to "
+                f"silently accept an out-of-order/duplicate step: "
+                f"{step_result!r}")
+        prev_index = idx
+
+        final_mesh = step_result.get("final_mesh")
+        if not final_mesh:
+            raise ValueError(
+                f"_step_results_to_entries: entry at list position {pos} "
+                f"(index={idx}) has no final_mesh -- refusing to "
+                f"silently skip a step that may have really run: "
+                f"{step_result!r}")
+        category = step_result.get("category")
+        if not isinstance(category, str) or not category:
+            raise ValueError(
+                f"_step_results_to_entries: entry at list position {pos} "
+                f"(index={idx}) has no valid category -- refusing to "
+                f"silently pass it through as a no-op: {step_result!r}")
+
+        process_result = build_process_result({
+            "final_mesh": final_mesh, "snapshots": [],
+            "state_transition": step_result.get("state_transition"),
+            "physics_status": step_result.get("physics_status"),
+            "numerical_status": step_result.get("numerical_status"),
+        })
+        entries.append((category, process_result))
+    if len(entries) != len(step_results):
+        raise AssertionError(
+            f"_step_results_to_entries: produced {len(entries)} entries "
+            f"from {len(step_results)} inputs -- every input must "
+            f"produce exactly one entry or raise, never be silently "
+            f"dropped")
+    return entries
+
+
+def validate_step_results(result, expected_steps):
+    """Explicit PHYSICAL PROVENANCE validator for worker_main's
+    `_flow_steps` JSON payload (Codex P0-1, strengthened for
+    cross-layer provenance). This is not a JSON-schema check -- it
+    proves that what the WORKER SAYS it ran is the SAME PHYSICAL
+    PROCESS the user actually requested, and that every "top-level
+    compatibility" field (still read by the 4 standalone single-step
+    RUN handlers) agrees byte-for-byte with the authoritative per-step
+    array it is supposed to summarize. `(True, "")` only when every
+    criterion holds; otherwise `(False, "<which criterion failed and
+    why>")`.
+
+    `expected_steps` is the EXACT list this session actually sent the
+    worker as `_flow_steps` (`steps_passed_to_worker` in
+    run_process_flow()) -- each entry's own `_process_category`/
+    `_process_model_key`, read from the request THIS SESSION BUILT,
+    never re-derived from the response. A category/model_key mismatch
+    at any index (e.g. a requested etch recorded as a deposition) is
+    NEVER "recovered" as a typo or alias -- exact equality only.
+
+    The caller (`run_process_flow()`) MUST fail-close the WHOLE flow's
+    WaferState state-transfer (reason_code
+    FLOW_STEP_SEQUENCE_METADATA_INVALID) rather than adopt any part of
+    an invalid payload -- there is no such thing as "trust step_results
+    partially": a schema/alignment/provenance failure means the
+    physical process history cannot be proven, so none of it may be
+    treated as canonical, even though the backend subprocess may have
+    produced perfectly real geometry. This function never mutates
+    anything and never reads a mesh/domain-state file's CONTENTS --
+    only `Path(...).is_file()` (criteria 8 and C), an existence check,
+    never a geometry read.
+    """
+    step_results = result.get("step_results")
+    requested_count = result.get("requested_step_count")
+    executed_count = result.get("executed_step_count")
+    stopped_unsupported = bool(result.get("stopped_unsupported"))
+    stopped_step_index = result.get("stopped_step_index")
+    step_meshes = result.get("step_meshes")
+    step_physics_status = result.get("step_physics_status")
+    step_numerical_status = result.get("step_numerical_status")
+
+    if not isinstance(expected_steps, list):
+        return False, (
+            f"internal error: expected_steps is not a list "
+            f"(got {type(expected_steps).__name__})")
+
+    # 1. step_results is a list.
+    if not isinstance(step_results, list):
+        return False, (
+            f"step_results is missing or not a list "
+            f"(got {type(step_results).__name__ if step_results is not None else 'None'})")
+
+    # 14. requested/executed count relationship is valid: 0 < executed <= requested.
+    if not isinstance(requested_count, int) or not isinstance(executed_count, int):
+        return False, "requested_step_count/executed_step_count missing or not integers"
+    if not (0 < executed_count <= requested_count):
+        return False, (
+            f"executed_step_count={executed_count} not in "
+            f"(0, requested_step_count={requested_count}]")
+
+    # T (cross-layer). requested_step_count must equal the number of
+    # steps THIS SESSION actually asked the worker to run -- never a
+    # number the worker merely reports on its own.
+    if requested_count != len(expected_steps):
+        return False, (
+            f"requested_step_count={requested_count!r} != "
+            f"len(expected_steps)={len(expected_steps)} -- the worker's "
+            f"own reported request count disagrees with what this "
+            f"session actually sent it")
+
+    # 2. len(step_results) == executed_step_count.
+    if len(step_results) != executed_count:
+        return False, (
+            f"len(step_results)={len(step_results)} != "
+            f"executed_step_count={executed_count}")
+
+    seen_indices = []
+    for pos, entry in enumerate(step_results):
+        if not isinstance(entry, dict):
+            return False, f"step_results[{pos}] is not a dict"
+        # 3./4. index == actual array position (0-based, contiguous) for
+        # the FULL, unsliced payload this validator always sees.
+        idx = entry.get("index")
+        if idx != pos:
+            return False, (
+                f"step_results[{pos}]['index']={idx!r} != actual array "
+                f"position {pos}")
+        seen_indices.append(idx)
+        # 5. executed is True.
+        if entry.get("executed") is not True:
+            return False, f"step_results[{pos}]['executed'] is not True: {entry.get('executed')!r}"
+        # 6. category is a non-empty string.
+        category = entry.get("category")
+        if not isinstance(category, str) or not category:
+            return False, f"step_results[{pos}]['category'] is not a non-empty string: {category!r}"
+        # 7. model_key is a non-empty string.
+        model_key = entry.get("model_key")
+        if not isinstance(model_key, str) or not model_key:
+            return False, f"step_results[{pos}]['model_key'] is not a non-empty string: {model_key!r}"
+        # A (cross-layer, physical process identity). What the worker
+        # RECORDED at this index must be EXACTLY the physical process
+        # THIS SESSION REQUESTED at that index -- never recovered as
+        # "close enough" (no whitespace/alias normalization), never
+        # missing (None fails), never inferred from the mesh.
+        expected_entry = expected_steps[pos] if pos < len(expected_steps) else None
+        expected_category = (
+            expected_entry.get("_process_category") if isinstance(expected_entry, dict) else None
+        )
+        expected_model = (
+            expected_entry.get("_process_model_key") if isinstance(expected_entry, dict) else None
+        )
+        if expected_category is None or category != expected_category:
+            return False, (
+                f"REQUESTED/RECORDED PROCESS MISMATCH at index {pos}: "
+                f"step_results[{pos}]['category']={category!r} != the "
+                f"process this session actually requested at that index "
+                f"({expected_category!r})")
+        if expected_model is None or model_key != expected_model:
+            return False, (
+                f"REQUESTED/RECORDED PROCESS MISMATCH at index {pos}: "
+                f"step_results[{pos}]['model_key']={model_key!r} != the "
+                f"model this session actually requested at that index "
+                f"({expected_model!r})")
+        # 8. final_mesh exists and is a real file.
+        final_mesh = entry.get("final_mesh")
+        if not final_mesh or not Path(final_mesh).is_file():
+            return False, f"step_results[{pos}]['final_mesh'] missing or not a real file: {final_mesh!r}"
+        # 9. state_transition/physics_status/numerical_status keys exist
+        #    (value may legitimately be None).
+        for key in ("state_transition", "physics_status", "numerical_status"):
+            if key not in entry:
+                return False, f"step_results[{pos}] missing required key {key!r}"
+
+    if len(set(seen_indices)) != len(seen_indices):
+        return False, f"duplicate index values in step_results: {seen_indices}"
+    if seen_indices != list(range(executed_count)):
+        return False, (
+            f"index values are not exactly 0..{executed_count - 1} "
+            f"contiguous, in order: {seen_indices}")
+
+    # 10. step_meshes[i] == step_results[i].final_mesh.
+    if not isinstance(step_meshes, list) or len(step_meshes) != executed_count:
+        return False, (
+            f"step_meshes missing or length mismatch (expected "
+            f"{executed_count}, got "
+            f"{len(step_meshes) if isinstance(step_meshes, list) else type(step_meshes).__name__})")
+    for pos, entry in enumerate(step_results):
+        if step_meshes[pos] != entry.get("final_mesh"):
+            return False, f"step_meshes[{pos}] != step_results[{pos}]['final_mesh']"
+
+    # 11. step_physics_status[i] == step_results[i].physics_status.
+    if not isinstance(step_physics_status, list) or len(step_physics_status) != executed_count:
+        return False, (
+            f"step_physics_status missing or length mismatch (expected "
+            f"{executed_count})")
+    for pos, entry in enumerate(step_results):
+        if step_physics_status[pos] != entry.get("physics_status"):
+            return False, f"step_physics_status[{pos}] != step_results[{pos}]['physics_status']"
+
+    # 12. step_numerical_status[i] == step_results[i].numerical_status.
+    if not isinstance(step_numerical_status, list) or len(step_numerical_status) != executed_count:
+        return False, (
+            f"step_numerical_status missing or length mismatch (expected "
+            f"{executed_count})")
+    for pos, entry in enumerate(step_results):
+        if step_numerical_status[pos] != entry.get("numerical_status"):
+            return False, f"step_numerical_status[{pos}] != step_results[{pos}]['numerical_status']"
+
+    # B (cross-layer). Top-level "compatibility" fields (still read
+    # directly by the 4 standalone single-step RUN handlers) must agree
+    # BYTE-FOR-BYTE with the TERMINAL (last) step_results entry -- never
+    # independently reconstructed, never silently patched to agree.
+    terminal = step_results[-1]
+    top_step_count = result.get("step_count")
+    if top_step_count != executed_count:
+        return False, (
+            f"top-level step_count={top_step_count!r} != "
+            f"executed_step_count={executed_count!r}")
+    top_final_mesh = result.get("final_mesh")
+    if top_final_mesh != terminal.get("final_mesh"):
+        return False, (
+            f"top-level final_mesh={top_final_mesh!r} != terminal "
+            f"step_results[-1]['final_mesh']={terminal.get('final_mesh')!r}")
+    top_transition = result.get("state_transition")
+    if top_transition != terminal.get("state_transition"):
+        return False, (
+            f"top-level state_transition={top_transition!r} != terminal "
+            f"step_results[-1]['state_transition']="
+            f"{terminal.get('state_transition')!r}")
+    top_physics = result.get("physics_status")
+    if top_physics != terminal.get("physics_status"):
+        return False, (
+            f"top-level physics_status={top_physics!r} != terminal "
+            f"step_results[-1]['physics_status']={terminal.get('physics_status')!r}")
+    top_numerical = result.get("numerical_status")
+    if top_numerical != terminal.get("numerical_status"):
+        return False, (
+            f"top-level numerical_status={top_numerical!r} != terminal "
+            f"step_results[-1]['numerical_status']="
+            f"{terminal.get('numerical_status')!r}")
+
+    # C (cross-layer). domain_state must be a real, existing file --
+    # never adopted as the resume state on faith alone.
+    domain_state = result.get("domain_state")
+    if not domain_state or not Path(domain_state).is_file():
+        return False, f"top-level domain_state missing or not a real file: {domain_state!r}"
+
+    # 13/D. stopped_unsupported consistency, both directions.
+    if stopped_unsupported:
+        if stopped_step_index != executed_count - 1:
+            return False, (
+                f"stopped_unsupported=True but stopped_step_index="
+                f"{stopped_step_index!r} != executed_count-1="
+                f"{executed_count - 1}")
+        last_transition = step_results[-1].get("state_transition") or {}
+        if last_transition.get("kind") != "unsupported":
+            return False, (
+                f"stopped_unsupported=True but the LAST step_results "
+                f"entry's state_transition.kind is not 'unsupported': "
+                f"{last_transition!r}")
+        for pos, entry in enumerate(step_results[:-1]):
+            t = entry.get("state_transition") or {}
+            if t.get("kind") == "unsupported":
+                return False, (
+                    f"step_results[{pos}] is 'unsupported' but is not "
+                    f"the LAST entry -- the terminal unsupported step "
+                    f"must be unique and final")
+    else:
+        # D. stopped_unsupported=False must mean exactly that: no
+        # stopped index, and NO entry anywhere claims "unsupported".
+        if stopped_step_index is not None:
+            return False, (
+                f"stopped_unsupported=False but stopped_step_index="
+                f"{stopped_step_index!r} is not None")
+        for pos, entry in enumerate(step_results):
+            t = entry.get("state_transition") or {}
+            if t.get("kind") == "unsupported":
+                return False, (
+                    f"stopped_unsupported=False but step_results[{pos}] "
+                    f"is 'unsupported' -- contradicts the top-level flag")
+
+    return True, ""
 
 
 # ============================================================
@@ -1307,6 +1732,7 @@ class TCADApplication(tk.Tk):
         # .vpsd and run only the queued steps, or replay everything when
         # resuming is not available -- see _chained_flow_config().
         all_steps = self.completed_steps + self.flow_steps
+        prior_completed_len = len(self.completed_steps)
         state = self.last_domain_state
         can_resume = (
             state and Path(state).exists() and not self._locos_in_history()
@@ -1380,44 +1806,294 @@ class TCADApplication(tk.Tk):
             self._log("\nPROCESS FLOW FAILED\n")
             return
 
-        self.last_final_mesh = result.get("final_mesh")
-        # A flow has no single recipe -- last_step_category reflects the
-        # LAST queued step (the operation that most recently touched
-        # this mesh), matching WaferState's own "most recent step"
-        # semantics; all_steps is non-empty here (guarded above).
-        self._sync_wafer_state_geometry(all_steps[-1], result)
-        self.wafer.processed = True
-        # `etched` means "this wafer has actually been etched" -- it
-        # gates the trench-opening placeholder in redraw(). Setting it
-        # for ANY completed flow claimed an etch that a flow of, say,
-        # oxidation + deposition never performed.
-        if any(step.get("_process_category") == "etching" for step in all_steps):
-            self.wafer.etched = True
-        self.process_stage = "flow_done"
+        steps_passed_to_worker = self.flow_steps if can_resume else all_steps
 
-        self._log(
-            f"\nPROCESS FLOW COMPLETE ({len(all_steps)} steps)\n"
-            f"final mesh: {self.last_final_mesh}\n"
+        # P0-1 (Codex correction, strengthened for cross-layer physical
+        # provenance): validate the worker's per-step metadata BEFORE
+        # adopting ANY of it as canonical -- both its internal schema/
+        # alignment AND that what it RECORDED is the SAME physical
+        # process this session actually REQUESTED (steps_passed_to_worker,
+        # the exact list this session sent, never re-derived from the
+        # response). A failure of either kind means per-step provenance
+        # cannot be proven -- the backend subprocess may have produced
+        # perfectly real geometry, but none of it may be treated as
+        # this wafer's current state without that proof. No
+        # final-step-only fallback, no inference from the final mesh,
+        # no silent skip, no "close enough" process-name recovery.
+        is_valid, validation_error = validate_step_results(result, steps_passed_to_worker)
+        if not is_valid:
+            self._log(
+                f"\n================================\n"
+                f"FLOW STEP SEQUENCE METADATA INVALID -- BACKEND RESULT "
+                f"NOT ADOPTED\n"
+                f"================================\n"
+                f"reason_code: FLOW_STEP_SEQUENCE_METADATA_INVALID\n"
+                f"validator failure: {validation_error}\n"
+                f"The backend subprocess may have produced real "
+                f"geometry, but its per-step provenance could not be "
+                f"verified, so it is NOT adopted as this wafer's "
+                f"current state. Existing last-known backend geometry/"
+                f"domain/history are preserved unchanged, and the "
+                f"queued steps stay queued.\n"
+            )
+            from tcad.physics import wafer_state_v2 as _v2
+
+            self.wafer_state = _v2.advance(
+                self.wafer_state, None, step_seed="flow_step_sequence_invalid",
+            )
+            self.last_physics_status = {
+                "resolution": "UNSUPPORTED_BY_MODEL",
+                "reason_code": "FLOW_STEP_SEQUENCE_METADATA_INVALID",
+                "entries": [{
+                    "parameter": "flow_step_sequence", "material": "?",
+                    "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED",
+                    "note": validation_error,
+                }],
+            }
+            self._log_physics_status({"physics_status": self.last_physics_status})
+            self._notify_error(
+                "ViennaPS",
+                "The process flow's backend result cannot be safely "
+                "mapped to per-step WaferState -- its per-step metadata "
+                f"failed validation ({validation_error}). The backend "
+                "result was NOT adopted as the current wafer state. See "
+                "the log for detail.",
+            )
+            # Deliberately NOT touching last_final_mesh, last_domain_state,
+            # completed_steps, flow_step_meshes, flow_steps, wafer.processed/
+            # etched, process_stage -- an unverifiable per-step payload
+            # never becomes the new "current" anything.
+            self._update_process_buttons()
+            self.redraw()
+            return
+
+        requested_count = result["requested_step_count"]
+        executed_count = result["executed_step_count"]
+        stopped_unsupported = bool(result.get("stopped_unsupported"))
+        stopped_step_index = result.get("stopped_step_index")
+        step_results = result["step_results"]
+
+        # Steps that ACTUALLY ran this click, worker-JSON order.
+        steps_run_this_click = steps_passed_to_worker[:executed_count]
+        # Tier 1-2 Phase 1 contract (from the earlier round): an
+        # UNSUPPORTED_BY_MODEL step performed no real solve and changed
+        # no geometry, so it must never be recorded as a completed step
+        # -- mirrors run_oxidation()'s own standalone handling.
+        real_steps_run = (
+            steps_run_this_click[:-1] if stopped_unsupported else steps_run_this_click
         )
 
-        # The queued steps are now part of the wafer's real history, so
-        # a later standalone RUN click (or another RUN PROCESS FLOW)
-        # continues from here instead of redoing/discarding them.
-        self.completed_steps = all_steps
+        # P0-2 (Codex correction): a replay anomaly is about WHERE the
+        # stop landed, not how many steps executed. Comparing raw
+        # counts (`executed_count < prior_completed_len`) misses the
+        # boundary case prior_completed_len=1, stopped AT index 0,
+        # executed_count=1 -- index 0 is still INSIDE the
+        # already-completed prefix even though executed_count now
+        # numerically equals prior_completed_len. Use the real stopped
+        # index instead of a count comparison.
+        replay_anomaly = (
+            not can_resume
+            and stopped_unsupported
+            and stopped_step_index is not None
+            and stopped_step_index < prior_completed_len
+        )
+        if replay_anomaly:
+            # Replay (can_resume=False) re-ran what this session's
+            # WaferState already recorded as a SUCCESSFULLY completed
+            # prefix, to rebuild backend geometry -- but it stopped
+            # UNSUPPORTED at or before the end of that same prefix this
+            # time. Backend geometry and WaferState's own history now
+            # disagree about what that prefix produced. This partial
+            # replay result is NEVER adopted as canonical: not its
+            # final_mesh, not its domain_state, not completed_steps/
+            # flow_step_meshes -- all of those still describe the
+            # LAST-KNOWN GOOD state from before this click. The queued
+            # steps are left exactly as they were; nothing here was
+            # proven to have run.
+            self._log(
+                f"\n================================\n"
+                f"REPLAY ANOMALY: PREVIOUSLY-COMPLETED HISTORY NOW "
+                f"STOPPED UNSUPPORTED AT STEP {stopped_step_index}\n"
+                f"================================\n"
+                f"Replay needed to re-run {prior_completed_len} "
+                f"previously-completed step(s) to rebuild backend "
+                f"geometry, but stopped UNSUPPORTED at step "
+                f"{stopped_step_index} -- INSIDE that already-completed "
+                f"prefix (executed_count={executed_count}). The "
+                f"geometry this session's WaferState already recorded "
+                f"as a real completion no longer replays the same way. "
+                f"This partial replay result is NOT adopted: "
+                f"last_final_mesh, last_domain_state, completed_steps "
+                f"and flow_step_meshes are all left exactly as they "
+                f"were before this click, and the queued steps remain "
+                f"queued. WaferState is fail-closed entirely rather "
+                f"than trusting stale history.\n"
+            )
+            from tcad.physics import wafer_state_v2 as _v2
+
+            self.wafer_state = _v2.advance(
+                self.wafer_state, None, step_seed="replay_anomaly",
+            )
+            self.last_physics_status = {
+                "resolution": "UNSUPPORTED_BY_MODEL",
+                "reason_code": "REPLAY_ANOMALY_STALE_HISTORY",
+                "entries": [{
+                    "parameter": "flow_replay_history", "material": "?",
+                    "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED",
+                    "note": (
+                        f"replay stopped unsupported at step "
+                        f"{stopped_step_index}, inside the "
+                        f"{prior_completed_len}-step already-completed "
+                        f"prefix"),
+                }],
+            }
+            self._log_physics_status({"physics_status": self.last_physics_status})
+            self._notify_error(
+                "ViennaPS",
+                "Replay of previously-completed process history stopped "
+                "UNSUPPORTED partway through that SAME completed prefix "
+                "-- WaferState fail-closed entirely, and this partial "
+                "backend result was NOT adopted (last-known geometry/"
+                "domain/history preserved). See the log for detail.",
+            )
+            # Deliberately NOT touching last_final_mesh, last_domain_state,
+            # completed_steps, flow_step_meshes, flow_steps, wafer.processed/
+            # etched, process_stage -- see the log message above for why.
+            self._update_process_buttons()
+            self.redraw()
+            return
+
+        self.last_final_mesh = result.get("final_mesh")
+
+        # Resume (can_resume=True): the worker only ever saw the NEW
+        # queue, so every entry in step_results is a genuinely new
+        # execution this click -- advance all of it.
+        #
+        # Replay (can_resume=False, no anomaly): the worker re-ran
+        # `prior_completed_len` already-completed steps first (needed to
+        # rebuild backend geometry) before the genuinely new ones. Those
+        # already have their own events in self.wafer_state from when
+        # they first ran -- re-advancing them here would duplicate
+        # events/inventory. Only the SUFFIX beyond prior_completed_len
+        # is new.
+        new_step_results = step_results if can_resume else step_results[prior_completed_len:]
+        self.wafer_state = advance_wafer_state_sequence(
+            self.wafer_state, _step_results_to_entries(new_step_results)
+        )
+        if new_step_results:
+            self._log("\nWaferState sequencing (per-step, in execution order):\n")
+            for offset, sr in enumerate(new_step_results):
+                transition = sr.get("state_transition") or {}
+                self._log(
+                    f"  [{offset + 1}/{len(new_step_results)}] "
+                    f"{sr.get('category', '?')}: "
+                    f"{transition.get('kind', 'fail-closed (no transform)')}\n"
+                )
+
+        # "Every requested step was processed" is not "a physical process
+        # ran". A zero-duration oxidation performs no oxidation and changes
+        # nothing physical (an inherited identity returns the domain untouched;
+        # a fresh materialization builds the recipe's bare Si wafer). Count what
+        # each executed step really was, from its own canonical transition, so
+        # neither `wafer.processed` nor `flow_done` nor the completion wording
+        # is ever earned by a zero-duration step. The unsupported terminal step
+        # (if any) is neither: it is handled by its own branch below.
+        executed_results = step_results[:-1] if stopped_unsupported else step_results
+        zero_materializations = sum(
+            1 for sr in executed_results
+            if is_canonical_fresh_zero_duration_materialization(sr.get("state_transition")))
+        zero_identities = sum(
+            1 for sr in executed_results
+            if is_canonical_inherited_zero_duration_identity(sr.get("state_transition")))
+        physical_changes = len(executed_results) - zero_materializations - zero_identities
+
+        if stopped_unsupported:
+            # Never claim FLOW COMPLETE / flow_done: the requested step
+            # count was not fully executed, and the step it stopped on
+            # performed no real process. wafer.processed/etched are
+            # promoted only from an EARLIER real step in real_steps_run
+            # (a real etch/oxidation before the unsupported one is still
+            # a real change); process_stage is left untouched, matching
+            # run_oxidation()'s own unsupported-standalone precedent --
+            # it never promotes process_stage either.
+            if any(step.get("_process_category") == "etching" for step in real_steps_run):
+                self.wafer.etched = True
+            if physical_changes > 0:
+                self.wafer.processed = True
+            self._log(
+                f"\n================================\n"
+                f"PROCESS FLOW STOPPED: STEP {executed_count}/{requested_count} "
+                f"UNSUPPORTED_BY_MODEL\n"
+                f"================================\n"
+                f"{len(real_steps_run)} real step(s) executed; the flow "
+                f"stopped before running {requested_count - executed_count} "
+                f"remaining queued step(s) -- 0 registry lookups, 0 solver "
+                f"calls for those.\n"
+                f"1. No ViennaPS solver call was made for the stopped step.\n"
+                f"2. The mesh shown is the LAST-KNOWN geometry from the real "
+                f"steps before it, not a new result for the stopped step.\n"
+                f"3. The physical state after the stopped step is "
+                f"UNRESOLVED -- not computed, not assumed unchanged.\n"
+                f"4. Doping queries and DevSim solves remain blocked "
+                f"(UNSUPPORTED_BY_MODEL) for the unresolved regions. "
+                f"Running another supported process does not restore the "
+                f"lost physical certainty. Recovery requires restoring a "
+                f"known pre-step state, resetting to a known wafer, or "
+                f"explicitly constructing and doping a new supported "
+                f"material instance.\n"
+            )
+        else:
+            if physical_changes > 0:
+                self.wafer.processed = True
+                # `etched` means "this wafer has actually been etched" -- it
+                # gates the trench-opening placeholder in redraw(). Setting it
+                # for ANY completed flow claimed an etch that a flow of, say,
+                # oxidation + deposition never performed.
+                if any(step.get("_process_category") == "etching" for step in all_steps):
+                    self.wafer.etched = True
+                self.process_stage = "flow_done"
+            if zero_materializations + zero_identities == 0:
+                self._log(
+                    f"\nPROCESS FLOW COMPLETE ({len(all_steps)} steps)\n"
+                    f"final mesh: {self.last_final_mesh}\n"
+                )
+            else:
+                self._log(
+                    f"\nFLOW FINISHED: {physical_changes} physical process "
+                    f"change(s), {zero_materializations} zero-duration "
+                    f"materialization(s), {zero_identities} zero-duration "
+                    f"identity step(s) ({executed_count} step(s) executed; "
+                    f"a zero-duration step performs no oxidation "
+                    f"and changes nothing physical)\n"
+                    f"final mesh: {self.last_final_mesh}\n"
+                )
+
+        # The steps that REALLY ran are now part of the wafer's real
+        # history, so a later standalone RUN click (or another RUN
+        # PROCESS FLOW) continues from here instead of redoing/
+        # discarding them. The unsupported step itself (if any) and
+        # every queued step after it are deliberately excluded, so a
+        # rejected/unrun request stays distinguishable from a real
+        # completion -- same contract as run_oxidation()'s standalone
+        # unsupported branch.
+        self.completed_steps = (
+            self.completed_steps + real_steps_run if can_resume else real_steps_run
+        )
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
         self._log_physics_status(result)
-        # The above logs only the LAST step's status. A multi-step flow
-        # can have earlier steps with their own real status (e.g. an
-        # etch wired to the resolver, queued before a step that is not)
-        # -- log each step's own entry too, so nothing is silently lost.
+        # The above logs only the LAST EXECUTED step's status. A
+        # multi-step flow can have earlier steps with their own real
+        # status (e.g. an etch wired to the resolver, queued before a
+        # step that is not) -- log each executed step's own entry too,
+        # so nothing is silently lost.
         step_physics = result.get("step_physics_status", [])
         step_numerical = result.get("step_numerical_status", [])
         for index, (physics, numerical) in enumerate(
             zip(step_physics, step_numerical)
         ):
             if physics or numerical:
-                self._log(f"\n-- step {index + 1}/{len(all_steps)} --\n")
+                self._log(f"\n-- step {index + 1}/{executed_count} --\n")
                 self._log_physics_status(
                     {"physics_status": physics, "numerical_status": numerical}
                 )
@@ -1433,12 +2109,24 @@ class TCADApplication(tk.Tk):
         # the ones this session already recorded. Concatenating keeps
         # the index-for-index alignment with completed_steps that the
         # timeline depends on. (Replaying returns meshes for every step,
-        # so the previous list is replaced outright.)
+        # so the previous list is replaced outright.) The unsupported
+        # step's own mesh (if the flow stopped on one) is dropped here
+        # too, to keep this list aligned with completed_steps above.
         step_meshes = result.get("step_meshes", [])
+        if stopped_unsupported:
+            step_meshes = step_meshes[:-1]
         self.flow_step_meshes = (
             self.flow_step_meshes + step_meshes if can_resume else step_meshes
         )
-        self.flow_steps = []
+        # Only drop the steps that were actually dispatched this click
+        # from the queue -- anything after the point the flow stopped
+        # was never sent to the worker and stays queued for the user to
+        # decide what to do with.
+        if can_resume:
+            executed_within_flow_steps = executed_count
+        else:
+            executed_within_flow_steps = max(0, executed_count - prior_completed_len)
+        self.flow_steps = self.flow_steps[executed_within_flow_steps:]
         self._refresh_flow_list()
 
         self._update_process_buttons()
@@ -2251,8 +2939,9 @@ class TCADApplication(tk.Tk):
             # y -0.00..+0.96), oxide floating on a mask rather than grown
             # from silicon.
             #
-            # LOCOS builds its own pad-oxide-first geometry and its own
-            # mask; that is why the mask keys live in ITS branch only.
+            # The mask keys live in the LOCOS branch only. They describe
+            # the request; a zero-duration or unsupported oxidation never
+            # turns them into geometry (no pad oxide, no mask is created).
             mask_keys = self._mask_recipe_keys() if is_locos else {"mask_spans_um": []}
 
             # Photoresist on the wafer is REPORTED, never acted on and
@@ -2371,7 +3060,7 @@ class TCADApplication(tk.Tk):
             f"\n================================\n"
             f"REAL VIENNAPS {model_label.upper()} START\n"
             f"================================\n"
-            f"1. {'Pad oxide + mask (LOCOS)' if is_locos else 'current wafer surface'}\n"
+            f"1. {'LOCOS request (pad oxide and nitride mask are separate steps; this one creates neither)' if is_locos else 'current wafer surface'}\n"
             f"2. {recipe['oxidant']} oxidation, "
             f"{recipe['temperature_c']}°C, {recipe['time_hours']}h\n"
         )
@@ -2438,14 +3127,124 @@ class TCADApplication(tk.Tk):
 
             return
 
-        self.wafer.processed = True
-        self.process_stage = "oxidized"
+        transition = result.get("state_transition") or {}
+        # Two DIFFERENT zero-duration results, each recognized only by its exact
+        # canonical schema (a near-miss is neither, and falls through to the
+        # ordinary branch below exactly as before):
+        #   inherited identity -- the backend domain IS the prior domain;
+        #   fresh materialization -- the backend built a NEW virgin Si wafer, so
+        #   no earlier WaferState is known to describe it.
+        inherited_identity = is_canonical_inherited_zero_duration_identity(transition)
+        fresh_wafer = is_canonical_fresh_zero_duration_materialization(transition)
+        identity = inherited_identity or fresh_wafer     # "no oxidation was performed"
+        unsupported = transition.get("kind") == "unsupported"
+
+        if fresh_wafer:
+            self._log(
+                "\nOxidation time is 0 h: no oxidation was performed. There "
+                "was no wafer to act on, so the recipe's bare Si wafer was "
+                "materialized -- no SiO2, no mask and no pad oxide were "
+                "created.\n"
+            )
+        elif identity:
+            self._log(
+                "\nOxidation time is 0 h: no oxidation was performed; the "
+                "existing wafer geometry and doping are preserved.\n"
+            )
+        elif not unsupported:
+            self.wafer.processed = True
+            self.process_stage = "oxidized"
+        # unsupported: neither branch -- wafer.processed/process_stage
+        # must NOT be promoted to look like a completed oxidation (Phase
+        # 1 contract, docs/audits/2026-09-18-tier1-2-oxidation-positive-
+        # support/REPORT.md Rev.2).
+
         self.last_final_mesh = result.get("final_mesh")
+        prior_wafer_state = self.wafer_state
+        # Still synced for identity, materialization AND unsupported: this is
+        # what lets WaferState correctly fail-closed (advance_wafer_state's
+        # default v2.advance(state, transform=None, ...) path -- the
+        # SAME mechanism already used for thermal anneal) rather than
+        # silently keeping stale doping queryable.
         self._sync_wafer_state_geometry(recipe, result)
-        self.completed_steps.append(recipe)
+        if fresh_wafer:
+            if prior_wafer_state is None:
+                self._log(
+                    "WaferState initialized from the materialized wafer's own "
+                    "exact bounds (bare Si, no dopant).\n"
+                )
+            else:
+                self._log(
+                    "\nCONTINUITY NOT PROVEN: a previous WaferState existed, "
+                    "but this step did not inherit the previous domain -- it "
+                    "built a NEW bare Si wafer. Nothing shows that the "
+                    "previous state's geometry, material history or dopant "
+                    "describes it, so the previous WaferState was fail-closed "
+                    "(nothing was preserved): doping queries and DevSim "
+                    "measurements are blocked (UNSUPPORTED_BY_MODEL).\n"
+                )
         self.last_domain_state = result.get("domain_state")
         self.last_physics_status = result.get("physics_status")
         self._log_physics_status(result)
+
+        if unsupported:
+            # Deliberately NOT appended to completed_steps/flow_step_meshes
+            # and NOT `_mark_stage_done(1)`'d -- those represent a process
+            # that actually ran and changed geometry, and this one did
+            # not. Absence from that history is what keeps a rejected
+            # request "distinguishable from a real completed step"
+            # (Phase 1 contract) with no extra bookkeeping needed.
+            #
+            # "Wafer geometry and doping are unchanged" is NOT an
+            # accurate description of what happens next (P0-2):
+            # _sync_wafer_state_geometry() above just fail-closed
+            # self.wafer_state (the same UNSUPPORTED_BY_MODEL mechanism
+            # thermal anneal already uses), so a doping query against
+            # this wafer now returns None/UNSUPPORTED rather than the
+            # value it held before -- "unchanged" wrongly implies it
+            # still reads as before. State the four real, distinct
+            # facts instead.
+            self._log(
+                f"\n================================\n"
+                f"OXIDATION RESULT NOT COMPUTED (UNSUPPORTED_BY_MODEL)\n"
+                f"================================\n"
+                f"Reason: {transition.get('reason', '?')}\n"
+                f"1. No ViennaPS solver call was made for this request.\n"
+                f"2. The mesh shown is the LAST-KNOWN geometry from before "
+                f"this request, not a new oxidation result.\n"
+                f"3. The physical state of this wafer after the requested "
+                f"oxidation is UNRESOLVED -- not computed, not assumed "
+                f"unchanged.\n"
+                f"4. Doping queries and DevSim solves remain blocked "
+                f"(UNSUPPORTED_BY_MODEL) for the unresolved regions. "
+                f"Running another supported process does not restore the "
+                f"lost physical certainty. Recovery requires restoring a "
+                f"known pre-step state, resetting to a known wafer, or "
+                f"explicitly constructing and doping a new supported "
+                f"material instance.\n"
+            )
+            self._update_process_buttons()
+            self.redraw()
+            self._notify_info(
+                "ViennaPS",
+                f"{model_label}: OXIDATION RESULT NOT COMPUTED -- this "
+                f"request is not yet physically supported "
+                f"(UNSUPPORTED_BY_MODEL).\n\n"
+                f"Reason: {transition.get('reason', '?')}\n\n"
+                f"1) No solver ran.\n"
+                f"2) The mesh shown is last-known geometry, not a new "
+                f"result.\n"
+                f"3) Post-oxidation physical state is unresolved.\n"
+                f"4) Doping/DevSim remain blocked for the unresolved "
+                f"regions. Running another supported process does not "
+                f"restore the lost physical certainty -- recovery requires "
+                f"restoring a known pre-step state, resetting to a known "
+                f"wafer, or explicitly constructing and doping a new "
+                f"supported material instance.",
+            )
+            return
+
+        self.completed_steps.append(recipe)
         # Keep flow_step_meshes aligned index-for-index with
         # completed_steps (see run_process_flow's own comment) so the
         # bottom timeline can show this step's geometry on click even
@@ -2453,15 +3252,27 @@ class TCADApplication(tk.Tk):
         # PROCESS FLOW.
         self.flow_step_meshes.append(self.last_final_mesh)
 
-        self._mark_stage_done(1)
+        # The "Film / oxide" session marker means a film/oxide step ACTUALLY
+        # ran. A zero-duration request (fresh materialization or inherited
+        # identity) performed no oxidation and created no film, so it must not
+        # light it; only a real (supported, positive-time) oxidation may.
+        if not identity:
+            self._mark_stage_done(1)
 
         self.history.append(
-            f"ViennaPS {model_label}"
+            f"ViennaPS {model_label} (0 h, no oxidation)" if identity
+            else f"ViennaPS {model_label}"
         )
 
+        # A zero-duration step ran no solver and grew nothing: it is not a
+        # "COMPLETE" oxidation, so it must not read like one.
+        outcome = (
+            "ZERO-DURATION OXIDATION: NO OXIDATION PERFORMED"
+            if identity else f"REAL VIENNAPS {model_label.upper()} COMPLETE"
+        )
         self._log(
             f"\n================================\n"
-            f"REAL VIENNAPS {model_label.upper()} COMPLETE\n"
+            f"{outcome}\n"
             f"================================\n"
             f"Surface files: "
             f"{len(result.get('snapshots', []))}\n"
@@ -2478,11 +3289,42 @@ class TCADApplication(tk.Tk):
 
         self.redraw()
 
-        self._notify_info(
-            "ViennaPS",
-            f"ViennaPS {model_label} simulation complete.\n\n"
-            f"Final mesh:\n{result['final_mesh']}",
-        )
+        # Three different outcomes, three different messages. A zero-duration
+        # request performed no oxidation, so it must never be reported as a
+        # completed simulation/oxidation/growth -- the two zero-duration cases
+        # also differ from each other (a NEW virgin wafer vs. the PRESERVED one).
+        if fresh_wafer:
+            self._notify_info(
+                "ViennaPS",
+                f"{model_label}: NO OXIDATION PERFORMED (0 h).\n\n"
+                f"1) No oxidation solver ran and no native-oxide seed was "
+                f"created.\n"
+                f"2) There was no existing wafer, so only the requested "
+                f"virgin Si geometry was materialized.\n"
+                f"3) No SiO2, pad oxide or Mask was created.\n"
+                f"4) The final mesh is that materialized virgin Si "
+                f"geometry, not an oxidation result.\n\n"
+                f"Final mesh:\n{result['final_mesh']}",
+            )
+        elif inherited_identity:
+            self._notify_info(
+                "ViennaPS",
+                f"{model_label}: NO OXIDATION PERFORMED (0 h).\n\n"
+                f"1) No oxidation solver ran and no native-oxide seed was "
+                f"created.\n"
+                f"2) The existing wafer geometry and state were preserved "
+                f"as an identity.\n"
+                f"3) No new oxide or Mask was created.\n"
+                f"4) The final mesh represents the preserved geometry, not "
+                f"a new oxidation result.\n\n"
+                f"Final mesh:\n{result['final_mesh']}",
+            )
+        else:
+            self._notify_info(
+                "ViennaPS",
+                f"ViennaPS {model_label} simulation complete.\n\n"
+                f"Final mesh:\n{result['final_mesh']}",
+            )
 
     # --------------------------------------------------------
     # DEPOSITION
@@ -2993,9 +3835,27 @@ class TCADApplication(tk.Tk):
 
         self.last_final_mesh = result.get("final_mesh")
         # No real process ran here (see this method's own docstring) --
-        # no recipe/_process_category exists, so last_step_category
-        # becomes None (unclassified), matching WaferState's own
-        # default for "nothing has been done to this wafer yet".
+        # no recipe/_process_category exists.
+        #
+        # WaferState v2, the user's P0 "명시적 초기 geometry 초기화 경로":
+        # when this is a genuine virgin rectangle (no resist pattern) and
+        # no accumulating v2 state exists yet, seed a MODELLED initial 2D
+        # WaferStateV2 from the SAME recipe bounds this export just used
+        # -- x_extent_um / silicon_depth_um straight from self.wafer,
+        # never read back from the mesh. That makes a later
+        # doping -> measurement solve run for real instead of failing
+        # closed on a LEGACY_UNRESOLVED state. A patterned resist / any
+        # prior real process falls through to advance_wafer_state's
+        # LEGACY path unchanged (its source has no exact y_min).
+        if self.wafer_state is None and not (self._resist_spans_um() or []):
+            from tcad.physics.wafer_state_accumulation import (
+                initial_wafer_state_from_recipe,
+            )
+            self.wafer_state = initial_wafer_state_from_recipe({
+                "x_extent_um": self.wafer.width_um,
+                "silicon_depth_um": self.wafer.silicon_depth_um,
+                "grid_delta_um": float(self.grid_var.get()),
+            })
         self._sync_wafer_state_geometry({}, result)
         self.last_domain_state = result.get("domain_state")
         self.wafer.processed = True
@@ -4158,12 +5018,22 @@ class TCADApplication(tk.Tk):
         final_mesh = result.get("final_mesh")
         if not final_mesh:
             return
-        process_result = build_process_result({"final_mesh": final_mesh, "snapshots": []})
+        process_result = build_process_result({
+            "final_mesh": final_mesh, "snapshots": [],
+            "state_transition": result.get("state_transition"),
+        })
         category = recipe.get("_process_category")
         self.wafer_state = advance_wafer_state(self.wafer_state, process_result, category)
 
     def run_doping(self, silent: bool = False, reattach: bool = False):
         """Apply the selected doping kind. Returns True on success.
+
+        Success means the canonical WaferStateV2 gained the requested
+        active attachment(s) -- not that a recipe DopingProfile could be
+        built. A refused request (no active attachment), a request that
+        was only recorded CHEMICAL (no activation model) and an all-zero
+        request (a known no-op) all return False and leave
+        last_doped_result, the history and the viewer layer untouched.
 
         `silent` suppresses only the success POPUP -- the log line and
         the auto-switch to the doping color overlay still happen either
@@ -4210,9 +5080,18 @@ class TCADApplication(tk.Tk):
                 region = self.dope_uniform_region_var.get()
                 donor = float(self.dope_uniform_donor_var.get())
                 acceptor = float(self.dope_uniform_acceptor_var.get())
+                requested_all_zero = donor == 0.0 and acceptor == 0.0
                 conc = donor - acceptor
+                # Declared analytic, electrically ACTIVE device profile
+                # (not a simulated implant). donor and acceptor go in as
+                # two separate quantities -- N_D == N_A != 0 is a real
+                # compensated profile, never a zero net.
+                chemical_state = "ACTIVE"
                 doped_result = apply_uniform_doping(
-                    process_result, {region: conc},
+                    process_result,
+                    donor_by_region_cm3={region: donor},
+                    acceptor_by_region_cm3={region: acceptor},
+                    chemical_state=chemical_state,
                 )
                 summary = (
                     f"region={region!r} donor={donor:.3e} "
@@ -4226,10 +5105,13 @@ class TCADApplication(tk.Tk):
                 position = float(self.dope_step_position_var.get())
                 donor = float(self.dope_step_donor_var.get())
                 acceptor = float(self.dope_step_acceptor_var.get())
+                requested_all_zero = donor == 0.0 and acceptor == 0.0
+                chemical_state = "ACTIVE"    # declared analytic active profile
                 doped_result = apply_step_junction_doping(
                     process_result, region=region, junction_axis=axis,
                     junction_position_um=position,
                     donor_conc_cm3=donor, acceptor_conc_cm3=acceptor,
+                    chemical_state=chemical_state,
                 )
                 summary = (
                     f"region={region!r} axis={axis!r} "
@@ -4247,15 +5129,20 @@ class TCADApplication(tk.Tk):
                 acceptor = float(self.dope_gauss_acceptor_var.get())
                 donor_species = self.dope_gauss_donor_species_var.get()
                 acceptor_species = self.dope_gauss_acceptor_species_var.get()
+                requested_all_zero = donor == 0.0 and acceptor == 0.0
                 # Multi-implant accumulation (formerly this branch's own
                 # `existing=`/`gaussian_terms` mechanism) is now
                 # WaferState's job -- every kind, not just Gaussian
                 # Implant, accumulates via self.wafer_state below.
+                # A process-like implant: no energy/dose or anneal
+                # activation model exists, so it is only ever CHEMICAL.
+                chemical_state = "CHEMICAL"
                 doped_result = apply_gaussian_implant_doping(
                     process_result, region=region, junction_axis=axis,
                     peak_position_um=position, straggle_um=straggle,
                     donor_peak_conc_cm3=donor, acceptor_peak_conc_cm3=acceptor,
                     donor_species=donor_species, acceptor_species=acceptor_species,
+                    chemical_state=chemical_state,
                 )
                 summary = (
                     f"region={region!r} axis={axis!r} "
@@ -4279,16 +5166,22 @@ class TCADApplication(tk.Tk):
                 drn_max = float(self.dope_win_drn_max_var.get())
                 drn_donor = float(self.dope_win_drn_donor_var.get())
                 drn_acceptor = float(self.dope_win_drn_acceptor_var.get())
+                requested_all_zero = not any((
+                    donor_bg, acceptor_bg, src_donor, src_acceptor,
+                    drn_donor, drn_acceptor,
+                ))
                 windows = [
                     {"min_um": src_min, "max_um": src_max,
                      "donor_conc_cm3": src_donor, "acceptor_conc_cm3": src_acceptor},
                     {"min_um": drn_min, "max_um": drn_max,
                      "donor_conc_cm3": drn_donor, "acceptor_conc_cm3": drn_acceptor},
                 ]
+                chemical_state = "CHEMICAL"    # process-like implant, no activation model
                 doped_result = apply_implant_windows_doping(
                     process_result, region=region, axis=axis,
                     donor_background_cm3=donor_bg, acceptor_background_cm3=acceptor_bg,
                     windows=windows,
+                    chemical_state=chemical_state,
                 )
                 summary = (
                     f"region={region!r} axis={axis!r} "
@@ -4324,10 +5217,158 @@ class TCADApplication(tk.Tk):
 
             return False
 
-        self.last_doped_result = doped_result
+        if requested_all_zero:
+            # A known, physically exact no-op: zero dopant added anywhere
+            # changes nothing on any geometry. No attachment, no ledger
+            # entry, and nothing is reported as applied. False = no doping
+            # application was recorded (last_doped_result stays as it was).
+            self._log(
+                "\nNO DOPING ADDED: all requested concentrations are zero. "
+                "The wafer state is unchanged.\n"
+            )
+            return False
+
+        # WaferState v2 P0-C: a SiO2 barrier over part of the doped
+        # region is carved into THIS NEW application's own support
+        # region at attach time (advance_wafer_state's barrier_windows)
+        # -- never a post-hoc zeroing of the accumulated NetDoping,
+        # which would also erase real pre-existing/background dopant
+        # that predates the barrier. Skipped for Implant Windows: that
+        # kind never reaches apply_doping() (it routes through the
+        # robust solve path, which registers NetDoping itself), so
+        # deriving barrier windows for it would be a wasted real mesh
+        # read.
+        barrier_windows = None
+        if kind != "Implant Windows":
+            try:
+                from tcad.device.devsim.mesh_import import derive_barrier_covered_windows
+
+                barrier_windows = derive_barrier_covered_windows(
+                    doped_result, doped_region=doped_result.doping.regions[0].region,
+                    barrier_material="SiO2", axis="x",
+                    min_barrier_thickness_um=float(self.dope_barrier_threshold_var.get()),
+                )
+                if barrier_windows:
+                    total = sum(w["max_um"] - w["min_um"] for w in barrier_windows)
+                    self._log(
+                        f"\nSiO2 barrier: {len(barrier_windows)} window(s) "
+                        f"totaling {total:.4f}um over the doped region (min "
+                        f"thickness {float(self.dope_barrier_threshold_var.get()):.4f}"
+                        f"um). This NEW doping application will be "
+                        f"UNSUPPORTED wherever it cannot be exactly carved "
+                        f"around them -- pre-existing dopant elsewhere on "
+                        f"this wafer is unaffected: {barrier_windows}\n"
+                    )
+            except Exception as exc:
+                barrier_windows = None
+                self._log(f"\n(Could not derive SiO2 barrier windows: {exc!r})\n")
+
+        # The physical source of truth is the canonical WaferStateV2, not
+        # the recipe DopingProfile: success needs a NEW active attachment
+        # and no new refusal event / unresolved-inventory entry from this
+        # request (every requested profile yields exactly one of the two).
+        # A refused request keeps the new state -- its refusal provenance
+        # and ledger are real -- but is never reported as applied.
+        prior = self.wafer_state
+        prior_att = {a.attachment_id for a in getattr(prior, "attachments", ())}
+        n_events = len(getattr(prior, "events", ()))
+        n_unresolved = len(getattr(prior, "unresolved_inventory", ()))
 
         if not reattach:
-            self.wafer_state = advance_wafer_state(self.wafer_state, doped_result, "doping")
+            self.wafer_state = advance_wafer_state(
+                self.wafer_state, doped_result, "doping",
+                barrier_windows=barrier_windows, barrier_axis="x",
+            )
+
+        state = self.wafer_state
+        new_att = [
+            a for a in getattr(state, "attachments", ())
+            if a.attachment_id not in prior_att
+        ]
+        n_refused = sum(
+            e.model_status == "UNSUPPORTED_BY_MODEL"
+            for e in getattr(state, "events", ())[n_events:]
+        )
+        n_new_unresolved = len(getattr(state, "unresolved_inventory", ())) - n_unresolved
+
+        if reattach:
+            # A re-attach needs the canonical attachment(s) of THIS request
+            # -- same material instance, model, parameters, species,
+            # polarity and chemical state -- not merely some other
+            # attachment that happens to exist, and never a stale numeric
+            # DopingProfile.
+            matched, recorded, why = canonical_doping_request_matches(
+                state, doped_result.doping,
+                barrier_windows=barrier_windows, barrier_axis="x")
+            refused = not matched
+        else:
+            # advance_wafer_state() is atomic per request: either every
+            # profile attached or none did.
+            recorded = tuple(new_att)
+            why = ""
+            refused = not new_att or n_refused > 0 or n_new_unresolved > 0
+
+        if refused:
+            self._log(
+                f"\n================================\n"
+                f"DOPING NOT APPLIED (UNSUPPORTED_BY_MODEL)\n"
+                f"================================\n"
+                + (
+                    "- No active dopant attachment was created.\n"
+                    if not new_att else
+                    f"- INCONSISTENT: {len(new_att)} attachment(s) exist although the "
+                    f"request was refused; it is still not reported as applied.\n"
+                )
+                + f"- The requested doping cannot be used as canonical electrical "
+                f"doping"
+                + (f" (re-attach needs this request's own canonical attachment: {why}).\n"
+                   if reattach else ".\n")
+                + f"- REQUESTED, NOT APPLIED (user input, not a result): "
+                f"{summary.split(' -> ')[0]}\n"
+                f"- WaferState recorded {n_refused} refusal event(s) and "
+                f"{n_new_unresolved} unresolved-inventory entr(ies) for this "
+                f"request; nothing else.\n"
+                f"- No DevSim write or solve is run.\n"
+                f"- Running another supported process step does not recover the "
+                f"physical certainty that was lost.\n"
+            )
+            if not silent:
+                self._notify_info(
+                    "Doping",
+                    "DOPING NOT APPLIED (UNSUPPORTED_BY_MODEL): the request is "
+                    "not reported as applied; see the process log.",
+                )
+            return False
+
+        if any(a.chemical_state != "ACTIVE" for a in recorded):
+            # A process-like implant: the dopant is on record but this
+            # project has no implantation (energy/dose) or anneal
+            # activation model, so nothing is claimed electrically active.
+            # No last_doped_result, history, overlay or measurement state
+            # is updated as if it were an active doping.
+            self._log(
+                f"\n================================\n"
+                f"CHEMICAL PROFILE RECORDED; ELECTRICAL ACTIVATION UNSUPPORTED\n"
+                f"================================\n"
+                f"- {len(recorded)} chemical dopant attachment(s) "
+                f"{'already present in' if reattach else 'recorded in'} the "
+                f"WaferState as provenance (chemical_state CHEMICAL).\n"
+                f"- No activation model exists: the electrical donor/acceptor/net "
+                f"query is UNSUPPORTED_BY_MODEL over their support.\n"
+                f"- REQUESTED, NOT APPLIED AS ELECTRICAL DOPING (user input, not a "
+                f"result): {summary.split(' -> ')[0]}\n"
+                f"- No DevSim write or solve is run; the last doped result, the "
+                f"history and the viewer layer are unchanged.\n"
+            )
+            if not silent:
+                self._notify_info(
+                    "Doping",
+                    "CHEMICAL PROFILE RECORDED; ELECTRICAL ACTIVATION UNSUPPORTED: "
+                    "no active doping was applied; see the process log.",
+                )
+            return False
+
+        self.last_doped_result = doped_result
 
         self.history.append(
             f"Doping: {kind}"
@@ -4337,6 +5378,9 @@ class TCADApplication(tk.Tk):
             f"\n================================\n"
             f"DOPING APPLIED: {kind.upper()}\n"
             f"================================\n"
+            f"ACTIVE ANALYTIC PROFILE DECLARED (DECLARED ANALYTIC ACTIVE "
+            f"PROFILE: the user's own electrically-active device profile -- not "
+            f"a simulated implant, anneal or activation)\n"
             f"{summary}\n"
             f"Materials in mesh: "
             f"{[r.name for r in doped_result.material_regions]}\n"
@@ -4344,6 +5388,22 @@ class TCADApplication(tk.Tk):
             f"{len(self.wafer_state.dopant_profiles) if self.wafer_state else 0}\n"
             f"(DopingProfile attached only -- no DevSim solve run.)\n"
         )
+
+        # Concentration preservation is not transport capability: a donor and
+        # an acceptor of finite area in the same place stay canonical, but no
+        # device solve / current is available for them (the central DevSim
+        # gate says so again, with the same reason code, at MEASURE).
+        from tcad.physics import wafer_state_v2 as _v2
+
+        if isinstance(self.wafer_state, _v2.WaferStateV2):
+            compensated = _v2.compensated_transport_problems(self.wafer_state, region)
+            if compensated:
+                self._log(
+                    f"NOTE: {_v2.COMPENSATED_TRANSPORT_REASON} -- donor and acceptor "
+                    f"coexist over a finite area ({compensated[0]}). The canonical "
+                    f"concentrations are kept; a DevSim measurement of this region is "
+                    f"UNSUPPORTED_BY_MODEL (no compensation-aware transport model).\n"
+                )
 
         self._update_process_buttons()
 
@@ -4359,7 +5419,10 @@ class TCADApplication(tk.Tk):
         if not silent:
             self._notify_info(
                 "Doping",
-                f"Doping profile attached ({kind}).\n\n{summary}\n\n"
+                f"Doping profile attached ({kind}) -- ACTIVE ANALYTIC PROFILE "
+                f"DECLARED: a declared analytic active profile, not a simulated "
+                f"implant.\n\n"
+                f"{summary}\n\n"
                 f"No DevSim solve was run -- this only attaches the "
                 f"DopingProfile object and reports it in the process log.",
             )
@@ -4367,15 +5430,28 @@ class TCADApplication(tk.Tk):
         return True
 
     def _on_thermal_anneal_clicked(self):
-        """Widens every accumulated DopantProfile in self.wafer_state by
-        its own species' real, cited D(T) -- see
-        tcad.physics.dopant_models/tcad.physics.doping.apply_thermal_anneal.
-        Dispatch-based, per-profile (Task 3): a profile whose model has
-        no registered anneal handler is left with model_params
-        UNCHANGED and reported UNSUPPORTED_BY_MODEL, never silently
-        skipped and never run through the wrong model's formula. A
-        real, honest no-op (logged, not silent) when nothing has been
-        doped yet."""
+        """WaferState v2 P0-B (user correction): thermal anneal has no
+        representable 2D `GeometryTransform` in this model -- the
+        previous mechanism (`tcad.physics.doping.apply_thermal_anneal`)
+        computed a real, cited Arrhenius D(T) widening, but only ever
+        moved a dopant profile laterally in x; it never produced an
+        exact axis-aligned 2D bounds change, and it operated on v1
+        `DopantProfile` objects that `replace(self.wafer_state,
+        dopant_profiles=...)` cannot write back into a `WaferStateV2`
+        (`dopant_profiles` is a read-only view there, not a field).
+
+        ANNEAL is therefore modelled as a fail-closed v2 transition:
+        `advance_wafer_state(..., transform=None)` moves every active
+        attachment to the unresolved-inventory ledger (a numeric total
+        preserved wherever it was already exact) and marks the affected
+        cells UNRESOLVED. Every doping query after this point is
+        honestly `UNSUPPORTED_BY_MODEL` -- no DevSim solve may run on it
+        -- until a NEW doping step attaches to fresh, explicit geometry.
+        The old x-only estimate is not computed at all any more: it
+        cannot be written back into v2, and computing it for display
+        only would need it to run against v1-shaped `DopantProfile`
+        objects `WaferStateV2.dopant_profiles`'s read-only view does not
+        provide (no `thermal_history` field)."""
 
         if self.wafer_state is None or not self.wafer_state.dopant_profiles:
             self._log("ANNEAL: no doping applied yet -- nothing to anneal.")
@@ -4391,72 +5467,33 @@ class TCADApplication(tk.Tk):
             )
             return
 
-        before_profiles = self.wafer_state.dopant_profiles
-        updated_profiles, physics_status = apply_thermal_anneal(
-            before_profiles, temperature_c, time_s,
-        )
-        self.wafer_state = replace(self.wafer_state, dopant_profiles=updated_profiles)
+        before_count = len(self.wafer_state.dopant_profiles)
+        self.wafer_state = advance_wafer_state(
+            self.wafer_state, None, "anneal", transform=None)
 
-        # Positional pairing (same principle as the Stage B final-review
-        # Important #1/#2 fix, now at the WaferState.dopant_profiles
-        # level instead of DopingRegion.gaussian_terms -- apply_thermal_
-        # anneal (Task 3) preserves order, never reorders/drops, so zip
-        # is correct).
-        unsupported_species = {
-            entry["material"] for entry in (physics_status or {}).get("entries", [])
-            if entry["resolution"] == "UNSUPPORTED_BY_MODEL"
+        self.last_physics_status = {
+            "resolution": "UNSUPPORTED_BY_MODEL",
+            "entries": [{
+                "parameter": "anneal_2d_transform",
+                "material": "?",
+                "resolution": "UNSUPPORTED_BY_MODEL",
+                "provenance": "DERIVED",
+                "note": "thermal anneal has no representable 2D GeometryTransform "
+                        "in this model; the accumulated doping state fail-closed",
+            }],
+            "notes": [],
         }
-        # Final-review Fix 1: this used to be unreachable (apply_thermal_
-        # anneal had no path to emit an UNVERIFIED entry at all) --
-        # doping.py now surfaces it whenever a registered handler's own
-        # D(T) had to extrapolate outside that species' cited window.
-        unverified_species = {
-            entry["material"] for entry in (physics_status or {}).get("entries", [])
-            if entry["resolution"] == "UNVERIFIED"
-        }
-
         self._log(
             f"\n================================\n"
             f"ANNEAL: {temperature_c:.0f} C / {time_s:.0f} s\n"
             f"================================\n"
-            f"Applied to {len(updated_profiles)} existing profile(s):"
+            f"WaferState v2 has no representable 2D anneal transform -- "
+            f"{before_count} existing dopant attachment(s) moved to the "
+            f"unresolved-inventory ledger (fail-closed, exact numeric "
+            f"total preserved where it was already known). Any "
+            f"measurement from here needs a fresh doping step on "
+            f"explicit geometry; DevSim is not run.\n"
         )
-        for before_p, after_p in zip(before_profiles, updated_profiles):
-            # Two distinct situations (Core Physics Requirement: never
-            # blur two different kinds of uncertainty into one label) --
-            # no handler at all for this model, vs. a handler that DID
-            # run but whose D(T) is only an extrapolation. Discriminate
-            # on before_p.model directly (not species-set membership):
-            # physics_status entries are keyed by species only, so two
-            # profiles sharing a species but different models (e.g. a
-            # Uniform "P" alongside a Gaussian Implant "P") would
-            # otherwise both match unsupported_species/unverified_species
-            # regardless of which one the entry actually describes --
-            # confirmed by this project's own scoped re-review, which
-            # reproduced a real gaussian_v1 profile getting mislabeled
-            # "no anneal handler registered" purely because a same-
-            # species uniform_v1 profile (which genuinely has none) was
-            # annealed alongside it.
-            if before_p.model not in ANNEAL_HANDLERS:
-                flag = " (UNSUPPORTED_BY_MODEL -- no anneal handler registered for this model)"
-            elif before_p.species in unverified_species:
-                flag = " (outside citation range -- UNVERIFIED)"
-            else:
-                flag = ""
-            before_straggle = before_p.model_params.get("straggle_um")
-            after_straggle = after_p.model_params.get("straggle_um")
-            if before_straggle is not None and after_straggle is not None:
-                self._log(
-                    f"  {before_p.species or '(unlabeled)'} ({before_p.polarity}): "
-                    f"straggle {before_straggle:.4f} -> {after_straggle:.4f} um{flag}"
-                )
-            else:
-                self._log(
-                    f"  {before_p.species or '(unlabeled)'} ({before_p.polarity}): "
-                    f"no defined shape to anneal{flag}"
-                )
-
-        self.last_physics_status = physics_status
         self._update_process_buttons()
 
     def _make_measurement_panel(
@@ -4727,13 +5764,12 @@ class TCADApplication(tk.Tk):
         region = doped_result.doping.regions[0].region
         kind = doped_result.doping.kind
 
-        from tcad.device.devsim.mesh_import import import_process_result, derive_barrier_covered_windows
-        from tcad.device.devsim.doping_mapping import apply_doping
+        from tcad.device.devsim.mesh_import import import_process_result
+        from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
         from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
         from tcad.characterization.robust_iv_sweep import (
             run_robust_pn_junction_iv_sweep,
         )
-        from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
         module = devsim_backend.require_devsim()
         device_name = "gui_measure_device"
@@ -4771,40 +5807,14 @@ class TCADApplication(tk.Tk):
                 "junction to resolve.)\n"
             )
 
-        exclude_windows = None
-        if kind != "implant_windows":
-            # implant_windows never reaches the apply_doping() call below
-            # that consumes exclude_windows (it routes through the robust
-            # solve path, which registers NetDoping itself) -- deriving
-            # barrier windows for it would be a wasted real mesh read.
-            try:
-                # Barrier stacking is always along y in this project's
-                # fixed 2D convention (x lateral, y depth/growth),
-                # regardless of which axis the user picked for the
-                # measurement CONTACTS -- so this must NOT reuse `axis`.
-                exclude_windows = derive_barrier_covered_windows(
-                    doped_result, doped_region=region,
-                    barrier_material="SiO2", axis="x",
-                    min_barrier_thickness_um=float(self.dope_barrier_threshold_var.get()),
-                )
-                if exclude_windows:
-                    total_excluded_um = sum(
-                        w["max_um"] - w["min_um"] for w in exclude_windows
-                    )
-                    self._log(
-                        f"\nSiO2 barrier exclusion: {len(exclude_windows)} "
-                        f"window(s) totaling {total_excluded_um:.4f}um excluded "
-                        f"from doping (min thickness "
-                        f"{float(self.dope_barrier_threshold_var.get()):.4f}um): "
-                        f"{exclude_windows}\n"
-                    )
-            except Exception as exc:
-                # Barrier detection is best-effort: if it fails (material
-                # absent, mesh unreadable), fall back to no exclusion --
-                # never let a diagnostic feature block the actual measurement.
-                exclude_windows = None
-                self._log(f"\n(Could not derive SiO2 barrier windows: {exc!r})\n")
-
+        # WaferState v2 P0-C: barrier exclusion is no longer derived or
+        # applied HERE, at measurement time, against the whole
+        # accumulated state -- that used to zero out real pre-existing/
+        # background dopant regardless of which attachment produced it.
+        # It is now derived once, at run_doping() time, and carved into
+        # just that call's own NEW attachment (see run_doping()'s own
+        # barrier_windows comment). self.wafer_state already reflects
+        # that by the time it gets here.
         imported = None
 
         try:
@@ -4850,46 +5860,18 @@ class TCADApplication(tk.Tk):
                     "continuation + DevSim's own drift-diffusion "
                     "tolerances + restoring bias ramp).\n"
                 )
-                # Final-review Fix 4: this solve reflects ONLY
-                # doped_result.doping (the single most-recent doping
-                # call) -- deliberately, this project's real 1e20 cm^-3
-                # convergence solution is not rewired to read the full
-                # self.wafer_state.dopant_profiles list. But Task 10's
-                # canvas color overlay DOES read that full accumulated
-                # list, so a wafer with e.g. an earlier Gaussian Implant
-                # PLUS this Implant Windows call would show both colors
-                # on screen while only the latter is actually solved --
-                # name that divergence honestly rather than let it go
-                # unremarked.
-                if self.wafer_state is not None:
-                    from tcad.physics.dopant_profile import dopant_profiles_from_doping_profile
-
-                    current_profiles = dopant_profiles_from_doping_profile(doped_result.doping)
-
-                    def _profile_identity(p):
-                        return (p.species, p.polarity, p.host_material, p.model, p.model_params)
-
-                    current_identities = [_profile_identity(p) for p in current_profiles]
-                    other_profiles = [
-                        p for p in self.wafer_state.dopant_profiles
-                        if _profile_identity(p) not in current_identities
-                    ]
-                    if other_profiles:
-                        species_list = ", ".join(
-                            p.species or "(unlabeled)" for p in other_profiles
-                        )
-                        self._log(
-                            f"NOTE: Implant Windows measurement reflects only its "
-                            f"own doping profile; {len(other_profiles)} other "
-                            f"accumulated profile(s) on this wafer (species: "
-                            f"{species_list}) are shown on the canvas overlay but "
-                            f"not included in this solve.\n"
-                        )
+                # Tier 1-1: the continuation solves the CANONICAL
+                # self.wafer_state -- every accumulated attachment, the
+                # same doping the canvas overlay shows -- through the
+                # central canonical-state gate, never the latest
+                # doped_result.doping. An unsupported state raises
+                # UnsupportedDopingState below before anything is
+                # written or solved.
                 result = run_robust_pn_junction_iv_sweep(
                     device=imported.device, region=region,
                     all_contacts=imported.contacts,
                     sweep_contact=source_contact, sweep_voltages=[voltage],
-                    doping=doped_result.doping,
+                    state=self.wafer_state,
                     length_scale_to_cm=length_scale_to_cm,
                     fixed_contacts={gnd_contact: 0.0},
                 )
@@ -4897,32 +5879,18 @@ class TCADApplication(tk.Tk):
                 # The real, cross-step accumulated WaferState (Task 9)
                 # -- every DopantProfile ever applied via run_doping(),
                 # kept geometry-current by _sync_wafer_state_geometry()
-                # after every process step. Using this instead of a
-                # throwaway single-profile state means a MEASURE click
-                # now reflects the wafer's FULL doping history (e.g.
-                # doping -> etch -> doping), not just the single most-
-                # recently-applied call. self.wafer_state is expected to
-                # be non-None here (the guard at the top of this method
-                # already requires self.last_doped_result, which is only
-                # ever set inside run_doping() alongside self.wafer_state
-                # -- the very first such call can never be reattach=True,
-                # so wafer_state is populated by then); the throwaway
-                # fallback below only guards a startup path this method
-                # should never actually reach.
-                state = (
-                    self.wafer_state if self.wafer_state is not None
-                    else advance_wafer_state(None, doped_result, "doping")
-                )
+                # after every process step, so a MEASURE click reflects
+                # the wafer's FULL doping history. Tier 1-1: passed
+                # as-is, None included -- no fallback state is ever
+                # rebuilt from doped_result; the central gate inside
+                # apply_doping() refuses a missing or unsupported state.
+                #
                 # Final-review Fix 3: capture the returned physics_status
                 # (same self.last_physics_status attribute the anneal
-                # handler already uses) instead of discarding it -- a
-                # doping-mapping gap (e.g. a CONVERSION-caused RECOVERY,
-                # Fix 2) must be visible the same way every other real
-                # process step's physics_status already is.
+                # handler already uses) instead of discarding it.
                 self.last_physics_status = apply_doping(
-                    imported.device, region, state,
+                    imported.device, region, self.wafer_state,
                     length_scale_to_cm=length_scale_to_cm,
-                    exclude_windows=exclude_windows, exclude_axis="x",
                 )
                 result = run_pn_junction_iv_sweep(
                     device=imported.device, region=region,
@@ -4930,6 +5898,21 @@ class TCADApplication(tk.Tk):
                     sweep_contact=source_contact, sweep_voltages=[voltage],
                     fixed_contacts={gnd_contact: 0.0},
                 )
+
+        except UnsupportedDopingState as exc:
+
+            # Tier 1-1: the central canonical-state gate refused this
+            # measurement before any doping write or DevSim solve. Show
+            # UNSUPPORTED_BY_MODEL with the concrete reason, record the
+            # status, and report no current.
+            self.last_physics_status = exc.physics_status
+            self._notify_error(
+                "Measurement",
+                f"{exc}\n\nMeasurement blocked: no doping was written to "
+                f"DevSim, no solve was run, and no current is reported.",
+            )
+
+            return
 
         except Exception as exc:
 
@@ -5246,65 +6229,32 @@ class TCADApplication(tk.Tk):
             )
             return None
 
-        from dataclasses import replace as _dataclasses_replace
         from tcad.device.devsim import backend as devsim_backend
-        from tcad.device.devsim.doping_mapping import apply_doping
-        from tcad.mesh.interface import DopingProfile, DopingRegion
+        from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
         from tcad.characterization.dc_operating_point import solve_mosfet_dc_operating_point
-        from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
         module = devsim_backend.require_devsim()
 
         try:
             # self.wafer_state (Task 9) is the real, cross-step
-            # accumulated doping+geometry state -- already reflects
-            # EVERY DopantProfile ever applied via run_doping(),
-            # geometry-gated against the CURRENT mesh regardless of
-            # whether self.last_doped_result itself still matches
-            # self.last_final_mesh (that staleness only matters for
-            # last_doped_result's own mesh-reading role -- see
-            # _sync_wafer_state_geometry()). Zero accumulated profiles
-            # already means net_doping_at() reports 0 everywhere
-            # (nothing to sum), which IS the correct "intrinsic Si"
-            # behavior -- no separate synthetic DopingProfile is needed
-            # for that case any more.
-            if self.wafer_state is not None:
-                state = self.wafer_state
-                if not state.dopant_profiles:
-                    self._log(
-                        "\n(No doping profile applied yet -- Si region "
-                        "treated as intrinsic, NetDoping=0, for this solve.)\n"
-                    )
-            else:
-                # Defensive fallback only -- should be unreachable in
-                # practice: resolve_electrode_pins() already requires
-                # self.last_final_mesh, and every one of this GUI's 8
-                # real mesh-producing sites populates self.wafer_state
-                # via _sync_wafer_state_geometry() before this method
-                # can ever run. Kept so a startup-order surprise fails
-                # softly (intrinsic Si) instead of crashing.
-                doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=0.0)])
-                self._log(
-                    "\n(No doping profile applied yet -- Si region "
-                    "treated as intrinsic, NetDoping=0, for this solve.)\n"
-                )
-                # Same real-mesh-file construction resolve_electrode_pins()
-                # and run_doping()/run_measurement() already use -- not
-                # stored across those methods, so rebuilt here (cheap: a
-                # meshio read, no ViennaPS simulation) and paired with the
-                # synthetic intrinsic DopingProfile above via the same
-                # dataclasses.replace() pattern every apply_*_doping() in
-                # tcad/physics/doping.py already uses.
-                doping_process_result = _dataclasses_replace(
-                    build_process_result({"final_mesh": self.last_final_mesh, "snapshots": []}),
-                    doping=doping,
-                )
-                state = advance_wafer_state(None, doping_process_result, "doping")
-
+            # accumulated doping+geometry state. Tier 1-1: passed as-is
+            # to the central canonical-state gate inside apply_doping(),
+            # None included -- no fallback state or synthetic intrinsic
+            # DopingProfile is ever built from the latest mesh; a missing
+            # or unsupported state blocks the solve right here.
+            #
             # Final-review Fix 3: same capture as run_measurement() above.
             self.last_physics_status = apply_doping(
-                imported.device, "Si", state, length_scale_to_cm=1.0e-4,
+                imported.device, "Si", self.wafer_state, length_scale_to_cm=1.0e-4,
             )
+            if not self.wafer_state.attachments:
+                # Only now, after the gate accepted it, is "no dopant"
+                # a real claim: a supported state with no attachment is
+                # canonically known-undoped (NetDoping = 0).
+                self._log(
+                    "\n(No doping attachment on this wafer -- the canonical "
+                    "state reports known-undoped Si, NetDoping=0, for this solve.)\n"
+                )
 
             gate_region = regions_by_name.get(gate_contact)
             if gate_region != "SiO2":
@@ -5333,6 +6283,16 @@ class TCADApplication(tk.Tk):
                 drain_voltage=drain_voltage, gate_voltage=gate_voltage,
                 body_contact=body_contact, body_voltage=body_voltage,
             )
+        except UnsupportedDopingState as exc:
+            # Tier 1-1: blocked by the central canonical-state gate
+            # before any doping write or solve -- not a solve failure.
+            self.last_physics_status = exc.physics_status
+            self._notify_error(
+                "Electrode",
+                f"{exc}\n\nDC operating point blocked: no doping was written "
+                f"to DevSim, no solve was run, and no current is reported.",
+            )
+            return None
         except Exception as exc:
             self._notify_error("Electrode", f"DC operating point solve failed:\n\n{exc}")
             return None
@@ -6183,12 +7143,24 @@ class TCADApplication(tk.Tk):
         DID (see docs/investigation_log.md, "Etch is correct, GUI
         gives no feedback about whether the target material was
         reached") -- this is diagnostic only.
+
+        Everything printed comes from tcad.mesh.etch_diagnostics and is
+        evidence from the two EXPORTED VOLUME MESHES only (this path holds
+        no native level-set domain, so it says nothing about native
+        geometry): a PAIRED pre/post vertical displacement over the flat
+        interior connected to the window centre; "fully cleared in the
+        window"; "cleared from the centre, residual remains elsewhere"
+        (both facts, with every positive-area residual component listed,
+        no size cutoff); or a post-only residual. Where the comparison is
+        not unambiguous it prints no number (see that module).
         """
         if not open_windows_um:
             self._log("\n(No open window -- resist fully covers the wafer, nothing exposed to etch.)\n")
             return
         try:
             import meshio
+            import numpy as np
+            from tcad.mesh import etch_diagnostics as etch_diag
 
             def read(path):
                 m = meshio.read(path)
@@ -6201,43 +7173,82 @@ class TCADApplication(tk.Tk):
                     v = getattr(viennaps_session.require_viennaps().Material, attr)
                     if isinstance(v, viennaps_session.require_viennaps().Material):
                         names[int(v)] = attr
-                pts = m.points
-                by_mat = {}
-                for t, tag in zip(tri.data, tags):
-                    by_mat.setdefault(names.get(int(tag), str(tag)), []).append(t)
-                return pts, by_mat
+                return etch_diag.TaggedMesh(
+                    m.points[:, :2], np.asarray(tri.data),
+                    tuple(names.get(int(tag), str(tag)) for tag in tags),
+                )
 
-            def top_in_window(pts, by_mat, material, lo, hi):
-                node_idxs = set()
-                for t in by_mat.get(material, []):
-                    node_idxs.update(t)
-                ys = [pts[n][1] for n in node_idxs if lo <= pts[n][0] <= hi]
-                return max(ys) if ys else None
+            src = f"evidence source: {etch_diag.EVIDENCE_SOURCE_TEXT}"
 
-            pts_pre, by_mat_pre = read(pre_mesh_path)
-            pts_post, by_mat_post = read(post_mesh_path)
-            materials = sorted(set(by_mat_pre) | set(by_mat_post))
-            noise_floor_um = 0.001
+            def residual_lines(r):
+                """Every positive-area residual component, no cutoff (formatting only)."""
+                res = r.residual
+                yn = lambda v: "yes" if v else "no"          # noqa: E731
+                out = [f"      ({r.material}-tagged residual: total clipped area {res.total_clipped_area_um2:.4g} um2; "
+                       f"x=[{res.x_extent_um[0]:.5f}, {res.x_extent_um[1]:.5f}], "
+                       f"y=[{res.y_extent_um[0]:.5f}, {res.y_extent_um[1]:.5f}]; "
+                       f"touches left window edge: {yn(res.touches_left_window_edge)}, right: "
+                       f"{yn(res.touches_right_window_edge)}; {res.component_count} component(s); {src})"]
+                for i, c in enumerate(res.components, 1):
+                    out.append(
+                        f"        component {i}: clipped area {c.clipped_area_um2:.4g} um2; "
+                        f"x=[{c.clipped_x_extent_um[0]:.5f}, {c.clipped_x_extent_um[1]:.5f}], "
+                        f"y=[{c.clipped_y_extent_um[0]:.5f}, {c.clipped_y_extent_um[1]:.5f}]; "
+                        f"touches left: {yn(c.touches_left_window_edge)}, right: {yn(c.touches_right_window_edge)}; "
+                        f"whole-mesh triangles {c.whole_mesh_triangle_count}; triangles intersecting the window "
+                        f"{c.triangles_intersecting_window}; isolated island (every triangle of the component lies "
+                        f"inside or on the window boundary): {yn(c.isolated_island)}")
+                return out
 
+            def describe(r):
+                """One material's structured result -> log lines (formatting only)."""
+                head = f"    {r.material}: "
+                if r.status == etch_diag.FULLY_CLEARED_IN_WINDOW:
+                    return [head + "fully cleared in the exported-mesh window",
+                            f"      (no positive-area post-step intersection; {src})"]
+                if r.status == etch_diag.CENTER_CLEARED_RESIDUAL_REMAINS:
+                    x0, x1 = r.center_clear_x_um
+                    return [head + "cleared from the window center; residual exported-mesh material remains "
+                                   "elsewhere in the window",
+                            f"      (center-clear x=[{x0:.5f}, {x1:.5f}], {r.n_center_clear_intervals} common "
+                            f"intervals; no whole-window full-clear claim; {src})"] + residual_lines(r)
+                if r.status == etch_diag.POST_ONLY_RESIDUAL:
+                    return [head + "post-step exported-mesh residual detected; no comparable pre-step support",
+                            f"      (physical creation or exposure is not inferred; {src})"] + residual_lines(r)
+                detail = ""
+                if r.run_x_um is not None:
+                    w = r.window_um[1] - r.window_um[0]
+                    detail = (f"      (measured on the paired flat interior x=[{r.run_x_um[0]:.3f}, "
+                              f"{r.run_x_um[1]:.3f}], {r.n_intervals} common intervals, "
+                              f"{r.run_x_um[1] - r.run_x_um[0]:.3f} of {w:.3f} um of the window; {src})")
+                if r.status == etch_diag.ETCHED:
+                    return [head + f"etched {r.displacement_um:.4f}um",
+                            "      (vertical paired flat-interior displacement; not undercut/path length)", detail]
+                elif r.status == etch_diag.UNCHANGED:
+                    text = {
+                        etch_diag.REACH_EXPOSED:
+                            "unchanged within diagnostic tolerance; surface is exposed",
+                        etch_diag.REACH_OVERLAIN:
+                            "unchanged within diagnostic tolerance; overlying material remains; etch front "
+                            "not demonstrated to have reached this material in the measured interior",
+                    }.get(r.reach, "unchanged within diagnostic tolerance; reach cannot be inferred")
+                elif r.status == etch_diag.ROSE_OR_INDETERMINATE:
+                    text = "top rose or correspondence is indeterminate; etch displacement not reported"
+                else:
+                    text = "no unambiguous paired flat interior; vertical displacement not reported"
+                    rng = ""
+                    if r.post_top_range_um is not None:
+                        rng = f"; post top range {r.post_top_range_um[0]:.4f}..{r.post_top_range_um[1]:.4f} um"
+                    detail = f"      (reason: {r.reason}{rng}; {src})"
+                return [head + text] + ([detail] if detail else [])
+
+            pre = read(pre_mesh_path)
+            post = read(post_mesh_path)
             lines = ["\nETCH RESULT BY MATERIAL (open window only):"]
-            for lo, hi in open_windows_um:
+            for (lo, hi), results in etch_diag.analyze_etch_windows(pre, post, open_windows_um):
                 lines.append(f"  Window x=[{lo:.3f}, {hi:.3f}]:")
-                for material in materials:
-                    before = top_in_window(pts_pre, by_mat_pre, material, lo, hi)
-                    after = top_in_window(pts_post, by_mat_post, material, lo, hi)
-                    if before is None and after is None:
-                        continue
-                    if after is None:
-                        lines.append(f"    {material}: fully cleared (was present, now gone here)")
-                    elif before is None:
-                        lines.append(f"    {material}: newly exposed here (top={after:.4f})")
-                    else:
-                        moved = before - after
-                        if abs(moved) < noise_floor_um:
-                            status = "unchanged (not yet reached)" if material == "Si" else "unchanged"
-                            lines.append(f"    {material}: {status} (top={after:.4f})")
-                        else:
-                            lines.append(f"    {material}: etched {moved:.4f}um (top {before:.4f} -> {after:.4f})")
+                for r in results:
+                    lines.extend(describe(r))
             self._log("\n".join(lines) + "\n")
         except Exception as exc:
             # Diagnostic-only: never let this block or corrupt a real
@@ -7848,6 +8859,8 @@ class TCADApplication(tk.Tk):
         physics = result.get("physics_status")
         if physics:
             self._log(f"\nPHYSICS: {physics.get('resolution', 'UNKNOWN')}\n")
+            if physics.get("reason_code"):
+                self._log(f"  reason_code: {physics['reason_code']}\n")
             for entry in physics.get("entries", []):
                 self._log(
                     f"  {entry.get('parameter')} [{entry.get('material')}]: "

@@ -1,60 +1,62 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LOCOS mask/oxide elastic-coupling fix — real-backend physical sanity
-check, real ViennaPS 4.6.2.
+Positive-time thermal and LOCOS requests: fail-closed capability contract, plus ONE clearly labelled
+construction-only geometry check. Real ViennaPS 4.6.2, real production entry points
+(registry -> ThermalOxidation.run() / LocosOxidation.run()).
 
-Regression test for the fix in tcad/process/oxidation/locos.py (moved
-out of thermal.py 2026-09-08, see that module's docstring): the LOCOS
-mask segfault's real root cause was ViennaPS's OxidationMaskParameters
-defaulting to contactMode=1 ("oneway"), which diverges for this
-project's trench geometry; setting contactMode=2 ("twoway", the same
-mode the official ViennaPS locosOxidation.py example uses) fixes it.
-NOTE: the ORIGINAL (MakeTrench-based, mask directly on bare Si)
-geometry this comment used to describe as "unchanged" has since been
-REPLACED for the fresh-wafer LOCOS path by a pad-oxide-first
-construction (see locos.py's module docstring, "LOCOS mask erosion —
-root cause found, fixed, and SHIPPED") — that geometry change is what
-fixed mask erosion; contactMode=2 alone still only fixes the segfault,
-unchanged from when this test was written.
+The file name is HISTORICAL and is kept on purpose (no rename in Batch 6). It used to be the regression
+test for the LOCOS `contactMode=2` fix (tcad/process/oxidation/locos.py: ViennaPS's
+OxidationMaskParameters defaults to contactMode=1 "oneway", which diverged for this project's geometry;
+contactMode=2 "twoway" is what the official locosOxidation.py example uses) and for the pad-oxide-first
+mask-retention fix, by growing oxide and measuring SiO2 area, Si consumption, window width and mask
+retention after a positive-time LOCOS run.
 
-This test locks in what was actually verified:
-  1. no crash (implicit: the test process itself would die otherwise)
-  2. real oxide growth (SiO2 area > 0)
-  3. Si is consumed correspondingly (recession, not just SiO2 appearing
-     from nowhere) -- and, now that the pad-oxide-first geometry ships,
-     Si must still be PRESENT in the export at all (the specific thing
-     save_locos_volume_mesh() exists to guarantee -- see io.py).
-  4. the exposed (Si) window's width matches the recipe's own
-     mask_right_um - mask_left_um, i.e. geometry is NOT shifted the way
-     halfTrench=True was -- compared against the fin-style variant's
-     window width (both variants' pre-oxidation width is measured the
-     same way; fin-style still goes through prepare_domain()/MakeTrench
-     unaffected by mask_material, while LOCOS-style now goes through
-     the new pad-oxide-first construction -- the two are expected to
-     match within grid resolution, not be identical code paths).
-  5. mask retention: now that the root cause is fixed, this asserts
-     real preservation (>=90%, well above the ~3.5% pre-fix baseline
-     and with margin below the ~98% actually measured), not just
-     "area > 0". See CLAUDE.md for the full investigation.
+WHAT THIS TEST VERIFIES NOW
+  1. A positive-time request through EACH of ThermalOxidation and LocosOxidation is refused before any
+     solver call, with
+        physics_status.resolution == "UNSUPPORTED_BY_MODEL"
+        physics_status.reason_code == state_transition.reason == <the model's reason code>
+        state_transition.kind      == "unsupported"
+     thermal -> OXIDATION_CAPABILITY_PROOF_MISSING, LOCOS -> LOCOS_CAPABILITY_PROOF_MISSING (as production
+     returns them). No oxide number of any kind is reported; the geometry returned for a fresh request is
+     the virgin Si wafer only (no SiO2, no Mask) and is the last-known geometry, not an oxidation result.
+  2. Forced, not inferred: `vps.Process`, `vps.Oxidation` (construction and `setInitialOxideThickness`) and
+     `LocosOxidation._build_locos_geometry` (the LOCOS growth-geometry builder) are trapped and counted; none
+     of them is entered.
+  3. CONSTRUCTION-ONLY: the plain trench-window geometry that `prepare_domain()` builds BEFORE any oxidation
+     has the width the recipe asks for (mask_right_um - mask_left_um), for both classes. This is a check of
+     mask/window geometry construction. It says nothing about oxidation, contactMode, oxide growth, Si
+     consumption or mask retention, and it is not mixed with the request results above.
 
-No calibration/fabricated numbers: all expected values come from the
-recipe itself or from comparing two real runs of the production code.
+WHAT THIS TEST DOES NOT VERIFY (and no longer claims)
+  * oxide growth, Si consumption, mask retention or post-oxidation window geometry -- the backend does not
+    compute them for a positive-time request, so there is nothing real to check;
+  * that contactMode=2 makes a LOCOS oxidation succeed -- the code that sets it is unreachable while the
+    positive-time gate is closed. The historical contactMode / mask-retention results (docs/investigation_log.md,
+    CLAUDE.md) are history, not a current regression contract.
 """
 
+import copy
 import sys
 import tempfile
+from contextlib import ExitStack
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import meshio
+import numpy as np
 
-import tcad.process.oxidation  # noqa: F401 -- registers the model
+import tcad.process.oxidation  # noqa: F401 -- registers the models
 from tcad.backends.viennaps import session
+from tcad.backends.viennaps.io import save_volume_mesh
 from tcad.process import registry
+from tcad.process.oxidation.locos import LocosOxidation
 
 assert session.is_available(), "ViennaPS must be installed for this test"
+MODULE = session.require_viennaps()
 
 BASE_RECIPE = {
     "grid_delta_um": 0.2,
@@ -65,159 +67,220 @@ BASE_RECIPE = {
     "pr_thickness_um": 0.5,
     "oxidant": "Dry",
     "temperature_c": 1000.0,
-    "time_hours": 0.01,  # the exact recipe that originally segfaulted
+    "time_hours": 0.01,        # the recipe that originally segfaulted -- now only a REQUEST that must be refused
 }
+MODELS = (
+    # label, registry name, recipe extras, reason code production returns
+    ("thermal (fin-style)", "thermal", {}, "OXIDATION_CAPABILITY_PROOF_MISSING"),
+    ("LOCOS", "locos", {"mask_material": "Mask"}, "LOCOS_CAPABILITY_PROOF_MISSING"),
+)
+RESULT_KEYS = {"final_mesh", "snapshots", "physics_status", "state_transition"}
+STATUS_KEYS = {"resolution", "entries", "reason_code", "requested_initial_oxide_um", "grid_delta_um", "measured_min_oxide_um"}
 
 
-def _measure(mesh_path, module):
+# ------------------------------------------------------------------------------------------ solver-call traps
+class SolverTrap:
+    """Recorders that also raise: a regression fails loudly, and the counts catch a call a broad `except` swallowed."""
+
+    FORBIDDEN = ("vps.Process", "vps.Oxidation", "setInitialOxideThickness", "LocosOxidation._build_locos_geometry")
+
+    def __init__(self):
+        self.calls = []
+        self._stack = None
+
+    def __enter__(self):
+        trap = self
+
+        def process(*a, **k):
+            trap.calls.append("vps.Process")
+            raise AssertionError("vps.Process() called on a positive-time request")
+
+        class OxidationModel:
+            def __init__(self, *a, **k):
+                trap.calls.append("vps.Oxidation")
+                raise AssertionError("vps.Oxidation() constructed on a positive-time request")
+
+            def setInitialOxideThickness(self, *a, **k):
+                trap.calls.append("setInitialOxideThickness")
+                raise AssertionError("setInitialOxideThickness() called on a positive-time request")
+
+        def build(*a, **k):
+            trap.calls.append("LocosOxidation._build_locos_geometry")
+            raise AssertionError("LocosOxidation._build_locos_geometry() called on a positive-time request")
+
+        self._stack = ExitStack()
+        self._stack.enter_context(patch.object(MODULE, "Process", process))
+        self._stack.enter_context(patch.object(MODULE, "Oxidation", OxidationModel))
+        self._stack.enter_context(patch.object(LocosOxidation, "_build_locos_geometry", build))
+        return self
+
+    def __exit__(self, *exc):
+        self._stack.close()
+        return False
+
+    def assert_not_entered(self, where):
+        if self.calls:
+            raise AssertionError(f"{where}: solver/oxidation path was entered: {self.calls}")
+
+
+def calibrate_trap():
+    """Each trapped path, called directly, must be recorded and raise: a trap that never fires proves nothing."""
+    with SolverTrap() as trap:
+        for label, call in (
+            ("vps.Process", lambda: MODULE.Process()),
+            ("vps.Oxidation", lambda: MODULE.Oxidation()),
+            ("setInitialOxideThickness", lambda: MODULE.Oxidation.setInitialOxideThickness(None, 0.1)),
+            ("LocosOxidation._build_locos_geometry", lambda: LocosOxidation()._build_locos_geometry({}, MODULE)),
+        ):
+            try:
+                call()
+            except AssertionError:
+                continue
+            raise AssertionError(f"the trap for {label} did not fire")
+        assert trap.calls == list(SolverTrap.FORBIDDEN), trap.calls
+
+
+# ------------------------------------------------------------------------------------------ contract checks
+def mesh_materials(path):
+    """Exact sorted material names present as triangles in an exported mesh."""
+    mesh = meshio.read(path)
+    tags = set()
+    for block, data in zip(mesh.cells, mesh.cell_data["Material"]):
+        if block.type == "triangle":
+            tags |= {int(t) for t in np.asarray(data)}
+    return sorted(str(MODULE.Material(t)).split("'")[1] for t in tags)
+
+
+def check_unsupported(result, where, reason, recipe):
+    assert set(result) == RESULT_KEYS, f"{where}: unexpected result keys {sorted(result)}"
+    status, transition = result["physics_status"], result["state_transition"]
+    if transition.get("kind") != "unsupported":
+        raise AssertionError(f"{where}: state_transition.kind is {transition.get('kind')!r}, expected 'unsupported': {transition}")
+    if status.get("resolution") != "UNSUPPORTED_BY_MODEL":
+        raise AssertionError(f"{where}: physics_status.resolution is {status.get('resolution')!r}, expected 'UNSUPPORTED_BY_MODEL'")
+    if status.get("reason_code") != reason or transition.get("reason") != reason:
+        raise AssertionError(f"{where}: reason code is {status.get('reason_code')!r} / {transition.get('reason')!r}, expected {reason!r}")
+    assert transition == {"kind": "unsupported", "category": "oxidation", "reason": reason}, f"{where}: {transition}"
+    entries = status["entries"]
+    assert len(entries) == 1 and entries[0]["parameter"] == "positive_time_oxidation" and entries[0]["resolution"] == "UNSUPPORTED_BY_MODEL", entries
+    assert status["measured_min_oxide_um"] is None, f"{where}: an oxide thickness was reported: {status['measured_min_oxide_um']}"
+    assert status["requested_initial_oxide_um"] == recipe.get("pad_oxide_thickness_um"), "requested_initial_oxide_um must echo the request"
+    assert set(status) == STATUS_KEYS, sorted(status)
+
+
+def check_fresh_materials(materials, where):
+    if materials != ["Si"]:
+        raise AssertionError(f"{where}: the returned geometry is not the virgin Si wafer only: materials {materials}")
+
+
+# ------------------------------------------------------------------------------------------ construction-only check
+def si_window_width(mesh_path):
+    """CONSTRUCTION-ONLY. Width of the gap in the mask (the trench window), from the mask triangles' own x-centroids: the
+    largest gap between consecutive sorted centroids (the mask is two blocks, one each side of the window)."""
     mesh = meshio.read(mesh_path)
-    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
-    assert triangle_block is not None, f"no triangle cells in {mesh_path}"
-    block_index = mesh.cells.index(triangle_block)
-    tags = mesh.cell_data["Material"][block_index]
-    points = mesh.points
-
-    per_material = {}
-    for tri, tag in zip(triangle_block.data, tags):
-        name = str(module.Material(int(tag))).split("'")[1]
-        d = per_material.setdefault(
-            name, {"area": 0.0, "xmin": 1e18, "xmax": -1e18, "ymin": 1e18, "ymax": -1e18}
-        )
-        p = [points[i] for i in tri]
-        d["area"] += abs(
-            (p[1][0] - p[0][0]) * (p[2][1] - p[0][1])
-            - (p[2][0] - p[0][0]) * (p[1][1] - p[0][1])
-        ) / 2.0
-        for q in p:
-            d["xmin"] = min(d["xmin"], float(q[0]))
-            d["xmax"] = max(d["xmax"], float(q[0]))
-            d["ymin"] = min(d["ymin"], float(q[1]))
-            d["ymax"] = max(d["ymax"], float(q[1]))
-    return per_material
+    block = next(c for c in mesh.cells if c.type == "triangle")
+    tags = mesh.cell_data["Material"][mesh.cells.index(block)]
+    xs = sorted(sum(mesh.points[i][0] for i in tri) / 3.0
+                for tri, tag in zip(block.data, tags) if str(MODULE.Material(int(tag))).split("'")[1] == "Mask")
+    assert len(xs) >= 2, "not enough Mask triangles to find a gap"
+    return max(b - a for a, b in zip(xs, xs[1:]))
 
 
-def _si_window_width(mesh_path, module):
-    """Width of the Si-exposed gap in the mask (the trench window),
-    found directly from the mask geometry's own triangle centroids --
-    NOT a hardcoded coordinate. The mask is two separate blocks (left
-    and right of the window), so a simple bounding box always spans the
-    full domain regardless of window size; the real window is the
-    largest gap between consecutive sorted mask-triangle x-centroids."""
-    mesh = meshio.read(mesh_path)
-    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
-    block_index = mesh.cells.index(triangle_block)
-    tags = mesh.cell_data["Material"][block_index]
-    points = mesh.points
+def check_window_width(width, expected, grid, where):
+    if abs(width - expected) >= 2 * grid:
+        raise AssertionError(f"{where}: window width {width} does not match the recipe's {expected} within {2 * grid} um")
 
-    mask_centroid_xs = []
-    for tri, tag in zip(triangle_block.data, tags):
-        if str(module.Material(int(tag))).split("'")[1] != "Mask":
-            continue
-        mask_centroid_xs.append(sum(points[i][0] for i in tri) / 3.0)
 
-    assert len(mask_centroid_xs) >= 2, "not enough Mask triangles to find a gap"
-    mask_centroid_xs.sort()
-    gaps = [b - a for a, b in zip(mask_centroid_xs, mask_centroid_xs[1:])]
-    return max(gaps)
+# ------------------------------------------------------------------------------------------ false-green machinery
+def expect_fail(check, label, expected):
+    """A guard passes only if `check` raises AssertionError whose message contains `expected` (str, tuple of str that must
+    all appear, or predicate). A passing check is FALSE GREEN; another reason is WRONG FAILURE REASON."""
+    try:
+        check()
+    except AssertionError as exc:
+        message = str(exc)
+        parts = (expected,) if isinstance(expected, str) else expected
+        ok = expected(message) if callable(expected) else all(p in message for p in parts)
+        if not ok:
+            raise AssertionError(f"WRONG FAILURE REASON for {label!r}:\n  expected: {expected!r}\n  actual:   {message[:300]}") from exc
+        print(f"    [guard OK] {label}: fails for the expected reason ({message.splitlines()[0][:90]})")
+        return
+    raise AssertionError(f"FALSE GREEN: the check did not fail when {label}")
+
+
+def run_guards(sample, sample_materials, reason, recipe):
+    print("\n[guards] every contract check fails, for its own reason, when its subject is broken")
+    bad = copy.deepcopy(sample)
+    bad["state_transition"] = {"kind": "identity", "category": "oxidation", "reason": "zero_duration_oxidation", "inherited": True}
+    expect_fail(lambda: check_unsupported(bad, "kind=identity", reason, recipe), "the transition kind is identity",
+                "state_transition.kind is 'identity'")
+    bad = copy.deepcopy(sample)
+    bad["physics_status"]["reason_code"] = bad["state_transition"]["reason"] = "SOMETHING_ELSE"
+    expect_fail(lambda: check_unsupported(bad, "wrong reason", reason, recipe), "the reason code is a different value",
+                "reason code is 'SOMETHING_ELSE'")
+    bad = copy.deepcopy(sample)
+    bad["physics_status"]["resolution"] = "MODELLED"
+    expect_fail(lambda: check_unsupported(bad, "MODELLED", reason, recipe), "the physics resolution is MODELLED",
+                "physics_status.resolution is 'MODELLED'")
+    expect_fail(lambda: check_fresh_materials(sample_materials + ["SiO2"], "fresh+SiO2"), "the fresh result contains SiO2",
+                "not the virgin Si wafer only: materials ['Si', 'SiO2']")
+    bad = copy.deepcopy(sample)
+    bad["physics_status"]["measured_min_oxide_um"] = 0.11
+    expect_fail(lambda: check_unsupported(bad, "number", reason, recipe), "an oxide thickness is reported", "an oxide thickness was reported")
+    with SolverTrap() as trap:
+        try:
+            MODULE.Process()
+        except AssertionError:
+            pass
+        expect_fail(lambda: trap.assert_not_entered("probe"), "the solver trap was actually called",
+                    "probe: solver/oxidation path was entered: ['vps.Process']")
+    expect_fail(lambda: check_window_width(1.5, 1.0, 0.2, "construction"), "the construction-only window is the wrong width",
+                "construction: window width 1.5 does not match")
 
 
 def main():
-    module = session.require_viennaps()
-    # 2026-09-08: LOCOS split out of ThermalOxidation into its own
-    # registry entry ("oxidation", "locos") -- see
-    # tcad/process/oxidation/locos.py. Fin-style still goes through
-    # "thermal"; LOCOS-style now goes through "locos" explicitly,
-    # instead of both sharing one class keyed off mask_material.
-    thermal_cls = registry.get("oxidation", "thermal")
-    locos_cls = registry.get("oxidation", "locos")
+    calibrate_trap()
+    print("[1/4] solver traps calibrated (vps.Process, vps.Oxidation, setInitialOxideThickness, "
+          "LocosOxidation._build_locos_geometry each fire when called directly)")
 
-    tmp_fin = tempfile.mkdtemp()
-    fin_result = thermal_cls().run(dict(BASE_RECIPE), tmp_fin)
-    tmp_locos = tempfile.mkdtemp()
-    locos_recipe = {**BASE_RECIPE, "mask_material": "Mask"}
-    locos_result = locos_cls().run(locos_recipe, tmp_locos)
-
-    print("[1/5] both fin-style and LOCOS-style runs completed without crashing "
-          "(reaching this line proves it)")
-
-    after = _measure(locos_result["final_mesh"], module)
-
-    assert "SiO2" in after and after["SiO2"]["area"] > 0.0, (
-        f"no real oxide growth: materials={list(after)}"
-    )
-    print(f"[2/5] real oxide growth confirmed: SiO2 area = {after['SiO2']['area']:.6f}")
-
-    assert "Si" in after and after["Si"]["area"] > 0.0, (
-        "Si missing/zero-area in the LOCOS export -- this is exactly what "
-        "save_locos_volume_mesh() exists to prevent (see io.py docstring)"
-    )
-    print(f"[3/5] Si present after oxidation (area={after['Si']['area']:.4f}, "
-          f"consumed by growth as expected)")
-
-    # Geometry-shift check: LOCOS's own pre-oxidation window width must
-    # match the recipe's trench_width, the same way the (never crashing,
-    # already-passing) fin-style variant's does -- proving this fix did
-    # not reintroduce halfTrench's coordinate-convention change.
-    expected_trench_width = round(
-        BASE_RECIPE["mask_right_um"] - BASE_RECIPE["mask_left_um"], 9
-    )
-    grid = BASE_RECIPE["grid_delta_um"]
-
-    for label, recipe, result, cls in (
-        ("fin-style", BASE_RECIPE, fin_result, thermal_cls),
-        ("LOCOS-style", locos_recipe, locos_result, locos_cls),
-    ):
+    sample = None
+    for label, name, extras, reason in MODELS:
+        recipe = {**BASE_RECIPE, **extras}
         with tempfile.TemporaryDirectory() as tmp:
-            # Re-run just prepare_domain() to inspect the BEFORE geometry
-            # directly (result["final_mesh"] is post-oxidation for LOCOS,
-            # which already moved the mask boundary via growth).
-            # prepare_domain() itself is the SAME inherited ProcessStep
-            # method for both classes (neither overrides it -- LOCOS's
-            # own pad-oxide-first construction is a separate method,
-            # _build_locos_geometry(), only reached by run()), so this
-            # measures the same plain MakeTrench window either way; `cls`
-            # is threaded through for clarity, not because it changes
-            # what runs.
-            step = cls()
-            geometry = step.prepare_domain(dict(recipe))
-            from tcad.backends.viennaps.io import save_volume_mesh
-            before_path = save_volume_mesh(geometry, Path(tmp) / "before")
-            width = _si_window_width(before_path, module)
-            print(f"[4/5] {label}: pre-oxidation Si window width = {width:.4f} um "
-                  f"(expected {expected_trench_width} um)")
-            assert abs(width - expected_trench_width) < 2 * grid, (
-                f"{label}: window width {width} doesn't match recipe's trench_width "
-                f"{expected_trench_width} within {2*grid} um -- geometry may have shifted"
-            )
+            with SolverTrap() as trap:
+                result = registry.get("oxidation", name)().run(dict(recipe), tmp)
+            trap.assert_not_entered(label)
+            check_unsupported(result, label, reason, recipe)
+            materials = mesh_materials(result["final_mesh"])
+            check_fresh_materials(materials, label)
+            print(f"[2/4] {label}, positive-time request ({recipe['time_hours']} h): forbidden-call counts "
+                  f"{dict.fromkeys(SolverTrap.FORBIDDEN, 0)}")
+            print(f"      state_transition = {result['state_transition']}")
+            print(f"      physics_status: resolution={result['physics_status']['resolution']}, reason_code={result['physics_status']['reason_code']}, "
+                  f"measured_min_oxide_um={result['physics_status']['measured_min_oxide_um']}")
+            print(f"      returned geometry: materials {materials} (virgin Si only; last-known, not an oxidation result); "
+                  f"no oxide area, Si consumption or mask retention is computed")
+            if sample is None:
+                sample = (result, materials, reason, recipe)
 
-    # Expected pre-oxidation mask area: two boxes (left + right of the
-    # window), each (half_x - window_half) wide by mask_height tall --
-    # not a hardcoded number, derived from the recipe itself.
-    half_x = BASE_RECIPE["x_extent_um"] / 2.0
-    window_half = expected_trench_width / 2.0
-    mask_height = max(BASE_RECIPE["pr_thickness_um"], 0.1)
-    expected_pre_mask_area = 2 * (half_x - window_half) * mask_height
-    retention = after["Mask"]["area"] / expected_pre_mask_area
+    # CONSTRUCTION-ONLY: the plain window geometry prepare_domain() builds before any oxidation (no oxidation physics, no contactMode).
+    expected = round(BASE_RECIPE["mask_right_um"] - BASE_RECIPE["mask_left_um"], 9)
+    grid = BASE_RECIPE["grid_delta_um"]
+    for label, name, extras, _ in MODELS:
+        with tempfile.TemporaryDirectory() as tmp, SolverTrap() as trap:
+            geometry = registry.get("oxidation", name)().prepare_domain({**BASE_RECIPE, **extras})
+            width = si_window_width(save_volume_mesh(geometry, Path(tmp) / "before"))
+        trap.assert_not_entered(f"construction-only {label}")
+        check_window_width(width, expected, grid, f"construction-only {label}")
+        print(f"[3/4] CONSTRUCTION-ONLY ({label}): window width {width:.4f} um vs the recipe's {expected} um "
+              f"(within 2 grid cells) -- geometry construction only; not an oxidation, contactMode or mask-retention check")
 
-    assert retention > 0.90, (
-        f"mask retention regressed: {retention:.4f} (area={after['Mask']['area']:.6f} vs "
-        f"expected pre-oxidation {expected_pre_mask_area:.6f}) -- root cause fix "
-        "(pad-oxide-first geometry, see locos.py) previously measured ~98% retention "
-        "at this recipe"
-    )
-    print(f"[5/5] mask retention = {100*retention:.2f}% "
-          f"(area={after['Mask']['area']:.6f} of expected pre-oxidation "
-          f"{expected_pre_mask_area:.6f}) -- root cause fixed, see locos.py module "
-          f"docstring and CLAUDE.md for the full investigation")
+    run_guards(*sample)
 
     print()
-    print("LOCOS CONTACT-MODE FIX + PAD-OXIDE-FIRST MASK-RETENTION FIX "
-          "(no crash, real growth, geometry NOT shifted, Si present, mask retained) "
-          "VERIFIED AGAINST REAL VIENNAPS 4.6.2")
-
-    import shutil
-    shutil.rmtree(tmp_fin, ignore_errors=True)
-    shutil.rmtree(tmp_locos, ignore_errors=True)
+    print("POSITIVE-TIME THERMAL AND LOCOS: UNSUPPORTED_BY_MODEL / exact reason codes / kind 'unsupported', 0 solver calls, "
+          "virgin Si only, no oxidation number computed; construction-only window geometry checked separately. "
+          "(contactMode / mask-retention results are historical, not a current contract.)")
 
 
 if __name__ == "__main__":

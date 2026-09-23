@@ -117,7 +117,7 @@ def flow_si_oxidation_doping(tmp):
         str(Path(tmp) / "flow2"),
     )
     final = results[-1]
-    doped = apply_uniform_doping(final, {"Si": -1e15})
+    doped = apply_uniform_doping(final, {"Si": -1e15}, chemical_state="UNKNOWN")
 
     _print_structures("structures:", results)
     print(f"    ProcessResult regions carried into doping: "

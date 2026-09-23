@@ -16,6 +16,7 @@
   },
   "doping": {
     "kind": "uniform",
+    "chemical_state": "ACTIVE",
     "doping_by_region_cm3": {"Si": -1e15}
   },
   "device": {

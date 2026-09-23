@@ -1,62 +1,67 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LOCOS bird's-beak (lateral oxide encroachment under the mask edge) —
-quantitative measurement through the real production entry point
-(registry -> LocosOxidation.run(), tcad/process/oxidation/locos.py),
+LOCOS positive-time request: the fail-closed CAPABILITY CONTRACT, through the real
+production entry point (registry -> LocosOxidation.run(), tcad/process/oxidation/locos.py),
 real ViennaPS 4.6.2.
 
-This does NOT re-run the full grid/time/pad-thickness scaling study
-already done and recorded in docs/investigation_log.md ("LOCOS
-bird's-beak shape — INVESTIGATED, evidence supports genuine diffusion
-physics, no code change needed") -- that investigation already
-established, by real measurement, that the taper is grid-independent in
-length and scales with pad-oxide thickness the way real lateral-
-oxidant-diffusion physics predicts (0.3um taper at pad=0.1um vs. 0.45um
-at pad=0.2um, at a mature growth stage). This test is a SMALL,
-reusable regression check, at the exact SAME recipe class (pad=0.1um,
-0.5hr/1000C dry, gd=0.05), that the same real, coordinate-measured
-taper is still present after the 2026-09-08 LOCOS/ThermalOxidation
-split -- so a future change that silently breaks the taper (e.g. an
-export or mask-mechanics regression) has something to fail against,
-without re-deriving the whole scaling study every time.
+WHAT THIS TEST PINS NOW (Batch 6). A positive-time LOCOS request is UNSUPPORTED_BY_MODEL:
+production blocks it before any solver call and returns
 
-Real coordinates, not a visual "looks like a bird's beak" judgment:
-the SiO2 top surface is read directly from the real, exported,
-per-material mesh (same technique as
-test_locos_contact_mode_fix_real.py's own _measure()), binned by x, and
-compared at three x-regions relative to the recipe's own known window
-edge:
-  - window interior (field-oxide plateau)
-  - right at the nominal mask edge (must be INTERMEDIATE, not equal to
-    either the plateau or the pad-only value -- that intermediate value
-    is the taper itself, at real, non-fabricated coordinates)
-  - well under the mask (pad-oxide-only, effectively unmoved)
+    physics_status.resolution == "UNSUPPORTED_BY_MODEL"
+    physics_status.reason_code == state_transition.reason == "LOCOS_CAPABILITY_PROOF_MISSING"
+    state_transition.kind      == "unsupported"
+
+with NO oxidation number of any kind: no oxide growth, no field-oxide plateau, no pad-only
+height, no taper, no bird's-beak length, no mask retention. The geometry that comes back for a
+fresh request is the recipe's virgin Si wafer and nothing else (no SiO2, no Mask) and it is the
+LAST-KNOWN geometry, never an oxidation result. This test computes and prints none of those
+numbers, and it forces (not infers) that the oxidation paths were never entered: `vps.Process`,
+`vps.Oxidation` (construction and `setInitialOxideThickness`) and
+`LocosOxidation._build_locos_geometry` are trapped and counted.
+
+WHAT IS NOT PINNED ANY MORE. This file used to measure a field-oxide plateau, an under-mask pad-only
+height, a mask-edge intermediate height and a taper length from a positive-time LOCOS run, and to
+call that a "confirmed" bird's beak. Those results were a HISTORICAL investigation
+(docs/investigation_log.md, "LOCOS bird's-beak shape"; and the pre-2026-09-18 model state). They are
+NOT a supported regression contract of the current backend: the backend no longer computes them.
+Nothing here says the current backend reproduces them, and none of those numbers may be quoted as a
+current result.
+
+The reason code is pinned per model as production returns it: LOCOS -> LOCOS_CAPABILITY_PROOF_MISSING
+(locos.py); thermal oxidation returns OXIDATION_CAPABILITY_PROOF_MISSING (see the other Batch 6
+tests). Fail-closed false-green guards at the end prove each check fails, for its own reason, when
+its subject is broken. No skip, no xfail, no swallowed exception.
 """
 
+import copy
 import sys
 import tempfile
+from contextlib import ExitStack
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import meshio
+import numpy as np
 
 import tcad.process.oxidation  # noqa: F401 -- registers "locos"
 from tcad.backends.viennaps import session as viennaps_session
 from tcad.process import registry
+from tcad.process.oxidation.locos import LocosOxidation
 
 assert viennaps_session.is_available(), "ViennaPS must be installed for this test"
+MODULE = viennaps_session.require_viennaps()
 
-# Matches docs/investigation_log.md's own "mature timescale" recipe
-# class (pad=0.1um, 0.5hr, gd=0.05) -- the one shown there to sit well
-# clear of grid-resolution noise, not a freshly invented value.
+# The historical bird's-beak recipe class (pad 0.1 um, 0.5 h, 1000 C dry, grid 0.05): it is used here ONLY as the
+# REQUEST that must be refused; nothing about its historical outcome is asserted.
 RECIPE = {
     "grid_delta_um": 0.05,
     "x_extent_um": 3.0,
     "y_extent_um": 2.0,
     "mask_left_um": 1.0,
-    "mask_right_um": 2.0,  # 1.0um window, centered in domain coords
+    "mask_right_um": 2.0,
     "pr_thickness_um": 0.5,
     "oxidant": "Dry",
     "temperature_c": 1000.0,
@@ -64,115 +69,182 @@ RECIPE = {
     "mask_material": "Mask",
     "pad_oxide_thickness_um": 0.1,
 }
+EXPECTED_REASON = "LOCOS_CAPABILITY_PROOF_MISSING"      # what locos.py returns for a positive-time request
+RESULT_KEYS = {"final_mesh", "snapshots", "physics_status", "state_transition"}
 
 
-def _sio2_top_by_x(mesh_path, module, x_bin=0.05):
-    """max y (top surface) of SiO2, binned by x -- a real y_top(x)
-    profile read from the exported mesh's own triangle vertices, not a
-    fabricated function."""
-    mesh = meshio.read(str(mesh_path))
-    block = next((c for c in mesh.cells if c.type == "triangle"), None)
-    assert block is not None, f"{mesh_path} has no triangle cells"
-    tags = mesh.cell_data["Material"][mesh.cells.index(block)]
-    target = int(module.Material.SiO2)
-    bins = {}
-    for tri, tag in zip(block.data, tags):
-        if int(tag) != target:
-            continue
-        for i in tri:
-            x, y = float(mesh.points[i][0]), float(mesh.points[i][1])
-            b = round(x / x_bin) * x_bin
-            bins[b] = max(bins.get(b, -1e9), y)
-    return bins
+# ------------------------------------------------------------------------------------------ solver-call traps
+class SolverTrap:
+    """Replaces the forbidden oxidation paths with recorders that ALSO raise, so a regression fails loudly; the counts are
+    kept separately so a call swallowed by a broad `except` is still caught by `assert_not_entered`."""
+
+    FORBIDDEN = ("vps.Process", "vps.Oxidation", "setInitialOxideThickness", "LocosOxidation._build_locos_geometry")
+
+    def __init__(self):
+        self.calls = []
+        self._stack = None
+
+    def __enter__(self):
+        trap = self
+
+        def process(*a, **k):
+            trap.calls.append("vps.Process")
+            raise AssertionError("vps.Process() called on a positive-time request")
+
+        class OxidationModel:
+            def __init__(self, *a, **k):
+                trap.calls.append("vps.Oxidation")
+                raise AssertionError("vps.Oxidation() constructed on a positive-time request")
+
+            def setInitialOxideThickness(self, *a, **k):
+                trap.calls.append("setInitialOxideThickness")
+                raise AssertionError("setInitialOxideThickness() called on a positive-time request")
+
+        def build(*a, **k):
+            trap.calls.append("LocosOxidation._build_locos_geometry")
+            raise AssertionError("LocosOxidation._build_locos_geometry() called on a positive-time request")
+
+        self._stack = ExitStack()
+        self._stack.enter_context(patch.object(MODULE, "Process", process))
+        self._stack.enter_context(patch.object(MODULE, "Oxidation", OxidationModel))
+        self._stack.enter_context(patch.object(LocosOxidation, "_build_locos_geometry", build))
+        return self
+
+    def __exit__(self, *exc):
+        self._stack.close()
+        return False
+
+    def assert_not_entered(self, where):
+        if self.calls:
+            raise AssertionError(f"{where}: solver/oxidation path was entered: {self.calls}")
+
+
+def calibrate_trap():
+    """Each trapped path, called directly, must be recorded and raise: a trap that never fires proves nothing."""
+    with SolverTrap() as trap:
+        for label, call in (
+            ("vps.Process", lambda: MODULE.Process()),
+            ("vps.Oxidation", lambda: MODULE.Oxidation()),
+            ("setInitialOxideThickness", lambda: MODULE.Oxidation.setInitialOxideThickness(None, 0.1)),
+            ("LocosOxidation._build_locos_geometry", lambda: LocosOxidation()._build_locos_geometry({}, MODULE)),
+        ):
+            try:
+                call()
+            except AssertionError:
+                continue
+            raise AssertionError(f"the trap for {label} did not fire")
+        assert trap.calls == list(SolverTrap.FORBIDDEN), trap.calls
+
+
+# ------------------------------------------------------------------------------------------ contract checks
+def mesh_materials(path):
+    """Exact sorted material names present as triangles in an exported mesh."""
+    mesh = meshio.read(path)
+    tags = set()
+    for block, data in zip(mesh.cells, mesh.cell_data["Material"]):
+        if block.type == "triangle":
+            tags |= {int(t) for t in np.asarray(data)}
+    return sorted(str(MODULE.Material(t)).split("'")[1] for t in tags)
+
+
+def check_unsupported(result, where):
+    """UNSUPPORTED_BY_MODEL / exact reason / kind 'unsupported' -- and nothing that looks like an oxidation number."""
+    assert set(result) == RESULT_KEYS, f"{where}: unexpected result keys {sorted(result)}"
+    status, transition = result["physics_status"], result["state_transition"]
+    if transition.get("kind") != "unsupported":
+        raise AssertionError(f"{where}: state_transition.kind is {transition.get('kind')!r}, expected 'unsupported': {transition}")
+    if status.get("resolution") != "UNSUPPORTED_BY_MODEL":
+        raise AssertionError(f"{where}: physics_status.resolution is {status.get('resolution')!r}, expected 'UNSUPPORTED_BY_MODEL'")
+    if status.get("reason_code") != EXPECTED_REASON or transition.get("reason") != EXPECTED_REASON:
+        raise AssertionError(f"{where}: reason code is {status.get('reason_code')!r} / {transition.get('reason')!r}, expected {EXPECTED_REASON!r}")
+    assert transition == {"kind": "unsupported", "category": "oxidation", "reason": EXPECTED_REASON}, f"{where}: {transition}"
+    entries = status["entries"]
+    assert len(entries) == 1 and entries[0]["parameter"] == "positive_time_oxidation" and entries[0]["resolution"] == "UNSUPPORTED_BY_MODEL", entries
+    # no oxidation result of any kind was computed: the only numeric field is an ECHO of the request
+    assert status["measured_min_oxide_um"] is None, f"{where}: an oxide thickness was reported: {status['measured_min_oxide_um']}"
+    assert status["requested_initial_oxide_um"] == RECIPE["pad_oxide_thickness_um"], "requested_initial_oxide_um must echo the request"
+    assert set(status) == {"resolution", "entries", "reason_code", "requested_initial_oxide_um", "grid_delta_um", "measured_min_oxide_um"}, sorted(status)
+
+
+def check_fresh_materials(materials, where):
+    """A fresh unsupported request returns the virgin Si wafer only -- no SiO2, no Mask, no pad oxide."""
+    if materials != ["Si"]:
+        raise AssertionError(f"{where}: the returned geometry is not the virgin Si wafer only: materials {materials}")
+
+
+# ------------------------------------------------------------------------------------------ false-green machinery
+def expect_fail(check, label, expected):
+    """A guard passes only if `check` raises AssertionError whose message contains `expected` (str, or a tuple of str that must
+    all appear, or a predicate). A passing check is FALSE GREEN; another reason is WRONG FAILURE REASON."""
+    try:
+        check()
+    except AssertionError as exc:
+        message = str(exc)
+        parts = (expected,) if isinstance(expected, str) else expected
+        ok = expected(message) if callable(expected) else all(p in message for p in parts)
+        if not ok:
+            raise AssertionError(f"WRONG FAILURE REASON for {label!r}:\n  expected: {expected!r}\n  actual:   {message[:300]}") from exc
+        print(f"    [guard OK] {label}: fails for the expected reason ({message.splitlines()[0][:90]})")
+        return
+    raise AssertionError(f"FALSE GREEN: the check did not fail when {label}")
+
+
+def run_guards(result, materials, trap_probe):
+    print("\n[guards] every contract check fails, for its own reason, when its subject is broken")
+    bad = copy.deepcopy(result)
+    bad["state_transition"] = {"kind": "identity", "category": "oxidation", "reason": "zero_duration_oxidation", "inherited": True}
+    expect_fail(lambda: check_unsupported(bad, "kind=identity"), "the transition kind is identity", "state_transition.kind is 'identity'")
+    bad = copy.deepcopy(result)
+    bad["physics_status"]["reason_code"] = bad["state_transition"]["reason"] = "SOMETHING_ELSE"
+    expect_fail(lambda: check_unsupported(bad, "wrong reason"), "the reason code is a different value", "reason code is 'SOMETHING_ELSE'")
+    bad = copy.deepcopy(result)
+    bad["physics_status"]["resolution"] = "MODELLED"
+    expect_fail(lambda: check_unsupported(bad, "MODELLED"), "the physics resolution is MODELLED", "physics_status.resolution is 'MODELLED'")
+    expect_fail(lambda: check_fresh_materials(materials + ["SiO2"], "fresh+SiO2"), "the fresh result contains SiO2",
+                "not the virgin Si wafer only: materials ['Si', 'SiO2']")
+    bad = copy.deepcopy(result)
+    bad["physics_status"]["measured_min_oxide_um"] = 0.11
+    expect_fail(lambda: check_unsupported(bad, "number"), "an oxide thickness is reported", "an oxide thickness was reported")
+    # a solver-path call that a broad `except` swallowed is still caught by the counter
+    with SolverTrap() as trap:
+        try:
+            MODULE.Process()
+        except AssertionError:
+            pass
+        expect_fail(lambda: trap.assert_not_entered("probe"), "the solver trap was actually called",
+                    "probe: solver/oxidation path was entered: ['vps.Process']")
 
 
 def main():
-    module = viennaps_session.require_viennaps()
     step_cls = registry.get("oxidation", "locos")
+    calibrate_trap()
+    print("[1/4] solver traps calibrated: vps.Process, vps.Oxidation, setInitialOxideThickness and "
+          "LocosOxidation._build_locos_geometry each fire when called directly")
 
     with tempfile.TemporaryDirectory() as tmp:
-        result = step_cls().run(dict(RECIPE), tmp)
-        profile = _sio2_top_by_x(result["final_mesh"], module)
+        with SolverTrap() as trap:
+            result = step_cls().run(dict(RECIPE), tmp)
+        trap.assert_not_entered("positive-time LOCOS request")
+        print(f"[2/4] positive-time LOCOS request ({RECIPE['time_hours']} h, mask_material set) ran through the real entry point; "
+              f"forbidden-call counts: {dict.fromkeys(SolverTrap.FORBIDDEN, 0)}")
 
-        half = RECIPE["x_extent_um"] / 2.0
-        window_right_domain = RECIPE["mask_right_um"] - half  # nominal mask edge, +0.5
-        pad_um = RECIPE["pad_oxide_thickness_um"]
+        check_unsupported(result, "LOCOS positive-time")
+        print(f"[3/4] state_transition = {result['state_transition']}")
+        print(f"      physics_status: resolution={result['physics_status']['resolution']}, reason_code={result['physics_status']['reason_code']}, "
+              f"measured_min_oxide_um={result['physics_status']['measured_min_oxide_um']}, "
+              f"requested_initial_oxide_um={result['physics_status']['requested_initial_oxide_um']} (an echo of the request)")
 
-        # Field-oxide plateau: window interior, well clear of the edge.
-        interior = {x: y for x, y in profile.items() if x < window_right_domain - 0.15}
-        assert interior, "no SiO2 measured inside the growth window"
-        plateau = max(interior.values())
+        materials = mesh_materials(result["final_mesh"])
+        check_fresh_materials(materials, "LOCOS positive-time")
+        print(f"[4/4] returned geometry = last-known/virgin wafer only: materials {materials} (no SiO2, no Mask); "
+              f"it is NOT an oxidation result and no oxide number was computed or is printed")
 
-        # Pad-oxide-only region: well under the mask, far from the edge.
-        under_mask = {x: y for x, y in profile.items() if x > window_right_domain + 0.5}
-        assert under_mask, "no SiO2 measured well under the mask"
-        pad_only = min(under_mask.values())
+        run_guards(result, materials, None)
 
-        # Real value AT the nominal mask edge coordinate (nearest bin).
-        edge_x = min(profile, key=lambda x: abs(x - window_right_domain))
-        edge_y = profile[edge_x]
-
-        print(f"[1/4] window interior (field-oxide) plateau: {plateau:.5f} um")
-        print(f"[2/4] under-mask (pad-oxide-only) value: {pad_only:.5f} um "
-              f"(started at pad_oxide_thickness_um={pad_um})")
-        print(f"[3/4] value at nominal mask edge x={edge_x:+.3f} "
-              f"(recipe edge={window_right_domain:+.3f}): {edge_y:.5f} um")
-
-        # 1) Real vertical growth in the window: plateau clearly above
-        # the as-built pad thickness.
-        assert plateau > pad_um + 1e-4, (
-            f"no real vertical oxide growth in the window: plateau={plateau:.5f} "
-            f"vs as-built pad={pad_um}"
-        )
-
-        # 2) Mask genuinely protects the covered Si -- pad-oxide-only
-        # region stayed close to its as-built thickness, not swept up
-        # into the field-oxide growth.
-        assert pad_only < plateau - 1e-4, (
-            f"no real mask protection: under-mask value {pad_only:.5f} is not "
-            f"clearly below the field-oxide plateau {plateau:.5f}"
-        )
-        assert abs(pad_only - pad_um) < 0.01, (
-            f"under-mask SiO2 grew far more than expected for a protected region: "
-            f"{pad_only:.5f} vs as-built {pad_um}"
-        )
-
-        # 3) Bird's beak: the value AT the nominal edge must be a real
-        # TAPER -- strictly between the plateau and the pad-only value,
-        # not equal to either (a sharp step would mean no lateral
-        # encroachment at all; a value outside the range would be a
-        # measurement error).
-        assert pad_only < edge_y < plateau, (
-            f"no taper at the mask edge: pad_only={pad_only:.5f}, "
-            f"edge={edge_y:.5f}, plateau={plateau:.5f} -- expected a real "
-            f"intermediate value (bird's-beak encroachment), not a sharp step"
-        )
-        print(f"[4/4] bird's-beak taper CONFIRMED at real coordinates: edge value "
-              f"{edge_y:.5f} is strictly between pad-only {pad_only:.5f} and "
-              f"plateau {plateau:.5f} -- a genuine lateral encroachment, not a "
-              f"sharp mask-edge cutoff")
-
-        # Quantify a taper length for the record (90% -> 10% of the
-        # plateau-to-pad delta), printed only -- not asserted to a
-        # specific number, since docs/investigation_log.md's own study
-        # is the source of truth for the expected magnitude (~0.3-0.45um
-        # at this pad thickness) and grid/solver noise can move this by
-        # tens of percent run to run without indicating a regression.
-        delta = plateau - pad_only
-        hi_thresh = pad_only + 0.9 * delta
-        lo_thresh = pad_only + 0.1 * delta
-        xs_sorted = sorted(profile)
-        x_hi = next((x for x in xs_sorted if x >= window_right_domain and profile[x] <= hi_thresh), None)
-        x_lo = next((x for x in xs_sorted if x >= window_right_domain and profile[x] <= lo_thresh), None)
-        if x_hi is not None and x_lo is not None:
-            print(f"      taper length (90%->10% of plateau-to-pad delta): "
-                  f"{x_lo - x_hi:.3f} um (docs/investigation_log.md's own study: "
-                  f"~0.3um at this same pad=0.1um recipe class)")
-
-        print()
-        print("LOCOS BIRD'S-BEAK: real, coordinate-measured lateral oxide "
-              "encroachment confirmed against real ViennaPS 4.6.2, post-split "
-              "(tcad/process/oxidation/locos.py)")
+    print()
+    print("LOCOS POSITIVE-TIME: UNSUPPORTED_BY_MODEL / LOCOS_CAPABILITY_PROOF_MISSING / kind 'unsupported', "
+          "0 solver calls, virgin Si only, no oxidation number computed. "
+          "(The old bird's-beak plateau/taper measurements are historical, not a current contract.)")
 
 
 if __name__ == "__main__":

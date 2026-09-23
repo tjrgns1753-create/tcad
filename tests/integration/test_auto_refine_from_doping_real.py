@@ -94,7 +94,7 @@ def test_step_junction_auto_refine():
         doped_result = apply_step_junction_doping(
             process_result, region="Si", junction_axis="x",
             junction_position_um=junction_position_um,
-            donor_conc_cm3=DONOR_CM3, acceptor_conc_cm3=ACCEPTOR_CM3,
+            donor_conc_cm3=DONOR_CM3, acceptor_conc_cm3=ACCEPTOR_CM3, chemical_state="ACTIVE",
         )
 
         # NO refine_near_um passed -- derived entirely from doped_result.doping.
@@ -149,7 +149,7 @@ def test_gaussian_implant_auto_refine():
         doped_result = apply_gaussian_implant_doping(
             process_result, region="Si", junction_axis="x",
             peak_position_um=peak_position_um, straggle_um=straggle_um,
-            peak_conc_cm3=peak_conc_cm3,
+            peak_conc_cm3=peak_conc_cm3, chemical_state="ACTIVE",
         )
 
         imported = import_process_result(

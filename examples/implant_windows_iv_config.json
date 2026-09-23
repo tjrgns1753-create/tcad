@@ -16,6 +16,8 @@
   },
   "doping": {
     "kind": "implant_windows",
+    "chemical_state": "ACTIVE",
+    "profile_semantics": "DIRECT_ANALYTIC_ACTIVE",
     "region": "Si",
     "axis": "x",
     "background_doping_cm3": -1e17,

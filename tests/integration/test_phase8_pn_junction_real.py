@@ -103,7 +103,7 @@ def main():
         doped_result = apply_step_junction_doping(
             process_result, region="Si", junction_axis="x",
             junction_position_um=junction_position_um,
-            donor_conc_cm3=DONOR_CM3, acceptor_conc_cm3=ACCEPTOR_CM3,
+            donor_conc_cm3=DONOR_CM3, acceptor_conc_cm3=ACCEPTOR_CM3, chemical_state="ACTIVE",
         )
         assert doped_result.doping.kind == "step_junction"
         assert process_result.doping is None, "original ProcessResult must stay untouched"

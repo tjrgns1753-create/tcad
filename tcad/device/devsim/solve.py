@@ -16,9 +16,23 @@ Process -> ProcessResult -> DevSim device -> solve() pipeline actually
 runs end-to-end on real ViennaPS-generated geometry; the real device
 physics (doping, drift-diffusion) is future work.
 
-Real API used (verified against installed DevSim 2.10.1). The
-derivative-model naming convention below ("{model}:{variable}@n0" for
-edges, a plain "1" for a linear contact residual) is not invented —
+Real API used, per DevSim's own public equation-assembly contract
+(devsim.net's "Equation and models" manual page): a bulk `edge_model`
+passed to `devsim.equation()` is integrated by DevSim itself against
+`EdgeCouple` ("the length of the perpendicular bisector of an element
+edge") during assembly — so the edge model string must define only the
+flux/field density (e.g. a gradient term), never multiply by
+`EdgeCouple` itself, or the couple gets applied twice, corrupting the
+assembled matrix coefficient (confirmed directly by reading the
+assembled matrix via `devsim.get_matrix_and_rhs()`: multiplying by
+`EdgeCouple` inside the edge model produces a coefficient of
+`EdgeCouple**2` instead of the correct `EdgeCouple/EdgeLength`; see
+docs/audits/2026-09-23-batch7h-c-flux-discretization/REPORT.md and the
+regression test this fixed,
+tests/integration/test_basic_potential_linear_precision_real.py).
+
+The derivative-model naming convention below ("{model}:{variable}@n0"
+for edges, a plain "1" for a linear contact residual) is not invented —
 it is DevSim's own convention, found by reading the source of
 devsim.python_packages.model_create.CreateEdgeModelDerivatives /
 CreateNodeModelDerivative (used by DevSim's bundled diode examples,
@@ -30,9 +44,9 @@ isolate a real equation-setup mistake from an environment problem):
     )
     CreateSolution(device, region, "Potential")
     CreateEdgeModel(device, region, "PotentialEdgeFlux",
-                     "(Potential@n0-Potential@n1)*EdgeCouple")
+                     "(Potential@n0-Potential@n1)*EdgeInverseLength")
     CreateEdgeModelDerivatives(device, region, "PotentialEdgeFlux",
-                                "(Potential@n0-Potential@n1)*EdgeCouple",
+                                "(Potential@n0-Potential@n1)*EdgeInverseLength",
                                 "Potential")
     devsim.equation(device=, region=, name=, variable_name="Potential",
                      edge_model="PotentialEdgeFlux")
@@ -77,10 +91,10 @@ def run_basic_potential_solve(
     )
 
     CreateSolution(device, region, "Potential")
-    CreateEdgeModel(device, region, "PotentialEdgeFlux", "(Potential@n0-Potential@n1)*EdgeCouple")
+    CreateEdgeModel(device, region, "PotentialEdgeFlux", "(Potential@n0-Potential@n1)*EdgeInverseLength")
     CreateEdgeModelDerivatives(
         device, region, "PotentialEdgeFlux",
-        "(Potential@n0-Potential@n1)*EdgeCouple", "Potential",
+        "(Potential@n0-Potential@n1)*EdgeInverseLength", "Potential",
     )
     module.equation(
         device=device,

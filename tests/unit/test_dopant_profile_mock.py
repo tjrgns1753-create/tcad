@@ -81,9 +81,14 @@ def test_step_junction_matches_devsim_step_function():
     """Reproduces doping_mapping.py's real DevSim equations exactly,
     INCLUDING the boundary quirk: at x == junction_position_um, both
     step() calls fire (DevSim's step(z) is 1.0 for z >= 0), so both
-    donor and acceptor profiles are non-zero there. This is existing,
-    already-shipped DevSim behavior -- not something this module may
-    round away."""
+    donor and acceptor profiles are non-zero there -- matching DEVSIM's
+    own official diode_common.py::SetNetDoping convention
+    (Acceptors = Na*step(xj-x), Donors = Nd*step(x-xj)). Batch 7C Rev.2
+    briefly made the junction coordinate strictly one-sided; Batch 7D
+    reverted that after Codex found it changed a real device's current
+    ratio (mesh/discontinuity sensitivity, not a physical fix) and
+    confirmed the junction LINE (measure-zero, not a finite area) is
+    not a compensated region regardless of this convention."""
     doping = DopingProfile(kind="step_junction", regions=[
         DopingRegion(region="Si", junction_axis="x", junction_position_um=1.0,
                      donor_conc_cm3=1.0e18, acceptor_conc_cm3=2.0e18,
@@ -181,7 +186,7 @@ def test_dopant_profile_has_no_gaussian_specific_top_level_fields():
     assert "thermal_budget" not in field_names
     assert field_names == {
         "species", "polarity", "concentration_at", "host_material",
-        "model", "model_params", "thermal_history", "source",
+        "model", "model_params", "thermal_history", "source", "chemical_state",
     }
     print(f"DopantProfile fields (model-agnostic): {sorted(field_names)}")
 

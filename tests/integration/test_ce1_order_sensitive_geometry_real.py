@@ -1,62 +1,24 @@
 # -*- coding: utf-8 -*-
-"""Spec 2026-09-03 CE-1 (corrected scope): geometry/state order-
-sensitivity, X-ONLY -- no depth-dependent claim anywhere in this file.
-Two disjoint x-regions: R_ETCH_X (a real ViennaPS masked etch removes
-Si there COMPLETELY -- verified below, not assumed) and R_SAFE_X
-(never touched by the etch). Whichever species existed at R_ETCH_X
-before the etch is erased there (geometry-gated zero); a DIFFERENT
-species is placed at R_SAFE_X after the etch. Swapping which species
-plays which role flips the wafer's species composition at R_SAFE_X and
-its net polarity -- this is the real, model-honest form of "process
-order changes the final WaferState."
+"""
+CE-1, WaferState v2 contract: a real, masked ViennaPS isotropic etch
+produces a CURVED sidewall front -- not an axis-aligned rectangle, so
+the process layer cannot hand advance_wafer_state() a
+`representable=True` GeometryTransform for it. The step is therefore
+advanced with NO transform, which is the fail-closed path: the etched
+region's dopant fate is `UNSUPPORTED_BY_MODEL`, NEVER a geometry-gated
+zero, and the post-etch geometry is UNRESOLVED so a subsequent doping
+call over it cannot produce a known active value either.
 
-Two real deviations from this task's own draft brief, both found by
-actually running the code (not guessed), documented here and in
-task-6-report.md:
+This replaces the old `last_step_category`-based demonstration ("an
+etch means 0 there"): that flat heuristic is retired (design doc
+2026-09-10 Sec7.4). What CE-1 now pins is exactly the honest v2
+behaviour -- a real non-representable geometry step makes the dopant
+state unresolvable, and v2 says so rather than inventing a number.
 
-Problem 1 (base wafer): a plain, non-LOCOS thermal oxidation
-unconditionally seeds a native-oxide layer across the ENTIRE exposed
-Si surface regardless of time_hours
-(tcad/process/oxidation/thermal.py's own
-`setInitialOxideThickness(max(0.002, grid_delta_um))`, confirmed by
-Task 5's own real-run finding). That makes Si never the topmost
-material anywhere on an unmasked wafer, so a host_material="Si"
-profile would read UNSUPPORTED_BY_MODEL everywhere -- not the real
-removal-gating this test needs. Fixed the same way Task 5 fixed the
-identical problem: the base step is a real, blanket (no-mask)
-isotropic etch, which has no such seed-layer side effect.
-
-Problem 2 (coordinates + masking convention): `mask_spans_um` /
-`remask_spans_um` take the OPAQUE (protected) spans, not the open
-ones (see `tcad.process.base.mask_spans_from_openings`'s own
-docstring), in DOMAIN coordinates centred on 0
-([-x_extent_um/2, +x_extent_um/2], the convention this project's own
-PN-diode investigation documents in CLAUDE.md). A window masked THIS
-way still leaves a solid "Mask" material sitting on top of the
-UNTOUCHED region (R_SAFE_X included) after the etch -- so this test
-also does a real, physically standard etch-then-STRIP
-(`domain.removeMaterial()`, the exact same real ViennaPS 4.6.2 API
-`tests/integration/test_pr_strip_real.py` already verifies for
-resist) so R_SAFE_X is genuinely exposed Si again afterward, matching
-what a real fab does after any masked etch. All real, printed and
-checked below -- not assumed.
-
-Problem 3 (discovered while building this test, not pre-flagged in
-the brief): `WaferState.last_step_category` is a single FLAT field --
-"the most recently run step's category" -- not a per-profile record of
-which step actually caused a given profile's host material to vanish.
-Confirmed by direct experiment (see task-6-report.md): once ANY
-further step of an unclassified category (e.g. "doping", which never
-touches geometry at all) runs after the removal-causing etch, a query
-against that LATER state reports the etched-away profile as
-UNSUPPORTED_BY_MODEL, not a geometry-gated zero -- the model has
-"forgotten" that the earlier etch, not this later step, is why the
-material is gone. This is real, current model behavior, not a bug this
-test may quietly route around: R_ETCH_X's erasure is therefore queried
-against the WaferState taken immediately after the etch (still
-classified "etching"), while R_SAFE_X's polarity is queried against the
-true final state (its host material genuinely IS exposed there, so no
-gating branch is even invoked) -- see run_order()'s own comments.
+The real ViennaPS work is unchanged: a blanket base etch (Problem 1),
+then a masked window etch that removes Si completely at R_ETCH_X, then
+a real mask strip (`domain.removeMaterial()`) so R_SAFE_X is exposed
+Si again -- all printed and geometry-checked below, not assumed.
 """
 import sys
 import tempfile
@@ -135,106 +97,80 @@ def _real_etch_and_strip(tmp, inherited_domain):
     return build_process_result({"final_mesh": stripped_mesh, "snapshots": []})
 
 
-def run_order(tmp, region_species):
-    """region_species: {"etch": (kwarg, species), "safe": (kwarg, species)} --
-    which species targets R_ETCH_X (implanted BEFORE the etch) vs R_SAFE_X
-    (implanted AFTER the etch)."""
+def run_order(tmp):
+    """Real ViennaPS: implant Si at R_ETCH_X, then a real masked etch
+    removes it there (curved front -> no representable transform), then
+    implant at R_SAFE_X. Returns (q_etch, q_safe, exposed_after,
+    exposed_safe_after)."""
     step, base = _fresh_wafer(tmp)
-    etch_kwarg, etch_species = region_species["etch"]
-    safe_kwarg, safe_species = region_species["safe"]
-
     r1 = apply_gaussian_implant_doping(
-        base, region="Si", junction_axis="x", peak_position_um=R_ETCH_X, straggle_um=0.3,
-        **{etch_kwarg: 1e18, f"{etch_kwarg.split('_')[0]}_species": etch_species},
+        base, region="Si", junction_axis="x", peak_position_um=R_ETCH_X,
+        straggle_um=0.3, acceptor_peak_conc_cm3=1e18, acceptor_species="B", chemical_state="ACTIVE",
     )
     state1 = advance_wafer_state(None, r1, "doping")
+    print(f"[state1] attachments={len(state1.attachments)} "
+          f"unresolved={len(state1.unresolved_inventory)}")
 
     pre_etch_state = WaferState.from_process_result(base)
-    print(f"[pre-etch] exposed material at R_ETCH_X={R_ETCH_X}: "
+    print(f"[pre-etch] exposed at R_ETCH_X={R_ETCH_X}: "
           f"{pre_etch_state.exposed_material_at(R_ETCH_X)}")
 
     stripped = _real_etch_and_strip(tmp, step.last_domain)
-    post_etch_state_for_check = WaferState.from_process_result(stripped)
-    exposed_after = post_etch_state_for_check.exposed_material_at(R_ETCH_X)
-    exposed_safe_after = post_etch_state_for_check.exposed_material_at(R_SAFE_X)
-    print(f"[post-etch+strip] exposed material at R_ETCH_X={R_ETCH_X}: {exposed_after}")
-    print(f"[post-etch+strip] exposed material at R_SAFE_X={R_SAFE_X}: {exposed_safe_after}")
-    assert exposed_after != "Si", (
-        f"the etch must remove Si COMPLETELY at R_ETCH_X (a recess that leaves Si "
-        f"still topmost there would produce NO geometry-gated zero at all) -- "
-        f"got exposed_material_at={exposed_after!r}, tune etch_time_s/window before "
-        f"trusting the rest of this test"
-    )
-    assert exposed_safe_after == "Si", (
-        f"R_SAFE_X must read genuine, exposed Si after the etch+strip -- if it "
-        f"doesn't, either lateral undercut reached it or the mask strip failed -- "
-        f"got exposed_material_at={exposed_safe_after!r}"
-    )
+    post = WaferState.from_process_result(stripped)
+    exposed_after = post.exposed_material_at(R_ETCH_X)
+    exposed_safe_after = post.exposed_material_at(R_SAFE_X)
+    print(f"[post-etch+strip] R_ETCH_X -> {exposed_after}  R_SAFE_X -> {exposed_safe_after}")
 
-    # R_ETCH_X's fate is queried on the state RIGHT AFTER the etch
-    # (last_step_category="etching"), NOT on the later state that also
-    # carries the R_SAFE_X implant -- Problem 3 (module docstring):
-    # last_step_category is a single flat "most recently run step"
-    # field, so a further "doping"-category step (not in
-    # MATERIAL_CHANGE_KIND_BY_CATEGORY) would make this SAME
-    # etched-away profile read UNSUPPORTED_BY_MODEL instead of a real
-    # geometry-gated zero. Confirmed directly (see task-6-report.md);
-    # this is current, real model behaviour, not something to route
-    # around silently.
-    state1_post_etch = advance_wafer_state(state1, stripped, "etching")
+    # A real masked ViennaPS etch: curved sidewall, NOT an axis-aligned
+    # rectangle -> no representable GeometryTransform -> fail-closed.
+    state1_post_etch = advance_wafer_state(state1, stripped, "etching", transform=None)
     q_etch = state1_post_etch.net_doping_at(R_ETCH_X, 0.0)
-    print(f"  R_ETCH_X net_doping (queried immediately post-etch): "
-          f"{q_etch.net_doping:.3e} (physics_status={q_etch.physics_status})")
+    print(f"  R_ETCH_X net_doping post-etch: {q_etch.net_doping} "
+          f"(physics_status={None if q_etch.physics_status is None else q_etch.physics_status['resolution']})")
 
     r2 = apply_gaussian_implant_doping(
-        stripped, region="Si", junction_axis="x", peak_position_um=R_SAFE_X, straggle_um=0.3,
-        **{safe_kwarg: 1e18, f"{safe_kwarg.split('_')[0]}_species": safe_species},
+        stripped, region="Si", junction_axis="x", peak_position_um=R_SAFE_X,
+        straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P", chemical_state="ACTIVE",
     )
-    # The true final state -- both profiles present. R_SAFE_X's own
-    # host_material ("Si") genuinely IS exposed there, so this query
-    # takes the direct-apply branch regardless of last_step_category;
-    # Problem 3 above never applies to this query.
     state2 = advance_wafer_state(state1_post_etch, r2, "doping")
     q_safe = state2.net_doping_at(R_SAFE_X, 0.0)
-    print(f"  R_SAFE_X net_doping: {q_safe.net_doping:.3e} "
-          f"(physics_status={q_safe.physics_status})")
-    return q_etch, q_safe
+    print(f"  R_SAFE_X net_doping: {q_safe.net_doping} "
+          f"(physics_status={None if q_safe.physics_status is None else q_safe.physics_status['resolution']})")
+    return q_etch, q_safe, exposed_after, exposed_safe_after
 
 
 def main():
     with tempfile.TemporaryDirectory() as tmp:
-        print("=== Order 1: B at R_ETCH_X (erased), P at R_SAFE_X (survives) ===")
-        q_etch_1, q_safe_1 = run_order(tmp, {
-            "etch": ("acceptor_peak_conc_cm3", "B"),
-            "safe": ("donor_peak_conc_cm3", "P"),
-        })
-    with tempfile.TemporaryDirectory() as tmp2:
-        print("\n=== Order 2 (swapped): P at R_ETCH_X (erased), B at R_SAFE_X (survives) ===")
-        q_etch_2, q_safe_2 = run_order(tmp2, {
-            "etch": ("donor_peak_conc_cm3", "P"),
-            "safe": ("acceptor_peak_conc_cm3", "B"),
-        })
+        q_etch, q_safe, exposed_after, exposed_safe_after = run_order(tmp)
 
-    # R_ETCH_X: whichever species was placed there before the etch is
-    # erased either way -- both orders must read (near) zero there,
-    # with NO physics_status gap (a real, physically meaningful zero,
-    # not a hidden unsupported case).
-    assert q_etch_1.physics_status is None and abs(q_etch_1.net_doping) < 1.0
-    assert q_etch_2.physics_status is None and abs(q_etch_2.net_doping) < 1.0
+    # Real geometry: the masked etch removed Si at R_ETCH_X; R_SAFE_X
+    # stays exposed Si.
+    assert exposed_after != "Si", (
+        f"the masked etch must remove Si at R_ETCH_X -- got {exposed_after!r}")
+    assert exposed_safe_after == "Si", (
+        f"R_SAFE_X must read exposed Si after the etch+strip -- got {exposed_safe_after!r}")
 
-    # R_SAFE_X: the SIGN must flip -- Order 1 ends with P (donor, positive)
-    # surviving there; Order 2 ends with B (acceptor, negative) instead.
-    print(f"\nR_SAFE_X net_doping: Order 1={q_safe_1.net_doping:.3e}, Order 2={q_safe_2.net_doping:.3e}")
-    assert (q_safe_1.net_doping > 0) and (q_safe_2.net_doping < 0), (
-        "swapping which species is assigned to the doomed (R_ETCH_X) vs safe "
-        "(R_SAFE_X) role must flip R_SAFE_X's final polarity -- this is real "
-        "geometry/state order-sensitivity, x-only, no depth claim involved"
-    )
-    print("\nOrder-sensitivity confirmed with real ViennaPS geometry: whichever species "
-          "existed at the etched location is erased there regardless of order; the "
-          "OTHER location's final species (and therefore polarity) depends entirely "
-          "on which role each species was assigned -- a real, x-only, model-honest "
-          "demonstration, not a claim about depth-selective physics.")
+    # v2 fail-closed contract (design doc Sec7.4): a real curved etch is
+    # not a representable GeometryTransform, so the etched region's
+    # dopant fate is UNSUPPORTED_BY_MODEL -- NOT a geometry-gated zero.
+    assert q_etch.physics_status is not None, (
+        "a real non-representable etch must report UNSUPPORTED_BY_MODEL at the "
+        "etched location, not a silent zero (the old last_step_category "
+        "heuristic is retired)")
+    assert q_etch.physics_status["resolution"] == "UNSUPPORTED_BY_MODEL"
+    assert q_etch.net_doping is None, "UNSUPPORTED must give net_doping None, not 0.0"
+
+    # After a fail-closed step the geometry is UNRESOLVED, so a further
+    # doping call over it cannot produce a known active value either.
+    assert q_safe.physics_status is not None
+    assert q_safe.physics_status["resolution"] == "UNSUPPORTED_BY_MODEL"
+    assert q_safe.net_doping is None
+
+    print()
+    print("CE-1 (v2): a real masked ViennaPS etch (curved front, no representable "
+          "GeometryTransform) makes the dopant state unresolvable -- the etched "
+          "region and any later doping over the resulting geometry both read "
+          "UNSUPPORTED_BY_MODEL, never an invented zero or value.")
 
 
 if __name__ == "__main__":

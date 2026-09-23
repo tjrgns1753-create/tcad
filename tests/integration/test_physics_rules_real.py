@@ -270,8 +270,8 @@ def test_rule_5_doping_preserves_geometry_and_colors():
         process_result = build_process_result(
             {"final_mesh": mesh_path, "snapshots": []}
         )
-        n_doped = apply_uniform_doping(process_result, {"Si": 1e17})
-        p_doped = apply_uniform_doping(process_result, {"Si": -1e17})
+        n_doped = apply_uniform_doping(process_result, {"Si": 1e17}, chemical_state="UNKNOWN")
+        p_doped = apply_uniform_doping(process_result, {"Si": -1e17}, chemical_state="UNKNOWN")
         after = _materials(mesh_path)
 
     assert sorted(before) == sorted(after), (

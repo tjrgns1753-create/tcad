@@ -60,7 +60,7 @@ def run_one(device_name, mesh_name, net_doping_cm3):
         process_result = build_process_result(step_result)
 
         # doping applied as a separate step, not by the process model
-        doped_result = apply_uniform_doping(process_result, {"Si": net_doping_cm3})
+        doped_result = apply_uniform_doping(process_result, {"Si": net_doping_cm3}, chemical_state="ACTIVE")
         assert doped_result.doping is not None
         assert doped_result.doping.kind == "uniform"
         assert process_result.doping is None, "original ProcessResult must stay untouched"

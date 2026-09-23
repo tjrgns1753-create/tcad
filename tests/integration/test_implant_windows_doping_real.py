@@ -68,7 +68,7 @@ def main():
         doped_result = apply_implant_windows_doping(
             process_result, region="Si", axis="x",
             background_doping_cm3=BACKGROUND_CM3,
-            windows=[SOURCE, DRAIN],
+            windows=[SOURCE, DRAIN], chemical_state="ACTIVE",
         )
         assert doped_result.doping is not None
         assert doped_result.doping.kind == "implant_windows"

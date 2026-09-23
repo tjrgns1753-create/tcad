@@ -31,18 +31,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from tcad.physics.dopant_profile import DopantProfile
 
-# Which material-change kind a process category's own physics is known to
-# perform, for the purpose of deciding a dopant's fate when its declared
-# host_material is no longer exposed at a query point (spec Sec3/Sec6).
-# A category absent from this table (e.g. "deposition", "doping", or
-# anything not yet classified) defaults to UNSUPPORTED_BY_MODEL, NEVER to
-# a silent zero -- see WaferState._polarity_sum.
-MATERIAL_CHANGE_KIND_BY_CATEGORY: Dict[str, str] = {
-    "etching": "removal",
-    "oxidation": "conversion",
-}
-
-
 @dataclass(frozen=True)
 class DopingQueryResult:
     donor_concentration: float
@@ -73,24 +61,9 @@ class WaferState:
     _cells: Tuple[_Cell, ...]
     _thin_x: Tuple[float, ...]
     dopant_profiles: Tuple[DopantProfile, ...] = ()
-    # The MOST RECENTLY run process step's category only -- NOT a
-    # per-location/per-profile provenance record (final-review Fix 7,
-    # 2026-09-03 dopant-state-unification). Consequence: if an
-    # unclassified-category step (e.g. "doping", which has no entry in
-    # MATERIAL_CHANGE_KIND_BY_CATEGORY) runs AFTER a removal-causing
-    # etch, a query against THIS state cannot recall that the earlier
-    # removal is still real and permanent -- _polarity_sum() will report
-    # UNSUPPORTED_BY_MODEL for that profile instead of the correct
-    # "genuinely removed, zero" (safe/conservative, never silently
-    # wrong, but it does lose real information). First characterized in
-    # tests/integration/test_ce1_order_sensitive_geometry_real.py's own
-    # "Problem 3" docstring section -- see that test for the fuller
-    # writeup.
-    last_step_category: Optional[str] = None
 
     @staticmethod
-    def query(domain: Any, dopant_profiles: Tuple[DopantProfile, ...] = (),
-              last_step_category: Optional[str] = None) -> "WaferState":
+    def query(domain: Any, dopant_profiles: Tuple[DopantProfile, ...] = ()) -> "WaferState":
         import viennals as vls
 
         material_map = domain.getMaterialMap()
@@ -132,13 +105,11 @@ class WaferState:
             _cells=tuple(cells),
             _thin_x=WaferState._thin_layer_positions(domain, grid),
             dopant_profiles=dopant_profiles,
-            last_step_category=last_step_category,
         )
 
     @staticmethod
     def from_process_result(
         result: "ProcessResult", dopant_profiles: Tuple[DopantProfile, ...] = (),
-        last_step_category: Optional[str] = None,
     ) -> "WaferState":
         """Build WaferState geometry from a real exported mesh FILE via
         ProcessResult (volume_mesh_path/material_field/material_regions)
@@ -204,7 +175,7 @@ class WaferState:
             # constructor has no level-set access to derive it from).
             grid_delta_um=0.0,
             _cells=tuple(cells), _thin_x=(),
-            dopant_profiles=dopant_profiles, last_step_category=last_step_category,
+            dopant_profiles=dopant_profiles,
         )
 
     @staticmethod
@@ -271,45 +242,32 @@ class WaferState:
     def _polarity_sum(
         self, x_um: float, depth_um: float, polarity: str, exposed: Optional[str],
     ) -> Tuple[float, List[dict]]:
-        """`exposed` is `self.exposed_material_at(x_um)`, computed ONCE
-        by the caller (net_doping_at, final-review Fix 6) -- it depends
-        only on x_um, not on which profile/polarity is being checked, so
-        recomputing it per profile (the old behavior) meant up to
-        2 * len(dopant_profiles) redundant full linear scans over
-        self._cells per net_doping_at() call. Passed in, never
-        recomputed here."""
+        """`exposed` is `self.exposed_material_at(x_um)`, computed ONCE by
+        the caller. Two-way (no process-category heuristic, WaferState v2
+        migration): a profile whose `host_material` IS exposed here
+        contributes its real value; a profile whose `host_material` is
+        NOT exposed here is `UNSUPPORTED_BY_MODEL` -- the v1 state has no
+        per-location provenance to tell "genuinely removed" from
+        "converted", so it never guesses a geometry-gated zero. The
+        removal-vs-conversion distinction lives in
+        tcad.physics.wafer_state_v2 (SpatialEvent / GeometryTransform),
+        never in a flat most-recent-process-category flag."""
         total = 0.0
         entries: List[dict] = []
-        change_kind = MATERIAL_CHANGE_KIND_BY_CATEGORY.get(self.last_step_category or "")
         for p in self.dopant_profiles:
             if p.polarity != polarity:
                 continue
             if exposed == p.host_material:
                 total += p.concentration_at(x_um, depth_um)
                 continue
-            # host_material absent here -- three-way test, spec Sec3.
-            if change_kind == "removal":
-                # A real, physically meaningful geometry-gated zero
-                # (spec Sec6 state A) -- ONLY for a category explicitly
-                # known to only ever take material away.
-                continue
-            # Default is UNSUPPORTED_BY_MODEL, not zero -- covers both
-            # "conversion" (oxidation) AND any category with no table
-            # entry at all. Never silently assume an unclassified
-            # category means removal; that would be exactly the kind
-            # of undisclosed guess CLAUDE.md's Core Physics Requirement
-            # forbids. A future category genuinely needing "removal"
-            # semantics gets added to MATERIAL_CHANGE_KIND_BY_CATEGORY
-            # explicitly, not by falling through a default.
             entries.append({
                 "parameter": "dopant_fate_at_material_change",
                 "material": p.species, "resolution": "UNSUPPORTED_BY_MODEL",
                 "provenance": "DERIVED",
-                "note": f"{p.host_material} no longer exposed at this point "
-                        f"(category={self.last_step_category!r}, classified as "
-                        f"a {change_kind or 'UNCLASSIFIED'} material change) and "
-                        f"no dopant segregation/fate model is registered -- "
-                        f"contribution excluded, NOT zero",
+                "note": f"{p.host_material} is not the exposed material at this "
+                        f"point and the v1 state carries no per-location "
+                        f"provenance to resolve whether it was removed or "
+                        f"converted -- contribution excluded, NOT zero",
             })
         return total, entries
 

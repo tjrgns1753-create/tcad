@@ -16,6 +16,8 @@
   },
   "doping": {
     "kind": "gaussian_implant",
+    "chemical_state": "ACTIVE",
+    "profile_semantics": "DIRECT_ANALYTIC_ACTIVE",
     "region": "Si",
     "junction_axis": "x",
     "peak_position_um": 0.0,

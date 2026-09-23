@@ -281,6 +281,20 @@ The CLI (`tcad.cli.run_pipeline`) writes both under `<workdir>/`:
   },
   "doping": {                          // optional
     "kind": "uniform | step_junction | gaussian_implant | implant_windows",
+    // REQUIRED whenever "doping" is set -- the CLI never guesses an activation
+    // state; a config without it is rejected:
+    "chemical_state": "ACTIVE | CHEMICAL | UNKNOWN",
+    //   uniform / step_junction: ACTIVE = a directly declared analytic active
+    //     profile ("DECLARED ANALYTIC ACTIVE PROFILE", not a simulated implant).
+    //   gaussian_implant / implant_windows are process-like implant inputs and
+    //     this project has no implantation/activation model: CHEMICAL or
+    //     UNKNOWN are accepted (the DevSim gate then blocks the device);
+    //     ACTIVE is refused unless the config ALSO says
+    //     "profile_semantics": "DIRECT_ANALYTIC_ACTIVE" (a direct analytic
+    //     device profile). A bare "chemical_state": "ACTIVE" cannot bypass this.
+    //   A region where a donor and an acceptor profile of finite area coexist
+    //     (a compensated region) is UNSUPPORTED_BY_MODEL for transport
+    //     (COMPENSATED_TRANSPORT_MODEL_MISSING): no current is reported.
     // uniform:
     "doping_by_region_cm3": {"Si": -1e17},
     // step_junction:

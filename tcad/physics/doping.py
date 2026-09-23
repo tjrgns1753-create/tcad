@@ -31,6 +31,7 @@ from typing import Dict, List, Optional, Tuple
 
 from tcad.mesh.interface import DopingProfile, DopingRegion, ProcessResult
 from tcad.physics.dopant_profile import DopantProfile
+from tcad.physics.wafer_state_v2 import validate_chemical_state
 from tcad.physics.values import Resolution, combine
 
 #: This project's own doping representation is defined along ONE
@@ -48,8 +49,17 @@ def apply_uniform_doping(
     donor_by_region_cm3: Optional[Dict[str, float]] = None,
     acceptor_by_region_cm3: Optional[Dict[str, float]] = None,
     species_by_region: Optional[Dict[str, tuple]] = None,
+    chemical_state: str,
 ) -> ProcessResult:
     """Return a new ProcessResult with uniform doping attached.
+
+    `chemical_state` is the DECLARED activation state stored on every
+    region built here (see DopingRegion.chemical_state). It is a REQUIRED
+    keyword-only argument with no default: nothing here may become
+    electrically ACTIVE by omission. "ACTIVE" means a user-declared,
+    electrically active analytic profile; a process-like implant with no
+    activation model must be declared "CHEMICAL" (or "UNKNOWN"). Omitting
+    it is a TypeError; an invalid string raises ValueError.
 
     Two mutually additive input shapes, so every existing caller stays
     unchanged:
@@ -74,8 +84,9 @@ def apply_uniform_doping(
             "apply_uniform_doping needs either doping_by_region_cm3 or "
             "donor_by_region_cm3/acceptor_by_region_cm3"
         )
+    validate_chemical_state(chemical_state)
     regions = [
-        DopingRegion(region=name, net_doping_cm3=value)
+        DopingRegion(region=name, net_doping_cm3=value, chemical_state=chemical_state)
         for name, value in (doping_by_region_cm3 or {}).items()
     ]
     donor_regions = set(donor_by_region_cm3 or {}) | set(acceptor_by_region_cm3 or {})
@@ -89,6 +100,7 @@ def apply_uniform_doping(
                 region=name, net_doping_cm3=donor - acceptor,
                 donor_conc_cm3=donor, acceptor_conc_cm3=acceptor,
                 donor_species=species[0], acceptor_species=species[1],
+                chemical_state=chemical_state,
             )
         )
     doping = DopingProfile(kind="uniform", regions=regions)
@@ -102,23 +114,31 @@ def apply_step_junction_doping(
     junction_position_um: float,
     donor_conc_cm3: float,
     acceptor_conc_cm3: float,
+    *,
+    chemical_state: str,
 ) -> ProcessResult:
     """Return a new ProcessResult with a step-junction doping profile
     attached to one region: donor_conc_cm3 where `junction_axis`'s
     coordinate is greater than junction_position_um, acceptor_conc_cm3
     on the other side — a PN junction.
 
+    `chemical_state`: the declared activation state, REQUIRED and
+    keyword-only (see apply_uniform_doping); "ACTIVE" = a user-declared
+    active analytic profile. Invalid strings raise ValueError.
+
     Kept separate from apply_uniform_doping so a ProcessResult's
     DopingProfile.kind unambiguously tells the DevSim-side mapping
     (tcad.device.devsim.doping_mapping) which equation shape to build,
     rather than inferring it from which fields happen to be set.
     """
+    validate_chemical_state(chemical_state)
     doping_region = DopingRegion(
         region=region,
         junction_axis=junction_axis,
         junction_position_um=junction_position_um,
         donor_conc_cm3=donor_conc_cm3,
         acceptor_conc_cm3=acceptor_conc_cm3,
+        chemical_state=chemical_state,
     )
     doping = DopingProfile(kind="step_junction", regions=[doping_region])
     return replace(result, doping=doping)
@@ -136,6 +156,7 @@ def apply_gaussian_implant_doping(
     acceptor_peak_conc_cm3: Optional[float] = None,
     donor_species: Optional[str] = None,
     acceptor_species: Optional[str] = None,
+    chemical_state: str,
 ) -> ProcessResult:
     """Return a new ProcessResult with a 1D Gaussian implant doping
     profile attached to one region: net doping along `junction_axis`
@@ -152,6 +173,13 @@ def apply_gaussian_implant_doping(
     when the donor/acceptor form is used, and is what every downstream
     consumer keeps reading.
 
+    `chemical_state`: the declared activation state, REQUIRED and
+    keyword-only (see apply_uniform_doping). This project has no implantation (energy/dose)
+    or anneal-activation model, so a caller presenting this as a process
+    implant must declare "CHEMICAL"; "ACTIVE" is only a user-declared
+    analytic profile. With explicit donor/acceptor peaks the two stay two
+    separate canonical profiles downstream -- never collapsed to a net.
+
     One implant call attaches one profile to `result`, replacing
     whatever doping it carried before -- multi-implant accumulation
     across calls is WaferState's job (dopant_profiles, Task 5), not
@@ -167,6 +195,7 @@ def apply_gaussian_implant_doping(
             "donor_peak_conc_cm3/acceptor_peak_conc_cm3"
         )
 
+    validate_chemical_state(chemical_state)
     if donor_peak_conc_cm3 is not None or acceptor_peak_conc_cm3 is not None:
         donor = donor_peak_conc_cm3 or 0.0
         acceptor = acceptor_peak_conc_cm3 or 0.0
@@ -182,6 +211,7 @@ def apply_gaussian_implant_doping(
         acceptor_peak_conc_cm3=acceptor_peak_conc_cm3,
         donor_species=donor_species,
         acceptor_species=acceptor_species,
+        chemical_state=chemical_state,
     )
     doping = DopingProfile(kind="gaussian_implant", regions=[doping_region])
     return replace(result, doping=doping)
@@ -247,6 +277,7 @@ def apply_implant_windows_doping(
     *,
     donor_background_cm3: Optional[float] = None,
     acceptor_background_cm3: Optional[float] = None,
+    chemical_state: str,
 ) -> ProcessResult:
     """Return a new ProcessResult with a background doping plus zero or
     more laterally-windowed implants SUPERPOSED on top, all in one
@@ -270,11 +301,15 @@ def apply_implant_windows_doping(
         here, since a caller may deliberately want graded overlap;
         DevSim-side mapping applies the windows exactly as given.
 
+    `chemical_state`: the declared activation state, REQUIRED and
+    keyword-only (see apply_uniform_doping and apply_gaussian_implant_doping).
+
     This models the real physical relationship between an implant and
     whatever doping already existed where it lands (superposition), not
     a replacement — the same reason `apply_gaussian_implant_doping`
     doesn't split its result into separate Donors/Acceptors models.
     """
+    validate_chemical_state(chemical_state)
     if donor_background_cm3 is not None or acceptor_background_cm3 is not None:
         background_doping_cm3 = (donor_background_cm3 or 0.0) - (acceptor_background_cm3 or 0.0)
 
@@ -292,6 +327,7 @@ def apply_implant_windows_doping(
         donor_conc_cm3=donor_background_cm3,
         acceptor_conc_cm3=acceptor_background_cm3,
         implant_windows=resolved_windows,
+        chemical_state=chemical_state,
     )
     doping = DopingProfile(kind="implant_windows", regions=[doping_region])
     return replace(result, doping=doping)

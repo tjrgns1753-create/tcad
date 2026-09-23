@@ -47,7 +47,7 @@ def main():
 
         b_result = apply_gaussian_implant_doping(
             base, region="Si", junction_axis="x", peak_position_um=-1.0,
-            straggle_um=0.2, acceptor_peak_conc_cm3=1e18, acceptor_species="B",
+            straggle_um=0.2, acceptor_peak_conc_cm3=1e18, acceptor_species="B", chemical_state="ACTIVE",
         )
         state1 = advance_wafer_state(None, b_result, "doping")
         print(f"after B implant: {len(state1.dopant_profiles)} profile(s), "
@@ -56,7 +56,7 @@ def main():
 
         p_result = apply_gaussian_implant_doping(
             base, region="Si", junction_axis="x", peak_position_um=1.0,
-            straggle_um=0.15, donor_peak_conc_cm3=2e18, donor_species="P",
+            straggle_um=0.15, donor_peak_conc_cm3=2e18, donor_species="P", chemical_state="ACTIVE",
         )
         state2 = advance_wafer_state(state1, p_result, "doping")
         species = sorted(p.species for p in state2.dopant_profiles)

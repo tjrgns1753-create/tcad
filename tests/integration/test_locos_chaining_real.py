@@ -1,90 +1,66 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LOCOS process-flow chaining — real ViennaPS 4.6.2, through the actual
-production entry points (registry -> LocosOxidation.run() ->
-DirectionalEtch(inherited_domain=...).run()), the same way
-tcad.process.flow.run_flow() chains any two steps.
+LOCOS process-flow chaining: what a positive-time LOCOS request now does to a flow — real ViennaPS 4.6.2,
+through the actual production entry points (registry -> LocosOxidation.run(); tcad.process.flow.run_flow()).
 
-2026-09-08: LOCOS split out of ThermalOxidation into its own
-tcad/process/oxidation/locos.py ("oxidation"/"locos" registry entry) --
-this test's own registry lookups were updated accordingly; the LOCOS
-logic itself (and every number this test checks) is unchanged, only
-moved.
+WHAT THIS TEST PINS NOW (Batch 7). A positive-time LOCOS request is UNSUPPORTED_BY_MODEL:
+    state_transition.kind == "unsupported"
+    physics_status.resolution == "UNSUPPORTED_BY_MODEL"
+    reason (both fields) == "LOCOS_CAPABILITY_PROOF_MISSING"
+and it is refused before any solver call. It therefore produces NO LOCOS geometry to chain from:
 
-Guards the fix in LocosOxidation._make_locos_domain_chainable() and
-tcad.backends.viennaps.io.register_locos_export(). Before it, chaining
-ANY further step onto fresh-LOCOS geometry silently destroyed the Si
-and SiO2 level sets outright (both dropping to zero points during the
-chained step's own Process() call, before export was even reached), so
-the chained step exported a mesh missing two of its three materials —
-or, when the resulting degenerate bounding box hit the floor
-mechanism's boolean intersect, hung for minutes instead.
+  A. direct request -- the contract above; `vps.Process`, `vps.Oxidation` (construction and
+     `setInitialOxideThickness`) and `LocosOxidation._build_locos_geometry` are trapped and counted (0 calls);
+     the returned geometry is the fresh virgin-Si wafer only (no SiO2, no Mask). It is a last-known/fresh
+     geometry, not a LOCOS result: no oxide growth, Si consumption, mask retention or chainable LOCOS stack
+     is claimed.
+  B. run_flow stops -- a real `run_flow` is given [positive-time LOCOS, a SENTINEL step]. The flow returns the
+     one unsupported LOCOS result and stops: the sentinel's registry lookup, constructor and run() are all
+     0, no directory/geometry exists for it, and the first result's last-known mesh is not treated as a
+     post-LOCOS geometry.
+  C. no manual chaining -- nothing here hands the `last_domain` of an unsupported LOCOS to an etch, a
+     Bosch, an oxidation or a second LOCOS. That would replace an UNCOMPUTED LOCOS state with an "unoxidized
+     last-known domain" and continue the process on it: a physically false recovery. (The supported-flow
+     mechanics are covered by test_waferstate_sequential_flow_real.py, run separately as a control.)
 
-Root cause (ViennaLS lsAdvect.hpp's own documented precondition): Advect
-advects only the LAST level set, then replaces each lower one with
-`lower INTERSECT last`, and requires the last to CONTAIN all the others.
-Every other geometry in this project satisfies that automatically —
-MakeTrench inserts the substrate last, wrapping the mask. LOCOS must
-insert its mask last and unwrapped (both alternatives break
-vps.Oxidation()'s own solve), so it is restored afterwards instead. See
-LOCOS_CHAINING_TEST_LOG.txt for the full investigation.
+WHAT IS NOT PINNED ANY MORE (historical). This file used to run a real LOCOS and then check, on its exported
+geometry: all 3 materials with >=90% mask retention; chained directional etch, a second chained etch and Bosch
+each keeping 3 materials and removing oxide while leaving Si; fin-style oxidation growing oxide on a LOCOS domain;
+a second LOCOS refused on a modified domain (stale stash); and a second LOCOS chained directly onto the first
+growing oxide and consuming Si (measured then: SiO2 +0.17511 at 10 hr vs the first step's +0.10577, Si -0.06407).
+Those were results of a positive-time LOCOS the backend no longer computes. They are HISTORICAL investigation
+results (the chainable-domain fix in LocosOxidation._make_locos_domain_chainable() and
+tcad.backends.viennaps.io.register_locos_export() belongs to that history), not a current contract; nothing here
+recomputes or verifies them.
 
-Checks:
-  1. The LOCOS step's OWN export is unchanged by the fix — all three
-     materials, mask retention still >=90%.
-  2. A chained step completes and its own export ALSO has all three
-     materials with nonzero area (the actual bug).
-  3. No level set was destroyed by the chained step.
-  4. The chained etch is physically real, not a no-op: it removes oxide,
-     and leaves the masked region's Si intact.
-  5. A SECOND chained step still works, with no further fixup — the
-     invariant is restored once, and Advect preserves it thereafter.
-  6. Bosch DRIE chains too. It is the one model that changes the
-     level-set stack size mid-run (duplicateTopLevelSet adds a polymer
-     layer each cycle, removeTopLevelSet pops it), which both the
-     Advect precondition and the export hint's fixed materials list
-     could in principle have tripped over. Neither does: the duplicate
-     is a copy of a top that already contains everything, so the
-     precondition holds through the cycle, and the stack is back to its
-     registered length by export time.
-  7. Fin-style oxidation (no mask_material) chains onto LOCOS and grows
-     real oxide — the guard in check 8 must not be over-broad.
-  8. A second LOCOS oxidation on a domain that intervening steps have
-     since modified raises a clear error rather than running against
-     stale geometry. The unwrapped-mask level sets check 9 relies on
-     are stashed when the FIRST LOCOS step re-wraps its domain; any
-     later step mutates the live domain in place while that stash keeps
-     the older state, so rebuilding from it there would silently
-     discard everything those steps did.
-  9. A second LOCOS oxidation chained DIRECTLY onto the first works and
-     is physically real (oxide grows, Si is consumed, all 3 materials
-     survive). The inherited domain cannot be oxidized as-is — the
-     chainable re-wrap unions the mask into the oxide, and
-     vps.Oxidation()'s oxide-band detection needs a distinct band, so
-     it hangs — so ThermalOxidation rebuilds an unwrapped-mask domain
-     from the stashed copies. This combination previously raised
-     NotImplementedError; before that it hung indefinitely.
-
-No fabricated numbers: every expectation is derived from the recipe or
-compared against the step's own measured "before" state.
+False-green guards at the end prove each check fails, for its own reason, when its subject is broken.
 """
 
+import copy
 import sys
 import tempfile
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import meshio
+import numpy as np
 
 import tcad.process.etching  # noqa: F401 -- registers the models
 import tcad.process.oxidation  # noqa: F401
 from tcad.backends.viennaps import session as viennaps_session
 from tcad.process import registry
+from tcad.process.base import ProcessStep
+from tcad.process.flow import FlowStep, run_flow
+from tcad.process.oxidation.locos import LocosOxidation
 
 assert viennaps_session.is_available(), "ViennaPS must be installed for this test"
+MODULE = viennaps_session.require_viennaps()
 
+# The historical LOCOS chaining recipe, used ONLY as the REQUEST that must be refused (0.02 h is > 0).
 OXIDATION_RECIPE = {
     "grid_delta_um": 0.2,
     "x_extent_um": 4.0,
@@ -97,239 +73,283 @@ OXIDATION_RECIPE = {
     "time_hours": 0.02,
     "mask_material": "Mask",
 }
-
-ETCH_RECIPE = {
-    "direction": [0, -1, 0],
-    "directional_velocity": -0.05,
-    "etch_time_s": 1.0,
-    "mask_material": "Mask",
-}
-
-#: One cycle is enough: the stack grows and shrinks once, which is the
-#: whole point of including Bosch here.
-BOSCH_RECIPE = {
-    "cycles": 1,
-    "etch_time_s": 1.0,
-    "polymer_rate": 0.03,
-    "polymer_sticking": 1.0,
-    "ion_source_exponent": 500.0,
-    "ion_rate": -0.02,
-    "neutral_rate": -0.01,
-    "neutral_sticking": 0.10,
-}
+EXPECTED_REASON = "LOCOS_CAPABILITY_PROOF_MISSING"
+RESULT_KEYS = {"final_mesh", "snapshots", "physics_status", "state_transition"}
+STATUS_KEYS = {"resolution", "entries", "reason_code", "requested_initial_oxide_um", "grid_delta_um", "measured_min_oxide_um"}
 
 
-def areas_by_material(mesh_path):
-    """{material tag: total triangle area} from a written mesh."""
-    mesh = meshio.read(str(mesh_path))
-    block = next((c for c in mesh.cells if c.type == "triangle"), None)
-    assert block is not None, f"{mesh_path} has no triangles at all"
-    tags = mesh.cell_data["Material"][mesh.cells.index(block)]
-    areas = {}
-    for tri, tag in zip(block.data, tags):
-        p = mesh.points[tri]
-        a = abs((p[1, 0] - p[0, 0]) * (p[2, 1] - p[0, 1])
-                - (p[2, 0] - p[0, 0]) * (p[1, 1] - p[0, 1])) / 2.0
-        areas[int(tag)] = areas.get(int(tag), 0.0) + a
-    return areas
+# ------------------------------------------------------------------------------------------ solver-call traps
+class SolverTrap:
+    """Recorders that also raise (a regression fails loudly); the counts catch a call a broad `except` swallowed."""
+
+    FORBIDDEN = ("vps.Process", "vps.Oxidation", "setInitialOxideThickness", "LocosOxidation._build_locos_geometry")
+
+    def __init__(self):
+        self.calls = []
+        self._stack = None
+
+    def __enter__(self):
+        trap = self
+
+        def process(*a, **k):
+            trap.calls.append("vps.Process")
+            raise AssertionError("vps.Process() called on a positive-time request")
+
+        class OxidationModel:
+            def __init__(self, *a, **k):
+                trap.calls.append("vps.Oxidation")
+                raise AssertionError("vps.Oxidation() constructed on a positive-time request")
+
+            def setInitialOxideThickness(self, *a, **k):
+                trap.calls.append("setInitialOxideThickness")
+                raise AssertionError("setInitialOxideThickness() called on a positive-time request")
+
+        def build(*a, **k):
+            trap.calls.append("LocosOxidation._build_locos_geometry")
+            raise AssertionError("LocosOxidation._build_locos_geometry() called on a positive-time request")
+
+        self._stack = ExitStack()
+        self._stack.enter_context(patch.object(MODULE, "Process", process))
+        self._stack.enter_context(patch.object(MODULE, "Oxidation", OxidationModel))
+        self._stack.enter_context(patch.object(LocosOxidation, "_build_locos_geometry", build))
+        return self
+
+    def __exit__(self, *exc):
+        self._stack.close()
+        return False
+
+    def assert_not_entered(self, where):
+        if self.calls:
+            raise AssertionError(f"{where}: solver/oxidation path was entered: {self.calls}")
+
+
+def calibrate_trap():
+    """Each trapped path, called directly, must be recorded and raise: a trap that never fires proves nothing."""
+    with SolverTrap() as trap:
+        for label, call in (
+            ("vps.Process", lambda: MODULE.Process()),
+            ("vps.Oxidation", lambda: MODULE.Oxidation()),
+            ("setInitialOxideThickness", lambda: MODULE.Oxidation.setInitialOxideThickness(None, 0.1)),
+            ("LocosOxidation._build_locos_geometry", lambda: LocosOxidation()._build_locos_geometry({}, MODULE)),
+        ):
+            try:
+                call()
+            except AssertionError:
+                continue
+            raise AssertionError(f"the trap for {label} did not fire")
+        assert trap.calls == list(SolverTrap.FORBIDDEN), trap.calls
+
+
+# ------------------------------------------------------------------------------------------ flow sentinel
+SENTINEL_CATEGORY, SENTINEL_NAME = "sentinel_tripwire", "must_never_run"
+
+
+class SentinelStep(ProcessStep):
+    """A step that must NEVER be reached: its constructor and run() record themselves and raise."""
+
+    category, name = SENTINEL_CATEGORY, SENTINEL_NAME
+    counts = {"constructed": 0, "run": 0}
+
+    def __init__(self, *a, **k):
+        SentinelStep.counts["constructed"] += 1
+        raise AssertionError("sentinel step constructed")
+
+    def run(self, recipe, output_dir):
+        SentinelStep.counts["run"] += 1
+        raise AssertionError("sentinel step run()")
+
+
+class FlowTracker:
+    """Registers the sentinel for the duration of the block and records every registry lookup (pass-through)."""
+
+    def __init__(self):
+        self.lookups = []
+
+    def __enter__(self):
+        SentinelStep.counts.update(constructed=0, run=0)
+        registry._REGISTRY.setdefault(SENTINEL_CATEGORY, {})[SENTINEL_NAME] = SentinelStep
+        original = registry.get
+        tracker = self
+
+        def tracking_get(category, name):
+            tracker.lookups.append((category, name))
+            return original(category, name)
+
+        self._patch = patch.object(registry, "get", tracking_get)
+        self._patch.start()
+        return self
+
+    def __exit__(self, *exc):
+        self._patch.stop()
+        registry._REGISTRY.pop(SENTINEL_CATEGORY, None)
+        return False
+
+    def sentinel_touches(self):
+        return {"lookups": sum(1 for k in self.lookups if k == (SENTINEL_CATEGORY, SENTINEL_NAME)),
+                "constructed": SentinelStep.counts["constructed"], "run": SentinelStep.counts["run"]}
+
+    def assert_sentinel_untouched(self, where):
+        touches = self.sentinel_touches()
+        if any(touches.values()):
+            raise AssertionError(f"{where}: sentinel step was reached: {touches}")
+
+
+def calibrate_sentinel():
+    """The sentinel must actually record and raise when touched, and the registry must be clean again afterwards."""
+    with FlowTracker() as tracker:
+        cls = registry.get(SENTINEL_CATEGORY, SENTINEL_NAME)
+        for label, call in (("constructor", lambda: cls()), ("run()", lambda: cls.run(None, {}, "unused"))):
+            try:
+                call()
+            except AssertionError:
+                continue
+            raise AssertionError(f"the sentinel {label} did not fire")
+        assert tracker.sentinel_touches() == {"lookups": 1, "constructed": 1, "run": 1}, tracker.sentinel_touches()
+    assert SENTINEL_CATEGORY not in registry._REGISTRY, "the sentinel was left registered"
+    SentinelStep.counts.update(constructed=0, run=0)
+
+
+# ------------------------------------------------------------------------------------------ contract checks
+def mesh_materials(path):
+    mesh = meshio.read(path)
+    tags = set()
+    for block, data in zip(mesh.cells, mesh.cell_data["Material"]):
+        if block.type == "triangle":
+            tags |= {int(t) for t in np.asarray(data)}
+    return sorted(str(MODULE.Material(t)).split("'")[1] for t in tags)
+
+
+def check_unsupported(result, where):
+    assert set(result) == RESULT_KEYS, f"{where}: unexpected result keys {sorted(result)}"
+    status, transition = result["physics_status"], result["state_transition"]
+    if transition.get("kind") != "unsupported":
+        raise AssertionError(f"{where}: state_transition.kind is {transition.get('kind')!r}, expected 'unsupported': {transition}")
+    if status.get("resolution") != "UNSUPPORTED_BY_MODEL":
+        raise AssertionError(f"{where}: physics_status.resolution is {status.get('resolution')!r}, expected 'UNSUPPORTED_BY_MODEL'")
+    if status.get("reason_code") != EXPECTED_REASON or transition.get("reason") != EXPECTED_REASON:
+        raise AssertionError(f"{where}: reason code is {status.get('reason_code')!r} / {transition.get('reason')!r}, expected {EXPECTED_REASON!r}")
+    assert transition == {"kind": "unsupported", "category": "oxidation", "reason": EXPECTED_REASON}, f"{where}: {transition}"
+    assert status["measured_min_oxide_um"] is None, f"{where}: an oxide thickness was reported: {status['measured_min_oxide_um']}"
+    assert status["requested_initial_oxide_um"] == OXIDATION_RECIPE.get("pad_oxide_thickness_um"), "requested_initial_oxide_um must echo the request"
+    assert set(status) == STATUS_KEYS, sorted(status)
+
+
+def check_fresh_materials(materials, where):
+    if materials != ["Si"]:
+        raise AssertionError(f"{where}: the returned geometry is not the virgin Si wafer only: materials {materials}")
+
+
+def check_flow_stopped(flow, lookups, tracker, flow_dir, where="run_flow"):
+    """The flow returned exactly the one unsupported LOCOS result; the sentinel was never looked up, constructed or run; no
+    directory (hence no geometry) exists for the second step."""
+    assert len(flow) == 1, f"{where}: expected exactly the unsupported LOCOS result, got {len(flow)} results"
+    kind = flow[0].metadata["state_transition"]["kind"]
+    if kind != "unsupported":
+        raise AssertionError(f"{where}: the first result's transition kind is {kind!r}, expected 'unsupported'")
+    tracker.assert_sentinel_untouched(where)
+    assert lookups == [("oxidation", "locos")], f"{where}: registry lookups were {lookups}"
+    made = sorted(p.name for p in Path(flow_dir).iterdir())
+    assert len(made) == 1 and made[0].endswith("oxidation_locos"), f"{where}: step directories {made} -- a second step's geometry exists"
+
+
+# ------------------------------------------------------------------------------------------ false-green machinery
+def expect_fail(check, label, expected):
+    """A guard passes only if `check` raises AssertionError whose message contains `expected` (str, tuple of str that must
+    all appear, or predicate). A passing check is FALSE GREEN; another reason is WRONG FAILURE REASON."""
+    try:
+        check()
+    except AssertionError as exc:
+        message = str(exc)
+        parts = (expected,) if isinstance(expected, str) else expected
+        ok = expected(message) if callable(expected) else all(p in message for p in parts)
+        if not ok:
+            raise AssertionError(f"WRONG FAILURE REASON for {label!r}:\n  expected: {expected!r}\n  actual:   {message[:300]}") from exc
+        print(f"    [guard OK] {label}: fails for the expected reason ({message.splitlines()[0][:90]})")
+        return
+    raise AssertionError(f"FALSE GREEN: the check did not fail when {label}")
+
+
+def run_guards(sample, materials):
+    print("\n[guards] every contract check fails, for its own reason, when its subject is broken")
+    bad = copy.deepcopy(sample)
+    bad["physics_status"]["reason_code"] = bad["state_transition"]["reason"] = "OXIDATION_CAPABILITY_PROOF_MISSING"      # LOCOS <-> thermal swapped
+    expect_fail(lambda: check_unsupported(bad, "swapped"), "the LOCOS request carries the thermal reason code",
+                "reason code is 'OXIDATION_CAPABILITY_PROOF_MISSING'")
+    bad = copy.deepcopy(sample)
+    bad["state_transition"] = {"kind": "identity", "category": "oxidation", "reason": "zero_duration_oxidation", "inherited": True}
+    expect_fail(lambda: check_unsupported(bad, "identity"), "the transition kind is identity", "state_transition.kind is 'identity'")
+    bad = copy.deepcopy(sample)
+    bad["physics_status"]["resolution"] = "MODELLED"
+    expect_fail(lambda: check_unsupported(bad, "MODELLED"), "the physics resolution is MODELLED", "physics_status.resolution is 'MODELLED'")
+    expect_fail(lambda: check_fresh_materials(materials + ["SiO2"], "fresh+SiO2"), "the fresh result contains SiO2",
+                "not the virgin Si wafer only: materials ['Si', 'SiO2']")
+    expect_fail(lambda: check_fresh_materials(sorted(materials + ["Mask"]), "fresh+Mask"), "the fresh result contains a Mask",
+                "not the virgin Si wafer only: materials ['Mask', 'Si']")
+    with SolverTrap() as trap:
+        try:
+            MODULE.Process()
+        except AssertionError:
+            pass
+        expect_fail(lambda: trap.assert_not_entered("probe"), "the solver trap was actually called",
+                    "probe: solver/oxidation path was entered: ['vps.Process']")
+
+    # a flow that DOES execute the sentinel (the first step is the sentinel; the exception is swallowed like a broad `except`)
+    def flow_that_runs_the_sentinel():
+        with FlowTracker() as tracker, tempfile.TemporaryDirectory() as tmp:
+            try:
+                run_flow([FlowStep(SENTINEL_CATEGORY, SENTINEL_NAME, {})], tmp)
+            except AssertionError:
+                pass
+            tracker.assert_sentinel_untouched("mutant flow")
+
+    expect_fail(flow_that_runs_the_sentinel, "run_flow executes the sentinel step",
+                "mutant flow: sentinel step was reached: {'lookups': 1, 'constructed': 1, 'run': 0}")
 
 
 def main():
-    module = viennaps_session.require_viennaps()
-    si_tag = int(module.Material.Si)
-    oxide_tag = int(module.Material.SiO2)
-    mask_tag = int(getattr(module.Material, OXIDATION_RECIPE["mask_material"]))
-    expected = {si_tag, oxide_tag, mask_tag}
+    step_cls = registry.get("oxidation", "locos")
+    calibrate_trap()
+    calibrate_sentinel()
+    print("[0] solver traps and the flow sentinel calibrated (each fires when touched directly; the registry is clean afterwards)")
 
-    # The mask's own pre-oxidation area, straight from the recipe's
-    # geometry -- not a magic number.
-    window_um = OXIDATION_RECIPE["mask_right_um"] - OXIDATION_RECIPE["mask_left_um"]
-    mask_height_um = max(OXIDATION_RECIPE["pr_thickness_um"], 0.1)
-    mask_area_initial = (OXIDATION_RECIPE["x_extent_um"] - window_um) * mask_height_um
-
+    # ---- A: the direct request ------------------------------------------------------------------------------------
     with tempfile.TemporaryDirectory() as tmp:
-        # ---- step 1: LOCOS oxidation, the real production entry point ----
-        step1 = registry.get("oxidation", "locos")()
-        result1 = step1.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step1"))
-        areas1 = areas_by_material(result1["final_mesh"])
+        with SolverTrap() as trap:
+            result = step_cls().run(dict(OXIDATION_RECIPE), str(Path(tmp) / "locos"))
+        trap.assert_not_entered("direct LOCOS request")
+        check_unsupported(result, "direct LOCOS request")
+        materials = mesh_materials(result["final_mesh"])
+        check_fresh_materials(materials, "direct LOCOS request")
+        print(f"[1/3] direct positive-time LOCOS request ({OXIDATION_RECIPE['time_hours']} h): state_transition {result['state_transition']}; "
+              f"resolution {result['physics_status']['resolution']}/{result['physics_status']['reason_code']}; solver-path counts "
+              f"{dict.fromkeys(SolverTrap.FORBIDDEN, 0)}; returned materials {materials} -- the fresh virgin-Si wafer, NOT a LOCOS "
+              f"result: no oxide growth, Si consumption, mask retention or chainable LOCOS stack is claimed")
 
-        assert set(areas1) == expected, (
-            f"[1/8] LOCOS step's own export should have all 3 materials "
-            f"{sorted(expected)}, got {sorted(areas1)}"
-        )
-        retention = areas1[mask_tag] / mask_area_initial
-        assert retention >= 0.90, (
-            f"[1/8] mask retention regressed to {retention:.1%} "
-            f"({areas1[mask_tag]:.5f} of {mask_area_initial:.5f})"
-        )
-        print(f"[1/8] LOCOS step's own export unchanged by the fix: "
-              f"3 materials, mask retention {retention:.2%}")
+    # ---- B: run_flow stops at the first unsupported step -----------------------------------------------------------------
+    with tempfile.TemporaryDirectory() as tmp:
+        steps = [FlowStep("oxidation", "locos", dict(OXIDATION_RECIPE)), FlowStep(SENTINEL_CATEGORY, SENTINEL_NAME, {})]
+        with FlowTracker() as tracker, SolverTrap() as trap:
+            flow = run_flow(steps, tmp)
+            lookups = list(tracker.lookups)
+        trap.assert_not_entered("run_flow")
+        check_flow_stopped(flow, lookups, tracker, tmp)
+        first = flow[0]
+        flow_materials = mesh_materials(first.volume_mesh_path)
+        check_fresh_materials(flow_materials, "run_flow first result")
+        print(f"[2/3] run_flow([positive-time LOCOS, SENTINEL]): {len(flow)} result (the unsupported LOCOS: transition "
+              f"{first.metadata['state_transition']['kind']}, reason {first.metadata['state_transition']['reason']}); registry lookups {lookups}; "
+              f"sentinel lookups/constructions/run() = {tracker.sentinel_touches()}; step directories "
+              f"{sorted(p.name for p in Path(tmp).iterdir())} (none for the second step); solver-path counts {dict.fromkeys(SolverTrap.FORBIDDEN, 0)}")
+        print(f"      the first result's mesh {flow_materials} is the last-known/fresh geometry, not a post-LOCOS geometry; it is not handed to any further step")
 
-        # ---- step 2: chain a real, unrelated step onto it ----
-        etch_cls = registry.get("etching", "directional")
-        step2 = etch_cls(inherited_domain=step1.last_domain)
-        result2 = step2.run(dict(ETCH_RECIPE), str(Path(tmp) / "step2"))
-        areas2 = areas_by_material(result2["final_mesh"])
+    print("[3/3] no manual chaining: the unsupported LOCOS's last_domain is not passed to any etch, Bosch, oxidation or second LOCOS "
+          "(that would replace an uncomputed LOCOS state with an 'unoxidized last-known domain' and continue on it)")
 
-        assert set(areas2) == expected, (
-            f"[2/8] chained step's export is missing materials: expected "
-            f"{sorted(expected)}, got {sorted(areas2)} -- this is the bug "
-            f"this test exists for"
-        )
-        for tag, area in areas2.items():
-            assert area > 0.0, f"[2/8] material {tag} exported with zero area"
-        print(f"[2/8] chained step's export has all 3 materials: "
-              f"{ {k: round(v, 5) for k, v in sorted(areas2.items())} }")
+    run_guards(result, materials)
 
-        # ---- 3: nothing was destroyed in the domain itself ----
-        points = [ls.getNumberOfPoints() for ls in step2.last_domain.getLevelSets()]
-        assert all(p > 0 for p in points), (
-            f"[3/8] a level set was destroyed by the chained step: {points}"
-        )
-        print(f"[3/8] every level set survived the chained step: {points} points")
-
-        # ---- 4: the chained etch actually did something physical ----
-        assert areas2[oxide_tag] < areas1[oxide_tag], (
-            f"[4/8] the chained etch removed no oxide at all "
-            f"({areas1[oxide_tag]:.5f} -> {areas2[oxide_tag]:.5f}); a fix that "
-            f"preserves materials by making the step a no-op is not a fix"
-        )
-        # The etch is shallower than the pad oxide covering the window, so
-        # it cannot reach Si yet. (This model has NO material selectivity
-        # -- see etching/directional.py's docstring; Si survives here
-        # purely because oxide is still in the way.)
-        assert abs(areas2[si_tag] - areas1[si_tag]) < 1e-3, (
-            f"[4/8] Si changed ({areas1[si_tag]:.5f} -> {areas2[si_tag]:.5f}) "
-            f"though the etch is shallower than the oxide above it"
-        )
-        print(f"[4/8] chained etch is physically real: oxide "
-              f"{areas1[oxide_tag]:.5f} -> {areas2[oxide_tag]:.5f}, Si intact")
-
-        # ---- 5: a SECOND chained step, with no further fixup ----
-        step3 = etch_cls(inherited_domain=step2.last_domain)
-        result3 = step3.run(dict(ETCH_RECIPE), str(Path(tmp) / "step3"))
-        areas3 = areas_by_material(result3["final_mesh"])
-
-        assert set(areas3) == expected, (
-            f"[5/8] second chained step lost materials: {sorted(areas3)}"
-        )
-        assert areas3[oxide_tag] < areas2[oxide_tag], (
-            f"[5/8] second chained etch removed no oxide "
-            f"({areas2[oxide_tag]:.5f} -> {areas3[oxide_tag]:.5f})"
-        )
-        print(f"[5/8] second chained step also OK, no further fixup needed: "
-              f"oxide {areas2[oxide_tag]:.5f} -> {areas3[oxide_tag]:.5f}")
-
-        # ---- 6: Bosch, the one model that resizes the level-set stack ----
-        step4 = registry.get("etching", "bosch_drie")(inherited_domain=step3.last_domain)
-        result4 = step4.run(dict(BOSCH_RECIPE), str(Path(tmp) / "step4"))
-        areas4 = areas_by_material(result4["final_mesh"])
-
-        points4 = [ls.getNumberOfPoints() for ls in step4.last_domain.getLevelSets()]
-        assert all(p > 0 for p in points4), (
-            f"[6/8] Bosch destroyed a level set: {points4}"
-        )
-        assert set(areas4) == expected, (
-            f"[6/8] Bosch's export lost materials: expected {sorted(expected)}, "
-            f"got {sorted(areas4)} -- duplicateTopLevelSet resizes the stack "
-            f"mid-run, so the export hint's materials list has to still line up "
-            f"by the time the export happens"
-        )
-        print(f"[6/8] Bosch (duplicateTopLevelSet) chains too: {points4} points, "
-              f"3 materials, oxide {areas3[oxide_tag]:.5f} -> {areas4[oxide_tag]:.5f}")
-
-        # ---- 7: fin-style oxidation on a LOCOS domain DOES work ----
-        fin_recipe = {k: v for k, v in OXIDATION_RECIPE.items()
-                      if k != "mask_material"}
-        thermal_cls = registry.get("oxidation", "thermal")
-        locos_cls = registry.get("oxidation", "locos")
-        step5 = thermal_cls(inherited_domain=step4.last_domain)
-        result5 = step5.run(fin_recipe, str(Path(tmp) / "step5"))
-        areas5 = areas_by_material(result5["final_mesh"])
-
-        assert set(areas5) == expected, (
-            f"[7/8] fin-style oxidation on a LOCOS domain lost materials: "
-            f"{sorted(areas5)}"
-        )
-        assert areas5[oxide_tag] > areas4[oxide_tag], (
-            f"[7/8] fin-style oxidation grew no oxide "
-            f"({areas4[oxide_tag]:.5f} -> {areas5[oxide_tag]:.5f})"
-        )
-        print(f"[7/8] fin-style oxidation chains onto LOCOS and grows real "
-              f"oxide: {areas4[oxide_tag]:.5f} -> {areas5[oxide_tag]:.5f}")
-
-        # ---- 8: a second LOCOS oxidation chained onto a domain that
-        # some OTHER step has since modified must refuse, not silently
-        # oxidize stale geometry. step5 was a fin-style oxidation on this
-        # domain, so the level sets stashed by step1's own re-wrap no
-        # longer describe it -- rebuilding from them would discard
-        # everything steps 2-5 did. (A second LOCOS chained DIRECTLY onto
-        # a LOCOS step does work; that is check 9.)
-        step6 = locos_cls(inherited_domain=step5.last_domain)
-        try:
-            step6.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step6"))
-        except NotImplementedError as exc:
-            assert "stale" in str(exc), (
-                f"[8/9] refused, but the message does not explain why: {exc}"
-            )
-            print("[8/9] a second LOCOS on a domain modified since the stash "
-                  "is refused, not run against stale geometry")
-        else:
-            raise AssertionError(
-                "[8/9] a second LOCOS oxidation on a domain modified by "
-                "intervening steps should raise NotImplementedError -- the "
-                "stashed unwrapped-mask geometry is stale, and using it would "
-                "silently discard those steps"
-            )
-
-        # ---- 9: a second LOCOS chained DIRECTLY onto the first works ----
-        # The domain cannot be oxidized as-is (the chainable re-wrap
-        # unioned the mask into the oxide, and vps.Oxidation()'s
-        # oxide-band detection needs a distinct band -- it hangs), so
-        # locos.py rebuilds an unwrapped-mask domain from the copies
-        # stashed just before that union. Expectations here are the
-        # step's OWN measured before/after, not fabricated numbers.
-        #
-        # SCOPE OF WHAT THIS CHECK PROVES, stated honestly: at this
-        # file's deliberately fast 0.02hr recipe the oxide/Si deltas are
-        # ~6e-4 / ~2e-4 um^2, i.e. at the 0.2um grid's own noise floor,
-        # so the growth ASSERTIONS below are weak evidence of magnitude
-        # on their own -- what they robustly guard is that the step runs
-        # at all (no hang, no NotImplementedError), keeps all three
-        # materials, and moves oxide and Si in the physically correct
-        # directions. The magnitude claim was verified separately, at
-        # 10hr where growth is well clear of that floor: SiO2 +0.17511
-        # (vs the first step's own +0.10577) and Si -0.06407, through
-        # these same production entry points. Raising this check's own
-        # time would make the whole suite materially slower for a
-        # property already measured.
-        fresh = locos_cls()
-        fresh_result = fresh.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step7"))
-        areas_first = areas_by_material(fresh_result["final_mesh"])
-
-        second = locos_cls(inherited_domain=fresh.last_domain)
-        second_result = second.run(dict(OXIDATION_RECIPE), str(Path(tmp) / "step8"))
-        areas_second = areas_by_material(second_result["final_mesh"])
-
-        for tag, name in ((si_tag, "Si"), (oxide_tag, "SiO2"), (mask_tag, "Mask")):
-            assert areas_second.get(tag, 0.0) > 0.0, (
-                f"[9/9] {name} missing or empty after a second LOCOS: "
-                f"{areas_second}"
-            )
-        assert areas_second[oxide_tag] > areas_first[oxide_tag], (
-            f"[9/9] second LOCOS did not grow oxide: "
-            f"{areas_first[oxide_tag]:.5f} -> {areas_second[oxide_tag]:.5f}"
-        )
-        assert areas_second[si_tag] < areas_first[si_tag], (
-            f"[9/9] second LOCOS grew oxide without consuming Si: "
-            f"{areas_first[si_tag]:.5f} -> {areas_second[si_tag]:.5f}"
-        )
-        print(f"[9/9] a second LOCOS chained directly onto the first runs and "
-              f"is physically real: SiO2 {areas_first[oxide_tag]:.5f} -> "
-              f"{areas_second[oxide_tag]:.5f}, Si {areas_first[si_tag]:.5f} -> "
-              f"{areas_second[si_tag]:.5f}")
-
-    print("LOCOS CHAINING TEST PASSED")
+    print()
+    print("LOCOS CHAINING: positive-time LOCOS = UNSUPPORTED_BY_MODEL / LOCOS_CAPABILITY_PROOF_MISSING; 0 solver and LOCOS-builder calls; "
+          "run_flow stops after it (sentinel lookups/constructions/run() all 0); only the fresh virgin Si is returned; no LOCOS chaining is claimed")
 
 
 if __name__ == "__main__":

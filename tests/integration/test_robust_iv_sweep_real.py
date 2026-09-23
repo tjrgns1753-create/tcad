@@ -89,7 +89,7 @@ def build_device(recipe, conc_cm3, device_name, mesh_name, tmp):
         windows=[
             {"min_um": -1.6, "max_um": -0.6, "conc_cm3": conc_cm3},
             {"min_um": 0.6, "max_um": 1.6, "conc_cm3": conc_cm3},
-        ],
+        ], chemical_state="ACTIVE",
     )
     refined = refine_process_result_for_implant_windows(doped)
     assert refined is not None, "no refinement derived for implant_windows"

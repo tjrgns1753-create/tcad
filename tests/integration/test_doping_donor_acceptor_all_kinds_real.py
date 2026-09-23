@@ -34,23 +34,23 @@ def _base_result():
 
 def main():
     # --- Backward compatibility: old net-only call shapes unchanged ---
-    r = apply_uniform_doping(_base_result(), {"Si": 1.0e17})
+    r = apply_uniform_doping(_base_result(), {"Si": 1.0e17}, chemical_state="UNKNOWN")
     assert r.doping.regions[0].net_doping_cm3 == 1.0e17
     assert r.doping.regions[0].donor_conc_cm3 is None
 
-    r = apply_gaussian_implant_doping(_base_result(), "Si", "x", 0.0, 0.5, 1.0e17)
+    r = apply_gaussian_implant_doping(_base_result(), "Si", "x", 0.0, 0.5, 1.0e17, chemical_state="UNKNOWN")
     assert r.doping.regions[0].peak_conc_cm3 == 1.0e17
 
     r = apply_implant_windows_doping(_base_result(), "Si", "x", -1.0e17, [
         {"min_um": -1.6, "max_um": -0.6, "conc_cm3": 1.0e20},
-    ])
+    ], chemical_state="UNKNOWN")
     assert r.doping.regions[0].net_doping_cm3 == -1.0e17
     assert r.doping.regions[0].implant_windows[0]["conc_cm3"] == 1.0e20
 
     # --- New donor/acceptor shapes ---
     r = apply_uniform_doping(
         _base_result(),
-        donor_by_region_cm3={"Si": 1.0e16}, acceptor_by_region_cm3={"Si": 5.0e15},
+        donor_by_region_cm3={"Si": 1.0e16}, acceptor_by_region_cm3={"Si": 5.0e15}, chemical_state="UNKNOWN",
     )
     region = r.doping.regions[0]
     assert region.net_doping_cm3 == 5.0e15, f"net must be donor-acceptor, got {region.net_doping_cm3}"
@@ -60,7 +60,7 @@ def main():
     r = apply_gaussian_implant_doping(
         _base_result(), "Si", "x", 0.0, 0.3,
         donor_peak_conc_cm3=2.0e18, acceptor_peak_conc_cm3=3.0e17,
-        donor_species="P", acceptor_species="B",
+        donor_species="P", acceptor_species="B", chemical_state="UNKNOWN",
     )
     region = r.doping.regions[0]
     assert abs(region.peak_conc_cm3 - (2.0e18 - 3.0e17)) < 1.0, (
@@ -74,7 +74,7 @@ def main():
         donor_background_cm3=1.0e15, acceptor_background_cm3=1.0e16,
         windows=[
             {"min_um": -1.6, "max_um": -0.6, "donor_conc_cm3": 1.0e20, "acceptor_conc_cm3": 0.0},
-        ],
+        ], chemical_state="UNKNOWN",
     )
     region = r.doping.regions[0]
     assert region.net_doping_cm3 == 1.0e15 - 1.0e16, (
@@ -84,7 +84,7 @@ def main():
     assert window["donor_conc_cm3"] == 1.0e20 and window["acceptor_conc_cm3"] == 0.0
 
     # --- step_junction unchanged (already correct) ---
-    r = apply_step_junction_doping(_base_result(), "Si", "x", 0.0, 1.0e18, 1.0e18)
+    r = apply_step_junction_doping(_base_result(), "Si", "x", 0.0, 1.0e18, 1.0e18, chemical_state="UNKNOWN")
     assert r.doping.regions[0].donor_conc_cm3 == 1.0e18
     assert r.doping.regions[0].acceptor_conc_cm3 == 1.0e18
 

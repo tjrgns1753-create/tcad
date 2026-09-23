@@ -45,7 +45,6 @@ def main():
         materials=("Si", "SiO2"), stack=(LayerInfo("Si", 0), LayerInfo("SiO2", 1)),
         grid_delta_um=0.05, _cells=(_Cell(-5.0, 5.0, 0.06, "SiO2"),),
         _thin_x=(), dopant_profiles=(profile,),
-        last_step_category="oxidation",
     )
 
     app.viewer_layer_var.set("doping")
@@ -67,7 +66,7 @@ def main():
     app.wafer_state = WaferState(
         materials=("Si",), stack=(LayerInfo("Si", 0),),
         grid_delta_um=0.05, _cells=(_Cell(-5.0, 5.0, 0.0, "Si"),),
-        _thin_x=(), dopant_profiles=(profile,), last_step_category="doping",
+        _thin_x=(), dopant_profiles=(profile,),
     )
     note3 = app._doping_unsupported_hover_note(0.0)
     assert note3 == "", "a genuinely computable doping value must not show the UNSUPPORTED note"

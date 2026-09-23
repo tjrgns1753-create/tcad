@@ -58,6 +58,18 @@ has no memory between sessions and this came up once already.
   ..\.venv\Scripts\python.exe tests\run_regression.py
   ```
   Bash/Git Bash equivalent: `PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe tests/run_regression.py`
+  Windows PowerShell environment that reproduces the ViennaPS/DevSim DLL
+  and parallel-execution setup (verified working here); set it once per
+  shell, then run a single test file or the full regression:
+  ```powershell
+  $env:PYTHONIOENCODING = "utf-8"
+  $env:PATH = "$(Resolve-Path '..\.venv\Library\bin');$env:PATH"
+  $env:DEVSIM_MATH_LIBS = "mkl_rt.3.dll"
+  $env:OMP_NUM_THREADS = "1"
+  $env:MKL_NUM_THREADS = "1"
+  ..\.venv\Scripts\python.exe tests\integration\<test_file>.py   # one test
+  ..\.venv\Scripts\python.exe tests\run_regression.py             # full regression
+  ```
 - Install, GUI launch (`tcad_2d_stagewise.py`), single-test-file
   invocation, and the CLI pipeline entry point are documented in
   `README.md` rather than duplicated here.
@@ -94,6 +106,159 @@ has no memory between sessions and this came up once already.
   dispatch succeeded. It produced no verdict, so discard the attempt
   (it doesn't count against a fix-loop round or a "one review" budget)
   and simply redispatch the identical prompt once the limit clears.
+
+## Project-wide Serena MCP policy (safe use, every coding session)
+
+This is a permanent, repository-wide rule for every current and future
+Claude Code session and every batch in this project. It is not limited
+to the task that introduced it.
+
+For every task that investigates or changes code, use Serena MCP
+**before editing** to:
+
+1. verify that this TCAD project is the active project;
+2. inspect the target file's symbol structure and find the exact target
+   symbol;
+3. find production and test callers/references of that symbol;
+4. check for duplicate implementations, indirect callers, and bypass
+   entry points; and
+5. list the expected impact by file and symbol before modifying code.
+
+Merely saying "Serena was used" is not evidence. Report the symbols,
+callers, references, and affected files that were actually found.
+
+Serena-first is required for production-code investigation, root-cause
+analysis, API/data-model changes, caller migration, state-field changes,
+test-to-production-path tracing, and removal/deprecation audits. Do not
+use Serena artificially for a task that only runs an already-fixed test
+command, aggregates a regression report, checks Git state, or edits
+unrelated prose. If such a task begins making a new judgment about code
+meaning or call relationships, return to Serena investigation first.
+
+### Serena is navigation assistance, not proof
+
+Serena does not replace any of the following:
+
+- reading the current working-tree files;
+- preserving and reviewing the current dirty Git diff;
+- real ViennaPS and DevSim execution;
+- inspecting real mesh, material geometry, process state, and
+  WaferState transitions;
+- checking conservation laws, constitutive equations, and literature;
+- validating fail-closed / `UNSUPPORTED_BY_MODEL` behavior;
+- checking test assertions and process return codes; or
+- running `git diff --check`.
+
+Never conclude that a change is physically correct, complete, or free
+of regressions from Serena output alone. The source-of-truth order is:
+
+1. current working-tree code;
+2. real backend execution and raw physical evidence;
+3. current test results;
+4. current Git diff;
+5. Serena's live symbol/reference results; and
+6. Serena memory or historical documents.
+
+Serena indexes and memories can be stale. When they disagree with the
+current files, trust the current files, verify with direct search, and
+report the index mismatch.
+
+### Safe editing and fallback
+
+Prefer Serena symbol-level editing only when it is narrower and safer
+than a direct patch. For a large function where replacing the whole
+symbol could overwrite unrelated user changes, use Serena to locate the
+symbol and all references, then apply the smallest direct patch. Never
+overwrite or revert unrelated changes in this dirty working tree.
+
+### Change transparency: Git diff is the review evidence
+
+Serena is primarily for navigation, symbol discovery, and caller-impact
+analysis. It must not turn an implementation into a review black box.
+Regardless of which editor performed the change, Git's unified diff is
+the authoritative evidence of what changed.
+
+Before editing, record the allowed files' existing diff. Before the
+final report, run `git diff -- <each changed file>` and separate this
+batch's changes from pre-existing dirty changes. For every changed hunk,
+the final chat report must show:
+
+- file path, enclosing function/class/symbol, and final line number;
+- a concise before -> after semantic explanation; and
+- the exact added/removed lines, or a clearly labelled contiguous diff
+  excerpt sufficient to review the hunk.
+
+If the complete batch diff is 300 lines or fewer, include the complete
+unified diff in the report. If it is larger, include every hunk header
+and changed-line excerpt in the report, then preserve the unabridged
+unified patch in the batch audit folder with its relative path and
+SHA-256 in the report. Do not replace this evidence with only a Serena
+symbol summary, an editor confirmation, or a prose claim that a change
+was made.
+
+After a Serena symbol-level edit, immediately inspect the corresponding
+Git diff before making another unrelated edit. If the diff is broader
+than the approved scope, stop and report it; do not continue layering
+changes on top of an unreviewed broad edit.
+
+If the same Serena operation fails twice because of connection,
+activation, indexing, missing-symbol, stale-reference, or edit errors,
+stop retrying it. Fall back to `rg` plus direct file reading, and report:
+
+- the failed Serena operation and both failures;
+- why fallback was necessary; and
+- the symbol/reference scope verified by the fallback.
+
+A Serena failure never permits skipping impact analysis.
+
+Treat Serena memory as non-authoritative context. Do not store temporary
+batch progress, unverified hypotheses, single-run measurements, or
+unapproved designs as permanent project memory. Only stable,
+independently verified architecture contracts, execution requirements,
+and backend capability limits may be stored, and they must still be
+rechecked against the current code and real execution.
+
+### Required physics question and reporting
+
+Before analysis and again before choosing an implementation, ask:
+
+> Does this change move the project toward a TCAD system that preserves
+> the real physical state and history for any user-selected process
+> order?
+
+If geometry transforms, material-instance lineage, dopant support,
+chemical-versus-active dopant state, conservation, or backend capability
+cannot be proved, do not invent a number, zero, identity, or unchanged
+state. Keep the affected result explicitly fail-closed.
+
+Every code-related batch report must include a `Serena investigation`
+section listing:
+
+- active project;
+- target symbols;
+- production and test callers;
+- bypass or duplicate paths found;
+- symbols changed and possibly affected but unchanged;
+- agreement or disagreement with direct file inspection;
+- any fallback used; and
+- the separate real backend/test evidence used for the final verdict.
+
+Every code-related batch report must also include a `Change diff`
+section satisfying the change-transparency rules above. A passing test
+or `RC=0` never substitutes for showing the actual patch.
+
+### Project role split
+
+- Codex lead: physical analysis, evidence review, architecture and task
+  order, bounded Claude prompts, and independent verification.
+- Claude Code: Serena-assisted code investigation, implementation,
+  testing, and evidence collection strictly within the approved prompt.
+- User: final authority over scope and priorities.
+
+Claude Code must not independently introduce a new physical model,
+numeric fallback, architecture expansion, or wider scope. If it finds an
+unexpected physical or structural defect, stop expanding the change,
+preserve the evidence, and wait for Codex/user review.
 
 ## THE INVARIANT (read before changing anything in the GUI or process layer)
 
@@ -177,6 +342,23 @@ prose. Describe what a step does to the wafer it is given instead.
   3.8e7x". Prefer deriving refinement scale from the doping profile
   programmatically (`derive_implant_windows_refinement()` in
   `tcad/device/devsim/mesh_import.py`) over a caller hand-picking one.
+- **Positive-time oxidation is currently unsupported** (a backend
+  capability that is not yet proven -- the contract until it is proven,
+  not a permanent claim). A `time_hours > 0` ThermalOxidation or LOCOS
+  request is blocked before any solver call with
+  `state_transition.kind == "unsupported"` and
+  `physics_status.resolution == "UNSUPPORTED_BY_MODEL"`; reason code
+  `OXIDATION_CAPABILITY_PROOF_MISSING` (thermal) or
+  `LOCOS_CAPABILITY_PROOF_MISSING` (LOCOS). No oxide thickness, Si
+  consumption, bird's-beak or mask-retention number exists. Tests must
+  assert this fail-closed contract with the solver paths trapped (0
+  calls) and must never expect SiO2 growth. A test that needs an
+  oxide-bearing input must not create it by positive-time oxidation: use
+  an explicit input fixture (`DIRECT_EXPLICIT_GEOMETRY`) --
+  `tests/integration/_explicit_oxide_fixture.py`,
+  `tests/integration/_explicit_chain_fixture.py`,
+  `tests/integration/_explicit_etch_fixture.py`. Current evidence:
+  `docs/audits/2026-09-21-batch6-positive-oxidation-contract/`.
 
 Order in which these were BUILT AND VERIFIED by this project. This is
 development sequencing only — it is not a process flow, and nothing in
@@ -364,13 +546,20 @@ GUI silently ran plain thermal oxidation. 8 test files were migrated
 call-site-by-call-site (never a blanket rename) to
 `registry.get("oxidation", "locos")` wherever they genuinely invoke
 LOCOS (pass `mask_material`); 7 other files, individually checked, stay
-on `"thermal"` correctly. Physical validation (real ViennaPS mesh
-coordinates, not visual impression, on the recipe already used by this
-project's own bird's-beak scaling study): vertical growth VERIFIED
-(plateau 0.10662um vs. pad-only 0.10000um), mask protection VERIFIED,
-and genuine bird's-beak taper VERIFIED (edge y=0.10348um, strictly
-between pad-only and plateau — taper length 0.250um), pinned by the new
-`tests/integration/test_locos_birds_beak_real.py`.
+on `"thermal"` correctly. HISTORICAL physical validation, measured before
+the 2026-09-18 capability gate (real ViennaPS mesh coordinates, not
+visual impression, on the recipe already used by this project's own
+bird's-beak scaling study): vertical growth was VERIFIED (plateau
+0.10662um vs. pad-only 0.10000um), mask protection was VERIFIED, and a
+genuine bird's-beak taper was VERIFIED (edge y=0.10348um, strictly
+between pad-only and plateau — taper length 0.250um), then pinned by
+`tests/integration/test_locos_birds_beak_real.py` at that time.
+**These numbers are historical investigation results, not a current
+regression contract.** Since the 2026-09-18 capability gate the backend
+blocks positive-time LOCOS as `UNSUPPORTED_BY_MODEL` /
+`LOCOS_CAPABILITY_PROOF_MISSING`; that test now asserts only this
+fail-closed contract, and no current test recomputes or verifies these
+values (see `docs/audits/2026-09-21-batch6-positive-oxidation-contract/`).
 
 `vps.Oxidation().saveVolumeMesh(domain, baseName)` (the native
 ViennaPS exporter) was rigorously A/B tested against this project's
@@ -402,7 +591,10 @@ pre-treatment does not cover this topology). Full repro recipes,
 tracebacks, and next-experiment notes: search `docs/investigation_log.md`
 for "TWO REAL FAILURES FOUND, NOT FIXED".
 
-Full regression after all fixes: **91 passed, 3 failed, 0 skipped** —
+**[HISTORICAL 2026-09-08 measurement — NOT a current baseline; do not
+quote it. Re-run the suite in the current working tree before citing any
+regression number.]** Full regression after all fixes: **91 passed, 3
+failed, 0 skipped** —
 same 3 pre-existing DevSim-convergence/solver-noise failures as every
 prior run (see "Resolved investigations" below), zero new failures
 after one genuine regression was found and fixed (see the "4th slot"
@@ -496,7 +688,10 @@ the canvas instead of leaving the gray hatch unexplained.
 
 ### Resolved investigations (summary — full detail in `docs/investigation_log.md`)
 
-Current regression: `tests/run_regression.py` → **91 passed, 3 failed,
+**[HISTORICAL 2026-09-08 measurement — STALE, NOT a current baseline; do
+not quote it. Re-run the suite in the current working tree before citing
+any regression number.]** Regression at that time:
+`tests/run_regression.py` → **91 passed, 3 failed,
 0 skipped**, measured on Windows with real ViennaPS 4.6.2 + DevSim
 (2026-09-08, post LOCOS-as-Advanced-process split — see Completed,
 "LOCOS split out of ThermalOxidation"). The +2 tests vs. the prior
@@ -1703,43 +1898,17 @@ live-verified through real ViennaPS):**
    openings (1.0–2.5 and 7.0–8.5) produced a real ViennaPS mesh with
    exactly TWO mask windows, at the drawn positions.
 
-## Current Task
+## Current Work
 
-Do not try to solve everything at once. One item at a time; regression
-before moving to the next. Root-caused already — see OPEN issue 3 and
-the cited `docs/investigation_log.md` entries for the full evidence
-before touching any code.
+Do not store temporary batch status or the current implementation task in
+this permanent project file.
 
-**PR Strip is no longer on this list — RESOLVED, 2026-09-08** (real
-mesh geometry removal confirmed via re-verification; see Completed and
-OPEN issue 3's own correction above).
-
-1. **Doping ↔ WaferState — substantially DONE.** Independent
-   donor+acceptor input for all 4 doping kinds, `WaferState.
-   dopant_profiles` as the one real cross-step canonical state (not just
-   present but fully WIRED — GUI, device-layer DevSim writes, and the
-   color overlay all read from it now), and the P/N overlay's own
-   correctness are DONE (see Completed, "litho/doping/renderer plan",
-   "Stage A", and "Dopant-state-unification"). The overlay is still
-   invisible BY DEFAULT (`viewer_layer_var` defaults to `"geometry"`) —
-   that specific default-visibility question was never in scope for any
-   of those plans and remains open. Still open, confirmed unrelated to
-   the above: wiring doping state into `resolve()` so ETCH-RATE physics
-   can condition on doping level (a different physics question — current
-   etch models don't model dopant-dependent etch rate at all), and the
-   "No DevSim solve was run" popup firing mid-MEASURE — see
-   `docs/investigation_log.md`, "Doping: five confirmed gaps".
-
-2. **Deposition renderer + mask policy.** Fix the renderer's `y_scale`
-   so unchanged lower layers stop looking eroded as the top grows, and
-   make the masked-vs-blanket choice explicit and consistent across all
-   7 deposition models (including Metallization, whose own "lift-off"
-   claim the current unconditional mask exclusion contradicts) — see
-   `docs/investigation_log.md`, "Deposition: renderer y-scale artifact".
-
-For each investigation report:
-1. What was tested
-2. Result
-3. What it proves
-4. What remains uncertain
-5. Next smallest experiment
+- Follow the user's latest request and the current Codex bounded prompt.
+- Current batch evidence and reports live under `docs/audits/`.
+- Long-term investigation history lives in
+  `docs/investigation_log.md`.
+- Completed SDD history lives in `docs/sdd_completions_log.md`.
+- Do not infer current priorities from the historical `Completed`,
+  `Resolved investigations`, or `OPEN` sections above.
+- Work one bounded subsystem at a time and wait for Codex/user review
+  before expanding scope.

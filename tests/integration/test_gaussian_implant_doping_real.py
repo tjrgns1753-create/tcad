@@ -59,7 +59,7 @@ def main():
         doped_result = apply_gaussian_implant_doping(
             process_result, region="Si", junction_axis="x",
             peak_position_um=PEAK_POSITION_UM, straggle_um=STRAGGLE_UM,
-            peak_conc_cm3=PEAK_CONC_CM3,
+            peak_conc_cm3=PEAK_CONC_CM3, chemical_state="ACTIVE",
         )
         assert doped_result.doping is not None
         assert doped_result.doping.kind == "gaussian_implant"

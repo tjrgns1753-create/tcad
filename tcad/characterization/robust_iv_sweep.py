@@ -26,6 +26,19 @@ this project's own failing device (the GUI's default 10x8um wafer with
    mechanism DevSim's own bias ramping uses, applied to a doping-level
    parameter instead of a contact voltage.
 
+   Tier 1-1: the ramp is driven by the CANONICAL WaferStateV2 per-node
+   NetDoping N (read through the central gate,
+   doping_mapping.canonical_node_doping), never by the latest
+   DopingProfile. Each step writes B + s*(N - B), B being the canonical
+   value of smallest magnitude. For an implant_windows state B is its
+   background, so every step equals the previous window-scaled ramp;
+   the final step writes N itself, so DevSim solves exactly the
+   canonical doping (every accumulated attachment, not just the latest
+   call). Verified before this change that DevSim picks up NetDoping
+   values re-set between solves: a uniform 1e16 -> 1e18 -> 1e19
+   sequence moved the solved potential by V_t*ln(100) and V_t*ln(10)
+   to six decimals.
+
 2. DevSim's OWN official drift-diffusion tolerances
    (absolute_error=1e30, relative_error=1e-5, from its gmsh_mos2d.py
    example) for the transport-enable solve, instead of
@@ -71,13 +84,12 @@ from typing import Dict, List, Optional
 
 from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
 from tcad.device.devsim import backend
-from tcad.device.devsim.doping_mapping import apply_doping_symbolic
+from tcad.device.devsim.doping_mapping import canonical_node_doping
 from tcad.device.devsim.semiconductor_equation import (
     read_drift_diffusion_terminal_currents,
     setup_drift_diffusion_equation,
     setup_semiconductor_potential_equation,
 )
-from tcad.mesh.interface import DopingProfile
 
 #: DevSim's own official gmsh_mos2d.py drift-diffusion tolerances (see
 #: module docstring point 2). Not this project's invention, and already
@@ -90,10 +102,10 @@ _DD_RELATIVE_ERROR = 1.0e-5
 _EQ_ABSOLUTE_ERROR = 1.0
 _EQ_RELATIVE_ERROR = 1.0e-6
 
-#: Window-concentration multipliers for the equilibrium continuation
-#: (module docstring point 1). Geometric, ending at 1.0 (the real
-#: profile). Verified sufficient on the 10x8um / 1e20 cm^-3 device that
-#: fails without it; the first step is deliberately near the background
+#: Continuation multipliers for the equilibrium solve (module docstring
+#: point 1). Geometric, ending at 1.0 (the canonical profile itself).
+#: Verified sufficient on the 10x8um / 1e20 cm^-3 device that fails
+#: without it; the first step is deliberately near the background
 #: doping's own magnitude, which the solve handles trivially.
 _DOPING_RAMP_SCALES = (1.0e-3, 1.0e-2, 0.1, 0.3, 1.0)
 
@@ -103,36 +115,43 @@ _SOLUTION_NAMES = ("Potential", "Electrons", "Holes")
 def ramp_doping_to_equilibrium(
     device: str,
     region: str,
-    doping: DopingProfile,
+    state,
     length_scale_to_cm: float = 1.0,
     scales: Optional[List[float]] = None,
     contacts: Optional[List[str]] = None,
     temperature_k: float = 300.0,
 ) -> None:
     """Register the equilibrium (Poisson-only) equations and reach the
-    full doping profile by CONTINUATION rather than in one step.
+    canonical WaferStateV2 doping by CONTINUATION rather than in one step.
 
-    Only meaningful for `implant_windows` (the only kind `apply_doping`
-    can scale); any other kind is applied once at full strength, which
-    is exactly what the non-continuation path already does.
+    The central canonical-state gate runs FIRST: if `state` is None or
+    any node of `region` is unsupported, `UnsupportedDopingState` is
+    raised before NetDoping is registered or any solve runs. A state
+    whose NetDoping is identical at every node needs no ramp and is
+    written once.
     """
+    _, _, net = canonical_node_doping(device, region, state, length_scale_to_cm)
     module = backend.require_devsim()
+    reference = min(net, key=abs)
     ramp = list(scales) if scales is not None else list(_DOPING_RAMP_SCALES)
-    if doping.kind != "implant_windows":
+    if all(value == reference for value in net):
         ramp = [1.0]
+    if not ramp or ramp[-1] != 1.0:
+        ramp.append(1.0)
+
+    def write(scale: float) -> None:
+        values = net if scale == 1.0 else [reference + scale * (v - reference) for v in net]
+        module.set_node_values(device=device, region=region, name="NetDoping", values=values)
 
     # NetDoping must exist before the potential equation is registered:
     # DevSim's CreateSiliconPotentialOnly references it at setup time.
-    # Uses the OLD kind-based symbolic-equation writer, not the new
-    # per-node apply_doping() -- window_scale (a solve-strategy doping-
-    # level continuation multiplier) has no WaferState equivalent; see
-    # doping_mapping.py's own module docstring.
-    apply_doping_symbolic(device, doping, length_scale_to_cm, window_scale=ramp[0])
+    module.node_model(device=device, region=region, name="NetDoping", equation="0")
+    write(ramp[0])
     setup_semiconductor_potential_equation(
         device, region, contacts or [], temperature_k
     )
     for scale in ramp:
-        apply_doping_symbolic(device, doping, length_scale_to_cm, window_scale=scale)
+        write(scale)
         module.solve(
             type="dc",
             absolute_error=_EQ_ABSOLUTE_ERROR,
@@ -213,7 +232,7 @@ def run_robust_pn_junction_iv_sweep(
     all_contacts: List[str],
     sweep_contact: str,
     sweep_voltages: List[float],
-    doping: DopingProfile,
+    state,
     length_scale_to_cm: float = 1.0,
     fixed_contacts: Optional[Dict[str, float]] = None,
     temperature_k: float = 300.0,
@@ -222,10 +241,13 @@ def run_robust_pn_junction_iv_sweep(
     own official tolerances, then a state-restoring bias ramp to each
     requested voltage.
 
-    `doping` is required (unlike `run_pn_junction_iv_sweep`, which only
-    needs NetDoping already registered) because the continuation has to
-    re-register NetDoping at each ramp step. Do NOT call `apply_doping`
-    yourself first — this function owns that.
+    `state` is the canonical WaferStateV2 (unlike
+    `run_pn_junction_iv_sweep`, which only needs NetDoping already
+    registered) because the continuation writes NetDoping at each ramp
+    step. Its first action is the central canonical-state gate: an
+    unsupported state raises `UnsupportedDopingState` with nothing
+    written and nothing solved. Do NOT call `apply_doping` yourself
+    first — this function owns that.
 
     Voltages are visited in the order given; each is reached by ramping
     from wherever the previous one left off, so a caller sweeping
@@ -241,7 +263,7 @@ def run_robust_pn_junction_iv_sweep(
     fixed_contacts = fixed_contacts or {}
 
     ramp_doping_to_equilibrium(
-        device, region, doping, length_scale_to_cm,
+        device, region, state, length_scale_to_cm,
         contacts=all_contacts, temperature_k=temperature_k,
     )
 

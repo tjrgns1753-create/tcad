@@ -247,11 +247,11 @@ def main():
 
         n_result = apply_gaussian_implant_doping(
             base, region="Si", junction_axis="x", peak_position_um=X_CONVERTED,
-            straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P",
+            straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P", chemical_state="ACTIVE",
         )
         p_result = apply_gaussian_implant_doping(
             base, region="Si", junction_axis="x", peak_position_um=X_PROTECTED,
-            straggle_um=0.3, acceptor_peak_conc_cm3=1e18, acceptor_species="B",
+            straggle_um=0.3, acceptor_peak_conc_cm3=1e18, acceptor_species="B", chemical_state="ACTIVE",
         )
         state1 = advance_wafer_state(None, n_result, "doping")
         state1 = advance_wafer_state(state1, p_result, "doping")

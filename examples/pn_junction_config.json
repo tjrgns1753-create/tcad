@@ -16,6 +16,7 @@
   },
   "doping": {
     "kind": "step_junction",
+    "chemical_state": "ACTIVE",
     "region": "Si",
     "junction_axis": "x",
     "junction_position_um": 0.0,

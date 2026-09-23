@@ -271,7 +271,7 @@ def test_pristine_wafer_can_be_materialized():
     process_result = build_process_result(
         {"final_mesh": result["final_mesh"], "snapshots": []}
     )
-    doped = apply_uniform_doping(process_result, {"Si": -1e15})
+    doped = apply_uniform_doping(process_result, {"Si": -1e15}, chemical_state="UNKNOWN")
     assert doped.doping.regions[0].region == "Si"
     assert doped.doping.regions[0].net_doping_cm3 == -1e15
 

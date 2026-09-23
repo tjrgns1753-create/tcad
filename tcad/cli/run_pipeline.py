@@ -50,6 +50,49 @@ def _build_process_result(step_result: Dict[str, Any]):
     return build_process_result(step_result)
 
 
+#: The explicit semantics declaration a Gaussian / Implant Windows config
+#: needs before its dopant may be ELECTRICALLY ACTIVE: the recipe numbers are
+#: the user's own direct analytic device profile, NOT a simulated implant
+#: (this project has no implantation dose/energy or anneal-activation model).
+DIRECT_ANALYTIC_ACTIVE = "DIRECT_ANALYTIC_ACTIVE"
+_PROCESS_LIKE_KINDS = ("gaussian_implant", "implant_windows")
+
+
+def _declared_activation(cfg: Dict[str, Any], kind: str) -> str:
+    """The doping config's activation state, declared -- never guessed.
+
+    * `chemical_state` MUST be present (ValueError otherwise): the CLI does
+      not pick ACTIVE, CHEMICAL or UNKNOWN for the user.
+    * uniform / step_junction: ACTIVE is a declared analytic active profile.
+    * gaussian_implant / implant_windows are process-like implant inputs:
+      CHEMICAL / UNKNOWN are accepted (the DevSim gate then blocks them),
+      but ACTIVE needs `profile_semantics == "DIRECT_ANALYTIC_ACTIVE"` as well
+      -- a bare `chemical_state: "ACTIVE"` cannot bypass the missing
+      implant-activation model.
+    * `profile_semantics` is only meaningful together with ACTIVE.
+    """
+    from tcad.physics.wafer_state_v2 import validate_chemical_state
+
+    if "chemical_state" not in cfg:
+        raise ValueError(
+            f"doping kind {kind!r}: the config must declare \"chemical_state\" "
+            f"(ACTIVE | CHEMICAL | UNKNOWN); the CLI never guesses an activation state")
+    state = validate_chemical_state(cfg["chemical_state"])
+    semantics = cfg.get("profile_semantics")
+    if semantics is not None and (semantics != DIRECT_ANALYTIC_ACTIVE or state != "ACTIVE"):
+        raise ValueError(
+            f"doping kind {kind!r}: profile_semantics {semantics!r} is only valid as "
+            f"{DIRECT_ANALYTIC_ACTIVE!r} together with chemical_state \"ACTIVE\" "
+            f"(got chemical_state {state!r})")
+    if kind in _PROCESS_LIKE_KINDS and state == "ACTIVE" and semantics != DIRECT_ANALYTIC_ACTIVE:
+        raise ValueError(
+            f"doping kind {kind!r} is a process-like implant and this project has no "
+            f"implant-activation model: chemical_state \"ACTIVE\" is refused unless the "
+            f"config also declares profile_semantics \"{DIRECT_ANALYTIC_ACTIVE}\" "
+            f"(a direct analytic device profile, not a simulated implant)")
+    return state
+
+
 def _apply_doping(process_result, cfg: Dict[str, Any] | None):
     if not cfg:
         return process_result
@@ -62,8 +105,17 @@ def _apply_doping(process_result, cfg: Dict[str, Any] | None):
     )
 
     kind = cfg["kind"]
+    if kind not in ("uniform", "step_junction", "gaussian_implant", "implant_windows"):
+        raise ValueError(f"Unknown doping kind: {kind!r}")
+    chemical_state = _declared_activation(cfg, kind)
+    if chemical_state == "ACTIVE":
+        print(f"doping kind {kind!r}: DECLARED ANALYTIC ACTIVE PROFILE "
+              f"(the recipe's own electrically active profile, not a simulated implant)",
+              file=sys.stderr)
     if kind == "uniform":
-        return apply_uniform_doping(process_result, cfg["doping_by_region_cm3"])
+        return apply_uniform_doping(
+            process_result, cfg["doping_by_region_cm3"],
+            chemical_state=chemical_state)
     if kind == "step_junction":
         return apply_step_junction_doping(
             process_result,
@@ -72,6 +124,7 @@ def _apply_doping(process_result, cfg: Dict[str, Any] | None):
             junction_position_um=cfg["junction_position_um"],
             donor_conc_cm3=cfg["donor_conc_cm3"],
             acceptor_conc_cm3=cfg["acceptor_conc_cm3"],
+            chemical_state=chemical_state,
         )
     if kind == "gaussian_implant":
         return apply_gaussian_implant_doping(
@@ -81,6 +134,7 @@ def _apply_doping(process_result, cfg: Dict[str, Any] | None):
             peak_position_um=cfg["peak_position_um"],
             straggle_um=cfg["straggle_um"],
             peak_conc_cm3=cfg["peak_conc_cm3"],
+            chemical_state=chemical_state,
         )
     if kind == "implant_windows":
         return apply_implant_windows_doping(
@@ -89,6 +143,7 @@ def _apply_doping(process_result, cfg: Dict[str, Any] | None):
             axis=cfg["axis"],
             background_doping_cm3=cfg["background_doping_cm3"],
             windows=cfg["windows"],
+            chemical_state=chemical_state,
         )
     raise ValueError(f"Unknown doping kind: {kind!r}")
 
@@ -189,15 +244,75 @@ def _import_device(process_result, cfg: Dict[str, Any]):
     )
 
 
-def _apply_device_doping(imported, process_result, cfg: Dict[str, Any] | None):
-    if not cfg or process_result.doping is None:
-        return
-    from tcad.device.devsim.doping_mapping import apply_doping
+def _initial_state_for_process(process_cfg: Dict[str, Any] | None):
+    """WaferState v2 P1: build a MODELLED initial `WaferStateV2` from
+    the process step's OWN recipe when it carries explicit
+    virgin-substrate bounds (`x_extent_um` + `silicon_depth_um` -- the
+    same authoritative input `tcad.process.base.prepare_domain` uses to
+    build the real domain). Returns None when the recipe lacks them
+    (Group B -- `_apply_device_doping` then falls back to the unchanged
+    legacy-migration path, exactly as before)."""
+    recipe = (process_cfg or {}).get("recipe") or {}
+    if "x_extent_um" not in recipe or "silicon_depth_um" not in recipe:
+        return None
+    from tcad.physics.wafer_state_accumulation import initial_wafer_state_from_recipe
+
+    try:
+        return initial_wafer_state_from_recipe(recipe)
+    except (KeyError, ValueError):
+        return None
+
+
+def _netdoping_region(characterization_cfg: Dict[str, Any]) -> str | None:
+    """The region a NetDoping-consuming characterization solves on, or
+    None for one whose equations never read NetDoping ("iv" is this
+    project's Ohmic resistor model: a constant conductivity)."""
+    kind = characterization_cfg["type"]
+    if kind == "pn_junction_iv":
+        return characterization_cfg["region"]
+    if kind == "mos_cv":
+        return characterization_cfg["si_region"]
+    return None
+
+
+def _apply_device_doping(
+    imported, process_result, cfg: Dict[str, Any] | None,
+    process_cfg: Dict[str, Any] | None = None,
+    netdoping_region: str | None = None,
+):
+    """Write the canonical doping through the central canonical-state
+    gate (Tier 1-1). `netdoping_region` names the region a
+    NetDoping-consuming characterization will solve on: with no doping
+    configured there is no canonical doping state, so the gate raises
+    `UnsupportedDopingState` before that characterization can reach
+    DevSim, instead of skipping doping silently."""
+    from tcad.device.devsim.doping_mapping import apply_doping, canonical_node_doping
     from tcad.physics.wafer_state_accumulation import advance_wafer_state
 
-    length_scale_to_cm = _resolve_length_scale_to_cm(cfg, True)
+    if process_result.doping is None:
+        if netdoping_region is not None:
+            canonical_node_doping(imported.device, netdoping_region, None)
+        return
+
+    length_scale_to_cm = _resolve_length_scale_to_cm(cfg or {}, True)
     region = process_result.doping.regions[0].region
-    state = advance_wafer_state(None, process_result, "doping")
+
+    state = _initial_state_for_process(process_cfg)
+    category = (process_cfg or {}).get("category")
+    if state is not None and category:
+        # The real process step (etching/deposition/oxidation) has no
+        # representable v2 GeometryTransform from this CLI yet, so it
+        # still fail-closes here exactly like any other real,
+        # un-represented ViennaPS step -- an explicit initial rectangle
+        # must NEVER be treated as still valid after a real geometry-
+        # changing step this model cannot verify. This still improves
+        # on the old unconditional legacy-from-mesh migration: the
+        # ledger/provenance now starts from the real initial bounds
+        # instead of a mesh-derived stub, even though the end result
+        # for a non-representable step is the same UNSUPPORTED_BY_MODEL.
+        state = advance_wafer_state(state, process_result, category, transform=None)
+
+    state = advance_wafer_state(state, process_result, "doping")
     apply_doping(imported.device, region, state, length_scale_to_cm=length_scale_to_cm)
 
 
@@ -316,7 +431,12 @@ def run_pipeline(config: Dict[str, Any], workdir: Path) -> Dict[str, Any]:
 
     imported = _import_device(process_result, config["device"])
     try:
-        _apply_device_doping(imported, process_result, config.get("doping_device", config.get("device")))
+        _apply_device_doping(
+            imported, process_result,
+            config.get("doping_device", config.get("device")),
+            config.get("process"),
+            netdoping_region=_netdoping_region(config["characterization"]),
+        )
 
         result = _run_characterization(imported, config["characterization"])
         written = _save_outputs(result, config.get("outputs", {}), workdir)

@@ -59,7 +59,7 @@ def main():
         print(f"[2/6] ProcessResult OK -> regions: {region_names}")
         assert "SiO2" in region_names and "Si" in region_names
 
-        doped_result = apply_uniform_doping(process_result, {"Si": SUBSTRATE_DOPING_CM3})
+        doped_result = apply_uniform_doping(process_result, {"Si": SUBSTRATE_DOPING_CM3}, chemical_state="ACTIVE")
         assert doped_result.doping.kind == "uniform"
         assert process_result.doping is None, "original ProcessResult must stay untouched"
         print(f"[3/6] Substrate doping applied (separate from process model): Na={-SUBSTRATE_DOPING_CM3:.1e} cm^-3")

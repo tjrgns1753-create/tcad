@@ -149,6 +149,10 @@ with tempfile.TemporaryDirectory() as tmp:
         process_result, region="Si", junction_axis="x",
         junction_position_um=junction_position_um,
         donor_conc_cm3=DONOR_CM3, acceptor_conc_cm3=ACCEPTOR_CM3,
+        # A directly declared analytic electrically-active PN profile
+        # (donor and acceptor on opposite sides of the junction) -- not a
+        # simulated implant.
+        chemical_state="ACTIVE",
     )
     print(f"[3] DOPING OK -> step junction at x={junction_position_um:.3f} um, "
           f"donor={DONOR_CM3:.1e} cm^-3, acceptor={ACCEPTOR_CM3:.1e} cm^-3")

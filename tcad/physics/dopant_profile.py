@@ -35,16 +35,15 @@ ThermalEvents this profile has lived through; any derived scalar like
 a cumulative D(T)*t thermal budget is computed FROM this by whichever
 model needs it, never stored directly).
 
-`_gaussian_implant_profiles()` deliberately does not handle
-donor+acceptor split or the (Stage B) `gaussian_terms` multi-implant
-list any more -- both concepts are discarded/absorbed into the new
-WaferState-level, cross-step `dopant_profiles` accumulation (see the
-design doc's own component-classification table, section 11:
-"DopingRegion.gaussian_terms | Discard, concept absorbed"). This is a
-deliberate, reviewed scope narrowing for this migration, not an
-oversight -- `_uniform_profiles`/`_step_junction_profiles`/
-`_implant_windows_profiles` keep their existing donor/acceptor-split
-branching unchanged.
+`_gaussian_implant_profiles()` does not handle the (Stage B)
+`gaussian_terms` multi-implant list any more -- that concept is
+absorbed into the new WaferState-level, cross-step `dopant_profiles`
+accumulation (see the design doc's own component-classification table,
+section 11: "DopingRegion.gaussian_terms | Discard, concept absorbed").
+Explicit `donor_peak_conc_cm3` / `acceptor_peak_conc_cm3` are handled
+again (Batch 7C): they stay two separate profiles, exactly like the
+donor/acceptor split of `_uniform_profiles`/`_step_junction_profiles`/
+`_implant_windows_profiles` -- a net is only ever derived.
 
 Three things this module deliberately does NOT model, all belonging to
 the DEVICE layer rather than the declared process-layer profile:
@@ -60,11 +59,12 @@ profile's specification).
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from tcad.mesh.interface import DopingProfile, DopingRegion
 from tcad.physics.values import Source
+from tcad.physics.wafer_state_v2 import validate_chemical_state
 
 
 @dataclass(frozen=True)
@@ -109,6 +109,12 @@ class DopantProfile:
         registry appends to it yet (that is apply_thermal_anneal()'s
         job, a later task of this same plan).
     source : provenance, when known. None for every existing caller.
+    chemical_state : "ACTIVE" | "CHEMICAL" | "UNKNOWN" -- whether this
+        dopant may be used in an electrical donor/acceptor query. It is
+        carried, never inferred: it comes from the originating
+        DopingRegion's own declaration (None there -> "UNKNOWN", the honest
+        answer for an undeclared profile), and nothing derives it from
+        `model`. Any other string is a ValueError.
     """
 
     species: Optional[str]
@@ -119,6 +125,10 @@ class DopantProfile:
     model_params: Dict[str, Any] = field(default_factory=dict)
     thermal_history: Tuple[ThermalEvent, ...] = ()
     source: Optional[Source] = None
+    chemical_state: str = "UNKNOWN"
+
+    def __post_init__(self) -> None:
+        validate_chemical_state(self.chemical_state)
 
 
 def _step(z: float) -> float:
@@ -172,7 +182,8 @@ def dopant_profiles_from_doping_profile(
 
     profiles: List[DopantProfile] = []
     for region in doping.regions:
-        profiles.extend(helper(region))
+        state = "UNKNOWN" if region.chemical_state is None else region.chemical_state
+        profiles.extend(replace(p, chemical_state=state) for p in helper(region))
     return tuple(profiles)
 
 
@@ -227,33 +238,48 @@ def _step_junction_profiles(region: DopingRegion) -> List[DopantProfile]:
     return out
 
 
+def _gaussian_profile(region: DopingRegion, polarity: str, magnitude: float,
+                      species: Optional[str]) -> DopantProfile:
+    position, straggle = region.peak_position_um, region.straggle_um
+    return DopantProfile(
+        species=species, polarity=polarity,
+        concentration_at=lambda x, d, m=magnitude, p=position, s=straggle: (
+            m * _gaussian_shape(x, p, s)
+        ),
+        host_material=region.region, model="gaussian_v1",
+        model_params={
+            "peak_conc_cm3": magnitude,
+            "peak_position_um": position,
+            "straggle_um": straggle,
+        },
+    )
+
+
 def _gaussian_implant_profiles(region: DopingRegion) -> List[DopantProfile]:
     if region.junction_axis not in (None, "x"):
         raise NotImplementedError(
             f"dopant_profiles_from_doping_profile evaluates along x only; "
             f"got junction_axis={region.junction_axis!r}"
         )
-    peak, position, straggle = (
-        region.peak_conc_cm3, region.peak_position_um, region.straggle_um,
-    )
+    if region.donor_peak_conc_cm3 is not None or region.acceptor_peak_conc_cm3 is not None:
+        # Explicit donor/acceptor peaks are two separate canonical
+        # quantities: never collapsed into one net (equal peaks stay TWO
+        # profiles), and never overridden by the derived net peak.
+        out: List[DopantProfile] = []
+        donor = region.donor_peak_conc_cm3 or 0.0
+        acceptor = region.acceptor_peak_conc_cm3 or 0.0
+        if donor:
+            out.append(_gaussian_profile(region, "donor", donor, region.donor_species))
+        if acceptor:
+            out.append(_gaussian_profile(region, "acceptor", acceptor, region.acceptor_species))
+        return out
+    peak = region.peak_conc_cm3
     if peak is None:
         return []
     polarity = "donor" if peak >= 0 else "acceptor"
-    magnitude = abs(peak)
-    params = {
-        "peak_conc_cm3": magnitude,
-        "peak_position_um": position,
-        "straggle_um": straggle,
-    }
-    return [DopantProfile(
-        species=region.donor_species if polarity == "donor" else region.acceptor_species,
-        polarity=polarity,
-        concentration_at=lambda x, d, m=magnitude, p=position, s=straggle: (
-            m * _gaussian_shape(x, p, s)
-        ),
-        host_material=region.region,
-        model="gaussian_v1",
-        model_params=params,
+    return [_gaussian_profile(
+        region, polarity, abs(peak),
+        region.donor_species if polarity == "donor" else region.acceptor_species,
     )]
 
 

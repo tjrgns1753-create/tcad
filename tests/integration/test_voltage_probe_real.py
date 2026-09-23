@@ -49,7 +49,7 @@ def main():
 
         doped = apply_step_junction_doping(
             process_result, region="Si", junction_axis="x", junction_position_um=0.0,
-            donor_conc_cm3=1e16, acceptor_conc_cm3=1e14,
+            donor_conc_cm3=1e16, acceptor_conc_cm3=1e14, chemical_state="ACTIVE",
         )
 
         imported = import_process_result(

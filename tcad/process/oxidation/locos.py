@@ -334,6 +334,52 @@ class LocosOxidation(ProcessStep):
         seal_locos_unwrapped(geometry)
 
     def run(self, recipe: Dict[str, Any], output_dir: str) -> Dict[str, Any]:
+        from tcad.process.oxidation.zero_duration import (
+            duration_hours, fresh_materialization, inherited_identity, unsupported_positive_time,
+        )
+
+        duration = duration_hours(recipe)
+        if duration == 0:
+            # Zero time changes nothing, so it never reaches the oxidation
+            # model below (no Oxidation(), no seed setter, no Process, no
+            # LOCOS pad/mask stack): an inherited domain is returned
+            # untouched, and a fresh step materializes the recipe's virgin Si
+            # wafer only. Everything after the `duration > 0` gate is
+            # unreachable until a positive-time capability certificate exists.
+            if self._inherited_domain is not None:
+                return inherited_identity(self, recipe, output_dir)
+            return fresh_materialization(self, recipe, output_dir)
+        if duration > 0:
+            # Phase 1 (docs/audits/2026-09-18-tier1-2-oxidation-positive-
+            # support/REPORT.md Rev.2, Section 8): NO positive-time LOCOS
+            # path is enabled yet -- fresh/chained/registered/arbitrary --
+            # none has a production capability certificate proving
+            # geometry provenance, surface coverage, oxide thickness and
+            # exporter topology for an arbitrary request. This blocks
+            # BEFORE `_build_locos_geometry()` ever runs, so its own
+            # grid-floored pad-oxide construction
+            # (`max(DEFAULT_PAD_OXIDE_THICKNESS_UM, grid_delta_um)`) is
+            # never reached either. No solver call, no
+            # setInitialOxideThickness() call, no mask/oxide mechanics
+            # setup, below this line.
+            return unsupported_positive_time(
+                self, recipe, output_dir,
+                reason_code="LOCOS_CAPABILITY_PROOF_MISSING",
+                note=(
+                    "Positive-time LOCOS oxidation is not yet supported: no "
+                    "production capability certificate exists to prove "
+                    "geometry provenance, surface coverage, oxide thickness "
+                    "and exporter (wrap) topology for this request -- "
+                    "including the fresh-fixture case Rev.3.1 measured "
+                    "working for one specific 20nm-pad recipe, which is not "
+                    "yet generalized into a checkable certificate. Blocked "
+                    "before any solver call or pad-oxide geometry "
+                    "construction rather than returning a physically wrong "
+                    "or unverified result -- see docs/audits/2026-09-18-"
+                    "tier1-2-oxidation-positive-support/REPORT.md Rev.2, "
+                    "Section 8."
+                ),
+            )
         module = session.require_viennaps()
 
         # LOCOS gets its own from-scratch geometry (pad-oxide-first,
@@ -468,7 +514,8 @@ class LocosOxidation(ProcessStep):
         recorder = SnapshotRecorder(output_dir)
         recorder.capture(geometry, "000_initial")
 
-        module.Process(geometry, model).apply()
+        if duration > 0:
+            module.Process(geometry, model).apply()
 
         recorder.capture(geometry, "001_locos_oxidation")
 

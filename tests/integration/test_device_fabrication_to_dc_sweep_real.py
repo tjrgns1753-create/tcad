@@ -93,7 +93,7 @@ def _build_doped_refined_device(tmp, recipe=RECIPE):
             windows=[
                 {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
                 {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
-            ],
+            ], chemical_state="ACTIVE",
         )
 
     doping = _dope(build_process_result({"final_mesh": filtered, "snapshots": []})).doping

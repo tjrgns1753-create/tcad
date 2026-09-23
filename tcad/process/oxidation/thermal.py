@@ -57,6 +57,9 @@ from tcad.backends.viennaps import session
 from tcad.backends.viennaps.io import DEFAULT_FLOOR_DEPTH_UM, SnapshotRecorder, save_volume_mesh
 from tcad.process.base import ProcessStep
 from tcad.process.registry import register
+from tcad.process.oxidation.zero_duration import (
+    duration_hours, fresh_materialization, inherited_identity, unsupported_positive_time,
+)
 
 
 @register
@@ -66,6 +69,40 @@ class ThermalOxidation(ProcessStep):
     display_name = "Thermal Oxidation"
 
     def run(self, recipe: Dict[str, Any], output_dir: str) -> Dict[str, Any]:
+        duration = duration_hours(recipe)
+        if duration == 0:
+            # Zero time changes nothing, so it never reaches the oxidation
+            # model below (no Oxidation(), no seed setter, no Process, no
+            # LOCOS pad/mask stack): an inherited domain is returned
+            # untouched, and a fresh step materializes the recipe's virgin Si
+            # wafer only. Everything after the `duration > 0` gate is
+            # unreachable until a positive-time capability certificate exists.
+            if self._inherited_domain is not None:
+                return inherited_identity(self, recipe, output_dir)
+            return fresh_materialization(self, recipe, output_dir)
+        if duration > 0:
+            # Phase 1 (docs/audits/2026-09-18-tier1-2-oxidation-positive-
+            # support/REPORT.md Rev.2): bare-Si positive-time oxidation is
+            # UNSUPPORTED_BY_MODEL at every tested grid -- the model's own
+            # initial-oxide seed is created without consuming silicon
+            # (whole-process mass ratio ~2.5x the physical 2.27), not only
+            # when the seed is under-resolved. No solver call, no
+            # setInitialOxideThickness() call, below this line.
+            return unsupported_positive_time(
+                self, recipe, output_dir,
+                reason_code="OXIDATION_CAPABILITY_PROOF_MISSING",
+                note=(
+                    "Bare-Si positive-time thermal oxidation is not yet "
+                    "supported: ViennaPS 4.6.2's own native-oxide seed "
+                    "creates SiO2 without consuming silicon (whole-process "
+                    "mass ratio ~2.5x the physical Si:SiO2 2.27, measured "
+                    "at every tested grid, not just under-resolved ones -- "
+                    "see docs/audits/2026-09-18-tier1-2-oxidation-positive-"
+                    "support/REPORT.md Rev.2, Section 2.1). Blocked before "
+                    "any solver call rather than returning a physically "
+                    "wrong result."
+                ),
+            )
         module = session.require_viennaps()
 
         # Fresh wafer normally; the previous step's domain when this
@@ -99,7 +136,8 @@ class ThermalOxidation(ProcessStep):
         recorder = SnapshotRecorder(output_dir)
         recorder.capture(geometry, "000_initial")
 
-        module.Process(geometry, model).apply()
+        if duration > 0:
+            module.Process(geometry, model).apply()
 
         recorder.capture(geometry, "001_thermal_oxidation")
 

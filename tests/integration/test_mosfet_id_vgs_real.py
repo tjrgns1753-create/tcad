@@ -148,7 +148,7 @@ def main():
                 windows=[
                     {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
                     {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
-                ],
+                ], chemical_state="ACTIVE",
             )
 
         # Refinement is DERIVED from the doping profile, not hand-picked
