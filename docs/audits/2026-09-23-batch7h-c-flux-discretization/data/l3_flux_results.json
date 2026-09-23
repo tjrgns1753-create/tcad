@@ -1,0 +1,212 @@
+{
+ "L3_after_E1": {
+  "I_left_A_per_cm": -0.5153707275894244,
+  "I_rel_err_vs_0.5": 0.030741455178848742,
+  "I_right_A_per_cm": 0.5153707275894244,
+  "KCL_sum": 0.0,
+  "L2_free_V": 0.002590115436318201,
+  "Linf_free_V": 0.014402803371671102,
+  "by_zone": {
+   "band": {
+    "err_max_abs_V": 0.005265240300470597,
+    "n_free": 2367,
+    "residual_L1": 0.01250012125893087,
+    "residual_max_abs": 0.006250000093132216
+   },
+   "outer": {
+    "err_max_abs_V": 0.012527216828597587,
+    "n_free": 176,
+    "residual_L1": 1.5315439888530236e-14,
+    "residual_max_abs": 4.683753385137379e-16
+   },
+   "ring": {
+    "err_max_abs_V": 0.014402803371671102,
+    "n_free": 356,
+    "residual_L1": 3.1062486739842248,
+    "residual_max_abs": 0.06631943727211084
+   }
+  },
+  "fraction_residual_L1_on_obtuse_incident_nodes": 0.9999999999999687,
+  "n_free_nodes_residual_gt_1e-12": 254,
+  "n_negative_signed_edge_couples": null,
+  "n_of_those_obtuse_incident": 254,
+  "residual_L1": 3.1187487952430133,
+  "residual_max_abs": 0.06631943727211084,
+  "sum_NodeVolume_over_area": 1.049739020208413
+ },
+ "L3_after_E1_signed": {
+  "I_left_A_per_cm": -0.5,
+  "I_rel_err_vs_0.5": 7.771561172376096e-16,
+  "I_right_A_per_cm": 0.4999999999999996,
+  "KCL_sum": -3.885780586188048e-16,
+  "L2_free_V": 1.499544760085793e-17,
+  "Linf_free_V": 1.1102230246251565e-16,
+  "by_zone": {
+   "band": {
+    "err_max_abs_V": 5.551115123125783e-17,
+    "n_free": 2367,
+    "residual_L1": 3.497201699303148e-14,
+    "residual_max_abs": 2.7755574529954803e-16
+   },
+   "outer": {
+    "err_max_abs_V": 1.1102230246251565e-16,
+    "n_free": 176,
+    "residual_L1": 7.063794247502077e-15,
+    "residual_max_abs": 2.220446380122775e-16
+   },
+   "ring": {
+    "err_max_abs_V": 0.0,
+    "n_free": 356,
+    "residual_L1": 5.551116518993218e-17,
+    "residual_max_abs": 2.7755579751532377e-17
+   }
+  },
+  "fraction_residual_L1_on_obtuse_incident_nodes": 0.022420048536820503,
+  "n_free_nodes_residual_gt_1e-12": 0,
+  "n_negative_signed_edge_couples": 6,
+  "n_of_those_obtuse_incident": 0,
+  "residual_L1": 4.209132240572328e-14,
+  "residual_max_abs": 2.7755574529954803e-16,
+  "sum_NodeVolume_over_area": 1.049739020208413
+ },
+ "L3_after_E2": {
+  "I_left_A_per_cm": -1.458687300907371e-11,
+  "I_rel_err_vs_0.5": 0.9999999999708262,
+  "I_right_A_per_cm": 1.458687300907376e-11,
+  "KCL_sum": 5.169878828456423e-26,
+  "L2_free_V": 0.26250065235607445,
+  "Linf_free_V": 0.43418855077624907,
+  "by_zone": {
+   "band": {
+    "err_max_abs_V": 0.41255370620997633,
+    "n_free": 2367,
+    "residual_L1": 3.247077568110822e-13,
+    "residual_max_abs": 4.028320492579889e-14
+   },
+   "outer": {
+    "err_max_abs_V": 0.36979868062806054,
+    "n_free": 176,
+    "residual_L1": 2.0875110344959063e-10,
+    "residual_max_abs": 1.1875003417953948e-11
+   },
+   "ring": {
+    "err_max_abs_V": 0.43418855077624907,
+    "n_free": 356,
+    "residual_L1": 1.7261963748527878e-10,
+    "residual_max_abs": 4.468000921786081e-12
+   }
+  },
+  "fraction_residual_L1_on_obtuse_incident_nodes": 0.4497115196941284,
+  "n_free_nodes_residual_gt_1e-12": 82,
+  "n_negative_signed_edge_couples": null,
+  "n_of_those_obtuse_incident": 62,
+  "residual_L1": 3.8169544869168336e-10,
+  "residual_max_abs": 1.1875003417953948e-11,
+  "sum_NodeVolume_over_area": 1.049739020208413
+ },
+ "L3_before_E1": {
+  "I_left_A_per_cm": -0.5338157322296905,
+  "I_rel_err_vs_0.5": 0.06763146445938095,
+  "I_right_A_per_cm": 0.5338157322296905,
+  "KCL_sum": 0.0,
+  "L2_free_V": 0.017400198354858912,
+  "Linf_free_V": 0.05574587240246831,
+  "by_zone": {
+   "band": {
+    "err_max_abs_V": 0.036899645718845464,
+    "n_free": 2367,
+    "residual_L1": 0.15937505866457727,
+    "residual_max_abs": 0.023437496914993944
+   },
+   "outer": {
+    "err_max_abs_V": 0.05574587240246831,
+    "n_free": 176,
+    "residual_L1": 0.44999999366701887,
+    "residual_max_abs": 0.025000005960464478
+   },
+   "ring": {
+    "err_max_abs_V": 0.050721834472508,
+    "n_free": 356,
+    "residual_L1": 6.359374839756495,
+    "residual_max_abs": 0.08750003576278696
+   }
+  },
+  "fraction_residual_L1_on_obtuse_incident_nodes": 0.999999999999998,
+  "n_free_nodes_residual_gt_1e-12": 355,
+  "n_negative_signed_edge_couples": null,
+  "n_of_those_obtuse_incident": 355,
+  "residual_L1": 6.968749892087862,
+  "residual_max_abs": 0.08750003576278696,
+  "sum_NodeVolume_over_area": 1.1855566506919268
+ },
+ "L3_before_E1_signed": {
+  "I_left_A_per_cm": -0.5,
+  "I_rel_err_vs_0.5": 7.771561172376096e-16,
+  "I_right_A_per_cm": 0.4999999999999996,
+  "KCL_sum": -3.885780586188048e-16,
+  "L2_free_V": 1.5167245070872526e-17,
+  "Linf_free_V": 1.1102230246251565e-16,
+  "by_zone": {
+   "band": {
+    "err_max_abs_V": 5.551115123125783e-17,
+    "n_free": 2367,
+    "residual_L1": 3.542304503707335e-14,
+    "residual_max_abs": 3.8857803690531667e-16
+   },
+   "outer": {
+    "err_max_abs_V": 1.1102230246251565e-16,
+    "n_free": 176,
+    "residual_L1": 7.92421694579604e-15,
+    "residual_max_abs": 2.220446380122775e-16
+   },
+   "ring": {
+    "err_max_abs_V": 0.0,
+    "n_free": 356,
+    "residual_L1": 2.1510570817769067e-16,
+    "residual_max_abs": 9.714451155277425e-17
+   }
+  },
+  "fraction_residual_L1_on_obtuse_incident_nodes": 0.0465116321214112,
+  "n_free_nodes_residual_gt_1e-12": 0,
+  "n_negative_signed_edge_couples": 75,
+  "n_of_those_obtuse_incident": 0,
+  "residual_L1": 4.3562367691046863e-14,
+  "residual_max_abs": 3.8857803690531667e-16,
+  "sum_NodeVolume_over_area": 1.1855566506919268
+ },
+ "L3_before_E2": {
+  "I_left_A_per_cm": -1.5112486124198332e-11,
+  "I_rel_err_vs_0.5": 0.9999999999697751,
+  "I_right_A_per_cm": 1.5112486124198297e-11,
+  "KCL_sum": -3.554291694563791e-26,
+  "L2_free_V": 0.2697895347645661,
+  "Linf_free_V": 0.4403865334645467,
+  "by_zone": {
+   "band": {
+    "err_max_abs_V": 0.4374232063569569,
+    "n_free": 2367,
+    "residual_L1": 3.4143069052946087e-12,
+    "residual_max_abs": 7.31811411542374e-13
+   },
+   "outer": {
+    "err_max_abs_V": 0.36963049221467675,
+    "n_free": 176,
+    "residual_L1": 1.0001151189190071e-11,
+    "residual_max_abs": 5.000003203750473e-12
+   },
+   "ring": {
+    "err_max_abs_V": 0.4403865334645467,
+    "n_free": 356,
+    "residual_L1": 5.555554746488378e-10,
+    "residual_max_abs": 1.024169899228605e-11
+   }
+  },
+  "fraction_residual_L1_on_obtuse_incident_nodes": 0.9999423180383102,
+  "n_free_nodes_residual_gt_1e-12": 194,
+  "n_negative_signed_edge_couples": null,
+  "n_of_those_obtuse_incident": 194,
+  "residual_L1": 5.689709327433257e-10,
+  "residual_max_abs": 1.024169899228605e-11,
+  "sum_NodeVolume_over_area": 1.1855566506919268
+ }
+}

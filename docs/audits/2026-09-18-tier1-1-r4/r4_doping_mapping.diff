@@ -1,0 +1,136 @@
+diff --git a/tcad/device/devsim/doping_mapping.py b/tcad/device/devsim/doping_mapping.py
+index c5b734f..02352ce 100644
+--- a/doping_mapping_r3_end_FINAL.py
++++ b/tcad/device/devsim/doping_mapping.py
+@@ -48,14 +48,24 @@ node belongs to; two cells whose rectangles overlap with positive area
+ (a genuine inconsistency, not a shared edge) still blocks regardless of
+ material (see `canonical_node_doping()` / `_ownership_problem()`).
+ 
+-A node whose exact coordinates fall just outside every cell's bounds is
+-tried once more with each axis SNAPPED onto the nearest cell boundary,
+-but only within that boundary's own float32 mesh-serialization
+-round-trip tolerance (`_float32_roundtrip_ulp_um()`) -- correcting for
+-DevSim node coordinates being the mesh file's float32 vertex
+-coordinates times `length_scale_to_cm` (see that function's own
+-docstring), never for a real geometry mismatch. `net_doping_at()` is
+-then queried at the SNAPPED point, not the raw one.
++Ownership is decided at the RAW coordinate first; a unique same-region
++owner there is used as-is, no snap. Only when the raw point has none
++(Tier 1-1 r4: including when it lies just inside a DIFFERENT material's
++neighboring cell -- a float32 round-trip error can push a node a few
++ULPs across a real interface) is a snap tried, and the snap SEARCH
++itself looks only at ACTIVE + MODELLED cells of the region's OWN
++material, so an unrelated cell that already contains the raw point can
++never shadow a same-region cell's real boundary a few ULPs away. A
++candidate snap is accepted only within that boundary's own float32
++mesh-serialization round-trip tolerance (`_float32_roundtrip_ulp_um()`)
++-- correcting for DevSim node coordinates being the mesh file's float32
++vertex coordinates times `length_scale_to_cm`, never a real geometry
++mismatch -- and ownership is then RE-DECIDED at the snapped point
++against every present cell there, so a positive-area overlap, two
++same-region cells, or an inactive/unbounded cell at that exact point
++still blocks exactly as it would anywhere else. `net_doping_at()` is
++queried at the final (possibly snapped) point with the final resolved
++owner, never at the raw point with a stale one.
+ 
+ `apply_doping_symbolic()` below is the OLD kind-based
+ equation-string writer, preserved verbatim under its own name. It
+@@ -125,20 +135,34 @@ def canonical_node_doping(
+     supported same-material cell with no active attachment covering it
+     -- never for a node no such cell owns.
+ 
+-    A node whose EXACT coordinates fall outside every cell is tried once
+-    more with coordinates SNAPPED onto the nearest cell boundary, but
+-    only within that boundary's own float32 mesh-serialization
++    Ownership is decided at the node's EXACT (raw) coordinates first. A
++    node with no valid same-region owner there -- because nothing
++    contains it exactly, OR (Tier 1-1 r4) because a float32 round-trip
++    error pushed it a few ULPs across a real interface into a
++    DIFFERENT material's neighboring cell, which the raw check then
++    finds instead -- is tried once more with coordinates SNAPPED onto
++    the nearest boundary of an ACTIVE + MODELLED cell of the REGION'S
++    OWN material specifically (a neighboring cell of another material
++    that already contains the raw point can never shadow that search),
++    but only within that boundary's own float32 mesh-serialization
+     round-trip tolerance (`_float32_roundtrip_ulp_um()`) -- DevSim node
+     coordinates are the mesh's float32 vertex points times
+     `length_scale_to_cm` (`import_process_result`), so a node on a
+-    canonical edge can read back up to 1 float32 ULP outside it (4.8 um
+-    wide: x = 2.4000001 um). This corrects that serialization round-trip
+-    only: an interior node is never snapped (the exact check already
+-    passed it), and a node whose nearest boundary is farther than 1 ULP,
+-    or that is within tolerance of 2+ DIFFERENT boundaries, is never
+-    snapped either -- it stays blocked on its raw coordinates, a real
+-    geometry mismatch. `net_doping_at()` is queried at the snapped point
+-    when a snap applies, never the raw one.
++    canonical edge can read back up to 1 float32 ULP to either side of
++    it (4.8 um wide: x = 2.4000001 um; a 0.6 um Si/SiO2 interface: y =
++    0.6000000212 um, landing a Si-owned node 2.1e-8 um inside SiO2).
++    Once a candidate snap point is found, ownership is RE-DECIDED there
++    against every present cell (not just same-region ones): a
++    positive-area overlap, 2+ same-region cells, or an inactive /
++    unbounded cell at that exact point still blocks, same as anywhere
++    else. This corrects the serialization round-trip only: an interior
++    node whose raw coordinates already have a valid owner is never
++    snapped, and a node whose nearest same-region boundary is farther
++    than 1 ULP, or reachable from 2+ DIFFERENT same-region boundaries,
++    is never snapped either -- it stays blocked on its raw coordinates
++    and their own ownership problem, a real geometry mismatch.
++    `net_doping_at()` is queried at the final (possibly snapped) point
++    with the final resolved owner, never the raw point with a stale one.
+ 
+     Raises `UnsupportedDopingState` -- and the caller must then write no
+     doping, run no solve and report no number -- when `state` is None or
+@@ -201,25 +225,40 @@ def canonical_node_doping(
+             reasons = [state_block or "a present cell has no exact bounds"]
+     else:
+         for x_um, y_um in points:
++            # Ownership is evaluated at the RAW coordinate FIRST (Tier
++            # 1-1 r4). A unique ACTIVE+MODELLED same-region owner there
++            # is used as-is -- no snap. Only when the raw point has NO
++            # such owner (found empty, or found non-empty but owned by
++            # a DIFFERENT material entirely -- e.g. a float32 round-trip
++            # error pushed it a few ULPs into a neighboring material's
++            # cell) do we try a snap, and the snap SEARCH itself only
++            # ever looks at ACTIVE+MODELLED cells of the region's OWN
++            # material: an unrelated cell that already happens to
++            # contain the raw point must never shadow a same-region
++            # cell's real boundary a few ULPs away.
+             found = [c for c in bounded if _contains(c.bounds_um, x_um, y_um)]
+-            if not found:
+-                # Exact containment failed for every cell -- try once
+-                # more with each axis snapped onto the nearest cell
+-                # boundary, but only within that boundary's own float32
+-                # round-trip tolerance (never for an interior node: this
+-                # branch only runs when nothing already contains the
+-                # raw point). net_doping_at() below then sees the
+-                # SNAPPED point, not the raw one.
+-                snap = _snap_to_canonical_boundary(x_um, y_um, bounded, length_scale_to_cm)
+-                if snap is not None:
+-                    x_um, y_um, found = snap
+             why = _ownership_problem(state, region, found)
++            owner = _same_region_owner(region, found) if why is None else None
++            if owner is None:
++                same_region_active = [c for c in bounded if c.material == region and c.lifecycle == "ACTIVE"]
++                snap = _snap_to_canonical_boundary(x_um, y_um, same_region_active, length_scale_to_cm)
++                if snap is not None:
++                    sx, sy, _snap_cells = snap
++                    # Re-resolve ownership at the SNAPPED point against
++                    # EVERY present bounded cell (not just same-region
++                    # ones): a positive-area overlap, two same-region
++                    # cells meeting there, or an inactive/unbounded cell
++                    # at that exact point must still block, exactly as
++                    # they would for any other node.
++                    snapped_found = [c for c in bounded if _contains(c.bounds_um, sx, sy)]
++                    snapped_why = _ownership_problem(state, region, snapped_found)
++                    x_um, y_um, found, why = sx, sy, snapped_found, snapped_why
++                    owner = _same_region_owner(region, found) if why is None else None
+             # Once ownership resolves, query net_doping_at() FOR that
+             # exact cell -- not net_doping_at()'s own largest-y_max
+             # tie-break, which would silently pick a DIFFERENT material's
+             # cell merely sharing the same boundary (see
+             # canonical_node_doping()'s own docstring).
+-            owner = _same_region_owner(region, found) if why is None else None
+             result = state.net_doping_at(x_um, y_um, owning_cell=owner)
+             status_entries = (result.physics_status or {}).get("entries", [])
+             if why is not None:

@@ -1,0 +1,47 @@
+{
+  "view1_physical_bare_si_accounting": {
+    "real_initial_oxide_um": 0.0,
+    "oxide_created_um": 0.06519607687368989,
+    "silicon_consumed_um": 0.0064143287017941475,
+    "ratio": 10.164130948801226,
+    "expected_ratio": 2.27,
+    "verdict": "bare-Si material conservation VIOLATED by production code's numerical seed"
+  },
+  "view2_solver_internal_seeded_step": {
+    "before_total_oxide_um": 0.049751244514482096,
+    "after_total_oxide_um": 0.06519607687368989,
+    "before_si_interface_um": 0.00024875623057596385,
+    "after_si_interface_um": -0.0064143287017941475,
+    "delta_oxide_um": 0.015444832359207794,
+    "delta_si_um": 0.006663084932370111,
+    "ratio": 2.3179702068894303,
+    "expected_ratio": 2.27,
+    "verdict": "ViennaPS's own post-seed growth is approximately volume-conserving (within mesh-discretization noise) -- the seed CREATION step is what violates conservation (View 1), not the subsequent kinetics."
+  },
+  "view3_naive_posthoc_subtraction_REFERENCE_ONLY": {
+    "additional_oxide_um": 0.015196076873689887,
+    "silicon_consumed_um": 0.0064143287017941475,
+    "ratio": 2.369082967238552,
+    "note": "NOT a conservation test. This is the mismatch a user would see if they posthoc-subtracted the NOMINAL seed value from the final thickness while silicon_consumed still reflects the seed-contaminated kinetics. It does not recover the true bare-Si answer (0.020625um) and must not be presented as evidence that subtraction fixes anything."
+  },
+  "decisive_argument": {
+    "bare_si_deal_grove_prediction_um": 0.020625253,
+    "seed_run_actual_um": 0.06519607687368989,
+    "seed_run_minus_nominal_50nm_um": 0.015196076873689887,
+    "conclusion": "subtraction does not recover the bare-Si answer because the seed changed the KINETICS (Deal-Grove A and the effective initial condition the CFL solve integrates from), not merely the reported final number."
+  },
+  "matrix4_corrected_fields": {
+    "t=0.0": {
+      "measured_delta_oxide_um": 0.0,
+      "nominal_delta_oxide_um": -0.00024875548551790694,
+      "measured_delta_si_um": 0.0,
+      "identity_holds_at_t0": true
+    },
+    "t=0.5": {
+      "measured_delta_oxide_um": 0.015444832359207794,
+      "nominal_delta_oxide_um": 0.015196076873689887,
+      "measured_delta_si_um": -0.006663084932370111,
+      "identity_holds_at_t0": null
+    }
+  }
+}

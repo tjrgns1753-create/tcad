@@ -1,0 +1,627 @@
+diff --git a/tcad/device/devsim/doping_mapping.py b/tcad/device/devsim/doping_mapping.py
+index 6c3b445..e9bfc33 100644
+--- a/tcad/device/devsim/doping_mapping.py
++++ b/tcad/device/devsim/doping_mapping.py
+@@ -33,16 +33,24 @@ time a `WaferStateV2` reaches `apply_doping()`, `net_doping_at()`
+ already reflects every attachment's own real support region correctly;
+ this module trusts that value as-is and never re-masks it.
+ 
++Central canonical-state gate (Tier 1-1): `canonical_node_doping()` is
++the ONE check every electrical measurement passes before any doping is
++written to DevSim or any solve runs -- `apply_doping()` here and
++`tcad.characterization.robust_iv_sweep.ramp_doping_to_equilibrium` both
++call it first. Only the canonical `WaferStateV2` decides; a process
++result's own `DopingProfile` is never a substitute for it.
++
+ `apply_doping_symbolic()` below is the OLD kind-based
+-equation-string writer, preserved verbatim under its own name. Its only
+-caller is `tcad.characterization.robust_iv_sweep.ramp_doping_to_equilibrium`,
+-which needs its `window_scale` doping-level-continuation multiplier
+-(a solve-strategy detail with no WaferState equivalent).
++equation-string writer, preserved verbatim under its own name. It
++writes NetDoping from a `DopingProfile` (the latest doping declaration),
++not from the canonical state, so no production measurement path may
++call it any more (pinned by
++tests/unit/test_measurement_canonical_state_gate_mock.py).
+ """
+ 
+ from __future__ import annotations
+ 
+-from typing import Dict, List, Optional, TYPE_CHECKING
++from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+ 
+ from tcad.device.devsim import backend
+ from tcad.mesh.interface import DopingProfile
+@@ -52,7 +60,9 @@ if TYPE_CHECKING:
+ 
+ 
+ class UnsupportedDopingState(RuntimeError):
+-    """Raised by apply_doping() when the WaferStateV2 cannot supply a
++    """Raised by the central gate, canonical_node_doping() (and so by
++    every measurement path built on it), when no canonical WaferStateV2
++    exists or it cannot supply a
+     fully-known active NetDoping (a LEGACY_UNRESOLVED region, a
+     fail-closed step, an oxidation-converted region, or any node whose
+     net_doping is None). The device solve MUST NOT proceed with a
+@@ -64,10 +74,91 @@ class UnsupportedDopingState(RuntimeError):
+         self.physics_status = physics_status
+ 
+ 
++def canonical_node_doping(
++    device: str,
++    region: str,
++    state: Optional["WaferStateV2"],
++    length_scale_to_cm: float = 1.0,
++) -> Tuple[List[float], List[float], List[float]]:
++    """THE central canonical-state gate for every electrical measurement.
++
++    Read-only: it reads the DevSim node coordinates of `region` and
++    nothing else -- it never registers or writes a node model and never
++    solves. Returns the canonical per-node (donors, acceptors, nets),
++    exactly as `state.net_doping_at()` reports them.
++
++    Raises `UnsupportedDopingState` -- and the caller must then write no
++    doping, run no solve and report no number -- when `state` is None
++    (no canonical WaferStateV2 exists for this wafer), or when ANY node's
++    query carries a physics_status (UNSUPPORTED_BY_MODEL) or has a None
++    donor, acceptor or net concentration. One such node blocks the whole
++    region; an unknown is never replaced by 0.0, by the latest process
++    result's DopingProfile, or by a legacy state.
++    """
++    if state is None:
++        entries = [{
++            "parameter": "canonical_wafer_state",
++            "material": "?",
++            "resolution": "UNSUPPORTED_BY_MODEL",
++            "provenance": "DERIVED",
++            "note": "no canonical WaferStateV2 exists for this wafer",
++        }]
++        blocked, total = None, None
++    else:
++        module = backend.require_devsim()
++        xs_native = module.get_node_model_values(device=device, region=region, name="x")
++        ys_native = module.get_node_model_values(device=device, region=region, name="y")
++
++        donors: List[float] = []
++        acceptors: List[float] = []
++        nets: List[float] = []
++        entries = []
++        blocked, total = 0, len(xs_native)
++        for x_native, y_native in zip(xs_native, ys_native):
++            x_um = x_native / length_scale_to_cm
++            y_um = y_native / length_scale_to_cm
++            result = state.net_doping_at(x_um, y_um)
++            if (result.physics_status is not None
++                    or result.donor_concentration is None
++                    or result.acceptor_concentration is None
++                    or result.net_doping is None):
++                blocked += 1
++                for e in (result.physics_status or {}).get("entries", []) or [{
++                    "parameter": "net_doping_at",
++                    "material": "?",
++                    "resolution": "UNSUPPORTED_BY_MODEL",
++                    "provenance": "DERIVED",
++                    "note": f"net_doping_at returned None at (x={x_um:.4g}, y={y_um:.4g})",
++                }]:
++                    if e not in entries:
++                        entries.append(e)
++                continue
++            donors.append(result.donor_concentration)
++            acceptors.append(result.acceptor_concentration)
++            nets.append(result.net_doping)
++        if not blocked:
++            return donors, acceptors, nets
++
++    reasons: List[str] = []
++    for e in entries:
++        note = e.get("note") or e.get("parameter", "?")
++        if note not in reasons:
++            reasons.append(note)
++    shown = "; ".join(reasons[:3]) + (f" (+{len(reasons) - 3} more)" if len(reasons) > 3 else "")
++    scope = ("no canonical state" if total is None
++             else f"{blocked} of {total} mesh node(s) blocked")
++    raise UnsupportedDopingState(
++        f"UNSUPPORTED_BY_MODEL: the canonical WaferStateV2 cannot supply a "
++        f"fully-known doping for device {device!r} region {region!r} "
++        f"({scope}). Reason: {shown}. The device solve must not proceed.",
++        {"resolution": "UNSUPPORTED_BY_MODEL", "entries": entries, "notes": [scope]},
++    )
++
++
+ def apply_doping(
+     device: str,
+     region: str,
+-    state: "WaferStateV2",
++    state: Optional["WaferStateV2"],
+     length_scale_to_cm: float = 1.0,
+ ) -> Optional[dict]:
+     """Write real per-node NetDoping into a DevSim region from a
+@@ -94,51 +185,11 @@ def apply_doping(
+ 
+     Returns None on full success (mirrors the previous convention), or
+     raises `UnsupportedDopingState` (carrying a `physics_status` dict)
+-    when the state is not fully modellable.
++    when the state is not fully modellable -- decided entirely by the
++    central gate, `canonical_node_doping()`, before anything is written.
+     """
++    donors, acceptors, nets = canonical_node_doping(device, region, state, length_scale_to_cm)
+     module = backend.require_devsim()
+-
+-    xs_native = module.get_node_model_values(device=device, region=region, name="x")
+-    ys_native = module.get_node_model_values(device=device, region=region, name="y")
+-
+-    donors: List[float] = []
+-    acceptors: List[float] = []
+-    nets: List[float] = []
+-    gap_entries: List[dict] = []
+-
+-    for x_native, y_native in zip(xs_native, ys_native):
+-        x_um = x_native / length_scale_to_cm
+-        y_um = y_native / length_scale_to_cm
+-
+-        result = state.net_doping_at(x_um, y_um)
+-        if result.physics_status is not None or result.net_doping is None:
+-            entries = (result.physics_status or {}).get("entries", []) or [{
+-                "parameter": "net_doping_at",
+-                "material": "?",
+-                "resolution": "UNSUPPORTED_BY_MODEL",
+-                "provenance": "DERIVED",
+-                "note": f"net_doping_at returned None at (x={x_um:.4g}, y={y_um:.4g})",
+-            }]
+-            for e in entries:
+-                if e not in gap_entries:
+-                    gap_entries.append(e)
+-            continue
+-
+-        donors.append(result.donor_concentration or 0.0)
+-        acceptors.append(result.acceptor_concentration or 0.0)
+-        nets.append(result.net_doping)
+-
+-    if gap_entries:
+-        physics_status = {
+-            "resolution": "UNSUPPORTED_BY_MODEL", "entries": gap_entries, "notes": [],
+-        }
+-        raise UnsupportedDopingState(
+-            f"WaferStateV2 could not supply a fully-known active NetDoping for "
+-            f"device {device!r} region {region!r}: {len(gap_entries)} distinct "
+-            f"unresolved gap(s). The device solve must not proceed.",
+-            physics_status,
+-        )
+-
+     module.node_model(device=device, region=region, name="Donors", equation="0")
+     module.set_node_values(device=device, region=region, name="Donors", values=donors)
+     module.node_model(device=device, region=region, name="Acceptors", equation="0")
+diff --git a/tcad/characterization/robust_iv_sweep.py b/tcad/characterization/robust_iv_sweep.py
+index 997f221..7542cb4 100644
+--- a/tcad/characterization/robust_iv_sweep.py
++++ b/tcad/characterization/robust_iv_sweep.py
+@@ -26,6 +26,19 @@ this project's own failing device (the GUI's default 10x8um wafer with
+    mechanism DevSim's own bias ramping uses, applied to a doping-level
+    parameter instead of a contact voltage.
+ 
++   Tier 1-1: the ramp is driven by the CANONICAL WaferStateV2 per-node
++   NetDoping N (read through the central gate,
++   doping_mapping.canonical_node_doping), never by the latest
++   DopingProfile. Each step writes B + s*(N - B), B being the canonical
++   value of smallest magnitude. For an implant_windows state B is its
++   background, so every step equals the previous window-scaled ramp;
++   the final step writes N itself, so DevSim solves exactly the
++   canonical doping (every accumulated attachment, not just the latest
++   call). Verified before this change that DevSim picks up NetDoping
++   values re-set between solves: a uniform 1e16 -> 1e18 -> 1e19
++   sequence moved the solved potential by V_t*ln(100) and V_t*ln(10)
++   to six decimals.
++
+ 2. DevSim's OWN official drift-diffusion tolerances
+    (absolute_error=1e30, relative_error=1e-5, from its gmsh_mos2d.py
+    example) for the transport-enable solve, instead of
+@@ -71,13 +84,12 @@ from typing import Dict, List, Optional
+ 
+ from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
+ from tcad.device.devsim import backend
+-from tcad.device.devsim.doping_mapping import apply_doping_symbolic
++from tcad.device.devsim.doping_mapping import canonical_node_doping
+ from tcad.device.devsim.semiconductor_equation import (
+     read_drift_diffusion_terminal_currents,
+     setup_drift_diffusion_equation,
+     setup_semiconductor_potential_equation,
+ )
+-from tcad.mesh.interface import DopingProfile
+ 
+ #: DevSim's own official gmsh_mos2d.py drift-diffusion tolerances (see
+ #: module docstring point 2). Not this project's invention, and already
+@@ -90,10 +102,10 @@ _DD_RELATIVE_ERROR = 1.0e-5
+ _EQ_ABSOLUTE_ERROR = 1.0
+ _EQ_RELATIVE_ERROR = 1.0e-6
+ 
+-#: Window-concentration multipliers for the equilibrium continuation
+-#: (module docstring point 1). Geometric, ending at 1.0 (the real
+-#: profile). Verified sufficient on the 10x8um / 1e20 cm^-3 device that
+-#: fails without it; the first step is deliberately near the background
++#: Continuation multipliers for the equilibrium solve (module docstring
++#: point 1). Geometric, ending at 1.0 (the canonical profile itself).
++#: Verified sufficient on the 10x8um / 1e20 cm^-3 device that fails
++#: without it; the first step is deliberately near the background
+ #: doping's own magnitude, which the solve handles trivially.
+ _DOPING_RAMP_SCALES = (1.0e-3, 1.0e-2, 0.1, 0.3, 1.0)
+ 
+@@ -103,36 +115,43 @@ _SOLUTION_NAMES = ("Potential", "Electrons", "Holes")
+ def ramp_doping_to_equilibrium(
+     device: str,
+     region: str,
+-    doping: DopingProfile,
++    state,
+     length_scale_to_cm: float = 1.0,
+     scales: Optional[List[float]] = None,
+     contacts: Optional[List[str]] = None,
+     temperature_k: float = 300.0,
+ ) -> None:
+     """Register the equilibrium (Poisson-only) equations and reach the
+-    full doping profile by CONTINUATION rather than in one step.
++    canonical WaferStateV2 doping by CONTINUATION rather than in one step.
+ 
+-    Only meaningful for `implant_windows` (the only kind `apply_doping`
+-    can scale); any other kind is applied once at full strength, which
+-    is exactly what the non-continuation path already does.
++    The central canonical-state gate runs FIRST: if `state` is None or
++    any node of `region` is unsupported, `UnsupportedDopingState` is
++    raised before NetDoping is registered or any solve runs. A state
++    whose NetDoping is identical at every node needs no ramp and is
++    written once.
+     """
++    _, _, net = canonical_node_doping(device, region, state, length_scale_to_cm)
+     module = backend.require_devsim()
++    reference = min(net, key=abs)
+     ramp = list(scales) if scales is not None else list(_DOPING_RAMP_SCALES)
+-    if doping.kind != "implant_windows":
++    if all(value == reference for value in net):
+         ramp = [1.0]
++    if not ramp or ramp[-1] != 1.0:
++        ramp.append(1.0)
++
++    def write(scale: float) -> None:
++        values = net if scale == 1.0 else [reference + scale * (v - reference) for v in net]
++        module.set_node_values(device=device, region=region, name="NetDoping", values=values)
+ 
+     # NetDoping must exist before the potential equation is registered:
+     # DevSim's CreateSiliconPotentialOnly references it at setup time.
+-    # Uses the OLD kind-based symbolic-equation writer, not the new
+-    # per-node apply_doping() -- window_scale (a solve-strategy doping-
+-    # level continuation multiplier) has no WaferState equivalent; see
+-    # doping_mapping.py's own module docstring.
+-    apply_doping_symbolic(device, doping, length_scale_to_cm, window_scale=ramp[0])
++    module.node_model(device=device, region=region, name="NetDoping", equation="0")
++    write(ramp[0])
+     setup_semiconductor_potential_equation(
+         device, region, contacts or [], temperature_k
+     )
+     for scale in ramp:
+-        apply_doping_symbolic(device, doping, length_scale_to_cm, window_scale=scale)
++        write(scale)
+         module.solve(
+             type="dc",
+             absolute_error=_EQ_ABSOLUTE_ERROR,
+@@ -213,7 +232,7 @@ def run_robust_pn_junction_iv_sweep(
+     all_contacts: List[str],
+     sweep_contact: str,
+     sweep_voltages: List[float],
+-    doping: DopingProfile,
++    state,
+     length_scale_to_cm: float = 1.0,
+     fixed_contacts: Optional[Dict[str, float]] = None,
+     temperature_k: float = 300.0,
+@@ -222,10 +241,13 @@ def run_robust_pn_junction_iv_sweep(
+     own official tolerances, then a state-restoring bias ramp to each
+     requested voltage.
+ 
+-    `doping` is required (unlike `run_pn_junction_iv_sweep`, which only
+-    needs NetDoping already registered) because the continuation has to
+-    re-register NetDoping at each ramp step. Do NOT call `apply_doping`
+-    yourself first — this function owns that.
++    `state` is the canonical WaferStateV2 (unlike
++    `run_pn_junction_iv_sweep`, which only needs NetDoping already
++    registered) because the continuation writes NetDoping at each ramp
++    step. Its first action is the central canonical-state gate: an
++    unsupported state raises `UnsupportedDopingState` with nothing
++    written and nothing solved. Do NOT call `apply_doping` yourself
++    first — this function owns that.
+ 
+     Voltages are visited in the order given; each is reached by ramping
+     from wherever the previous one left off, so a caller sweeping
+@@ -241,7 +263,7 @@ def run_robust_pn_junction_iv_sweep(
+     fixed_contacts = fixed_contacts or {}
+ 
+     ramp_doping_to_equilibrium(
+-        device, region, doping, length_scale_to_cm,
++        device, region, state, length_scale_to_cm,
+         contacts=all_contacts, temperature_k=temperature_k,
+     )
+ 
+diff --git a/tcad_2d_stagewise.py b/tcad_2d_stagewise.py
+index 9bf12c5..7e34577 100644
+--- a/tcad_2d_stagewise.py
++++ b/tcad_2d_stagewise.py
+@@ -4761,7 +4761,6 @@ class TCADApplication(tk.Tk):
+         from tcad.characterization.robust_iv_sweep import (
+             run_robust_pn_junction_iv_sweep,
+         )
+-        from tcad.physics.wafer_state_accumulation import advance_wafer_state
+ 
+         module = devsim_backend.require_devsim()
+         device_name = "gui_measure_device"
+@@ -4852,46 +4851,18 @@ class TCADApplication(tk.Tk):
+                     "continuation + DevSim's own drift-diffusion "
+                     "tolerances + restoring bias ramp).\n"
+                 )
+-                # Final-review Fix 4: this solve reflects ONLY
+-                # doped_result.doping (the single most-recent doping
+-                # call) -- deliberately, this project's real 1e20 cm^-3
+-                # convergence solution is not rewired to read the full
+-                # self.wafer_state.dopant_profiles list. But Task 10's
+-                # canvas color overlay DOES read that full accumulated
+-                # list, so a wafer with e.g. an earlier Gaussian Implant
+-                # PLUS this Implant Windows call would show both colors
+-                # on screen while only the latter is actually solved --
+-                # name that divergence honestly rather than let it go
+-                # unremarked.
+-                if self.wafer_state is not None:
+-                    from tcad.physics.dopant_profile import dopant_profiles_from_doping_profile
+-
+-                    current_profiles = dopant_profiles_from_doping_profile(doped_result.doping)
+-
+-                    def _profile_identity(p):
+-                        return (p.species, p.polarity, p.host_material, p.model, p.model_params)
+-
+-                    current_identities = [_profile_identity(p) for p in current_profiles]
+-                    other_profiles = [
+-                        p for p in self.wafer_state.dopant_profiles
+-                        if _profile_identity(p) not in current_identities
+-                    ]
+-                    if other_profiles:
+-                        species_list = ", ".join(
+-                            p.species or "(unlabeled)" for p in other_profiles
+-                        )
+-                        self._log(
+-                            f"NOTE: Implant Windows measurement reflects only its "
+-                            f"own doping profile; {len(other_profiles)} other "
+-                            f"accumulated profile(s) on this wafer (species: "
+-                            f"{species_list}) are shown on the canvas overlay but "
+-                            f"not included in this solve.\n"
+-                        )
++                # Tier 1-1: the continuation solves the CANONICAL
++                # self.wafer_state -- every accumulated attachment, the
++                # same doping the canvas overlay shows -- through the
++                # central canonical-state gate, never the latest
++                # doped_result.doping. An unsupported state raises
++                # UnsupportedDopingState below before anything is
++                # written or solved.
+                 result = run_robust_pn_junction_iv_sweep(
+                     device=imported.device, region=region,
+                     all_contacts=imported.contacts,
+                     sweep_contact=source_contact, sweep_voltages=[voltage],
+-                    doping=doped_result.doping,
++                    state=self.wafer_state,
+                     length_scale_to_cm=length_scale_to_cm,
+                     fixed_contacts={gnd_contact: 0.0},
+                 )
+@@ -4899,30 +4870,17 @@ class TCADApplication(tk.Tk):
+                 # The real, cross-step accumulated WaferState (Task 9)
+                 # -- every DopantProfile ever applied via run_doping(),
+                 # kept geometry-current by _sync_wafer_state_geometry()
+-                # after every process step. Using this instead of a
+-                # throwaway single-profile state means a MEASURE click
+-                # now reflects the wafer's FULL doping history (e.g.
+-                # doping -> etch -> doping), not just the single most-
+-                # recently-applied call. self.wafer_state is expected to
+-                # be non-None here (the guard at the top of this method
+-                # already requires self.last_doped_result, which is only
+-                # ever set inside run_doping() alongside self.wafer_state
+-                # -- the very first such call can never be reattach=True,
+-                # so wafer_state is populated by then); the throwaway
+-                # fallback below only guards a startup path this method
+-                # should never actually reach.
+-                state = (
+-                    self.wafer_state if self.wafer_state is not None
+-                    else advance_wafer_state(None, doped_result, "doping")
+-                )
++                # after every process step, so a MEASURE click reflects
++                # the wafer's FULL doping history. Tier 1-1: passed
++                # as-is, None included -- no fallback state is ever
++                # rebuilt from doped_result; the central gate inside
++                # apply_doping() refuses a missing or unsupported state.
++                #
+                 # Final-review Fix 3: capture the returned physics_status
+                 # (same self.last_physics_status attribute the anneal
+-                # handler already uses) instead of discarding it -- a
+-                # doping-mapping gap (e.g. a CONVERSION-caused RECOVERY,
+-                # Fix 2) must be visible the same way every other real
+-                # process step's physics_status already is.
++                # handler already uses) instead of discarding it.
+                 self.last_physics_status = apply_doping(
+-                    imported.device, region, state,
++                    imported.device, region, self.wafer_state,
+                     length_scale_to_cm=length_scale_to_cm,
+                 )
+                 result = run_pn_junction_iv_sweep(
+@@ -4932,6 +4890,21 @@ class TCADApplication(tk.Tk):
+                     fixed_contacts={gnd_contact: 0.0},
+                 )
+ 
++        except UnsupportedDopingState as exc:
++
++            # Tier 1-1: the central canonical-state gate refused this
++            # measurement before any doping write or DevSim solve. Show
++            # UNSUPPORTED_BY_MODEL with the concrete reason, record the
++            # status, and report no current.
++            self.last_physics_status = exc.physics_status
++            self._notify_error(
++                "Measurement",
++                f"{exc}\n\nMeasurement blocked: no doping was written to "
++                f"DevSim, no solve was run, and no current is reported.",
++            )
++
++            return
++
+         except Exception as exc:
+ 
+             self._notify_error(
+@@ -5247,71 +5220,32 @@ class TCADApplication(tk.Tk):
+             )
+             return None
+ 
+-        from dataclasses import replace as _dataclasses_replace
+         from tcad.device.devsim import backend as devsim_backend
+-        from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState  # noqa: F401
+-        from tcad.mesh.interface import DopingProfile, DopingRegion
++        from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
+         from tcad.characterization.dc_operating_point import solve_mosfet_dc_operating_point
+-        from tcad.physics.wafer_state_accumulation import advance_wafer_state
+ 
+         module = devsim_backend.require_devsim()
+ 
+         try:
+             # self.wafer_state (Task 9) is the real, cross-step
+-            # accumulated doping+geometry state -- already reflects
+-            # EVERY DopantProfile ever applied via run_doping(),
+-            # geometry-gated against the CURRENT mesh regardless of
+-            # whether self.last_doped_result itself still matches
+-            # self.last_final_mesh (that staleness only matters for
+-            # last_doped_result's own mesh-reading role -- see
+-            # _sync_wafer_state_geometry()). Zero accumulated profiles
+-            # already means net_doping_at() reports 0 everywhere
+-            # (nothing to sum), which IS the correct "intrinsic Si"
+-            # behavior -- no separate synthetic DopingProfile is needed
+-            # for that case any more.
+-            if self.wafer_state is not None:
+-                state = self.wafer_state
+-                if not state.dopant_profiles:
+-                    self._log(
+-                        "\n(No doping profile applied yet -- Si region "
+-                        "treated as intrinsic, NetDoping=0, for this solve.)\n"
+-                    )
+-            else:
+-                # Defensive fallback only -- should be unreachable in
+-                # practice: resolve_electrode_pins() already requires
+-                # self.last_final_mesh, and every one of this GUI's 8
+-                # real mesh-producing sites populates self.wafer_state
+-                # via _sync_wafer_state_geometry() before this method
+-                # can ever run.
+-                #
+-                # WaferState v2 P1 (user correction): this used to log
+-                # "Si region treated as intrinsic, NetDoping=0" and then
+-                # actually proceed to a real solve on that assumption --
+-                # a real physics claim ("this Si is genuinely undoped")
+-                # this fallback has no geometry to back up. With no
+-                # accumulated WaferStateV2, `advance_wafer_state(None,
+-                # ...)` migrates the mesh as LEGACY_UNRESOLVED (no
+-                # ACTIVE+MODELLED cell), so `apply_doping()` below
+-                # correctly raises `UnsupportedDopingState` and blocks
+-                # the solve -- fail closed EXPLICITLY, never silently
+-                # continuing on a guessed "0". Pinned by
+-                # test_wafer_state_v2_gate_stack_fallback_fail_closed_mock.py.
+-                doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=0.0)])
+-                self._log(
+-                    "\n(No accumulated WaferState for this gate-stack "
+-                    "device -- the solve below will be blocked as "
+-                    "UNSUPPORTED_BY_MODEL rather than assumed intrinsic.)\n"
+-                )
+-                doping_process_result = _dataclasses_replace(
+-                    build_process_result({"final_mesh": self.last_final_mesh, "snapshots": []}),
+-                    doping=doping,
+-                )
+-                state = advance_wafer_state(None, doping_process_result, "doping")
+-
++            # accumulated doping+geometry state. Tier 1-1: passed as-is
++            # to the central canonical-state gate inside apply_doping(),
++            # None included -- no fallback state or synthetic intrinsic
++            # DopingProfile is ever built from the latest mesh; a missing
++            # or unsupported state blocks the solve right here.
++            #
+             # Final-review Fix 3: same capture as run_measurement() above.
+             self.last_physics_status = apply_doping(
+-                imported.device, "Si", state, length_scale_to_cm=1.0e-4,
++                imported.device, "Si", self.wafer_state, length_scale_to_cm=1.0e-4,
+             )
++            if not self.wafer_state.attachments:
++                # Only now, after the gate accepted it, is "no dopant"
++                # a real claim: a supported state with no attachment is
++                # canonically known-undoped (NetDoping = 0).
++                self._log(
++                    "\n(No doping attachment on this wafer -- the canonical "
++                    "state reports known-undoped Si, NetDoping=0, for this solve.)\n"
++                )
+ 
+             gate_region = regions_by_name.get(gate_contact)
+             if gate_region != "SiO2":
+@@ -5340,6 +5274,16 @@ class TCADApplication(tk.Tk):
+                 drain_voltage=drain_voltage, gate_voltage=gate_voltage,
+                 body_contact=body_contact, body_voltage=body_voltage,
+             )
++        except UnsupportedDopingState as exc:
++            # Tier 1-1: blocked by the central canonical-state gate
++            # before any doping write or solve -- not a solve failure.
++            self.last_physics_status = exc.physics_status
++            self._notify_error(
++                "Electrode",
++                f"{exc}\n\nDC operating point blocked: no doping was written "
++                f"to DevSim, no solve was run, and no current is reported.",
++            )
++            return None
+         except Exception as exc:
+             self._notify_error("Electrode", f"DC operating point solve failed:\n\n{exc}")
+             return None
+diff --git a/tcad/cli/run_pipeline.py b/tcad/cli/run_pipeline.py
+index 7861fc4..8ca736d 100644
+--- a/tcad/cli/run_pipeline.py
++++ b/tcad/cli/run_pipeline.py
+@@ -208,16 +208,38 @@ def _initial_state_for_process(process_cfg: Dict[str, Any] | None):
+         return None
+ 
+ 
++def _netdoping_region(characterization_cfg: Dict[str, Any]) -> str | None:
++    """The region a NetDoping-consuming characterization solves on, or
++    None for one whose equations never read NetDoping ("iv" is this
++    project's Ohmic resistor model: a constant conductivity)."""
++    kind = characterization_cfg["type"]
++    if kind == "pn_junction_iv":
++        return characterization_cfg["region"]
++    if kind == "mos_cv":
++        return characterization_cfg["si_region"]
++    return None
++
++
+ def _apply_device_doping(
+     imported, process_result, cfg: Dict[str, Any] | None,
+     process_cfg: Dict[str, Any] | None = None,
++    netdoping_region: str | None = None,
+ ):
+-    if not cfg or process_result.doping is None:
+-        return
+-    from tcad.device.devsim.doping_mapping import apply_doping
++    """Write the canonical doping through the central canonical-state
++    gate (Tier 1-1). `netdoping_region` names the region a
++    NetDoping-consuming characterization will solve on: with no doping
++    configured there is no canonical doping state, so the gate raises
++    `UnsupportedDopingState` before that characterization can reach
++    DevSim, instead of skipping doping silently."""
++    from tcad.device.devsim.doping_mapping import apply_doping, canonical_node_doping
+     from tcad.physics.wafer_state_accumulation import advance_wafer_state
+ 
+-    length_scale_to_cm = _resolve_length_scale_to_cm(cfg, True)
++    if process_result.doping is None:
++        if netdoping_region is not None:
++            canonical_node_doping(imported.device, netdoping_region, None)
++        return
++
++    length_scale_to_cm = _resolve_length_scale_to_cm(cfg or {}, True)
+     region = process_result.doping.regions[0].region
+ 
+     state = _initial_state_for_process(process_cfg)
+@@ -358,6 +380,7 @@ def run_pipeline(config: Dict[str, Any], workdir: Path) -> Dict[str, Any]:
+             imported, process_result,
+             config.get("doping_device", config.get("device")),
+             config.get("process"),
++            netdoping_region=_netdoping_region(config["characterization"]),
+         )
+ 
+         result = _run_characterization(imported, config["characterization"])

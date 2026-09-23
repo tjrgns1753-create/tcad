@@ -1,0 +1,182 @@
+diff --git a/tests/unit/test_measurement_canonical_state_gate_mock.py b/tests/unit/test_measurement_canonical_state_gate_mock.py
+index 29868d3..93b8f6a 100644
+--- a/tests/unit/test_measurement_canonical_state_gate_mock.py
++++ b/tests/unit/test_measurement_canonical_state_gate_mock.py
+@@ -180,17 +180,67 @@ def test_two_instances_sharing_an_edge_block():
+                         because="2 ACTIVE modelled cells contain this node")
+ 
+ 
+-def test_si_node_on_the_oxide_interface_blocks():
+-    """A Si node on a shared Si/SiO2 edge lies in both closed cells. The
+-    old query picked the cell with the larger y_max -- the oxide -- and
+-    handed a doped Si node the oxide's 0."""
++def test_si_sio2_interface_node_is_not_ambiguous():
++    """A Si node exactly on a shared Si/SiO2 edge (y=0, Si's y_max ==
++    SiO2's y_min, a zero-area shared boundary -- not an overlap) is NOT
++    ambiguous: DevSim region='Si' already names which material this node
++    belongs to, so the SiO2 cell merely touching that same boundary is
++    not a second owner. Exactly the Si cell resolves as owner, and the
++    real Si attachment's value reaches the node -- not blocked, not the
++    SiO2 cell's unrelated 0.
++
++    History: this used to assert the interface node BLOCKS ("2 ACTIVE
++    modelled cells contain this node"), treating a normal heterogeneous
++    material boundary as ambiguity that pinned a real bug (WaferStateV2.
++    net_doping_at()'s own y_max tie-break silently returning the SiO2
++    cell's 0 for a doped Si node) as the expected contract. Fixed two
++    ways: canonical_node_doping()'s ownership check now only considers
++    cells of the DevSim region's OWN material as candidates (see
++    _ownership_problem()), and it passes its resolved owner into
++    net_doping_at(owning_cell=...) instead of letting that method's own,
++    coarser tie-break pick a different cell (see that method's own
++    docstring in wafer_state_v2.py) -- every OTHER caller of
++    net_doping_at() (GUI overlay, hover note, ...) that omits
++    owning_cell keeps that same tie-break unchanged."""
+     state = _cells_state(MaterialCell("csi", "Si", (-2.0, 2.0, -1.0, 0.0), "si#0"),
+                          MaterialCell("cox", "SiO2", (-2.0, 2.0, 0.0, 0.1), "ox#0"))
+     state = _uniform(state, "si#0", (-2.0, 2.0, -1.0, 0.0), 1.0e17)
+-    assert state.net_doping_at(0.5, 0.0).net_doping == 0.0, "old query: doped Si interface node read as 0"
+-    exc, _ = _expect_blocked(state, xs=(0.5, 0.5), ys=(-0.5, 0.0))
+-    _assert_diagnostics(exc, x=0.5, y=0.0, instance_ids=["si#0", "ox#0"], blocked=1, total=2,
+-                        because="2 ACTIVE modelled cells contain this node")
++    assert state.net_doping_at(0.5, 0.0).net_doping == 0.0, (
++        "net_doping_at()'s OWN default tie-break is unchanged (still picks SiO2) -- "
++        "the gate must not rely on it directly at a shared boundary")
++
++    fake = FakeDevsim([0.5], [0.0])
++    donors, acceptors, nets = _with_fake(fake, lambda: canonical_node_doping("dev", "Si", state))
++    assert (donors, acceptors, nets) == ([1.0e17], [0.0], [1.0e17]), (
++        "the real Si attachment must reach the interface node, not SiO2's 0")
++    assert fake.writes == [] and fake.solves == 0, "the gate itself must be read-only"
++
++    fake2 = FakeDevsim([0.5], [0.0])
++    _with_fake(fake2, lambda: apply_doping("dev", "Si", state))
++    assert fake2._nodes["NetDoping"] == [1.0e17], "the write/solve path is not blocked"
++
++    # Same interface, no dopant attached anywhere -- known-undoped 0.0,
++    # still resolved (not blocked), distinct from an unknown None.
++    virgin = _cells_state(MaterialCell("csi", "Si", (-2.0, 2.0, -1.0, 0.0), "si#0"),
++                          MaterialCell("cox", "SiO2", (-2.0, 2.0, 0.0, 0.1), "ox#0"))
++    fake3 = FakeDevsim([0.5], [0.0])
++    _, _, nets3 = _with_fake(fake3, lambda: canonical_node_doping("dev", "Si", virgin))
++    assert nets3 == [0.0], "known-undoped 0.0 at the interface, not a block"
++
++
++def test_positive_area_overlap_still_blocks():
++    """Unlike a zero-area shared edge, two cells whose rectangles
++    overlap with REAL (positive) area is a genuine geometry
++    inconsistency -- two solids occupying the same space -- and blocks
++    regardless of material, even though only one of them matches the
++    DevSim region."""
++    state = _cells_state(MaterialCell("csi", "Si", (-2.0, 2.0, -1.0, 0.05), "si#0"),
++                         MaterialCell("cox", "SiO2", (-2.0, 2.0, 0.0, 0.1), "ox#0"))
++    state = _uniform(state, "si#0", (-2.0, 2.0, -1.0, 0.05), 1.0e17)
++    exc, _ = _expect_blocked(state, xs=(0.5,), ys=(0.02,))
++    _assert_diagnostics(exc, x=0.5, y=0.02, instance_ids=["si#0", "ox#0"], blocked=1, total=1,
++                        because="physically overlap over a positive area")
++    assert "(-2.0, 2.0, 0.0, 0.05)" in str(exc), str(exc)
+ 
+ 
+ def test_one_instance_split_into_two_cells_blocks_on_their_shared_edge():
+@@ -277,7 +327,7 @@ def test_each_unknown_query_condition_blocks_even_on_one_node():
+         (DopingQueryResult(1.0e17, 0.0, None, None), "donor/acceptor/net is None"),
+     ):
+         state = v2.initialize_wafer_state(cells=[("Si", (-2.0, 2.0, -2.0, 0.0), "si#0")])
+-        object.__setattr__(state, "net_doping_at", lambda x, y, bad=bad: (
++        object.__setattr__(state, "net_doping_at", lambda x, y, bad=bad, **kw: (
+             bad if x > 0 else DopingQueryResult(1.0e17, 0.0, 1.0e17, None)))
+         exc, _ = _expect_blocked(state)
+         _assert_diagnostics(exc, x=1.0, y=-1.0, instance_ids=["si#0"], blocked=1, total=2,
+@@ -324,21 +374,85 @@ def test_another_material_elsewhere_does_not_block():
+     assert nets == [1.0e17, 1.0e17]
+ 
+ 
+-def test_float32_node_coordinates_are_compared_exactly():
++def test_float32_boundary_node_snaps_within_1ulp():
+     """DevSim nodes carry the mesh's float32 coordinates scaled to cm
+-    (mesh_import.py multiplies the float32 point array). The gate does
+-    no rounding: 2 um reads back as 1.99999995 um (inside), 2.4 um as
+-    2.4000001 um (outside the 2.4 um edge -> zero owning cells)."""
++    (mesh_import.py multiplies the float32 point array): 2.4 um reads
++    back as 2.4000001 um, one float32 ULP outside a cell edge at exactly
++    2.4. The gate corrects for this ONE mechanism -- coordinate
++    round-trip serialization -- by snapping onto the boundary, only
++    within that boundary's own float32 ULP tolerance
++    (_float32_roundtrip_ulp_um), and only once exact containment already
++    failed. A node genuinely 2 um DEFAULT-inside (well within tolerance
++    for real) needs no snap and is unaffected.
++
++    History: this used to assert such a node BLOCKS ("zero owning
++    cells"), pinning the coordinate round-trip error itself as an
++    ownership problem. Real GUI+DevSim evidence
++    (docs/audits/2026-09-17-tier1-1-r2/post_fix_float32_boundary_evidence.log)
++    showed the fixed-r2 gate blocking a real uniformly-doped measurement
++    at width=4.8um purely because of this -- 12 real, well-inside-tolerance
++    boundary nodes. The real-DevSim regression for this fix is
++    tests/integration/test_float32_boundary_snap_real.py."""
+     scale = 1.0e-4
+     x_in = float((np.array([2.0], dtype=np.float32) * scale)[0])
+     x_out = float((np.array([2.4], dtype=np.float32) * scale)[0])
++    assert x_in != 2.0 and x_out != 2.4, "fixture is broken: no float32 rounding occurred"
++
+     inside = v2.initialize_wafer_state(cells=[("Si", (-2.0, 2.0, -1.0, 0.0), "si#0")])
+     _, _, nets = _with_fake(FakeDevsim([x_in], [-0.5e-4]),
+                             lambda: canonical_node_doping("dev", "Si", inside, scale))
+-    assert nets == [0.0]
++    assert nets == [0.0], "an interior node (not at a boundary) needs no snap"
++
++    on_edge = v2.initialize_wafer_state(cells=[("Si", (-2.4, 2.4, -1.0, 0.0), "si#0")])
++    on_edge = v2.attach_dopant(
++        on_edge, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e16,
++        inventory_integral=v2.uniform_inventory_integral(1.0e16),
++        support_instance_id="si#0", support_region_um=(-2.4, 2.4, -1.0, 0.0),
++        model="uniform_v1", model_params={"conc_cm3": 1.0e16},
++    )
++    fake = FakeDevsim([x_out], [-0.5e-4])
++    donors, acceptors, nets = _with_fake(fake, lambda: canonical_node_doping("dev", "Si", on_edge, scale))
++    assert x_out / scale > 2.4, "fixture is broken: the raw node must genuinely fall outside [-2.4, 2.4]"
++    assert nets == [1.0e16], "within 1 ULP: the node snaps onto the real edge and reads its real attachment"
++    assert fake.writes == [] and fake.solves == 0, "the gate itself must be read-only"
++
++    fake2 = FakeDevsim([x_out], [-0.5e-4])
++    _with_fake(fake2, lambda: apply_doping("dev", "Si", on_edge, length_scale_to_cm=scale))
++    assert fake2._nodes["NetDoping"] == [1.0e16], "the write/solve path is not blocked"
++
++
++def test_a_real_gap_beyond_1ulp_still_blocks():
++    """A node genuinely outside a cell -- by far more than one float32
++    ULP, e.g. a whole grid cell -- is a real geometry mismatch, not a
++    serialization artifact, and must still block exactly as before."""
++    scale = 1.0e-4
+     outside = v2.initialize_wafer_state(cells=[("Si", (-2.4, 2.4, -1.0, 0.0), "si#0")])
+-    exc, _ = _expect_blocked(outside, xs=(x_out,), ys=(-0.5e-4,), scale=scale)
+-    assert x_out / scale > 2.4 and _first(exc)["material_instance_ids"] == []
++    x_far = 2.4 + 0.2  # one grid cell past the edge, scaled to native
++    x_far_native = float((np.array([x_far], dtype=np.float32) * scale)[0])
++    exc, fake = _expect_blocked(outside, xs=(x_far_native / scale,), ys=(-0.5,), scale=scale)
++    assert _first(exc)["material_instance_ids"] == []
++    assert "no ACTIVE modelled cell contains this node" in _first(exc)["reason"]
++
++
++def test_ambiguous_snap_blocks_rather_than_guessing():
++    """A raw coordinate within tolerance of TWO DIFFERENT cell edges --
++    a real (if unusual) tiny gap between two cells, smaller than the
++    float32 ULP at that magnitude -- must not be arbitrarily assigned to
++    either side. Constructed at a large coordinate magnitude
++    (boundary~100) where the float32 ULP (~1.2e-5) is itself larger than
++    a genuine 1e-5 gap between two cells -- confirmed reachable from both
++    sides before asserting the block (see docs/audits/2026-09-17-tier1-1-r3/
++    for the derivation)."""
++    scale = 1.0
++    left = MaterialCell("cl", "Si", (0.0, 100.0, -1.0, 0.0), "si#l")
++    right = MaterialCell("cr", "Si", (100.00001, 200.0, -1.0, 0.0), "si#r")
++    state = _cells_state(left, right)
++    x_mid = 100.000005  # equidistant from both edges, 5e-6 from each
++    tol = float(np.spacing(np.float32(100.0)))  # 1 float32 ULP at this magnitude (~7.6e-6)
++    assert abs(x_mid - 100.0) <= tol and abs(x_mid - 100.00001) <= tol, "fixture is broken: not ambiguous"
++    exc, _ = _expect_blocked(state, xs=(x_mid,), ys=(-0.5,), scale=scale)
++    assert _first(exc)["material_instance_ids"] == [], (
++        "an ambiguous snap must not resolve to either cell")
+ 
+ 
+ # ---------------------------------------------------------------------------

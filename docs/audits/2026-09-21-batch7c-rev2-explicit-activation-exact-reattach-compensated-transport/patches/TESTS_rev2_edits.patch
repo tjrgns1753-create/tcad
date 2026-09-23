@@ -1,0 +1,277 @@
+--- a/tests/integration/test_dopant_activation_devsim_gate_real.py
++++ b/tests/integration/test_dopant_activation_devsim_gate_real.py
+@@ -7,7 +7,12 @@
+                 reported (control).
+   * CHEMICAL -> the canonical query is None/UNSUPPORTED_BY_MODEL, so the central gate blocks the measurement: 0 DevSim doping writes, 0
+   * UNKNOWN     devsim.solve calls, no current, UNSUPPORTED_BY_MODEL with the activation-state reason in the log, canonical state unchanged.
+-A compensated ACTIVE profile (N_D == N_A != 0) writes Donors = Acceptors = the requested value and NetDoping = 0 (derived), not "no doping".
++  * ACTIVE single polarity control (N_D or N_A only) and an ideal ACTIVE Step Junction (donor on one side, acceptor on the other, exactly one
++    polarity at every node including the junction coordinate) run a real PN solve.
++  * A compensated ACTIVE profile (N_D == N_A != 0) keeps its CANONICAL concentrations (donor N_D, acceptor N_A, net N_D - N_A = 0), but a finite
++    area holding both polarities has no compensation-aware ionized-impurity scattering / mobility in the drift-diffusion model, so the central gate
++    blocks it: reason_code COMPENSATED_TRANSPORT_MODEL_MISSING, 0 DevSim doping writes, 0 devsim.solve calls, no current. (Batch 7C Rev.2: this
++    replaces the earlier assertion that a 2.4e-9 A current was reported for the compensated device -- that number was never a validated current.)
+ 
+ The counting is pass-through observation of the real devsim.solve / node_model / set_node_values; nothing DevSim is mocked. The one temporary
+ geometry-only mesh->device import that precedes the canonical gate is observed and reported, not treated as an authorization.
+@@ -28,10 +33,11 @@
+ from tcad.device.devsim import backend as devsim_backend  # noqa: E402
+ from tcad.device.devsim import mesh_import  # noqa: E402
+ from tcad.mesh.viennaps_adapter import build_process_result  # noqa: E402
+-from tcad.physics.doping import apply_uniform_doping  # noqa: E402
++from tcad.physics.doping import apply_step_junction_doping, apply_uniform_doping  # noqa: E402
+ from tcad.physics.wafer_state_accumulation import advance_wafer_state  # noqa: E402
+ 
+ DOPING_MODELS = {"Donors", "Acceptors", "NetDoping"}
++REASON = "COMPENSATED_TRANSPORT_MODEL_MISSING"
+ MESSAGEBOX = ("showinfo", "showwarning", "showerror", "askyesno", "askokcancel", "askquestion", "askretrycancel", "askyesnocancel")
+ 
+ 
+@@ -40,13 +46,14 @@
+ 
+     def __init__(self, devsim):
+         self.devsim, self.solves, self.writes, self.values, self.imports = devsim, 0, [], {}, 0
++        self.x = None
+         self._orig = {}
+ 
+     def install(self):
+         d = self.devsim
+         for n in ("solve", "node_model", "set_node_values"):
+             self._orig[n] = getattr(d, n)
+-        o = self._orig
++        o = dict(self._orig, get_x=d.get_node_model_values)
+ 
+         def solve(*a, **k):
+             self.solves += 1
+@@ -61,6 +68,7 @@
+             if k.get("name") in DOPING_MODELS:
+                 self.writes.append(("set_node_values", k.get("name")))
+                 self.values[k["name"]] = list(k.get("values", []))
++                self.x = list(o["get_x"](device=k["device"], region=k["region"], name="x"))
+             return o["set_node_values"](*a, **k)
+ 
+         d.solve, d.node_model, d.set_node_values = solve, node_model, set_node_values
+@@ -89,7 +97,7 @@
+     finally:
+         obs.restore()
+     return {
+-        "log": app.log.get("1.0", "end-1c")[len(log0):], "solves": obs.solves, "writes": obs.writes, "values": obs.values, "imports": obs.imports,
++        "log": app.log.get("1.0", "end-1c")[len(log0):], "solves": obs.solves, "writes": obs.writes, "values": obs.values, "x": obs.x, "imports": obs.imports,
+         "modal": len(modal) - modal0, "history_added": len(app.history) - hist0, "leaked": list(devsim.get_device_list()),
+         "state_unchanged": app.wafer_state is state, "status": app.last_physics_status if isinstance(app.last_physics_status, dict) else None,
+     }
+@@ -106,16 +114,44 @@
+     assert m["modal"] == 0 and not m["leaked"], m
+ 
+ 
++def _blocked_common(m, label):
++    assert m["writes"] == [], f"{label}: {len(m['writes'])} DevSim doping write(s) {sorted(set(m['writes']))}, expected 0"
++    assert m["solves"] == 0, f"{label}: devsim.solve was called {m['solves']} time(s), expected 0"
++    assert not re.search(r"I = [-+0-9.eE]+ A", m["log"]), f"{label}: a terminal current was reported"
++    assert "UNSUPPORTED_BY_MODEL" in m["log"], f"{label}: UNSUPPORTED_BY_MODEL is not shown:\n{m['log'][-800:]}"
++    counts = re.search(r"(\d+) of (\d+) mesh node\(s\) blocked", m["log"])
++    assert counts and counts.group(1) == counts.group(2) and int(counts.group(1)) > 0, f"{label}: blocked/total node counts: {m['log'][-800:]}"
++    assert m["state_unchanged"] and m["history_added"] == 0 and m["modal"] == 0 and not m["leaked"], m
++
++
+ def check_blocked(m, state_name):
+-    assert m["writes"] == [], f"{state_name}: {len(m['writes'])} DevSim doping write(s) {sorted(set(m['writes']))}, expected 0"
+-    assert m["solves"] == 0, f"{state_name}: devsim.solve was called {m['solves']} time(s), expected 0"
+-    assert not re.search(r"I = [-+0-9.eE]+ A", m["log"]), f"{state_name}: a terminal current was reported"
+-    assert "UNSUPPORTED_BY_MODEL" in m["log"], f"{state_name}: UNSUPPORTED_BY_MODEL is not shown:\n{m['log'][-800:]}"
++    _blocked_common(m, state_name)
+     assert "dopant_activation_state" in str(m["status"]) or f"chemical_state '{state_name}'" in m["log"], \
+         f"{state_name}: the log/status must name the activation state as the reason:\n{m['log'][-800:]}"
+-    counts = re.search(r"(\d+) of (\d+) mesh node\(s\) blocked", m["log"])
+-    assert counts and counts.group(1) == counts.group(2) and int(counts.group(1)) > 0, f"{state_name}: blocked/total node counts: {m['log'][-800:]}"
+-    assert m["state_unchanged"] and m["history_added"] == 0 and m["modal"] == 0 and not m["leaked"], m
++
++
++def check_compensated_blocked(m, label, canonical, expected_canonical):
++    """Concentration preservation is separate from transport capability."""
++    _blocked_common(m, label)
++    status = m["status"] or {}
++    assert status.get("reason_code") == REASON, f"{label}: physics_status.reason_code is {status.get('reason_code')!r}, expected {REASON!r}"
++    assert status.get("resolution") == "UNSUPPORTED_BY_MODEL", status
++    assert REASON in m["log"], f"{label}: {REASON} is not in the GUI log:\n{m['log'][-800:]}"
++    assert canonical == expected_canonical, f"{label}: the canonical donor/acceptor/net must be preserved: {canonical} != {expected_canonical}"
++
++
++def check_step_junction(m, donor, acceptor):
++    assert m["solves"] >= 1 and sorted(set(n for _, n in m["writes"])) == ["Acceptors", "Donors", "NetDoping"], (m["solves"], m["writes"])
++    assert re.search(r"I = [-+0-9.eE]+ A", m["log"]) and "UNSUPPORTED_BY_MODEL" not in m["log"], "the ideal step junction must solve and report a current"
++    d, a, n, x = m["values"]["Donors"], m["values"]["Acceptors"], m["values"]["NetDoping"], m["x"]
++    both = [i for i in range(len(x)) if d[i] > 0 and a[i] > 0]
++    assert not both, f"{len(both)} node(s) carry BOTH polarities (first at x={x[both[0]] / 1e-4:g} um)"
++    on_junction = [i for i in range(len(x)) if x[i] == 0.0]
++    assert on_junction, "the mesh must have nodes exactly on the junction coordinate for this control to mean anything"
++    assert all((d[i] == donor and a[i] == 0.0) for i in on_junction), \
++        f"on the junction coordinate exactly one polarity (donor side, x >= junction) must exist: {[(d[i], a[i]) for i in on_junction]}"
++    assert all(abs(n[i] - (d[i] - a[i])) == 0.0 for i in range(len(x))), "NetDoping must be exactly N_D - N_A at every node"
++    assert {d[i] for i in range(len(x)) if x[i] < 0} == {0.0} and {a[i] for i in range(len(x)) if x[i] < 0} == {acceptor}, "left side must be acceptor only"
+ 
+ 
+ def expect_fail(check, label, expected):
+@@ -158,18 +194,39 @@
+                 [a.chemical_state for a in state.attachments]
+             m = measure(app, devsim, modal, state, doped)
+             results[name] = m
+-            if name.startswith("ACTIVE"):
++            if name == "ACTIVE":
+                 check_active(m, donor, acceptor)
+                 cur = re.search(r"I = ([-+0-9.eE]+) A", m["log"]).group(1)
+-                print(f"[{name}] state ACTIVE, donor/acceptor {donor:g}/{acceptor:g}: devsim.solve {m['solves']}, DevSim writes {sorted(set(n for _, n in m['writes']))} "
++                print(f"[{name}] single-polarity control, donor/acceptor {donor:g}/{acceptor:g}: devsim.solve {m['solves']}, DevSim writes {sorted(set(n for _, n in m['writes']))} "
+                       f"(Donors {sorted(set(m['values']['Donors']))}, Acceptors {sorted(set(m['values']['Acceptors']))}, NetDoping {sorted(set(m['values']['NetDoping']))}), "
+                       f"current reported {cur} A, geometry-only imports observed {m['imports']}")
++            elif name == "ACTIVE compensated":
++                q = state.net_doping_at(0.0, -0.5)
++                canonical = (q.donor_concentration, q.acceptor_concentration, q.net_doping)
++                check_compensated_blocked(m, name, canonical, (donor, acceptor, donor - acceptor))
++                print(f"[{name}] canonical donor/acceptor/net {canonical} (preserved) -> measurement blocked: reason_code {m['status']['reason_code']}, "
++                      f"DevSim doping writes {len(m['writes'])}, devsim.solve {m['solves']}, no current; geometry-only imports observed {m['imports']}; "
++                      f"canonical state unchanged, modal calls {m['modal']}, leaked devices {m['leaked']}")
+             else:
+                 check_blocked(m, name)
+                 n_blocked = re.search(r"(\d+ of \d+ mesh node\(s\) blocked)", m["log"]).group(1)
+                 print(f"[{name}] canonical query None/None/None -> measurement blocked: DevSim doping writes {len(m['writes'])}, devsim.solve {m['solves']}, "
+                       f"no current, {n_blocked}, reason names the activation state; geometry-only imports observed {m['imports']}; "
+                       f"canonical state unchanged, modal calls {m['modal']}, leaked devices {m['leaked']}")
++        # ideal Step Junction control: donor on one side, acceptor on the other (opposite sides, NOT a compensated region)
++        step = apply_step_junction_doping(process_result, region="Si", junction_axis="x", junction_position_um=0.0,
++                                          donor_conc_cm3=1e17, acceptor_conc_cm3=1e17, chemical_state="ACTIVE")
++        step_state = advance_wafer_state(base_state, step, "doping")
++        assert [a.polarity for a in step_state.attachments] == ["donor", "acceptor"], [a.polarity for a in step_state.attachments]
++        m = measure(app, devsim, modal, step_state, step)
++        results["ACTIVE step junction"] = m
++        check_step_junction(m, 1e17, 1e17)
++        on_j = [i for i, xv in enumerate(m["x"]) if xv == 0.0]
++        cur = re.search(r"I = ([-+0-9.eE]+) A", m["log"]).group(1)
++        print(f"[ACTIVE step junction] donor 1e17 (x >= 0) / acceptor 1e17 (x < 0): PN solve entered: devsim.solve {m['solves']}, writes "
++              f"{sorted(set(n for _, n in m['writes']))}, current reported {cur} A; nodes ON the junction x=0: {len(on_j)}, each with exactly one polarity "
++              f"(Donors {sorted({m['values']['Donors'][i] for i in on_j})}, Acceptors {sorted({m['values']['Acceptors'][i] for i in on_j})}); "
++              f"no node carries both polarities")
+         assert not list(devsim.get_device_list()), f"leaked DevSim devices: {list(devsim.get_device_list())}"
+ 
+         print("\n[guards] every check fails, for its own reason, when its subject is broken")
+@@ -180,15 +237,29 @@
+         expect_fail(lambda: check_blocked({**chem, "log": chem["log"] + "\nI = 1.0e-12 A\n"}, "CHEMICAL"), "a current is reported for a CHEMICAL state", "a terminal current was reported")
+         expect_fail(lambda: check_active({**results["ACTIVE"], "solves": 0}, 1e16, 0.0), "the ACTIVE control does not solve", "devsim.solve must run")
+         expect_fail(lambda: check_active({**results["ACTIVE"], "writes": []}, 1e16, 0.0), "the ACTIVE control writes nothing", "DevSim writes []")
+-        expect_fail(lambda: check_active({**results["ACTIVE compensated"], "values": {**results["ACTIVE compensated"]["values"], "Acceptors": [0.0]}}, 1e17, 1e17),
+-                    "the compensated profile lost its acceptor", "Donors/Acceptors written must equal")
++        comp = results["ACTIVE compensated"]
++        expect_fail(lambda: check_compensated_blocked({**comp, "solves": 1}, "compensated", (1e17, 1e17, 0.0), (1e17, 1e17, 0.0)),
++                    "a solve is allowed for a compensated region", "devsim.solve was called 1 time(s)")
++        expect_fail(lambda: check_compensated_blocked({**comp, "writes": [("node_model", "NetDoping")]}, "compensated", (1e17, 1e17, 0.0), (1e17, 1e17, 0.0)),
++                    "a DevSim write is allowed for a compensated region", "1 DevSim doping write(s)")
++        expect_fail(lambda: check_compensated_blocked({**comp, "log": comp["log"] + "\nI = 2.4e-09 A\n"}, "compensated", (1e17, 1e17, 0.0), (1e17, 1e17, 0.0)),
++                    "a current is reported for a compensated region", "a terminal current was reported")
++        expect_fail(lambda: check_compensated_blocked({**comp, "status": {**comp["status"], "reason_code": "SOMETHING_ELSE"}}, "compensated", (1e17, 1e17, 0.0), (1e17, 1e17, 0.0)),
++                    "the reason code is not COMPENSATED_TRANSPORT_MODEL_MISSING", "physics_status.reason_code is 'SOMETHING_ELSE'")
++        expect_fail(lambda: check_compensated_blocked(comp, "compensated", (1e17, 1e17, 0.0), (1e17, 0.0, 1e17)),
++                    "the canonical concentrations were collapsed", "the canonical donor/acceptor/net must be preserved")
++        step_m = results["ACTIVE step junction"]
++        dbl = list(step_m["values"]["Acceptors"]); j0 = step_m["x"].index(0.0); dbl[j0] = 1e17
++        expect_fail(lambda: check_step_junction({**step_m, "values": {**step_m["values"], "Acceptors": dbl}}, 1e17, 1e17),
++                    "the junction node is doped by BOTH polarities", "node(s) carry BOTH polarities")
+     finally:
+         for n, fn in originals.items():
+             setattr(gui.messagebox, n, fn)
+         app.destroy()
+     assert not list(devsim.get_device_list()), f"leaked DevSim devices: {list(devsim.get_device_list())}"
+     print("\nDOPANT ACTIVATION GATE (real DevSim): ACTIVE solves and writes; CHEMICAL and UNKNOWN are blocked with 0 doping writes and 0 solves; "
+-          "compensation N_D == N_A writes both Donors and Acceptors and a derived NetDoping of 0")
++          "a compensated N_D == N_A region keeps its canonical values but is transport-blocked (COMPENSATED_TRANSPORT_MODEL_MISSING, 0 writes, "
++          "0 solves, no current); an ideal Step Junction solves with exactly one polarity per node")
+ 
+ 
+ if __name__ == "__main__":
+--- a/tests/unit/test_dopant_activation_compensation_mock.py
++++ b/tests/unit/test_dopant_activation_compensation_mock.py
+@@ -203,11 +203,14 @@
+     assert [p.chemical_state for p in dopant_profiles_from_doping_profile(undeclared)] == ["UNKNOWN"]
+     check_gate_none(advance_wafer_state(base(), ProcessResult(volume_mesh_path="x", doping=undeclared), "doping"), "undeclared")
+ 
+-    # ---- E. active query control: numeric + DevSim write possible -----------------------------------------------------------------------
+-    outcome, fake = run_mapping(s_comp)
++    # ---- E. active query control: numeric + DevSim write possible (single polarity; a compensated region is blocked, see the Rev.2 test) ------
++    outcome, fake = run_mapping(s_one)
+     assert outcome == "written" and fake.solves == 0, outcome
+     assert [w[1] for w in fake.writes] == ["Donors", "Donors", "Acceptors", "Acceptors", "NetDoping", "NetDoping"], fake.writes
+-    print(f"E ACTIVE control: numeric query {q(s_comp)[:3]}, DevSim writes {[w[1] for w in fake.writes]}")
++    print(f"E ACTIVE control (single polarity): numeric query {q(s_one)[:3]}, DevSim writes {[w[1] for w in fake.writes]}")
++    # the compensated state keeps its canonical concentrations but is NOT transport-capable
++    assert q(s_comp)[:3] == (1e17, 1e17, 0.0)
++    check_devsim_blocked(s_comp, "compensated")
+ 
+     # ---- F. exact reattach ------------------------------------------------------------------------------------------------------------
+     req = uniform(1e17, 1e17).doping
+@@ -216,7 +219,7 @@
+     negatives = {
+         "different concentration": uniform(2e17, 1e17).doping,
+         "different chemical state": uniform(1e17, 1e17, "CHEMICAL").doping,
+-        "different model": apply_step_junction_doping(PR, "Si", "x", 0.0, 1e17, 1e17).doping,
++        "different model": apply_step_junction_doping(PR, "Si", "x", 0.0, 1e17, 1e17, chemical_state="ACTIVE").doping,
+         "different polarity (acceptor-only request, no acceptor attachment on a donor-only state)": None,
+         "different host material (no such instance)": apply_uniform_doping(
+             PR, donor_by_region_cm3={"SiO2": 1e17}, acceptor_by_region_cm3={"SiO2": 1e17}, chemical_state="ACTIVE").doping,
+@@ -286,7 +289,7 @@
+     as_chem = rep(s_comp, attachments=tuple(rep(a, chemical_state="CHEMICAL") for a in s_comp.attachments))
+     expect_fail(lambda: check_compensated(as_chem, 1e17, 1e17), "compensated attachments are not ACTIVE", "['CHEMICAL', 'CHEMICAL']")
+     expect_fail(lambda: check_gate_none(s_comp, "ACTIVE mutant"), "an ACTIVE state answers numerically where None is expected", "expected all three None")
+-    expect_fail(lambda: check_devsim_blocked(s_comp, "ACTIVE mutant"), "the mapping is not blocked for an ACTIVE state", "the mapping must be blocked")
++    expect_fail(lambda: check_devsim_blocked(s_one, "ACTIVE mutant"), "the mapping is not blocked for an ACTIVE single-polarity state", "the mapping must be blocked")
+     print("GUARDS: 4 mutant states were rejected for the stated reason")
+     print("DOPANT ACTIVATION + COMPENSATION: compensation kept, chemical_state gates the query and DevSim, reattach exact, request atomic, invalid state rejected")
+ 
+--- a/tests/unit/test_gui_doping_application_truthfulness_mock.py
++++ b/tests/unit/test_gui_doping_application_truthfulness_mock.py
+@@ -246,6 +246,9 @@
+             "both requested values must be kept in the canonical provenance"
+         q = app.wafer_state.net_doping_at(0.0, -0.5)
+         assert (q.donor_concentration, q.acceptor_concentration, q.net_doping) == (1e17, 1e17, 0.0), q
++        # concentration preservation is not transport capability: the log says so (the central DevSim gate blocks the measurement)
++        assert "COMPENSATED_TRANSPORT_MODEL_MISSING" in obs_comp["log"] and "UNSUPPORTED_BY_MODEL" in obs_comp["log"], obs_comp["log"]
++        assert "COMPENSATED_TRANSPORT_MODEL_MISSING" not in obs_a["log"], "a single-polarity doping must not carry the compensation note"
+         print(f"A2 compensated uniform 1e17/1e17: True, 2 ACTIVE attachments {[(a.polarity, a.model_params['conc_cm3']) for a in obs_comp['new_att']]}, "
+               f"query donor {q.donor_concentration:g} / acceptor {q.acceptor_concentration:g} / net {q.net_doping:g}")
+ 
+--- a/tests/unit/test_dopant_profile_mock.py
++++ b/tests/unit/test_dopant_profile_mock.py
+@@ -78,12 +78,13 @@
+ 
+ 
+ def test_step_junction_matches_devsim_step_function():
+-    """Reproduces doping_mapping.py's real DevSim equations exactly,
+-    INCLUDING the boundary quirk: at x == junction_position_um, both
+-    step() calls fire (DevSim's step(z) is 1.0 for z >= 0), so both
+-    donor and acceptor profiles are non-zero there. This is existing,
+-    already-shipped DevSim behavior -- not something this module may
+-    round away."""
++    """Reproduces doping_mapping.py's real DevSim equations everywhere
++    except the single junction coordinate. The legacy DevSim step()
++    equations both fire at x == junction_position_um (step(z) is 1.0 for
++    z >= 0), which double-dopes a mesh node sitting exactly on the
++    junction. The canonical profile puts exactly ONE polarity at every x
++    (Batch 7C Rev.2): donor for x >= junction, acceptor for x < junction.
++    Finite-area concentrations are unchanged."""
+     doping = DopingProfile(kind="step_junction", regions=[
+         DopingRegion(region="Si", junction_axis="x", junction_position_um=1.0,
+                      donor_conc_cm3=1.0e18, acceptor_conc_cm3=2.0e18,
+@@ -97,9 +98,13 @@
+     assert donor.concentration_at(0.0, 0.0) == 0.0       # left of junction: no donor
+     assert acceptor.concentration_at(0.0, 0.0) == 2.0e18
+     assert acceptor.concentration_at(2.0, 0.0) == 0.0
+-    # boundary quirk, exactly matching DevSim's own step():
++    # the junction coordinate itself: ONE polarity only (donor side, x >= junction)
+     assert donor.concentration_at(1.0, 0.0) == 1.0e18
+-    assert acceptor.concentration_at(1.0, 0.0) == 2.0e18
++    assert acceptor.concentration_at(1.0, 0.0) == 0.0
++    assert acceptor.concentration_at(1.0 - 1e-12, 0.0) == 2.0e18
++    for x in (0.0, 0.999999, 1.0, 1.000001, 2.0):
++        assert (donor.concentration_at(x, 0.0) > 0.0) + (acceptor.concentration_at(x, 0.0) > 0.0) == 1, \
++            f"exactly one polarity must exist at x={x}"
+ 
+ 
+ def test_implant_windows_background_plus_windows():

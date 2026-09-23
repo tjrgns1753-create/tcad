@@ -1,0 +1,62 @@
+diff --git a/tcad/physics/wafer_state_v2.py b/tcad/physics/wafer_state_v2.py
+index 35157ed..f0a1faf 100644
+--- a/tcad/physics/wafer_state_v2.py
++++ b/tcad/physics/wafer_state_v2.py
+@@ -240,7 +240,10 @@ class WaferStateV2:
+ 
+     # -- doping query (v1 compatibility surface, design doc Sec7.3) ------
+ 
+-    def net_doping_at(self, x_um: float, y_um: float = 0.0) -> "DopingQueryResult":
++    def net_doping_at(
++        self, x_um: float, y_um: float = 0.0, *,
++        owning_cell: Optional[MaterialCell] = None,
++    ) -> "DopingQueryResult":
+         """The one public doping query.
+ 
+         If a LEGACY_UNRESOLVED cell or an UNSUPPORTED_BY_MODEL event
+@@ -249,6 +252,23 @@ class WaferStateV2:
+         `physics_status` reports UNSUPPORTED_BY_MODEL. Otherwise the
+         three values are real floats summed from the active
+         attachments whose exact support contains the point.
++
++        `owning_cell`, when given, is trusted as the point's owner
++        INSTEAD of this method's own tie-break (below: among every
++        active cell whose bounds contain the point, the one with the
++        largest y_max). That tie-break is a coarse "what's on top"
++        default and picks the WRONG cell whenever two different
++        materials share an exact boundary with no thickness between
++        them (e.g. Si's y_max == SiO2's y_min): it always prefers the
++        cell stacked above, even when the point is being queried FOR the
++        cell below. A caller that already knows which cell genuinely
++        owns the point by a more specific rule -- e.g.
++        tcad.device.devsim.doping_mapping.canonical_node_doping(),
++        which resolves ownership by the DevSim region's own material --
++        passes it here so the attachment lookup matches that
++        determination instead of this method's own independent (and
++        coarser) guess. Every existing caller that omits it keeps this
++        method's original tie-break, unchanged.
+         """
+         legacy_here = any(
+             c.lifecycle == "LEGACY_UNRESOLVED"
+@@ -278,12 +298,15 @@ class WaferStateV2:
+                 },
+             )
+ 
+-        owning = None
+-        for cell in self.active_cells():
+-            b = cell.bounds_um
+-            if b is not None and b[0] <= x_um <= b[1] and b[2] <= y_um <= b[3]:
+-                if owning is None or b[3] > owning.bounds_um[3]:
+-                    owning = cell
++        if owning_cell is not None:
++            owning = owning_cell
++        else:
++            owning = None
++            for cell in self.active_cells():
++                b = cell.bounds_um
++                if b is not None and b[0] <= x_um <= b[1] and b[2] <= y_um <= b[3]:
++                    if owning is None or b[3] > owning.bounds_um[3]:
++                        owning = cell
+ 
+         donor = 0.0
+         acceptor = 0.0

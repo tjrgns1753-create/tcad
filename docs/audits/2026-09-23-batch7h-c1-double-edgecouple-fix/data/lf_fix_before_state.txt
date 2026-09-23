@@ -1,0 +1,275 @@
+=== BEFORE state ===
+tcad/device/devsim/solve.py sha256=2027a7ba58b54f198f6247ab6bd42a64fe4adf61ca6233bf7c4b2f3186f71cdd CRLF_lines=134 total_lines=134
+tests/integration/test_basic_potential_linear_precision_real.py sha256=aa289cae4adb658e176d4fe18b701bdf037e6fbce8136517bafd94bcbb1584d7 CRLF_lines=199 total_lines=199
+--- clean-env diff --check on solve.py ---
+tcad/device/devsim/solve.py:1: trailing whitespace.
++#!/usr/bin/env python3
+tcad/device/devsim/solve.py:2: trailing whitespace.
++# -*- coding: utf-8 -*-
+tcad/device/devsim/solve.py:3: trailing whitespace.
++
+tcad/device/devsim/solve.py:4: trailing whitespace.
++"""
+tcad/device/devsim/solve.py:5: trailing whitespace.
++Minimal device solve skeleton — a charge-free (no doping) potential
+tcad/device/devsim/solve.py:6: trailing whitespace.
++equation, i.e. Laplace's equation div(grad Potential) = 0, solved with
+tcad/device/devsim/solve.py:7: trailing whitespace.
++simple Dirichlet contacts.
+tcad/device/devsim/solve.py:8: trailing whitespace.
++
+tcad/device/devsim/solve.py:9: trailing whitespace.
++This is intentionally NOT a real semiconductor device solve: no
+tcad/device/devsim/solve.py:10: trailing whitespace.
++NetDoping, no carrier continuity equations, no mobility model. DevSim's
+tcad/device/devsim/solve.py:11: trailing whitespace.
++own official Poisson helper (devsim.python_packages.simple_physics.
+tcad/device/devsim/solve.py:12: trailing whitespace.
++CreateSiliconPotentialOnly) was checked and requires a "NetDoping" node
+tcad/device/devsim/solve.py:13: trailing whitespace.
++model — since doping is explicitly out of scope until a later phase,
+tcad/device/devsim/solve.py:14: trailing whitespace.
++that helper is not used here. This module exists to prove the
+tcad/device/devsim/solve.py:15: trailing whitespace.
++Process -> ProcessResult -> DevSim device -> solve() pipeline actually
+tcad/device/devsim/solve.py:16: trailing whitespace.
++runs end-to-end on real ViennaPS-generated geometry; the real device
+tcad/device/devsim/solve.py:17: trailing whitespace.
++physics (doping, drift-diffusion) is future work.
+tcad/device/devsim/solve.py:18: trailing whitespace.
++
+tcad/device/devsim/solve.py:19: trailing whitespace.
++Real API used, per DevSim's own public equation-assembly contract
+tcad/device/devsim/solve.py:20: trailing whitespace.
++(devsim.net's "Equation and models" manual page): a bulk `edge_model`
+tcad/device/devsim/solve.py:21: trailing whitespace.
++passed to `devsim.equation()` is integrated by DevSim itself against
+tcad/device/devsim/solve.py:22: trailing whitespace.
++`EdgeCouple` ("the length of the perpendicular bisector of an element
+tcad/device/devsim/solve.py:23: trailing whitespace.
++edge") during assembly — so the edge model string must define only the
+tcad/device/devsim/solve.py:24: trailing whitespace.
++flux/field density (e.g. a gradient term), never multiply by
+tcad/device/devsim/solve.py:25: trailing whitespace.
++`EdgeCouple` itself, or the couple gets applied twice, corrupting the
+tcad/device/devsim/solve.py:26: trailing whitespace.
++assembled matrix coefficient (confirmed directly by reading the
+tcad/device/devsim/solve.py:27: trailing whitespace.
++assembled matrix via `devsim.get_matrix_and_rhs()`: multiplying by
+tcad/device/devsim/solve.py:28: trailing whitespace.
++`EdgeCouple` inside the edge model produces a coefficient of
+tcad/device/devsim/solve.py:29: trailing whitespace.
++`EdgeCouple**2` instead of the correct `EdgeCouple/EdgeLength`; see
+tcad/device/devsim/solve.py:30: trailing whitespace.
++docs/audits/2026-09-23-batch7h-c-flux-discretization/REPORT.md and the
+tcad/device/devsim/solve.py:31: trailing whitespace.
++regression test this fixed,
+tcad/device/devsim/solve.py:32: trailing whitespace.
++tests/integration/test_basic_potential_linear_precision_real.py).
+tcad/device/devsim/solve.py:33: trailing whitespace.
++
+tcad/device/devsim/solve.py:34: trailing whitespace.
++The derivative-model naming convention below ("{model}:{variable}@n0"
+tcad/device/devsim/solve.py:35: trailing whitespace.
++for edges, a plain "1" for a linear contact residual) is not invented —
+tcad/device/devsim/solve.py:36: trailing whitespace.
++it is DevSim's own convention, found by reading the source of
+tcad/device/devsim/solve.py:37: trailing whitespace.
++devsim.python_packages.model_create.CreateEdgeModelDerivatives /
+tcad/device/devsim/solve.py:38: trailing whitespace.
++CreateNodeModelDerivative (used by DevSim's bundled diode examples,
+tcad/device/devsim/solve.py:39: trailing whitespace.
++which were run and confirmed working in this environment first, to
+tcad/device/devsim/solve.py:40: trailing whitespace.
++isolate a real equation-setup mistake from an environment problem):
+tcad/device/devsim/solve.py:41: trailing whitespace.
++
+tcad/device/devsim/solve.py:42: trailing whitespace.
++    from devsim.python_packages.model_create import (
+tcad/device/devsim/solve.py:43: trailing whitespace.
++        CreateSolution, CreateEdgeModel, CreateEdgeModelDerivatives,
+tcad/device/devsim/solve.py:44: trailing whitespace.
++    )
+tcad/device/devsim/solve.py:45: trailing whitespace.
++    CreateSolution(device, region, "Potential")
+tcad/device/devsim/solve.py:46: trailing whitespace.
++    CreateEdgeModel(device, region, "PotentialEdgeFlux",
+tcad/device/devsim/solve.py:47: trailing whitespace.
++                     "(Potential@n0-Potential@n1)*EdgeInverseLength")
+tcad/device/devsim/solve.py:48: trailing whitespace.
++    CreateEdgeModelDerivatives(device, region, "PotentialEdgeFlux",
+tcad/device/devsim/solve.py:49: trailing whitespace.
++                                "(Potential@n0-Potential@n1)*EdgeInverseLength",
+tcad/device/devsim/solve.py:50: trailing whitespace.
++                                "Potential")
+tcad/device/devsim/solve.py:51: trailing whitespace.
++    devsim.equation(device=, region=, name=, variable_name="Potential",
+tcad/device/devsim/solve.py:52: trailing whitespace.
++                     edge_model="PotentialEdgeFlux")
+tcad/device/devsim/solve.py:53: trailing whitespace.
++    # per Dirichlet contact:
+tcad/device/devsim/solve.py:54: trailing whitespace.
++    devsim.contact_node_model(device=, contact=, name=f"{c}_bc",
+tcad/device/devsim/solve.py:55: trailing whitespace.
++                               equation=f"Potential-{bias}")
+tcad/device/devsim/solve.py:56: trailing whitespace.
++    devsim.contact_node_model(device=, contact=, name=f"{c}_bc:Potential",
+tcad/device/devsim/solve.py:57: trailing whitespace.
++                               equation="1")
+tcad/device/devsim/solve.py:58: trailing whitespace.
++    devsim.contact_equation(device=, contact=, name=, node_model=f"{c}_bc")
+tcad/device/devsim/solve.py:59: trailing whitespace.
++    devsim.solve(type="dc", solver_type="direct", ...)
+tcad/device/devsim/solve.py:60: trailing whitespace.
++
+tcad/device/devsim/solve.py:61: trailing whitespace.
++Skipping CreateEdgeModelDerivatives (i.e. omitting the bulk equation's
+tcad/device/devsim/solve.py:62: trailing whitespace.
++Jacobian contribution) was tried and reproducibly fails with a DevSim
+tcad/device/devsim/solve.py:63: trailing whitespace.
++"UMFPACK ... required argument(s) missing" error even in DevSim's own
+tcad/device/devsim/solve.py:64: trailing whitespace.
++minimal 1D example — that is what led to finding this convention.
+tcad/device/devsim/solve.py:65: trailing whitespace.
++"""
+tcad/device/devsim/solve.py:66: trailing whitespace.
++
+tcad/device/devsim/solve.py:67: trailing whitespace.
++from __future__ import annotations
+tcad/device/devsim/solve.py:68: trailing whitespace.
++
+tcad/device/devsim/solve.py:69: trailing whitespace.
++from typing import Any, Dict
+tcad/device/devsim/solve.py:70: trailing whitespace.
++
+tcad/device/devsim/solve.py:71: trailing whitespace.
++from tcad.device.devsim import backend
+tcad/device/devsim/solve.py:72: trailing whitespace.
++
+tcad/device/devsim/solve.py:73: trailing whitespace.
++
+tcad/device/devsim/solve.py:74: trailing whitespace.
++def run_basic_potential_solve(
+tcad/device/devsim/solve.py:75: trailing whitespace.
++    device: str,
+tcad/device/devsim/solve.py:76: trailing whitespace.
++    region: str,
+tcad/device/devsim/solve.py:77: trailing whitespace.
++    contact_bias: Dict[str, float],
+tcad/device/devsim/solve.py:78: trailing whitespace.
++) -> Dict[str, Any]:
+tcad/device/devsim/solve.py:79: trailing whitespace.
++    """Solve div(grad Potential) = 0 on `region` with Dirichlet contacts.
+tcad/device/devsim/solve.py:80: trailing whitespace.
++
+tcad/device/devsim/solve.py:81: trailing whitespace.
++    contact_bias : {contact_name: bias_volts}. Every contact named here
+tcad/device/devsim/solve.py:82: trailing whitespace.
++        must already exist on `device` (e.g. from
+tcad/device/devsim/solve.py:83: trailing whitespace.
++        tcad.device.devsim.mesh_import.import_process_result's
+tcad/device/devsim/solve.py:84: trailing whitespace.
++        contact_regions option) and be attached to `region`.
+tcad/device/devsim/solve.py:85: trailing whitespace.
++    """
+tcad/device/devsim/solve.py:86: trailing whitespace.
++    module = backend.require_devsim()
+tcad/device/devsim/solve.py:87: trailing whitespace.
++    from devsim.python_packages.model_create import (
+tcad/device/devsim/solve.py:88: trailing whitespace.
++        CreateEdgeModel,
+tcad/device/devsim/solve.py:89: trailing whitespace.
++        CreateEdgeModelDerivatives,
+tcad/device/devsim/solve.py:90: trailing whitespace.
++        CreateSolution,
+tcad/device/devsim/solve.py:91: trailing whitespace.
++    )
+tcad/device/devsim/solve.py:92: trailing whitespace.
++
+tcad/device/devsim/solve.py:93: trailing whitespace.
++    CreateSolution(device, region, "Potential")
+tcad/device/devsim/solve.py:94: trailing whitespace.
++    CreateEdgeModel(device, region, "PotentialEdgeFlux", "(Potential@n0-Potential@n1)*EdgeInverseLength")
+tcad/device/devsim/solve.py:95: trailing whitespace.
++    CreateEdgeModelDerivatives(
+tcad/device/devsim/solve.py:96: trailing whitespace.
++        device, region, "PotentialEdgeFlux",
+tcad/device/devsim/solve.py:97: trailing whitespace.
++        "(Potential@n0-Potential@n1)*EdgeInverseLength", "Potential",
+tcad/device/devsim/solve.py:98: trailing whitespace.
++    )
+tcad/device/devsim/solve.py:99: trailing whitespace.
++    module.equation(
+tcad/device/devsim/solve.py:100: trailing whitespace.
++        device=device,
+tcad/device/devsim/solve.py:101: trailing whitespace.
++        region=region,
+tcad/device/devsim/solve.py:102: trailing whitespace.
++        name="PotentialEquation",
+tcad/device/devsim/solve.py:103: trailing whitespace.
++        variable_name="Potential",
+tcad/device/devsim/solve.py:104: trailing whitespace.
++        edge_model="PotentialEdgeFlux",
+tcad/device/devsim/solve.py:105: trailing whitespace.
++    )
+tcad/device/devsim/solve.py:106: trailing whitespace.
++
+tcad/device/devsim/solve.py:107: trailing whitespace.
++    for contact, bias in contact_bias.items():
+tcad/device/devsim/solve.py:108: trailing whitespace.
++        module.contact_node_model(
+tcad/device/devsim/solve.py:109: trailing whitespace.
++            device=device, contact=contact, name=f"{contact}_bc",
+tcad/device/devsim/solve.py:110: trailing whitespace.
++            equation=f"Potential-{bias}",
+tcad/device/devsim/solve.py:111: trailing whitespace.
++        )
+tcad/device/devsim/solve.py:112: trailing whitespace.
++        module.contact_node_model(
+tcad/device/devsim/solve.py:113: trailing whitespace.
++            device=device, contact=contact, name=f"{contact}_bc:Potential",
+tcad/device/devsim/solve.py:114: trailing whitespace.
++            equation="1",
+tcad/device/devsim/solve.py:115: trailing whitespace.
++        )
+tcad/device/devsim/solve.py:116: trailing whitespace.
++        module.contact_equation(
+tcad/device/devsim/solve.py:117: trailing whitespace.
++            device=device, contact=contact, name="PotentialEquation",
+tcad/device/devsim/solve.py:118: trailing whitespace.
++            node_model=f"{contact}_bc",
+tcad/device/devsim/solve.py:119: trailing whitespace.
++        )
+tcad/device/devsim/solve.py:120: trailing whitespace.
++
+tcad/device/devsim/solve.py:121: trailing whitespace.
++    module.solve(
+tcad/device/devsim/solve.py:122: trailing whitespace.
++        type="dc",
+tcad/device/devsim/solve.py:123: trailing whitespace.
++        solver_type="direct",
+tcad/device/devsim/solve.py:124: trailing whitespace.
++        absolute_error=1.0e-10,
+tcad/device/devsim/solve.py:125: trailing whitespace.
++        relative_error=1.0e-10,
+tcad/device/devsim/solve.py:126: trailing whitespace.
++        maximum_iterations=30,
+tcad/device/devsim/solve.py:127: trailing whitespace.
++    )
+tcad/device/devsim/solve.py:128: trailing whitespace.
++
+tcad/device/devsim/solve.py:129: trailing whitespace.
++    values = module.get_node_model_values(device=device, region=region, name="Potential")
+tcad/device/devsim/solve.py:130: trailing whitespace.
++    return {
+tcad/device/devsim/solve.py:131: trailing whitespace.
++        "num_nodes": len(values),
+tcad/device/devsim/solve.py:132: trailing whitespace.
++        "potential_min": min(values),
+tcad/device/devsim/solve.py:133: trailing whitespace.
++        "potential_max": max(values),
+tcad/device/devsim/solve.py:134: trailing whitespace.
++    }
+rc=0
+--- clean-env diff --check on new test ---
+rc=0

@@ -1,0 +1,254 @@
+--- a/tests/integration/test_locos_devsim_import_real.py
++++ b/tests/integration/test_locos_devsim_import_real.py
+@@ -17,14 +17,24 @@
+      does not read `physics_status` or `state_transition`, so it is NOT a physics gate and this test never calls it
+      on the refused LOCOS result and never calls the outcome "a LOCOS device". Authorization to write doping and solve
+      is decided by the canonical WaferState gate (`canonical_node_doping()` / `apply_doping()` raising
+-     `UnsupportedDopingState`, and the GUI's `run_measurement()`, which catches it). That gate is exercised for real:
+-     the GUI runs a positive-time LOCOS request, the user then applies a doping and asks for a MEASUREMENT, and the
+-     pass-through observers on the real DevSim functions must show 0 `devsim.solve` calls and 0 doping node-model
+-     writes, no current reported, `UNSUPPORTED_BY_MODEL` with the blocked-node diagnostics in the log, the canonical
+-     state unchanged and still answering None, and no leaked DevSim device. Two variants: a wafer materialized
+-     BEFORE the request (the canonical cell becomes UNRESOLVED) and a wafer with no earlier state (LEGACY_UNRESOLVED
+-     cells). The geometry-only mesh/device import that happens on the way to the gate is OBSERVED and reported, not
+-     treated as a success.
++     `UnsupportedDopingState`, and the GUI's `run_measurement()`, which catches it). Real GUI, two variants: a wafer
++     materialized BEFORE the request (the canonical cell becomes UNRESOLVED) and a wafer with no earlier state
++     (LEGACY_UNRESOLVED cells). After the refused LOCOS request:
++       (a) the user's doping request is refused at the source (Tier 1): `run_doping()` returns False, no active
++           attachment, one refusal event + one unresolved-inventory entry in the canonical state, `last_doped_result`,
++           history and viewer layer untouched, the log says DOPING NOT APPLIED (UNSUPPORTED_BY_MODEL) with the input
++           labelled REQUESTED, NOT APPLIED and never DOPING APPLIED;
++       (b) a MEASURE right after stops with "no doping profile": 0 mesh/device imports, 0 `devsim.solve`, 0 doping
++           writes, no current;
++       (c) defence in depth (constructed on purpose: a real doping result bound to the current mesh, as if a doping
++           application had survived): the canonical gate still blocks -- 0 `devsim.solve`, 0 doping node-model writes,
++           no current, `UNSUPPORTED_BY_MODEL` with blocked-node diagnostics, canonical state unchanged and answering
++           None, no leaked DevSim device.
++     The pass-through observers on the real DevSim functions do the counting. The one geometry-only import that
++     happens on the way to the gate in (c) is OBSERVED and described exactly: "One temporary device was imported
++     from last-known Si geometry; no post-LOCOS device or electrical result was claimed." It is not a LOCOS result
++     import and not a solve authorization; it is staging to obtain node coordinates for the canonical gate.
++     Making it 0 would be a production change that is out of scope here.
+ 
+ WHAT IS NOT PINNED ANY MORE (historical). This file used to import a positive-time LOCOS result into DevSim as
+ a three-region Si/SiO2/Mask device with two contacts on Si, and to check a >=90% mask-retention area. That was
+@@ -58,6 +68,7 @@
+ from tcad.device.devsim import backend as devsim_backend
+ from tcad.device.devsim import doping_mapping, mesh_import
+ from tcad.mesh.viennaps_adapter import build_process_result
++from tcad.physics.doping import apply_uniform_doping
+ from tcad.process import registry
+ from tcad.process.oxidation.locos import LocosOxidation
+ 
+@@ -154,6 +165,7 @@
+     def __init__(self, devsim, importer_owner=None):
+         self.devsim, self.importer_owner = devsim, importer_owner
+         self.solve_calls, self.doping_writes, self.import_calls = 0, [], 0
++        self.imported_meshes = []
+         self._originals = {}
+ 
+     def install(self):
+@@ -182,6 +194,7 @@
+ 
+             def counted(*a, **k):
+                 self.import_calls += 1
++                self.imported_meshes.append(getattr(a[0], "volume_mesh_path", None) if a else None)
+                 return self._orig_import(*a, **k)
+ 
+             self.importer_owner.import_process_result = counted
+@@ -269,6 +282,44 @@
+     assert not m["leaked_devices"], f"{where}: leaked DevSim devices {m['leaked_devices']}"
+ 
+ 
++IMPORT_MEANING = ("One temporary device was imported from last-known Si geometry; no post-LOCOS device or electrical result was claimed.")
++SUCCESS_WORDS = ("DOPING APPLIED", "profile attached", "Doping profile attached", "net_doping_cm3=")
++
++
++def check_doping_refused(d, where):
++    """Tier 1: the doping request after a refused LOCOS is refused at the source, and the canonical state says so."""
++    assert d["ret"] is False, f"{where}: run_doping() returned {d['ret']!r} for a refused doping request, expected False"
++    assert d["attachments_added"] == 0, f"{where}: {d['attachments_added']} active attachment(s) were created on an unresolved state"
++    assert d["refusal_events"] >= 1 and d["ledger_added"] >= 1, f"{where}: no refusal provenance/ledger was recorded: {d}"
++    assert d["last_doped_result_replaced"] is False, f"{where}: the refused request replaced last_doped_result"
++    assert d["history_added"] == 0, f"{where}: a refused doping request was added to the history"
++    assert d["layer_after"] == d["layer_before"], f"{where}: the viewer layer was switched by a refused doping request"
++    found = [w for w in SUCCESS_WORDS if w in d["log"]]
++    assert not found, f"{where}: the refusal log carries success wording {found}"
++    for text in ("DOPING NOT APPLIED (UNSUPPORTED_BY_MODEL)", "REQUESTED, NOT APPLIED", "No DevSim write or solve is run"):
++        assert text in d["log"], f"{where}: {text!r} missing from the refusal log:\n{d['log']}"
++    assert d["modal_calls"] == 0, f"{where}: {d['modal_calls']} modal dialog call(s)"
++
++
++def check_gui_stopped(m, where):
++    """MEASURE right after the refused doping request: there is no doping profile, so it stops before any import, DevSim write or solve."""
++    assert m["import_calls"] == 0, f"{where}: {m['import_calls']} mesh/device import(s) although no doping application exists"
++    assert m["solve_calls"] == 0, f"{where}: devsim.solve was called {m['solve_calls']} time(s)"
++    assert not m["doping_writes"], f"{where}: {len(m['doping_writes'])} DevSim doping write(s)"
++    assert not re.search(r"I = [-+0-9.eE]+ A", m["log"]), f"{where}: a terminal current was reported:\n{m['log']}"
++    assert "carries no doping profile" in m["log"], f"{where}: the stop reason is missing from the log:\n{m['log']}"
++    assert m["state_unchanged"] and m["history_added"] == 0 and m["modal_calls"] == 0 and not m["leaked_devices"], m
++
++
++def check_import_meaning(m, statement, where):
++    """What the one geometry-only import on the way to the canonical gate is, and is not."""
++    assert m["import_calls"] == 1, f"{where}: expected exactly one temporary geometry import on the way to the gate, observed {m['import_calls']}"
++    assert m["imported_materials"] == [["Si"]], f"{where}: the imported geometry is {m['imported_materials']}, expected last-known virgin Si only"
++    assert not m["leaked_devices"], f"{where}: leaked DevSim devices {m['leaked_devices']}"
++    assert statement == IMPORT_MEANING, (f"{where}: the geometry-only import is described as {statement!r}, expected {IMPORT_MEANING!r} "
++                                         f"(it is neither a LOCOS result import nor a solve authorization)")
++
++
+ # ------------------------------------------------------------------------------------------ the real GUI path
+ def configure(app):
+     app.wafer.width_um = 4.0
+@@ -302,8 +353,33 @@
+     app.dope_uniform_region_var.set("Si")
+     app.dope_uniform_donor_var.set(1e16)
+     app.dope_uniform_acceptor_var.set(0.0)
+-    app.run_doping(silent=True)           # the user's next action; whatever it logs, the canonical state must stay without a number
+ 
++    # (a) the user's next action: apply a doping. It must be refused at the source (Tier 1), not reported as applied.
++    st = app.wafer_state
++    att0, ev0, un0 = {a.attachment_id for a in st.attachments}, len(st.events), len(st.unresolved_inventory)
++    res0, hist0, layer0 = app.last_doped_result, len(app.history), app.viewer_layer_var.get()
++    log_d, modal_d = app.log.get("1.0", "end-1c"), len(modal)
++    ret = app.run_doping(silent=True)
++    st = app.wafer_state
++    d = {
++        "ret": ret, "attachments_added": sum(a.attachment_id not in att0 for a in st.attachments),
++        "refusal_events": sum(e.model_status == "UNSUPPORTED_BY_MODEL" for e in st.events[ev0:]), "ledger_added": len(st.unresolved_inventory) - un0,
++        "last_doped_result_replaced": app.last_doped_result is not res0, "history_added": len(app.history) - hist0,
++        "layer_before": layer0, "layer_after": app.viewer_layer_var.get(), "log": app.log.get("1.0", "end-1c")[len(log_d):],
++        "modal_calls": len(modal) - modal_d,
++    }
++
++    # (b) MEASURE now: with no doping application there is nothing to measure -> stops before any import, DevSim write or solve.
++    stopped = measure(app, devsim, modal)
++
++    # (c) Defence in depth, constructed on purpose: bind a real doping result (real recipe helpers, on the current virgin-Si mesh) to
++    #     the current mesh, as if a doping application had survived. The canonical gate must still refuse the device.
++    app.last_doped_result = apply_uniform_doping(build_process_result({"final_mesh": app.last_final_mesh, "snapshots": []}), {"Si": 1e16})
++    gated = measure(app, devsim, modal)
++    return ox, d, stopped, gated
++
++
++def measure(app, devsim, modal):
+     obs = DevsimObserver(devsim, importer_owner=mesh_import)
+     state_before, history_before = app.wafer_state, len(app.history)
+     log1, modal_before = app.log.get("1.0", "end-1c"), len(modal)
+@@ -312,15 +388,14 @@
+         app.run_measurement()
+     finally:
+         obs.restore()
+-    m = {
++    return {
+         "log": app.log.get("1.0", "end-1c")[len(log1):], "solve_calls": obs.solve_calls, "doping_writes": obs.doping_writes,
+-        "import_calls": obs.import_calls, "physics_status": app.last_physics_status if isinstance(app.last_physics_status, dict) else None,
++        "import_calls": obs.import_calls, "imported_materials": [mesh_materials(p) for p in obs.imported_meshes],
++        "physics_status": app.last_physics_status if isinstance(app.last_physics_status, dict) else None,
+         "history_added": len(app.history) - history_before, "state_unchanged": app.wafer_state is state_before,
+         "net_doping_after": app.wafer_state.net_doping_at(0.0, -0.5).net_doping, "attachments_after": len(app.wafer_state.attachments),
+         "modal_calls": len(modal) - modal_before, "leaked_devices": list(devsim.get_device_list()),
+-        "cells_after": [(c.material_instance_id, c.lifecycle, c.bounds_um) for c in app.wafer_state.cells][:1],
+     }
+-    return ox, m
+ 
+ 
+ def check_gui_oxidation_refused(ox, where):
+@@ -350,7 +425,7 @@
+     raise AssertionError(f"FALSE GREEN: the check did not fail when {label}")
+ 
+ 
+-def run_guards(sample, materials, gui_metrics):
++def run_guards(sample, materials, doping_metrics, stopped_metrics, gui_metrics):
+     print("\n[guards] every contract check fails, for its own reason, when its subject is broken")
+     bad = copy.deepcopy(sample)
+     bad["physics_status"]["reason_code"] = bad["state_transition"]["reason"] = "OXIDATION_CAPABILITY_PROOF_MISSING"      # LOCOS <-> thermal swapped
+@@ -381,6 +456,34 @@
+                 "the measurement log does not say UNSUPPORTED_BY_MODEL", "mutant: UNSUPPORTED_BY_MODEL not shown")
+     expect_fail(lambda: check_gui_blocked({**gui_metrics, "log": gui_metrics["log"] + "\nLOCOS device imported successfully\n"}, "mutant"),
+                 "the log presents the refused LOCOS as an imported device", "the log presents the unsupported result as a device")
++    # Tier 1 -- refused doping must never read as applied
++    expect_fail(lambda: check_doping_refused({**doping_metrics, "ret": True}, "mutant"),
++                "the refused doping request returns True", "mutant: run_doping() returned True")
++    expect_fail(lambda: check_doping_refused({**doping_metrics, "attachments_added": 1}, "mutant"),
++                "an active attachment appears on an unresolved state", "mutant: 1 active attachment(s) were created")
++    expect_fail(lambda: check_doping_refused({**doping_metrics, "last_doped_result_replaced": True}, "mutant"),
++                "the refused request replaces last_doped_result", "mutant: the refused request replaced last_doped_result")
++    expect_fail(lambda: check_doping_refused({**doping_metrics, "history_added": 1}, "mutant"),
++                "the refused request is added to the history", "mutant: a refused doping request was added to the history")
++    expect_fail(lambda: check_doping_refused({**doping_metrics, "layer_after": "doping"}, "mutant"),
++                "the refused request switches the overlay", "mutant: the viewer layer was switched")
++    expect_fail(lambda: check_doping_refused({**doping_metrics, "log": doping_metrics["log"] + "DOPING APPLIED: UNIFORM"}, "mutant"),
++                "the refusal log prints DOPING APPLIED", "the refusal log carries success wording ['DOPING APPLIED']")
++    expect_fail(lambda: check_doping_refused({**doping_metrics, "log": doping_metrics["log"].replace("REQUESTED, NOT APPLIED", "value")}, "mutant"),
++                "the requested value is not labelled REQUESTED, NOT APPLIED", "'REQUESTED, NOT APPLIED' missing")
++    expect_fail(lambda: check_gui_stopped({**stopped_metrics, "solve_calls": 1}, "mutant"),
++                "a solve follows the refused doping request", "mutant: devsim.solve was called 1 time(s)")
++    expect_fail(lambda: check_gui_stopped({**stopped_metrics, "doping_writes": [("node_model", "NetDoping")]}, "mutant"),
++                "a DevSim doping write follows the refused doping request", "mutant: 1 DevSim doping write(s)")
++    expect_fail(lambda: check_gui_stopped({**stopped_metrics, "import_calls": 1}, "mutant"),
++                "a device import follows the refused doping request", "mutant: 1 mesh/device import(s) although no doping application exists")
++    # the geometry-only import must not be described as a LOCOS result or an authorization
++    expect_fail(lambda: check_import_meaning(gui_metrics, "The refused LOCOS result was imported into DevSim as a LOCOS device.", "mutant"),
++                "the temporary geometry import is labelled a LOCOS result import", "the geometry-only import is described as")
++    expect_fail(lambda: check_import_meaning({**gui_metrics, "import_calls": 0}, IMPORT_MEANING, "mutant"),
++                "the import is claimed but was not observed", "expected exactly one temporary geometry import")
++    expect_fail(lambda: check_import_meaning({**gui_metrics, "imported_materials": [["Si", "SiO2", "Mask"]]}, IMPORT_MEANING, "mutant"),
++                "the imported geometry is presented as a LOCOS geometry", "expected last-known virgin Si only")
+ 
+ 
+ def main():
+@@ -429,32 +532,43 @@
+         app.withdraw()
+         for variant, materialize_first in (("materialized wafer before the request", True), ("no earlier canonical state", False)):
+             app.reset()
+-            ox, m = gui_scenario(app, devsim, modal, materialize_first)
++            ox, d, stopped, m = gui_scenario(app, devsim, modal, materialize_first)
+             check_gui_oxidation_refused(ox, variant)
++            check_doping_refused(d, variant)
++            check_gui_stopped(stopped, variant)
+             check_gui_blocked(m, variant)
++            check_import_meaning(m, IMPORT_MEANING, variant)
+             if materialize_first:
+                 assert "lifecycle UNRESOLVED" in m["log"] and "si#substrate" in m["log"], m["log"]
+             else:
+                 assert "LEGACY_UNRESOLVED" in m["log"], m["log"]
+-            metrics[variant] = m
++            metrics[variant] = (d, stopped, m)
+             print(f"[4/4] GUI, {variant}: LOCOS request -> {ox['status']['resolution']}/{ox['status']['reason_code']} (canonical cells {ox['cells']}, "
+-                  f"query {ox['q'].net_doping}); then doping + MEASURE -> devsim.solve calls {m['solve_calls']}, DevSim doping writes "
+-                  f"{len(m['doping_writes'])}, currents reported 0, 'UNSUPPORTED_BY_MODEL' with blocked-node diagnostics in the log, canonical state "
++                  f"query {ox['q'].net_doping})")
++            print(f"      (a) doping request -> run_doping() returned {d['ret']}, active attachments added {d['attachments_added']}, refusal events "
++                  f"{d['refusal_events']}, unresolved-ledger entries {d['ledger_added']}, last_doped_result replaced {d['last_doped_result_replaced']}, "
++                  f"history added {d['history_added']}, viewer layer {d['layer_before']!r}->{d['layer_after']!r}, modal calls {d['modal_calls']}; "
++                  f"log says DOPING NOT APPLIED (UNSUPPORTED_BY_MODEL) with the input labelled REQUESTED, NOT APPLIED")
++            print(f"      (b) MEASURE right after -> stops with 'no doping profile': mesh/device imports {stopped['import_calls']}, devsim.solve "
++                  f"{stopped['solve_calls']}, DevSim doping writes {len(stopped['doping_writes'])}, currents 0, leaked devices {stopped['leaked_devices']}")
++            print(f"      (c) canonical gate, defence in depth (a real doping result bound to the current mesh): devsim.solve {m['solve_calls']}, DevSim "
++                  f"doping writes {len(m['doping_writes'])}, currents 0, UNSUPPORTED_BY_MODEL with blocked-node diagnostics in the log, canonical state "
+                   f"unchanged (query {m['net_doping_after']}, attachments {m['attachments_after']}), modal calls {m['modal_calls']}, leaked devices "
+-                  f"{m['leaked_devices']}; mesh/device import calls observed on the way to the gate: {m['import_calls']} (geometry only, "
+-                  f"authorizes nothing)")
++                  f"{m['leaked_devices']}")
++            print(f"          temporary import observed on the way to the gate: {m['import_calls']} from {m['imported_materials']} -- {IMPORT_MEANING}")
+     finally:
+         for n, fn in originals.items():
+             setattr(gui.messagebox, n, fn)
+         app.destroy()
+     assert not list(devsim.get_device_list()), f"leaked DevSim devices: {list(devsim.get_device_list())}"
+ 
+-    run_guards(step_result, materials, next(iter(metrics.values())))
++    run_guards(step_result, materials, *next(iter(metrics.values())))
+ 
+     print()
+     print("LOCOS -> DEVSIM: a positive-time LOCOS request is UNSUPPORTED_BY_MODEL / LOCOS_CAPABILITY_PROOF_MISSING with 0 solver and LOCOS-builder "
+           "calls and only the fresh virgin Si returned; build_process_result() preserves that verdict; the canonical measurement gate then blocks the "
+-          "device: 0 devsim.solve, 0 DevSim doping writes, no current, UNSUPPORTED_BY_MODEL logged. No LOCOS device was imported or claimed.")
++          "device: 0 devsim.solve, 0 DevSim doping writes, no current, UNSUPPORTED_BY_MODEL logged. The refused doping request is reported as NOT "
++          "APPLIED. One temporary device was imported from last-known Si geometry; no post-LOCOS device or electrical result was claimed.")
+ 
+ 
+ if __name__ == "__main__":

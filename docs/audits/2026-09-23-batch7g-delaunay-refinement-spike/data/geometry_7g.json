@@ -1,0 +1,1663 @@
+{
+  "geometry_7g": [
+    {
+      "label": "geo_raw",
+      "mode": "raw",
+      "n_points": 231,
+      "n_triangles": 400,
+      "n_interior_unconstrained_edges": 570,
+      "n_constrained_edges": 60,
+      "n_delaunay_violations": 0,
+      "delaunay_violation_rate": 0.0,
+      "violations_by_zone": {
+        "band": 0,
+        "ring": 0,
+        "outer": 0,
+        "unknown": 0
+      },
+      "max_violation_severity_rad": 0.0,
+      "n_negative_cotangent_weights": 0,
+      "n_hanging_nodes": 0,
+      "hanging_node_sample": [],
+      "n_overlap_pairs": 1,
+      "overlap_pairs_checked": 5416,
+      "total_overlap_area_um2": 2.9802322387695312e-08,
+      "boundary_holes": {
+        "n_boundary_loops": 1,
+        "loop_areas": [
+          "7.999997"
+        ],
+        "outer_loop_area": "7.999997",
+        "triangle_area_sum": 7.999993324279785,
+        "uncovered_hole_area": "3.8146973e-06",
+        "n_boundary_edges": 60
+      },
+      "sum_NodeVolume_cm2": 7.999999595806008e-08,
+      "sum_barycentric_cm2": 7.999999945829117e-08,
+      "total_excess_cm2": -3.500231093872151e-15,
+      "total_excess_relative": -4.375288896966846e-08,
+      "excess_by_zone_cm2": {
+        "band": -2.4162493617111694e-16,
+        "ring": -4.832498723422339e-16,
+        "outer": -2.7753562853588e-15
+      },
+      "excess_fraction_in_ring": 0.13806227628463122,
+      "top20_excess_nodes": [
+        {
+          "node": 209,
+          "x_um": 1.9999999494757503,
+          "y_cm": -0.00019999999494757503,
+          "zone": "outer",
+          "NodeVolume": 1.0000006770716264e-10,
+          "barycentric": 6.666669299937311e-11,
+          "excess": 3.3333374707789524e-11
+        },
+        {
+          "node": 210,
+          "x_um": -1.9999999494757503,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 1.0000003132736225e-10,
+          "barycentric": 6.66666791215853e-11,
+          "excess": 3.3333352205776945e-11
+        },
+        {
+          "node": 230,
+          "x_um": 1.9999999494757503,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 1.0000003132736225e-10,
+          "barycentric": 1.333333582431706e-10,
+          "excess": -3.333332691580836e-11
+        },
+        {
+          "node": 189,
+          "x_um": -1.9999999494757503,
+          "y_cm": -0.00019999999494757503,
+          "zone": "outer",
+          "NodeVolume": 1.0000006770716264e-10,
+          "barycentric": 1.3333338599874622e-10,
+          "excess": -3.333331829158359e-11
+        },
+        {
+          "node": 58,
+          "x_um": 1.2000000424450263,
+          "y_cm": -0.0001399999891873449,
+          "zone": "outer",
+          "NodeVolume": 3.99999834271165e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -1.1555825653929104e-16
+        },
+        {
+          "node": 59,
+          "x_um": 1.399999891873449,
+          "y_cm": -0.0001399999891873449,
+          "zone": "outer",
+          "NodeVolume": 3.99999834271165e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -1.1555825653929104e-16
+        },
+        {
+          "node": 46,
+          "x_um": -1.2000000424450263,
+          "y_cm": -0.0001399999891873449,
+          "zone": "outer",
+          "NodeVolume": 3.99999834271165e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -1.1555825653929104e-16
+        },
+        {
+          "node": 45,
+          "x_um": -1.399999891873449,
+          "y_cm": -0.0001399999891873449,
+          "zone": "outer",
+          "NodeVolume": 3.99999834271165e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -1.1555825653929104e-16
+        },
+        {
+          "node": 80,
+          "x_um": 1.399999891873449,
+          "y_cm": -0.00012000000424450263,
+          "zone": "outer",
+          "NodeVolume": 3.99999834271165e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -1.1555825653929104e-16
+        },
+        {
+          "node": 79,
+          "x_um": 1.2000000424450263,
+          "y_cm": -0.00012000000424450263,
+          "zone": "outer",
+          "NodeVolume": 3.99999834271165e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -1.1555825653929104e-16
+        },
+        {
+          "node": 66,
+          "x_um": -1.399999891873449,
+          "y_cm": -0.00012000000424450263,
+          "zone": "outer",
+          "NodeVolume": 3.99999834271165e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -1.1555825653929104e-16
+        },
+        {
+          "node": 67,
+          "x_um": -1.2000000424450263,
+          "y_cm": -0.00012000000424450263,
+          "zone": "outer",
+          "NodeVolume": 3.99999834271165e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -1.1555825653929104e-16
+        },
+        {
+          "node": 108,
+          "x_um": -1.399999891873449,
+          "y_cm": -7.999999797903001e-05,
+          "zone": "outer",
+          "NodeVolume": 3.9999987065094555e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -7.917847600484956e-17
+        },
+        {
+          "node": 109,
+          "x_um": -1.2000000424450263,
+          "y_cm": -7.999999797903001e-05,
+          "zone": "outer",
+          "NodeVolume": 3.9999987065094555e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -7.917847600484956e-17
+        },
+        {
+          "node": 69,
+          "x_um": -0.7999999797903001,
+          "y_cm": -0.00012000000424450263,
+          "zone": "outer",
+          "NodeVolume": 3.9999987065094555e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -7.917847600484956e-17
+        },
+        {
+          "node": 77,
+          "x_um": 0.7999999797903001,
+          "y_cm": -0.00012000000424450263,
+          "zone": "outer",
+          "NodeVolume": 3.9999987065094555e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -7.917847600484956e-17
+        },
+        {
+          "node": 48,
+          "x_um": -0.7999999797903001,
+          "y_cm": -0.0001399999891873449,
+          "zone": "outer",
+          "NodeVolume": 3.9999987065094555e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -7.917847600484956e-17
+        },
+        {
+          "node": 56,
+          "x_um": 0.7999999797903001,
+          "y_cm": -0.0001399999891873449,
+          "zone": "outer",
+          "NodeVolume": 3.9999987065094555e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -7.917847600484956e-17
+        },
+        {
+          "node": 121,
+          "x_um": 1.2000000424450263,
+          "y_cm": -7.999999797903001e-05,
+          "zone": "outer",
+          "NodeVolume": 3.9999987065094555e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -7.917847600484956e-17
+        },
+        {
+          "node": 122,
+          "x_um": 1.399999891873449,
+          "y_cm": -7.999999797903001e-05,
+          "zone": "outer",
+          "NodeVolume": 3.9999987065094555e-10,
+          "barycentric": 3.9999994982942155e-10,
+          "excess": -7.917847600484956e-17
+        }
+      ],
+      "timing_s": {
+        "mesh": 0.23632121086120605,
+        "delaunay": 0.013112068176269531,
+        "geo": 0.01589512825012207,
+        "cot": 0.0,
+        "hanging": 0.09361982345581055,
+        "overlap": 0.060577392578125,
+        "hole": 0.0017437934875488281,
+        "nodevolume": 0.007016420364379883,
+        "total": 0.4282858371734619
+      },
+      "wall_s": 0.7260370254516602
+    },
+    {
+      "label": "geo_imp_L3",
+      "mode": "imported",
+      "n_points": 2921,
+      "n_triangles": 5760,
+      "n_interior_unconstrained_edges": 8600,
+      "n_constrained_edges": 80,
+      "n_delaunay_violations": 68,
+      "delaunay_violation_rate": 0.007906976744186046,
+      "violations_by_zone": {
+        "band": 10,
+        "ring": 50,
+        "outer": 8,
+        "unknown": 0
+      },
+      "max_violation_severity_rad": 1.030376672744751,
+      "n_negative_cotangent_weights": 69,
+      "n_hanging_nodes": 0,
+      "hanging_node_sample": [],
+      "n_overlap_pairs": 25,
+      "overlap_pairs_checked": 95759,
+      "total_overlap_area_um2": 0.012065196176990867,
+      "boundary_holes": {
+        "n_boundary_loops": 1,
+        "loop_areas": [
+          "7.999997"
+        ],
+        "outer_loop_area": "7.999997",
+        "triangle_area_sum": 8.000261306762695,
+        "uncovered_hole_area": "-0.0002641678",
+        "n_boundary_edges": 80
+      },
+      "sum_NodeVolume_cm2": 9.484452693680171e-08,
+      "sum_barycentric_cm2": 7.999999937030816e-08,
+      "total_excess_cm2": 1.4844527566493564e-08,
+      "total_excess_relative": 0.18555659604171296,
+      "excess_by_zone_cm2": {
+        "band": 5.729556960746758e-09,
+        "ring": 7.539973509387332e-09,
+        "outer": 1.5749970963594962e-09
+      },
+      "excess_fraction_in_ring": 0.5079295030180846,
+      "top20_excess_nodes": [
+        {
+          "node": 11,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00017999998817685992,
+          "zone": "ring",
+          "NodeVolume": 4.804689894782305e-10,
+          "barycentric": 2.3333330189875823e-10,
+          "excess": 2.471356875794723e-10
+        },
+        {
+          "node": 177,
+          "x_um": -0.19999999494757503,
+          "y_cm": -1.9999999494757503e-05,
+          "zone": "ring",
+          "NodeVolume": 4.804687351748976e-10,
+          "barycentric": 2.3333335415730294e-10,
+          "excess": 2.471353810175946e-10
+        },
+        {
+          "node": 249,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00014999999257270247,
+          "zone": "ring",
+          "NodeVolume": 3.117190269943969e-10,
+          "barycentric": 1.166666897638169e-10,
+          "excess": 1.9505233723058002e-10
+        },
+        {
+          "node": 259,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00011000000085914508,
+          "zone": "ring",
+          "NodeVolume": 3.1171898720397907e-10,
+          "barycentric": 1.166666897638169e-10,
+          "excess": 1.9505229744016218e-10
+        },
+        {
+          "node": 263,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00011000000085914508,
+          "zone": "ring",
+          "NodeVolume": 3.117189008019449e-10,
+          "barycentric": 1.166666897638169e-10,
+          "excess": 1.95052211038128e-10
+        },
+        {
+          "node": 284,
+          "x_um": 0.19999999494757503,
+          "y_cm": -4.999999873689376e-05,
+          "zone": "ring",
+          "NodeVolume": 3.117188766434451e-10,
+          "barycentric": 1.1666667935547603e-10,
+          "excess": 1.9505219728796908e-10
+        },
+        {
+          "node": 270,
+          "x_um": 0.19999999494757503,
+          "y_cm": -8.999999408842996e-05,
+          "zone": "ring",
+          "NodeVolume": 3.117188436742564e-10,
+          "barycentric": 1.1666666374296475e-10,
+          "excess": 1.9505217993129164e-10
+        },
+        {
+          "node": 287,
+          "x_um": -0.19999999494757503,
+          "y_cm": -3.000000106112566e-05,
+          "zone": "ring",
+          "NodeVolume": 3.1171879617445414e-10,
+          "barycentric": 1.166666741513056e-10,
+          "excess": 1.9505212202314853e-10
+        },
+        {
+          "node": 256,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00012999998580198735,
+          "zone": "ring",
+          "NodeVolume": 3.1171875414606275e-10,
+          "barycentric": 1.1666663945683609e-10,
+          "excess": 1.9505211468922667e-10
+        },
+        {
+          "node": 280,
+          "x_um": -0.19999999494757503,
+          "y_cm": -4.999999873689376e-05,
+          "zone": "ring",
+          "NodeVolume": 3.117187758174027e-10,
+          "barycentric": 1.1666667068185865e-10,
+          "excess": 1.9505210513554407e-10
+        },
+        {
+          "node": 231,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00018999999156221747,
+          "zone": "ring",
+          "NodeVolume": 3.117187899572383e-10,
+          "barycentric": 1.166666897638169e-10,
+          "excess": 1.950521001934214e-10
+        },
+        {
+          "node": 298,
+          "x_um": 0.19999999494757503,
+          "y_cm": -9.999999747378752e-06,
+          "zone": "ring",
+          "NodeVolume": 3.117187435587544e-10,
+          "barycentric": 1.1666667588602908e-10,
+          "excess": 1.950520676727253e-10
+        },
+        {
+          "node": 273,
+          "x_um": -0.19999999494757503,
+          "y_cm": -7.000000186963007e-05,
+          "zone": "ring",
+          "NodeVolume": 3.1171871058958335e-10,
+          "barycentric": 1.1666666374296475e-10,
+          "excess": 1.950520468466186e-10
+        },
+        {
+          "node": 245,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00014999999257270247,
+          "zone": "ring",
+          "NodeVolume": 3.117187143556019e-10,
+          "barycentric": 1.166666897638169e-10,
+          "excess": 1.95052024591785e-10
+        },
+        {
+          "node": 238,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00016999999934341758,
+          "zone": "ring",
+          "NodeVolume": 3.117186506909347e-10,
+          "barycentric": 1.1666663945683609e-10,
+          "excess": 1.950520112340986e-10
+        },
+        {
+          "node": 291,
+          "x_um": 0.19999999494757503,
+          "y_cm": -3.000000106112566e-05,
+          "zone": "ring",
+          "NodeVolume": 3.1171866699779166e-10,
+          "barycentric": 1.1666667241658213e-10,
+          "excess": 1.9505199458120953e-10
+        },
+        {
+          "node": 242,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00016999999934341758,
+          "zone": "ring",
+          "NodeVolume": 3.1171856457312854e-10,
+          "barycentric": 1.166666156043883e-10,
+          "excess": 1.9505194896874025e-10
+        },
+        {
+          "node": 277,
+          "x_um": 0.19999999494757503,
+          "y_cm": -7.000000186963007e-05,
+          "zone": "ring",
+          "NodeVolume": 3.1171859711592804e-10,
+          "barycentric": 1.1666665420198563e-10,
+          "excess": 1.950519429139424e-10
+        },
+        {
+          "node": 266,
+          "x_um": -0.19999999494757503,
+          "y_cm": -8.999999408842996e-05,
+          "zone": "ring",
+          "NodeVolume": 3.117184970716234e-10,
+          "barycentric": 1.1666665420198563e-10,
+          "excess": 1.9505184286963776e-10
+        },
+        {
+          "node": 252,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00012999998580198735,
+          "zone": "ring",
+          "NodeVolume": 3.11718088083739e-10,
+          "barycentric": 1.166666156043883e-10,
+          "excess": 1.9505147247935068e-10
+        }
+      ],
+      "timing_s": {
+        "mesh": 0.24979257583618164,
+        "delaunay": 0.21718811988830566,
+        "geo": 0.2294325828552246,
+        "cot": 0.21910858154296875,
+        "hanging": 1.0497443675994873,
+        "overlap": 1.461193561553955,
+        "hole": 0.04811358451843262,
+        "nodevolume": 0.09515190124511719,
+        "total": 3.5707240104675293
+      },
+      "wall_s": 3.8865435123443604
+    },
+    {
+      "label": "geo_imp_L4",
+      "mode": "imported",
+      "n_points": 10625,
+      "n_triangles": 21148,
+      "n_interior_unconstrained_edges": 31672,
+      "n_constrained_edges": 100,
+      "n_delaunay_violations": 106,
+      "delaunay_violation_rate": 0.0033468047486739077,
+      "violations_by_zone": {
+        "band": 41,
+        "ring": 57,
+        "outer": 8,
+        "unknown": 0
+      },
+      "max_violation_severity_rad": 1.341564416885376,
+      "n_negative_cotangent_weights": 106,
+      "n_hanging_nodes": 0,
+      "hanging_node_sample": [],
+      "n_overlap_pairs": 166,
+      "overlap_pairs_checked": 362578,
+      "total_overlap_area_um2": 0.05396006582304835,
+      "boundary_holes": {
+        "n_boundary_loops": 1,
+        "loop_areas": [
+          "7.999997"
+        ],
+        "outer_loop_area": "7.999997",
+        "triangle_area_sum": 8.000285148620605,
+        "uncovered_hole_area": "-0.00028800964",
+        "n_boundary_edges": 100
+      },
+      "sum_NodeVolume_cm2": 1.0651425271196442e-07,
+      "sum_barycentric_cm2": 7.999999936451446e-08,
+      "total_excess_cm2": 2.6514253347449957e-08,
+      "total_excess_relative": 0.3314281694758471,
+      "excess_by_zone_cm2": {
+        "band": 1.1512238999932824e-08,
+        "ring": 1.3427017251157427e-08,
+        "outer": 1.5749970963594962e-09
+      },
+      "excess_fraction_in_ring": 0.5064075188241643,
+      "top20_excess_nodes": [
+        {
+          "node": 11,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00017999998817685992,
+          "zone": "ring",
+          "NodeVolume": 6.308596771525926e-10,
+          "barycentric": 2.333333016819178e-10,
+          "excess": 3.975263754706748e-10
+        },
+        {
+          "node": 177,
+          "x_um": -0.19999999494757503,
+          "y_cm": -1.9999999494757503e-05,
+          "zone": "ring",
+          "NodeVolume": 6.308593484020869e-10,
+          "barycentric": 2.333333538320423e-10,
+          "excess": 3.9752599457004456e-10
+        },
+        {
+          "node": 256,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00012999998580198735,
+          "zone": "ring",
+          "NodeVolume": 4.6210974024865794e-10,
+          "barycentric": 1.1666663923999565e-10,
+          "excess": 3.454431010086623e-10
+        },
+        {
+          "node": 259,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00011000000085914508,
+          "zone": "ring",
+          "NodeVolume": 4.621097901994848e-10,
+          "barycentric": 1.1666668965539667e-10,
+          "excess": 3.4544310054408813e-10
+        },
+        {
+          "node": 249,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00014999999257270247,
+          "zone": "ring",
+          "NodeVolume": 4.6210971466875903e-10,
+          "barycentric": 1.1666668954697645e-10,
+          "excess": 3.454430251217826e-10
+        },
+        {
+          "node": 270,
+          "x_um": 0.19999999494757503,
+          "y_cm": -8.999999408842996e-05,
+          "zone": "ring",
+          "NodeVolume": 4.621095758285907e-10,
+          "barycentric": 1.1666666363454453e-10,
+          "excess": 3.4544291219404615e-10
+        },
+        {
+          "node": 263,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00011000000085914508,
+          "zone": "ring",
+          "NodeVolume": 4.6210957575757997e-10,
+          "barycentric": 1.1666668965539667e-10,
+          "excess": 3.454428861021833e-10
+        },
+        {
+          "node": 284,
+          "x_um": 0.19999999494757503,
+          "y_cm": -4.999999873689376e-05,
+          "zone": "ring",
+          "NodeVolume": 4.621095507464122e-10,
+          "barycentric": 1.1666667924705582e-10,
+          "excess": 3.454428714993564e-10
+        },
+        {
+          "node": 287,
+          "x_um": -0.19999999494757503,
+          "y_cm": -3.000000106112566e-05,
+          "zone": "ring",
+          "NodeVolume": 4.621094747627014e-10,
+          "barycentric": 1.1666667425972582e-10,
+          "excess": 3.4544280050297556e-10
+        },
+        {
+          "node": 231,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00018999999156221747,
+          "zone": "ring",
+          "NodeVolume": 4.6210947208939173e-10,
+          "barycentric": 1.1666668965539667e-10,
+          "excess": 3.4544278243399506e-10
+        },
+        {
+          "node": 273,
+          "x_um": -0.19999999494757503,
+          "y_cm": -7.000000186963007e-05,
+          "zone": "ring",
+          "NodeVolume": 4.621093678349238e-10,
+          "barycentric": 1.1666666363454453e-10,
+          "excess": 3.454427042003793e-10
+        },
+        {
+          "node": 298,
+          "x_um": 0.19999999494757503,
+          "y_cm": -9.999999747378752e-06,
+          "zone": "ring",
+          "NodeVolume": 4.6210936257686785e-10,
+          "barycentric": 1.166666759944493e-10,
+          "excess": 3.4544268658241855e-10
+        },
+        {
+          "node": 280,
+          "x_um": -0.19999999494757503,
+          "y_cm": -4.999999873689376e-05,
+          "zone": "ring",
+          "NodeVolume": 4.6210934143823514e-10,
+          "barycentric": 1.1666667111553952e-10,
+          "excess": 3.454426703226956e-10
+        },
+        {
+          "node": 291,
+          "x_um": 0.19999999494757503,
+          "y_cm": -3.000000106112566e-05,
+          "zone": "ring",
+          "NodeVolume": 4.6210929597237773e-10,
+          "barycentric": 1.16666672850263e-10,
+          "excess": 3.4544262312211473e-10
+        },
+        {
+          "node": 238,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00016999999934341758,
+          "zone": "ring",
+          "NodeVolume": 4.6210920435693407e-10,
+          "barycentric": 1.1666663923999565e-10,
+          "excess": 3.454425651169384e-10
+        },
+        {
+          "node": 245,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00014999999257270247,
+          "zone": "ring",
+          "NodeVolume": 4.621092285154446e-10,
+          "barycentric": 1.1666668954697645e-10,
+          "excess": 3.4544253896846813e-10
+        },
+        {
+          "node": 277,
+          "x_um": 0.19999999494757503,
+          "y_cm": -7.000000186963007e-05,
+          "zone": "ring",
+          "NodeVolume": 4.6210914683840187e-10,
+          "barycentric": 1.1666665420198563e-10,
+          "excess": 3.4544249263641623e-10
+        },
+        {
+          "node": 266,
+          "x_um": -0.19999999494757503,
+          "y_cm": -8.999999408842996e-05,
+          "zone": "ring",
+          "NodeVolume": 4.62108936233708e-10,
+          "barycentric": 1.1666665420198563e-10,
+          "excess": 3.454422820317224e-10
+        },
+        {
+          "node": 242,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00016999999934341758,
+          "zone": "ring",
+          "NodeVolume": 4.6210887288894416e-10,
+          "barycentric": 1.166666156043883e-10,
+          "excess": 3.4544225728455587e-10
+        },
+        {
+          "node": 252,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00012999998580198735,
+          "zone": "ring",
+          "NodeVolume": 4.6210815989571196e-10,
+          "barycentric": 1.166666156043883e-10,
+          "excess": 3.4544154429132366e-10
+        }
+      ],
+      "timing_s": {
+        "mesh": 0.3427608013153076,
+        "delaunay": 0.7402498722076416,
+        "geo": 0.8758821487426758,
+        "cot": 0.8819360733032227,
+        "hanging": 3.720635175704956,
+        "overlap": 5.60495662689209,
+        "hole": 0.15824484825134277,
+        "nodevolume": 0.35989928245544434,
+        "total": 12.68831491470337
+      },
+      "wall_s": 13.02477741241455
+    },
+    {
+      "label": "geo_imp_L5",
+      "mode": "imported",
+      "n_points": 41085,
+      "n_triangles": 82028,
+      "n_interior_unconstrained_edges": 122972,
+      "n_constrained_edges": 140,
+      "n_delaunay_violations": 257,
+      "delaunay_violation_rate": 0.0020899066454152164,
+      "violations_by_zone": {
+        "band": 187,
+        "ring": 62,
+        "outer": 8,
+        "unknown": 0
+      },
+      "max_violation_severity_rad": 1.6951677799224854,
+      "n_negative_cotangent_weights": 257,
+      "n_hanging_nodes": 0,
+      "hanging_node_sample": [],
+      "n_overlap_pairs": 510,
+      "overlap_pairs_checked": 1409596,
+      "total_overlap_area_um2": 0.03108737085130997,
+      "boundary_holes": {
+        "n_boundary_loops": 1,
+        "loop_areas": [
+          "7.999996"
+        ],
+        "outer_loop_area": "7.999996",
+        "triangle_area_sum": 7.993256092071533,
+        "uncovered_hole_area": "0.006740093",
+        "n_boundary_edges": 140
+      },
+      "sum_NodeVolume_cm2": 1.296986999951648e-07,
+      "sum_barycentric_cm2": 7.999999942838244e-08,
+      "total_excess_cm2": 4.969870056678234e-08,
+      "total_excess_relative": 0.6212337615236309,
+      "excess_by_zone_cm2": {
+        "band": 2.3027359313542448e-08,
+        "ring": 2.509634415687791e-08,
+        "outer": 1.5749970963594962e-09
+      },
+      "excess_fraction_in_ring": 0.5049698255823579,
+      "top20_excess_nodes": [
+        {
+          "node": 11,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00017999998817685992,
+          "zone": "ring",
+          "NodeVolume": 9.310552502296336e-10,
+          "barycentric": 2.333333016819178e-10,
+          "excess": 6.977219485477158e-10
+        },
+        {
+          "node": 177,
+          "x_um": -0.19999999494757503,
+          "y_cm": -1.9999999494757503e-05,
+          "zone": "ring",
+          "NodeVolume": 9.310546077053688e-10,
+          "barycentric": 2.3333335415730294e-10,
+          "excess": 6.977212535480658e-10
+        },
+        {
+          "node": 256,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00012999998580198735,
+          "zone": "ring",
+          "NodeVolume": 7.623055894072257e-10,
+          "barycentric": 1.1666663923999565e-10,
+          "excess": 6.4563895016723e-10
+        },
+        {
+          "node": 259,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00011000000085914508,
+          "zone": "ring",
+          "NodeVolume": 7.623055051364865e-10,
+          "barycentric": 1.1666668949276635e-10,
+          "excess": 6.456388156437202e-10
+        },
+        {
+          "node": 249,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00014999999257270247,
+          "zone": "ring",
+          "NodeVolume": 7.623052877458001e-10,
+          "barycentric": 1.1666668954697645e-10,
+          "excess": 6.456385981988237e-10
+        },
+        {
+          "node": 270,
+          "x_um": 0.19999999494757503,
+          "y_cm": -8.999999408842996e-05,
+          "zone": "ring",
+          "NodeVolume": 7.623051002865394e-10,
+          "barycentric": 1.1666666352612431e-10,
+          "excess": 6.456384367604151e-10
+        },
+        {
+          "node": 263,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00011000000085914508,
+          "zone": "ring",
+          "NodeVolume": 7.623050492876026e-10,
+          "barycentric": 1.1666668949276635e-10,
+          "excess": 6.456383597948362e-10
+        },
+        {
+          "node": 231,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00018999999156221747,
+          "zone": "ring",
+          "NodeVolume": 7.62304997737612e-10,
+          "barycentric": 1.1666668949276635e-10,
+          "excess": 6.456383082448457e-10
+        },
+        {
+          "node": 284,
+          "x_um": 0.19999999494757503,
+          "y_cm": -4.999999873689376e-05,
+          "zone": "ring",
+          "NodeVolume": 7.623049749644825e-10,
+          "barycentric": 1.166666791386356e-10,
+          "excess": 6.456382958258469e-10
+        },
+        {
+          "node": 287,
+          "x_um": -0.19999999494757503,
+          "y_cm": -3.000000106112566e-05,
+          "zone": "ring",
+          "NodeVolume": 7.62304878261758e-10,
+          "barycentric": 1.1666667436814604e-10,
+          "excess": 6.456382038936119e-10
+        },
+        {
+          "node": 298,
+          "x_um": 0.19999999494757503,
+          "y_cm": -9.999999747378752e-06,
+          "zone": "ring",
+          "NodeVolume": 7.623047277821025e-10,
+          "barycentric": 1.166666759944493e-10,
+          "excess": 6.456380517876532e-10
+        },
+        {
+          "node": 273,
+          "x_um": -0.19999999494757503,
+          "y_cm": -7.000000186963007e-05,
+          "zone": "ring",
+          "NodeVolume": 7.623047017918477e-10,
+          "barycentric": 1.1666666352612431e-10,
+          "excess": 6.456380382657234e-10
+        },
+        {
+          "node": 280,
+          "x_um": -0.19999999494757503,
+          "y_cm": -4.999999873689376e-05,
+          "zone": "ring",
+          "NodeVolume": 7.623046253818199e-10,
+          "barycentric": 1.1666667106132941e-10,
+          "excess": 6.456379543204905e-10
+        },
+        {
+          "node": 291,
+          "x_um": 0.19999999494757503,
+          "y_cm": -3.000000106112566e-05,
+          "zone": "ring",
+          "NodeVolume": 7.623045443377575e-10,
+          "barycentric": 1.166666727960529e-10,
+          "excess": 6.456378715417046e-10
+        },
+        {
+          "node": 238,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00016999999934341758,
+          "zone": "ring",
+          "NodeVolume": 7.623043736679531e-10,
+          "barycentric": 1.1666663923999565e-10,
+          "excess": 6.456377344279575e-10
+        },
+        {
+          "node": 245,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00014999999257270247,
+          "zone": "ring",
+          "NodeVolume": 7.62304259306185e-10,
+          "barycentric": 1.1666668954697645e-10,
+          "excess": 6.456375697592085e-10
+        },
+        {
+          "node": 277,
+          "x_um": 0.19999999494757503,
+          "y_cm": -7.000000186963007e-05,
+          "zone": "ring",
+          "NodeVolume": 7.623041594302872e-10,
+          "barycentric": 1.1666665420198563e-10,
+          "excess": 6.456375052283015e-10
+        },
+        {
+          "node": 242,
+          "x_um": 0.19999999494757503,
+          "y_cm": -0.00016999999934341758,
+          "zone": "ring",
+          "NodeVolume": 7.623037785709566e-10,
+          "barycentric": 1.166666156043883e-10,
+          "excess": 6.456371629665683e-10
+        },
+        {
+          "node": 266,
+          "x_um": -0.19999999494757503,
+          "y_cm": -8.999999408842996e-05,
+          "zone": "ring",
+          "NodeVolume": 7.623038037328794e-10,
+          "barycentric": 1.1666665420198563e-10,
+          "excess": 6.456371495308938e-10
+        },
+        {
+          "node": 252,
+          "x_um": -0.19999999494757503,
+          "y_cm": -0.00012999998580198735,
+          "zone": "ring",
+          "NodeVolume": 7.62302390554333e-10,
+          "barycentric": 1.166666156043883e-10,
+          "excess": 6.456357749499447e-10
+        }
+      ],
+      "timing_s": {
+        "mesh": 0.6147212982177734,
+        "delaunay": 3.0464632511138916,
+        "geo": 3.2235770225524902,
+        "cot": 3.6380162239074707,
+        "hanging": 14.525429487228394,
+        "overlap": 24.634319067001343,
+        "hole": 0.558459997177124,
+        "nodevolume": 1.4870340824127197,
+        "total": 51.768219232559204
+      },
+      "wall_s": 52.14943790435791
+    },
+    {
+      "label": "geo_struct_L3",
+      "mode": "structured",
+      "n_points": 1209,
+      "n_triangles": 2280,
+      "n_interior_unconstrained_edges": 3352,
+      "n_constrained_edges": 136,
+      "n_delaunay_violations": 0,
+      "delaunay_violation_rate": 0.0,
+      "violations_by_zone": {
+        "band": 0,
+        "ring": 0,
+        "outer": 0,
+        "unknown": 0
+      },
+      "max_violation_severity_rad": 0.0,
+      "n_negative_cotangent_weights": 0,
+      "n_hanging_nodes": 0,
+      "hanging_node_sample": [],
+      "n_overlap_pairs": 0,
+      "overlap_pairs_checked": 57796,
+      "total_overlap_area_um2": 0,
+      "boundary_holes": {
+        "n_boundary_loops": 1,
+        "loop_areas": [
+          11.999999999999977
+        ],
+        "outer_loop_area": 11.999999999999977,
+        "triangle_area_sum": 11.99999999999981,
+        "uncovered_hole_area": 1.6697754290362354e-13,
+        "n_boundary_edges": 136
+      },
+      "sum_NodeVolume_cm2": 1.2000000000000002e-07,
+      "sum_barycentric_cm2": 1.2000000000000002e-07,
+      "total_excess_cm2": 1.6940238892431195e-23,
+      "total_excess_relative": 1.411686574369266e-16,
+      "excess_by_zone_cm2": {
+        "band": 6.08268555910576e-25,
+        "ring": 2.0194839173657902e-24,
+        "outer": 1.4320564354824292e-23
+      },
+      "excess_fraction_in_ring": 0.1192122454818559,
+      "top20_excess_nodes": [
+        {
+          "node": 38,
+          "x_um": 2.0,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 8.12500023682502e-11,
+          "barycentric": 5.4166668245500034e-11,
+          "excess": 2.708333412275017e-11
+        },
+        {
+          "node": 1170,
+          "x_um": -2.0,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 8.125000236824971e-11,
+          "barycentric": 5.416666824549979e-11,
+          "excess": 2.7083334122749923e-11
+        },
+        {
+          "node": 1208,
+          "x_um": 2.0,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 8.125000236824971e-11,
+          "barycentric": 1.0833333649099958e-10,
+          "excess": -2.7083334122749865e-11
+        },
+        {
+          "node": 0,
+          "x_um": -2.0,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 8.12500023682502e-11,
+          "barycentric": 1.0833333649100007e-10,
+          "excess": -2.7083334122749865e-11
+        },
+        {
+          "node": 1,
+          "x_um": -1.674999990527,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 1.312500023682504e-10,
+          "barycentric": 1.208333349121668e-10,
+          "excess": 1.0416667456083579e-11
+        },
+        {
+          "node": 1207,
+          "x_um": 1.674999990527,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 1.312500023682496e-10,
+          "barycentric": 1.208333349121663e-10,
+          "excess": 1.0416667456083295e-11
+        },
+        {
+          "node": 1171,
+          "x_um": -1.674999990527,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 1.312500023682496e-10,
+          "barycentric": 1.4166666982433283e-10,
+          "excess": -1.0416667456083243e-11
+        },
+        {
+          "node": 37,
+          "x_um": 1.674999990527,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 1.312500023682504e-10,
+          "barycentric": 1.4166666982433345e-10,
+          "excess": -1.0416667456083062e-11
+        },
+        {
+          "node": 8,
+          "x_um": -0.274999995579,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 7.499999810550019e-11,
+          "barycentric": 6.666666498266674e-11,
+          "excess": 8.333333122833455e-12
+        },
+        {
+          "node": 1178,
+          "x_um": -0.274999995579,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 7.499999810549973e-11,
+          "barycentric": 8.333333122833304e-11,
+          "excess": -8.333333122833313e-12
+        },
+        {
+          "node": 1200,
+          "x_um": 0.274999995579,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 7.499999810549973e-11,
+          "barycentric": 6.666666498266643e-11,
+          "excess": 8.3333331228333e-12
+        },
+        {
+          "node": 30,
+          "x_um": 0.274999995579,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 7.499999810550019e-11,
+          "barycentric": 8.333333122833341e-11,
+          "excess": -8.333333122833222e-12
+        },
+        {
+          "node": 9,
+          "x_um": -0.174999998105,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 3.749999905275011e-11,
+          "barycentric": 3.333333249133336e-11,
+          "excess": 4.166666561416747e-12
+        },
+        {
+          "node": 1199,
+          "x_um": 0.174999998105,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 3.7499999052749876e-11,
+          "barycentric": 3.333333249133321e-11,
+          "excess": 4.166666561416663e-12
+        },
+        {
+          "node": 1179,
+          "x_um": -0.174999998105,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 3.7499999052749876e-11,
+          "barycentric": 4.1666665614166525e-11,
+          "excess": -4.16666656141665e-12
+        },
+        {
+          "node": 29,
+          "x_um": 0.174999998105,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 3.749999905275011e-11,
+          "barycentric": 4.1666665614166706e-11,
+          "excess": -4.166666561416598e-12
+        },
+        {
+          "node": 10,
+          "x_um": -0.124999999368,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526250053e-11,
+          "barycentric": 1.6666666245500013e-11,
+          "excess": 2.0833332807500394e-12
+        },
+        {
+          "node": 1198,
+          "x_um": 0.124999999368,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526249937e-11,
+          "barycentric": 1.6666666245499942e-11,
+          "excess": 2.0833332807499942e-12
+        },
+        {
+          "node": 1180,
+          "x_um": -0.124999999368,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526249937e-11,
+          "barycentric": 2.0833332806999924e-11,
+          "excess": -2.0833332807499877e-12
+        },
+        {
+          "node": 28,
+          "x_um": 0.124999999368,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526250053e-11,
+          "barycentric": 2.0833332807000018e-11,
+          "excess": -2.083333280749965e-12
+        }
+      ],
+      "timing_s": {
+        "mesh": 0.004480838775634766,
+        "delaunay": 0.0774679183959961,
+        "geo": 0.08055663108825684,
+        "cot": 0.08957076072692871,
+        "hanging": 1.002500057220459,
+        "overlap": 1.0504233837127686,
+        "hole": 0.01877617835998535,
+        "nodevolume": 0.03681135177612305,
+        "total": 2.3605871200561523
+      },
+      "wall_s": 2.6155810356140137
+    },
+    {
+      "label": "geo_struct_L4",
+      "mode": "structured",
+      "n_points": 1767,
+      "n_triangles": 3360,
+      "n_interior_unconstrained_edges": 4954,
+      "n_constrained_edges": 172,
+      "n_delaunay_violations": 0,
+      "delaunay_violation_rate": 0.0,
+      "violations_by_zone": {
+        "band": 0,
+        "ring": 0,
+        "outer": 0,
+        "unknown": 0
+      },
+      "max_violation_severity_rad": 0.0,
+      "n_negative_cotangent_weights": 0,
+      "n_hanging_nodes": 0,
+      "hanging_node_sample": [],
+      "n_overlap_pairs": 0,
+      "overlap_pairs_checked": 70480,
+      "total_overlap_area_um2": 0,
+      "boundary_holes": {
+        "n_boundary_loops": 1,
+        "loop_areas": [
+          11.999999999999975
+        ],
+        "outer_loop_area": 11.999999999999975,
+        "triangle_area_sum": 11.999999999999648,
+        "uncovered_hole_area": 3.268496584496461e-13,
+        "n_boundary_edges": 172
+      },
+      "sum_NodeVolume_cm2": 1.2000000000000002e-07,
+      "sum_barycentric_cm2": 1.2000000000000002e-07,
+      "total_excess_cm2": 2.2996267263827726e-23,
+      "total_excess_relative": 1.916355605318977e-16,
+      "excess_by_zone_cm2": {
+        "band": 8.598962520143535e-25,
+        "ring": 1.941935734938944e-24,
+        "outer": 2.0194839173657902e-23
+      },
+      "excess_fraction_in_ring": 0.08444569341014473,
+      "top20_excess_nodes": [
+        {
+          "node": 56,
+          "x_um": 2.0,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 7.812500244725024e-11,
+          "barycentric": 5.208333496483338e-11,
+          "excess": 2.604166748241686e-11
+        },
+        {
+          "node": 1710,
+          "x_um": -2.0,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 7.812500244724976e-11,
+          "barycentric": 5.2083334964833155e-11,
+          "excess": 2.6041667482416607e-11
+        },
+        {
+          "node": 1766,
+          "x_um": 2.0,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 7.812500244724976e-11,
+          "barycentric": 1.0416666992966631e-10,
+          "excess": -2.604166748241655e-11
+        },
+        {
+          "node": 0,
+          "x_um": -2.0,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 7.812500244725024e-11,
+          "barycentric": 1.0416666992966676e-10,
+          "excess": -2.6041667482416523e-11
+        },
+        {
+          "node": 1,
+          "x_um": -1.687499990211,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 1.2812500244725035e-10,
+          "barycentric": 1.1875000163150008e-10,
+          "excess": 9.375000815750275e-12
+        },
+        {
+          "node": 1765,
+          "x_um": 1.687499990211,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 1.2812500244724958e-10,
+          "barycentric": 1.1875000163149959e-10,
+          "excess": 9.375000815749991e-12
+        },
+        {
+          "node": 1711,
+          "x_um": -1.687499990211,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 1.2812500244724958e-10,
+          "barycentric": 1.3750000326299952e-10,
+          "excess": -9.37500081574994e-12
+        },
+        {
+          "node": 55,
+          "x_um": 1.687499990211,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 1.2812500244725035e-10,
+          "barycentric": 1.375000032630001e-10,
+          "excess": -9.375000815749758e-12
+        },
+        {
+          "node": 8,
+          "x_um": -0.287499995263,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 7.499999810525019e-11,
+          "barycentric": 6.66666649823334e-11,
+          "excess": 8.333333122916793e-12
+        },
+        {
+          "node": 1718,
+          "x_um": -0.287499995263,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 7.499999810524974e-11,
+          "barycentric": 8.333333122816637e-11,
+          "excess": -8.333333122916638e-12
+        },
+        {
+          "node": 1758,
+          "x_um": 0.287499995263,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 7.499999810524974e-11,
+          "barycentric": 6.66666649823331e-11,
+          "excess": 8.333333122916638e-12
+        },
+        {
+          "node": 48,
+          "x_um": 0.287499995263,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 7.499999810525019e-11,
+          "barycentric": 8.333333122816674e-11,
+          "excess": -8.333333122916548e-12
+        },
+        {
+          "node": 9,
+          "x_um": -0.18749999779,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 3.7499999052500106e-11,
+          "barycentric": 3.3333332491166704e-11,
+          "excess": 4.166666561333402e-12
+        },
+        {
+          "node": 1757,
+          "x_um": 0.18749999779,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 3.749999905249987e-11,
+          "barycentric": 3.333333249116655e-11,
+          "excess": 4.1666665613333244e-12
+        },
+        {
+          "node": 1719,
+          "x_um": -0.18749999779,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 3.749999905249987e-11,
+          "barycentric": 4.166666561383319e-11,
+          "excess": -4.166666561333318e-12
+        },
+        {
+          "node": 47,
+          "x_um": 0.18749999779,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 3.7499999052500106e-11,
+          "barycentric": 4.166666561383338e-11,
+          "excess": -4.166666561333273e-12
+        },
+        {
+          "node": 10,
+          "x_um": -0.137499999053,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526500055e-11,
+          "barycentric": 1.666666624583335e-11,
+          "excess": 2.0833332806667042e-12
+        },
+        {
+          "node": 1756,
+          "x_um": 0.137499999053,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 1.874999952649994e-11,
+          "barycentric": 1.6666666245833277e-11,
+          "excess": 2.0833332806666622e-12
+        },
+        {
+          "node": 1720,
+          "x_um": -0.137499999053,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 1.874999952649994e-11,
+          "barycentric": 2.0833332807166595e-11,
+          "excess": -2.0833332806666558e-12
+        },
+        {
+          "node": 46,
+          "x_um": 0.137499999053,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526500055e-11,
+          "barycentric": 2.083333280716669e-11,
+          "excess": -2.083333280666633e-12
+        }
+      ],
+      "timing_s": {
+        "mesh": 0.0015060901641845703,
+        "delaunay": 0.10089778900146484,
+        "geo": 0.11739850044250488,
+        "cot": 0.13643431663513184,
+        "hanging": 2.5486183166503906,
+        "overlap": 1.2992668151855469,
+        "hole": 0.01520395278930664,
+        "nodevolume": 0.06382322311401367,
+        "total": 4.283149003982544
+      },
+      "wall_s": 4.532150745391846
+    },
+    {
+      "label": "geo_struct_L5",
+      "mode": "structured",
+      "n_points": 2821,
+      "n_triangles": 5400,
+      "n_interior_unconstrained_edges": 7980,
+      "n_constrained_edges": 240,
+      "n_delaunay_violations": 0,
+      "delaunay_violation_rate": 0.0,
+      "violations_by_zone": {
+        "band": 0,
+        "ring": 0,
+        "outer": 0,
+        "unknown": 0
+      },
+      "max_violation_severity_rad": 0.0,
+      "n_negative_cotangent_weights": 0,
+      "n_hanging_nodes": 0,
+      "hanging_node_sample": [],
+      "n_overlap_pairs": 0,
+      "overlap_pairs_checked": 167668,
+      "total_overlap_area_um2": 0,
+      "boundary_holes": {
+        "n_boundary_loops": 1,
+        "loop_areas": [
+          11.99999999999999
+        ],
+        "outer_loop_area": 11.99999999999999,
+        "triangle_area_sum": 11.999999999999533,
+        "uncovered_hole_area": 4.565237077258644e-13,
+        "n_boundary_edges": 240
+      },
+      "sum_NodeVolume_cm2": 1.2000000000000002e-07,
+      "sum_barycentric_cm2": 1.2000000000000002e-07,
+      "total_excess_cm2": 1.824159432878171e-23,
+      "total_excess_relative": 1.520132860731809e-16,
+      "excess_by_zone_cm2": {
+        "band": 3.4512980147781355e-25,
+        "ring": 1.6091247853570616e-24,
+        "outer": 1.6278655961102162e-23
+      },
+      "excess_fraction_in_ring": 0.08821185014613409,
+      "top20_excess_nodes": [
+        {
+          "node": 90,
+          "x_um": 2.0,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 7.656250248675022e-11,
+          "barycentric": 5.104166832450005e-11,
+          "excess": 2.5520834162250168e-11
+        },
+        {
+          "node": 2730,
+          "x_um": -2.0,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 7.656250248674975e-11,
+          "barycentric": 5.1041668324499826e-11,
+          "excess": 2.552083416224993e-11
+        },
+        {
+          "node": 2820,
+          "x_um": 2.0,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 7.656250248674975e-11,
+          "barycentric": 1.0208333664899965e-10,
+          "excess": -2.5520834162249897e-11
+        },
+        {
+          "node": 0,
+          "x_um": -2.0,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 7.656250248675022e-11,
+          "barycentric": 1.020833366490001e-10,
+          "excess": -2.5520834162249884e-11
+        },
+        {
+          "node": 1,
+          "x_um": -1.693749990053,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 1.2656250248675036e-10,
+          "barycentric": 1.1770833499116675e-10,
+          "excess": 8.85416749558361e-12
+        },
+        {
+          "node": 2819,
+          "x_um": 1.693749990053,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 1.2656250248674958e-10,
+          "barycentric": 1.1770833499116626e-10,
+          "excess": 8.854167495583326e-12
+        },
+        {
+          "node": 2731,
+          "x_um": -1.693749990053,
+          "y_cm": 0.0,
+          "zone": "outer",
+          "NodeVolume": 1.2656250248674958e-10,
+          "barycentric": 1.3541666998233286e-10,
+          "excess": -8.854167495583275e-12
+        },
+        {
+          "node": 89,
+          "x_um": 1.693749990053,
+          "y_cm": -0.00030000000000000003,
+          "zone": "outer",
+          "NodeVolume": 1.2656250248675036e-10,
+          "barycentric": 1.3541666998233345e-10,
+          "excess": -8.854167495583094e-12
+        },
+        {
+          "node": 8,
+          "x_um": -0.293749995105,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 7.499999810525021e-11,
+          "barycentric": 6.66666649823334e-11,
+          "excess": 8.33333312291682e-12
+        },
+        {
+          "node": 2812,
+          "x_um": 0.293749995105,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 7.499999810524975e-11,
+          "barycentric": 6.66666649823331e-11,
+          "excess": 8.333333122916651e-12
+        },
+        {
+          "node": 2738,
+          "x_um": -0.293749995105,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 7.499999810524975e-11,
+          "barycentric": 8.333333122816637e-11,
+          "excess": -8.333333122916625e-12
+        },
+        {
+          "node": 82,
+          "x_um": 0.293749995105,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 7.499999810525021e-11,
+          "barycentric": 8.333333122816675e-11,
+          "excess": -8.333333122916535e-12
+        },
+        {
+          "node": 9,
+          "x_um": -0.193749997632,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 3.749999905250009e-11,
+          "barycentric": 3.333333249116669e-11,
+          "excess": 4.166666561333402e-12
+        },
+        {
+          "node": 2739,
+          "x_um": -0.193749997632,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 3.7499999052499867e-11,
+          "barycentric": 4.1666665613833185e-11,
+          "excess": -4.166666561333318e-12
+        },
+        {
+          "node": 2811,
+          "x_um": 0.193749997632,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 3.7499999052499867e-11,
+          "barycentric": 3.333333249116655e-11,
+          "excess": 4.166666561333318e-12
+        },
+        {
+          "node": 81,
+          "x_um": 0.193749997632,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 3.749999905250009e-11,
+          "barycentric": 4.1666665613833366e-11,
+          "excess": -4.166666561333273e-12
+        },
+        {
+          "node": 10,
+          "x_um": -0.143749998895,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526500046e-11,
+          "barycentric": 1.6666666245833348e-11,
+          "excess": 2.0833332806666978e-12
+        },
+        {
+          "node": 2810,
+          "x_um": 0.143749998895,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526499933e-11,
+          "barycentric": 1.6666666245833274e-11,
+          "excess": 2.083333280666659e-12
+        },
+        {
+          "node": 2740,
+          "x_um": -0.143749998895,
+          "y_cm": 0.0,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526499933e-11,
+          "barycentric": 2.0833332807166588e-11,
+          "excess": -2.0833332806666558e-12
+        },
+        {
+          "node": 80,
+          "x_um": 0.143749998895,
+          "y_cm": -0.00030000000000000003,
+          "zone": "ring",
+          "NodeVolume": 1.8749999526500046e-11,
+          "barycentric": 2.083333280716668e-11,
+          "excess": -2.083333280666633e-12
+        }
+      ],
+      "timing_s": {
+        "mesh": 0.004012584686279297,
+        "delaunay": 0.18353724479675293,
+        "geo": 0.20461010932922363,
+        "cot": 0.19051384925842285,
+        "hanging": 8.435882806777954,
+        "overlap": 3.600497007369995,
+        "hole": 0.042873382568359375,
+        "nodevolume": 0.09361791610717773,
+        "total": 12.755544900894165
+      },
+      "wall_s": 13.00148606300354
+    }
+  ]
+}

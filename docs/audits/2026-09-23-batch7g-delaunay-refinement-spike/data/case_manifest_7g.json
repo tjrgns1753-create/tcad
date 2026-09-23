@@ -1,0 +1,60 @@
+{
+  "batch": "7G-Phase1",
+  "case_timeout_s": 600,
+  "created": "2026-09-23",
+  "fixed_tolerances": {
+    "COORD_TOL_REL": 1e-09,
+    "DELAUNAY_ANGLE_SLACK_RAD": 1e-09,
+    "overlap_area_threshold_um2": 1e-20
+  },
+  "geometry_cases": [
+    {
+      "label": "geo_raw",
+      "mode": "raw"
+    },
+    {
+      "label": "geo_imp_L3",
+      "level": 3,
+      "mode": "imported"
+    },
+    {
+      "label": "geo_imp_L4",
+      "level": 4,
+      "mode": "imported"
+    },
+    {
+      "label": "geo_imp_L5",
+      "level": 5,
+      "mode": "imported"
+    },
+    {
+      "band_spacing_um": 0.01249999968422344,
+      "label": "geo_struct_L3",
+      "level_equiv": 3,
+      "mode": "structured"
+    },
+    {
+      "band_spacing_um": 0.00624999984211172,
+      "label": "geo_struct_L4",
+      "level_equiv": 4,
+      "mode": "structured"
+    },
+    {
+      "band_spacing_um": 0.00312499992105586,
+      "label": "geo_struct_L5",
+      "level_equiv": 5,
+      "mode": "structured"
+    }
+  ],
+  "levels": [
+    3,
+    4,
+    5
+  ],
+  "no_L6_or_above": true,
+  "rev2_local_spacing_cm_reused": {
+    "3": 1.249999968422344e-06,
+    "4": 6.24999984211172e-07,
+    "5": 3.12499992105586e-07
+  }
+}

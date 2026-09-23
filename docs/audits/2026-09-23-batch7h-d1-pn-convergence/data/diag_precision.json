@@ -1,0 +1,359 @@
+{
+ "0.02": {
+  "h": 0.02,
+  "+0.10": {
+   "all_ok": true,
+   "I_left_total": 7.866930138158368e-08,
+   "I_right_total": -7.867275711393396e-08,
+   "kcl_rel": 4.39273298427064e-05,
+   "J_junction_edge_total_plus_x": 7.860744461196252e-08,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": 7.84955372914287e-08,
+   "Jt_all_edges_max": 7.86930252909582e-08,
+   "left_contact_edge": {
+    "dpsi_V": 2.3814283878209608e-14,
+    "dpsi_in_ulps": 429.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 1.000000000000004e-06,
+    "current_quantum_A_per_cm2": 1.7763568394002432e-10
+   },
+   "right_contact_edge": {
+    "dpsi_V": -1.1934897514720433e-14,
+    "dpsi_in_ulps": -215.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 1.000000000000004e-06,
+    "current_quantum_A_per_cm2": 3.5527136788004865e-10
+   }
+  },
+  "-0.10": {
+   "all_ok": true,
+   "I_left_total": -3.820106594054339e-08,
+   "I_right_total": 3.833094472872015e-08,
+   "kcl_rel": 0.0033998734061218244,
+   "J_junction_edge_total_plus_x": -3.815122907601915e-08,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": -3.833094472872015e-08,
+   "Jt_all_edges_max": -3.7993183065727854e-08,
+   "left_contact_edge": {
+    "dpsi_V": -1.2878587085651816e-14,
+    "dpsi_in_ulps": -116.0,
+    "ulp_V": 1.1102230246251565e-16,
+    "L_cm": 1.000000000000004e-06,
+    "current_quantum_A_per_cm2": 3.5527136788004865e-10
+   },
+   "right_contact_edge": {
+    "dpsi_V": 6.938893903907228e-15,
+    "dpsi_in_ulps": 125.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 1.000000000000004e-06,
+    "current_quantum_A_per_cm2": 3.5527136788004865e-10
+   }
+  }
+ },
+ "0.01": {
+  "h": 0.01,
+  "+0.10": {
+   "all_ok": true,
+   "I_left_total": 2.8067935162925487e-07,
+   "I_right_total": -2.808787526882654e-07,
+   "kcl_rel": 0.000710422971455013,
+   "J_junction_edge_total_plus_x": 2.807420837449515e-07,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": 2.804503123693366e-07,
+   "Jt_all_edges_max": 2.8100515552461393e-07,
+   "left_contact_edge": {
+    "dpsi_V": 4.368727601899991e-14,
+    "dpsi_in_ulps": 787.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 4.999999999999986e-07,
+    "current_quantum_A_per_cm2": 3.552713678800511e-10
+   },
+   "right_contact_edge": {
+    "dpsi_V": -2.19824158875781e-14,
+    "dpsi_in_ulps": -396.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 4.999999999999986e-07,
+    "current_quantum_A_per_cm2": 7.105427357601022e-10
+   }
+  },
+  "-0.10": {
+   "all_ok": true,
+   "I_left_total": -9.411601069289364e-08,
+   "I_right_total": 9.438338006187154e-08,
+   "kcl_rel": 0.0028408489374920965,
+   "J_junction_edge_total_plus_x": -9.411943247830196e-08,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": -9.44220901889094e-08,
+   "Jt_all_edges_max": -9.379051831037816e-08,
+   "left_contact_edge": {
+    "dpsi_V": -1.4765966227514582e-14,
+    "dpsi_in_ulps": -133.0,
+    "ulp_V": 1.1102230246251565e-16,
+    "L_cm": 4.999999999999986e-07,
+    "current_quantum_A_per_cm2": 7.105427357601022e-10
+   },
+   "right_contact_edge": {
+    "dpsi_V": 7.438494264988549e-15,
+    "dpsi_in_ulps": 134.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 4.999999999999986e-07,
+    "current_quantum_A_per_cm2": 7.105427357601022e-10
+   }
+  }
+ },
+ "0.005": {
+  "h": 0.005,
+  "+0.10": {
+   "all_ok": true,
+   "I_left_total": 3.910615555542218e-07,
+   "I_right_total": -3.9151077021443976e-07,
+   "kcl_rel": 0.0011487057570292955,
+   "J_junction_edge_total_plus_x": 3.9107038898952326e-07,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": 3.904176161696515e-07,
+   "Jt_all_edges_max": 3.9167572235927783e-07,
+   "left_contact_edge": {
+    "dpsi_V": 3.047562202596055e-14,
+    "dpsi_in_ulps": 549.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 2.499999999999993e-07,
+    "current_quantum_A_per_cm2": 7.105427357601022e-10
+   },
+   "right_contact_edge": {
+    "dpsi_V": -1.532107773982716e-14,
+    "dpsi_in_ulps": -276.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 2.499999999999993e-07,
+    "current_quantum_A_per_cm2": 1.4210854715202043e-09
+   }
+  },
+  "-0.10": {
+   "all_ok": true,
+   "I_left_total": -9.503859493070586e-08,
+   "I_right_total": 9.480750258494354e-08,
+   "kcl_rel": 0.0024315631552719167,
+   "J_junction_edge_total_plus_x": -9.467798997568125e-08,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": -9.525732606972024e-08,
+   "Jt_all_edges_max": -9.406983194607833e-08,
+   "left_contact_edge": {
+    "dpsi_V": -7.438494264988549e-15,
+    "dpsi_in_ulps": -67.0,
+    "ulp_V": 1.1102230246251565e-16,
+    "L_cm": 2.499999999999993e-07,
+    "current_quantum_A_per_cm2": 1.4210854715202043e-09
+   },
+   "right_contact_edge": {
+    "dpsi_V": 3.7192471324942744e-15,
+    "dpsi_in_ulps": 67.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 2.499999999999993e-07,
+    "current_quantum_A_per_cm2": 1.4210854715202043e-09
+   }
+  }
+ },
+ "0.0025": {
+  "h": 0.0025,
+  "+0.10": {
+   "all_ok": true,
+   "I_left_total": 4.0308747176733697e-07,
+   "I_right_total": -4.029853405936337e-07,
+   "kcl_rel": 0.0002533722352011695,
+   "J_junction_edge_total_plus_x": 4.038313806666612e-07,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": 4.024597130074799e-07,
+   "Jt_all_edges_max": 4.050896973570057e-07,
+   "left_contact_edge": {
+    "dpsi_V": 1.5709655798445965e-14,
+    "dpsi_in_ulps": 283.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 1.2499999999999626e-07,
+    "current_quantum_A_per_cm2": 1.4210854715202428e-09
+   },
+   "right_contact_edge": {
+    "dpsi_V": -7.882583474838611e-15,
+    "dpsi_in_ulps": -142.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 1.2499999999999626e-07,
+    "current_quantum_A_per_cm2": 2.8421709430404855e-09
+   }
+  },
+  "-0.10": {
+   "all_ok": true,
+   "I_left_total": -9.645967372161455e-08,
+   "I_right_total": 9.622858470152782e-08,
+   "kcl_rel": 0.002395706010302883,
+   "J_junction_edge_total_plus_x": -9.518076452017082e-08,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": -9.647141652389794e-08,
+   "Jt_all_edges_max": -9.392856330564738e-08,
+   "left_contact_edge": {
+    "dpsi_V": -3.774758283725532e-15,
+    "dpsi_in_ulps": -34.0,
+    "ulp_V": 1.1102230246251565e-16,
+    "L_cm": 1.2499999999999626e-07,
+    "current_quantum_A_per_cm2": 2.8421709430404855e-09
+   },
+   "right_contact_edge": {
+    "dpsi_V": 1.887379141862766e-15,
+    "dpsi_in_ulps": 34.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 1.2499999999999626e-07,
+    "current_quantum_A_per_cm2": 2.8421709430404855e-09
+   }
+  }
+ },
+ "0.00125": {
+  "h": 0.00125,
+  "+0.10": {
+   "all_ok": true,
+   "I_left_total": 4.045084836597623e-07,
+   "I_right_total": -4.027732357476397e-07,
+   "kcl_rel": 0.004289768897856123,
+   "J_junction_edge_total_plus_x": 4.048437314094402e-07,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": 4.022639563752537e-07,
+   "Jt_all_edges_max": 4.0752414546241343e-07,
+   "left_contact_edge": {
+    "dpsi_V": 7.882583474838611e-15,
+    "dpsi_in_ulps": 142.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 6.250000000000152e-08,
+    "current_quantum_A_per_cm2": 2.8421709430403313e-09
+   },
+   "right_contact_edge": {
+    "dpsi_V": -3.941291737419306e-15,
+    "dpsi_in_ulps": -71.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 6.250000000000152e-08,
+    "current_quantum_A_per_cm2": 5.6843418860806625e-09
+   }
+  },
+  "-0.10": {
+   "all_ok": true,
+   "I_left_total": -9.645967204609579e-08,
+   "I_right_total": 9.62285838600691e-08,
+   "kcl_rel": 0.0023956974051938863,
+   "J_junction_edge_total_plus_x": -9.529517990888358e-08,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": -9.797762807127452e-08,
+   "Jt_all_edges_max": -9.259292917942496e-08,
+   "left_contact_edge": {
+    "dpsi_V": -1.887379141862766e-15,
+    "dpsi_in_ulps": -17.0,
+    "ulp_V": 1.1102230246251565e-16,
+    "L_cm": 6.250000000000152e-08,
+    "current_quantum_A_per_cm2": 5.6843418860806625e-09
+   },
+   "right_contact_edge": {
+    "dpsi_V": 9.43689570931383e-16,
+    "dpsi_in_ulps": 17.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 6.250000000000152e-08,
+    "current_quantum_A_per_cm2": 5.6843418860806625e-09
+   }
+  }
+ },
+ "0.000625": {
+  "h": 0.000625,
+  "+0.10": {
+   "all_ok": true,
+   "I_left_total": 4.045084652495148e-07,
+   "I_right_total": -4.0845756838593046e-07,
+   "kcl_rel": 0.009762720624350164,
+   "J_junction_edge_total_plus_x": 4.050671040102898e-07,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": 3.993863620141003e-07,
+   "Jt_all_edges_max": 4.102800451819419e-07,
+   "left_contact_edge": {
+    "dpsi_V": 3.941291737419306e-15,
+    "dpsi_in_ulps": 71.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 3.124999999999737e-08,
+    "current_quantum_A_per_cm2": 5.684341886081279e-09
+   },
+   "right_contact_edge": {
+    "dpsi_V": -1.9984014443252818e-15,
+    "dpsi_in_ulps": -36.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 3.124999999999737e-08,
+    "current_quantum_A_per_cm2": 1.1368683772162558e-08
+   }
+  },
+  "-0.10": {
+   "all_ok": true,
+   "I_left_total": -9.098739762689049e-08,
+   "I_right_total": 9.096837753562424e-08,
+   "kcl_rel": 0.00020904094151860675,
+   "J_junction_edge_total_plus_x": -9.532348463467241e-08,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": -1.0087160852060426e-07,
+   "Jt_all_edges_max": -8.971499217094668e-08,
+   "left_contact_edge": {
+    "dpsi_V": -8.881784197001252e-16,
+    "dpsi_in_ulps": -8.0,
+    "ulp_V": 1.1102230246251565e-16,
+    "L_cm": 3.124999999999737e-08,
+    "current_quantum_A_per_cm2": 1.1368683772162558e-08
+   },
+   "right_contact_edge": {
+    "dpsi_V": 4.440892098500626e-16,
+    "dpsi_in_ulps": 8.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 3.124999999999737e-08,
+    "current_quantum_A_per_cm2": 1.1368683772162558e-08
+   }
+  }
+ },
+ "0.0003125": {
+  "h": 0.0003125,
+  "+0.10": {
+   "all_ok": true,
+   "I_left_total": 4.101928025319615e-07,
+   "I_right_total": -4.084575660733892e-07,
+   "kcl_rel": 0.0042302947488628674,
+   "J_junction_edge_total_plus_x": 4.051220697515063e-07,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": 3.94354835359115e-07,
+   "Jt_all_edges_max": 4.1575408052823355e-07,
+   "left_contact_edge": {
+    "dpsi_V": 1.9984014443252818e-15,
+    "dpsi_in_ulps": 36.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 1.5625000000002074e-08,
+    "current_quantum_A_per_cm2": 1.1368683772160093e-08
+   },
+   "right_contact_edge": {
+    "dpsi_V": -9.992007221626409e-16,
+    "dpsi_in_ulps": -18.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 1.5625000000002074e-08,
+    "current_quantum_A_per_cm2": 2.2737367544320185e-08
+   }
+  },
+  "-0.10": {
+   "all_ok": true,
+   "I_left_total": -9.098739752204609e-08,
+   "I_right_total": 9.096837748296028e-08,
+   "kcl_rel": 0.00020904036826857128,
+   "J_junction_edge_total_plus_x": -9.533054172858076e-08,
+   "junction_edge_mid_um": 0.0,
+   "Jt_all_edges_min": -1.0718025376573195e-07,
+   "Jt_all_edges_max": -8.425462289821096e-08,
+   "left_contact_edge": {
+    "dpsi_V": -4.440892098500626e-16,
+    "dpsi_in_ulps": -4.0,
+    "ulp_V": 1.1102230246251565e-16,
+    "L_cm": 1.5625000000002074e-08,
+    "current_quantum_A_per_cm2": 2.2737367544320185e-08
+   },
+   "right_contact_edge": {
+    "dpsi_V": 2.220446049250313e-16,
+    "dpsi_in_ulps": 4.0,
+    "ulp_V": 5.551115123125783e-17,
+    "L_cm": 1.5625000000002074e-08,
+    "current_quantum_A_per_cm2": 2.2737367544320185e-08
+   }
+  }
+ }
+}

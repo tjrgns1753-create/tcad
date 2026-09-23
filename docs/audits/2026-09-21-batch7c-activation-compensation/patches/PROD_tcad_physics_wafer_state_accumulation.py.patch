@@ -1,0 +1,153 @@
+--- a/tcad/physics/wafer_state_accumulation.py
++++ b/tcad/physics/wafer_state_accumulation.py
+@@ -312,6 +312,8 @@
+         state = v2.advance(state, transform, step_seed="doping")
+     if result.doping is None:
+         return state
++
++    plan = []
+     for profile in dopant_profiles_from_doping_profile(result.doping):
+         instance_id, support_region = _resolve_doping_target(
+             state, profile.host_material, target_instance_id)
+@@ -322,35 +324,116 @@
+                 instance_id, support_region = None, None
+             else:
+                 support_region = carved
+-        state = v2.attach_dopant(
+-            state,
+-            species=profile.species,
+-            polarity=profile.polarity,
+-            concentration_at=profile.concentration_at,
+-            inventory_integral=_exact_integral_for(profile),
+-            support_instance_id=(
+-                instance_id if instance_id is not None
+-                else f"__no_unambiguous_target_for_{profile.host_material}__"
+-            ),
+-            support_region_um=support_region,
+-            model=profile.model,
+-            model_params=profile.model_params,
+-            provenance=profile.source,
+-            # `attach_dopant()`'s own `_IdGen` restarts at "att:1"/"evt:1"
+-            # for every call that shares the same step_seed -- its
+-            # default ("") collides across every SEPARATE call to
+-            # advance_wafer_state(..., "doping") (e.g. a background
+-            # application followed later by a new masked one), which
+-            # would give two real, distinct attachments the identical
+-            # attachment_id. `len(state.events)` grows monotonically
+-            # with every event this module or attach_dopant ever
+-            # appended, including within this very loop, so it is a
+-            # simple, deterministic, always-unique seed here.
+-            step_seed=f"doping:{len(state.events)}",
++        plan.append((profile, instance_id, support_region))
++
++    # ONE request is all-or-nothing. A profile's attachability depends only
++    # on the cells/support/integral, never on its siblings, so each is
++    # first tried against the SAME base state. If some would attach and
++    # some would not, no active attachment may remain from this request:
++    # every profile of it is recorded as refused (provenance + ledger,
++    # no numbers), and every prior attachment is preserved untouched.
++    would_attach = [
++        len(_attach_planned(state, item).attachments) > len(state.attachments)
++        for item in plan
++    ]
++    partial = any(would_attach) and not all(would_attach)
++    for item, ok in zip(plan, would_attach):
++        state = _attach_planned(
++            state, item,
++            refuse_reason=(
++                "the doping request is refused as a whole: another profile of "
++                "the same request cannot be attached (atomic request)"
++                if partial and ok else None),
+         )
+     return state
+ 
+ 
++def _attach_planned(state, item, refuse_reason=None):
++    """Attach (or refuse) ONE planned profile of a doping request."""
++    profile, instance_id, support_region = item
++    return v2.attach_dopant(
++        state,
++        species=profile.species,
++        polarity=profile.polarity,
++        chemical_state=profile.chemical_state,
++        concentration_at=profile.concentration_at,
++        inventory_integral=_exact_integral_for(profile),
++        support_instance_id=(
++            instance_id if instance_id is not None
++            else f"__no_unambiguous_target_for_{profile.host_material}__"
++        ),
++        support_region_um=support_region,
++        model=profile.model,
++        model_params=profile.model_params,
++        provenance=profile.source,
++        # `attach_dopant()`'s own `_IdGen` restarts at "att:1"/"evt:1"
++        # for every call that shares the same step_seed -- its
++        # default ("") collides across every SEPARATE call to
++        # advance_wafer_state(..., "doping") (e.g. a background
++        # application followed later by a new masked one), which
++        # would give two real, distinct attachments the identical
++        # attachment_id. `len(state.events)` grows monotonically
++        # with every event this module or attach_dopant ever
++        # appended, including across a request's own profiles, so it
++        # is a simple, deterministic, always-unique seed here.
++        step_seed=f"doping:{len(state.events)}",
++        refuse_reason=refuse_reason,
++    )
++
++
++def canonical_doping_request_matches(
++    state: Optional[v2.WaferStateV2],
++    doping,
++    target_instance_id: Optional[str] = None,
++):
++    """Does the canonical state ALREADY hold every profile of this doping
++    request? Returns `(matched, attachments, reason)`.
++
++    A request matches only when EACH of its profiles has its own distinct
++    active attachment with the same typed identity: the material INSTANCE
++    the request resolves to (not a material name), `model`, exact
++    `model_params` (which carry the requested concentrations), `species`,
++    `polarity`, `chemical_state`, and an exact, known support region that
++    still lies inside that instance's present geometry (a later geometry
++    step legitimately clips an attachment's support, so equality with its
++    creation-time rectangle is not required -- but an unknown or
++    outside-the-geometry support never matches). No runtime-callable
++    identity is used. Any other attachment on the wafer -- an earlier,
++    different doping -- is irrelevant and never makes this true.
++    """
++    if not isinstance(state, v2.WaferStateV2) or doping is None:
++        return False, (), "no canonical WaferStateV2 or no doping request"
++    profiles = dopant_profiles_from_doping_profile(doping)
++    if not profiles:
++        return False, (), "the request has no non-zero dopant profile"
++    remaining = list(state.attachments)
++    matched = []
++    for p in profiles:
++        instance_id, _ = _resolve_doping_target(state, p.host_material, target_instance_id)
++        if instance_id is None:
++            return False, (), f"the {p.host_material!r} target instance is not unambiguous"
++        geometry = [c.bounds_um for c in v2._active_modelled_cells(state, instance_id)]
++        found = next((
++            a for a in remaining
++            if a.support_instance_id == instance_id
++            and a.model == p.model
++            and a.model_params == p.model_params
++            and a.species == p.species
++            and a.polarity == p.polarity
++            and a.chemical_state == p.chemical_state
++            and a.support_region_um is not None
++            and v2._covered_by(a.support_region_um, geometry)
++        ), None)
++        if found is None:
++            return False, (), (
++                f"no canonical attachment on instance {instance_id!r} has the same "
++                f"model/params/species/polarity/chemical_state ({p.polarity} {p.species!r} "
++                f"{p.model} {p.chemical_state}) as this request")
++        remaining.remove(found)
++        matched.append(found)
++    return True, tuple(matched), "every requested profile has its own canonical attachment"
++
++
+ def _resolve_doping_target(
+     state: v2.WaferStateV2, host_material: str, target_instance_id: Optional[str],
+ ) -> Tuple[Optional[str], Optional[v2.Bounds]]:

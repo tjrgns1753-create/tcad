@@ -1,0 +1,314 @@
+[
+  {
+    "test": "tests\\unit\\test_anneal_profile_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.27
+  },
+  {
+    "test": "tests\\unit\\test_cad_negative_validation_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.38
+  },
+  {
+    "test": "tests\\unit\\test_cli_doping_initial_state_branch_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.67
+  },
+  {
+    "test": "tests\\unit\\test_dc_operating_point_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.17
+  },
+  {
+    "test": "tests\\unit\\test_diffusion_model_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.3
+  },
+  {
+    "test": "tests\\unit\\test_dopant_models_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.38
+  },
+  {
+    "test": "tests\\unit\\test_dopant_profile_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.31
+  },
+  {
+    "test": "tests\\unit\\test_doping_staleness_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 1.51
+  },
+  {
+    "test": "tests\\unit\\test_doping_unsupported_hover_note_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.99
+  },
+  {
+    "test": "tests\\unit\\test_gaussian_implant_no_existing_param_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.31
+  },
+  {
+    "test": "tests\\unit\\test_gui_error_dialog_visibility_gate_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 1.11
+  },
+  {
+    "test": "tests\\unit\\test_gui_gate_stack_state_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.98
+  },
+  {
+    "test": "tests\\unit\\test_gui_litho_lifecycle_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 1.05
+  },
+  {
+    "test": "tests\\unit\\test_gui_no_forced_order_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 1.16
+  },
+  {
+    "test": "tests\\unit\\test_implant_windows_from_mask_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.47
+  },
+  {
+    "test": "tests\\unit\\test_mask_spans_from_openings_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.26
+  },
+  {
+    "test": "tests\\unit\\test_measurement_canonical_state_gate_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.7
+  },
+  {
+    "test": "tests\\unit\\test_mesh_refine_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.38
+  },
+  {
+    "test": "tests\\unit\\test_phase1_bosch_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.3
+  },
+  {
+    "test": "tests\\unit\\test_physics_tables_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.34
+  },
+  {
+    "test": "tests\\unit\\test_physics_values_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.44
+  },
+  {
+    "test": "tests\\unit\\test_pin_model_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.47
+  },
+  {
+    "test": "tests\\unit\\test_resolver_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.36
+  },
+  {
+    "test": "tests\\unit\\test_thermal_anneal_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.47
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_doping_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.3
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_anneal_fail_closed_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.31
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_apply_doping_barrier_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.59
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_barrier_physics_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.33
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_devsim_mapping_gate_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.31
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_etch_conservation_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.52
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_exact_inventory_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.45
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_explicit_doping_target_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.38
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_fail_closed_no_resurrection_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.3
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_gate_stack_fallback_fail_closed_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 1.45
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_instance_not_name_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.52
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_legacy_migration_fail_closed_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.33
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_multi_extent_provenance_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.3
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_no_last_step_category_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.69
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_no_numeric_without_exact_integral_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.33
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_oxidation_unsupported_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.3
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_redeposit_no_resurrection_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.34
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_remesh_preserved_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.41
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_transform_structural_validation_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.41
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_transform_targets_instance_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.3
+  },
+  {
+    "test": "tests\\unit\\test_wafer_state_v2_unsupported_returns_none_mock.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 0.44
+  },
+  {
+    "test": "tests\\integration\\test_wafer_state_v2_initial_geometry_devsim_real.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 6.34
+  },
+  {
+    "test": "tests\\integration\\test_gui_measurement_captures_physics_status_real.py",
+    "status": "PASS",
+    "rc": 0,
+    "seconds": 18.34
+  },
+  {
+    "test": "tests\\integration\\test_gui_implant_windows_overlay_note_real.py",
+    "status": "FAIL",
+    "rc": 1,
+    "seconds": 15.64
+  },
+  {
+    "test": "tests\\integration\\test_robust_iv_sweep_real.py",
+    "status": "FAIL",
+    "rc": 1,
+    "seconds": 40.83
+  },
+  {
+    "test": "tests\\integration\\test_gui_electrode_panel_real.py",
+    "status": "FAIL",
+    "rc": 1,
+    "seconds": 7.16
+  },
+  {
+    "test": "tests\\integration\\test_phase8_pn_junction_real.py",
+    "status": "FAIL",
+    "rc": 1,
+    "seconds": 4.27
+  },
+  {
+    "test": "tests\\integration\\test_device_lifecycle_repeat_real.py",
+    "status": "FAIL",
+    "rc": 1,
+    "seconds": 5.48
+  }
+]

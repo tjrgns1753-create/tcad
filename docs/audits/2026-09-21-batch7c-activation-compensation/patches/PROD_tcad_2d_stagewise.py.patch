@@ -1,0 +1,210 @@
+--- a/tcad_2d_stagewise.py
++++ b/tcad_2d_stagewise.py
+@@ -64,7 +64,8 @@
+     apply_implant_windows_doping,
+ )
+ from tcad.physics.wafer_state_accumulation import (
+-    advance_wafer_state, is_canonical_fresh_zero_duration_materialization,
++    advance_wafer_state, canonical_doping_request_matches,
++    is_canonical_fresh_zero_duration_materialization,
+     is_canonical_inherited_zero_duration_identity,
+ )
+ 
+@@ -5029,8 +5030,9 @@
+ 
+         Success means the canonical WaferStateV2 gained the requested
+         active attachment(s) -- not that a recipe DopingProfile could be
+-        built. A refused request (no active attachment) and an all-zero
+-        request (a known no-op) both return False and leave
++        built. A refused request (no active attachment), a request that
++        was only recorded CHEMICAL (no activation model) and an all-zero
++        request (a known no-op) all return False and leave
+         last_doped_result, the history and the viewer layer untouched.
+ 
+         `silent` suppresses only the success POPUP -- the log line and
+@@ -5080,8 +5082,16 @@
+                 acceptor = float(self.dope_uniform_acceptor_var.get())
+                 requested_all_zero = donor == 0.0 and acceptor == 0.0
+                 conc = donor - acceptor
++                # Declared analytic, electrically ACTIVE device profile
++                # (not a simulated implant). donor and acceptor go in as
++                # two separate quantities -- N_D == N_A != 0 is a real
++                # compensated profile, never a zero net.
++                chemical_state = "ACTIVE"
+                 doped_result = apply_uniform_doping(
+-                    process_result, {region: conc},
++                    process_result,
++                    donor_by_region_cm3={region: donor},
++                    acceptor_by_region_cm3={region: acceptor},
++                    chemical_state=chemical_state,
+                 )
+                 summary = (
+                     f"region={region!r} donor={donor:.3e} "
+@@ -5096,10 +5106,12 @@
+                 donor = float(self.dope_step_donor_var.get())
+                 acceptor = float(self.dope_step_acceptor_var.get())
+                 requested_all_zero = donor == 0.0 and acceptor == 0.0
++                chemical_state = "ACTIVE"    # declared analytic active profile
+                 doped_result = apply_step_junction_doping(
+                     process_result, region=region, junction_axis=axis,
+                     junction_position_um=position,
+                     donor_conc_cm3=donor, acceptor_conc_cm3=acceptor,
++                    chemical_state=chemical_state,
+                 )
+                 summary = (
+                     f"region={region!r} axis={axis!r} "
+@@ -5122,11 +5134,15 @@
+                 # `existing=`/`gaussian_terms` mechanism) is now
+                 # WaferState's job -- every kind, not just Gaussian
+                 # Implant, accumulates via self.wafer_state below.
++                # A process-like implant: no energy/dose or anneal
++                # activation model exists, so it is only ever CHEMICAL.
++                chemical_state = "CHEMICAL"
+                 doped_result = apply_gaussian_implant_doping(
+                     process_result, region=region, junction_axis=axis,
+                     peak_position_um=position, straggle_um=straggle,
+                     donor_peak_conc_cm3=donor, acceptor_peak_conc_cm3=acceptor,
+                     donor_species=donor_species, acceptor_species=acceptor_species,
++                    chemical_state=chemical_state,
+                 )
+                 summary = (
+                     f"region={region!r} axis={axis!r} "
+@@ -5160,10 +5176,12 @@
+                     {"min_um": drn_min, "max_um": drn_max,
+                      "donor_conc_cm3": drn_donor, "acceptor_conc_cm3": drn_acceptor},
+                 ]
++                chemical_state = "CHEMICAL"    # process-like implant, no activation model
+                 doped_result = apply_implant_windows_doping(
+                     process_result, region=region, axis=axis,
+                     donor_background_cm3=donor_bg, acceptor_background_cm3=acceptor_bg,
+                     windows=windows,
++                    chemical_state=chemical_state,
+                 )
+                 summary = (
+                     f"region={region!r} axis={axis!r} "
+@@ -5263,10 +5281,10 @@
+             )
+ 
+         state = self.wafer_state
+-        n_new_att = sum(
+-            a.attachment_id not in prior_att
+-            for a in getattr(state, "attachments", ())
+-        )
++        new_att = [
++            a for a in getattr(state, "attachments", ())
++            if a.attachment_id not in prior_att
++        ]
+         n_refused = sum(
+             e.model_status == "UNSUPPORTED_BY_MODEL"
+             for e in getattr(state, "events", ())[n_events:]
+@@ -5274,27 +5292,35 @@
+         n_new_unresolved = len(getattr(state, "unresolved_inventory", ())) - n_unresolved
+ 
+         if reattach:
+-            # Only an existing canonical active attachment can justify
+-            # re-attaching; a stale numeric DopingProfile cannot.
+-            applied = bool(getattr(state, "attachments", ()))
++            # A re-attach needs the canonical attachment(s) of THIS request
++            # -- same material instance, model, parameters, species,
++            # polarity and chemical state -- not merely some other
++            # attachment that happens to exist, and never a stale numeric
++            # DopingProfile.
++            matched, recorded, why = canonical_doping_request_matches(
++                state, doped_result.doping)
++            refused = not matched
+         else:
+-            applied = n_new_att > 0 and n_refused == 0 and n_new_unresolved == 0
++            # advance_wafer_state() is atomic per request: either every
++            # profile attached or none did.
++            recorded = tuple(new_att)
++            why = ""
++            refused = not new_att or n_refused > 0 or n_new_unresolved > 0
+ 
+-        if not applied:
++        if refused:
+             self._log(
+                 f"\n================================\n"
+                 f"DOPING NOT APPLIED (UNSUPPORTED_BY_MODEL)\n"
+                 f"================================\n"
+                 + (
+                     "- No active dopant attachment was created.\n"
+-                    if n_new_att == 0 else
+-                    f"- PARTIAL: {n_new_att} active attachment(s) WERE created while "
+-                    f"others were refused; the canonical state keeps them, and the "
+-                    f"request is still not reported as applied.\n"
++                    if not new_att else
++                    f"- INCONSISTENT: {len(new_att)} attachment(s) exist although the "
++                    f"request was refused; it is still not reported as applied.\n"
+                 )
+                 + f"- The requested doping cannot be used as canonical electrical "
+                 f"doping"
+-                + (" (re-attach needs an existing canonical active attachment).\n"
++                + (f" (re-attach needs this request's own canonical attachment: {why}).\n"
+                    if reattach else ".\n")
+                 + f"- REQUESTED, NOT APPLIED (user input, not a result): "
+                 f"{summary.split(' -> ')[0]}\n"
+@@ -5306,13 +5332,41 @@
+                 f"physical certainty that was lost.\n"
+             )
+             if not silent:
+-                self._notify_error(
++                self._notify_info(
+                     "Doping",
+                     "DOPING NOT APPLIED (UNSUPPORTED_BY_MODEL): the request is "
+                     "not reported as applied; see the process log.",
+                 )
+             return False
+ 
++        if any(a.chemical_state != "ACTIVE" for a in recorded):
++            # A process-like implant: the dopant is on record but this
++            # project has no implantation (energy/dose) or anneal
++            # activation model, so nothing is claimed electrically active.
++            # No last_doped_result, history, overlay or measurement state
++            # is updated as if it were an active doping.
++            self._log(
++                f"\n================================\n"
++                f"CHEMICAL PROFILE RECORDED; ELECTRICAL ACTIVATION UNSUPPORTED\n"
++                f"================================\n"
++                f"- {len(recorded)} chemical dopant attachment(s) "
++                f"{'already present in' if reattach else 'recorded in'} the "
++                f"WaferState as provenance (chemical_state CHEMICAL).\n"
++                f"- No activation model exists: the electrical donor/acceptor/net "
++                f"query is UNSUPPORTED_BY_MODEL over their support.\n"
++                f"- REQUESTED, NOT APPLIED AS ELECTRICAL DOPING (user input, not a "
++                f"result): {summary.split(' -> ')[0]}\n"
++                f"- No DevSim write or solve is run; the last doped result, the "
++                f"history and the viewer layer are unchanged.\n"
++            )
++            if not silent:
++                self._notify_info(
++                    "Doping",
++                    "CHEMICAL PROFILE RECORDED; ELECTRICAL ACTIVATION UNSUPPORTED: "
++                    "no active doping was applied; see the process log.",
++                )
++            return False
++
+         self.last_doped_result = doped_result
+ 
+         self.history.append(
+@@ -5323,6 +5377,9 @@
+             f"\n================================\n"
+             f"DOPING APPLIED: {kind.upper()}\n"
+             f"================================\n"
++            f"ACTIVE ANALYTIC PROFILE DECLARED (DECLARED ANALYTIC ACTIVE "
++            f"PROFILE: the user's own electrically-active device profile -- not "
++            f"a simulated implant, anneal or activation)\n"
+             f"{summary}\n"
+             f"Materials in mesh: "
+             f"{[r.name for r in doped_result.material_regions]}\n"
+@@ -5345,7 +5402,10 @@
+         if not silent:
+             self._notify_info(
+                 "Doping",
+-                f"Doping profile attached ({kind}).\n\n{summary}\n\n"
++                f"Doping profile attached ({kind}) -- ACTIVE ANALYTIC PROFILE "
++                f"DECLARED: a declared analytic active profile, not a simulated "
++                f"implant.\n\n"
++                f"{summary}\n\n"
+                 f"No DevSim solve was run -- this only attaches the "
+                 f"DopingProfile object and reports it in the process log.",
+             )

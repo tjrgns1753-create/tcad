@@ -1,0 +1,467 @@
+--- a/tests/integration/test_measurement_canonical_state_gate_real.py
++++ b/tests/integration/test_measurement_canonical_state_gate_real.py
+@@ -4,9 +4,18 @@
+ canonical-state gate before any doping is written or any DevSim solve
+ runs. Real GUI (window withdrawn), real ViennaPS, real DevSim.
+ 
++B0 (Batch 7C) the same Gaussian Implant and Implant Windows requests made
++   through the GUI are process-like implant inputs; this project has no
++   implantation/activation model, so they are recorded CHEMICAL only:
++   run_doping() returns False, the attachments are CHEMICAL, and a MEASURE
++   afterwards writes 0 doping and runs 0 solves.
++
+ B1 (supported, accumulated) virgin 4 x 1 um wafer (grid 0.2 um) ->
+-   Gaussian Implant donor (P, peak 1e16 at x=0, straggle 0.5 um) ->
+-   Implant Windows (donor background 1e16, source/drain windows 1e16) ->
++   Gaussian donor (P, peak 1e16 at x=0, straggle 0.5 um) ->
++   Implant Windows (donor background 1e16, source/drain windows 1e16),
++   both DECLARED electrically ACTIVE through the recipe helpers
++   (chemical_state="ACTIVE": a user-declared analytic profile, not a
++   simulated implant) ->
+    MEASURE (the Implant Windows robust branch). Required: both
+    applications are attachments of the canonical state; the solve
+    really runs; the NetDoping DevSim actually solved with equals the
+@@ -253,10 +262,39 @@
+         app.withdraw()
+         _configure(app)
+         assert app._materialize_current_wafer(), "materializing the real ViennaPS wafer failed"
++        # B0: through the GUI these two kinds are CHEMICAL records (Batch 7C).
+         _set_gaussian_p_1e16(app)
+-        assert app.run_doping(silent=True)
++        assert app.run_doping(silent=True) is False, "a GUI Gaussian Implant must not be reported as an applied active doping"
+         _set_implant_windows_1e16(app)
+-        assert app.run_doping(silent=True)
++        assert app.run_doping(silent=True) is False, "a GUI Implant Windows must not be reported as an applied active doping"
++        metrics["B0_states"] = [(a.model, a.chemical_state) for a in app.wafer_state.attachments]
++        assert app.last_doped_result is None
++        metrics["B0"] = _measure(app, devsim, "B0 blocked: GUI Gaussian + Implant Windows are CHEMICAL")
++
++        # B1: the same physics, DECLARED electrically active through the recipe helpers.
++        app.reset()
++        _configure(app)
++        assert app._materialize_current_wafer(), "materializing the real ViennaPS wafer failed"
++        from tcad.mesh.viennaps_adapter import build_process_result
++        from tcad.physics.doping import apply_gaussian_implant_doping, apply_implant_windows_doping
++        from tcad.physics.wafer_state_accumulation import advance_wafer_state
++        pr = build_process_result({"final_mesh": app.last_final_mesh, "snapshots": []})
++        gauss = apply_gaussian_implant_doping(
++            pr, region="Si", junction_axis="x", peak_position_um=0.0, straggle_um=0.5,
++            donor_peak_conc_cm3=1e16, acceptor_peak_conc_cm3=0.0, donor_species="P",
++            chemical_state="ACTIVE")
++        windows_result = apply_implant_windows_doping(
++            pr, region="Si", axis="x", donor_background_cm3=1e16, acceptor_background_cm3=0.0,
++            windows=[
++                {"min_um": float(app.dope_win_src_min_var.get()), "max_um": float(app.dope_win_src_max_var.get()),
++                 "donor_conc_cm3": 1e16, "acceptor_conc_cm3": 0.0},
++                {"min_um": float(app.dope_win_drn_min_var.get()), "max_um": float(app.dope_win_drn_max_var.get()),
++                 "donor_conc_cm3": 1e16, "acceptor_conc_cm3": 0.0},
++            ],
++            chemical_state="ACTIVE")
++        app.wafer_state = advance_wafer_state(
++            advance_wafer_state(app.wafer_state, gauss, "doping"), windows_result, "doping")
++        app.last_doped_result = windows_result
+         metrics["B1_attachments"] = [
+             (a.model, a.species, a.polarity, a.support_instance_id, a.support_region_um)
+             for a in app.wafer_state.attachments]
+@@ -283,7 +321,7 @@
+         app.dope_uniform_region_var.set("Si")
+         app.dope_uniform_donor_var.set(1e16)
+         app.dope_uniform_acceptor_var.set(0.0)
+-        assert app.run_doping(silent=True)
++        assert app.run_doping(silent=True) is True
+         metrics["B2"] = _measure(app, devsim, "B2 supported: uniform apply_doping path")
+     finally:
+         for n, fn in originals.items():
+@@ -299,6 +337,11 @@
+     print("METRICS " + json.dumps(printable, default=str))
+     print("A_LOG_DELTA " + json.dumps(metrics["A"]["log_delta"]))
+ 
++    # ---- B0: the GUI kinds are CHEMICAL records, never measurable ----
++    b0 = metrics["B0"]
++    assert metrics["B0_states"] and all(state == "CHEMICAL" for _, state in metrics["B0_states"]), metrics["B0_states"]
++    assert b0["solve_calls"] == 0 and b0["doping_writes"] == 0 and not b0["currents_in_log"], b0
++
+     # ---- B1: supported, accumulated ----
+     b1 = metrics["B1"]
+     models = [m for m, *_ in metrics["B1_attachments"]]
+--- a/tests/integration/test_oxidation_positive_time_unsupported_real.py
++++ b/tests/integration/test_oxidation_positive_time_unsupported_real.py
+@@ -274,7 +274,7 @@
+                         s0, species="P", polarity="donor", concentration_at=lambda x, y: 1e17,
+                         support_instance_id=s0.cells[0].material_instance_id,
+                         support_region_um=(-1.0, 1.0, -0.5, 0.0), model="uniform_v1",
+-                        inventory_integral=uniform_inventory_integral(1e17))
++                        inventory_integral=uniform_inventory_integral(1e17), chemical_state="ACTIVE")
+                     out = advance_wafer_state(doped, build_process_result(result), "oxidation")
+                     assert out is not doped and out.attachments == ()
+         print(f"PASS test_3 grid={grid}: fresh request (both models, LOCOS pad omitted/0.1/0.2) -> "
+--- a/tests/integration/test_oxidation_zero_duration_identity_real.py
++++ b/tests/integration/test_oxidation_zero_duration_identity_real.py
+@@ -103,7 +103,7 @@
+     return attach_dopant(
+         s, species='P', polarity='donor', concentration_at=lambda x, y: 1e17,
+         support_instance_id='si#substrate', support_region_um=bounds, model='uniform_v1',
+-        inventory_integral=uniform_inventory_integral(1e17))
++        inventory_integral=uniform_inventory_integral(1e17), chemical_state="ACTIVE")
+ 
+ 
+ def assert_fail_closed(prior, out):
+--- a/tests/unit/test_advance_wafer_state_result_contract_mock.py
++++ b/tests/unit/test_advance_wafer_state_result_contract_mock.py
+@@ -34,7 +34,7 @@
+ 
+ def _uniform(conc):
+     return DopingProfile(kind="uniform",
+-                         regions=[DopingRegion(region="Si", net_doping_cm3=conc)])
++                         regions=[DopingRegion(region="Si", net_doping_cm3=conc, chemical_state="ACTIVE")])
+ 
+ 
+ def _state():
+@@ -48,7 +48,7 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: 1e17,
+         support_instance_id=s.cells[0].material_instance_id,
+         support_region_um=(-1.0, 1.0, -1.0, 0.0), model="uniform_v1",
+-        inventory_integral=uniform_inventory_integral(1e17))
++        inventory_integral=uniform_inventory_integral(1e17), chemical_state="ACTIVE")
+ 
+ 
+ def test_A_metadata_less_doping_result_attaches():
+--- a/tests/unit/test_cli_doping_initial_state_branch_mock.py
++++ b/tests/unit/test_cli_doping_initial_state_branch_mock.py
+@@ -74,7 +74,7 @@
+ def _process_result(tmp, net_doping_cm3=1.0e17):
+     mesh_path = str(Path(tmp) / "cli.vtu")
+     _write_minimal_si_mesh(mesh_path)
+-    doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=net_doping_cm3)])
++    doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=net_doping_cm3, chemical_state="ACTIVE")])
+     return ProcessResult(
+         volume_mesh_path=mesh_path, material_field="Material",
+         material_regions=[MaterialRegion(name="Si", tag=0)], doping=doping,
+--- a/tests/unit/test_dopant_profile_mock.py
++++ b/tests/unit/test_dopant_profile_mock.py
+@@ -181,7 +181,7 @@
+     assert "thermal_budget" not in field_names
+     assert field_names == {
+         "species", "polarity", "concentration_at", "host_material",
+-        "model", "model_params", "thermal_history", "source",
++        "model", "model_params", "thermal_history", "source", "chemical_state",
+     }
+     print(f"DopantProfile fields (model-agnostic): {sorted(field_names)}")
+ 
+--- a/tests/unit/test_measurement_canonical_state_gate_mock.py
++++ b/tests/unit/test_measurement_canonical_state_gate_mock.py
+@@ -86,7 +86,7 @@
+         concentration_at=lambda x, y: conc,
+         inventory_integral=v2.uniform_inventory_integral(conc),
+         support_instance_id=instance_id, support_region_um=bounds,
+-        model="uniform_v1", model_params={"conc_cm3": conc}, step_seed=seed,
++        model="uniform_v1", model_params={"conc_cm3": conc}, step_seed=seed, chemical_state="ACTIVE",
+     )
+ 
+ 
+@@ -408,7 +408,7 @@
+         on_edge, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e16,
+         inventory_integral=v2.uniform_inventory_integral(1.0e16),
+         support_instance_id="si#0", support_region_um=(-2.4, 2.4, -1.0, 0.0),
+-        model="uniform_v1", model_params={"conc_cm3": 1.0e16},
++        model="uniform_v1", model_params={"conc_cm3": 1.0e16}, chemical_state="ACTIVE",
+     )
+     fake = FakeDevsim([x_out], [-0.5e-4])
+     donors, acceptors, nets = _with_fake(fake, lambda: canonical_node_doping("dev", "Si", on_edge, scale))
+@@ -562,7 +562,7 @@
+         state, species="B", polarity="acceptor", concentration_at=lambda x, y: 5.0e16,
+         inventory_integral=v2.uniform_inventory_integral(5.0e16),
+         support_instance_id="ox#0", support_region_um=(-2.0, 2.0, 0.7, 1.0),
+-        model="uniform_v1", model_params={"conc_cm3": 5.0e16},
++        model="uniform_v1", model_params={"conc_cm3": 5.0e16}, chemical_state="ACTIVE",
+     )
+ 
+     y_native = _f32_native(0.7, scale)
+@@ -667,7 +667,7 @@
+         state, species="As", polarity="donor", concentration_at=lambda x, y: 1.0e20,
+         inventory_integral=v2.uniform_inventory_integral(1.0e20),
+         support_instance_id="si#0", support_region_um=(0.0, 2.0, -2.0, 0.0),
+-        model="uniform_v1", model_params={"conc_cm3": 1.0e20}, step_seed="second")
++        model="uniform_v1", model_params={"conc_cm3": 1.0e20}, step_seed="second", chemical_state="ACTIVE")
+     fake = FakeDevsim([-1.0, 1.0], [-1.0, -1.0])
+     history = []
+     real_set = fake.set_node_values
+--- a/tests/unit/test_measurement_entry_point_gate_mock.py
++++ b/tests/unit/test_measurement_entry_point_gate_mock.py
+@@ -91,7 +91,7 @@
+         state, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         inventory_integral=v2.uniform_inventory_integral(1.0e17),
+         support_instance_id="si#0", support_region_um=SI,
+-        model="uniform_v1", model_params={"conc_cm3": 1.0e17})
++        model="uniform_v1", model_params={"conc_cm3": 1.0e17}, chemical_state="ACTIVE")
+ 
+ 
+ UNSUPPORTED_STATES = {
+@@ -200,7 +200,7 @@
+     module_name, function_name, characterization = CHARACTERIZATIONS[kind]
+     fake = FakeDevsim(*zip(*nodes))
+     recorder = Recorder(SimpleNamespace(name=kind))
+-    doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=1.0e17)])
++    doping = DopingProfile(kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=1.0e17, chemical_state="ACTIVE")])
+     restores = [
+         _patched(importlib.import_module(module_name), function_name, recorder),
+         _patched(backend, "require_devsim", lambda: fake),
+--- a/tests/unit/test_wafer_state_v2_apply_doping_barrier_mock.py
++++ b/tests/unit/test_wafer_state_v2_apply_doping_barrier_mock.py
+@@ -66,7 +66,7 @@
+         support_instance_id="si#0",
+         support_region_um=(-2.0, 2.0, -2.0, 0.0),
+         model="uniform_v1", model_params={"conc_cm3": 1.0e17},
+-        provenance="test",
++        provenance="test", chemical_state="ACTIVE",
+     )
+     return state
+ 
+--- a/tests/unit/test_wafer_state_v2_barrier_physics_mock.py
++++ b/tests/unit/test_wafer_state_v2_barrier_physics_mock.py
+@@ -40,7 +40,7 @@
+ 
+ def _uniform(conc_cm3):
+     return _FakeResult(DopingProfile(
+-        kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=conc_cm3)]))
++        kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=conc_cm3, chemical_state="ACTIVE")]))
+ 
+ 
+ def _virgin_si():
+--- a/tests/unit/test_wafer_state_v2_devsim_mapping_gate_mock.py
++++ b/tests/unit/test_wafer_state_v2_devsim_mapping_gate_mock.py
+@@ -74,7 +74,7 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         inventory_integral=uniform_inventory_integral(1.0e17),
+         support_instance_id="inst_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+ 
+ 
+ def main():
+@@ -123,7 +123,7 @@
+         shadowed, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         inventory_integral=uniform_inventory_integral(1.0e17),
+         support_instance_id="inst_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+     # net_doping_at at a Si-depth point still reads the real value here
+     # (v2 owns the point by the deepest containing cell, which is Si) --
+     # so this particular shadow no longer even needs RECOVERY. The point
+--- a/tests/unit/test_wafer_state_v2_etch_conservation_mock.py
++++ b/tests/unit/test_wafer_state_v2_etch_conservation_mock.py
+@@ -34,7 +34,7 @@
+         concentration_at=lambda x, y, v=C: v,
+         inventory_integral=uniform_inventory_integral(C),
+         support_instance_id="inst_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1",
++        model="uniform_v1", chemical_state="ACTIVE",
+     )
+ 
+ 
+@@ -79,7 +79,7 @@
+         concentration_at=lambda x, y: 5.0e16,
+         inventory_integral=uniform_inventory_integral(5.0e16),
+         support_instance_id="inst_si", support_region_um=(-5.0, -4.0, 0.0, 2.0),
+-        model="uniform_v1",
++        model="uniform_v1", chemical_state="ACTIVE",
+     )
+     b_initial = next(a for a in s_out.attachments if a.species == "B").inventory_cm_per_depth
+     s_out2 = advance(s_out, t, step_seed="etch2")
+--- a/tests/unit/test_wafer_state_v2_exact_inventory_mock.py
++++ b/tests/unit/test_wafer_state_v2_exact_inventory_mock.py
+@@ -46,7 +46,7 @@
+     s = attach_dopant(
+         s, species="P", polarity="donor", concentration_at=lambda x, y: C,
+         inventory_integral=integ, support_instance_id="inst_si",
+-        support_region_um=SUPPORT, model="uniform_v1")
++        support_region_um=SUPPORT, model="uniform_v1", chemical_state="ACTIVE")
+     initial = s.attachments[0].inventory_cm_per_depth
+     assert initial == exact_inventory
+ 
+--- a/tests/unit/test_wafer_state_v2_explicit_doping_target_mock.py
++++ b/tests/unit/test_wafer_state_v2_explicit_doping_target_mock.py
+@@ -52,7 +52,7 @@
+     adapter advance_wafer_state() calls -- is exercised end to end,
+     matching exactly what run_doping()/apply_uniform_doping() build."""
+     return _FakeResult(DopingProfile(
+-        kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=conc_cm3)]))
++        kind="uniform", regions=[DopingRegion(region="Si", net_doping_cm3=conc_cm3, chemical_state="ACTIVE")]))
+ 
+ 
+ def _two_si_instances():
+--- a/tests/unit/test_wafer_state_v2_fail_closed_no_resurrection_mock.py
++++ b/tests/unit/test_wafer_state_v2_fail_closed_no_resurrection_mock.py
+@@ -25,7 +25,7 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         inventory_integral=uniform_inventory_integral(1.0e17),
+         support_instance_id="inst_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+ 
+ 
+ def main():
+@@ -65,7 +65,7 @@
+         s, species="As", polarity="donor", concentration_at=lambda x, y: 2.0e16,
+         inventory_integral=uniform_inventory_integral(2.0e16),
+         support_instance_id="inst_sin", support_region_um=(-5.0, 5.0, 2.0, 2.5),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+     assert len(s.attachments) == 1 and s.attachments[0].species == "As"
+     assert abs(s.net_doping_at(0.0, 2.25).net_doping - 2.0e16) < 1.0
+     # the OLD region is STILL unsupported -- the new doping did not leak there
+--- a/tests/unit/test_wafer_state_v2_instance_not_name_mock.py
++++ b/tests/unit/test_wafer_state_v2_instance_not_name_mock.py
+@@ -41,7 +41,7 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         inventory_integral=uniform_inventory_integral(1.0e17),
+         support_instance_id="inst_doped_si", support_region_um=(-5.0, 0.0, 0.0, 2.0),
+-        model="uniform_v1",
++        model="uniform_v1", chemical_state="ACTIVE",
+     )
+ 
+     # The sanctioned, instance-keyed lookup: doped instance -> 1, fresh -> 0.
+--- a/tests/unit/test_wafer_state_v2_legacy_migration_fail_closed_mock.py
++++ b/tests/unit/test_wafer_state_v2_legacy_migration_fail_closed_mock.py
+@@ -51,7 +51,7 @@
+     state = attach_dopant(
+         state, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         support_instance_id=cell.material_instance_id, support_region_um=None,
+-        model="uniform_v1",
++        model="uniform_v1", chemical_state="ACTIVE",
+     )
+     assert len(state.attachments) == n_att_before, (
+         "attach_dopant created an active attachment on a legacy cell")
+--- a/tests/unit/test_wafer_state_v2_multi_extent_provenance_mock.py
++++ b/tests/unit/test_wafer_state_v2_multi_extent_provenance_mock.py
+@@ -33,12 +33,12 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: C,
+         inventory_integral=uniform_inventory_integral(C),
+         support_instance_id="inst_si", support_region_um=(-6.0, -2.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+     s = attach_dopant(
+         s, species="P", polarity="donor", concentration_at=lambda x, y: C,
+         inventory_integral=uniform_inventory_integral(C),
+         support_instance_id="inst_si", support_region_um=(2.0, 6.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+ 
+     # TWO non-overlapping removed extents, one biting each cell.
+     rL = (-5.0, -3.0, 0.0, 2.0)     # bites the left cell
+--- a/tests/unit/test_wafer_state_v2_no_last_step_category_mock.py
++++ b/tests/unit/test_wafer_state_v2_no_last_step_category_mock.py
+@@ -62,7 +62,7 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         inventory_integral=uniform_inventory_integral(1.0e17),
+         support_instance_id="inst_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+ 
+     # etch with an explicit transform -> a REMOVED SpatialEvent drives the clip
+     s_etch = advance(s, GeometryTransform(
+--- a/tests/unit/test_wafer_state_v2_no_numeric_without_exact_integral_mock.py
++++ b/tests/unit/test_wafer_state_v2_no_numeric_without_exact_integral_mock.py
+@@ -71,7 +71,7 @@
+         s3, species="As", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         inventory_integral=uniform_inventory_integral(1.0e17),
+         support_instance_id="inst_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+     assert s3.attachments == (), "attach_dopant created an active attachment on an UNRESOLVED instance"
+     assert any(e.category == "UNSUPPORTED_BY_MODEL" and e.process_category == "doping"
+                for e in s3.events)
+--- a/tests/unit/test_wafer_state_v2_oxidation_unsupported_mock.py
++++ b/tests/unit/test_wafer_state_v2_oxidation_unsupported_mock.py
+@@ -41,7 +41,7 @@
+         s, species="B", polarity="acceptor", concentration_at=lambda x, y: C,
+         inventory_integral=uniform_inventory_integral(C),
+         support_instance_id="inst_si", support_region_um=(-5.0, 0.0, 0.0, 2.0),
+-        model="uniform_v1",
++        model="uniform_v1", chemical_state="ACTIVE",
+     )
+ 
+ 
+--- a/tests/unit/test_wafer_state_v2_redeposit_no_resurrection_mock.py
++++ b/tests/unit/test_wafer_state_v2_redeposit_no_resurrection_mock.py
+@@ -33,7 +33,7 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         inventory_integral=uniform_inventory_integral(1.0e17),
+         support_instance_id="inst_old_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1",
++        model="uniform_v1", chemical_state="ACTIVE",
+     )
+     old_attachment_id = s.attachments[0].attachment_id
+ 
+--- a/tests/unit/test_wafer_state_v2_remesh_preserved_mock.py
++++ b/tests/unit/test_wafer_state_v2_remesh_preserved_mock.py
+@@ -29,7 +29,7 @@
+             step_inventory_integral(1.0e17, 0.0, "x_le")(b)
+             + step_inventory_integral(3.0e17, 0.0, "x_ge")(b)),
+         support_instance_id="inst_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="step_junction_v1",
++        model="step_junction_v1", chemical_state="ACTIVE",
+     )
+     inv_before = tuple(a.inventory_cm_per_depth for a in s.attachments)
+     lineage_before = s.cells[0].lineage
+--- a/tests/unit/test_wafer_state_v2_transform_structural_validation_mock.py
++++ b/tests/unit/test_wafer_state_v2_transform_structural_validation_mock.py
+@@ -29,7 +29,7 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: 1.0e17,
+         inventory_integral=uniform_inventory_integral(1.0e17),
+         support_instance_id="inst_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+ 
+ 
+ def _is_fail_closed(state):
+--- a/tests/unit/test_wafer_state_v2_transform_targets_instance_mock.py
++++ b/tests/unit/test_wafer_state_v2_transform_targets_instance_mock.py
+@@ -43,12 +43,12 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: CA,
+         inventory_integral=uniform_inventory_integral(CA),
+         support_instance_id="inst_A", support_region_um=(-5.0, 0.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+     s = attach_dopant(
+         s, species="As", polarity="donor", concentration_at=lambda x, y: CB,
+         inventory_integral=uniform_inventory_integral(CB),
+         support_instance_id="inst_B", support_region_um=(0.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+     return s
+ 
+ 
+--- a/tests/unit/test_wafer_state_v2_unsupported_returns_none_mock.py
++++ b/tests/unit/test_wafer_state_v2_unsupported_returns_none_mock.py
+@@ -41,7 +41,7 @@
+         s, species="B", polarity="acceptor", concentration_at=lambda x, y: 1.0e18,
+         inventory_integral=uniform_inventory_integral(1.0e18),
+         support_instance_id="inst_si", support_region_um=(-5.0, 5.0, 0.0, 2.0),
+-        model="uniform_v1")
++        model="uniform_v1", chemical_state="ACTIVE")
+     s = advance(s, GeometryTransform(
+         "oxidation", representable=True, converted_extents_um=((-5.0, 0.0, 1.0, 2.0),),
+         input_instance_ids=("inst_si",)), step_seed="ox")
+--- a/tests/unit/test_waferstate_sequential_advance_mock.py
++++ b/tests/unit/test_waferstate_sequential_advance_mock.py
+@@ -110,7 +110,7 @@
+         state, species="P", polarity="donor",
+         concentration_at=lambda x, y: 1e17,
+         support_instance_id=si_instance, support_region_um=(-1.0, 1.0, -1.0, 0.0),
+-        model="uniform_v1", inventory_integral=uniform_inventory_integral(1e17),
++        model="uniform_v1", inventory_integral=uniform_inventory_integral(1e17), chemical_state="ACTIVE",
+     )
+     q_before = state.net_doping_at(0.0, -0.5)
+     assert q_before.donor_concentration == 1e17, (
+--- a/tests/unit/test_zero_duration_identity_state_contract_mock.py
++++ b/tests/unit/test_zero_duration_identity_state_contract_mock.py
+@@ -55,7 +55,7 @@
+         s, species="P", polarity="donor", concentration_at=lambda x, y: 1e17,
+         support_instance_id=s.cells[0].material_instance_id,
+         support_region_um=tuple(s.cells[0].bounds_um), model="uniform_v1",
+-        inventory_integral=uniform_inventory_integral(1e17))
++        inventory_integral=uniform_inventory_integral(1e17), chemical_state="ACTIVE")
+ 
+ 
+ def _result(transition="__absent__"):

@@ -1,0 +1,1988 @@
+{
+  "rev2_L4L5": [
+    {
+      "label": "rev2_L4L5_1d_L4_R1_node",
+      "geometry": "1d",
+      "level": 4,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 531,
+      "x0_aligned_cm": 5e-06,
+      "x1_neighbor_cm": 5.000500000000001e-06,
+      "local_spacing_cm": 5.000000000002493e-10,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "donors_at_x0": 1e+18,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 383256.9278503777,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 2.2897551971986407e-06,
+        "recovery_90pct_cm": 3.1042773029133e-06,
+        "recovery_99pct_cm": 4.038763505195682e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 2.316071574013034e-06,
+        "recovery_90pct_cm": 3.1398554631359265e-06,
+        "recovery_99pct_cm": 4.084967538851087e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.9381121592296496e-08,
+            "top": -2.9935950129750014e-09
+          },
+          "conservation_error": 2.2374716605271495e-08
+        },
+        {
+          "v_bias": 0.1,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.4109489549312275e-07,
+            "top": 1.1812057028962401e-07
+          },
+          "conservation_error": 2.2974325203498745e-08
+        },
+        {
+          "v_bias": 0.2,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.1418273442446209e-06,
+            "top": 1.1429297720154337e-06
+          },
+          "conservation_error": 1.102427770812786e-09
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.5941355060391748e-05,
+            "top": 1.5926043069815065e-05
+          },
+          "conservation_error": 1.5311990576683074e-08
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.00044877445219504344,
+            "top": 0.0004487581895814796
+          },
+          "conservation_error": 1.6262613563851162e-08
+        },
+        {
+          "v_bias": 0.5,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.018155347451910976,
+            "top": 0.01815537228895014
+          },
+          "conservation_error": 2.4837039164921082e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ],
+      "wall_s": 0.6055560111999512
+    },
+    {
+      "label": "rev2_L4L5_1d_L4_R1_shift",
+      "geometry": "1d",
+      "level": 4,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 531,
+      "x0_aligned_cm": 5e-06,
+      "x1_neighbor_cm": 5.000500000000001e-06,
+      "local_spacing_cm": 5.000000000002493e-10,
+      "xj_used_cm": 5.00025e-06,
+      "junction_on_a_node": false,
+      "donors_at_x0": 0.0,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 383288.685755113,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 2.289505197198641e-06,
+        "recovery_90pct_cm": 3.1040273029133e-06,
+        "recovery_99pct_cm": 4.038513505195682e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 2.3163215740130336e-06,
+        "recovery_90pct_cm": 3.140105463135926e-06,
+        "recovery_99pct_cm": 4.085217538851086e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": 2.2197510992832134e-08,
+            "top": -7.620671912137503e-09
+          },
+          "conservation_error": 1.457683908069463e-08
+        },
+        {
+          "v_bias": 0.1,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.3336710614957855e-07,
+            "top": 1.19640471837379e-07
+          },
+          "conservation_error": 1.372663431219956e-08
+        },
+        {
+          "v_bias": 0.2,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.1209905226073087e-06,
+            "top": 1.1501235542424474e-06
+          },
+          "conservation_error": 2.913303163513869e-08
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.5951895824083835e-05,
+            "top": 1.592323539859956e-05
+          },
+          "conservation_error": 2.8660425484276e-08
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.0004487502030495066,
+            "top": 0.0004487514310196967
+          },
+          "conservation_error": 1.227970190104382e-09
+        },
+        {
+          "v_bias": 0.5,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.01815502498556655,
+            "top": 0.018155035792054686
+          },
+          "conservation_error": 1.0806488134895709e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ],
+      "wall_s": 0.6426792144775391
+    },
+    {
+      "label": "rev2_L4L5_1d_L4_R2_node",
+      "geometry": "1d",
+      "level": 4,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 531,
+      "x0_aligned_cm": 5e-06,
+      "x1_neighbor_cm": 5.000500000000001e-06,
+      "local_spacing_cm": 5.000000000002493e-10,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "donors_at_x0": 1e+18,
+      "acceptors_at_x0": 0.0,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 383288.6872398169,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 2.2897551971986407e-06,
+        "recovery_90pct_cm": 3.1042773029133e-06,
+        "recovery_99pct_cm": 4.038763505195682e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 2.316071574013034e-06,
+        "recovery_90pct_cm": 3.1398554631359265e-06,
+        "recovery_99pct_cm": 4.084967538851087e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.524497926733153e-08,
+            "top": 6.841467399075002e-09
+          },
+          "conservation_error": 8.403511868256529e-09
+        },
+        {
+          "v_bias": 0.1,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.2697344198168802e-07,
+            "top": 1.1493612223396773e-07
+          },
+          "conservation_error": 1.203731974772029e-08
+        },
+        {
+          "v_bias": 0.2,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.1716710215101827e-06,
+            "top": 1.1328006412931575e-06
+          },
+          "conservation_error": 3.887038021702517e-08
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.5907269542521646e-05,
+            "top": 1.5932126256763605e-05
+          },
+          "conservation_error": 2.4856714241959055e-08
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.0004487780074101542,
+            "top": 0.0004487652251477245
+          },
+          "conservation_error": 1.2782262429663748e-08
+        },
+        {
+          "v_bias": 0.5,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.01815570873346287,
+            "top": 0.018155706675620532
+          },
+          "conservation_error": 2.057842337505056e-09
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ],
+      "wall_s": 0.6118950843811035
+    },
+    {
+      "label": "rev2_L4L5_1d_L4_R2_shift",
+      "geometry": "1d",
+      "level": 4,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 531,
+      "x0_aligned_cm": 5e-06,
+      "x1_neighbor_cm": 5.000500000000001e-06,
+      "local_spacing_cm": 5.000000000002493e-10,
+      "xj_used_cm": 5.00025e-06,
+      "junction_on_a_node": false,
+      "donors_at_x0": 0.0,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 383288.685755113,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 2.289505197198641e-06,
+        "recovery_90pct_cm": 3.1040273029133e-06,
+        "recovery_99pct_cm": 4.038513505195682e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 2.3163215740130336e-06,
+        "recovery_90pct_cm": 3.140105463135926e-06,
+        "recovery_99pct_cm": 4.085217538851086e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": 2.2197510992832134e-08,
+            "top": -7.620671912137503e-09
+          },
+          "conservation_error": 1.457683908069463e-08
+        },
+        {
+          "v_bias": 0.1,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.3336710614957855e-07,
+            "top": 1.19640471837379e-07
+          },
+          "conservation_error": 1.372663431219956e-08
+        },
+        {
+          "v_bias": 0.2,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.1209905226073087e-06,
+            "top": 1.1501235542424474e-06
+          },
+          "conservation_error": 2.913303163513869e-08
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.5951895824083835e-05,
+            "top": 1.592323539859956e-05
+          },
+          "conservation_error": 2.8660425484276e-08
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.0004487502030495066,
+            "top": 0.0004487514310196967
+          },
+          "conservation_error": 1.227970190104382e-09
+        },
+        {
+          "v_bias": 0.5,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.01815502498556655,
+            "top": 0.018155035792054686
+          },
+          "conservation_error": 1.0806488134895709e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ],
+      "wall_s": 0.595430850982666
+    },
+    {
+      "label": "rev2_L4L5_1d_L5_R1_node",
+      "geometry": "1d",
+      "level": 5,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 599,
+      "x0_aligned_cm": 5e-06,
+      "x1_neighbor_cm": 5.00025e-06,
+      "local_spacing_cm": 2.4999999999970114e-10,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "donors_at_x0": 1e+18,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 383268.2909713333,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 2.304033846439365e-06,
+        "recovery_90pct_cm": 3.1215870865041657e-06,
+        "recovery_99pct_cm": 4.060203310319175e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 2.318231822403427e-06,
+        "recovery_90pct_cm": 3.14079629950459e-06,
+        "recovery_99pct_cm": 4.085165822497202e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": 3.5851907616493077e-09,
+            "top": 5.171743442512501e-09
+          },
+          "conservation_error": 8.75693420416181e-09
+        },
+        {
+          "v_bias": 0.1,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -8.3501522108955e-08,
+            "top": 1.1912918812571514e-07
+          },
+          "conservation_error": 3.5627666016760134e-08
+        },
+        {
+          "v_bias": 0.2,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.1081558568092756e-06,
+            "top": 1.1368020090147225e-06
+          },
+          "conservation_error": 2.864615220544694e-08
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.5914713830907023e-05,
+            "top": 1.59233949681596e-05
+          },
+          "conservation_error": 8.681137252578545e-09
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.00044875164773128094,
+            "top": 0.0004487628338132295
+          },
+          "conservation_error": 1.1186081948580135e-08
+        },
+        {
+          "v_bias": 0.5,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.01815549256540957,
+            "top": 0.018155454642213454
+          },
+          "conservation_error": 3.792319611464756e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ],
+      "wall_s": 0.6537520885467529
+    },
+    {
+      "label": "rev2_L4L5_1d_L5_R1_shift",
+      "geometry": "1d",
+      "level": 5,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 599,
+      "x0_aligned_cm": 5e-06,
+      "x1_neighbor_cm": 5.00025e-06,
+      "local_spacing_cm": 2.4999999999970114e-10,
+      "xj_used_cm": 5.000125e-06,
+      "junction_on_a_node": false,
+      "donors_at_x0": 0.0,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 383288.6497729999,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 2.3039088464393655e-06,
+        "recovery_90pct_cm": 3.1214620865041663e-06,
+        "recovery_99pct_cm": 4.060078310319175e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 2.3183568224034265e-06,
+        "recovery_90pct_cm": 3.1409212995045895e-06,
+        "recovery_99pct_cm": 4.085290822497201e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": 3.376556227139519e-08,
+            "top": -6.343915547212503e-09
+          },
+          "conservation_error": 2.742164672418269e-08
+        },
+        {
+          "v_bias": 0.1,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.243730982203855e-07,
+            "top": 1.282020069307854e-07
+          },
+          "conservation_error": 3.8289087103999e-09
+        },
+        {
+          "v_bias": 0.2,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.1598763949751224e-06,
+            "top": 1.142181321398618e-06
+          },
+          "conservation_error": 1.7695073576504257e-08
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.5872164223001483e-05,
+            "top": 1.5929926878920898e-05
+          },
+          "conservation_error": 5.7762655919414723e-08
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.0004487995822143962,
+            "top": 0.00044875362994163106
+          },
+          "conservation_error": 4.5952272765149155e-08
+        },
+        {
+          "v_bias": 0.5,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.018155191292589534,
+            "top": 0.01815524023812759
+          },
+          "conservation_error": 4.894553805659396e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ],
+      "wall_s": 0.6824326515197754
+    },
+    {
+      "label": "rev2_L4L5_1d_L5_R2_node",
+      "geometry": "1d",
+      "level": 5,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 599,
+      "x0_aligned_cm": 5e-06,
+      "x1_neighbor_cm": 5.00025e-06,
+      "local_spacing_cm": 2.4999999999970114e-10,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "donors_at_x0": 1e+18,
+      "acceptors_at_x0": 0.0,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 383288.6497730154,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 2.304033846439365e-06,
+        "recovery_90pct_cm": 3.1215870865041657e-06,
+        "recovery_99pct_cm": 4.060203310319175e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 2.318231822403427e-06,
+        "recovery_90pct_cm": 3.14079629950459e-06,
+        "recovery_99pct_cm": 4.085165822497202e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": 1.9373085666873958e-08,
+            "top": 5.608201518600002e-09
+          },
+          "conservation_error": 2.498128718547396e-08
+        },
+        {
+          "v_bias": 0.1,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.3438675302166057e-07,
+            "top": 1.1314988890320637e-07
+          },
+          "conservation_error": 2.12368641184542e-08
+        },
+        {
+          "v_bias": 0.2,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.1537331063010242e-06,
+            "top": 1.1509395694085294e-06
+          },
+          "conservation_error": 2.7935368924947435e-09
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.588604242663464e-05,
+            "top": 1.592600175808983e-05
+          },
+          "conservation_error": 3.995933145519085e-08
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.000448716629585957,
+            "top": 0.0004487670957481053
+          },
+          "conservation_error": 5.046616214829901e-08
+        },
+        {
+          "v_bias": 0.5,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.018155614923983276,
+            "top": 0.01815567074025353
+          },
+          "conservation_error": 5.5816270255054645e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ],
+      "wall_s": 0.6155965328216553
+    },
+    {
+      "label": "rev2_L4L5_1d_L5_R2_shift",
+      "geometry": "1d",
+      "level": 5,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 599,
+      "x0_aligned_cm": 5e-06,
+      "x1_neighbor_cm": 5.00025e-06,
+      "local_spacing_cm": 2.4999999999970114e-10,
+      "xj_used_cm": 5.000125e-06,
+      "junction_on_a_node": false,
+      "donors_at_x0": 0.0,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 383288.6497729999,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 2.3039088464393655e-06,
+        "recovery_90pct_cm": 3.1214620865041663e-06,
+        "recovery_99pct_cm": 4.060078310319175e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 2.3183568224034265e-06,
+        "recovery_90pct_cm": 3.1409212995045895e-06,
+        "recovery_99pct_cm": 4.085290822497201e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": 3.376556227139519e-08,
+            "top": -6.343915547212503e-09
+          },
+          "conservation_error": 2.742164672418269e-08
+        },
+        {
+          "v_bias": 0.1,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.243730982203855e-07,
+            "top": 1.282020069307854e-07
+          },
+          "conservation_error": 3.8289087103999e-09
+        },
+        {
+          "v_bias": 0.2,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.1598763949751224e-06,
+            "top": 1.142181321398618e-06
+          },
+          "conservation_error": 1.7695073576504257e-08
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -1.5872164223001483e-05,
+            "top": 1.5929926878920898e-05
+          },
+          "conservation_error": 5.7762655919414723e-08
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.0004487995822143962,
+            "top": 0.00044875362994163106
+          },
+          "conservation_error": 4.5952272765149155e-08
+        },
+        {
+          "v_bias": 0.5,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "bot": -0.018155191292589534,
+            "top": 0.01815524023812759
+          },
+          "conservation_error": 4.894553805659396e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ],
+      "wall_s": 0.6143767833709717
+    },
+    {
+      "label": "rev2_L4L5_2d_L4_R1_node",
+      "geometry": "2d",
+      "level": 4,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 10625,
+      "x0_aligned_cm": 0.0,
+      "x1_neighbor_cm": 6.24999984211172e-07,
+      "local_spacing_cm": 6.24999984211172e-07,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "donors_at_x0": 1e+18,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 526532.1017072409,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 1.249999968422344e-06,
+        "recovery_90pct_cm": 2.499999936844688e-06,
+        "recovery_99pct_cm": 3.7500001326407073e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 1.249999968422344e-06,
+        "recovery_90pct_cm": 2.499999936844688e-06,
+        "recovery_99pct_cm": 3.7500001326407073e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": -0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -1.1013579610380063e-11,
+            "Si_xmax": 1.101348920699019e-11
+          },
+          "conservation_error": 9.040338987226235e-17
+        },
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 2.2143373159720164e-29,
+            "Si_xmax": -1.160143233230559e-29
+          },
+          "conservation_error": 1.0541940827414574e-29
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 3.264450234186885e-09,
+            "Si_xmax": -3.264443024238785e-09
+          },
+          "conservation_error": 7.20994809985819e-15
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 2.4376958877232974e-08,
+            "Si_xmax": -2.4376959276809514e-08
+          },
+          "conservation_error": 3.99576539902163e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ],
+      "wall_s": 11.36392092704773
+    },
+    {
+      "label": "rev2_L4L5_2d_L4_R1_shift",
+      "geometry": "2d",
+      "level": 4,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 10625,
+      "x0_aligned_cm": 0.0,
+      "x1_neighbor_cm": 6.24999984211172e-07,
+      "local_spacing_cm": 6.24999984211172e-07,
+      "xj_used_cm": 3.12499992105586e-07,
+      "junction_on_a_node": false,
+      "donors_at_x0": 0.0,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 561103.0636292305,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 1.5625000742147677e-06,
+        "recovery_90pct_cm": 2.187499944739102e-06,
+        "recovery_99pct_cm": 3.4375001405351213e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 1.56249996052793e-06,
+        "recovery_90pct_cm": 2.812499928950274e-06,
+        "recovery_99pct_cm": 3.437499913161446e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": -0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -1.5122291110837087e-11,
+            "Si_xmax": 1.5122201266762196e-11
+          },
+          "conservation_error": 8.984407489090049e-17
+        },
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 4.8030282932653225e-29,
+            "Si_xmax": -2.77410200895767e-29
+          },
+          "conservation_error": 2.0289262843076526e-29
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 3.790293228994608e-10,
+            "Si_xmax": -3.7902774746046085e-10
+          },
+          "conservation_error": 1.5754389999356025e-15
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 5.022213834880158e-09,
+            "Si_xmax": -5.0222197178557754e-09
+          },
+          "conservation_error": 5.882975617368423e-15
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ],
+      "wall_s": 11.06471061706543
+    },
+    {
+      "label": "rev2_L4L5_2d_L4_R2_node",
+      "geometry": "2d",
+      "level": 4,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 10625,
+      "x0_aligned_cm": 0.0,
+      "x1_neighbor_cm": 6.24999984211172e-07,
+      "local_spacing_cm": 6.24999984211172e-07,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "donors_at_x0": 1e+18,
+      "acceptors_at_x0": 0.0,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 561101.6153944199,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 1.249999968422344e-06,
+        "recovery_90pct_cm": 2.499999936844688e-06,
+        "recovery_99pct_cm": 3.12499992105586e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 1.8750000663203537e-06,
+        "recovery_90pct_cm": 2.499999936844688e-06,
+        "recovery_99pct_cm": 3.7500001326407073e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": -0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -1.5122291816624566e-11,
+            "Si_xmax": 1.5122200873378238e-11
+          },
+          "conservation_error": 9.094324632798034e-17
+        },
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 3.883625103399995e-29,
+            "Si_xmax": -7.310491629787698e-30
+          },
+          "conservation_error": 3.152575940421225e-29
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 3.790578281966487e-10,
+            "Si_xmax": -3.7905820063628767e-10
+          },
+          "conservation_error": 3.7243963898134575e-16
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 5.023665183403332e-09,
+            "Si_xmax": -5.02366110561547e-09
+          },
+          "conservation_error": 4.077787862593141e-15
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ],
+      "wall_s": 10.89383316040039
+    },
+    {
+      "label": "rev2_L4L5_2d_L4_R2_shift",
+      "geometry": "2d",
+      "level": 4,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 10625,
+      "x0_aligned_cm": 0.0,
+      "x1_neighbor_cm": 6.24999984211172e-07,
+      "local_spacing_cm": 6.24999984211172e-07,
+      "xj_used_cm": 3.12499992105586e-07,
+      "junction_on_a_node": false,
+      "donors_at_x0": 0.0,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 561103.0636292305,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 1.5625000742147677e-06,
+        "recovery_90pct_cm": 2.187499944739102e-06,
+        "recovery_99pct_cm": 3.4375001405351213e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 1.56249996052793e-06,
+        "recovery_90pct_cm": 2.812499928950274e-06,
+        "recovery_99pct_cm": 3.437499913161446e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": -0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -1.5122291110837087e-11,
+            "Si_xmax": 1.5122201266762196e-11
+          },
+          "conservation_error": 8.984407489090049e-17
+        },
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 4.8030282932653225e-29,
+            "Si_xmax": -2.77410200895767e-29
+          },
+          "conservation_error": 2.0289262843076526e-29
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 3.790293228994608e-10,
+            "Si_xmax": -3.7902774746046085e-10
+          },
+          "conservation_error": 1.5754389999356025e-15
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 5.022213834880158e-09,
+            "Si_xmax": -5.0222197178557754e-09
+          },
+          "conservation_error": 5.882975617368423e-15
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ],
+      "wall_s": 10.939010620117188
+    },
+    {
+      "label": "rev2_L4L5_2d_L5_R1_node",
+      "geometry": "2d",
+      "level": 5,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 41085,
+      "x0_aligned_cm": 0.0,
+      "x1_neighbor_cm": 3.12499992105586e-07,
+      "local_spacing_cm": 3.12499992105586e-07,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "donors_at_x0": 1e+18,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 632037.1097677116,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 1.56249996052793e-06,
+        "recovery_90pct_cm": 2.499999936844688e-06,
+        "recovery_99pct_cm": 3.7500001326407073e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 1.56249996052793e-06,
+        "recovery_90pct_cm": 2.499999936844688e-06,
+        "recovery_99pct_cm": 3.7500001326407073e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": -0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -1.3536005355636157e-11,
+            "Si_xmax": 1.3535914709439531e-11
+          },
+          "conservation_error": 9.064619662578937e-17
+        },
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 4.1202448530682454e-31,
+            "Si_xmax": -1.9424011551127651e-31
+          },
+          "conservation_error": 2.1778436979554805e-31
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 1.878529949933863e-09,
+            "Si_xmax": -1.8785272657417e-09
+          },
+          "conservation_error": 2.6841921628693557e-15
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 1.536069458074848e-08,
+            "Si_xmax": -1.5360698489448083e-08
+          },
+          "conservation_error": 3.908699603674855e-15
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ],
+      "wall_s": 45.63124179840088
+    },
+    {
+      "label": "rev2_L4L5_2d_L5_R1_shift",
+      "geometry": "2d",
+      "level": 5,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 41085,
+      "x0_aligned_cm": 0.0,
+      "x1_neighbor_cm": 3.12499992105586e-07,
+      "local_spacing_cm": 3.12499992105586e-07,
+      "xj_used_cm": 1.56249996052793e-07,
+      "junction_on_a_node": false,
+      "donors_at_x0": 0.0,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 644397.1722026392,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 1.406249964475137e-06,
+        "recovery_90pct_cm": 2.656249819210643e-06,
+        "recovery_99pct_cm": 3.5937501365879143e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 1.406249964475137e-06,
+        "recovery_90pct_cm": 2.656249932897481e-06,
+        "recovery_99pct_cm": 3.5937500229010766e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": -0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -1.2740197587691459e-11,
+            "Si_xmax": 1.2740107241929061e-11
+          },
+          "conservation_error": 9.034576239779987e-17
+        },
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -5.297457717175463e-31,
+            "Si_xmax": 2.354425642560927e-31
+          },
+          "conservation_error": 2.9430320746145363e-31
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 1.0747033762931915e-09,
+            "Si_xmax": -1.0747074627528386e-09
+          },
+          "conservation_error": 4.086459647147583e-15
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 1.0462701115408418e-08,
+            "Si_xmax": -1.0462703068791751e-08
+          },
+          "conservation_error": 1.9533833339358878e-15
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ],
+      "wall_s": 43.14125657081604
+    },
+    {
+      "label": "rev2_L4L5_2d_L5_R2_node",
+      "geometry": "2d",
+      "level": 5,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 41085,
+      "x0_aligned_cm": 0.0,
+      "x1_neighbor_cm": 3.12499992105586e-07,
+      "local_spacing_cm": 3.12499992105586e-07,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "donors_at_x0": 1e+18,
+      "acceptors_at_x0": 0.0,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 644394.5263413277,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 1.249999968422344e-06,
+        "recovery_90pct_cm": 2.499999936844688e-06,
+        "recovery_99pct_cm": 3.4375000268482836e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 1.56249996052793e-06,
+        "recovery_90pct_cm": 2.812499815263436e-06,
+        "recovery_99pct_cm": 3.7500001326407073e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": -0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -1.274019796495111e-11,
+            "Si_xmax": 1.274010702291753e-11
+          },
+          "conservation_error": 9.094203357942035e-17
+        },
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -5.886064320536088e-32,
+            "Si_xmax": 4.120244874481622e-32
+          },
+          "conservation_error": 1.7658194460544657e-32
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 1.0747171382567213e-09,
+            "Si_xmax": -1.0747153423468058e-09
+          },
+          "conservation_error": 1.7959099154587428e-15
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 1.0463361403722988e-08,
+            "Si_xmax": -1.0463360948183636e-08
+          },
+          "conservation_error": 4.555393516002095e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ],
+      "wall_s": 45.06517958641052
+    },
+    {
+      "label": "rev2_L4L5_2d_L5_R2_shift",
+      "geometry": "2d",
+      "level": 5,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 41085,
+      "x0_aligned_cm": 0.0,
+      "x1_neighbor_cm": 3.12499992105586e-07,
+      "local_spacing_cm": 3.12499992105586e-07,
+      "xj_used_cm": 1.56249996052793e-07,
+      "junction_on_a_node": false,
+      "donors_at_x0": 0.0,
+      "acceptors_at_x0": 1e+18,
+      "equilibrium_converged": true,
+      "solve_detail": {
+        "stage1_potential_only": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        },
+        "stage2_drift_diffusion": {
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null
+        }
+      },
+      "V_t": 0.025887193125000003,
+      "ElectronCharge": 1.6e-19,
+      "Permittivity": 9.8235e-13,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "W_analytic_cm": 4.839644335362905e-06,
+      "E_max_analytic_Vpercm": 394127.90434064483,
+      "contact_potential_span": 0.9537194398253274,
+      "contact_boundary_consistency_error": 0.0,
+      "peak_field_solved_Vpercm": 644397.1722026392,
+      "depletion_recovery_donor_side": {
+        "recovery_50pct_cm": 1.406249964475137e-06,
+        "recovery_90pct_cm": 2.656249819210643e-06,
+        "recovery_99pct_cm": 3.5937501365879143e-06
+      },
+      "depletion_recovery_acceptor_side": {
+        "recovery_50pct_cm": 1.406249964475137e-06,
+        "recovery_90pct_cm": 2.656249932897481e-06,
+        "recovery_99pct_cm": 3.5937500229010766e-06
+      },
+      "bias_points": [
+        {
+          "v_bias": -0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -1.2740197587691459e-11,
+            "Si_xmax": 1.2740107241929061e-11
+          },
+          "conservation_error": 9.034576239779987e-17
+        },
+        {
+          "v_bias": 0.0,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": -5.297457717175463e-31,
+            "Si_xmax": 2.354425642560927e-31
+          },
+          "conservation_error": 2.9430320746145363e-31
+        },
+        {
+          "v_bias": 0.3,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 1.0747033762931915e-09,
+            "Si_xmax": -1.0747074627528386e-09
+          },
+          "conservation_error": 4.086459647147583e-15
+        },
+        {
+          "v_bias": 0.4,
+          "converged": true,
+          "iteration_limit": 100,
+          "actual_iterations": null,
+          "actual_iterations_status": "UNAVAILABLE_FROM_PUBLIC_API",
+          "error": null,
+          "currents": {
+            "Si_xmin": 1.0462701115408418e-08,
+            "Si_xmax": -1.0462703068791751e-08
+          },
+          "conservation_error": 1.9533833339358878e-15
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ],
+      "wall_s": 42.67397403717041
+    }
+  ]
+}

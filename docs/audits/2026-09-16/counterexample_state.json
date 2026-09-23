@@ -1,0 +1,159 @@
+{
+  "mask_translation": {
+    "edge_1um": {
+      "attachments": 2,
+      "under": {
+        "net": 1e+17,
+        "status": null
+      },
+      "open": {
+        "net": 5.1e+18,
+        "status": null
+      }
+    },
+    "center_1um": {
+      "attachments": 1,
+      "under": {
+        "net": null,
+        "status": {
+          "resolution": "UNSUPPORTED_BY_MODEL",
+          "entries": [
+            {
+              "parameter": "dopant_fate_2d_state",
+              "material": "?",
+              "resolution": "UNSUPPORTED_BY_MODEL",
+              "provenance": "DERIVED",
+              "note": "point lies in a region an UNSUPPORTED_BY_MODEL 'doping' event covers (attach_dopant refused an active attachment: instance '__no_unambiguous_target_for_Si__' is not ACTIVE + MODELLED (legacy / unresolved / nonexistent))"
+            }
+          ],
+          "notes": []
+        }
+      },
+      "open": {
+        "net": null,
+        "status": {
+          "resolution": "UNSUPPORTED_BY_MODEL",
+          "entries": [
+            {
+              "parameter": "dopant_fate_2d_state",
+              "material": "?",
+              "resolution": "UNSUPPORTED_BY_MODEL",
+              "provenance": "DERIVED",
+              "note": "point lies in a region an UNSUPPORTED_BY_MODEL 'doping' event covers (attach_dopant refused an active attachment: instance '__no_unambiguous_target_for_Si__' is not ACTIVE + MODELLED (legacy / unresolved / nonexistent))"
+            }
+          ],
+          "notes": []
+        }
+      }
+    }
+  },
+  "chemical_state": {
+    "CHEMICAL": {
+      "net": -1e+18,
+      "status": null
+    },
+    "UNKNOWN": {
+      "net": -1e+18,
+      "status": null
+    },
+    "ACTIVE": {
+      "net": -1e+18,
+      "status": null
+    }
+  },
+  "conversion_volume": {
+    "consumed_Si_area_um2": 1.2,
+    "oxide_area_um2": 1.2,
+    "oxide_bounds": [
+      [
+        -2.0,
+        2.0,
+        -0.3,
+        0.0
+      ]
+    ],
+    "deep_query": {
+      "net": 1e+17,
+      "status": null
+    }
+  },
+  "overlapping_deposition": {
+    "cells": [
+      [
+        "Si0",
+        [
+          -2.0,
+          2.0,
+          -2.0,
+          0.0
+        ]
+      ],
+      [
+        "newSi",
+        [
+          -1,
+          1,
+          -1.5,
+          0.5
+        ]
+      ]
+    ],
+    "original": {
+      "net": 1e+17,
+      "status": null
+    },
+    "after": {
+      "net": 0.0,
+      "status": null
+    },
+    "events": [
+      "ADDED",
+      "ADDED",
+      "ADDED"
+    ]
+  },
+  "split_boundary": {
+    "(-1, -1.5)": {
+      "net": 2e+17,
+      "status": null
+    },
+    "(-1, -1.500001)": {
+      "net": 1e+17,
+      "status": null
+    },
+    "(-1, -1.499999)": {
+      "net": 1e+17,
+      "status": null
+    }
+  },
+  "outside_geometry": {
+    "net": 0.0,
+    "status": null
+  },
+  "repeated_etch_provenance": {
+    "event_count": 4,
+    "unique_event_count": 3,
+    "removal_events": [
+      {
+        "id": "evt:etching:1",
+        "extent": [
+          -2.0,
+          -1.5,
+          -2.0,
+          0.0
+        ],
+        "inventory": 2000000000.0
+      },
+      {
+        "id": "evt:etching:1",
+        "extent": [
+          1.5,
+          2.0,
+          -2.0,
+          0.0
+        ],
+        "inventory": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+error None 
+steps {'A': True, 'B0': True, 'C+0.025': True, 'C+0.050': True, 'C+0.075': True, 'C+0.100': True, 'Arev': True, 'C-0.025': True, 'C-0.050': True, 'C-0.075': True, 'C-0.100': True}
+keys C+0.100 ['C0', 'C1', 'C2', 'C3', 'couple_model', 'info', 'positive_finite', 'psi_range', 'ulp']
+flags {'extended_model': 'UNSET: Cannot find parameter "extended_model"', 'extended_equation': 'UNSET: Cannot find parameter "extended_equation"', 'extended_solver': 'UNSET: Cannot find parameter "extended_solver"'} {'extended_model': False, 'extended_equation': False, 'extended_solver': False} {'extended_model': False, 'extended_equation': False, 'extended_solver': False}
+error None 
+steps {'A': True, 'B0': True, 'C+0.025': True, 'C+0.050': True, 'C+0.075': True, 'C+0.100': True, 'Arev': True, 'C-0.025': True, 'C-0.050': True, 'C-0.075': True, 'C-0.100': True}
+keys C+0.100 ['C0', 'C1', 'C2', 'C3', 'couple_model', 'info', 'positive_finite', 'psi_range', 'ulp']
+flags {'extended_model': 'UNSET: Cannot find parameter "extended_model"', 'extended_equation': 'UNSET: Cannot find parameter "extended_equation"', 'extended_solver': 'UNSET: Cannot find parameter "extended_solver"'} {'extended_model': True, 'extended_equation': True, 'extended_solver': True} {'extended_model': True, 'extended_equation': True, 'extended_solver': True}

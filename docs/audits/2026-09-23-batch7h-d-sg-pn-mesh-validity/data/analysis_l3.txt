@@ -1,0 +1,202 @@
+{
+ "levels": {
+  "R0L3_dx0.02": {
+   "dx_um": 0.02,
+   "all_ok": true,
+   "psiA_Linf_vs_finest_V": 0.0014570673272268908,
+   "V_bi_numeric_V": 0.834504509847162,
+   "E_peak_V_per_cm": 97009.86610701973,
+   "W_um_B0": 0.12000000000000365,
+   "B0_contact_p_side_p_n_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_contact_n_side_n_p_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_currents_A_per_cm2": [
+    -2.8253117989152173e-25,
+    -6.121508897648559e-25
+   ],
+   "B0_qf_n_dev_V": 2.5818890525577987e-15,
+   "B0_mass_action_dev": 1.6564527527407336e-13,
+   "newton": {
+    "A": 10,
+    "B0": 1,
+    "C+0.025": 4,
+    "C+0.050": 4,
+    "C+0.075": 4,
+    "C+0.100": 4,
+    "Arev": 10,
+    "B0rev": 1,
+    "C-0.025": 4,
+    "C-0.050": 4,
+    "C-0.075": 4,
+    "C-0.100": 4
+   },
+   "J_C_-0.100_A_per_cm2": -1.3820850891830953e-07,
+   "Jrel_C_-0.100_vs_finest": 0.4514550086895297,
+   "J_C_+0.050_A_per_cm2": 2.614121086423134e-07,
+   "Jrel_C_+0.050_vs_finest": 1.2852304591771795,
+   "J_C_+0.100_A_per_cm2": 9.489363697009777e-07,
+   "Jrel_C_+0.100_vs_finest": 1.3544380465428163
+  },
+  "R0L3_dx0.01": {
+   "dx_um": 0.01,
+   "all_ok": true,
+   "psiA_Linf_vs_finest_V": 0.00034068544664767053,
+   "V_bi_numeric_V": 0.834504509847162,
+   "E_peak_V_per_cm": 104864.2437059301,
+   "W_um_B0": 0.1400000000000047,
+   "B0_contact_p_side_p_n_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_contact_n_side_n_p_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_currents_A_per_cm2": [
+    -1.8835411992768114e-25,
+    0.0
+   ],
+   "B0_qf_n_dev_V": 1.6653345369377348e-16,
+   "B0_mass_action_dev": 6.5503158452884236e-15,
+   "newton": {
+    "A": 11,
+    "B0": 1,
+    "C+0.025": 4,
+    "C+0.050": 4,
+    "C+0.075": 4,
+    "C+0.100": 4,
+    "Arev": 11,
+    "B0rev": 1,
+    "C-0.025": 4,
+    "C-0.050": 4,
+    "C-0.075": 4,
+    "C-0.100": 4
+   },
+   "J_C_-0.100_A_per_cm2": -9.344430906608561e-08,
+   "Jrel_C_-0.100_vs_finest": 0.018655135714770534,
+   "J_C_+0.050_A_per_cm2": 1.4497187223157224e-07,
+   "Jrel_C_+0.050_vs_finest": 0.2673251436904036,
+   "J_C_+0.100_A_per_cm2": 5.24926258612558e-07,
+   "Jrel_C_+0.100_vs_finest": 0.30241225267425537
+  },
+  "R0L3_dx0.005": {
+   "dx_um": 0.005,
+   "all_ok": true,
+   "psiA_Linf_vs_finest_V": 6.883928139378437e-05,
+   "V_bi_numeric_V": 0.834504509847162,
+   "E_peak_V_per_cm": 108862.72943235177,
+   "W_um_B0": 0.1299999999999842,
+   "B0_contact_p_side_p_n_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_contact_n_side_n_p_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_currents_A_per_cm2": [
+    0.0,
+    0.0
+   ],
+   "B0_qf_n_dev_V": 1.6653345369377348e-16,
+   "B0_mass_action_dev": 6.439293542825908e-15,
+   "newton": {
+    "A": 11,
+    "B0": 1,
+    "C+0.025": 4,
+    "C+0.050": 4,
+    "C+0.075": 4,
+    "C+0.100": 4,
+    "Arev": 11,
+    "B0rev": 1,
+    "C-0.025": 4,
+    "C-0.050": 4,
+    "C-0.075": 4,
+    "C-0.100": 4
+   },
+   "J_C_-0.100_A_per_cm2": -9.522066395752221e-08,
+   "Jrel_C_-0.100_vs_finest": 5.163058826017063e-09,
+   "J_C_+0.050_A_per_cm2": 1.1619487965493943e-07,
+   "Jrel_C_+0.050_vs_finest": 0.01576043882197606,
+   "J_C_+0.100_A_per_cm2": 4.1159459908871834e-07,
+   "Jrel_C_+0.100_vs_finest": 0.021221248113172865
+  },
+  "R0L3_dx0.0025": {
+   "dx_um": 0.0025,
+   "all_ok": true,
+   "psiA_Linf_vs_finest_V": 0.0,
+   "V_bi_numeric_V": 0.834504509847162,
+   "E_peak_V_per_cm": 110880.31052367539,
+   "W_um_B0": 0.1349999999999679,
+   "B0_contact_p_side_p_n_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_contact_n_side_n_p_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_currents_A_per_cm2": [
+    0.0,
+    0.0
+   ],
+   "B0_qf_n_dev_V": 2.220446049250313e-16,
+   "B0_mass_action_dev": 8.881784197001252e-15,
+   "newton": {
+    "A": 11,
+    "B0": 1,
+    "C+0.025": 4,
+    "C+0.050": 4,
+    "C+0.075": 4,
+    "C+0.100": 4,
+    "Arev": 11,
+    "B0rev": 1,
+    "C-0.025": 4,
+    "C-0.050": 4,
+    "C-0.075": 4,
+    "C-0.100": 4
+   },
+   "J_C_-0.100_A_per_cm2": -9.522066346589233e-08,
+   "Jrel_C_-0.100_vs_finest": 0.0,
+   "J_C_+0.050_A_per_cm2": 1.1439201135820564e-07,
+   "Jrel_C_+0.050_vs_finest": 0.0,
+   "J_C_+0.100_A_per_cm2": 4.0304155426572653e-07,
+   "Jrel_C_+0.100_vs_finest": 0.0
+  }
+ },
+ "finest": "R0L3_dx0.0025",
+ "U_psi_V": 0.0014570673272268908,
+ "U_I": {
+  "C_-0.100": 0.4514550086895297,
+  "C_+0.050": 1.2852304591771795,
+  "C_+0.100": 1.3544380465428163
+ },
+ "monotone_psi_diff": true,
+ "monotone_J_diff": {
+  "C_-0.100": true,
+  "C_+0.050": true,
+  "C_+0.100": true
+ }
+}
+expected signs {'PotentialEquation': [-1], 'ElectronContinuityEquation': [1], 'HoleContinuityEquation': [-1], 'PotentialEquation@A': [-1]}
+
+== L3_after_D0 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.401e-01 V tol=4.372e-03 agree=False Vbi=0.834505 yvar=2.80e-01 Epk=6.1969e+08 over=0.00e+00 PEviol=0
+  B: pos=True Il=-1.05e-29 Ir=4.38e-30 eqok=True cons=True qf=4.54e-15 ma=1.81e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1250 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999902] nside(n,p)=[1.0000000000000101e+17, 999.9999999999902] psiB_Linf=1.401e-01 V
+  C_-0.100: I=-1.954752e-11 ref=-1.904413e-11 rel=2.643e-02 tol=1.354e+00 agree=True cons=True over=0.0e+00 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=3.297107e-11 ref=2.287840e-11 rel=4.411e-01 tol=3.856e+00 agree=True cons=True over=5.9e-12
+  C_+0.100: I=1.196046e-10 ref=8.060831e-11 rel=4.838e-01 tol=4.063e+00 agree=True cons=True over=2.2e-11 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== L3_after_D1 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=2.444e-02 V tol=4.372e-03 agree=False Vbi=0.834505 yvar=4.89e-02 Epk=5.6699e+08 over=1.44e-05 PEviol=12
+  B: pos=True Il=1.16e-28 Ir=1.09e-28 eqok=True cons=True qf=4.44e-13 ma=1.72e-11 nover=True pover=True viol={'PotentialEquation': 12, 'ElectronContinuityEquation': 12, 'HoleContinuityEquation': 12}
+     W=0.1250 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999902] nside(n,p)=[1.0000000000000101e+17, 999.9999999999902] psiB_Linf=2.444e-02 V
+  C_-0.100: I=-1.958703e-11 ref=-1.904413e-11 rel=2.851e-02 tol=1.354e+00 agree=True cons=True over=2.1e-05 viol={'PotentialEquation': 12, 'ElectronContinuityEquation': 12, 'HoleContinuityEquation': 12}
+  C_+0.050: I=3.386248e-11 ref=2.287840e-11 rel=4.801e-01 tol=3.856e+00 agree=True cons=True over=1.2e-05
+  C_+0.100: I=1.228715e-10 ref=8.060831e-11 rel=5.243e-01 tol=4.063e+00 agree=True cons=True over=9.5e-06 viol={'PotentialEquation': 12, 'ElectronContinuityEquation': 12, 'HoleContinuityEquation': 12}

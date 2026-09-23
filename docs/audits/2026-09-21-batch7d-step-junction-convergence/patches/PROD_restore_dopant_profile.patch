@@ -1,0 +1,27 @@
+--- a/tcad/physics/dopant_profile.py
++++ b/tcad/physics/dopant_profile.py
+@@ -140,15 +140,6 @@
+     return 1.0 if z >= 0.0 else 0.0
+ 
+ 
+-def _below(x: float, position: float) -> float:
+-    """1.0 strictly BELOW `position`, else 0.0 -- the acceptor side of an
+-    ideal step junction. The donor side is `_step(x - position)` (x >= position),
+-    so exactly one polarity is present at every x including the junction
+-    coordinate itself (a node sitting on it is never counted twice). The
+-    finite-area concentrations are unchanged."""
+-    return 1.0 if x < position else 0.0
+-
+-
+ def _gaussian_shape(x_um: float, position_um: float, straggle_um: float) -> float:
+     return math.exp(-((x_um - position_um) ** 2) / (2.0 * straggle_um ** 2))
+ 
+@@ -240,7 +231,7 @@
+     if acceptor:
+         out.append(DopantProfile(
+             species=region.acceptor_species, polarity="acceptor",
+-            concentration_at=lambda x, d, v=acceptor, p=position: v * _below(x, p),
++            concentration_at=lambda x, d, v=acceptor, p=position: v * _step(p - x),
+             host_material=region.region, model="step_junction_v1",
+             model_params={"conc_cm3": acceptor, "junction_position_um": position},
+         ))

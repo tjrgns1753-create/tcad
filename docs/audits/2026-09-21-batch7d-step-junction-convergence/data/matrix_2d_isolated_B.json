@@ -1,0 +1,956 @@
+{
+  "matrix_2d_isolated_B": [
+    {
+      "label": "matrix_2d_isolated_B_L0_R1_node",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": [
+        100,
+        "Convergence failure!\n"
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L0_R1_shift",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": [
+        100,
+        "Convergence failure!\n"
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L0_R2_node",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.7038595746673204e-16,
+            "Si_xmax": 7.546940785500706e-17
+          },
+          "conservation_error": 9.491654961172498e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -8.833699194927075e-18,
+            "Si_xmax": 3.3174868390313878e-18
+          },
+          "conservation_error": 5.516212355895687e-18
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L0_R2_shift",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.7038595746673204e-16,
+            "Si_xmax": 7.546940785500706e-17
+          },
+          "conservation_error": 9.491654961172498e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -8.833699194927075e-18,
+            "Si_xmax": 3.3174868390313878e-18
+          },
+          "conservation_error": 5.516212355895687e-18
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L1_R1_node",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L1_R1_shift",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L1_R2_node",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.699874173980615e-16,
+            "Si_xmax": 7.744132040991602e-17
+          },
+          "conservation_error": 9.254609698814548e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -4.998881532072048e-17,
+            "Si_xmax": 1.8590832696445303e-17
+          },
+          "conservation_error": 3.139798262427518e-17
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L1_R2_shift",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.699874173980615e-16,
+            "Si_xmax": 7.744132040991602e-17
+          },
+          "conservation_error": 9.254609698814548e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -4.998881532072048e-17,
+            "Si_xmax": 1.8590832696445303e-17
+          },
+          "conservation_error": 3.139798262427518e-17
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L2_R1_node",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L2_R1_shift",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L2_R2_node",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.7051239000999442e-16,
+            "Si_xmax": 7.92190312578331e-17
+          },
+          "conservation_error": 9.129335875216132e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L2_R2_shift",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.7051239000999442e-16,
+            "Si_xmax": 7.92190312578331e-17
+          },
+          "conservation_error": 9.129335875216132e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L3_R1_node",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.9655551859218963e-11,
+            "Si_xmax": 1.9655461898135426e-11
+          },
+          "conservation_error": 8.996108353704107e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 1.5266546798197294e-25,
+            "Si_xmax": 3.343808246474842e-27
+          },
+          "conservation_error": 1.5600927622844778e-25
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 6.4462913717797595e-09,
+            "Si_xmax": -6.4462887150027606e-09
+          },
+          "conservation_error": 2.6567769989591622e-15
+        },
+        {
+          "v_n_contact": 0.4,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 4.626562947446115e-08,
+            "Si_xmax": -4.6265629770944894e-08
+          },
+          "conservation_error": 2.9648374630153584e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L3_R1_shift",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.9655551859218963e-11,
+            "Si_xmax": 1.9655461898135426e-11
+          },
+          "conservation_error": 8.996108353704107e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 1.5266546798197294e-25,
+            "Si_xmax": 3.343808246474842e-27
+          },
+          "conservation_error": 1.5600927622844778e-25
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 6.4462913717797595e-09,
+            "Si_xmax": -6.4462887150027606e-09
+          },
+          "conservation_error": 2.6567769989591622e-15
+        },
+        {
+          "v_n_contact": 0.4,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 4.626562947446115e-08,
+            "Si_xmax": -4.6265629770944894e-08
+          },
+          "conservation_error": 2.9648374630153584e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L3_R2_node",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.2453968670814601e-12,
+            "Si_xmax": 1.245305892639806e-12
+          },
+          "conservation_error": 9.097444165410639e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 2.4067252074937716e-25,
+            "Si_xmax": -3.7503534145551104e-26
+          },
+          "conservation_error": 2.0316898660382605e-25
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 6.158929614084045e-11,
+            "Si_xmax": -6.1593207931858e-11
+          },
+          "conservation_error": 3.911791017558042e-15
+        },
+        {
+          "v_n_contact": 0.4,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 1.9880207093752693e-09,
+            "Si_xmax": -1.9880216195342085e-09
+          },
+          "conservation_error": 9.10158939157035e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L3_R2_shift",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.2453968670814601e-12,
+            "Si_xmax": 1.245305892639806e-12
+          },
+          "conservation_error": 9.097444165410639e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 2.4067252074937716e-25,
+            "Si_xmax": -3.7503534145551104e-26
+          },
+          "conservation_error": 2.0316898660382605e-25
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 6.158929614084045e-11,
+            "Si_xmax": -6.1593207931858e-11
+          },
+          "conservation_error": 3.911791017558042e-15
+        },
+        {
+          "v_n_contact": 0.4,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 1.9880207093752693e-09,
+            "Si_xmax": -1.9880216195342085e-09
+          },
+          "conservation_error": 9.10158939157035e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    }
+  ]
+}

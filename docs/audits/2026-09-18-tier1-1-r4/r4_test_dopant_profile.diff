@@ -1,0 +1,123 @@
+diff --git a/tests/integration/test_dopant_profile_matches_devsim_real.py b/tests/integration/test_dopant_profile_matches_devsim_real.py
+index c55f0bd..39c18a4 100644
+--- a/tests/integration/test_dopant_profile_matches_devsim_real.py
++++ b/tests/integration/test_dopant_profile_matches_devsim_real.py
+@@ -138,9 +138,17 @@ def _independent_windows(bg_donor, bg_acceptor, donor_windows, acceptor_windows)
+ 
+ def _check_branch_a(label, doped_result, independent_formula, boundaries=()):
+     """Real canonical-state write vs. an independently-written formula,
+-    at every real DevSim node. `boundaries` are x-coordinates to skip
+-    (a step-function discontinuity the mesh may land exactly on --
+-    boundary handling itself, not this check's concern)."""
++    at every real DevSim node EXCEPT one lying exactly on a
++    `boundaries` x-coordinate -- a step-function discontinuity
++    (junction position or an implant-window edge) where `_step()`'s own
++    `>=`/`<=` split has a known, DELIBERATELY UNTOUCHED-this-round
++    boundary-node ambiguity (see wafer_state_v2.py's `_covered_by`/
++    half-open-boundary notes and CLAUDE.md's OPEN items; called Tier 2
++    territory in review). Excluding it is a real, reported gap in
++    coverage, not a silent one -- this function returns and PRINTS both
++    `checked` (nodes actually compared) and `total` (every real DevSim
++    node in the region), so "all N nodes matched" is never claimed when
++    N is actually `total - len(boundaries)`."""
+     state = initial_wafer_state_from_recipe(A_RECIPE)
+     state = advance_wafer_state(state, doped_result, "doping")
+     assert state.attachments, f"{label}: fixture is broken -- no attachment was created"
+@@ -159,11 +167,14 @@ def _check_branch_a(label, doped_result, independent_formula, boundaries=()):
+         nets = devsim.get_node_model_values(device=imported.device, region="Si", name="NetDoping")
+ 
+         checked = 0
++        skipped = 0
+         max_rel_error = 0.0
++        total = len(xs)
+         for x, y, d_dev, a_dev, n_dev in zip(xs, ys, donors, acceptors, nets):
+             for v in (d_dev, a_dev, n_dev):
+                 assert math.isfinite(v), f"{label}: non-finite DevSim value {v} at x={x}"
+             if boundaries and any(x == b for b in boundaries):
++                skipped += 1
+                 continue
+             d_exp, a_exp, n_exp = independent_formula(x, y)
+             for name, dev_v, exp_v in (("Donors", d_dev, d_exp), ("Acceptors", a_dev, a_exp), ("NetDoping", n_dev, n_exp)):
+@@ -176,20 +187,27 @@ def _check_branch_a(label, doped_result, independent_formula, boundaries=()):
+                     f"independent={exp_v!r} rel_error={rel:.3e}")
+             checked += 1
+         assert checked > 0, f"{label}: no nodes checked"
+-        print(f"[Branch A][{label}] {checked} nodes checked against an independent formula, "
++        assert checked + skipped == total
++        scope = (f"{checked}/{total} non-discontinuity nodes (Tier 2: the {skipped} node(s) exactly on a "
++                 f"junction/window-edge discontinuity at x in {list(boundaries)} are excluded from this "
++                 f"check, not verified here)") if boundaries else f"all {checked}/{total} nodes"
++        print(f"[Branch A][{label}] {scope} checked against an independent formula, "
+               f"max relative error {max_rel_error:.3e}")
++        return checked, skipped, total
+     finally:
+         devsim.delete_device(device=imported.device)
+         devsim.delete_mesh(mesh=imported.mesh)
+ 
+ 
+ def _run_branch_a():
++    totals = {}
++
+     # uniform, donor/acceptor split
+     with tempfile.TemporaryDirectory() as tmp:
+         result = _virgin_rectangle_process_result(tmp)
+         donor, acceptor = 1.0e16, 3.0e15
+         doped = apply_uniform_doping(result, donor_by_region_cm3={"Si": donor}, acceptor_by_region_cm3={"Si": acceptor})
+-        _check_branch_a("uniform", doped, _independent_uniform(donor, acceptor))
++        totals["uniform"] = _check_branch_a("uniform", doped, _independent_uniform(donor, acceptor))
+ 
+     # step_junction, donor/acceptor split
+     with tempfile.TemporaryDirectory() as tmp:
+@@ -199,8 +217,9 @@ def _run_branch_a():
+             result, region="Si", junction_axis="x", junction_position_um=position,
+             donor_conc_cm3=donor, acceptor_conc_cm3=acceptor,
+         )
+-        _check_branch_a("step_junction", doped, _independent_step_junction(donor, acceptor, position),
+-                        boundaries=[position])
++        totals["step_junction"] = _check_branch_a(
++            "step_junction", doped, _independent_step_junction(donor, acceptor, position),
++            boundaries=[position])
+ 
+     # gaussian_implant, donor/acceptor split
+     with tempfile.TemporaryDirectory() as tmp:
+@@ -210,8 +229,9 @@ def _run_branch_a():
+             result, region="Si", junction_axis="x", peak_position_um=position, straggle_um=straggle,
+             donor_peak_conc_cm3=donor_peak, acceptor_peak_conc_cm3=acceptor_peak,
+         )
+-        _check_branch_a("gaussian_implant", doped,
+-                        _independent_gaussian(donor_peak, acceptor_peak, position, straggle))
++        totals["gaussian_implant"] = _check_branch_a(
++            "gaussian_implant", doped,
++            _independent_gaussian(donor_peak, acceptor_peak, position, straggle))
+ 
+     # implant_windows: donor background + a donor window + an acceptor
+     # window (exercises both polarities' window path, not just background).
+@@ -227,16 +247,20 @@ def _run_branch_a():
+                 {"min_um": 0.6, "max_um": 1.6, "acceptor_conc_cm3": 5.0e19},
+             ],
+         )
+-        _check_branch_a("implant_windows", doped,
+-                        _independent_windows(bg_donor, 0.0, donor_windows, acceptor_windows),
+-                        boundaries=[-1.6, -0.6, 0.6, 1.6])
++        totals["implant_windows"] = _check_branch_a(
++            "implant_windows", doped,
++            _independent_windows(bg_donor, 0.0, donor_windows, acceptor_windows),
++            boundaries=[-1.6, -0.6, 0.6, 1.6])
+ 
+     assert devsim.get_device_list() == (), "Branch A leaked a device"
+-    print("Branch A PASS: canonical-state apply_doping() writes match an independently-written "
+-          "formula, at every real DevSim node EXCEPT the 11 step_junction node(s) that land "
+-          "exactly on the x=0 discontinuity (Tier 2 territory -- see _check_branch_a's own "
+-          "docstring, not verified here), for all 4 doping kinds (donor/acceptor split "
+-          "included); no None/NaN/Inf.")
++    total_checked = sum(c for c, s, t in totals.values())
++    total_skipped = sum(s for c, s, t in totals.values())
++    total_nodes = sum(t for c, s, t in totals.values())
++    skip_detail = ", ".join(f"{k}={s}" for k, (c, s, t) in totals.items() if s)
++    print(f"Branch A PASS: canonical-state apply_doping() writes match an independently-written "
++          f"formula at {total_checked}/{total_nodes} real DevSim nodes across all 4 doping kinds "
++          f"(donor/acceptor split included); no None/NaN/Inf. {total_skipped} node(s) excluded as "
++          f"Tier 2 discontinuity boundaries, not verified here ({skip_detail or 'none'}).")
+ 
+ 
+ # ---------------------------------------------------------------------------

@@ -1,0 +1,44 @@
+[
+  {
+    "grid_delta_um": 0.001,
+    "label": "B_grid_0p0010",
+    "elapsed_wall_s": 59.903759479522705,
+    "returncode": 0,
+    "timed_out": false
+  },
+  {
+    "grid_delta_um": 0.002,
+    "label": "B_grid_0p0020",
+    "elapsed_wall_s": 7.875218629837036,
+    "returncode": 0,
+    "timed_out": false
+  },
+  {
+    "grid_delta_um": 0.005,
+    "label": "B_grid_0p0050",
+    "elapsed_wall_s": 0.8547258377075195,
+    "returncode": 0,
+    "timed_out": false
+  },
+  {
+    "grid_delta_um": 0.01,
+    "label": "B_grid_0p0100",
+    "elapsed_wall_s": 0.6875898838043213,
+    "returncode": 0,
+    "timed_out": false
+  },
+  {
+    "grid_delta_um": 0.02,
+    "label": "B_grid_0p0200",
+    "elapsed_wall_s": 0.5980355739593506,
+    "returncode": 0,
+    "timed_out": false
+  },
+  {
+    "grid_delta_um": 0.05,
+    "label": "B_grid_0p0500",
+    "elapsed_wall_s": 0.6163203716278076,
+    "returncode": 0,
+    "timed_out": false
+  }
+]

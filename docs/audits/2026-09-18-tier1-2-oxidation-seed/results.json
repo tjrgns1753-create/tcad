@@ -1,0 +1,548 @@
+[
+  {
+    "label": "A_grid0.02_t0_currentfloor",
+    "grid_delta_um": 0.02,
+    "time_hours": 0.0,
+    "apply_grid_floor_seed": true,
+    "seed_arg_um": 0.02,
+    "before": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "after_setter_before_apply": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "setter_changed_domain": false,
+    "after": {
+      "materials": [
+        "Si",
+        "SiO2"
+      ],
+      "num_level_sets": 2,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        },
+        {
+          "index": 1,
+          "y_min": 0.02,
+          "y_max": 0.02
+        }
+      ]
+    },
+    "mesh_report": {
+      "Si": {
+        "y_min": -1.0,
+        "y_max": 9.950248204404488e-05,
+        "n_points": 10452
+      },
+      "SiO2": {
+        "y_min": 9.950248204404488e-05,
+        "y_max": 0.019999999552965164,
+        "n_points": 402
+      }
+    },
+    "native_yranges_after": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.02,
+        0.02
+      ]
+    ],
+    "initial_si_surface_y": 0.0,
+    "oxide_thickness_um": 0.019999999552965164,
+    "si_consumed_depth_um": -9.950248204404488e-05
+  },
+  {
+    "label": "A_grid0.05_t0_currentfloor",
+    "grid_delta_um": 0.05,
+    "time_hours": 0.0,
+    "apply_grid_floor_seed": true,
+    "seed_arg_um": 0.05,
+    "before": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "after_setter_before_apply": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "setter_changed_domain": false,
+    "after": {
+      "materials": [
+        "Si",
+        "SiO2"
+      ],
+      "num_level_sets": 2,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        },
+        {
+          "index": 1,
+          "y_min": 0.05,
+          "y_max": 0.05
+        }
+      ]
+    },
+    "mesh_report": {
+      "Si": {
+        "y_min": -1.0,
+        "y_max": 0.00024875623057596385,
+        "n_points": 1782
+      },
+      "SiO2": {
+        "y_min": 0.00024875623057596385,
+        "y_max": 0.05000000074505806,
+        "n_points": 162
+      }
+    },
+    "native_yranges_after": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.05,
+        0.05
+      ]
+    ],
+    "initial_si_surface_y": 0.0,
+    "oxide_thickness_um": 0.05000000074505806,
+    "si_consumed_depth_um": -0.00024875623057596385
+  },
+  {
+    "label": "A_grid0.1_t0_currentfloor",
+    "grid_delta_um": 0.1,
+    "time_hours": 0.0,
+    "apply_grid_floor_seed": true,
+    "seed_arg_um": 0.1,
+    "before": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "after_setter_before_apply": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "setter_changed_domain": false,
+    "after": {
+      "materials": [
+        "Si",
+        "SiO2"
+      ],
+      "num_level_sets": 2,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        },
+        {
+          "index": 1,
+          "y_min": 0.1,
+          "y_max": 0.1
+        }
+      ]
+    },
+    "mesh_report": {
+      "Si": {
+        "y_min": -1.0,
+        "y_max": 0.0004975124611519277,
+        "n_points": 492
+      },
+      "SiO2": {
+        "y_min": 0.0004975124611519277,
+        "y_max": 0.10000000149011612,
+        "n_points": 82
+      }
+    },
+    "native_yranges_after": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.1,
+        0.1
+      ]
+    ],
+    "initial_si_surface_y": 0.0,
+    "oxide_thickness_um": 0.10000000149011612,
+    "si_consumed_depth_um": -0.0004975124611519277
+  },
+  {
+    "label": "B_grid0.02_t0_bareDefault",
+    "grid_delta_um": 0.02,
+    "time_hours": 0.0,
+    "apply_grid_floor_seed": false,
+    "seed_arg_um": 0.002,
+    "before": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "after_setter_before_apply": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "setter_changed_domain": false,
+    "after": {
+      "materials": [
+        "Si",
+        "SiO2"
+      ],
+      "num_level_sets": 2,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        },
+        {
+          "index": 1,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "mesh_report": {
+      "Si": {
+        "y_min": -1.0,
+        "y_max": 9.95024893200025e-05,
+        "n_points": 10452
+      },
+      "SiO2": {
+        "y_min": 9.95024893200025e-05,
+        "y_max": 0.0020000000949949026,
+        "n_points": 402
+      }
+    },
+    "native_yranges_after": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "initial_si_surface_y": 0.0,
+    "oxide_thickness_um": 0.0020000000949949026,
+    "si_consumed_depth_um": -9.95024893200025e-05
+  },
+  {
+    "label": "B_grid0.05_t0_bareDefault",
+    "grid_delta_um": 0.05,
+    "time_hours": 0.0,
+    "apply_grid_floor_seed": false,
+    "seed_arg_um": 0.002,
+    "before": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "after_setter_before_apply": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "setter_changed_domain": false,
+    "after": {
+      "materials": [
+        "Si",
+        "SiO2"
+      ],
+      "num_level_sets": 2,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        },
+        {
+          "index": 1,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "mesh_report": {
+      "Si": {
+        "y_min": -1.0,
+        "y_max": 0.00024875623057596385,
+        "n_points": 1782
+      },
+      "SiO2": {
+        "y_min": 0.00024875623057596385,
+        "y_max": 0.0020000000949949026,
+        "n_points": 162
+      }
+    },
+    "native_yranges_after": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "initial_si_surface_y": 0.0,
+    "oxide_thickness_um": 0.0020000000949949026,
+    "si_consumed_depth_um": -0.00024875623057596385
+  },
+  {
+    "label": "B_grid0.1_t0_bareDefault",
+    "grid_delta_um": 0.1,
+    "time_hours": 0.0,
+    "apply_grid_floor_seed": false,
+    "seed_arg_um": 0.002,
+    "before": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "after_setter_before_apply": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "setter_changed_domain": false,
+    "after": {
+      "materials": [
+        "Si",
+        "SiO2"
+      ],
+      "num_level_sets": 2,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        },
+        {
+          "index": 1,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "mesh_report": {
+      "Si": {
+        "y_min": -1.0,
+        "y_max": 0.0004975124611519277,
+        "n_points": 492
+      },
+      "SiO2": {
+        "y_min": 0.0004975124611519277,
+        "y_max": 0.0020000000949949026,
+        "n_points": 82
+      }
+    },
+    "native_yranges_after": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "initial_si_surface_y": 0.0,
+    "oxide_thickness_um": 0.0020000000949949026,
+    "si_consumed_depth_um": -0.0004975124611519277
+  },
+  {
+    "label": "C_grid0.05_t0.5_CONTROL",
+    "grid_delta_um": 0.05,
+    "time_hours": 0.5,
+    "apply_grid_floor_seed": true,
+    "seed_arg_um": 0.05,
+    "before": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "after_setter_before_apply": {
+      "materials": [
+        "Si"
+      ],
+      "num_level_sets": 1,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        }
+      ]
+    },
+    "setter_changed_domain": false,
+    "after": {
+      "materials": [
+        "Si",
+        "SiO2"
+      ],
+      "num_level_sets": 2,
+      "level_sets": [
+        {
+          "index": 0,
+          "y_min": 0.0,
+          "y_max": 0.0
+        },
+        {
+          "index": 1,
+          "y_min": 0.05,
+          "y_max": 0.05
+        }
+      ]
+    },
+    "mesh_report": {
+      "Si": {
+        "y_min": -1.0,
+        "y_max": -0.0064143287017941475,
+        "n_points": 1701
+      },
+      "SiO2": {
+        "y_min": -0.0064145945943892,
+        "y_max": 0.05878148227930069,
+        "n_points": 324
+      }
+    },
+    "native_yranges_after": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.05,
+        0.05
+      ]
+    ],
+    "initial_si_surface_y": 0.0,
+    "oxide_thickness_um": 0.05878148227930069,
+    "si_consumed_depth_um": 0.0064143287017941475
+  }
+]

@@ -1,0 +1,38 @@
+runs 86 not ok []
+P0 reproduces True [0.004289768897856123, 0.0023956974051938863]
+P0 restores False {'a': False, 'b': False, 'c': False, 'd': False} worst {'mis_lr': '1.33e-02', 'spread': '9.73e-02', 'c0L_vs_cut0': '4.56e-02', 'c3_total': '1.88e-01', 'c3_species': '1.88e-01'} d {'C+0.050': ['9.52e-15', '2.38e-15', '5.96e-16'], 'C+0.100': ['1.42e-09', '1.84e-14', '5.68e-09'], 'C-0.100': ['1.68e-15', '5.47e-09', '1.05e-16']}
+P1 restores False {'a': False, 'b': False, 'c': False, 'd': False} worst {'mis_lr': '1.23e-02', 'spread': '5.39e-02', 'c0L_vs_cut0': '6.93e-02', 'c3_total': '4.37e-02', 'c3_species': '4.37e-02'} d {'C+0.050': ['1.06e-10', '2.38e-15', '5.96e-16'], 'C+0.100': ['2.95e-09', '3.05e-09', '4.24e-10'], 'C-0.100': ['1.68e-15', '5.47e-09', '1.18e-08']}
+P2 restores False {'a': False, 'b': False, 'c': False, 'd': False} worst {'mis_lr': '2.00e-01', 'spread': '1.06e-01', 'c0L_vs_cut0': '1.93e-01', 'c3_total': '1.93e-01', 'c3_species': '1.93e-01'} d {'C+0.050': ['9.52e-15', '2.38e-15', '5.96e-16'], 'C+0.100': ['1.06e-10', '1.84e-14', '5.68e-09'], 'C-0.100': ['1.68e-15', '5.90e-09', '2.32e-08']}
+P3 restores False {'a': False, 'b': False, 'c': False, 'd': False} worst {'mis_lr': '1.04e-02', 'spread': '9.99e-02', 'c0L_vs_cut0': '4.56e-02', 'c3_total': '1.93e-01', 'c3_species': '1.93e-01'} d {'C+0.050': ['9.52e-15', '2.38e-15', '5.96e-16'], 'C+0.100': ['1.42e-09', '1.84e-14', '5.68e-09'], 'C-0.100': ['1.68e-15', '5.47e-09', '1.05e-16']}
+P4 restores True {'a': True, 'b': True, 'c': True, 'd': True} worst {'mis_lr': '3.23e-16', 'spread': '2.57e-16', 'c0L_vs_cut0': '4.85e-16', 'c3_total': '2.65e-16', 'c3_species': '3.24e-16'} d {'C+0.050': ['2.59e-10', '5.93e-11', '1.46e-11'], 'C+0.100': ['1.01e-09', '2.23e-10', '5.50e-11'], 'C-0.100': ['1.14e-10', '2.83e-11', '7.06e-12']}
+cause ['FLOAT64_CAUSAL_ONLY_WITH_ALL_FLAGS (attribution INCONCLUSIVE)'] mode P4
+cert P0 INTERIOR_CUT_CURRENT_NOT_CONSERVATIVE {'spread': False, 'contacts_vs_cut0': False, 'c3_species': False, 'c3_total': False, 'c1_identity': True, 'zero_bias': False, 'M2_same_h': False, 'mirror': False} {'spread': '9.73e-02', 'c0L_vs_cut0': '4.56e-02', 'c0R_vs_cut0': '4.58e-02', 'c3_species': '1.88e-01', 'c3_total': '1.88e-01'}
+   M2 same-h max 3.26e-03 mirror max 5.16e+00
+cert P4 INCONCLUSIVE {'spread': True, 'contacts_vs_cut0': True, 'c3_species': True, 'c3_total': True, 'c1_identity': True, 'zero_bias': True, 'M2_same_h': True, 'mirror': False} {'spread': '2.57e-16', 'c0L_vs_cut0': '4.85e-16', 'c0R_vs_cut0': '2.12e-16', 'c3_species': '3.24e-16', 'c3_total': '2.65e-16'}
+   M2 same-h max 1.73e-16 mirror max 5.14e+00
+reeval M2_D0 U_ref {'C+0.050': '1.28e-04', 'C+0.100': '1.36e-04', 'C-0.100': '7.40e-05'} ref_ok True U_psi 5.95e-06
+   h=0.02 psi=7.358e-03 logc=2.842e-01 eI_max=8.084e-01 Ep=6.938e-03 yvar=0.000e+00 spread=2.57e-16 qf=5.6e-17 ma=2.2e-16 wall=8.4
+     eI cut0: {'C+0.050': '-8.084e-01', 'C+0.100': '-8.060e-01', 'C-0.100': '+5.998e-01'}
+   h=0.005 psi=4.948e-04 logc=1.911e-02 eI_max=3.469e-02 Ep=4.319e-04 yvar=0.000e+00 spread=2.07e-16 qf=5.6e-17 ma=2.2e-16 wall=90.4
+     eI cut0: {'C+0.050': '-2.790e-02', 'C+0.100': '-3.469e-02', 'C-0.100': '+6.845e-03'}
+   h=0.00125 psi=2.964e-05 logc=1.145e-03 eI_max=6.871e-04 Ep=2.540e-05 yvar=0.000e+00 spread=2.12e-16 qf=5.6e-17 ma=2.2e-16 wall=372.4
+     eI cut0: {'C+0.050': '-6.449e-04', 'C+0.100': '-6.871e-04', 'C-0.100': '+3.709e-04'}
+   checks {'e_psi_decreasing': True, 'e_logc_decreasing': True, 'e_I_decreasing_every_cut_bias': True, 'finest_psi': True, 'finest_I': True, 'spread': True, 'positive': True, 'qf': True, 'mass_action': True, 'zero_bias': True, 'ref_ok': True, 'E_peak_decreasing': True, 'yvar_decreasing': True, 'c1_identity': True}
+reeval M1_D0 U_ref {'C+0.050': '1.28e-04', 'C+0.100': '1.36e-04', 'C-0.100': '7.40e-05'} ref_ok True U_psi 5.95e-06
+   h=0.02 psi=7.416e-03 logc=2.865e-01 eI_max=8.087e-01 Ep=6.430e-03 yvar=5.193e-04 spread=2.30e-16 qf=5.6e-17 ma=2.2e-16 wall=11.2
+     eI cut0: {'C+0.050': '-8.087e-01', 'C+0.100': '-8.063e-01', 'C-0.100': '+6.000e-01'}
+   h=0.005 psi=4.971e-04 logc=1.920e-02 eI_max=4.036e-02 Ep=3.492e-04 yvar=3.269e-05 spread=2.08e-16 qf=5.6e-17 ma=2.2e-16 wall=38.7
+     eI cut0: {'C+0.050': '-3.392e-02', 'C+0.100': '-4.036e-02', 'C-0.100': '+1.472e-02'}
+   h=0.00125 psi=3.031e-05 logc=1.171e-03 eI_max=1.130e-03 Ep=4.723e-06 yvar=2.043e-06 spread=2.00e-16 qf=5.6e-17 ma=2.2e-16 wall=445.9
+     eI cut0: {'C+0.050': '-9.967e-04', 'C+0.100': '-1.130e-03', 'C-0.100': '+3.329e-04'}
+   checks {'e_psi_decreasing': True, 'e_logc_decreasing': True, 'e_I_decreasing_every_cut_bias': True, 'finest_psi': False, 'finest_I': True, 'spread': True, 'positive': True, 'qf': True, 'mass_action': True, 'zero_bias': True, 'ref_ok': True, 'E_peak_decreasing': True, 'yvar_decreasing': True, 'c1_identity': True}
+reeval M3_D1 U_ref {'C+0.050': '1.28e-04', 'C+0.100': '1.36e-04', 'C-0.100': '7.40e-05'} ref_ok True U_psi 5.95e-06
+   h=0.02 psi=7.616e-03 logc=2.942e-01 eI_max=8.095e-01 Ep=4.654e-03 yvar=1.934e-03 spread=2.31e-16 qf=5.6e-17 ma=2.2e-16 wall=12.7
+     eI cut0: {'C+0.050': '-8.095e-01', 'C+0.100': '-8.071e-01', 'C-0.100': '+6.027e-01'}
+   h=0.005 psi=5.291e-04 logc=2.044e-02 eI_max=3.133e-02 Ep=8.997e-05 yvar=1.339e-04 spread=0.00e+00 qf=5.6e-17 ma=2.2e-16 wall=38.0
+     eI cut0: {'C+0.050': '-2.440e-02', 'C+0.100': '-3.133e-02', 'C-0.100': '-3.572e-04'}
+   h=0.00125 psi=3.244e-05 logc=1.253e-03 eI_max=1.998e-03 Ep=8.063e-05 yvar=9.011e-06 spread=2.12e-16 qf=5.6e-17 ma=2.2e-16 wall=344.4
+     eI cut0: {'C+0.050': '+1.896e-03', 'C+0.100': '+1.998e-03', 'C-0.100': '-3.030e-04'}
+   checks {'e_psi_decreasing': True, 'e_logc_decreasing': True, 'e_I_decreasing_every_cut_bias': True, 'finest_psi': False, 'finest_I': True, 'spread': True, 'positive': True, 'qf': True, 'mass_action': True, 'zero_bias': True, 'ref_ok': True, 'E_peak_decreasing': True, 'yvar_decreasing': True, 'c1_identity': True}
+M3 D1 sign crossing (-0.10 V, cut 0) {'0.02': {'P0': 0.6027205404445786, 'P4': 0.6027205404702788}, '0.005': {'P0': -0.00035717703493305105, 'P4': -0.0003571769708573312}, '0.0025': {'P0': -0.0026647591905720725, 'P4': -0.002664759132374758}, '0.00125': {'P0': -0.00030301848034498173, 'P4': -0.0003030184104262729}}
+FINAL {'cause': ['FLOAT64_CAUSAL_ONLY_WITH_ALL_FLAGS (attribution INCONCLUSIVE)'], 'cut': 'INCONCLUSIVE', 'A': False, 'B': False, 'terminal_unresolved': False}

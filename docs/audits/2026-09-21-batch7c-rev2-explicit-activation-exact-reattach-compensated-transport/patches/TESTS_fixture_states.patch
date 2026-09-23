@@ -1,0 +1,608 @@
+--- a/tests/integration/test_auto_refine_from_doping_real.py
++++ b/tests/integration/test_auto_refine_from_doping_real.py
+@@ -94,7 +94,7 @@
+         doped_result = apply_step_junction_doping(
+             process_result, region="Si", junction_axis="x",
+             junction_position_um=junction_position_um,
+-            donor_conc_cm3=DONOR_CM3, acceptor_conc_cm3=ACCEPTOR_CM3,
++            donor_conc_cm3=DONOR_CM3, acceptor_conc_cm3=ACCEPTOR_CM3, chemical_state="ACTIVE",
+         )
+ 
+         # NO refine_near_um passed -- derived entirely from doped_result.doping.
+@@ -149,7 +149,7 @@
+         doped_result = apply_gaussian_implant_doping(
+             process_result, region="Si", junction_axis="x",
+             peak_position_um=peak_position_um, straggle_um=straggle_um,
+-            peak_conc_cm3=peak_conc_cm3,
++            peak_conc_cm3=peak_conc_cm3, chemical_state="ACTIVE",
+         )
+ 
+         imported = import_process_result(
+--- a/tests/integration/test_ce1_order_sensitive_geometry_real.py
++++ b/tests/integration/test_ce1_order_sensitive_geometry_real.py
+@@ -105,7 +105,7 @@
+     step, base = _fresh_wafer(tmp)
+     r1 = apply_gaussian_implant_doping(
+         base, region="Si", junction_axis="x", peak_position_um=R_ETCH_X,
+-        straggle_um=0.3, acceptor_peak_conc_cm3=1e18, acceptor_species="B",
++        straggle_um=0.3, acceptor_peak_conc_cm3=1e18, acceptor_species="B", chemical_state="ACTIVE",
+     )
+     state1 = advance_wafer_state(None, r1, "doping")
+     print(f"[state1] attachments={len(state1.attachments)} "
+@@ -130,7 +130,7 @@
+ 
+     r2 = apply_gaussian_implant_doping(
+         stripped, region="Si", junction_axis="x", peak_position_um=R_SAFE_X,
+-        straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P",
++        straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P", chemical_state="ACTIVE",
+     )
+     state2 = advance_wafer_state(state1_post_etch, r2, "doping")
+     q_safe = state2.net_doping_at(R_SAFE_X, 0.0)
+--- a/tests/integration/test_ce2_oxidation_conversion_unsupported_real.py
++++ b/tests/integration/test_ce2_oxidation_conversion_unsupported_real.py
+@@ -247,11 +247,11 @@
+ 
+         n_result = apply_gaussian_implant_doping(
+             base, region="Si", junction_axis="x", peak_position_um=X_CONVERTED,
+-            straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P",
++            straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P", chemical_state="ACTIVE",
+         )
+         p_result = apply_gaussian_implant_doping(
+             base, region="Si", junction_axis="x", peak_position_um=X_PROTECTED,
+-            straggle_um=0.3, acceptor_peak_conc_cm3=1e18, acceptor_species="B",
++            straggle_um=0.3, acceptor_peak_conc_cm3=1e18, acceptor_species="B", chemical_state="ACTIVE",
+         )
+         state1 = advance_wafer_state(None, n_result, "doping")
+         state1 = advance_wafer_state(state1, p_result, "doping")
+--- a/tests/integration/test_device_fabrication_to_dc_sweep_real.py
++++ b/tests/integration/test_device_fabrication_to_dc_sweep_real.py
+@@ -93,7 +93,7 @@
+             windows=[
+                 {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
+                 {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
+-            ],
++            ], chemical_state="ACTIVE",
+         )
+ 
+     doping = _dope(build_process_result({"final_mesh": filtered, "snapshots": []})).doping
+--- a/tests/integration/test_dopant_profile_matches_devsim_real.py
++++ b/tests/integration/test_dopant_profile_matches_devsim_real.py
+@@ -206,7 +206,7 @@
+     with tempfile.TemporaryDirectory() as tmp:
+         result = _virgin_rectangle_process_result(tmp)
+         donor, acceptor = 1.0e16, 3.0e15
+-        doped = apply_uniform_doping(result, donor_by_region_cm3={"Si": donor}, acceptor_by_region_cm3={"Si": acceptor})
++        doped = apply_uniform_doping(result, donor_by_region_cm3={"Si": donor}, acceptor_by_region_cm3={"Si": acceptor}, chemical_state="ACTIVE")
+         totals["uniform"] = _check_branch_a("uniform", doped, _independent_uniform(donor, acceptor))
+ 
+     # step_junction, donor/acceptor split
+@@ -215,7 +215,7 @@
+         donor, acceptor, position = 1.0e18, 1.0e18, 0.0
+         doped = apply_step_junction_doping(
+             result, region="Si", junction_axis="x", junction_position_um=position,
+-            donor_conc_cm3=donor, acceptor_conc_cm3=acceptor,
++            donor_conc_cm3=donor, acceptor_conc_cm3=acceptor, chemical_state="ACTIVE",
+         )
+         totals["step_junction"] = _check_branch_a(
+             "step_junction", doped, _independent_step_junction(donor, acceptor, position),
+@@ -227,7 +227,7 @@
+         donor_peak, acceptor_peak, position, straggle = 2.0e18, 1.0e17, 0.0, 0.5
+         doped = apply_gaussian_implant_doping(
+             result, region="Si", junction_axis="x", peak_position_um=position, straggle_um=straggle,
+-            donor_peak_conc_cm3=donor_peak, acceptor_peak_conc_cm3=acceptor_peak,
++            donor_peak_conc_cm3=donor_peak, acceptor_peak_conc_cm3=acceptor_peak, chemical_state="ACTIVE",
+         )
+         totals["gaussian_implant"] = _check_branch_a(
+             "gaussian_implant", doped,
+@@ -245,7 +245,7 @@
+             windows=[
+                 {"min_um": -1.6, "max_um": -0.6, "donor_conc_cm3": 1.0e20},
+                 {"min_um": 0.6, "max_um": 1.6, "acceptor_conc_cm3": 5.0e19},
+-            ],
++            ], chemical_state="ACTIVE",
+         )
+         totals["implant_windows"] = _check_branch_a(
+             "implant_windows", doped,
+@@ -341,7 +341,7 @@
+     try:
+         doped = apply_uniform_doping(
+             result, donor_by_region_cm3={"Si": 1.0e16},
+-            acceptor_by_region_cm3={"Si": 3.0e15},
++            acceptor_by_region_cm3={"Si": 3.0e15}, chemical_state="ACTIVE",
+         )
+         _check_branch_b("uniform", doped)
+     finally:
+@@ -352,7 +352,7 @@
+     try:
+         doped = apply_step_junction_doping(
+             result, region="Si", junction_axis="x", junction_position_um=0.0,
+-            donor_conc_cm3=1.0e18, acceptor_conc_cm3=1.0e18,
++            donor_conc_cm3=1.0e18, acceptor_conc_cm3=1.0e18, chemical_state="ACTIVE",
+         )
+         _check_branch_b("step_junction", doped)
+     finally:
+@@ -364,7 +364,7 @@
+         doped = apply_gaussian_implant_doping(
+             result, region="Si", junction_axis="x",
+             peak_position_um=0.0, straggle_um=0.5,
+-            donor_peak_conc_cm3=2.0e18, acceptor_peak_conc_cm3=1.0e17,
++            donor_peak_conc_cm3=2.0e18, acceptor_peak_conc_cm3=1.0e17, chemical_state="ACTIVE",
+         )
+         _check_branch_b("gaussian_implant", doped)
+     finally:
+@@ -376,7 +376,7 @@
+         doped = apply_implant_windows_doping(
+             result, region="Si", axis="x",
+             background_doping_cm3=-1.0e17,
+-            windows=[{"min_um": -1.6, "max_um": -0.6, "conc_cm3": 1.0e20}],
++            windows=[{"min_um": -1.6, "max_um": -0.6, "conc_cm3": 1.0e20}], chemical_state="ACTIVE",
+         )
+         _check_branch_b("implant_windows", doped)
+     finally:
+--- a/tests/integration/test_doping_barrier_windows_real.py
++++ b/tests/integration/test_doping_barrier_windows_real.py
+@@ -75,7 +75,7 @@
+         from tcad.device.devsim.doping_mapping import apply_doping
+         from tcad.physics.wafer_state_accumulation import advance_wafer_state
+ 
+-        doped = apply_uniform_doping(etch_result, {"Si": 1.0e17})
++        doped = apply_uniform_doping(etch_result, {"Si": 1.0e17}, chemical_state="ACTIVE")
+ 
+         module_ds = devsim_backend.require_devsim()
+         imported = import_process_result(
+--- a/tests/integration/test_doping_donor_acceptor_all_kinds_real.py
++++ b/tests/integration/test_doping_donor_acceptor_all_kinds_real.py
+@@ -34,23 +34,23 @@
+ 
+ def main():
+     # --- Backward compatibility: old net-only call shapes unchanged ---
+-    r = apply_uniform_doping(_base_result(), {"Si": 1.0e17})
++    r = apply_uniform_doping(_base_result(), {"Si": 1.0e17}, chemical_state="UNKNOWN")
+     assert r.doping.regions[0].net_doping_cm3 == 1.0e17
+     assert r.doping.regions[0].donor_conc_cm3 is None
+ 
+-    r = apply_gaussian_implant_doping(_base_result(), "Si", "x", 0.0, 0.5, 1.0e17)
++    r = apply_gaussian_implant_doping(_base_result(), "Si", "x", 0.0, 0.5, 1.0e17, chemical_state="UNKNOWN")
+     assert r.doping.regions[0].peak_conc_cm3 == 1.0e17
+ 
+     r = apply_implant_windows_doping(_base_result(), "Si", "x", -1.0e17, [
+         {"min_um": -1.6, "max_um": -0.6, "conc_cm3": 1.0e20},
+-    ])
++    ], chemical_state="UNKNOWN")
+     assert r.doping.regions[0].net_doping_cm3 == -1.0e17
+     assert r.doping.regions[0].implant_windows[0]["conc_cm3"] == 1.0e20
+ 
+     # --- New donor/acceptor shapes ---
+     r = apply_uniform_doping(
+         _base_result(),
+-        donor_by_region_cm3={"Si": 1.0e16}, acceptor_by_region_cm3={"Si": 5.0e15},
++        donor_by_region_cm3={"Si": 1.0e16}, acceptor_by_region_cm3={"Si": 5.0e15}, chemical_state="UNKNOWN",
+     )
+     region = r.doping.regions[0]
+     assert region.net_doping_cm3 == 5.0e15, f"net must be donor-acceptor, got {region.net_doping_cm3}"
+@@ -60,7 +60,7 @@
+     r = apply_gaussian_implant_doping(
+         _base_result(), "Si", "x", 0.0, 0.3,
+         donor_peak_conc_cm3=2.0e18, acceptor_peak_conc_cm3=3.0e17,
+-        donor_species="P", acceptor_species="B",
++        donor_species="P", acceptor_species="B", chemical_state="UNKNOWN",
+     )
+     region = r.doping.regions[0]
+     assert abs(region.peak_conc_cm3 - (2.0e18 - 3.0e17)) < 1.0, (
+@@ -74,7 +74,7 @@
+         donor_background_cm3=1.0e15, acceptor_background_cm3=1.0e16,
+         windows=[
+             {"min_um": -1.6, "max_um": -0.6, "donor_conc_cm3": 1.0e20, "acceptor_conc_cm3": 0.0},
+-        ],
++        ], chemical_state="UNKNOWN",
+     )
+     region = r.doping.regions[0]
+     assert region.net_doping_cm3 == 1.0e15 - 1.0e16, (
+@@ -84,7 +84,7 @@
+     assert window["donor_conc_cm3"] == 1.0e20 and window["acceptor_conc_cm3"] == 0.0
+ 
+     # --- step_junction unchanged (already correct) ---
+-    r = apply_step_junction_doping(_base_result(), "Si", "x", 0.0, 1.0e18, 1.0e18)
++    r = apply_step_junction_doping(_base_result(), "Si", "x", 0.0, 1.0e18, 1.0e18, chemical_state="UNKNOWN")
+     assert r.doping.regions[0].donor_conc_cm3 == 1.0e18
+     assert r.doping.regions[0].acceptor_conc_cm3 == 1.0e18
+ 
+--- a/tests/integration/test_doping_mapping_per_node_real.py
++++ b/tests/integration/test_doping_mapping_per_node_real.py
+@@ -77,11 +77,11 @@
+ 
+         r_p = apply_gaussian_implant_doping(
+             base, region="Si", junction_axis="x", peak_position_um=1.0,
+-            straggle_um=3.0, donor_peak_conc_cm3=3e18, donor_species="P",
++            straggle_um=3.0, donor_peak_conc_cm3=3e18, donor_species="P", chemical_state="ACTIVE",
+         )
+         r_b = apply_gaussian_implant_doping(
+             base, region="Si", junction_axis="x", peak_position_um=-1.0,
+-            straggle_um=3.0, acceptor_peak_conc_cm3=1e18, acceptor_species="B",
++            straggle_um=3.0, acceptor_peak_conc_cm3=1e18, acceptor_species="B", chemical_state="ACTIVE",
+         )
+         state = advance_wafer_state(None, r_p, "doping")
+         state = advance_wafer_state(state, r_b, "doping")
+--- a/tests/integration/test_doping_mapping_recovery_real.py
++++ b/tests/integration/test_doping_mapping_recovery_real.py
+@@ -106,7 +106,7 @@
+         doped_result = apply_uniform_doping(
+             process_result,
+             donor_by_region_cm3={"Si": DONOR_CM3},
+-            acceptor_by_region_cm3={"Si": ACCEPTOR_CM3},
++            acceptor_by_region_cm3={"Si": ACCEPTOR_CM3}, chemical_state="ACTIVE",
+         )
+         state = advance_wafer_state(None, doped_result, "doping")
+ 
+@@ -304,7 +304,7 @@
+ 
+         doped = apply_gaussian_implant_doping(
+             base, region="Si", junction_axis="x", peak_position_um=CONV_X_UM,
+-            straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P",
++            straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="P", chemical_state="ACTIVE",
+         )
+         state1 = advance_wafer_state(None, doped, "doping")
+ 
+--- a/tests/integration/test_gaussian_implant_doping_real.py
++++ b/tests/integration/test_gaussian_implant_doping_real.py
+@@ -59,7 +59,7 @@
+         doped_result = apply_gaussian_implant_doping(
+             process_result, region="Si", junction_axis="x",
+             peak_position_um=PEAK_POSITION_UM, straggle_um=STRAGGLE_UM,
+-            peak_conc_cm3=PEAK_CONC_CM3,
++            peak_conc_cm3=PEAK_CONC_CM3, chemical_state="ACTIVE",
+         )
+         assert doped_result.doping is not None
+         assert doped_result.doping.kind == "gaussian_implant"
+--- a/tests/integration/test_gui_doping_color_overlay_real.py
++++ b/tests/integration/test_gui_doping_color_overlay_real.py
+@@ -325,7 +325,7 @@
+             from tcad.physics.doping import apply_gaussian_implant_doping
+             implanted = apply_gaussian_implant_doping(
+                 base, region="Si", junction_axis="x", peak_position_um=ERASE_X_UM,
+-                straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="As",
++                straggle_um=0.3, donor_peak_conc_cm3=1e18, donor_species="As", chemical_state="ACTIVE",
+             )
+             zero_state1 = advance_wafer_state(None, implanted, "doping")
+ 
+--- a/tests/integration/test_gui_measurement_doping_kinds_real.py
++++ b/tests/integration/test_gui_measurement_doping_kinds_real.py
+@@ -103,17 +103,17 @@
+ def dope_with_panel_defaults(kind, process_result):
+     """The doping panel's own default field values, verbatim."""
+     if kind == "uniform":
+-        return apply_uniform_doping(process_result, {REGION: 1.0e17})
++        return apply_uniform_doping(process_result, {REGION: 1.0e17}, chemical_state="ACTIVE")
+     if kind == "step_junction":
+         return apply_step_junction_doping(
+             process_result, region=REGION, junction_axis="x",
+             junction_position_um=0.0,
+-            donor_conc_cm3=1.0e18, acceptor_conc_cm3=1.0e18,
++            donor_conc_cm3=1.0e18, acceptor_conc_cm3=1.0e18, chemical_state="ACTIVE",
+         )
+     if kind == "gaussian_implant":
+         return apply_gaussian_implant_doping(
+             process_result, region=REGION, junction_axis="x",
+-            peak_position_um=0.0, straggle_um=0.5, peak_conc_cm3=1.0e17,
++            peak_position_um=0.0, straggle_um=0.5, peak_conc_cm3=1.0e17, chemical_state="ACTIVE",
+         )
+     if kind == "implant_windows":
+         return apply_implant_windows_doping(
+@@ -122,7 +122,7 @@
+             windows=[
+                 {"min_um": -1.6, "max_um": -0.6, "conc_cm3": 1.0e20},
+                 {"min_um": 0.6, "max_um": 1.6, "conc_cm3": 1.0e20},
+-            ],
++            ], chemical_state="ACTIVE",
+         )
+     raise AssertionError(f"unknown kind {kind!r}")
+ 
+--- a/tests/integration/test_gui_process_state_chaining_real.py
++++ b/tests/integration/test_gui_process_state_chaining_real.py
+@@ -231,7 +231,7 @@
+         final_mesh = etch_stage.result.volume_mesh_path
+         sha_before = fx.sha256_file(final_mesh)
+         process_result = build_process_result({"final_mesh": final_mesh, "snapshots": []})
+-        doped = apply_uniform_doping(process_result, {"Si": 1e17})
++        doped = apply_uniform_doping(process_result, {"Si": 1e17}, chemical_state="UNKNOWN")
+         assert doped.doping is not None and doped.doping.regions, "doping profile was not attached"
+         assert doped.doping.regions[0].region == "Si", f"doping attached to the wrong region: {doped.doping.regions[0].region}"
+         assert doped.material_regions == process_result.material_regions, "applying doping must not alter the geometry it was attached to"
+--- a/tests/integration/test_implant_windows_doping_real.py
++++ b/tests/integration/test_implant_windows_doping_real.py
+@@ -68,7 +68,7 @@
+         doped_result = apply_implant_windows_doping(
+             process_result, region="Si", axis="x",
+             background_doping_cm3=BACKGROUND_CM3,
+-            windows=[SOURCE, DRAIN],
++            windows=[SOURCE, DRAIN], chemical_state="ACTIVE",
+         )
+         assert doped_result.doping is not None
+         assert doped_result.doping.kind == "implant_windows"
+--- a/tests/integration/test_litho_lifecycle_state_real.py
++++ b/tests/integration/test_litho_lifecycle_state_real.py
+@@ -588,7 +588,7 @@
+         final_mesh = dep.result.volume_mesh_path
+         sha_before = fx.sha256_file(final_mesh)
+         final_result = build_process_result({"final_mesh": final_mesh, "snapshots": []})
+-        final_doped = apply_uniform_doping(final_result, {"Si": 1e17})
++        final_doped = apply_uniform_doping(final_result, {"Si": 1e17}, chemical_state="UNKNOWN")
+         assert final_doped.doping is not None and final_doped.doping.regions, "no doping attached"
+         assert final_doped.doping.regions[0].region == "Si"
+         assert final_doped.material_regions == final_result.material_regions, "doping altered the geometry it was attached to"
+--- a/tests/integration/test_locos_devsim_import_real.py
++++ b/tests/integration/test_locos_devsim_import_real.py
+@@ -374,7 +374,7 @@
+ 
+     # (c) Defence in depth, constructed on purpose: bind a real doping result (real recipe helpers, on the current virgin-Si mesh) to
+     #     the current mesh, as if a doping application had survived. The canonical gate must still refuse the device.
+-    app.last_doped_result = apply_uniform_doping(build_process_result({"final_mesh": app.last_final_mesh, "snapshots": []}), {"Si": 1e16})
++    app.last_doped_result = apply_uniform_doping(build_process_result({"final_mesh": app.last_final_mesh, "snapshots": []}), {"Si": 1e16}, chemical_state="ACTIVE")
+     gated = measure(app, devsim, modal)
+     return ox, d, stopped, gated
+ 
+--- a/tests/integration/test_mosfet_body_contact_real.py
++++ b/tests/integration/test_mosfet_body_contact_real.py
+@@ -70,7 +70,7 @@
+             windows=[
+                 {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
+                 {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
+-            ],
++            ], chemical_state="ACTIVE",
+         )
+ 
+     doping = _dope(build_process_result({"final_mesh": filtered, "snapshots": []})).doping
+--- a/tests/integration/test_mosfet_gate_stack_cv_real.py
++++ b/tests/integration/test_mosfet_gate_stack_cv_real.py
+@@ -216,7 +216,7 @@
+             windows=[
+                 {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
+                 {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
+-            ],
++            ], chemical_state="ACTIVE",
+         )
+ 
+         refined = refine_process_result_for_mos_gate(
+--- a/tests/integration/test_mosfet_id_vds_real.py
++++ b/tests/integration/test_mosfet_id_vds_real.py
+@@ -67,7 +67,7 @@
+                 windows=[
+                     {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
+                     {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
+-                ],
++                ], chemical_state="ACTIVE",
+             )
+ 
+         doping = _dope(build_process_result({"final_mesh": filtered, "snapshots": []})).doping
+--- a/tests/integration/test_mosfet_id_vgs_real.py
++++ b/tests/integration/test_mosfet_id_vgs_real.py
+@@ -148,7 +148,7 @@
+                 windows=[
+                     {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
+                     {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
+-                ],
++                ], chemical_state="ACTIVE",
+             )
+ 
+         # Refinement is DERIVED from the doping profile, not hand-picked
+--- a/tests/integration/test_mosfet_vth_extraction_real.py
++++ b/tests/integration/test_mosfet_vth_extraction_real.py
+@@ -202,7 +202,7 @@
+                 windows=[
+                     {"min_um": SRC[0], "max_um": SRC[1], "conc_cm3": SD_DOPING_CM3},
+                     {"min_um": DRN[0], "max_um": DRN[1], "conc_cm3": SD_DOPING_CM3},
+-                ],
++                ], chemical_state="ACTIVE",
+             )
+ 
+         # Doping-derived graded refinement -- same rationale as
+--- a/tests/integration/test_phase13_process_flow_real.py
++++ b/tests/integration/test_phase13_process_flow_real.py
+@@ -117,7 +117,7 @@
+         str(Path(tmp) / "flow2"),
+     )
+     final = results[-1]
+-    doped = apply_uniform_doping(final, {"Si": -1e15})
++    doped = apply_uniform_doping(final, {"Si": -1e15}, chemical_state="UNKNOWN")
+ 
+     _print_structures("structures:", results)
+     print(f"    ProcessResult regions carried into doping: "
+--- a/tests/integration/test_phase14_flow_devsim_real.py
++++ b/tests/integration/test_phase14_flow_devsim_real.py
+@@ -110,7 +110,7 @@
+         )
+         final = results[-1]
+ 
+-        doped = apply_uniform_doping(final, {"Si": 1.0e17})
++        doped = apply_uniform_doping(final, {"Si": 1.0e17}, chemical_state="ACTIVE")
+         print(f"[Doping] kind={doped.doping.kind} "
+               f"regions={[(d.region, d.net_doping_cm3) for d in doped.doping.regions]}")
+         assert final.doping is None, "doping must not mutate the flow's ProcessResult"
+@@ -172,7 +172,7 @@
+         )
+         final = results[-1]
+ 
+-        doped = apply_uniform_doping(final, {"Si": -1.0e15})
++        doped = apply_uniform_doping(final, {"Si": -1.0e15}, chemical_state="ACTIVE")
+ 
+         imported = import_process_result(
+             doped, mesh_name="p14t3_mesh", device_name="p14t3_device",
+@@ -249,7 +249,7 @@
+             "step 2 must still carry the oxide grown in step 1 (continuity)"
+         )
+ 
+-        doped = apply_uniform_doping(final, {"Si": 1.0e17})
++        doped = apply_uniform_doping(final, {"Si": 1.0e17}, chemical_state="ACTIVE")
+ 
+         imported = import_process_result(
+             doped, mesh_name="p14t4_mesh", device_name="p14t4_device",
+--- a/tests/integration/test_phase7_doping_real.py
++++ b/tests/integration/test_phase7_doping_real.py
+@@ -60,7 +60,7 @@
+         process_result = build_process_result(step_result)
+ 
+         # doping applied as a separate step, not by the process model
+-        doped_result = apply_uniform_doping(process_result, {"Si": net_doping_cm3})
++        doped_result = apply_uniform_doping(process_result, {"Si": net_doping_cm3}, chemical_state="ACTIVE")
+         assert doped_result.doping is not None
+         assert doped_result.doping.kind == "uniform"
+         assert process_result.doping is None, "original ProcessResult must stay untouched"
+--- a/tests/integration/test_phase8_pn_junction_real.py
++++ b/tests/integration/test_phase8_pn_junction_real.py
+@@ -103,7 +103,7 @@
+         doped_result = apply_step_junction_doping(
+             process_result, region="Si", junction_axis="x",
+             junction_position_um=junction_position_um,
+-            donor_conc_cm3=DONOR_CM3, acceptor_conc_cm3=ACCEPTOR_CM3,
++            donor_conc_cm3=DONOR_CM3, acceptor_conc_cm3=ACCEPTOR_CM3, chemical_state="ACTIVE",
+         )
+         assert doped_result.doping.kind == "step_junction"
+         assert process_result.doping is None, "original ProcessResult must stay untouched"
+--- a/tests/integration/test_phase9_mos_cv_real.py
++++ b/tests/integration/test_phase9_mos_cv_real.py
+@@ -59,7 +59,7 @@
+         print(f"[2/6] ProcessResult OK -> regions: {region_names}")
+         assert "SiO2" in region_names and "Si" in region_names
+ 
+-        doped_result = apply_uniform_doping(process_result, {"Si": SUBSTRATE_DOPING_CM3})
++        doped_result = apply_uniform_doping(process_result, {"Si": SUBSTRATE_DOPING_CM3}, chemical_state="ACTIVE")
+         assert doped_result.doping.kind == "uniform"
+         assert process_result.doping is None, "original ProcessResult must stay untouched"
+         print(f"[3/6] Substrate doping applied (separate from process model): Na={-SUBSTRATE_DOPING_CM3:.1e} cm^-3")
+--- a/tests/integration/test_physics_rules_real.py
++++ b/tests/integration/test_physics_rules_real.py
+@@ -270,8 +270,8 @@
+         process_result = build_process_result(
+             {"final_mesh": mesh_path, "snapshots": []}
+         )
+-        n_doped = apply_uniform_doping(process_result, {"Si": 1e17})
+-        p_doped = apply_uniform_doping(process_result, {"Si": -1e17})
++        n_doped = apply_uniform_doping(process_result, {"Si": 1e17}, chemical_state="UNKNOWN")
++        p_doped = apply_uniform_doping(process_result, {"Si": -1e17}, chemical_state="UNKNOWN")
+         after = _materials(mesh_path)
+ 
+     assert sorted(before) == sorted(after), (
+--- a/tests/integration/test_process_state_resume_real.py
++++ b/tests/integration/test_process_state_resume_real.py
+@@ -271,7 +271,7 @@
+     process_result = build_process_result(
+         {"final_mesh": result["final_mesh"], "snapshots": []}
+     )
+-    doped = apply_uniform_doping(process_result, {"Si": -1e15})
++    doped = apply_uniform_doping(process_result, {"Si": -1e15}, chemical_state="UNKNOWN")
+     assert doped.doping.regions[0].region == "Si"
+     assert doped.doping.regions[0].net_doping_cm3 == -1e15
+ 
+--- a/tests/integration/test_robust_iv_sweep_real.py
++++ b/tests/integration/test_robust_iv_sweep_real.py
+@@ -89,7 +89,7 @@
+         windows=[
+             {"min_um": -1.6, "max_um": -0.6, "conc_cm3": conc_cm3},
+             {"min_um": 0.6, "max_um": 1.6, "conc_cm3": conc_cm3},
+-        ],
++        ], chemical_state="ACTIVE",
+     )
+     refined = refine_process_result_for_implant_windows(doped)
+     assert refined is not None, "no refinement derived for implant_windows"
+--- a/tests/integration/test_thermal_anneal_acceptance_real.py
++++ b/tests/integration/test_thermal_anneal_acceptance_real.py
+@@ -84,7 +84,7 @@
+ def scenario_A():
+     b_profile = _species_profile(apply_gaussian_implant_doping(
+         _fresh_process_result(), "Si", "x", peak_position_um=0.0, straggle_um=0.2,
+-        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B",
++        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B", chemical_state="CHEMICAL",
+     ))
+     b_dose_before = _dose(b_profile)
+ 
+@@ -100,11 +100,11 @@
+ def scenario_B():
+     b_profile = _species_profile(apply_gaussian_implant_doping(
+         _fresh_process_result(), "Si", "x", peak_position_um=-1.0, straggle_um=0.2,
+-        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B",
++        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B", chemical_state="CHEMICAL",
+     ))
+     p_profile = _species_profile(apply_gaussian_implant_doping(
+         _fresh_process_result(), "Si", "x", peak_position_um=1.0, straggle_um=0.2,
+-        donor_peak_conc_cm3=1.0e18, donor_species="P",
++        donor_peak_conc_cm3=1.0e18, donor_species="P", chemical_state="CHEMICAL",
+     ))
+     updated, _ = apply_thermal_anneal((b_profile, p_profile), temperature_c=900.0, time_s=600.0)
+     terms = _by_species(updated)
+@@ -123,14 +123,14 @@
+ def scenario_C():
+     b_profile = _species_profile(apply_gaussian_implant_doping(
+         _fresh_process_result(), "Si", "x", peak_position_um=-1.0, straggle_um=0.2,
+-        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B",
++        acceptor_peak_conc_cm3=1.0e18, acceptor_species="B", chemical_state="CHEMICAL",
+     ))
+     (b_annealed_once,), _ = apply_thermal_anneal((b_profile,), temperature_c=900.0, time_s=600.0)
+     b_straggle_after_first_anneal = b_annealed_once.model_params["straggle_um"]
+ 
+     p_profile = _species_profile(apply_gaussian_implant_doping(
+         _fresh_process_result(), "Si", "x", peak_position_um=1.0, straggle_um=0.2,
+-        donor_peak_conc_cm3=1.0e18, donor_species="P",
++        donor_peak_conc_cm3=1.0e18, donor_species="P", chemical_state="CHEMICAL",
+     ))
+     updated, _ = apply_thermal_anneal(
+         (b_annealed_once, p_profile), temperature_c=900.0, time_s=600.0,
+@@ -155,7 +155,7 @@
+ def scenario_temperature_dependence():
+     implant = _species_profile(apply_gaussian_implant_doping(
+         _fresh_process_result(), "Si", "x", peak_position_um=0.0, straggle_um=0.2,
+-        donor_peak_conc_cm3=1.0e18, donor_species="P",
++        donor_peak_conc_cm3=1.0e18, donor_species="P", chemical_state="CHEMICAL",
+     ))
+     (low,), _ = apply_thermal_anneal((implant,), temperature_c=900.0, time_s=600.0)
+     (high,), _ = apply_thermal_anneal((implant,), temperature_c=1000.0, time_s=600.0)
+--- a/tests/integration/test_voltage_probe_real.py
++++ b/tests/integration/test_voltage_probe_real.py
+@@ -49,7 +49,7 @@
+ 
+         doped = apply_step_junction_doping(
+             process_result, region="Si", junction_axis="x", junction_position_um=0.0,
+-            donor_conc_cm3=1e16, acceptor_conc_cm3=1e14,
++            donor_conc_cm3=1e16, acceptor_conc_cm3=1e14, chemical_state="ACTIVE",
+         )
+ 
+         imported = import_process_result(
+--- a/tests/integration/test_wafer_state_accumulation_devsim_real.py
++++ b/tests/integration/test_wafer_state_accumulation_devsim_real.py
+@@ -47,7 +47,7 @@
+ 
+         b_result = apply_gaussian_implant_doping(
+             base, region="Si", junction_axis="x", peak_position_um=-1.0,
+-            straggle_um=0.2, acceptor_peak_conc_cm3=1e18, acceptor_species="B",
++            straggle_um=0.2, acceptor_peak_conc_cm3=1e18, acceptor_species="B", chemical_state="ACTIVE",
+         )
+         state1 = advance_wafer_state(None, b_result, "doping")
+         print(f"after B implant: {len(state1.dopant_profiles)} profile(s), "
+@@ -56,7 +56,7 @@
+ 
+         p_result = apply_gaussian_implant_doping(
+             base, region="Si", junction_axis="x", peak_position_um=1.0,
+-            straggle_um=0.15, donor_peak_conc_cm3=2e18, donor_species="P",
++            straggle_um=0.15, donor_peak_conc_cm3=2e18, donor_species="P", chemical_state="ACTIVE",
+         )
+         state2 = advance_wafer_state(state1, p_result, "doping")
+         species = sorted(p.species for p in state2.dopant_profiles)
+--- a/tests/integration/test_wafer_state_v2_initial_geometry_devsim_real.py
++++ b/tests/integration/test_wafer_state_v2_initial_geometry_devsim_real.py
+@@ -111,7 +111,7 @@
+         _assert_mesh_matches_recipe_bounds(process_result)
+ 
+         n_doping = 1.0e17
+-        doped = apply_uniform_doping(process_result, {"Si": n_doping})
++        doped = apply_uniform_doping(process_result, {"Si": n_doping}, chemical_state="ACTIVE")
+ 
+         # Branch A: MODELLED initial state from the RECIPE, threaded as
+         # prior_state -- NOT advance_wafer_state(None, ...).
+@@ -207,7 +207,7 @@
+         doped = apply_step_junction_doping(
+             process_result, region="Si", junction_axis="x",
+             junction_position_um=0.0,
+-            donor_conc_cm3=donor, acceptor_conc_cm3=acceptor,
++            donor_conc_cm3=donor, acceptor_conc_cm3=acceptor, chemical_state="ACTIVE",
+         )
+ 
+         state = initial_wafer_state_from_recipe(RECIPE)

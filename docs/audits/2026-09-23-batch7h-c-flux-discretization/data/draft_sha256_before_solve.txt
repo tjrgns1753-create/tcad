@@ -1,0 +1,9 @@
+d0695a7580c171b9fbdbf1af76b2ea9fa10d6e2eaa2b565d602f1ab578a1d2b0 *REPORT_DRAFT.md
+474c2394ea4c314a9d5485ae9df3f10a5dd72976f4414c3a2a5e2fcc14ee7730 *data/fixtures_7hc.json
+9591b235a9f6c36c5c75d023831b98bad65bb6cf4afb4348e013699e916009ec *scripts/meshes.py
+3fe5708ad80a308a540a8716e82d30f1f2d4b0e5d636af45ed1dae5e3e4affd2 *scripts/build_fixtures.py
+Wed Sep 23 06:51:09 UTC 2026
+--- ADDENDUM (interface capability fixture, before any registered-fixture solve)
+f1b7248ce0aa42908deaa4bd7d9223b3f25e8b4d974da8c4b34600b9b71e391e *scripts/interface_fixture.py
+977f5433943ad3e9a7aab998294925b1979e06547de8a654d60d9edeadcfa4d6 *data/fixture_IF4.json
+Wed Sep 23 06:52:52 UTC 2026

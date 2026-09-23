@@ -1,0 +1,5 @@
+e247123414d8dd23a95f619f57989e3a92a841220bb580664d6021879182340a *REPORT_DRAFT.md
+f1aeb9200192df322b83f261f74a4f77c5dca4c46dcacc142c25f4b44fba73ed *scripts/formulas.py
+36417dd360abf1b761ffa640d3bbd0eeb5e4e3f1b877eca852baefb71745c30b *scripts/fixtures.py
+83d074f7ca69c2bd662af87d104cc2b6596488a4a15db380d69026558e328653 *data/analytic_predictions.json
+Wed Sep 23 06:23:42 UTC 2026

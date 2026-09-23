@@ -1,0 +1,2 @@
+M4 nodes 306 neg edges 246 endpoint nodes 287 fraction 0.9379
+L3_after nodes 2921 neg edges 6 endpoint nodes 8 fraction 0.0027

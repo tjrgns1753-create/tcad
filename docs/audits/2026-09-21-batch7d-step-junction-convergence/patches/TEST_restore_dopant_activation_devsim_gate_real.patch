@@ -1,0 +1,84 @@
+--- a/tests/integration/test_dopant_activation_devsim_gate_real.py
++++ b/tests/integration/test_dopant_activation_devsim_gate_real.py
+@@ -7,8 +7,10 @@
+                 reported (control).
+   * CHEMICAL -> the canonical query is None/UNSUPPORTED_BY_MODEL, so the central gate blocks the measurement: 0 DevSim doping writes, 0
+   * UNKNOWN     devsim.solve calls, no current, UNSUPPORTED_BY_MODEL with the activation-state reason in the log, canonical state unchanged.
+-  * ACTIVE single polarity control (N_D or N_A only) and an ideal ACTIVE Step Junction (donor on one side, acceptor on the other, exactly one
+-    polarity at every node including the junction coordinate) run a real PN solve.
++  * ACTIVE single polarity control (N_D or N_A only) and an ideal ACTIVE Step Junction (donor on one side, acceptor on the other, both fire on
++    the junction node itself per DEVSIM's own official step() convention -- diode_common.py::SetNetDoping -- since that line is measure-zero,
++    not a finite area) run a real PN solve. (Batch 7D reverted Rev.2's strict one-sided junction: it changed a real device's current ratio,
++    which was mesh/discontinuity sensitivity rather than a physical improvement -- see docs/audits/2026-09-21-batch7d-step-junction-convergence.)
+   * A compensated ACTIVE profile (N_D == N_A != 0) keeps its CANONICAL concentrations (donor N_D, acceptor N_A, net N_D - N_A = 0), but a finite
+     area holding both polarities has no compensation-aware ionized-impurity scattering / mobility in the drift-diffusion model, so the central gate
+     blocks it: reason_code COMPENSATED_TRANSPORT_MODEL_MISSING, 0 DevSim doping writes, 0 devsim.solve calls, no current. (Batch 7C Rev.2: this
+@@ -141,17 +143,22 @@
+ 
+ 
+ def check_step_junction(m, donor, acceptor):
++    """Official DEVSIM step() convention (diode_common.py::SetNetDoping): Donors=Nd*step(x-xj),
++    Acceptors=Na*step(xj-x) -- BOTH fire on the junction line itself (x==xj), net = Nd-Na there.
++    That line is measure-zero, not a finite area, so it is a real, expected nodal artifact of the
++    discontinuity representation -- not a compensated region (Batch 7D, reverting Rev.2's strict
++    one-sided junction, which Codex found changed a real device's current ratio -- mesh/
++    discontinuity sensitivity, not a physical improvement)."""
+     assert m["solves"] >= 1 and sorted(set(n for _, n in m["writes"])) == ["Acceptors", "Donors", "NetDoping"], (m["solves"], m["writes"])
+     assert re.search(r"I = [-+0-9.eE]+ A", m["log"]) and "UNSUPPORTED_BY_MODEL" not in m["log"], "the ideal step junction must solve and report a current"
+     d, a, n, x = m["values"]["Donors"], m["values"]["Acceptors"], m["values"]["NetDoping"], m["x"]
+-    both = [i for i in range(len(x)) if d[i] > 0 and a[i] > 0]
+-    assert not both, f"{len(both)} node(s) carry BOTH polarities (first at x={x[both[0]] / 1e-4:g} um)"
+     on_junction = [i for i in range(len(x)) if x[i] == 0.0]
+     assert on_junction, "the mesh must have nodes exactly on the junction coordinate for this control to mean anything"
+-    assert all((d[i] == donor and a[i] == 0.0) for i in on_junction), \
+-        f"on the junction coordinate exactly one polarity (donor side, x >= junction) must exist: {[(d[i], a[i]) for i in on_junction]}"
++    assert all((d[i] == donor and a[i] == acceptor) for i in on_junction), \
++        f"on the junction coordinate BOTH polarities must exist (official step() convention): {[(d[i], a[i]) for i in on_junction]}"
+     assert all(abs(n[i] - (d[i] - a[i])) == 0.0 for i in range(len(x))), "NetDoping must be exactly N_D - N_A at every node"
+-    assert {d[i] for i in range(len(x)) if x[i] < 0} == {0.0} and {a[i] for i in range(len(x)) if x[i] < 0} == {acceptor}, "left side must be acceptor only"
++    assert {d[i] for i in range(len(x)) if x[i] > 0} == {donor} and {a[i] for i in range(len(x)) if x[i] > 0} == {0.0}, "strictly right of the junction must be donor only"
++    assert {d[i] for i in range(len(x)) if x[i] < 0} == {0.0} and {a[i] for i in range(len(x)) if x[i] < 0} == {acceptor}, "strictly left of the junction must be acceptor only"
+ 
+ 
+ def expect_fail(check, label, expected):
+@@ -223,10 +230,10 @@
+         check_step_junction(m, 1e17, 1e17)
+         on_j = [i for i, xv in enumerate(m["x"]) if xv == 0.0]
+         cur = re.search(r"I = ([-+0-9.eE]+) A", m["log"]).group(1)
+-        print(f"[ACTIVE step junction] donor 1e17 (x >= 0) / acceptor 1e17 (x < 0): PN solve entered: devsim.solve {m['solves']}, writes "
+-              f"{sorted(set(n for _, n in m['writes']))}, current reported {cur} A; nodes ON the junction x=0: {len(on_j)}, each with exactly one polarity "
+-              f"(Donors {sorted({m['values']['Donors'][i] for i in on_j})}, Acceptors {sorted({m['values']['Acceptors'][i] for i in on_j})}); "
+-              f"no node carries both polarities")
++        print(f"[ACTIVE step junction] donor 1e17 (x > 0) / acceptor 1e17 (x < 0): PN solve entered: devsim.solve {m['solves']}, writes "
++              f"{sorted(set(n for _, n in m['writes']))}, current reported {cur} A; nodes ON the junction x=0: {len(on_j)}, each with BOTH polarities "
++              f"(official step() convention: Donors {sorted({m['values']['Donors'][i] for i in on_j})}, Acceptors {sorted({m['values']['Acceptors'][i] for i in on_j})}, "
++              f"net {sorted({m['values']['NetDoping'][i] for i in on_j})})")
+         assert not list(devsim.get_device_list()), f"leaked DevSim devices: {list(devsim.get_device_list())}"
+ 
+         print("\n[guards] every check fails, for its own reason, when its subject is broken")
+@@ -249,9 +256,12 @@
+         expect_fail(lambda: check_compensated_blocked(comp, "compensated", (1e17, 1e17, 0.0), (1e17, 0.0, 1e17)),
+                     "the canonical concentrations were collapsed", "the canonical donor/acceptor/net must be preserved")
+         step_m = results["ACTIVE step junction"]
+-        dbl = list(step_m["values"]["Acceptors"]); j0 = step_m["x"].index(0.0); dbl[j0] = 1e17
+-        expect_fail(lambda: check_step_junction({**step_m, "values": {**step_m["values"], "Acceptors": dbl}}, 1e17, 1e17),
+-                    "the junction node is doped by BOTH polarities", "node(s) carry BOTH polarities")
++        zeroed_a = list(step_m["values"]["Acceptors"]); j0 = step_m["x"].index(0.0); zeroed_a[j0] = 0.0
++        expect_fail(lambda: check_step_junction({**step_m, "values": {**step_m["values"], "Acceptors": zeroed_a}}, 1e17, 1e17),
++                    "the junction node's Acceptors was zeroed (violates the official step() convention)", "official step() convention")
++        zeroed_d = list(step_m["values"]["Donors"]); zeroed_d[j0] = 0.0
++        expect_fail(lambda: check_step_junction({**step_m, "values": {**step_m["values"], "Donors": zeroed_d}}, 1e17, 1e17),
++                    "the junction node's Donors was zeroed (violates the official step() convention)", "official step() convention")
+     finally:
+         for n, fn in originals.items():
+             setattr(gui.messagebox, n, fn)
+@@ -259,7 +269,8 @@
+     assert not list(devsim.get_device_list()), f"leaked DevSim devices: {list(devsim.get_device_list())}"
+     print("\nDOPANT ACTIVATION GATE (real DevSim): ACTIVE solves and writes; CHEMICAL and UNKNOWN are blocked with 0 doping writes and 0 solves; "
+           "a compensated N_D == N_A region keeps its canonical values but is transport-blocked (COMPENSATED_TRANSPORT_MODEL_MISSING, 0 writes, "
+-          "0 solves, no current); an ideal Step Junction solves with exactly one polarity per node")
++          "0 solves, no current); an ideal Step Junction solves with DEVSIM's official step() convention (both polarities on the junction line, "
++          "not compensated)")
+ 
+ 
+ if __name__ == "__main__":

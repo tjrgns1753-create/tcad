@@ -1,0 +1,62 @@
+{
+ "R0_dx0.02": {
+  "cfg": {
+   "id": "R0_dx0.02",
+   "kind": "1d",
+   "dx_um": 0.02
+  },
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 97009.86610702128,
+  "B_ok": true,
+  "B_couple_model": "EdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 1.449954011156492e-10,
+  "B_max_abs_HoleCurrent_A_per_cm2": 7.24977005578246e-11,
+  "B_max_abs_ElectronCurrent_x_couple": 1.449954011156492e-10,
+  "B_max_abs_HoleCurrent_x_couple": 7.24977005578246e-11
+ },
+ "R0_dx0.01": {
+  "cfg": {
+   "id": "R0_dx0.01",
+   "kind": "1d",
+   "dx_um": 0.01
+  },
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 104864.24370593182,
+  "B_ok": true,
+  "B_couple_model": "EdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 2.780295323470499e-10,
+  "B_max_abs_HoleCurrent_A_per_cm2": 1.3901476617352496e-10,
+  "B_max_abs_ElectronCurrent_x_couple": 2.780295323470499e-10,
+  "B_max_abs_HoleCurrent_x_couple": 1.3901476617352496e-10
+ },
+ "R0_dx0.005": {
+  "cfg": {
+   "id": "R0_dx0.005",
+   "kind": "1d",
+   "dx_um": 0.005
+  },
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 108862.72943234495,
+  "B_ok": true,
+  "B_couple_model": "EdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 7.058919821324997e-10,
+  "B_max_abs_HoleCurrent_A_per_cm2": 3.3399656569874985e-10,
+  "B_max_abs_ElectronCurrent_x_couple": 7.058919821324997e-10,
+  "B_max_abs_HoleCurrent_x_couple": 3.3399656569874985e-10
+ },
+ "R0_dx0.0025": {
+  "cfg": {
+   "id": "R0_dx0.0025",
+   "kind": "1d",
+   "dx_um": 0.0025
+  },
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 110880.31052366181,
+  "B_ok": true,
+  "B_couple_model": "EdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 1.3373145993922305e-09,
+  "B_max_abs_HoleCurrent_A_per_cm2": 6.686572996961153e-10,
+  "B_max_abs_ElectronCurrent_x_couple": 1.3373145993922305e-09,
+  "B_max_abs_HoleCurrent_x_couple": 6.686572996961153e-10
+ }
+}

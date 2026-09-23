@@ -1,0 +1,15 @@
+--- a/tcad/physics/wafer_state_v2.py
++++ b/tcad/physics/wafer_state_v2.py
+@@ -730,8 +730,10 @@
+ 
+       uniform_v1         whole support
+       gaussian_v1        whole support (exp(-u^2/2s^2) > 0 everywhere)
+-      step_junction_v1   donor: x >= junction; acceptor: x < junction (strict, so the
+-                         two polarities never both exist at the junction coordinate)
++      step_junction_v1   donor: x >= junction; acceptor: x <= junction (DEVSIM's own
++                         step() convention: at the junction line both are written, net
++                         N_D - N_A). The two rectangles share only that LINE, which is
++                         zero area, so an ideal step junction is not a compensated region
+       implant_windows_v1 whole support if the background is > 0, else the union of
+                          the windows (x in [lo, hi], any y) that have a positive value
+     """

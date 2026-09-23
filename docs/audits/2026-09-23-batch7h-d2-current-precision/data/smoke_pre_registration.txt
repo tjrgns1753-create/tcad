@@ -1,0 +1,8 @@
+SMOKE P0 start {'extended_model': 'UNSET', 'extended_equation': 'UNSET', 'extended_solver': 'UNSET'}
+SMOKE P0 after set {'extended_model': 'UNSET', 'extended_equation': 'UNSET', 'extended_solver': 'UNSET'}
+SMOKE P0 1d 0.00125 ok True True True iters 12 1 5 wall_s 0.4
+SMOKE P0 M2 0.005 ok True True True iters 11 1 5 wall_s 1.5
+SMOKE P4 start {'extended_model': 'UNSET', 'extended_equation': 'UNSET', 'extended_solver': 'UNSET'}
+SMOKE P4 after set {'extended_model': True, 'extended_equation': True, 'extended_solver': True}
+SMOKE P4 1d 0.00125 ok True True True iters 12 1 5 wall_s 0.9
+SMOKE P4 M2 0.005 ok True True True iters 11 1 5 wall_s 6.5

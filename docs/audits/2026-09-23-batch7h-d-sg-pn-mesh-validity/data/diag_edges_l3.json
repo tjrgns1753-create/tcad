@@ -1,0 +1,204 @@
+{
+ "L3_after_D0": {
+  "cfg": {
+   "id": "L3_after_D0",
+   "kind": "2d",
+   "mesh": "L3_after",
+   "variant": "D0"
+  },
+  "n_negative_signed_couple_edges": 6,
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 150552.6846658903,
+  "B_ok": true,
+  "B_couple_model": "EdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 2.438781562096254e-10,
+  "B_max_abs_HoleCurrent_A_per_cm2": 1.283486729130419e-10,
+  "B_max_abs_ElectronCurrent_x_couple": 1.5011151874922336e-15,
+  "B_max_abs_HoleCurrent_x_couple": 7.575505237516455e-16,
+  "B_overshoot_psi": {
+   "n_nodes": 0,
+   "hop_histogram_to_negative_couple_endpoint": {},
+   "coords_um_sample": []
+  },
+  "B_overshoot_n": {
+   "n_nodes": 0,
+   "hop_histogram_to_negative_couple_endpoint": {},
+   "coords_um_sample": []
+  },
+  "B_overshoot_p": {
+   "n_nodes": 0,
+   "hop_histogram_to_negative_couple_endpoint": {},
+   "coords_um_sample": []
+  },
+  "B_psi_overshoot_max_V": 0.0,
+  "B_PE_violation_edges": 0,
+  "B_PE_violation_edges_subset_of_negative_couple": true,
+  "B_negative_couple_edges_all_violating_or_contact": false,
+  "negative_couple_edges_midpoints_um": [
+   [
+    -0.15000000223517418,
+    0.0
+   ],
+   [
+    -0.07500000111758709,
+    0.0
+   ],
+   [
+    -0.02500000037252903,
+    0.0
+   ],
+   [
+    0.02500000037252903,
+    -2.0
+   ],
+   [
+    0.07500000111758709,
+    -2.0
+   ],
+   [
+    0.15000000223517418,
+    -2.0
+   ]
+  ]
+ },
+ "L3_after_D1": {
+  "cfg": {
+   "id": "L3_after_D1",
+   "kind": "2d",
+   "mesh": "L3_after",
+   "variant": "D1"
+  },
+  "n_negative_signed_couple_edges": 6,
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 111980.23225723628,
+  "B_ok": true,
+  "B_couple_model": "OvEdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 2.7730387721258417e-10,
+  "B_max_abs_HoleCurrent_A_per_cm2": 1.380921162263828e-10,
+  "B_max_abs_ElectronCurrent_x_couple": 1.9195286770706006e-15,
+  "B_max_abs_HoleCurrent_x_couple": 8.4149879113526155e-16,
+  "B_overshoot_psi": {
+   "n_nodes": 4,
+   "hop_histogram_to_negative_couple_endpoint": {
+    "0": 2,
+    "1": 2
+   },
+   "coords_um_sample": [
+    [
+     0.20000000298023224,
+     -2.0
+    ],
+    [
+     0.4000000059604645,
+     -2.0
+    ],
+    [
+     -0.4000000059604645,
+     0.0
+    ],
+    [
+     -0.20000000298023224,
+     0.0
+    ]
+   ]
+  },
+  "B_overshoot_n": {
+   "n_nodes": 6,
+   "hop_histogram_to_negative_couple_endpoint": {
+    "0": 2,
+    "1": 2,
+    "2": 2
+   },
+   "coords_um_sample": [
+    [
+     0.20000000298023224,
+     -2.0
+    ],
+    [
+     0.4000000059604645,
+     -2.0
+    ],
+    [
+     0.6000000238418579,
+     -2.0
+    ],
+    [
+     -0.6000000238418579,
+     0.0
+    ],
+    [
+     -0.4000000059604645,
+     0.0
+    ],
+    [
+     -0.20000000298023224,
+     0.0
+    ]
+   ]
+  },
+  "B_overshoot_p": {
+   "n_nodes": 6,
+   "hop_histogram_to_negative_couple_endpoint": {
+    "0": 2,
+    "1": 2,
+    "2": 2
+   },
+   "coords_um_sample": [
+    [
+     0.20000000298023224,
+     -2.0
+    ],
+    [
+     0.4000000059604645,
+     -2.0
+    ],
+    [
+     0.6000000238418579,
+     -2.0
+    ],
+    [
+     -0.6000000238418579,
+     0.0
+    ],
+    [
+     -0.4000000059604645,
+     0.0
+    ],
+    [
+     -0.20000000298023224,
+     0.0
+    ]
+   ]
+  },
+  "B_psi_overshoot_max_V": 1.4400398218927801e-05,
+  "B_PE_violation_edges": 6,
+  "B_PE_violation_edges_subset_of_negative_couple": true,
+  "B_negative_couple_edges_all_violating_or_contact": true,
+  "negative_couple_edges_midpoints_um": [
+   [
+    -0.15000000223517418,
+    0.0
+   ],
+   [
+    -0.07500000111758709,
+    0.0
+   ],
+   [
+    -0.02500000037252903,
+    0.0
+   ],
+   [
+    0.02500000037252903,
+    -2.0
+   ],
+   [
+    0.07500000111758709,
+    -2.0
+   ],
+   [
+    0.15000000223517418,
+    -2.0
+   ]
+  ]
+ }
+}

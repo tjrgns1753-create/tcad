@@ -1,0 +1,61 @@
+{
+ "status_carried_from_7HD1": {"A": "PROVISIONAL", "contact_current_float64_cause": "HYPOTHESIS_SUPPORTED_BY_ULP_CORRELATION (not yet confirmed by controlled intervention)"},
+ "physics": "identical to 7H-D1 (J1 junction, NA=ND=1e17 cm^-3, T=300 K, taun=taup=1e-8 s, domain x in [-0.5,0.5] um, 2D height 0.1 um = 1e-5 cm, ohmic contacts, production setup functions unmodified)",
+ "solver": {
+  "poisson": {"absolute_error": 1e-10, "relative_error": 1e-10, "maximum_iterations": 50},
+  "drift_diffusion": {"absolute_error": 1e30, "relative_error": 1e-10, "maximum_iterations": 50},
+  "acceptance": "info=True converged AND final device relative update < 1e-10 (identical in every precision variant)"
+ },
+ "precision_variants": {"P0": [false, false, false], "P1": [true, false, false], "P2": [false, true, false], "P3": [false, false, true], "P4": [true, true, true],
+                        "order": ["extended_model", "extended_equation", "extended_solver"],
+                        "scope": "global set_parameter (manual 9.3.2); set explicitly (False too) at process start and read back; a run whose readback differs aborts"},
+ "fixtures": {
+  "R1": "1D J1, h = 0.02, 0.01, 0.005, 0.0025, 0.00125, 0.000625, 0.0003125 um (finer levels only as precision reference), all P0-P4",
+  "R2": "M2 D0 (structured right triangles), h = 0.02, 0.005, 0.00125 um, all P0-P4",
+  "R3": "M1 D0 (irregular non-obtuse), h = 0.02, 0.005, 0.00125 um, all P0-P4",
+  "R4": "M3 D1 (Delaunay-obtuse, signed override), h = 0.02, 0.005, 0.00125 um, all P0-P4; plus h = 0.0025 um P0 and P4 for the -0.10 V sign-crossing analysis",
+  "mirror": "1D h = 0.005 and M1 D0 h = 0.005 with x -> -x (mesh and doping), bias on the p contact (right), P0 and P4",
+  "sources": "h 0.02/0.005/0.0025 from 7H-D1 fixtures_d1.json (read-only); h 0.00125 from data/fixtures_d2.json (7H-D1 builder)"
+ },
+ "bias": "p contact: +0.025..+0.10 V (record +0.05, +0.10) from the 0 V DD state; rebuilt device -0.025..-0.10 V (record -0.10); 0 V recorded",
+ "stop_condition": "per run 3600 s wall time or crash -> NOT_COMPLETED, no retry",
+ "observables": {
+  "C0": "get_contact_current(ECE) + get_contact_current(HCE) per contact",
+  "C1": "sum over edges with exactly one contact node of (Jn+Jp)*couple_used, +1 if the contact node is n0",
+  "C2": "cuts x_c = -0.25, -0.10, 0, +0.10, +0.25 um; L = {x < x_c}, R = {x >= x_c} (node on the cut -> R); each L-R edge once; +1 if n0 in L; couple_used = OvEdgeCouple (D1) else EdgeCouple; 1D couple 1",
+  "C3": "between consecutive cuts: dI_n vs +q sum(USRH*V), dI_p vs -q sum(USRH*V), dI_total vs 0; V = node volume used by the equations",
+  "units": "1D A/cm^2, 2D A/cm per unit depth"
+ },
+ "tolerances": {
+  "derivation": "a conserved-current observable used to certify a reference whose 7H-D1 uncertainty was 7.4e-5 must agree to at least 10x better: 1e-5 relative",
+  "tau_rel": 1e-05,
+  "zero_bias": "|I| <= 1e-6 * |I(-0.10 V)| of the same run and observable",
+  "same_h_M2_vs_1D": 1e-08,
+  "C1_vs_C0_couple_identity": "|C1 - C0| <= 1e-10 |C0| + 1e-30"
+ },
+ "reproduction_P0": "P0 reproduces the 7H-D1 defect iff 1D h = 0.00125 um at +-0.10 V has |C0_left + C0_right| / |C0_left| > 1e-5",
+ "restoration": {
+  "per_flag": "variant Pk restores iff on every completed run of Pk at +0.05/+0.10/-0.10 V: (a) |C0_left + C0_right|/|C0_left| <= 1e-5; (b) 5-cut spread max|I_cut - median|/|median| <= 1e-5; (c) |C0_left - I_cut(0)|/|I_cut(0)| <= 1e-5; and (d) the 1D C0_left sequence over h 0.0025, 0.00125, 0.000625, 0.0003125 has strictly decreasing successive changes and finest change <= 1e-3 relative, at every bias",
+  "verdicts": "P1 restores -> FLOAT64_MODEL_CANCELLATION_CONFIRMED; P2 -> FLOAT64_EQUATION_ASSEMBLY_CONFIRMED; P3 -> FLOAT64_SOLVER_PRECISION_CONFIRMED (several allowed). P4 restores but no single flag -> float64 causal, attribution INCONCLUSIVE. P4 does not restore and its (a) mismatch is within a factor 2 of P0 everywhere -> PRECISION_NOT_CAUSAL; otherwise INCONCLUSIVE"
+ },
+ "cut_certification": {
+  "mode": "the restoring single-flag variant(s), else P4",
+  "INTERIOR_CUT_CURRENT_CERTIFIED iff": "in that mode: 5-cut spread <= 1e-5 (all runs, biased points); |C0_left - I_cut(0)| and |C0_right + I_cut(0)| <= 1e-5 relative; M2(h) cut currents vs 1D(h) <= 1e-8 relative; mirror: |I_m(-x_c) + I(x_c)| <= 1e-5 |I(x_c)| at all 5 cuts; C3 |dI_n - q int U| and |dI_p + q int U| <= 1e-5 |I_cut(0)|; C1 vs C0 couple identity; zero-bias rule",
+  "INTERIOR_CUT_CURRENT_NOT_CONSERVATIVE iff": "C3 total (dI_total) exceeds 1e-5 |I_cut(0)| in that mode",
+  "INTERIOR_CUT_CURRENT_POSITION_DEPENDENT iff": "C3 holds but the 5-cut spread exceeds 1e-5",
+  "else": "INCONCLUSIVE"
+ },
+ "A_reevaluation": {
+  "mode": "certifying precision mode (P4 unless a single flag certifies)",
+  "reference": "1D cut current I_cut(0) at h = 0.0003125 um; U_ref = |I(0.0003125) - I(0.000625)| / |I(0.0003125)|; converged iff U_ref <= 0.01 and the successive changes over the finest 3 changes strictly decrease",
+  "potential_reference": "1D P4 h = 0.0003125 um psi (per-side 4-point Lagrange, 7H-D1 interp); U_psi = finest-pair change",
+  "M2": "same-h vs 1D: cut currents <= 1e-8 rel, psi <= 1e-9 V",
+  "M1_and_M2": "e_psi, e_logc (0 V), and every-cut current error strictly decrease over h 0.02 > 0.005 > 0.00125; finest e_psi <= max(5 U_psi, 1e-6 V); finest current error (every cut, every bias) <= max(5 U_ref, 0.02); cut spread <= 1e-5; positivity; qf <= 1e-6 V; mass action <= 1e-6; zero-bias rule; every solve accepted",
+  "verdict": "NONOBTUSE_DEFAULT_SG_DD_CONVERGENCE_VALIDATED iff all of the above for M1 D0 and M2 D0; scope = this symmetric 1e17 abrupt junction, one region, 300 K, DEVSIM 2.11.0"
+ },
+ "M3_D1": {
+  "verdict": "SIGNED_OVERRIDE_CONVERGENCE_VALIDATED_FOR_NONNEGATIVE_TRANSMISSIBILITY iff the A conditions hold for M3 D1 plus 0 negative signed couples and node volumes (fixtures) and C1 vs C0 couple identity; also E_peak and y-variation errors strictly decrease over the 3 levels",
+  "sign_crossing_classification_at_-0.10V": "noise iff |e_P0 - e_P4| > 0.5 |e_P4| at the same h; spatial discretization iff not noise and |e(0.00125)| < |e(0.0025)| < ... measured in the certifying mode; override problem suspected iff not noise and |e(0.00125)| >= |e(0.0025)|"
+ },
+ "terminal_current": "TERMINAL_CURRENT_REMAINS_NUMERICALLY_UNRESOLVED iff no precision variant restores C0 per restoration (a)-(d)"
+}

@@ -1,0 +1,43 @@
+--- a/tcad/cli/run_pipeline.py
++++ b/tcad/cli/run_pipeline.py
+@@ -62,8 +62,15 @@
+     )
+ 
+     kind = cfg["kind"]
++    # The CLI recipe is the user's own numeric declaration of an
++    # electrically active analytic profile; it says so explicitly (and a
++    # config may override it with "CHEMICAL"/"UNKNOWN") instead of relying
++    # on any library default. An invalid value raises ValueError below.
++    chemical_state = cfg.get("chemical_state", "ACTIVE")
+     if kind == "uniform":
+-        return apply_uniform_doping(process_result, cfg["doping_by_region_cm3"])
++        return apply_uniform_doping(
++            process_result, cfg["doping_by_region_cm3"],
++            chemical_state=chemical_state)
+     if kind == "step_junction":
+         return apply_step_junction_doping(
+             process_result,
+@@ -72,6 +79,7 @@
+             junction_position_um=cfg["junction_position_um"],
+             donor_conc_cm3=cfg["donor_conc_cm3"],
+             acceptor_conc_cm3=cfg["acceptor_conc_cm3"],
++            chemical_state=chemical_state,
+         )
+     if kind == "gaussian_implant":
+         return apply_gaussian_implant_doping(
+@@ -81,6 +89,7 @@
+             peak_position_um=cfg["peak_position_um"],
+             straggle_um=cfg["straggle_um"],
+             peak_conc_cm3=cfg["peak_conc_cm3"],
++            chemical_state=chemical_state,
+         )
+     if kind == "implant_windows":
+         return apply_implant_windows_doping(
+@@ -89,6 +98,7 @@
+             axis=cfg["axis"],
+             background_doping_cm3=cfg["background_doping_cm3"],
+             windows=cfg["windows"],
++            chemical_state=chemical_state,
+         )
+     raise ValueError(f"Unknown doping kind: {kind!r}")
+ 

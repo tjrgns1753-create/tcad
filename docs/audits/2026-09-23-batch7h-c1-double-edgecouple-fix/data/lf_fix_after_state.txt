@@ -1,0 +1,8 @@
+=== AFTER state (corrected CR counts, independently re-verified) ===
+tcad/device/devsim/solve.py sha256=67857f5faa798cd19c4d0b36e1c7335b5dbddeec85a4aca9cc83f7b8b7b048b0 CR_bytes=0 total_lines=134
+tests/integration/test_basic_potential_linear_precision_real.py sha256=6669858e155501dbc0ab6d4c7f8e31a65f3dc4a5e1772b642867d5d21c91caac CR_bytes=0 total_lines=208
+--- clean-env diff --check (both files) ---
+clean_rc=0
+--- normal-env diff --check ---
+warning: in the working copy of 'tcad/device/devsim/solve.py', LF will be replaced by CRLF the next time Git touches it
+normal_rc=0

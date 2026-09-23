@@ -1,0 +1,787 @@
+{
+ "0.005": {
+  "h": 0.005,
+  "steps": {
+   "0.000": {
+    "info_ok": true,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 3.0136659188428982e-24,
+      "HoleContinuityEquation": 1.5905091456000048e-10,
+      "total": 1.590509145600035e-10
+     },
+     "right": {
+      "ElectronContinuityEquation": -3.1810182912000096e-10,
+      "HoleContinuityEquation": -1.5068329594214491e-24,
+      "total": -3.1810182912000246e-10
+     }
+    }
+   },
+   "+0.025": {
+    "info_ok": true,
+    "rel": 7.796527922077707e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.223992644865781e-11,
+      "HoleContinuityEquation": 4.4159683560166785e-08,
+      "total": 4.422192348661544e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.426571750320678e-08,
+      "HoleContinuityEquation": -3.102521173578655e-11,
+      "total": -4.4296742714942566e-08
+     }
+    }
+   },
+   "+0.050": {
+    "info_ok": true,
+    "rel": 8.94850346981714e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 2.251300583532364e-10,
+      "HoleContinuityEquation": 1.1084466677857705e-07,
+      "total": 1.1106979683693028e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -1.1084466677857705e-07,
+      "HoleContinuityEquation": -1.1222054798045656e-10,
+      "total": -1.109568873265575e-07
+     }
+    }
+   },
+   "+0.075": {
+    "info_ok": true,
+    "rel": 4.680462631849464e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.516760187546475e-10,
+      "HoleContinuityEquation": 2.1721400925651345e-07,
+      "total": 2.178656852752681e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -2.1700194137043347e-07,
+      "HoleContinuityEquation": -3.2483568938524135e-10,
+      "total": -2.1732677705981872e-07
+     }
+    }
+   },
+   "+0.100": {
+    "info_ok": true,
+    "rel": 1.1642545907224278e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 1.7688481947217665e-09,
+      "HoleContinuityEquation": 3.8929270735950004e-07,
+      "total": 3.910615555542218e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -3.906290809939803e-07,
+      "HoleContinuityEquation": -8.816892204594618e-10,
+      "total": -3.9151077021443976e-07
+     }
+    }
+   },
+   "-0.025": {
+    "info_ok": true,
+    "rel": 5.833454220511039e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -2.381805238226311e-11,
+      "HoleContinuityEquation": -3.181537219464492e-08,
+      "total": -3.183919024702718e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 3.0945778544324806e-08,
+      "HoleContinuityEquation": 1.1873128244271654e-11,
+      "total": 3.095765167256908e-08
+     }
+    }
+   },
+   "-0.050": {
+    "info_ok": true,
+    "rel": 7.372435031893398e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.2969268399651745e-11,
+      "HoleContinuityEquation": -5.592080823896864e-08,
+      "total": -5.595377750736829e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 5.6419283088648746e-08,
+      "HoleContinuityEquation": 1.6435187983136974e-11,
+      "total": 5.643571827663188e-08
+     }
+    }
+   },
+   "-0.075": {
+    "info_ok": true,
+    "rel": 3.723414187575251e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.6521548508425196e-11,
+      "HoleContinuityEquation": -7.65265475760118e-08,
+      "total": -7.656306912452023e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 7.631447968993181e-08,
+      "HoleContinuityEquation": 1.820626653048704e-11,
+      "total": 7.633268595646229e-08
+     }
+    }
+   },
+   "-0.100": {
+    "info_ok": true,
+    "rel": 9.654222913550468e-11,
+    "iterations": 4,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.7936224931206386e-11,
+      "HoleContinuityEquation": -9.500065870577465e-08,
+      "total": -9.503859493070586e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 9.478859081969465e-08,
+      "HoleContinuityEquation": 1.8911765248883693e-11,
+      "total": 9.480750258494354e-08
+     }
+    }
+   }
+  },
+  "n_nodes": 202
+ },
+ "0.0025": {
+  "h": 0.0025,
+  "steps": {
+   "0.000": {
+    "info_ok": true,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 3.01366591884298e-24,
+      "HoleContinuityEquation": 1.060339430400032e-10,
+      "total": 1.060339430400062e-10
+     },
+     "right": {
+      "ElectronContinuityEquation": -2.120678860800064e-10,
+      "HoleContinuityEquation": -1.50683295942149e-24,
+      "total": -2.1206788608000789e-10
+     }
+    }
+   },
+   "+0.025": {
+    "info_ok": true,
+    "rel": 5.980774952062606e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.222934587630801e-11,
+      "HoleContinuityEquation": 4.5580769031688236e-08,
+      "total": 4.5642998377564546e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.568680297472824e-08,
+      "HoleContinuityEquation": -3.101989760824094e-11,
+      "total": -4.5717822872336484e-08
+     }
+    }
+   },
+   "+0.050": {
+    "info_ok": true,
+    "rel": 3.584757925850285e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 2.2509208888473825e-10,
+      "HoleContinuityEquation": 1.1368683772162058e-07,
+      "total": 1.1391192981050531e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -1.1368683772162058e-07,
+      "HoleContinuityEquation": -1.1220147714794117e-10,
+      "total": -1.1379903919876852e-07
+     }
+    }
+   },
+   "+0.075": {
+    "info_ok": true,
+    "rel": 8.115853751896994e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.515670145325902e-10,
+      "HoleContinuityEquation": 2.2289835114260037e-07,
+      "total": 2.2354991815713296e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -2.2410736872804064e-07,
+      "HoleContinuityEquation": -3.247809383800925e-10,
+      "total": -2.2443214966642074e-07
+     }
+    }
+   },
+   "+0.100": {
+    "info_ok": true,
+    "rel": 5.086794169502535e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 1.7685548714242016e-09,
+      "HoleContinuityEquation": 4.0131891689591277e-07,
+      "total": 4.0308747176733697e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.02103798709193e-07,
+      "HoleContinuityEquation": -8.815418844406962e-10,
+      "total": -4.029853405936337e-07
+     }
+    }
+   },
+   "-0.025": {
+    "info_ok": true,
+    "rel": 5.88894871084797e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -2.3813942547727647e-11,
+      "HoleContinuityEquation": -3.1157846430405655e-08,
+      "total": -3.118166037295338e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 3.105181248736565e-08,
+      "HoleContinuityEquation": 1.1871064155401437e-11,
+      "total": 3.106368355152105e-08
+     }
+    }
+   },
+   "-0.050": {
+    "info_ok": true,
+    "rel": 2.7875602462874713e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.2963539332798015e-11,
+      "HoleContinuityEquation": -5.663135097473028e-08,
+      "total": -5.666431451406308e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 5.6419283088650274e-08,
+      "HoleContinuityEquation": 1.6432310730664704e-11,
+      "total": 5.643571539938094e-08
+     }
+    }
+   },
+   "-0.075": {
+    "info_ok": true,
+    "rel": 4.575969678026582e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.651515898411778e-11,
+      "HoleContinuityEquation": -7.652654757601388e-08,
+      "total": -7.6563062734998e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 7.631447968993387e-08,
+      "HoleContinuityEquation": 1.8203057676109105e-11,
+      "total": 7.633268274760998e-08
+     }
+    }
+   },
+   "-0.100": {
+    "info_ok": true,
+    "rel": 5.737108641318629e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.792954431705501e-11,
+      "HoleContinuityEquation": -9.64217441772975e-08,
+      "total": -9.645967372161455e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 9.620967629121749e-08,
+      "HoleContinuityEquation": 1.890841031033963e-11,
+      "total": 9.622858470152782e-08
+     }
+    }
+   }
+  },
+  "n_nodes": 402
+ },
+ "0.00125": {
+  "h": 0.00125,
+  "steps": {
+   "0.000": {
+    "info_ok": true,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 3.0136659188428163e-24,
+      "HoleContinuityEquation": 2.1206788607999486e-10,
+      "total": 2.1206788607999788e-10
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.241357721599897e-10,
+      "HoleContinuityEquation": -1.5068329594214082e-24,
+      "total": -4.241357721599912e-10
+     }
+    }
+   },
+   "+0.025": {
+    "info_ok": true,
+    "rel": 5.019210513241821e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.222669194108382e-11,
+      "HoleContinuityEquation": 4.5474735088645763e-08,
+      "total": 4.553696178058685e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.5474735088645763e-08,
+      "HoleContinuityEquation": -3.101856459800395e-11,
+      "total": -4.550575365324377e-08
+     }
+    }
+   },
+   "+0.050": {
+    "info_ok": true,
+    "rel": 6.794173156590454e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 2.25082564752438e-10,
+      "HoleContinuityEquation": 1.136868377216144e-07,
+      "total": 1.1391192028636684e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -1.136868377216144e-07,
+      "HoleContinuityEquation": -1.1219669326694646e-10,
+      "total": -1.1379903441488135e-07
+     }
+    }
+   },
+   "+0.075": {
+    "info_ok": true,
+    "rel": 6.0217709804665945e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.515396717569191e-10,
+      "HoleContinuityEquation": 2.2431943661410845e-07,
+      "total": 2.2497097628586536e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -2.2694953967106881e-07,
+      "HoleContinuityEquation": -3.247672040139167e-10,
+      "total": -2.2727430687508273e-07
+     }
+    }
+   },
+   "+0.100": {
+    "info_ok": true,
+    "rel": 8.468364570359094e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 1.768481292351145e-09,
+      "HoleContinuityEquation": 4.0274000236741115e-07,
+      "total": 4.045084836597623e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.018917308230912e-07,
+      "HoleContinuityEquation": -8.815049245485302e-10,
+      "total": -4.027732357476397e-07
+     }
+    }
+   },
+   "-0.025": {
+    "info_ok": true,
+    "rel": 5.4579025689547744e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -2.381291173337255e-11,
+      "HoleContinuityEquation": -3.105181248736396e-08,
+      "total": -3.107562539909734e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 3.368191554432433e-08,
+      "HoleContinuityEquation": 1.1870546430939814e-11,
+      "total": 3.369378609075527e-08
+     }
+    }
+   },
+   "-0.050": {
+    "info_ok": true,
+    "rel": 2.280377674370308e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.2962102424991285e-11,
+      "HoleContinuityEquation": -5.6631350974727206e-08,
+      "total": -5.6664313077152195e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 5.641928308864721e-08,
+      "HoleContinuityEquation": 1.6431589067260273e-11,
+      "total": 5.6435714677714474e-08
+     }
+    }
+   },
+   "-0.075": {
+    "info_ok": true,
+    "rel": 5.3151425378878e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.651355645485529e-11,
+      "HoleContinuityEquation": -7.652654757600973e-08,
+      "total": -7.656306113246458e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 7.915665063297008e-08,
+      "HoleContinuityEquation": 1.8202252854399857e-11,
+      "total": 7.917485288582447e-08
+     }
+    }
+   },
+   "-0.100": {
+    "info_ok": true,
+    "rel": 2.5686700654315244e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.792786880355515e-11,
+      "HoleContinuityEquation": -9.642174417729224e-08,
+      "total": -9.645967204609579e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 9.620967629121226e-08,
+      "HoleContinuityEquation": 1.890756885684859e-11,
+      "total": 9.62285838600691e-08
+     }
+    }
+   }
+  },
+  "n_nodes": 802
+ },
+ "0.000625": {
+  "h": 0.000625,
+  "steps": {
+   "0.000": {
+    "info_ok": true,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 0.0,
+      "HoleContinuityEquation": 0.0,
+      "total": 0.0
+     },
+     "right": {
+      "ElectronContinuityEquation": 0.0,
+      "HoleContinuityEquation": 0.0,
+      "total": 0.0
+     }
+    }
+   },
+   "+0.025": {
+    "info_ok": true,
+    "rel": 1.1703152031462246e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.222602790886807e-11,
+      "HoleContinuityEquation": 4.54747350886507e-08,
+      "total": 4.5536961116559565e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.54747350886507e-08,
+      "HoleContinuityEquation": -3.101823106714195e-11,
+      "total": -4.550575331971784e-08
+     }
+    }
+   },
+   "+0.050": {
+    "info_ok": true,
+    "rel": 9.010061728130607e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 2.250801817381922e-10,
+      "HoleContinuityEquation": 1.1368683772162675e-07,
+      "total": 1.1391191790336494e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -1.1368683772162675e-07,
+      "HoleContinuityEquation": -1.1219549629183953e-10,
+      "total": -1.1379903321791859e-07
+     }
+    }
+   },
+   "+0.075": {
+    "info_ok": true,
+    "rel": 7.782568375381952e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.515328303360602e-10,
+      "HoleContinuityEquation": 2.212651977850121e-07,
+      "total": 2.2191673061534817e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -2.2652540389893341e-07,
+      "HoleContinuityEquation": -3.2476376751976626e-10,
+      "total": -2.268501676664532e-07
+     }
+    }
+   },
+   "+0.100": {
+    "info_ok": true,
+    "rel": 1.1674839510695662e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 1.768462882059926e-09,
+      "HoleContinuityEquation": 4.027400023674549e-07,
+      "total": 4.045084652495148e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.0757607270921613e-07,
+      "HoleContinuityEquation": -8.814956767143267e-10,
+      "total": -4.0845756838593046e-07
+     }
+    }
+   },
+   "-0.025": {
+    "info_ok": true,
+    "rel": 1.7278708080484325e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -2.381265381950295e-11,
+      "HoleContinuityEquation": -3.4106051316488025e-08,
+      "total": -3.412986397030753e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 3.4106051316488025e-08,
+      "HoleContinuityEquation": 1.1870416893017088e-11,
+      "total": 3.4117921733381044e-08
+     }
+    }
+   },
+   "-0.050": {
+    "info_ok": true,
+    "rel": 2.4182029916346024e-13,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.29617429065916e-11,
+      "HoleContinuityEquation": -5.6843418860813375e-08,
+      "total": -5.687638060371997e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 5.6843418860813375e-08,
+      "HoleContinuityEquation": 1.6431408503406928e-11,
+      "total": 5.6859850269316785e-08
+     }
+    }
+   },
+   "-0.075": {
+    "info_ok": true,
+    "rel": 1.067995121365766e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.6513155499447574e-11,
+      "HoleContinuityEquation": -7.958078640513871e-08,
+      "total": -7.961729956063815e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 7.958078640513871e-08,
+      "HoleContinuityEquation": 1.820205148487085e-11,
+      "total": 7.959898845662358e-08
+     }
+    }
+   },
+   "-0.100": {
+    "info_ok": true,
+    "rel": 4.810335538837709e-15,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.7927449589085823e-11,
+      "HoleContinuityEquation": -9.09494701773014e-08,
+      "total": -9.098739762689049e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 9.09494701773014e-08,
+      "HoleContinuityEquation": 1.8907358322843267e-11,
+      "total": 9.096837753562424e-08
+     }
+    }
+   }
+  },
+  "n_nodes": 1602
+ },
+ "0.0003125": {
+  "h": 0.0003125,
+  "steps": {
+   "0.000": {
+    "info_ok": true,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 0.0,
+      "HoleContinuityEquation": 0.0,
+      "total": 0.0
+     },
+     "right": {
+      "ElectronContinuityEquation": 0.0,
+      "HoleContinuityEquation": 0.0,
+      "total": 0.0
+     }
+    }
+   },
+   "+0.025": {
+    "info_ok": true,
+    "rel": 1.3389414474963872e-13,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.222586186643386e-11,
+      "HoleContinuityEquation": 4.5474735088640833e-08,
+      "total": 4.5536960950507266e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.5474735088640833e-08,
+      "HoleContinuityEquation": -3.1018147666935413e-11,
+      "total": -4.550575323630777e-08
+     }
+    }
+   },
+   "+0.050": {
+    "info_ok": true,
+    "rel": 1.4517026041013167e-13,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 2.2507958586044204e-10,
+      "HoleContinuityEquation": 1.1368683772160208e-07,
+      "total": 1.1391191730746253e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -1.1368683772160208e-07,
+      "HoleContinuityEquation": -1.1219519698491508e-10,
+      "total": -1.1379903291858699e-07
+     }
+    }
+   },
+   "+0.075": {
+    "info_ok": true,
+    "rel": 5.26391326291358e-13,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 6.515311196219472e-10,
+      "HoleContinuityEquation": 2.2737367544320416e-07,
+      "total": 2.2802520656282611e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -2.2737367544320416e-07,
+      "HoleContinuityEquation": -3.2476290821380176e-10,
+      "total": -2.2769843835141796e-07
+     }
+    }
+   },
+   "+0.100": {
+    "info_ok": true,
+    "rel": 1.1311285512453234e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": 1.768458278513909e-09,
+      "HoleContinuityEquation": 4.084243442534476e-07,
+      "total": 4.101928025319615e-07
+     },
+     "right": {
+      "ElectronContinuityEquation": -4.075760727091277e-07,
+      "HoleContinuityEquation": -8.814933642615072e-10,
+      "total": -4.084575660733892e-07
+     }
+    }
+   },
+   "-0.025": {
+    "info_ok": true,
+    "rel": 2.222420932297398e-13,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -2.38125893278248e-11,
+      "HoleContinuityEquation": -3.410605131648062e-08,
+      "total": -3.4129863905808446e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 2.2737367544320417e-08,
+      "HoleContinuityEquation": 1.1870384501763002e-11,
+      "total": 2.274923792882218e-08
+     }
+    }
+   },
+   "-0.050": {
+    "info_ok": true,
+    "rel": 1.3455588086752439e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.2961653008713455e-11,
+      "HoleContinuityEquation": -5.684341886080104e-08,
+      "total": -5.687638051380975e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 4.5474735088640833e-08,
+      "HoleContinuityEquation": 1.6431363353079986e-11,
+      "total": 4.5491166451993913e-08
+     }
+    }
+   },
+   "-0.075": {
+    "info_ok": true,
+    "rel": 1.0385031639673849e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.6513055240320225e-11,
+      "HoleContinuityEquation": -7.958078640512145e-08,
+      "total": -7.961729946036178e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 6.821210263296124e-08,
+      "HoleContinuityEquation": 1.8202001132112377e-11,
+      "total": 6.823030463409335e-08
+     }
+    }
+   },
+   "-0.100": {
+    "info_ok": true,
+    "rel": 1.250857738570129e-14,
+    "iterations": 5,
+    "currents": {
+     "left": {
+      "ElectronContinuityEquation": -3.792734476442317e-11,
+      "HoleContinuityEquation": -9.094947017728167e-08,
+      "total": -9.098739752204609e-08
+     },
+     "right": {
+      "ElectronContinuityEquation": 9.094947017728167e-08,
+      "HoleContinuityEquation": 1.8907305678619237e-11,
+      "total": 9.096837748296028e-08
+     }
+    }
+   }
+  },
+  "n_nodes": 3202
+ }
+}

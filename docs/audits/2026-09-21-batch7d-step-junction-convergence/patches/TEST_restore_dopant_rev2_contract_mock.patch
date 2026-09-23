@@ -1,0 +1,57 @@
+--- a/tests/unit/test_dopant_rev2_contract_mock.py
++++ b/tests/unit/test_dopant_rev2_contract_mock.py
+@@ -1,6 +1,6 @@
+ #!/usr/bin/env python3
+ # -*- coding: utf-8 -*-
+-"""Batch 7C Rev.2 -- no implicit ACTIVE, exact reattach support, compensated transport fail-closed.
++"""Batch 7C Rev.2 / 7D -- no implicit ACTIVE, exact reattach support, compensated transport fail-closed.
+ 
+ A. helper contract   the four apply_*_doping helpers have NO default activation state: omitting it is a TypeError, an explicit
+                      ACTIVE / CHEMICAL / UNKNOWN is preserved, an invalid string is a ValueError; and no production call site omits it (AST scan --
+@@ -10,8 +10,11 @@
+                      blocked by the DevSim gate; uniform / step_junction may declare ACTIVE.
+ C. compensated       canonical concentrations stay (N_D, N_A, N_D - N_A) but a finite-area donor + acceptor coexistence, or one whose relation
+                      cannot be proven, makes the central DevSim gate (`canonical_node_doping` via `apply_doping`) raise UNSUPPORTED_BY_MODEL /
+-                     COMPENSATED_TRANSPORT_MODEL_MISSING: 0 DevSim writes, 0 solves. Single polarity and an ideal step junction (opposite sides,
+-                     exactly ONE polarity at the junction coordinate) stay supported.
++                     COMPENSATED_TRANSPORT_MODEL_MISSING: 0 DevSim writes, 0 solves. Single polarity and an ideal step junction (opposite sides)
++                     stay supported. (Batch 7D: the step junction uses DEVSIM's own official step() convention -- Donors=Nd*step(x-xj),
++                     Acceptors=Na*step(xj-x) -- so BOTH fire on the junction line; that line is measure-zero, not a finite area, so it is
++                     correctly NOT compensated. Rev.2's strict one-sided junction was reverted per Codex: it changed a real device's current
++                     ratio, which was mesh/discontinuity sensitivity, not a physical improvement.)
+ D. exact reattach    the request's desired support (current geometry + the same barrier carve as an application) must equal the attachment's
+                      support EXACTLY -- subset, superset, another carve, unknown or outside support all fail; a geometry step that clips both
+                      identically still matches. Judged through the real GUI run_doping(reattach=True) with the exact last_doped_result / history /
+@@ -227,14 +230,15 @@
+     assert [a.polarity for a in ss.attachments] == ["donor", "acceptor"]
+     b, rc, w, sv, _ = dm_blocked(ss, points=((-1.0, -0.5), (0.0, -0.5), (1.0, -0.5)))
+     assert not b and sorted(set(w)) == ["Acceptors", "Donors", "NetDoping"], (b, rc)
++    # official DEVSIM step() convention (diode_common.py::SetNetDoping): BOTH fire on the
++    # junction line itself (Donors=Nd, Acceptors=Na there), net = Nd-Na; this is a measure-zero
++    # LINE, not a finite area, so it is correctly NOT flagged as a compensated region (below).
+     on_junction, left, right = q(ss, 0.0), q(ss, -1.0), q(ss, 1.0)
+-    assert on_junction == (1e17, 0.0, 1e17), f"exactly ONE polarity at the junction coordinate, got {on_junction}"
++    assert on_junction == (1e17, 1e17, 0.0), f"official step() convention: both polarities on the junction line, got {on_junction}"
+     assert left == (0.0, 1e17, -1e17) and right == (1e17, 0.0, 1e17), (left, right)
+-    for x in (-1e-9, 0.0, 1e-9):
+-        d, a, n = q(ss, x)
+-        assert (d > 0) + (a > 0) == 1, f"both polarities present at x={x}: {d}, {a}"
+     print(f"C controls: single polarity -> gate passes, {len(set(w))} DevSim models written; disjoint donor/acceptor windows pass; "
+-          f"ideal Step Junction 1e17/1e17 passes; at the junction x=0 donor/acceptor/net = {on_junction} (one polarity only), left {left}, right {right}")
++          f"ideal Step Junction 1e17/1e17 passes; at the junction x=0 donor/acceptor/net = {on_junction} (official step() convention, both fire), "
++          f"left {left}, right {right}")
+ 
+     # state-level analysis is pure and exact
+     assert v2.compensated_transport_problems(s1, "Si") == [] and v2.compensated_transport_problems(ss, "Si") == []
+@@ -366,8 +370,9 @@
+     part_b()
+     part_c()
+     part_d()
+-    print("BATCH 7C REV.2 CONTRACT: no implicit ACTIVE (helpers + CLI), compensated transport fail-closed at the central gate, "
+-          "ideal step junction keeps exactly one polarity per x, reattach compares the exact desired support")
++    print("BATCH 7C REV.2 / 7D CONTRACT: no implicit ACTIVE (helpers + CLI), compensated transport fail-closed at the central gate, "
++          "ideal step junction uses DEVSIM's official step() convention (both polarities on the junction LINE, not compensated), "
++          "reattach compares the exact desired support")
+ 
+ 
+ if __name__ == "__main__":

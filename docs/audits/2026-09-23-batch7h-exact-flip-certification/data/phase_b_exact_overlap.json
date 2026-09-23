@@ -1,0 +1,9298 @@
+{
+ "L3": {
+  "K_power_of_two": 30,
+  "dtype": "float32",
+  "n_points": 2921,
+  "n_triangles": 5760
+ },
+ "exact_scan_before": {
+  "cell": 26843648,
+  "counts": {
+   "DUPLICATE": 0,
+   "EXACT_BOUNDARY_TOUCH_ONLY": 35165,
+   "EXACT_DISJOINT": 16545,
+   "EXACT_POSITIVE_AREA_OVERLAP": 0,
+   "INVALID": 0
+  },
+  "n_candidate_pairs": 51710,
+  "positives": [],
+  "total_positive_area_exact": "0",
+  "total_positive_area_um2": 0.0
+ },
+ "exact_scan_rev1_after": {
+  "cell": 26843648,
+  "counts": {
+   "DUPLICATE": 0,
+   "EXACT_BOUNDARY_TOUCH_ONLY": 35180,
+   "EXACT_DISJOINT": 14831,
+   "EXACT_POSITIVE_AREA_OVERLAP": 0,
+   "INVALID": 0
+  },
+  "n_candidate_pairs": 50011,
+  "positives": [],
+  "total_positive_area_exact": "0",
+  "total_positive_area_um2": 0.0
+ },
+ "method_comparison_before": {
+  "claimed_by_exact_verdict": {
+   "EXACT_BOUNDARY_TOUCH_ONLY": 525,
+   "EXACT_DISJOINT": 0,
+   "EXACT_POSITIVE_AREA_OVERLAP": 0
+  },
+  "claimed_overlap_pairs": [
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     3,
+     541
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     5,
+     540
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     8,
+     9
+    ],
+    "sat_min_overlap": 1.1102230246251565e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     9,
+     544
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     11,
+     549
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0016666650772094727,
+    "pair": [
+     13,
+     551
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     15,
+     550
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0031452924013137817,
+    "pair": [
+     15,
+     554
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004598900675773621,
+    "pair": [
+     18,
+     755
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.195638656616211e-08,
+    "pair": [
+     25,
+     26
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.195638656616211e-08,
+    "pair": [
+     26,
+     219
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.777444362640381e-06,
+    "pair": [
+     32,
+     37
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6850419342517853e-05,
+    "pair": [
+     39,
+     41
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.7202069759368896e-05,
+    "pair": [
+     108,
+     122
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001139037311077118,
+    "pair": [
+     110,
+     187
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.858919858932495e-05,
+    "pair": [
+     111,
+     146
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.389773726463318e-06,
+    "pair": [
+     132,
+     138
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     132,
+     175
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007519498467445374,
+    "pair": [
+     163,
+     214
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.667842924594879e-05,
+    "pair": [
+     171,
+     173
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00014400482177734375,
+    "pair": [
+     172,
+     186
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.33996319770813e-06,
+    "pair": [
+     175,
+     210
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.244727849960327e-05,
+    "pair": [
+     193,
+     202
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00041666626930236816,
+    "pair": [
+     219,
+     252
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.01048828661441803,
+    "pair": [
+     224,
+     574
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.841038465499878e-05,
+    "pair": [
+     236,
+     598
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0014355406165122986,
+    "pair": [
+     242,
+     251
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.62396240234375e-05,
+    "pair": [
+     260,
+     275
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.450580596923828e-08,
+    "pair": [
+     288,
+     289
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     289,
+     290
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     290,
+     291
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0008552521467208862,
+    "pair": [
+     295,
+     296
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.7216970920562744e-05,
+    "pair": [
+     306,
+     308
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010319054126739502,
+    "pair": [
+     308,
+     317
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.2193721532821655e-06,
+    "pair": [
+     352,
+     498
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.047605812549591e-05,
+    "pair": [
+     358,
+     360
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1688098311424255e-05,
+    "pair": [
+     359,
+     365
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     386,
+     387
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3193115592002869e-05,
+    "pair": [
+     395,
+     400
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009448006749153137,
+    "pair": [
+     425,
+     845
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.924088716506958e-05,
+    "pair": [
+     426,
+     856
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013574287295341492,
+    "pair": [
+     460,
+     469
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.456408977508545e-05,
+    "pair": [
+     463,
+     469
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001220710575580597,
+    "pair": [
+     478,
+     505
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.441026926040649e-06,
+    "pair": [
+     490,
+     513
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003956019878387451,
+    "pair": [
+     519,
+     1107
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.940696716308594e-08,
+    "pair": [
+     521,
+     1106
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.006666630506515503,
+    "pair": [
+     521,
+     1109
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     522,
+     523
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     523,
+     1110
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     526,
+     527
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     527,
+     1112
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     528,
+     1116
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     528,
+     1117
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.007619142532348633,
+    "pair": [
+     529,
+     1117
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     530,
+     531
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     531,
+     1116
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     533,
+     1116
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     533,
+     1120
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.019999980926513672,
+    "pair": [
+     533,
+     1121
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     536,
+     1125
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     540,
+     1129
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     541,
+     1128
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     542,
+     543
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     542,
+     545
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     544,
+     545
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     546,
+     547
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     546,
+     549
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     546,
+     1132
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     546,
+     1134
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     547,
+     1134
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     549,
+     1134
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     549,
+     1135
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     550,
+     554
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     553,
+     554
+    ],
+    "sat_min_overlap": 1.1102230246251565e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     560,
+     561
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0016261991113424301,
+    "pair": [
+     568,
+     573
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.3052172511816025e-05,
+    "pair": [
+     575,
+     577
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000613093376159668,
+    "pair": [
+     646,
+     723
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00018641352653503418,
+    "pair": [
+     647,
+     734
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.33996319770813e-06,
+    "pair": [
+     681,
+     690
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.127140760421753e-05,
+    "pair": [
+     699,
+     750
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0019824206829071045,
+    "pair": [
+     729,
+     738
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.680671453475952e-05,
+    "pair": [
+     735,
+     737
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.876032471656799e-05,
+    "pair": [
+     757,
+     771
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.46758484840393e-06,
+    "pair": [
+     760,
+     1160
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.479421138763428e-05,
+    "pair": [
+     778,
+     787
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0012189075350761414,
+    "pair": [
+     783,
+     1185
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0875205993652344e-05,
+    "pair": [
+     796,
+     811
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     823,
+     824
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.21540641784668e-08,
+    "pair": [
+     824,
+     825
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     826,
+     827
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     827,
+     828
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000673830509185791,
+    "pair": [
+     869,
+     884
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     898,
+     1105
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0011517852544784546,
+    "pair": [
+     899,
+     1105
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.21540641784668e-08,
+    "pair": [
+     901,
+     902
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8298625946044922e-05,
+    "pair": [
+     904,
+     909
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3806467652320862e-05,
+    "pair": [
+     940,
+     945
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003574218600988388,
+    "pair": [
+     957,
+     966
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8792226910591125e-05,
+    "pair": [
+     963,
+     965
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     968,
+     969
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     972,
+     973
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     973,
+     974
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.962032496929169e-05,
+    "pair": [
+     977,
+     1427
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003903055563569069,
+    "pair": [
+     986,
+     1419
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0016894638538360596,
+    "pair": [
+     1063,
+     1090
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1103,
+     1693
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1106,
+     1108
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1108,
+     1109
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1108,
+     1110
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1108,
+     1111
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1109,
+     1694
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1111,
+     1694
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1112,
+     1113
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1116,
+     1118
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1116,
+     1705
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     1118,
+     1119
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     1118,
+     1121
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1122,
+     1123
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     1122,
+     1125
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00013172626495361328,
+    "pair": [
+     1125,
+     1713
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1128,
+     1129
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1131,
+     1717
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002666652202606201,
+    "pair": [
+     1133,
+     1721
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004487201571464539,
+    "pair": [
+     1139,
+     1411
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.1767717599868774e-06,
+    "pair": [
+     1157,
+     1159
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.07280570268631e-05,
+    "pair": [
+     1158,
+     1164
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.8906152844429016e-05,
+    "pair": [
+     1166,
+     1171
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.966292858123779e-06,
+    "pair": [
+     1182,
+     1196
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.466250538825989e-05,
+    "pair": [
+     1185,
+     1208
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.6191195249557495e-05,
+    "pair": [
+     1267,
+     1276
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009109750390052795,
+    "pair": [
+     1284,
+     1325
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.082677721977234e-05,
+    "pair": [
+     1285,
+     1336
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0012532547116279602,
+    "pair": [
+     1315,
+     1324
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.373971700668335e-06,
+    "pair": [
+     1321,
+     1323
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.154870450496674e-06,
+    "pair": [
+     1342,
+     1344
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.7937272787094116e-06,
+    "pair": [
+     1343,
+     1357
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.310425043106079e-05,
+    "pair": [
+     1346,
+     1393
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.118680953979492e-05,
+    "pair": [
+     1346,
+     1746
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.422928810119629e-05,
+    "pair": [
+     1364,
+     1373
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     1367,
+     1771
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.5272369384765625e-05,
+    "pair": [
+     1369,
+     1771
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002187483012676239,
+    "pair": [
+     1381,
+     1398
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00011904910206794739,
+    "pair": [
+     1406,
+     1863
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     1410,
+     1411
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     1412,
+     1413
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.1714717149734497e-05,
+    "pair": [
+     1419,
+     1466
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001279294490814209,
+    "pair": [
+     1437,
+     1446
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3439526557922363e-05,
+    "pair": [
+     1439,
+     1441
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.056468605995178e-05,
+    "pair": [
+     1440,
+     1446
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002705078572034836,
+    "pair": [
+     1455,
+     1470
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.705522537231445e-08,
+    "pair": [
+     1484,
+     1485
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0008453577756881714,
+    "pair": [
+     1508,
+     1625
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.0117888450622559e-05,
+    "pair": [
+     1543,
+     1552
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.66847962141037e-05,
+    "pair": [
+     1563,
+     2013
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6197562217712402e-05,
+    "pair": [
+     1570,
+     1576
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.900192677974701e-05,
+    "pair": [
+     1578,
+     1583
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.0947307348251343e-05,
+    "pair": [
+     1594,
+     1608
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009430088102817535,
+    "pair": [
+     1596,
+     2017
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009109750390052795,
+    "pair": [
+     1648,
+     1677
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005957037210464478,
+    "pair": [
+     1649,
+     1676
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.020000040531158447,
+    "pair": [
+     1693,
+     2281
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1698,
+     1701
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1701,
+     2288
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.006666660308837891,
+    "pair": [
+     1701,
+     2289
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1702,
+     1703
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1702,
+     1705
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1703,
+     2288
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1704,
+     1705
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1705,
+     2293
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1706,
+     1707
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1707,
+     2293
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1710,
+     1711
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1711,
+     2296
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1713,
+     2300
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1714,
+     1717
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1715,
+     2300
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1716,
+     1717
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1718,
+     1720
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1718,
+     1721
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     1725,
+     1726
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     1730,
+     1731
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.127140760421753e-06,
+    "pair": [
+     1743,
+     1745
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.790513336658478e-05,
+    "pair": [
+     1752,
+     1757
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.862645149230957e-06,
+    "pair": [
+     1767,
+     1769
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.798654794692993e-06,
+    "pair": [
+     1768,
+     1782
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.0972215831279755e-05,
+    "pair": [
+     1809,
+     1861
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.0150095224380493e-05,
+    "pair": [
+     1843,
+     1845
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.911795258522034e-06,
+    "pair": [
+     1859,
+     1861
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001026749610900879,
+    "pair": [
+     1870,
+     1911
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.30023467540741e-05,
+    "pair": [
+     1871,
+     1922
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.4647841453552246e-05,
+    "pair": [
+     1932,
+     2332
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.41758131980896e-05,
+    "pair": [
+     1944,
+     2356
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     1996,
+     1997
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.898096323013306e-06,
+    "pair": [
+     2002,
+     2016
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.674013376235962e-05,
+    "pair": [
+     2005,
+     2052
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.449330925941467e-05,
+    "pair": [
+     2023,
+     2032
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6041100025177002e-05,
+    "pair": [
+     2026,
+     2032
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.4789402484893799e-05,
+    "pair": [
+     2041,
+     2056
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000589277595281601,
+    "pair": [
+     2094,
+     2211
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.352652907371521e-05,
+    "pair": [
+     2095,
+     2222
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.3449381589889526e-05,
+    "pair": [
+     2112,
+     2117
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003908388316631317,
+    "pair": [
+     2129,
+     2138
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0700117349624634e-05,
+    "pair": [
+     2164,
+     2169
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000741761177778244,
+    "pair": [
+     2182,
+     2603
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0024145841598510742,
+    "pair": [
+     2183,
+     2614
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0010644607245922089,
+    "pair": [
+     2235,
+     2262
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     2278,
+     2279
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     2280,
+     2281
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2280,
+     2283
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2286,
+     2287
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2286,
+     2289
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2286,
+     2872
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2287,
+     2872
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2288,
+     2877
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     2290,
+     2292
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2291,
+     2876
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     2293,
+     2876
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2294,
+     2295
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     2294,
+     2297
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2298,
+     2300
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009999871253967285,
+    "pair": [
+     2305,
+     2893
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     2320,
+     2513
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.8677983209490776e-05,
+    "pair": [
+     2333,
+     2335
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.439560532569885e-05,
+    "pair": [
+     2402,
+     2416
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.414445281028748e-05,
+    "pair": [
+     2404,
+     2481
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.191828727722168e-05,
+    "pair": [
+     2405,
+     2440
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.4769455194473267e-05,
+    "pair": [
+     2405,
+     2492
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3237819075584412e-05,
+    "pair": [
+     2419,
+     2477
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.2349337339401245e-06,
+    "pair": [
+     2425,
+     2427
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004511719569563866,
+    "pair": [
+     2439,
+     2448
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.881007432937622e-05,
+    "pair": [
+     2457,
+     2508
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.5744160413742065e-06,
+    "pair": [
+     2465,
+     2467
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.413615584373474e-05,
+    "pair": [
+     2466,
+     2480
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00013971514999866486,
+    "pair": [
+     2487,
+     2496
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00011904537677764893,
+    "pair": [
+     2513,
+     2546
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.927658200263977e-06,
+    "pair": [
+     2520,
+     2921
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-06,
+    "pair": [
+     2530,
+     2942
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.862645149230957e-06,
+    "pair": [
+     2542,
+     2544
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.24973326921463e-05,
+    "pair": [
+     2553,
+     2570
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.0978193283081055e-08,
+    "pair": [
+     2583,
+     2584
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.3527612686157227e-08,
+    "pair": [
+     2584,
+     2585
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.21540641784668e-08,
+    "pair": [
+     2585,
+     2586
+    ],
+    "sat_min_overlap": 1.1102230246251565e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.9283186197280884e-05,
+    "pair": [
+     2609,
+     2618
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.7758458852767944e-05,
+    "pair": [
+     2615,
+     2617
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007070079445838928,
+    "pair": [
+     2626,
+     2643
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005175881087779999,
+    "pair": [
+     2627,
+     2642
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.705522537231445e-08,
+    "pair": [
+     2659,
+     2660
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0030120164155960083,
+    "pair": [
+     2681,
+     2808
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0035416223108768463,
+    "pair": [
+     2704,
+     2833
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.610349863767624e-05,
+    "pair": [
+     2733,
+     3176
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.2117048501968384e-05,
+    "pair": [
+     2741,
+     3221
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.9498169422149658e-05,
+    "pair": [
+     2769,
+     3200
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.6193599700927734e-06,
+    "pair": [
+     2771,
+     3203
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00039257481694221497,
+    "pair": [
+     2803,
+     2812
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.645941615104675e-05,
+    "pair": [
+     2805,
+     2807
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.96993350982666e-05,
+    "pair": [
+     2806,
+     2812
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007519535720348358,
+    "pair": [
+     2821,
+     2848
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8693041056394577e-05,
+    "pair": [
+     2829,
+     2831
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.1054019927978516e-05,
+    "pair": [
+     2833,
+     2856
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.011666655540466309,
+    "pair": [
+     2863,
+     3451
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2870,
+     2871
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2870,
+     2873
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2872,
+     3461
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0019444823265075684,
+    "pair": [
+     2873,
+     3461
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2874,
+     2876
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2876,
+     2877
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2876,
+     3465
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004444420337677002,
+    "pair": [
+     2877,
+     3465
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2878,
+     2879
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2880,
+     3469
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2882,
+     2883
+    ],
+    "sat_min_overlap": 1.1102230246251565e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2882,
+     2885
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2882,
+     3468
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2882,
+     3471
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2883,
+     3469
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001111149787902832,
+    "pair": [
+     2883,
+     3471
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2887,
+     3472
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009523928165435791,
+    "pair": [
+     2887,
+     3475
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0026470422744750977,
+    "pair": [
+     2893,
+     3481
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002838447690010071,
+    "pair": [
+     2897,
+     3169
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009523779153823853,
+    "pair": [
+     2898,
+     3685
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.492964267730713e-05,
+    "pair": [
+     2912,
+     2917
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.8868747651577e-06,
+    "pair": [
+     2913,
+     2922
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.1972769647836685e-05,
+    "pair": [
+     2926,
+     2935
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0020624883472919464,
+    "pair": [
+     2930,
+     2959
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0019775480031967163,
+    "pair": [
+     2991,
+     3078
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013333242386579514,
+    "pair": [
+     3008,
+     3013
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.811933755874634e-06,
+    "pair": [
+     3025,
+     3034
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.734363079071045e-05,
+    "pair": [
+     3073,
+     3082
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010444410145282745,
+    "pair": [
+     3100,
+     3102
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.9297079890966415e-05,
+    "pair": [
+     3101,
+     3115
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.0187500417232513e-05,
+    "pair": [
+     3104,
+     3504
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.2258609533309937e-05,
+    "pair": [
+     3125,
+     3131
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0014249980449676514,
+    "pair": [
+     3127,
+     3529
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00022629089653491974,
+    "pair": [
+     3139,
+     3156
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.601214408874512e-06,
+    "pair": [
+     3149,
+     3154
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010458379983901978,
+    "pair": [
+     3195,
+     3204
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00014473497867584229,
+    "pair": [
+     3208,
+     3217
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.15529716014862e-05,
+    "pair": [
+     3225,
+     3227
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007633455097675323,
+    "pair": [
+     3266,
+     3383
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.739446401596069e-05,
+    "pair": [
+     3284,
+     3289
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.329283446073532e-06,
+    "pair": [
+     3285,
+     3294
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00027669547125697136,
+    "pair": [
+     3288,
+     3294
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.2117979824543e-05,
+    "pair": [
+     3326,
+     3332
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.046208828687668e-05,
+    "pair": [
+     3327,
+     3329
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002076939679682255,
+    "pair": [
+     3330,
+     3763
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002338348887860775,
+    "pair": [
+     3342,
+     3371
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.215274333953857e-05,
+    "pair": [
+     3351,
+     3353
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009448006749153137,
+    "pair": [
+     3354,
+     3775
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.925710916519165e-05,
+    "pair": [
+     3355,
+     3786
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000576164573431015,
+    "pair": [
+     3389,
+     3398
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00043944641947746277,
+    "pair": [
+     3407,
+     3434
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3448,
+     3449
+    ],
+    "sat_min_overlap": 1.1102230246251565e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.005999989807605743,
+    "pair": [
+     3449,
+     4037
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.012499958276748657,
+    "pair": [
+     3455,
+     4043
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3459,
+     4044
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.006857126951217651,
+    "pair": [
+     3459,
+     4047
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3462,
+     3465
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3462,
+     4051
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3463,
+     3465
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003324747085571289,
+    "pair": [
+     3463,
+     4051
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3468,
+     3470
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3468,
+     3471
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.045199602842331e-06,
+    "pair": [
+     3493,
+     3836
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.204820677638054e-05,
+    "pair": [
+     3500,
+     3506
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3437663912773132e-05,
+    "pair": [
+     3501,
+     3503
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.375143468379974e-06,
+    "pair": [
+     3502,
+     3508
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.066076457500458e-05,
+    "pair": [
+     3529,
+     3552
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.587034583091736e-06,
+    "pair": [
+     3538,
+     3546
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.273614078760147e-06,
+    "pair": [
+     3560,
+     3569
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0006249994039535522,
+    "pair": [
+     3564,
+     3605
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013671889901161194,
+    "pair": [
+     3577,
+     3664
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.48434865474701e-06,
+    "pair": [
+     3594,
+     3599
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.439419955015182e-06,
+    "pair": [
+     3595,
+     3604
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.215499550104141e-05,
+    "pair": [
+     3598,
+     3604
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3392418622970581e-05,
+    "pair": [
+     3612,
+     3618
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.595611244440079e-06,
+    "pair": [
+     3613,
+     3615
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.858950316905975e-06,
+    "pair": [
+     3614,
+     3620
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003551114350557327,
+    "pair": [
+     3628,
+     3669
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1719763278961182e-05,
+    "pair": [
+     3629,
+     3680
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0008463561534881592,
+    "pair": [
+     3675,
+     3684
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.905966877937317e-05,
+    "pair": [
+     3685,
+     3718
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.9296614229679108e-05,
+    "pair": [
+     3690,
+     4090
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.6749446988105774e-05,
+    "pair": [
+     3702,
+     4114
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.548975706100464e-05,
+    "pair": [
+     3708,
+     3717
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009027775377035141,
+    "pair": [
+     3713,
+     4115
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00036458298563957214,
+    "pair": [
+     3725,
+     3742
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.597777009010315e-05,
+    "pair": [
+     3726,
+     3741
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.978850483894348e-06,
+    "pair": [
+     3759,
+     3761
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.580244421958923e-06,
+    "pair": [
+     3772,
+     3816
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.257346391677856e-05,
+    "pair": [
+     3782,
+     3788
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.110617399215698e-07,
+    "pair": [
+     3784,
+     3790
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0001010112464427948,
+    "pair": [
+     3791,
+     3824
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0006738342344760895,
+    "pair": [
+     3799,
+     3814
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.238719940185547e-06,
+    "pair": [
+     3808,
+     3813
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.492964267730713e-05,
+    "pair": [
+     3834,
+     3839
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0012648850679397583,
+    "pair": [
+     3840,
+     3881
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.9989128708839417e-05,
+    "pair": [
+     3843,
+     3895
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00041704438626766205,
+    "pair": [
+     3852,
+     3969
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8602237105369568e-05,
+    "pair": [
+     3853,
+     3980
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.7515535950660706e-05,
+    "pair": [
+     3867,
+     4013
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.893021494150162e-05,
+    "pair": [
+     3870,
+     3875
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.353443652391434e-05,
+    "pair": [
+     3876,
+     4005
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.7467496693134308e-05,
+    "pair": [
+     3907,
+     4357
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.655921995639801e-06,
+    "pair": [
+     3910,
+     3915
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.550682544708252e-07,
+    "pair": [
+     3911,
+     3920
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007638875395059586,
+    "pair": [
+     3916,
+     4349
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0640512704849243e-06,
+    "pair": [
+     3924,
+     3933
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00019410066306591034,
+    "pair": [
+     3940,
+     4361
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.170167863368988e-05,
+    "pair": [
+     3941,
+     4372
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.25151801109314e-07,
+    "pair": [
+     3953,
+     3955
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.4553930163383484e-05,
+    "pair": [
+     3975,
+     3984
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010840222239494324,
+    "pair": [
+     3985,
+     4409
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.7785924077034e-05,
+    "pair": [
+     3988,
+     3997
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.906339406967163e-05,
+    "pair": [
+     3989,
+     3991
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003327261656522751,
+    "pair": [
+     3993,
+     4020
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.7621164917945862e-05,
+    "pair": [
+     4017,
+     4019
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.187250018119812e-05,
+    "pair": [
+     4018,
+     4032
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.019999995827674866,
+    "pair": [
+     4041,
+     4629
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4042,
+     4043
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4044,
+     4045
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4044,
+     4046
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4046,
+     4047
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4048,
+     4050
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4048,
+     4051
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.006666630506515503,
+    "pair": [
+     4049,
+     4637
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4050,
+     4051
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4052,
+     4053
+    ],
+    "sat_min_overlap": 1.1102230246251565e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4052,
+     4054
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     4052,
+     4055
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4055,
+     4640
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003717944025993347,
+    "pair": [
+     4055,
+     4643
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     4058,
+     4059
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004333324730396271,
+    "pair": [
+     4063,
+     4651
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002499997615814209,
+    "pair": [
+     4065,
+     4653
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.696869730949402e-05,
+    "pair": [
+     4084,
+     4089
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0002766922116279602,
+    "pair": [
+     4088,
+     4094
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.158914528787136e-05,
+    "pair": [
+     4098,
+     4107
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3437663912773132e-05,
+    "pair": [
+     4099,
+     4101
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.0156148821115494e-06,
+    "pair": [
+     4127,
+     4129
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.115785360336304e-06,
+    "pair": [
+     4128,
+     4142
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3393349945545197e-05,
+    "pair": [
+     4138,
+     4141
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0008125072345137596,
+    "pair": [
+     4150,
+     4191
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013928189873695374,
+    "pair": [
+     4153,
+     4205
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.0515563189983368e-05,
+    "pair": [
+     4163,
+     4198
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.472362782806158e-05,
+    "pair": [
+     4175,
+     4510
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.6675482988357544e-05,
+    "pair": [
+     4184,
+     4190
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020820915699005e-05,
+    "pair": [
+     4197,
+     4206
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013854186981916428,
+    "pair": [
+     4214,
+     4255
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.5112181901931763e-05,
+    "pair": [
+     4215,
+     4266
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.0693987607955933e-06,
+    "pair": [
+     4244,
+     4249
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.2628734111785889e-06,
+    "pair": [
+     4245,
+     4254
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020820915699005e-05,
+    "pair": [
+     4262,
+     4268
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.009902477264404e-05,
+    "pair": [
+     4276,
+     4676
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.2551586627960205e-05,
+    "pair": [
+     4288,
+     4700
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010771770030260086,
+    "pair": [
+     4308,
+     4310
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000736607238650322,
+    "pair": [
+     4311,
+     4328
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.0205432772636414e-05,
+    "pair": [
+     4312,
+     4327
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.293397068977356e-06,
+    "pair": [
+     4367,
+     4376
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003160471096634865,
+    "pair": [
+     4385,
+     4400
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8589198589324951e-06,
+    "pair": [
+     4396,
+     4405
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.277696669101715e-05,
+    "pair": [
+     4397,
+     4399
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.552049070596695e-06,
+    "pair": [
+     4422,
+     4431
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005249939858913422,
+    "pair": [
+     4426,
+     4467
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00046542659401893616,
+    "pair": [
+     4438,
+     4555
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.8279609978199005e-06,
+    "pair": [
+     4456,
+     4461
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.8868747651577e-06,
+    "pair": [
+     4457,
+     4466
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0010817337315529585,
+    "pair": [
+     4502,
+     4935
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.916451871395111e-06,
+    "pair": [
+     4503,
+     4505
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001397056970745325,
+    "pair": [
+     4514,
+     4543
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.896963506937027e-05,
+    "pair": [
+     4527,
+     4958
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.2784264981746674e-05,
+    "pair": [
+     4563,
+     4565
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0001318361610174179,
+    "pair": [
+     4579,
+     4606
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.206760786473751e-05,
+    "pair": [
+     4587,
+     4589
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.617170922458172e-05,
+    "pair": [
+     4588,
+     4602
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.996212035417557e-05,
+    "pair": [
+     4591,
+     4614
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.09000002592802048,
+    "pair": [
+     4621,
+     5209
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     4630,
+     4631
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0025000274181365967,
+    "pair": [
+     4631,
+     5219
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4634,
+     4636
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004285722970962524,
+    "pair": [
+     4635,
+     5223
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4637,
+     5220
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0004761889576911926,
+    "pair": [
+     4642,
+     5231
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.009999990463256836,
+    "pair": [
+     4646,
+     5235
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.030345007777214e-05,
+    "pair": [
+     4682,
+     4687
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.8044916689395905e-05,
+    "pair": [
+     4685,
+     4687
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.2931060306727886e-07,
+    "pair": [
+     4689,
+     5044
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8978025764226913e-06,
+    "pair": [
+     4732,
+     4741
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8314924091100693e-05,
+    "pair": [
+     4733,
+     4753
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.472362782806158e-05,
+    "pair": [
+     4737,
+     4788
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0906638130545616e-05,
+    "pair": [
+     4739,
+     4791
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.7208978533744812e-05,
+    "pair": [
+     4749,
+     4784
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.4584587663412094e-06,
+    "pair": [
+     4761,
+     5096
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.861534297466278e-06,
+    "pair": [
+     4770,
+     4776
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00017578154802322388,
+    "pair": [
+     4800,
+     4841
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.008187144994736e-06,
+    "pair": [
+     4813,
+     4848
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.860812962055206e-06,
+    "pair": [
+     4834,
+     4840
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8476508557796478e-05,
+    "pair": [
+     4847,
+     4856
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.604164183139801e-05,
+    "pair": [
+     4857,
+     4890
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3757806047797203e-05,
+    "pair": [
+     4862,
+     5350
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.310447886586189e-05,
+    "pair": [
+     4909,
+     4918
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0156224966049194e-06,
+    "pair": [
+     4959,
+     4961
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00014285743236541748,
+    "pair": [
+     4963,
+     4996
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00015624985098838806,
+    "pair": [
+     4970,
+     4987
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.139115869998932e-05,
+    "pair": [
+     4971,
+     4986
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.94463960826397e-05,
+    "pair": [
+     5012,
+     5053
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.8738828152418137e-05,
+    "pair": [
+     5015,
+     5067
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.741347998380661e-05,
+    "pair": [
+     5021,
+     5023
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010119099169969559,
+    "pair": [
+     5024,
+     5141
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.657815098762512e-06,
+    "pair": [
+     5025,
+     5060
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.079790621995926e-05,
+    "pair": [
+     5039,
+     5185
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005104155279695988,
+    "pair": [
+     5048,
+     5177
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.575572580099106e-06,
+    "pair": [
+     5061,
+     5063
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0006026785122230649,
+    "pair": [
+     5088,
+     5672
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.5727011486887932e-05,
+    "pair": [
+     5089,
+     5091
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.44047574698925e-05,
+    "pair": [
+     5100,
+     5129
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.734849790111184e-05,
+    "pair": [
+     5104,
+     5126
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0002766922116279602,
+    "pair": [
+     5113,
+     5695
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.1665357053279877e-05,
+    "pair": [
+     5147,
+     5156
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010964926332235336,
+    "pair": [
+     5160,
+     5169
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3437663912773132e-05,
+    "pair": [
+     5167,
+     5201
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.9501912649720907e-05,
+    "pair": [
+     5173,
+     5175
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.7043744921684265e-05,
+    "pair": [
+     5177,
+     5200
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6456469893455505e-06,
+    "pair": [
+     5189,
+     5191
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0066666752099990845,
+    "pair": [
+     5208,
+     5747
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009523779153823853,
+    "pair": [
+     5214,
+     5753
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0008338676998391747,
+    "pair": [
+     5253,
+     5257
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8849968910217285e-06,
+    "pair": [
+     5286,
+     5403
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3984583094716072e-05,
+    "pair": [
+     5287,
+     5414
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.138947067782283e-05,
+    "pair": [
+     5308,
+     5314
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.651141792535782e-05,
+    "pair": [
+     5321,
+     5330
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.713575329631567e-05,
+    "pair": [
+     5324,
+     5330
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.1033920347690582e-06,
+    "pair": [
+     5345,
+     5354
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3354583643376827e-05,
+    "pair": [
+     5351,
+     5353
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005555558018386364,
+    "pair": [
+     5356,
+     5361
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.704529859125614e-05,
+    "pair": [
+     5398,
+     5401
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.398621290922165e-06,
+    "pair": [
+     5412,
+     5418
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.562526449561119e-05,
+    "pair": [
+     5422,
+     5431
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.736055128276348e-05,
+    "pair": [
+     5426,
+     5455
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003515625430736691,
+    "pair": [
+     5480,
+     5485
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.588282899931073e-05,
+    "pair": [
+     5492,
+     5497
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.812486728653312e-05,
+    "pair": [
+     5495,
+     5497
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00012500007869675756,
+    "pair": [
+     5498,
+     5527
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3437576601281762e-05,
+    "pair": [
+     5501,
+     5535
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.006433300673962e-06,
+    "pair": [
+     5542,
+     5551
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0006835944950580597,
+    "pair": [
+     5546,
+     5587
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.049665484577417e-05,
+    "pair": [
+     5549,
+     5601
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.46966465562582e-05,
+    "pair": [
+     5556,
+     5570
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.893937587738037e-05,
+    "pair": [
+     5559,
+     5594
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.461764082312584e-06,
+    "pair": [
+     5559,
+     5646
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3832079023122787e-05,
+    "pair": [
+     5576,
+     5581
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00024702376686036587,
+    "pair": [
+     5593,
+     5602
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020820915699005e-05,
+    "pair": [
+     5611,
+     5662
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020879123359919e-05,
+    "pair": [
+     5620,
+     5634
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020820915699005e-05,
+    "pair": [
+     5623,
+     5658
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.5104104578495026e-06,
+    "pair": [
+     5641,
+     5650
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.5625031664967537e-05,
+    "pair": [
+     5643,
+     5645
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.5104104578495026e-06,
+    "pair": [
+     5644,
+     5650
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0001139321830123663,
+    "pair": [
+     5657,
+     5666
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0001139321830123663,
+    "pair": [
+     5660,
+     5666
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00013392837718129158,
+    "pair": [
+     5707,
+     5724
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6740523278713226e-05,
+    "pair": [
+     5708,
+     5723
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.1250063329935074e-05,
+    "pair": [
+     5719,
+     5728
+    ],
+    "sat_min_overlap": 0.0
+   }
+  ],
+  "confusion": {
+   "SAT": {
+    "FN": 0,
+    "FP": 0,
+    "TN": 51710,
+    "TP": 0
+   },
+   "methodA": {
+    "FN": 0,
+    "FP": 525,
+    "TN": 51185,
+    "TP": 0
+   }
+  },
+  "n_pairs_evaluated": 51710,
+  "tolerance": {
+   "area_tol": 2.9802436074533034e-08,
+   "basis": "float32_ulp_at_max_abs_coord",
+   "dtype": "float32",
+   "length_tol": 2.384185791015625e-07,
+   "max_abs_coord": 2.0,
+   "median_edge_len": 0.01250004768371582,
+   "safety_factor": 10.0,
+   "span": 4.0
+  }
+ },
+ "method_comparison_rev1_after": {
+  "claimed_by_exact_verdict": {
+   "EXACT_BOUNDARY_TOUCH_ONLY": 493,
+   "EXACT_DISJOINT": 0,
+   "EXACT_POSITIVE_AREA_OVERLAP": 0
+  },
+  "claimed_overlap_pairs": [
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     3,
+     541
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     5,
+     540
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     8,
+     9
+    ],
+    "sat_min_overlap": 1.1102230246251565e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     9,
+     544
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     11,
+     549
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0016666650772094727,
+    "pair": [
+     13,
+     551
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     15,
+     550
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.450580596923828e-08,
+    "pair": [
+     17,
+     552
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.777444362640381e-06,
+    "pair": [
+     32,
+     37
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6850419342517853e-05,
+    "pair": [
+     39,
+     41
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.7202069759368896e-05,
+    "pair": [
+     108,
+     122
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001139037311077118,
+    "pair": [
+     110,
+     187
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.858919858932495e-05,
+    "pair": [
+     111,
+     146
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.389773726463318e-06,
+    "pair": [
+     132,
+     138
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     132,
+     175
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007519498467445374,
+    "pair": [
+     163,
+     214
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.667842924594879e-05,
+    "pair": [
+     171,
+     173
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00014400482177734375,
+    "pair": [
+     172,
+     186
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.33996319770813e-06,
+    "pair": [
+     175,
+     210
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.244727849960327e-05,
+    "pair": [
+     193,
+     202
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.01048828661441803,
+    "pair": [
+     224,
+     574
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.841038465499878e-05,
+    "pair": [
+     236,
+     598
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0014355406165122986,
+    "pair": [
+     242,
+     251
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.62396240234375e-05,
+    "pair": [
+     260,
+     275
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0004999935626983643,
+    "pair": [
+     295,
+     296
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.129724740982056e-05,
+    "pair": [
+     298,
+     314
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.858919858932495e-05,
+    "pair": [
+     302,
+     308
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.2193721532821655e-06,
+    "pair": [
+     352,
+     498
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.047605812549591e-05,
+    "pair": [
+     358,
+     360
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1688098311424255e-05,
+    "pair": [
+     359,
+     365
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     386,
+     387
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3193115592002869e-05,
+    "pair": [
+     395,
+     400
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009448006749153137,
+    "pair": [
+     425,
+     845
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.924088716506958e-05,
+    "pair": [
+     426,
+     856
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013574287295341492,
+    "pair": [
+     460,
+     469
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.456408977508545e-05,
+    "pair": [
+     463,
+     469
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001220710575580597,
+    "pair": [
+     478,
+     505
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.441026926040649e-06,
+    "pair": [
+     490,
+     513
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003956019878387451,
+    "pair": [
+     519,
+     1107
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.940696716308594e-08,
+    "pair": [
+     521,
+     1106
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.006666630506515503,
+    "pair": [
+     521,
+     1109
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     522,
+     523
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     523,
+     1110
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     526,
+     527
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     527,
+     1112
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     528,
+     1116
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     528,
+     1117
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.007619142532348633,
+    "pair": [
+     529,
+     1117
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     530,
+     531
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     531,
+     1116
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     533,
+     1116
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     533,
+     1120
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.019999980926513672,
+    "pair": [
+     533,
+     1121
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     536,
+     1125
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     540,
+     1129
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     541,
+     1128
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     542,
+     543
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     542,
+     545
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     544,
+     545
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     546,
+     547
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     546,
+     549
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     546,
+     1132
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     546,
+     1134
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     547,
+     1134
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     549,
+     1134
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     549,
+     1135
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     550,
+     553
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     561,
+     562
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0016261991113424301,
+    "pair": [
+     568,
+     573
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.3052172511816025e-05,
+    "pair": [
+     575,
+     577
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000613093376159668,
+    "pair": [
+     646,
+     723
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00018641352653503418,
+    "pair": [
+     647,
+     734
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.33996319770813e-06,
+    "pair": [
+     681,
+     690
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.127140760421753e-05,
+    "pair": [
+     699,
+     750
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0019824206829071045,
+    "pair": [
+     729,
+     738
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.680671453475952e-05,
+    "pair": [
+     735,
+     737
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.876032471656799e-05,
+    "pair": [
+     757,
+     771
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.46758484840393e-06,
+    "pair": [
+     760,
+     1160
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.479421138763428e-05,
+    "pair": [
+     778,
+     787
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0012189075350761414,
+    "pair": [
+     783,
+     1185
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0875205993652344e-05,
+    "pair": [
+     796,
+     811
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     823,
+     824
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000673830509185791,
+    "pair": [
+     869,
+     884
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013158470392227173,
+    "pair": [
+     899,
+     1105
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8298625946044922e-05,
+    "pair": [
+     904,
+     909
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3806467652320862e-05,
+    "pair": [
+     940,
+     945
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003574218600988388,
+    "pair": [
+     957,
+     966
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8792226910591125e-05,
+    "pair": [
+     963,
+     965
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.725290298461914e-08,
+    "pair": [
+     968,
+     969
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.962032496929169e-05,
+    "pair": [
+     977,
+     1427
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003903055563569069,
+    "pair": [
+     986,
+     1419
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0016894638538360596,
+    "pair": [
+     1063,
+     1090
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1106,
+     1108
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1108,
+     1109
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1108,
+     1110
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1108,
+     1111
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1109,
+     1694
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1111,
+     1694
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1112,
+     1113
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1116,
+     1118
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1116,
+     1705
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     1118,
+     1119
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     1118,
+     1121
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1122,
+     1123
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.384185791015625e-07,
+    "pair": [
+     1122,
+     1125
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00013172626495361328,
+    "pair": [
+     1125,
+     1713
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1128,
+     1129
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1131,
+     1717
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002666652202606201,
+    "pair": [
+     1133,
+     1721
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.010769233107566833,
+    "pair": [
+     1139,
+     1145
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0011538565158843994,
+    "pair": [
+     1139,
+     1406
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.1767717599868774e-06,
+    "pair": [
+     1157,
+     1159
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.07280570268631e-05,
+    "pair": [
+     1158,
+     1164
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.8906152844429016e-05,
+    "pair": [
+     1166,
+     1171
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.966292858123779e-06,
+    "pair": [
+     1182,
+     1196
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.466250538825989e-05,
+    "pair": [
+     1185,
+     1208
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.6191195249557495e-05,
+    "pair": [
+     1267,
+     1276
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009109750390052795,
+    "pair": [
+     1284,
+     1325
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.082677721977234e-05,
+    "pair": [
+     1285,
+     1336
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0012532547116279602,
+    "pair": [
+     1315,
+     1324
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.373971700668335e-06,
+    "pair": [
+     1321,
+     1323
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.154870450496674e-06,
+    "pair": [
+     1342,
+     1344
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.7937272787094116e-06,
+    "pair": [
+     1343,
+     1357
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.310425043106079e-05,
+    "pair": [
+     1346,
+     1393
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.118680953979492e-05,
+    "pair": [
+     1346,
+     1746
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.422928810119629e-05,
+    "pair": [
+     1364,
+     1373
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     1367,
+     1771
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.5272369384765625e-05,
+    "pair": [
+     1369,
+     1771
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002187483012676239,
+    "pair": [
+     1381,
+     1398
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.1714717149734497e-05,
+    "pair": [
+     1419,
+     1466
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001279294490814209,
+    "pair": [
+     1437,
+     1446
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3439526557922363e-05,
+    "pair": [
+     1439,
+     1441
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.056468605995178e-05,
+    "pair": [
+     1440,
+     1446
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002705078572034836,
+    "pair": [
+     1455,
+     1470
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     1484,
+     1485
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001435890793800354,
+    "pair": [
+     1485,
+     1691
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0008453577756881714,
+    "pair": [
+     1508,
+     1625
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.0117888450622559e-05,
+    "pair": [
+     1543,
+     1552
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.66847962141037e-05,
+    "pair": [
+     1563,
+     2013
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6197562217712402e-05,
+    "pair": [
+     1570,
+     1576
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.900192677974701e-05,
+    "pair": [
+     1578,
+     1583
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.0947307348251343e-05,
+    "pair": [
+     1594,
+     1608
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009430088102817535,
+    "pair": [
+     1596,
+     2017
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009109750390052795,
+    "pair": [
+     1648,
+     1677
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005957037210464478,
+    "pair": [
+     1649,
+     1676
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.020000040531158447,
+    "pair": [
+     1693,
+     2281
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1698,
+     1701
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1701,
+     2288
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.006666660308837891,
+    "pair": [
+     1701,
+     2289
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1702,
+     1703
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1702,
+     1705
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1703,
+     2288
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1704,
+     1705
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1705,
+     2293
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1706,
+     1707
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1707,
+     2293
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1710,
+     1711
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1711,
+     2296
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1713,
+     2300
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1714,
+     1717
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     1715,
+     2300
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1716,
+     1717
+    ],
+    "sat_min_overlap": 5.551115123125783e-17
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1718,
+     1720
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     1718,
+     1721
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0008653849363327026,
+    "pair": [
+     1725,
+     1992
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.127140760421753e-06,
+    "pair": [
+     1743,
+     1745
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.790513336658478e-05,
+    "pair": [
+     1752,
+     1757
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.862645149230957e-06,
+    "pair": [
+     1767,
+     1769
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.798654794692993e-06,
+    "pair": [
+     1768,
+     1782
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.0972215831279755e-05,
+    "pair": [
+     1809,
+     1861
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.0150095224380493e-05,
+    "pair": [
+     1843,
+     1845
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.911795258522034e-06,
+    "pair": [
+     1859,
+     1861
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001026749610900879,
+    "pair": [
+     1870,
+     1911
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.30023467540741e-05,
+    "pair": [
+     1871,
+     1922
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.4647841453552246e-05,
+    "pair": [
+     1932,
+     2332
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.41758131980896e-05,
+    "pair": [
+     1944,
+     2356
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.898096323013306e-06,
+    "pair": [
+     2002,
+     2016
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.674013376235962e-05,
+    "pair": [
+     2005,
+     2052
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.449330925941467e-05,
+    "pair": [
+     2023,
+     2032
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6041100025177002e-05,
+    "pair": [
+     2026,
+     2032
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.4789402484893799e-05,
+    "pair": [
+     2041,
+     2056
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000589277595281601,
+    "pair": [
+     2094,
+     2211
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.352652907371521e-05,
+    "pair": [
+     2095,
+     2222
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.3449381589889526e-05,
+    "pair": [
+     2112,
+     2117
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003908388316631317,
+    "pair": [
+     2129,
+     2138
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0700117349624634e-05,
+    "pair": [
+     2164,
+     2169
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000741761177778244,
+    "pair": [
+     2182,
+     2603
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0024145841598510742,
+    "pair": [
+     2183,
+     2614
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0010644607245922089,
+    "pair": [
+     2235,
+     2262
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     2278,
+     2279
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     2280,
+     2281
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2280,
+     2283
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2286,
+     2287
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2286,
+     2289
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2286,
+     2872
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2287,
+     2872
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2288,
+     2877
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     2290,
+     2292
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2291,
+     2876
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     2293,
+     2876
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2294,
+     2295
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     2294,
+     2297
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2298,
+     2300
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009999871253967285,
+    "pair": [
+     2305,
+     2893
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.8677983209490776e-05,
+    "pair": [
+     2333,
+     2335
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.439560532569885e-05,
+    "pair": [
+     2402,
+     2416
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.414445281028748e-05,
+    "pair": [
+     2404,
+     2481
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.191828727722168e-05,
+    "pair": [
+     2405,
+     2440
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.4769455194473267e-05,
+    "pair": [
+     2405,
+     2492
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3237819075584412e-05,
+    "pair": [
+     2419,
+     2477
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.2349337339401245e-06,
+    "pair": [
+     2425,
+     2427
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004511719569563866,
+    "pair": [
+     2439,
+     2448
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.881007432937622e-05,
+    "pair": [
+     2457,
+     2508
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.5744160413742065e-06,
+    "pair": [
+     2465,
+     2467
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.413615584373474e-05,
+    "pair": [
+     2466,
+     2480
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00013971514999866486,
+    "pair": [
+     2487,
+     2496
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.927658200263977e-06,
+    "pair": [
+     2520,
+     2921
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-06,
+    "pair": [
+     2530,
+     2942
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.862645149230957e-06,
+    "pair": [
+     2542,
+     2544
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.24973326921463e-05,
+    "pair": [
+     2553,
+     2570
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.9283186197280884e-05,
+    "pair": [
+     2609,
+     2618
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.7758458852767944e-05,
+    "pair": [
+     2615,
+     2617
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007070079445838928,
+    "pair": [
+     2626,
+     2643
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005175881087779999,
+    "pair": [
+     2627,
+     2642
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0030120164155960083,
+    "pair": [
+     2681,
+     2808
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0035416223108768463,
+    "pair": [
+     2704,
+     2833
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.610349863767624e-05,
+    "pair": [
+     2733,
+     3176
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.2117048501968384e-05,
+    "pair": [
+     2741,
+     3221
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.9498169422149658e-05,
+    "pair": [
+     2769,
+     3200
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.6193599700927734e-06,
+    "pair": [
+     2771,
+     3203
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00039257481694221497,
+    "pair": [
+     2803,
+     2812
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.645941615104675e-05,
+    "pair": [
+     2805,
+     2807
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.96993350982666e-05,
+    "pair": [
+     2806,
+     2812
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007519535720348358,
+    "pair": [
+     2821,
+     2848
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8693041056394577e-05,
+    "pair": [
+     2829,
+     2831
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.1054019927978516e-05,
+    "pair": [
+     2833,
+     2856
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2870,
+     2871
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2870,
+     2873
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2872,
+     3461
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0019444823265075684,
+    "pair": [
+     2873,
+     3461
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2874,
+     2876
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2876,
+     2877
+    ],
+    "sat_min_overlap": 2.220446049250313e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2876,
+     3465
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004444420337677002,
+    "pair": [
+     2877,
+     3465
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2878,
+     2879
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2880,
+     3469
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2882,
+     2883
+    ],
+    "sat_min_overlap": 1.1102230246251565e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2882,
+     2885
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2882,
+     3468
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2882,
+     3471
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2883,
+     3469
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001111149787902832,
+    "pair": [
+     2883,
+     3471
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     2887,
+     3472
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009523928165435791,
+    "pair": [
+     2887,
+     3475
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0026470422744750977,
+    "pair": [
+     2893,
+     3481
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0020618699491024017,
+    "pair": [
+     2897,
+     3164
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.492964267730713e-05,
+    "pair": [
+     2912,
+     2917
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.8868747651577e-06,
+    "pair": [
+     2913,
+     2922
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.1972769647836685e-05,
+    "pair": [
+     2926,
+     2935
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0020624883472919464,
+    "pair": [
+     2930,
+     2959
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0019775480031967163,
+    "pair": [
+     2991,
+     3078
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013333242386579514,
+    "pair": [
+     3008,
+     3013
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.811933755874634e-06,
+    "pair": [
+     3025,
+     3034
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.734363079071045e-05,
+    "pair": [
+     3073,
+     3082
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010444410145282745,
+    "pair": [
+     3100,
+     3102
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.9297079890966415e-05,
+    "pair": [
+     3101,
+     3115
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.0187500417232513e-05,
+    "pair": [
+     3104,
+     3504
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.2258609533309937e-05,
+    "pair": [
+     3125,
+     3131
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0014249980449676514,
+    "pair": [
+     3127,
+     3529
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00022629089653491974,
+    "pair": [
+     3139,
+     3156
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.601214408874512e-06,
+    "pair": [
+     3149,
+     3154
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010458379983901978,
+    "pair": [
+     3195,
+     3204
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00014473497867584229,
+    "pair": [
+     3208,
+     3217
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.15529716014862e-05,
+    "pair": [
+     3225,
+     3227
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.3527612686157227e-08,
+    "pair": [
+     3242,
+     3243
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007633455097675323,
+    "pair": [
+     3266,
+     3383
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.739446401596069e-05,
+    "pair": [
+     3284,
+     3289
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.329283446073532e-06,
+    "pair": [
+     3285,
+     3294
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00027669547125697136,
+    "pair": [
+     3288,
+     3294
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.2117979824543e-05,
+    "pair": [
+     3326,
+     3332
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.046208828687668e-05,
+    "pair": [
+     3327,
+     3329
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002076939679682255,
+    "pair": [
+     3330,
+     3763
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002338348887860775,
+    "pair": [
+     3342,
+     3371
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.215274333953857e-05,
+    "pair": [
+     3351,
+     3353
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009448006749153137,
+    "pair": [
+     3354,
+     3775
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.925710916519165e-05,
+    "pair": [
+     3355,
+     3786
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000576164573431015,
+    "pair": [
+     3389,
+     3398
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00043944641947746277,
+    "pair": [
+     3407,
+     3434
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.012499958276748657,
+    "pair": [
+     3455,
+     4043
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3459,
+     4044
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.006857126951217651,
+    "pair": [
+     3459,
+     4047
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3462,
+     3465
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3462,
+     4051
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3463,
+     3465
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003324747085571289,
+    "pair": [
+     3463,
+     4051
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3468,
+     3470
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     3468,
+     3471
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002019234001636505,
+    "pair": [
+     3483,
+     3489
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.045199602842331e-06,
+    "pair": [
+     3493,
+     3836
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.204820677638054e-05,
+    "pair": [
+     3500,
+     3506
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3437663912773132e-05,
+    "pair": [
+     3501,
+     3503
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.375143468379974e-06,
+    "pair": [
+     3502,
+     3508
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.066076457500458e-05,
+    "pair": [
+     3529,
+     3552
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.587034583091736e-06,
+    "pair": [
+     3538,
+     3546
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.273614078760147e-06,
+    "pair": [
+     3560,
+     3569
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0006249994039535522,
+    "pair": [
+     3564,
+     3605
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013671889901161194,
+    "pair": [
+     3577,
+     3664
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.48434865474701e-06,
+    "pair": [
+     3594,
+     3599
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.439419955015182e-06,
+    "pair": [
+     3595,
+     3604
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.215499550104141e-05,
+    "pair": [
+     3598,
+     3604
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3392418622970581e-05,
+    "pair": [
+     3612,
+     3618
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.595611244440079e-06,
+    "pair": [
+     3613,
+     3615
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.858950316905975e-06,
+    "pair": [
+     3614,
+     3620
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003551114350557327,
+    "pair": [
+     3628,
+     3669
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1719763278961182e-05,
+    "pair": [
+     3629,
+     3680
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0008463561534881592,
+    "pair": [
+     3675,
+     3684
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.9296614229679108e-05,
+    "pair": [
+     3690,
+     4090
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.6749446988105774e-05,
+    "pair": [
+     3702,
+     4114
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.548975706100464e-05,
+    "pair": [
+     3708,
+     3717
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009027775377035141,
+    "pair": [
+     3713,
+     4115
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00036458298563957214,
+    "pair": [
+     3725,
+     3742
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.597777009010315e-05,
+    "pair": [
+     3726,
+     3741
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.978850483894348e-06,
+    "pair": [
+     3759,
+     3761
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.580244421958923e-06,
+    "pair": [
+     3772,
+     3816
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.257346391677856e-05,
+    "pair": [
+     3782,
+     3788
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.110617399215698e-07,
+    "pair": [
+     3784,
+     3790
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0006738342344760895,
+    "pair": [
+     3799,
+     3814
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.238719940185547e-06,
+    "pair": [
+     3808,
+     3813
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.492964267730713e-05,
+    "pair": [
+     3834,
+     3839
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0012648850679397583,
+    "pair": [
+     3840,
+     3881
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.9989128708839417e-05,
+    "pair": [
+     3843,
+     3895
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00041704438626766205,
+    "pair": [
+     3852,
+     3969
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8602237105369568e-05,
+    "pair": [
+     3853,
+     3980
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.7515535950660706e-05,
+    "pair": [
+     3867,
+     4013
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.893021494150162e-05,
+    "pair": [
+     3870,
+     3875
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.353443652391434e-05,
+    "pair": [
+     3876,
+     4005
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.7467496693134308e-05,
+    "pair": [
+     3907,
+     4357
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.655921995639801e-06,
+    "pair": [
+     3910,
+     3915
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.550682544708252e-07,
+    "pair": [
+     3911,
+     3920
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0007638875395059586,
+    "pair": [
+     3916,
+     4349
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0640512704849243e-06,
+    "pair": [
+     3924,
+     3933
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00019410066306591034,
+    "pair": [
+     3940,
+     4361
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.170167863368988e-05,
+    "pair": [
+     3941,
+     4372
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.25151801109314e-07,
+    "pair": [
+     3953,
+     3955
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.4553930163383484e-05,
+    "pair": [
+     3975,
+     3984
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.7785924077034e-05,
+    "pair": [
+     3988,
+     3997
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.906339406967163e-05,
+    "pair": [
+     3989,
+     3991
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003327261656522751,
+    "pair": [
+     3993,
+     4020
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.7621164917945862e-05,
+    "pair": [
+     4017,
+     4019
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.187250018119812e-05,
+    "pair": [
+     4018,
+     4032
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.019999995827674866,
+    "pair": [
+     4041,
+     4629
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4042,
+     4043
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4044,
+     4045
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4044,
+     4046
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4046,
+     4047
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4048,
+     4050
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4048,
+     4051
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.006666630506515503,
+    "pair": [
+     4049,
+     4637
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4050,
+     4051
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4052,
+     4053
+    ],
+    "sat_min_overlap": 1.1102230246251565e-16
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4052,
+     4054
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.1920928955078125e-07,
+    "pair": [
+     4052,
+     4055
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4055,
+     4640
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.003717944025993347,
+    "pair": [
+     4055,
+     4643
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     4058,
+     4059
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004333324730396271,
+    "pair": [
+     4063,
+     4651
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.002499997615814209,
+    "pair": [
+     4065,
+     4653
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.696869730949402e-05,
+    "pair": [
+     4084,
+     4089
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0002766922116279602,
+    "pair": [
+     4088,
+     4094
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.158914528787136e-05,
+    "pair": [
+     4098,
+     4107
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3437663912773132e-05,
+    "pair": [
+     4099,
+     4101
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.0156148821115494e-06,
+    "pair": [
+     4127,
+     4129
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.115785360336304e-06,
+    "pair": [
+     4128,
+     4142
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3393349945545197e-05,
+    "pair": [
+     4138,
+     4141
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0008125072345137596,
+    "pair": [
+     4150,
+     4191
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013928189873695374,
+    "pair": [
+     4153,
+     4205
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.0515563189983368e-05,
+    "pair": [
+     4163,
+     4198
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.472362782806158e-05,
+    "pair": [
+     4175,
+     4510
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.6675482988357544e-05,
+    "pair": [
+     4184,
+     4190
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020820915699005e-05,
+    "pair": [
+     4197,
+     4206
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0013854186981916428,
+    "pair": [
+     4214,
+     4255
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.5112181901931763e-05,
+    "pair": [
+     4215,
+     4266
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.0693987607955933e-06,
+    "pair": [
+     4244,
+     4249
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.2628734111785889e-06,
+    "pair": [
+     4245,
+     4254
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020820915699005e-05,
+    "pair": [
+     4262,
+     4268
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.009902477264404e-05,
+    "pair": [
+     4276,
+     4676
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.2551586627960205e-05,
+    "pair": [
+     4288,
+     4700
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010771770030260086,
+    "pair": [
+     4308,
+     4310
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.000736607238650322,
+    "pair": [
+     4311,
+     4328
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.0205432772636414e-05,
+    "pair": [
+     4312,
+     4327
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.293397068977356e-06,
+    "pair": [
+     4367,
+     4376
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003160471096634865,
+    "pair": [
+     4385,
+     4400
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8589198589324951e-06,
+    "pair": [
+     4396,
+     4405
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.277696669101715e-05,
+    "pair": [
+     4397,
+     4399
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.552049070596695e-06,
+    "pair": [
+     4422,
+     4431
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005249939858913422,
+    "pair": [
+     4426,
+     4467
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00046542659401893616,
+    "pair": [
+     4438,
+     4555
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.8279609978199005e-06,
+    "pair": [
+     4456,
+     4461
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.8868747651577e-06,
+    "pair": [
+     4457,
+     4466
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0010817337315529585,
+    "pair": [
+     4502,
+     4935
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.916451871395111e-06,
+    "pair": [
+     4503,
+     4505
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.001397056970745325,
+    "pair": [
+     4514,
+     4543
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.896963506937027e-05,
+    "pair": [
+     4527,
+     4958
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.2784264981746674e-05,
+    "pair": [
+     4563,
+     4565
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0001318361610174179,
+    "pair": [
+     4579,
+     4606
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.206760786473751e-05,
+    "pair": [
+     4587,
+     4589
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.617170922458172e-05,
+    "pair": [
+     4588,
+     4602
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.996212035417557e-05,
+    "pair": [
+     4591,
+     4614
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.470348358154297e-08,
+    "pair": [
+     4630,
+     4631
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0025000274181365967,
+    "pair": [
+     4631,
+     5219
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4634,
+     4636
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.004285722970962524,
+    "pair": [
+     4635,
+     5223
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.960464477539063e-08,
+    "pair": [
+     4637,
+     5220
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0004761889576911926,
+    "pair": [
+     4642,
+     5231
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.009999990463256836,
+    "pair": [
+     4646,
+     5235
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.030345007777214e-05,
+    "pair": [
+     4682,
+     4687
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.8044916689395905e-05,
+    "pair": [
+     4685,
+     4687
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.2931060306727886e-07,
+    "pair": [
+     4689,
+     5044
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8978025764226913e-06,
+    "pair": [
+     4732,
+     4741
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8314924091100693e-05,
+    "pair": [
+     4733,
+     4753
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.472362782806158e-05,
+    "pair": [
+     4737,
+     4788
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0906638130545616e-05,
+    "pair": [
+     4739,
+     4791
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.7208978533744812e-05,
+    "pair": [
+     4749,
+     4784
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.4584587663412094e-06,
+    "pair": [
+     4761,
+     5096
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.861534297466278e-06,
+    "pair": [
+     4770,
+     4776
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00017578154802322388,
+    "pair": [
+     4800,
+     4841
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.008187144994736e-06,
+    "pair": [
+     4813,
+     4848
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.860812962055206e-06,
+    "pair": [
+     4834,
+     4840
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8476508557796478e-05,
+    "pair": [
+     4847,
+     4856
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3757806047797203e-05,
+    "pair": [
+     4862,
+     5350
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 5.310447886586189e-05,
+    "pair": [
+     4909,
+     4918
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.0156224966049194e-06,
+    "pair": [
+     4959,
+     4961
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00015624985098838806,
+    "pair": [
+     4970,
+     4987
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.139115869998932e-05,
+    "pair": [
+     4971,
+     4986
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.94463960826397e-05,
+    "pair": [
+     5012,
+     5053
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.8738828152418137e-05,
+    "pair": [
+     5015,
+     5067
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.741347998380661e-05,
+    "pair": [
+     5021,
+     5023
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010119099169969559,
+    "pair": [
+     5024,
+     5141
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.657815098762512e-06,
+    "pair": [
+     5025,
+     5060
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.079790621995926e-05,
+    "pair": [
+     5039,
+     5185
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005104155279695988,
+    "pair": [
+     5048,
+     5177
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.575572580099106e-06,
+    "pair": [
+     5061,
+     5063
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0006026785122230649,
+    "pair": [
+     5088,
+     5672
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.5727011486887932e-05,
+    "pair": [
+     5089,
+     5091
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.44047574698925e-05,
+    "pair": [
+     5100,
+     5129
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.734849790111184e-05,
+    "pair": [
+     5104,
+     5126
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0002766922116279602,
+    "pair": [
+     5113,
+     5695
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.1665357053279877e-05,
+    "pair": [
+     5147,
+     5156
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00010964926332235336,
+    "pair": [
+     5160,
+     5169
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3437663912773132e-05,
+    "pair": [
+     5167,
+     5201
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.9501912649720907e-05,
+    "pair": [
+     5173,
+     5175
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.7043744921684265e-05,
+    "pair": [
+     5177,
+     5200
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6456469893455505e-06,
+    "pair": [
+     5189,
+     5191
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0066666752099990845,
+    "pair": [
+     5208,
+     5747
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0009523779153823853,
+    "pair": [
+     5214,
+     5753
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0015144203789532185,
+    "pair": [
+     5253,
+     5257
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0001087072305381298,
+    "pair": [
+     5258,
+     5263
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.8849968910217285e-06,
+    "pair": [
+     5286,
+     5403
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3984583094716072e-05,
+    "pair": [
+     5287,
+     5414
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.138947067782283e-05,
+    "pair": [
+     5308,
+     5314
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.651141792535782e-05,
+    "pair": [
+     5321,
+     5330
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.713575329631567e-05,
+    "pair": [
+     5324,
+     5330
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.1033920347690582e-06,
+    "pair": [
+     5345,
+     5354
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3354583643376827e-05,
+    "pair": [
+     5351,
+     5353
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0005555558018386364,
+    "pair": [
+     5356,
+     5361
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.704529859125614e-05,
+    "pair": [
+     5398,
+     5401
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.398621290922165e-06,
+    "pair": [
+     5412,
+     5418
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.562526449561119e-05,
+    "pair": [
+     5422,
+     5431
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.736055128276348e-05,
+    "pair": [
+     5426,
+     5455
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0003515625430736691,
+    "pair": [
+     5480,
+     5485
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.588282899931073e-05,
+    "pair": [
+     5492,
+     5497
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 7.812486728653312e-05,
+    "pair": [
+     5495,
+     5497
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00012500007869675756,
+    "pair": [
+     5498,
+     5527
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3437576601281762e-05,
+    "pair": [
+     5501,
+     5535
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 4.006433300673962e-06,
+    "pair": [
+     5542,
+     5551
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0006835944950580597,
+    "pair": [
+     5546,
+     5587
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.049665484577417e-05,
+    "pair": [
+     5549,
+     5601
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 9.46966465562582e-05,
+    "pair": [
+     5556,
+     5570
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.893937587738037e-05,
+    "pair": [
+     5559,
+     5594
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 8.461764082312584e-06,
+    "pair": [
+     5559,
+     5646
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 2.3832079023122787e-05,
+    "pair": [
+     5576,
+     5581
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00024702376686036587,
+    "pair": [
+     5593,
+     5602
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020820915699005e-05,
+    "pair": [
+     5611,
+     5662
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020879123359919e-05,
+    "pair": [
+     5620,
+     5634
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.3020820915699005e-05,
+    "pair": [
+     5623,
+     5658
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.5104104578495026e-06,
+    "pair": [
+     5641,
+     5650
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.5625031664967537e-05,
+    "pair": [
+     5643,
+     5645
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 6.5104104578495026e-06,
+    "pair": [
+     5644,
+     5650
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0001139321830123663,
+    "pair": [
+     5657,
+     5666
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.0001139321830123663,
+    "pair": [
+     5660,
+     5666
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 0.00013392837718129158,
+    "pair": [
+     5707,
+     5724
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 1.6740523278713226e-05,
+    "pair": [
+     5708,
+     5723
+    ],
+    "sat_min_overlap": 0.0
+   },
+   {
+    "exact": "EXACT_BOUNDARY_TOUCH_ONLY",
+    "methodA_area": 3.1250063329935074e-05,
+    "pair": [
+     5719,
+     5728
+    ],
+    "sat_min_overlap": 0.0
+   }
+  ],
+  "confusion": {
+   "SAT": {
+    "FN": 0,
+    "FP": 0,
+    "TN": 50011,
+    "TP": 0
+   },
+   "methodA": {
+    "FN": 0,
+    "FP": 493,
+    "TN": 49518,
+    "TP": 0
+   }
+  },
+  "n_pairs_evaluated": 50011,
+  "tolerance": {
+   "area_tol": 2.9802436074533034e-08,
+   "basis": "float32_ulp_at_max_abs_coord",
+   "dtype": "float32",
+   "length_tol": 2.384185791015625e-07,
+   "max_abs_coord": 2.0,
+   "median_edge_len": 0.01250004768371582,
+   "safety_factor": 10.0,
+   "span": 4.0
+  }
+ },
+ "rev1_reproduction": {
+  "confirmed_after": 0,
+  "confirmed_before": 0,
+  "flips": 184,
+  "rev1_tolerance": {
+   "area_tol": 2.9802436074533034e-08,
+   "basis": "float32_ulp_at_max_abs_coord",
+   "dtype": "float32",
+   "length_tol": 2.384185791015625e-07,
+   "max_abs_coord": 2.0,
+   "median_edge_len": 0.01250004768371582,
+   "safety_factor": 10.0,
+   "span": 4.0
+  },
+  "terminated": "no_violations_remaining",
+  "unknown_after": 511,
+  "unknown_before": 545
+ },
+ "rev1_unknown_after_exact": {
+  "DUPLICATE": 0,
+  "EXACT_BOUNDARY_TOUCH_ONLY": 493,
+  "EXACT_DISJOINT": 18,
+  "EXACT_POSITIVE_AREA_OVERLAP": 0,
+  "INVALID": 0
+ },
+ "rev1_unknown_before_exact": {
+  "DUPLICATE": 0,
+  "EXACT_BOUNDARY_TOUCH_ONLY": 525,
+  "EXACT_DISJOINT": 20,
+  "EXACT_POSITIVE_AREA_OVERLAP": 0,
+  "INVALID": 0
+ }
+}

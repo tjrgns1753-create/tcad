@@ -1,0 +1,206 @@
+[
+  {
+    "grid_um": 0.2,
+    "nodes": 2921,
+    "snapshots": [
+      {
+        "n_bias_V": 0.0,
+        "barrier_V": 0.7152895798690472,
+        "analytic_barrier_V": 0.7152895798689954,
+        "W_depletion_um": 0.4191254939705731,
+        "W_integrated_abs_charge_um": 0.30536622503402366
+      },
+      {
+        "n_bias_V": 0.0,
+        "barrier_V": 0.7152895798690472,
+        "analytic_barrier_V": 0.7152895798689954,
+        "W_depletion_um": 0.4191254939705731,
+        "W_integrated_abs_charge_um": 0.30536622503402305
+      },
+      {
+        "n_bias_V": -0.2,
+        "barrier_V": 0.5152895834390969,
+        "analytic_barrier_V": 0.5152895798689954,
+        "W_depletion_um": 0.35573681239938737,
+        "W_integrated_abs_charge_um": 0.2536892007406948
+      },
+      {
+        "n_bias_V": 0.0,
+        "barrier_V": 0.7152895798690472,
+        "analytic_barrier_V": 0.7152895798689954,
+        "W_depletion_um": 0.4191254939705731,
+        "W_integrated_abs_charge_um": 0.305366225034023
+      },
+      {
+        "n_bias_V": 0.2,
+        "barrier_V": 0.9152895798690472,
+        "analytic_barrier_V": 0.9152895798689955,
+        "W_depletion_um": 0.47411357257104225,
+        "W_integrated_abs_charge_um": 0.3530276729806699
+      }
+    ],
+    "points": [
+      {
+        "n_bias_V": -0.2,
+        "currents_per_cm": {
+          "Si_xmin": 2.06337705299494e-09,
+          "Si_xmax": -2.06337704430787e-09
+        },
+        "KCL_relative": 4.210122335894412e-09
+      },
+      {
+        "n_bias_V": 0.0,
+        "currents_per_cm": {
+          "Si_xmin": 9.035677279982219e-18,
+          "Si_xmax": -1.8071355917492632e-17
+        },
+        "KCL_relative": 0.5000000375602196
+      },
+      {
+        "n_bias_V": 0.2,
+        "currents_per_cm": {
+          "Si_xmin": -7.757791573338243e-11,
+          "Si_xmax": 7.757789813203365e-11
+        },
+        "KCL_relative": 2.2688607464448052e-07
+      }
+    ],
+    "interpretation": "W_charge is integrated net space charge / doping, not an exact sharp depletion boundary"
+  },
+  {
+    "grid_um": 0.1,
+    "nodes": 11391,
+    "snapshots": [
+      {
+        "n_bias_V": 0.0,
+        "barrier_V": 0.7152895798690472,
+        "analytic_barrier_V": 0.7152895798689954,
+        "W_depletion_um": 0.4191254939705731,
+        "W_integrated_abs_charge_um": 0.24699186603606027
+      },
+      {
+        "n_bias_V": 0.0,
+        "barrier_V": 0.7152895798690472,
+        "analytic_barrier_V": 0.7152895798689954,
+        "W_depletion_um": 0.4191254939705731,
+        "W_integrated_abs_charge_um": 0.24699186603605938
+      },
+      {
+        "n_bias_V": -0.2,
+        "barrier_V": 0.5152895845120322,
+        "analytic_barrier_V": 0.5152895798689954,
+        "W_depletion_um": 0.35573681239938737,
+        "W_integrated_abs_charge_um": 0.21749079662017656
+      },
+      {
+        "n_bias_V": 0.0,
+        "barrier_V": 0.7152895798690472,
+        "analytic_barrier_V": 0.7152895798689954,
+        "W_depletion_um": 0.4191254939705731,
+        "W_integrated_abs_charge_um": 0.24699186603605938
+      },
+      {
+        "n_bias_V": 0.2,
+        "barrier_V": 0.9152895798690472,
+        "analytic_barrier_V": 0.9152895798689955,
+        "W_depletion_um": 0.47411357257104225,
+        "W_integrated_abs_charge_um": 0.2730980318111086
+      }
+    ],
+    "points": [
+      {
+        "n_bias_V": -0.2,
+        "currents_per_cm": {
+          "Si_xmin": 2.038954292848141e-09,
+          "Si_xmax": -2.038954278838833e-09
+        },
+        "KCL_relative": 6.870829777787746e-09
+      },
+      {
+        "n_bias_V": 0.0,
+        "currents_per_cm": {
+          "Si_xmin": 0.0,
+          "Si_xmax": 0.0
+        },
+        "KCL_relative": 0.0
+      },
+      {
+        "n_bias_V": 0.2,
+        "currents_per_cm": {
+          "Si_xmin": -7.592587271964977e-11,
+          "Si_xmax": 7.592589419201103e-11
+        },
+        "KCL_relative": 2.828068275035662e-07
+      }
+    ],
+    "interpretation": "W_charge is integrated net space charge / doping, not an exact sharp depletion boundary"
+  },
+  {
+    "grid_um": 0.05,
+    "nodes": 44781,
+    "snapshots": [
+      {
+        "n_bias_V": 0.0,
+        "barrier_V": 0.7152895798690542,
+        "analytic_barrier_V": 0.7152895798689954,
+        "W_depletion_um": 0.4191254939705731,
+        "W_integrated_abs_charge_um": 0.26601272175791785
+      },
+      {
+        "n_bias_V": 0.0,
+        "barrier_V": 0.7152895798690472,
+        "analytic_barrier_V": 0.7152895798689954,
+        "W_depletion_um": 0.4191254939705731,
+        "W_integrated_abs_charge_um": 0.26601272175789425
+      },
+      {
+        "n_bias_V": -0.2,
+        "barrier_V": 0.5152895849416392,
+        "analytic_barrier_V": 0.5152895798689954,
+        "W_depletion_um": 0.35573681239938737,
+        "W_integrated_abs_charge_um": 0.23073196399047857
+      },
+      {
+        "n_bias_V": 0.0,
+        "barrier_V": 0.7152895798690472,
+        "analytic_barrier_V": 0.7152895798689954,
+        "W_depletion_um": 0.4191254939705731,
+        "W_integrated_abs_charge_um": 0.26601272175789425
+      },
+      {
+        "n_bias_V": 0.2,
+        "barrier_V": 0.9152895798690472,
+        "analytic_barrier_V": 0.9152895798689955,
+        "W_depletion_um": 0.47411357257104225,
+        "W_integrated_abs_charge_um": 0.2994223724571807
+      }
+    ],
+    "points": [
+      {
+        "n_bias_V": -0.2,
+        "currents_per_cm": {
+          "Si_xmin": 2.0546982998989717e-09,
+          "Si_xmax": -2.0546983205091387e-09
+        },
+        "KCL_relative": 1.0030750873298051e-08
+      },
+      {
+        "n_bias_V": 0.0,
+        "currents_per_cm": {
+          "Si_xmin": 0.0,
+          "Si_xmax": 0.0
+        },
+        "KCL_relative": 0.0
+      },
+      {
+        "n_bias_V": 0.2,
+        "currents_per_cm": {
+          "Si_xmin": -7.738657766553826e-11,
+          "Si_xmax": 7.73864391805631e-11
+        },
+        "KCL_relative": 1.789521895729777e-06
+      }
+    ],
+    "interpretation": "W_charge is integrated net space charge / doping, not an exact sharp depletion boundary"
+  }
+]

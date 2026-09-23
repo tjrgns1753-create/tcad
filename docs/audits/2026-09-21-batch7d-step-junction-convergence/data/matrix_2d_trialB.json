@@ -1,0 +1,536 @@
+{
+  "2d_trialB": [
+    {
+      "label": "2dB_L0_R1_node",
+      "level": 0,
+      "representation": "R1",
+      "shifted": false,
+      "error": "TypeError(\"unsupported operand type(s) for +: 'int' and 'str'\")"
+    },
+    {
+      "label": "2dB_L0_R1_shift",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L0_R2_node",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L0_R2_shift",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L1_R1_node",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L1_R1_shift",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L1_R2_node",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L1_R2_shift",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L2_R1_node",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L2_R1_shift",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L2_R2_node",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L2_R2_shift",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L3_R1_node",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L3_R1_shift",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L3_R2_node",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "2dB_L3_R2_shift",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": "Convergence failure!\nConvergence failure!\n",
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    }
+  ]
+}

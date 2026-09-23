@@ -1,0 +1,37 @@
+diff --git a/tests/integration/test_float32_boundary_snap_real.py b/tests/integration/test_float32_boundary_snap_real.py
+index 56b843e..8ea35fc 100644
+--- a/tests/integration/test_float32_boundary_snap_real.py
++++ b/tests/integration/test_float32_boundary_snap_real.py
+@@ -285,17 +285,26 @@ def main():
+     # Same uniform doping, same depth, same grid; only the contact
+     # separation (~ width) differs -- an Ohmic resistor at fixed bias,
+     # so current should scale as I ~ 1/width (R = rho*L/A, L=width).
+-    # A wide (2x) tolerance around that prediction only needs to rule
+-    # out the pre-fix failure mode (~2e-7 A, a ~1000x-6000x error from a
+-    # spuriously near-zero-doped contact node), not pin an exact ratio.
++    # This IS a real physics check, not a coarse smoke test: measured
++    # in development the observed ratio was ~1.8% off the predicted
++    # one, so REL_TOL below (10%) is a genuine, named bound on a real
++    # Ohm's-law prediction -- wide enough to absorb this project's own
++    # non-ideal contact effects (see mosfet_sweep.py's own tolerance
++    # notes), but tight enough that the pre-fix failure mode (~2e-7 A,
++    # a ~600x-1000x error from a spuriously near-zero-doped contact
++    # node) would still fail it outright.
++    REL_TOL = 0.10
+     i48, i50 = abs(currents48[0]), abs(currents50[0])
+     predicted_ratio = 5.0 / 4.8
+     observed_ratio = i48 / i50
++    rel_error = abs(observed_ratio - predicted_ratio) / predicted_ratio
+     print(f"[scaling] |I(4.8)|={i48:.6e} A, |I(5.0)|={i50:.6e} A, observed ratio={observed_ratio:.4f}, "
+-          f"predicted (5.0/4.8, fixed-cross-section Ohmic scaling)={predicted_ratio:.4f}")
+-    assert 0.5 * predicted_ratio <= observed_ratio <= 2.0 * predicted_ratio, (
++          f"predicted (5.0/4.8, fixed-cross-section Ohmic scaling)={predicted_ratio:.4f}, "
++          f"relative error={rel_error:.4%} (tolerance {REL_TOL:.0%})")
++    assert rel_error <= REL_TOL, (
+         f"4.8um current is not consistent with 5.0um by simple length scaling: "
+-        f"observed {observed_ratio:.4f} vs predicted {predicted_ratio:.4f} (2x band)")
++        f"observed ratio {observed_ratio:.4f} vs predicted {predicted_ratio:.4f}, "
++        f"relative error {rel_error:.4%} exceeds {REL_TOL:.0%}")
+ 
+     # ---- Scenario 3: a real mismatch (not 1-ULP) still blocks ----
+     assert mismatch_exc is not None, "a genuine ~0.4um geometry mismatch must still raise UnsupportedDopingState"

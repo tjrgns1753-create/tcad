@@ -1,0 +1,38 @@
+== 1D h=0.00125 and 0.0003125, +0.100 / -0.100: left-contact ulp, DEVSIM-vs-double dpsi, cancellation
+0.00125 P0 C+0.100 ulpL=142 ulpR=71 dev-py=0.0e+00 cancL_p=3.29e+12 cancR_n=6.60e+12 cancCut0_n=7.42e+06 vdiffL=[3.04e-13,3.04e-13] mis=4.3e-03 c3tot=2.9e-03
+0.00125 P0 C-0.100 ulpL=17 ulpR=17 dev-py=0.0e+00 cancL_p=1.37e+13 cancR_n=2.76e+13 cancCut0_n=7.09e+05 vdiffL=[-7.29e-14,-7.29e-14] mis=2.4e-03 c3tot=2.3e-02
+0.00125 P1 C+0.100 ulpL=143 ulpR=71 dev-py=0.0e+00 cancL_p=3.27e+12 cancR_n=6.59e+12 cancCut0_n=7.42e+06 vdiffL=[3.07e-13,3.07e-13] mis=1.1e-02 c3tot=5.5e-03
+0.00125 P1 C-0.100 ulpL=17 ulpR=17 dev-py=0.0e+00 cancL_p=1.37e+13 cancR_n=2.76e+13 cancCut0_n=7.09e+05 vdiffL=[-7.29e-14,-7.29e-14] mis=2.4e-03 c3tot=3.4e-02
+0.00125 P2 C+0.100 ulpL=142 ulpR=72 dev-py=0.0e+00 cancL_p=3.29e+12 cancR_n=6.50e+12 cancCut0_n=7.42e+06 vdiffL=[3.04e-13,3.04e-13] mis=1.1e-02 c3tot=2.9e-03
+0.00125 P2 C-0.100 ulpL=17 ulpR=17 dev-py=0.0e+00 cancL_p=1.37e+13 cancR_n=2.76e+13 cancCut0_n=7.09e+05 vdiffL=[-7.29e-14,-7.29e-14] mis=2.4e-03 c3tot=2.5e-02
+0.00125 P3 C+0.100 ulpL=142 ulpR=71 dev-py=0.0e+00 cancL_p=3.29e+12 cancR_n=6.60e+12 cancCut0_n=7.42e+06 vdiffL=[3.04e-13,3.04e-13] mis=4.3e-03 c3tot=2.9e-03
+0.00125 P3 C-0.100 ulpL=17 ulpR=17 dev-py=0.0e+00 cancL_p=1.37e+13 cancR_n=2.76e+13 cancCut0_n=7.09e+05 vdiffL=[-7.29e-14,-7.29e-14] mis=2.4e-03 c3tot=2.3e-02
+0.00125 P4 C+0.100 ulpL=143 ulpR=71 dev-py=6.3e-03 cancL_p=3.29e+12 cancR_n=6.56e+12 cancCut0_n=7.42e+06 vdiffL=[3.05e-13,3.05e-13] mis=0.0e+00 c3tot=1.3e-16
+0.00125 P4 C-0.100 ulpL=17 ulpR=17 dev-py=1.2e-02 cancL_p=1.39e+13 cancR_n=2.78e+13 cancCut0_n=7.09e+05 vdiffL=[-7.20e-14,-7.20e-14] mis=0.0e+00 c3tot=1.4e-16
+0.0003125 P0 C+0.100 ulpL=36 ulpR=18 dev-py=0.0e+00 cancL_p=1.30e+13 cancR_n=2.60e+13 cancCut0_n=2.05e+07 vdiffL=[7.72e-14,7.72e-14] mis=4.2e-03 c3tot=1.9e-02
+0.0003125 P0 C-0.100 ulpL=4 ulpR=4 dev-py=0.0e+00 cancL_p=5.83e+13 cancR_n=1.17e+14 cancCut0_n=1.86e+06 vdiffL=[-1.72e-14,-1.72e-14] mis=2.1e-04 c3tot=1.9e-01
+0.0003125 P1 C+0.100 ulpL=36 ulpR=18 dev-py=0.0e+00 cancL_p=1.30e+13 cancR_n=2.59e+13 cancCut0_n=2.05e+07 vdiffL=[7.72e-14,7.72e-14] mis=2.2e-03 c3tot=1.4e-02
+0.0003125 P1 C-0.100 ulpL=4 ulpR=4 dev-py=0.0e+00 cancL_p=5.88e+13 cancR_n=1.19e+14 cancCut0_n=1.86e+06 vdiffL=[-1.72e-14,-1.72e-14] mis=9.6e-03 c3tot=3.5e-02
+0.0003125 P2 C+0.100 ulpL=35 ulpR=18 dev-py=0.0e+00 cancL_p=1.34e+13 cancR_n=2.60e+13 cancCut0_n=2.05e+07 vdiffL=[7.51e-14,7.51e-14] mis=2.4e-02 c3tot=2.6e-02
+0.0003125 P2 C-0.100 ulpL=5 ulpR=4 dev-py=0.0e+00 cancL_p=4.66e+13 cancR_n=1.17e+14 cancCut0_n=1.86e+06 vdiffL=[-2.14e-14,-2.14e-14] mis=2.0e-01 c3tot=1.9e-01
+0.0003125 P3 C+0.100 ulpL=36 ulpR=18 dev-py=0.0e+00 cancL_p=1.30e+13 cancR_n=2.60e+13 cancCut0_n=2.05e+07 vdiffL=[7.72e-14,7.72e-14] mis=4.2e-03 c3tot=1.3e-02
+0.0003125 P3 C-0.100 ulpL=4 ulpR=4 dev-py=0.0e+00 cancL_p=5.83e+13 cancR_n=1.17e+14 cancCut0_n=1.86e+06 vdiffL=[-1.72e-14,-1.72e-14] mis=2.1e-04 c3tot=1.9e-01
+0.0003125 P4 C+0.100 ulpL=36 ulpR=18 dev-py=1.3e-02 cancL_p=1.31e+13 cancR_n=2.62e+13 cancCut0_n=2.05e+07 vdiffL=[7.62e-14,7.62e-14] mis=0.0e+00 c3tot=0.0e+00
+0.0003125 P4 C-0.100 ulpL=4 ulpR=4 dev-py=4.8e-02 cancL_p=5.56e+13 cancR_n=1.11e+14 cancCut0_n=1.86e+06 vdiffL=[-1.80e-14,-1.80e-14] mis=0.0e+00 c3tot=1.4e-16
+== 2D worst per P (mis_lr, spread, c0L_vs_cut0, c3_total) and wall s at h=0.00125
+P0 M2_D0 mis=4.3e-03 spread=1.9e-02 c0/cut=1.2e-02 c3=2.4e-02 wall=228.2
+P0 M1_D0 mis=2.4e-03 spread=1.3e-02 c0/cut=1.2e-02 c3=1.5e-02 wall=86.9
+P0 M3_D1 mis=9.8e-03 spread=2.6e-03 c0/cut=1.2e-02 c3=4.4e-03 wall=147.1
+P1 M2_D0 mis=1.1e-02 spread=1.8e-02 c0/cut=1.2e-02 c3=3.4e-02 wall=509.4
+P1 M1_D0 mis=2.4e-03 spread=2.5e-02 c0/cut=1.2e-02 c3=3.0e-02 wall=313.8
+P1 M3_D1 mis=1.1e-02 spread=1.6e-03 c0/cut=1.2e-02 c3=1.6e-03 wall=377.6
+P2 M2_D0 mis=1.8e-02 spread=4.8e-03 c0/cut=1.0e-02 c3=4.9e-03 wall=183.8
+P2 M1_D0 mis=7.9e-03 spread=4.8e-03 c0/cut=6.4e-03 c3=7.0e-03 wall=191.9
+P2 M3_D1 mis=2.2e-03 spread=4.1e-03 c0/cut=3.1e-03 c3=3.5e-03 wall=209.9
+P3 M2_D0 mis=4.3e-03 spread=1.9e-02 c0/cut=1.2e-02 c3=2.4e-02 wall=162.8
+P3 M1_D0 mis=2.4e-03 spread=1.3e-02 c0/cut=1.2e-02 c3=1.5e-02 wall=202.1
+P3 M3_D1 mis=9.8e-03 spread=2.4e-03 c0/cut=1.2e-02 c3=4.4e-03 wall=195.6
+P4 M2_D0 mis=0.0e+00 spread=2.1e-16 c0/cut=2.1e-16 c3=2.1e-16 wall=372.4
+P4 M1_D0 mis=2.1e-16 spread=2.0e-16 c0/cut=2.0e-16 c3=2.0e-16 wall=445.9
+P4 M3_D1 mis=1.8e-16 spread=2.1e-16 c0/cut=2.1e-16 c3=2.1e-16 wall=344.4
+== restoration worst {'P0': {'mis_lr': '1.3e-02', 'spread': '9.7e-02', 'c0L_vs_cut0': '4.6e-02', 'c3_total': '1.9e-01', 'c3_species': '1.9e-01'}, 'P1': {'mis_lr': '1.2e-02', 'spread': '5.4e-02', 'c0L_vs_cut0': '6.9e-02', 'c3_total': '4.4e-02', 'c3_species': '4.4e-02'}, 'P2': {'mis_lr': '2.0e-01', 'spread': '1.1e-01', 'c0L_vs_cut0': '1.9e-01', 'c3_total': '1.9e-01', 'c3_species': '1.9e-01'}, 'P3': {'mis_lr': '1.0e-02', 'spread': '1.0e-01', 'c0L_vs_cut0': '4.6e-02', 'c3_total': '1.9e-01', 'c3_species': '1.9e-01'}, 'P4': {'mis_lr': '3.2e-16', 'spread': '2.6e-16', 'c0L_vs_cut0': '4.8e-16', 'c3_total': '2.6e-16', 'c3_species': '3.2e-16'}}

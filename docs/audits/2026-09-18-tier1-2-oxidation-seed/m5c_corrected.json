@@ -1,0 +1,15 @@
+{
+  "label": "M5c_CORRECTED_locos_on_genuinely_bare_si_t0",
+  "before_materials": [
+    "Mask",
+    "Si"
+  ],
+  "after_materials": [
+    "Mask",
+    "Si",
+    "SiO2"
+  ],
+  "num_level_sets_after": 3,
+  "native_seed_message_fired": true,
+  "seed_value_um": 0.05
+}

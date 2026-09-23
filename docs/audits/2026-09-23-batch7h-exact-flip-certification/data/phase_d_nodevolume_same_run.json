@@ -1,0 +1,49 @@
+{
+ "absolute_reduction_of_relative_error": 0.13581761882478124,
+ "after": {
+  "relative_error": 0.04973896788525855,
+  "sum_NodeVolume_cm2": 8.397911743081941e-08,
+  "triangulated_area_cm2": 7.999999999999878e-08
+ },
+ "before": {
+  "relative_error": 0.1855565867100398,
+  "sum_NodeVolume_cm2": 9.484452693680171e-08,
+  "triangulated_area_cm2": 7.999999999999876e-08
+ },
+ "contacts": {
+  "Si_xmax": {
+   "edge_set_equal": true,
+   "n_edges": 10,
+   "n_nodes": 11,
+   "node_set_equal": true
+  },
+  "Si_xmin": {
+   "edge_set_equal": true,
+   "n_edges": 10,
+   "n_nodes": 11,
+   "node_set_equal": true
+  }
+ },
+ "devsim_version": "2.11.0",
+ "exact_overlap_certification_sha256": {
+  "phase_b_exact_overlap.json": "2cd6e720f63ba838444755fabd3a5e218ae67959c0d7e124f2609015cdc320cc",
+  "phase_c_exact_flip.json": "17fee59357b242fe78485076fb5c7c3511b08f1e1591c4e5b33d9e94838796f6"
+ },
+ "excess_cm2": [
+  1.4844526936802954e-08,
+  3.979117430820624e-09
+ ],
+ "n_nodes": [
+  2921,
+  2921
+ ],
+ "n_triangles": [
+  5760,
+  5760
+ ],
+ "node_order_identity": [
+  true,
+  true
+ ],
+ "relative_reduction_of_relative_error": 0.7319471716572196
+}

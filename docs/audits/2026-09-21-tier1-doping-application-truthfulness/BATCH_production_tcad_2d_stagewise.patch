@@ -1,0 +1,145 @@
+--- a/tcad_2d_stagewise.py
++++ b/tcad_2d_stagewise.py
+@@ -5027,6 +5027,12 @@
+     def run_doping(self, silent: bool = False, reattach: bool = False):
+         """Apply the selected doping kind. Returns True on success.
+ 
++        Success means the canonical WaferStateV2 gained the requested
++        active attachment(s) -- not that a recipe DopingProfile could be
++        built. A refused request (no active attachment) and an all-zero
++        request (a known no-op) both return False and leave
++        last_doped_result, the history and the viewer layer untouched.
++
+         `silent` suppresses only the success POPUP -- the log line and
+         the auto-switch to the doping color overlay still happen either
+         way. Needed because run_measurement() calls this internally to
+@@ -5072,6 +5078,7 @@
+                 region = self.dope_uniform_region_var.get()
+                 donor = float(self.dope_uniform_donor_var.get())
+                 acceptor = float(self.dope_uniform_acceptor_var.get())
++                requested_all_zero = donor == 0.0 and acceptor == 0.0
+                 conc = donor - acceptor
+                 doped_result = apply_uniform_doping(
+                     process_result, {region: conc},
+@@ -5088,6 +5095,7 @@
+                 position = float(self.dope_step_position_var.get())
+                 donor = float(self.dope_step_donor_var.get())
+                 acceptor = float(self.dope_step_acceptor_var.get())
++                requested_all_zero = donor == 0.0 and acceptor == 0.0
+                 doped_result = apply_step_junction_doping(
+                     process_result, region=region, junction_axis=axis,
+                     junction_position_um=position,
+@@ -5109,6 +5117,7 @@
+                 acceptor = float(self.dope_gauss_acceptor_var.get())
+                 donor_species = self.dope_gauss_donor_species_var.get()
+                 acceptor_species = self.dope_gauss_acceptor_species_var.get()
++                requested_all_zero = donor == 0.0 and acceptor == 0.0
+                 # Multi-implant accumulation (formerly this branch's own
+                 # `existing=`/`gaussian_terms` mechanism) is now
+                 # WaferState's job -- every kind, not just Gaussian
+@@ -5141,6 +5150,10 @@
+                 drn_max = float(self.dope_win_drn_max_var.get())
+                 drn_donor = float(self.dope_win_drn_donor_var.get())
+                 drn_acceptor = float(self.dope_win_drn_acceptor_var.get())
++                requested_all_zero = not any((
++                    donor_bg, acceptor_bg, src_donor, src_acceptor,
++                    drn_donor, drn_acceptor,
++                ))
+                 windows = [
+                     {"min_um": src_min, "max_um": src_max,
+                      "donor_conc_cm3": src_donor, "acceptor_conc_cm3": src_acceptor},
+@@ -5186,7 +5199,16 @@
+ 
+             return False
+ 
+-        self.last_doped_result = doped_result
++        if requested_all_zero:
++            # A known, physically exact no-op: zero dopant added anywhere
++            # changes nothing on any geometry. No attachment, no ledger
++            # entry, and nothing is reported as applied. False = no doping
++            # application was recorded (last_doped_result stays as it was).
++            self._log(
++                "\nNO DOPING ADDED: all requested concentrations are zero. "
++                "The wafer state is unchanged.\n"
++            )
++            return False
+ 
+         # WaferState v2 P0-C: a SiO2 barrier over part of the doped
+         # region is carved into THIS NEW application's own support
+@@ -5223,12 +5245,76 @@
+                 barrier_windows = None
+                 self._log(f"\n(Could not derive SiO2 barrier windows: {exc!r})\n")
+ 
++        # The physical source of truth is the canonical WaferStateV2, not
++        # the recipe DopingProfile: success needs a NEW active attachment
++        # and no new refusal event / unresolved-inventory entry from this
++        # request (every requested profile yields exactly one of the two).
++        # A refused request keeps the new state -- its refusal provenance
++        # and ledger are real -- but is never reported as applied.
++        prior = self.wafer_state
++        prior_att = {a.attachment_id for a in getattr(prior, "attachments", ())}
++        n_events = len(getattr(prior, "events", ()))
++        n_unresolved = len(getattr(prior, "unresolved_inventory", ()))
++
+         if not reattach:
+             self.wafer_state = advance_wafer_state(
+                 self.wafer_state, doped_result, "doping",
+                 barrier_windows=barrier_windows, barrier_axis="x",
+             )
+ 
++        state = self.wafer_state
++        n_new_att = sum(
++            a.attachment_id not in prior_att
++            for a in getattr(state, "attachments", ())
++        )
++        n_refused = sum(
++            e.model_status == "UNSUPPORTED_BY_MODEL"
++            for e in getattr(state, "events", ())[n_events:]
++        )
++        n_new_unresolved = len(getattr(state, "unresolved_inventory", ())) - n_unresolved
++
++        if reattach:
++            # Only an existing canonical active attachment can justify
++            # re-attaching; a stale numeric DopingProfile cannot.
++            applied = bool(getattr(state, "attachments", ()))
++        else:
++            applied = n_new_att > 0 and n_refused == 0 and n_new_unresolved == 0
++
++        if not applied:
++            self._log(
++                f"\n================================\n"
++                f"DOPING NOT APPLIED (UNSUPPORTED_BY_MODEL)\n"
++                f"================================\n"
++                + (
++                    "- No active dopant attachment was created.\n"
++                    if n_new_att == 0 else
++                    f"- PARTIAL: {n_new_att} active attachment(s) WERE created while "
++                    f"others were refused; the canonical state keeps them, and the "
++                    f"request is still not reported as applied.\n"
++                )
++                + f"- The requested doping cannot be used as canonical electrical "
++                f"doping"
++                + (" (re-attach needs an existing canonical active attachment).\n"
++                   if reattach else ".\n")
++                + f"- REQUESTED, NOT APPLIED (user input, not a result): "
++                f"{summary.split(' -> ')[0]}\n"
++                f"- WaferState recorded {n_refused} refusal event(s) and "
++                f"{n_new_unresolved} unresolved-inventory entr(ies) for this "
++                f"request; nothing else.\n"
++                f"- No DevSim write or solve is run.\n"
++                f"- Running another supported process step does not recover the "
++                f"physical certainty that was lost.\n"
++            )
++            if not silent:
++                self._notify_error(
++                    "Doping",
++                    "DOPING NOT APPLIED (UNSUPPORTED_BY_MODEL): the request is "
++                    "not reported as applied; see the process log.",
++                )
++            return False
++
++        self.last_doped_result = doped_result
++
+         self.history.append(
+             f"Doping: {kind}"
+         )

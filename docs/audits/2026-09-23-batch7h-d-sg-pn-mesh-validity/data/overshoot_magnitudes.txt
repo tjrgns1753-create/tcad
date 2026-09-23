@@ -1,0 +1,3 @@
+M4_D2 n max/contactmax-1 = 2.761e-01 n min/contactmin = 8.116e-01 p max/contactmax-1 = 2.322e-01 p min/contactmin = 7.836e-01 psi range -0.4226584768322843 0.42356434797934434 contact psi -0.4172522549235809 0.4172522549235809
+L3_after_D1 n max/contactmax-1 = 5.564e-04 n min/contactmin = 9.994e-01 p max/contactmax-1 = 5.564e-04 p min/contactmin = 9.994e-01 psi range -0.4172666553217999 0.4172666551383581 contact psi -0.417252254923581 0.417252254923581
+L3_after_D0 n max/contactmax-1 = 0.000e+00 n min/contactmin = 1.000e+00 p max/contactmax-1 = 0.000e+00 p min/contactmin = 1.000e+00 psi range -0.417252254923581 0.417252254923581 contact psi -0.417252254923581 0.417252254923581

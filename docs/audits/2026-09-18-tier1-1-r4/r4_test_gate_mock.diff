@@ -1,0 +1,212 @@
+diff --git a/tests/unit/test_measurement_canonical_state_gate_mock.py b/tests/unit/test_measurement_canonical_state_gate_mock.py
+index 5737960..0df7cfa 100644
+--- a/tests/unit/test_measurement_canonical_state_gate_mock.py
++++ b/tests/unit/test_measurement_canonical_state_gate_mock.py
+@@ -424,12 +424,24 @@ def test_float32_boundary_node_snaps_within_1ulp():
+ def test_a_real_gap_beyond_1ulp_still_blocks():
+     """A node genuinely outside a cell -- by far more than one float32
+     ULP, e.g. a whole grid cell -- is a real geometry mismatch, not a
+-    serialization artifact, and must still block exactly as before."""
++    serialization artifact, and must still block exactly as before.
++
++    FakeDevsim/_expect_blocked's xs/ys are the NATIVE (pre-division)
++    coordinates canonical_node_doping() divides by `scale` -- exactly
++    what get_node_model_values() would really return -- not already-
++    um values; this test originally passed `x_far_native / scale`
++    (dividing back to um) into `xs`, and -0.5 (already um) into `ys`,
++    so both axes landed thousands of um away regardless of the real
++    ~0.2um gap under test, passing only because ANY absurd coordinate
++    blocks -- not because it actually exercised a 0.2um-beyond-the-edge
++    gap. Fixed to pass genuinely native coordinates on both axes."""
+     scale = 1.0e-4
+     outside = v2.initialize_wafer_state(cells=[("Si", (-2.4, 2.4, -1.0, 0.0), "si#0")])
+-    x_far = 2.4 + 0.2  # one grid cell past the edge, scaled to native
++    x_far = 2.4 + 0.2  # one grid cell past the edge
+     x_far_native = float((np.array([x_far], dtype=np.float32) * scale)[0])
+-    exc, fake = _expect_blocked(outside, xs=(x_far_native / scale,), ys=(-0.5,), scale=scale)
++    y_native = -0.5 * scale
++    exc, fake = _expect_blocked(outside, xs=(x_far_native,), ys=(y_native,), scale=scale)
++    assert abs(_first(exc)["x_um"] - x_far) < 1e-6, _first(exc)
+     assert _first(exc)["material_instance_ids"] == []
+     assert "no ACTIVE modelled cell contains this node" in _first(exc)["reason"]
+ 
+@@ -455,6 +467,179 @@ def test_ambiguous_snap_blocks_rather_than_guessing():
+         "an ambiguous snap must not resolve to either cell")
+ 
+ 
++# ---------------------------------------------------------------------------
++# Tier 1-1 r4: the r3 snap only triggered when `found` was EMPTY, so a
++# float32 round-trip error that pushed a node a few ULPs INTO a
++# neighboring material's cell (found non-empty, just the wrong material)
++# never got a snap chance at all -- a real, Codex-reported false block on
++# a genuinely supported interface node. Fixed by deciding ownership at
++# the RAW coordinate first, and -- only when that has no same-region
++# owner -- searching ACTIVE+MODELLED cells of the region's OWN material
++# specifically for a snap target, then re-deciding ownership at the
++# snapped point against every present cell.
++#
++# Task D (a real 2-material DevSim mesh with a NON-ZERO Si/SiO2
++# interface) was investigated directly, not assumed impossible: every
++# real multi-material geometry model in this project (gate_stack.py,
++# confirmed by reading a real exported mesh -- Si at y in [-1,0], the
++# gate oxide at y in [0,0.075], every other material likewise) anchors
++# the Si surface, and so every Si-to-other-material interface, at
++# EXACTLY y=0 -- trivially float32-exact, not useful for this bug. The
++# only real process that produces a Si/SiO2 interface AWAY from y=0 is
++# oxidation, whose CONVERTED-region dopant fate this project's own
++# WaferStateV2 design already marks UNSUPPORTED_BY_MODEL by construction
++# (`_apply_conversion` / `_apply_geometry_change` in wafer_state_v2.py) --
++# so no oxidation-derived interface can ever become the TWO ACTIVE +
++# MODELLED cells this bug needs, and building one would mean either
++# touching oxidation conversion physics (explicitly out of scope this
++# round) or writing an entirely new, bespoke geometry-construction path
++# with no existing production caller -- disproportionate to what the
++# deterministic unit regressions below already prove rigorously (with
++# EXACT, numpy-verified float32 arithmetic, not an approximation a real
++# mesh's own meshing/export noise could obscure). Pinned here as
++# deterministic unit regressions instead, per the task's own fallback.
++# ---------------------------------------------------------------------------
++
++def _f32_native(v_um: float, scale: float) -> float:
++    """What DevSim's get_node_model_values() would actually return for a
++    canonical boundary value `v_um` at this length_scale_to_cm -- the
++    mesh's own float32 serialization, exactly as mesh_import.py computes
++    it (`points = raw_points * length_scale_to_cm`). This -- NOT `v_um`
++    itself -- is the value FakeDevsim's xs/ys (and _expect_blocked's)
++    must carry: canonical_node_doping() divides whatever
++    get_node_model_values() returns by `length_scale_to_cm` to recover
++    um. A caller here must never pass an already-um value into
++    FakeDevsim/_expect_blocked; scale it to native first (bare `v * scale`
++    for a value with no float32 error of its own, e.g. a synthetic
++    "far away" test coordinate)."""
++    return float((np.array([v_um], dtype=np.float32) * scale)[0])
++
++
++def test_r4_snap_up_into_a_neighboring_material_resolves_to_the_real_owner():
++    """The exact Codex repro: Si (-2,2,-1,0.6) / SiO2 (-2,2,0.6,1),
++    region='Si', exact interface 0.6um. float32(0.6)*float32(1e-4)/1e-4
++    = 0.6000000212225132um -- +2.122251319e-08um, INSIDE SiO2's range,
++    one float32 ULP (3.638e-08um at this magnitude) past the true
++    boundary. `found` at the raw coordinate is the SiO2 cell (not
++    empty), so the r3 gate never tried a snap at all and blocked a
++    genuinely supported Si node with 'the only cell containing this
++    node is material SiO2 ..., not ... Si'. Required: canonical donor
++    1e17 is returned, apply_doping() writes it, not UNSUPPORTED."""
++    scale = 1.0e-4
++    state = _cells_state(MaterialCell("csi", "Si", (-2.0, 2.0, -1.0, 0.6), "si#0"),
++                         MaterialCell("cox", "SiO2", (-2.0, 2.0, 0.6, 1.0), "ox#0"))
++    state = _uniform(state, "si#0", (-2.0, 2.0, -1.0, 0.6), 1.0e17)
++
++    y_native = _f32_native(0.6, scale)
++    x_native = 0.5 * scale
++    y_raw = y_native / scale  # for the sanity checks only -- never passed to FakeDevsim
++    assert y_raw > 0.6, "fixture is broken: this repro needs the round-trip to land INSIDE SiO2"
++    tol = float(np.spacing(np.float32(0.6) * np.float32(scale))) / scale
++    assert 0.0 < y_raw - 0.6 <= tol, (y_raw, tol)
++
++    fake = FakeDevsim([x_native], [y_native])
++    donors, acceptors, nets = _with_fake(fake, lambda: canonical_node_doping("dev", "Si", state, scale))
++    assert (donors, acceptors, nets) == ([1.0e17], [0.0], [1.0e17]), (
++        f"the Si attachment's real value must reach this node, not SiO2's 0 (y_raw={y_raw!r})")
++    assert fake.writes == [] and fake.solves == 0, "the gate itself must be read-only"
++
++    fake2 = FakeDevsim([x_native], [y_native])
++    _with_fake(fake2, lambda: apply_doping("dev", "Si", state, length_scale_to_cm=scale))
++    assert fake2._nodes["NetDoping"] == [1.0e17], "the write/solve path is not blocked"
++
++
++def test_r4_snap_down_needs_the_upper_regions_owner():
++    """Opposite direction: interface at 0.7um, Si (-1,0.7) below,
++    SiO2 (0.7,1.0) above. float32(0.7)*float32(1e-4)/1e-4 =
++    0.6999999459367245um -- rounds DOWN, landing INSIDE Si's range
++    while the DevSim region being queried is 'SiO2' (the UPPER
++    material) -- the query must snap UP to find the real SiO2 owner,
++    not stay stuck on the Si cell that already (wrongly) contains it."""
++    scale = 1.0e-4
++    state = _cells_state(MaterialCell("csi", "Si", (-2.0, 2.0, -1.0, 0.7), "si#0"),
++                         MaterialCell("cox", "SiO2", (-2.0, 2.0, 0.7, 1.0), "ox#0"))
++    state = v2.attach_dopant(
++        state, species="B", polarity="acceptor", concentration_at=lambda x, y: 5.0e16,
++        inventory_integral=v2.uniform_inventory_integral(5.0e16),
++        support_instance_id="ox#0", support_region_um=(-2.0, 2.0, 0.7, 1.0),
++        model="uniform_v1", model_params={"conc_cm3": 5.0e16},
++    )
++
++    y_native = _f32_native(0.7, scale)
++    x_native = 0.5 * scale
++    y_raw = y_native / scale
++    tol = float(np.spacing(np.float32(0.7) * np.float32(scale))) / scale
++    assert 0.0 < 0.7 - y_raw <= tol, (
++        f"fixture is broken: this repro needs the round-trip to land INSIDE Si, "
++        f"within tolerance (y_raw={y_raw!r}, tol={tol!r})")
++
++    fake = FakeDevsim([x_native], [y_native])
++    donors, acceptors, nets = _with_fake(fake, lambda: canonical_node_doping("dev", "SiO2", state, scale))
++    assert (donors, acceptors, nets) == ([0.0], [5.0e16], [-5.0e16]), (
++        f"the SiO2 (upper region) attachment's real value must be returned (y_raw={y_raw!r})")
++
++    fake2 = FakeDevsim([x_native], [y_native])
++    _with_fake(fake2, lambda: apply_doping("dev", "SiO2", state, length_scale_to_cm=scale))
++    assert fake2._nodes["NetDoping"] == [-5.0e16]
++
++
++def test_r4_gap_beyond_1ulp_at_the_interface_still_blocks():
++    """Same Si/SiO2 interface as the first r4 test, but the node is
++    genuinely 1e-6um past the boundary (~27x the ~3.6e-8um tolerance at
++    this magnitude) -- a real mismatch, not a serialization artifact,
++    and must still block with 0 writes / 0 solves."""
++    scale = 1.0e-4
++    state = _cells_state(MaterialCell("csi", "Si", (-2.0, 2.0, -1.0, 0.6), "si#0"),
++                         MaterialCell("cox", "SiO2", (-2.0, 2.0, 0.6, 1.0), "ox#0"))
++    state = _uniform(state, "si#0", (-2.0, 2.0, -1.0, 0.6), 1.0e17)
++    y_far = 0.6 + 1.0e-6
++    y_far_native = y_far * scale
++    x_native = 0.5 * scale
++    tol = float(np.spacing(np.float32(0.6) * np.float32(scale))) / scale
++    assert (y_far - 0.6) > tol, "fixture is broken: this gap must exceed the 1-ULP tolerance"
++    exc, fake = _expect_blocked(state, xs=(x_native,), ys=(y_far_native,), region="Si", scale=scale)
++    assert abs(_first(exc)["y_um"] - y_far) < 1e-12, _first(exc)
++    assert "material SiO2" in str(exc) and "not the DevSim region's material 'Si'" in str(exc)
++
++
++def test_r4_overlap_at_the_interface_still_blocks_after_a_snap_attempt():
++    """Si (-2,2,-1,0.6) and SiO2 (-2,2,0.55,1) genuinely overlap over
++    y in [0.55, 0.6] (positive area, not a shared edge). A raw node at
++    float32(0.6)'s round-trip (0.6000000212...um, just past Si's own
++    y_max) has NO same-region owner at the raw point (only SiO2
++    contains it there), so a snap IS attempted and succeeds -- onto
++    Si's y_max=0.6 -- but re-deciding ownership at that snapped point
++    finds both cells (0.6 lies inside SiO2's [0.55,1] too) and their
++    genuine overlap, and correctly blocks anyway."""
++    scale = 1.0e-4
++    state = _cells_state(MaterialCell("csi", "Si", (-2.0, 2.0, -1.0, 0.6), "si#0"),
++                         MaterialCell("cox", "SiO2", (-2.0, 2.0, 0.55, 1.0), "ox#0"))
++    state = _uniform(state, "si#0", (-2.0, 2.0, -1.0, 0.6), 1.0e17)
++    y_native = _f32_native(0.6, scale)
++    x_native = 0.5 * scale
++    exc, _ = _expect_blocked(state, xs=(x_native,), ys=(y_native,), region="Si", scale=scale)
++    assert "physically overlap over a positive area" in str(exc), str(exc)
++
++
++def test_r4_ambiguous_same_region_snap_at_the_interface_still_blocks():
++    """Two Si cells stacked with a real gap of 2e-8um between them
++    (smaller than the ~3.6e-8um float32 ULP at this magnitude) -- a
++    query point in the gap is within tolerance of BOTH boundaries, so
++    the region-targeted snap search must refuse to guess either side."""
++    scale = 1.0e-4
++    gap = 2.0e-8
++    state = _cells_state(MaterialCell("cl", "Si", (-2.0, 2.0, -1.0, 0.6), "si#l"),
++                         MaterialCell("cu", "Si", (-2.0, 2.0, 0.6 + gap, 1.6), "si#u"))
++    y_mid = 0.6 + gap / 2.0
++    y_mid_native = y_mid * scale
++    x_native = 0.5 * scale
++    tol = float(np.spacing(np.float32(0.6) * np.float32(scale))) / scale
++    assert abs(y_mid - 0.6) <= tol and abs(y_mid - (0.6 + gap)) <= tol, (
++        "fixture is broken: both boundaries must be reachable")
++    exc, _ = _expect_blocked(state, xs=(x_native,), ys=(y_mid_native,), region="Si", scale=scale)
++    assert _first(exc)["material_instance_ids"] == [], (
++        "an ambiguous same-region snap must not resolve to either cell")
++
+ 
+ # ---------------------------------------------------------------------------
+ # Robust continuation and CLI helper

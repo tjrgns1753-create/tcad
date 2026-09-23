@@ -1,0 +1,8 @@
+P0 1D_h0.005_P0 mirror state C+0.100 (p contact -0.10 V) vs original C-0.100: max cut |I_m(-x)+I(x)|/|I| = 6.55e-03  p-contact C0 rel diff = 6.96e-16
+P0 1D_h0.005_P0 mirror state C-0.100 (p contact +0.10 V) vs original C+0.100: max cut |I_m(-x)+I(x)|/|I| = 6.99e-05  p-contact C0 rel diff = 2.30e-15
+P0 M1_D0_h0.005_P0 mirror state C+0.100 (p contact -0.10 V) vs original C-0.100: max cut |I_m(-x)+I(x)|/|I| = 7.17e-03  p-contact C0 rel diff = 0.00e+00
+P0 M1_D0_h0.005_P0 mirror state C-0.100 (p contact +0.10 V) vs original C+0.100: max cut |I_m(-x)+I(x)|/|I| = 1.75e-03  p-contact C0 rel diff = 0.00e+00
+P4 1D_h0.005_P4 mirror state C+0.100 (p contact -0.10 V) vs original C-0.100: max cut |I_m(-x)+I(x)|/|I| = 0.00e+00  p-contact C0 rel diff = 0.00e+00
+P4 1D_h0.005_P4 mirror state C-0.100 (p contact +0.10 V) vs original C+0.100: max cut |I_m(-x)+I(x)|/|I| = 0.00e+00  p-contact C0 rel diff = 0.00e+00
+P4 M1_D0_h0.005_P4 mirror state C+0.100 (p contact -0.10 V) vs original C-0.100: max cut |I_m(-x)+I(x)|/|I| = 0.00e+00  p-contact C0 rel diff = 0.00e+00
+P4 M1_D0_h0.005_P4 mirror state C-0.100 (p contact +0.10 V) vs original C+0.100: max cut |I_m(-x)+I(x)|/|I| = 0.00e+00  p-contact C0 rel diff = 0.00e+00

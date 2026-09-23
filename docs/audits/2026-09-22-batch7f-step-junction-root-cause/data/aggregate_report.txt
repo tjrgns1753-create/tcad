@@ -1,0 +1,144 @@
+==============================================================================================================
+TABLE 1: mesh quality (whole / junction_band / transition_ring / coarse_outer), imported L3/L4/L5, R1 node
+==============================================================================================================
+L3 whole            n_tri=  5760 n_nodes=  2921 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=3.814 deg  worst_aspect=16.00 area[min,med,max]=[7.812e-05,7.813e-05,2.000e-02] um^2
+L3 junction_band    n_tri=  5020 n_nodes=  2681 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=18.435 deg  worst_aspect=4.00 area[min,med,max]=[7.812e-05,7.812e-05,3.125e-04] um^2
+L3 transition_ring  n_tri=   400 n_nodes=   384 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=3.814 deg  worst_aspect=16.00 area[min,med,max]=[3.125e-04,6.250e-04,2.000e-02] um^2
+L3 coarse_outer     n_tri=   340 n_nodes=   218 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=45.000 deg  worst_aspect=2.00 area[min,med,max]=[2.000e-02,2.000e-02,2.000e-02] um^2
+
+L4 whole            n_tri= 21148 n_nodes= 10625 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=1.847 deg  worst_aspect=32.00 area[min,med,max]=[1.953e-05,1.953e-05,2.000e-02] um^2
+L4 junction_band    n_tri= 20080 n_nodes= 10379 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=18.435 deg  worst_aspect=4.00 area[min,med,max]=[1.953e-05,1.953e-05,7.813e-05] um^2
+L4 transition_ring  n_tri=   728 n_nodes=   706 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=1.847 deg  worst_aspect=32.00 area[min,med,max]=[7.812e-05,3.125e-04,2.000e-02] um^2
+L4 coarse_outer     n_tri=   340 n_nodes=   218 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=45.000 deg  worst_aspect=2.00 area[min,med,max]=[2.000e-02,2.000e-02,2.000e-02] um^2
+
+L5 whole            n_tri= 82028 n_nodes= 41085 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=0.909 deg  worst_aspect=64.00 area[min,med,max]=[4.883e-06,4.883e-06,2.000e-02] um^2
+L5 junction_band    n_tri= 80314 n_nodes= 40835 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=18.435 deg  worst_aspect=4.00 area[min,med,max]=[4.883e-06,4.883e-06,1.953e-05] um^2
+L5 transition_ring  n_tri=  1374 n_nodes=  1348 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=0.909 deg  worst_aspect=64.00 area[min,med,max]=[1.953e-05,1.563e-04,2.000e-02] um^2
+L5 coarse_outer     n_tri=   340 n_nodes=   218 dup_coords=0 zero_area=0 flipped=0 non_manifold=0 min_angle=45.000 deg  worst_aspect=2.00 area[min,med,max]=[2.000e-02,2.000e-02,2.000e-02] um^2
+
+==============================================================================================================
+TABLE 2: contact geometry (imported, R1 node)
+==============================================================================================================
+L3: contacts=['Si_xmin', 'Si_xmax'] contact_geometry={'Si_xmin': {'in_contact_list': True}, 'Si_xmax': {'in_contact_list': True}}
+L4: contacts=['Si_xmin', 'Si_xmax'] contact_geometry={'Si_xmin': {'in_contact_list': True}, 'Si_xmax': {'in_contact_list': True}}
+L5: contacts=['Si_xmin', 'Si_xmax'] contact_geometry={'Si_xmin': {'in_contact_list': True}, 'Si_xmax': {'in_contact_list': True}}
+
+==============================================================================================================
+TABLE 3: NodeVolume dopant inventory -- imported, all (level, rep, shift)
+==============================================================================================================
+L3 R1 node: Q_D/q=4.754980e+10 Q_A/q=4.754980e+10 Q_net/q=3.607475e+03  analytic Q_D=4.000000e+10 NodeVolume_vs_triangulated_relerr=0.185518
+L3 R1 shift: Q_D/q=4.729473e+10 Q_A/q=4.754980e+10 Q_net/q=-2.550745e+08  analytic Q_D=3.987500e+10 NodeVolume_vs_triangulated_relerr=0.185518
+L3 R2 node: Q_D/q=4.754980e+10 Q_A/q=4.729472e+10 Q_net/q=2.550817e+08  analytic Q_D=4.000000e+10 NodeVolume_vs_triangulated_relerr=0.185518
+L3 R2 shift: Q_D/q=4.729473e+10 Q_A/q=4.754980e+10 Q_net/q=-2.550745e+08  analytic Q_D=3.987500e+10 NodeVolume_vs_triangulated_relerr=0.185518
+L4 R1 node: Q_D/q=5.332026e+10 Q_A/q=5.332026e+10 Q_net/q=6.645857e+03  analytic Q_D=4.000000e+10 NodeVolume_vs_triangulated_relerr=0.331381
+L4 R1 shift: Q_D/q=5.319399e+10 Q_A/q=5.332026e+10 Q_net/q=-1.262629e+08  analytic Q_D=3.993750e+10 NodeVolume_vs_triangulated_relerr=0.331381
+L4 R2 node: Q_D/q=5.332026e+10 Q_A/q=5.319399e+10 Q_net/q=1.262762e+08  analytic Q_D=4.000000e+10 NodeVolume_vs_triangulated_relerr=0.331381
+L4 R2 shift: Q_D/q=5.319399e+10 Q_A/q=5.332026e+10 Q_net/q=-1.262629e+08  analytic Q_D=3.993750e+10 NodeVolume_vs_triangulated_relerr=0.331381
+L5 R1 node: Q_D/q=6.488076e+10 Q_A/q=6.488075e+10 Q_net/q=1.172524e+04  analytic Q_D=4.000000e+10 NodeVolume_vs_triangulated_relerr=0.622602
+L5 R1 shift: Q_D/q=6.481795e+10 Q_A/q=6.488075e+10 Q_net/q=-6.280565e+07  analytic Q_D=3.996875e+10 NodeVolume_vs_triangulated_relerr=0.622602
+L5 R2 node: Q_D/q=6.488076e+10 Q_A/q=6.481794e+10 Q_net/q=6.282910e+07  analytic Q_D=4.000000e+10 NodeVolume_vs_triangulated_relerr=0.622602
+L5 R2 shift: Q_D/q=6.481795e+10 Q_A/q=6.488075e+10 Q_net/q=-6.280565e+07  analytic Q_D=3.996875e+10 NodeVolume_vs_triangulated_relerr=0.622602
+
+==============================================================================================================
+TABLE 4: R1-R2 inventory difference vs junction-column NodeVolume (node-aligned cases)
+==============================================================================================================
+L3: Q_A(R1)-Q_A(R2)=2.550781e+08 cm^-1   NA*junction_column_NodeVolume=2.550781e+08 cm^-1   match_relerr=0.000000   junction_column_volume=2.550781e-10 cm^2 (161 nodes)
+L4: Q_A(R1)-Q_A(R2)=1.262695e+08 cm^-1   NA*junction_column_NodeVolume=1.262695e+08 cm^-1   match_relerr=0.000000   junction_column_volume=1.262695e-10 cm^2 (321 nodes)
+L5: Q_A(R1)-Q_A(R2)=6.281738e+07 cm^-1   NA*junction_column_NodeVolume=6.281738e+07 cm^-1   match_relerr=0.000000   junction_column_volume=6.281738e-11 cm^2 (641 nodes)
+
+==============================================================================================================
+TABLE 4b: R1 vs R2 shifted doping fingerprint (byte-identical check, imported mesh)
+==============================================================================================================
+L3 shift: donors R1==True  acceptors R1==R2 True
+L4 shift: donors R1==True  acceptors R1==R2 True
+L5 shift: donors R1==True  acceptors R1==R2 True
+
+==============================================================================================================
+TABLE 5: field maximum -- global / junction-band / junction-interior (imported, R1 node)
+==============================================================================================================
+L3 global_max: mag=419381.2 V/cm Ex=-406609.1 Ey=102711.6 centroid_cm=[4.166666561407813e-07, -4.166666561407813e-07] dist_junction=4.167e-07 boundary_adj=True to_xmin=2.004e-04 to_ymax=4.167e-07
+L3 junction_band_max: mag=419381.2 V/cm Ex=-406609.1 Ey=102711.6 centroid_cm=[4.166666561407813e-07, -4.166666561407813e-07] dist_junction=4.167e-07 boundary_adj=True to_xmin=2.004e-04 to_ymax=4.167e-07
+L3 junction_interior_max_excl_boundary: mag=333297.9 V/cm Ex=-329645.4 Ey=49207.9 centroid_cm=[4.166666561407813e-07, -1.6666666245631252e-06] dist_junction=4.167e-07 boundary_adj=False to_xmin=2.004e-04 to_ymax=1.667e-06
+L3 y-invariance indicator max|Ey|/max|Ex| = 0.3136
+
+L4 global_max: mag=547010.1 V/cm Ex=-526532.1 Ey=148270.1 centroid_cm=[2.0833332807039065e-07, -2.0833332807039065e-07] dist_junction=2.083e-07 boundary_adj=True to_xmin=2.002e-04 to_ymax=2.083e-07
+L4 junction_band_max: mag=547010.1 V/cm Ex=-526532.1 Ey=148270.1 centroid_cm=[2.0833332807039065e-07, -2.0833332807039065e-07] dist_junction=2.083e-07 boundary_adj=True to_xmin=2.002e-04 to_ymax=2.083e-07
+L4 junction_interior_max_excl_boundary: mag=432844.6 V/cm Ex=-421592.7 Ey=98051.5 centroid_cm=[2.0833332807039065e-07, -8.333333122815626e-07] dist_junction=2.083e-07 boundary_adj=False to_xmin=2.002e-04 to_ymax=8.333e-07
+L4 y-invariance indicator max|Ey|/max|Ex| = 0.2816
+
+L5 global_max: mag=660394.6 V/cm Ex=-632037.1 Ey=191442.2 centroid_cm=[1.0416666403519533e-07, -1.0416666403519533e-07] dist_junction=1.042e-07 boundary_adj=True to_xmin=2.001e-04 to_ymax=1.042e-07
+L5 junction_band_max: mag=660394.6 V/cm Ex=-632037.1 Ey=191442.2 centroid_cm=[1.0416666403519533e-07, -1.0416666403519533e-07] dist_junction=1.042e-07 boundary_adj=True to_xmin=2.001e-04 to_ymax=1.042e-07
+L5 junction_interior_max_excl_boundary: mag=517367.0 V/cm Ex=-499266.8 Ey=135651.1 centroid_cm=[1.0416666403519533e-07, -4.166666561407813e-07] dist_junction=1.042e-07 boundary_adj=False to_xmin=2.001e-04 to_ymax=4.167e-07
+L5 y-invariance indicator max|Ey|/max|Ex| = 0.3029
+
+==============================================================================================================
+TABLE 6: y-invariance (Potential/Electrons/Holes/NetDoping spread), imported R1 node
+==============================================================================================================
+L3: n_x_columns=45 n_multi=37 n_singleton=8
+   Potential: max_spread=4.921155e-01  median_spread=1.311027e-09
+   Electrons: max_spread=5.817288e+17  median_spread=1.197579e-02
+   Holes: max_spread=5.817311e+17  median_spread=1.197578e-02
+   NetDoping: max_spread=0.000000e+00  median_spread=0.000000e+00
+L4: n_x_columns=71 n_multi=61 n_singleton=10
+   Potential: max_spread=5.557434e-01  median_spread=1.289824e-07
+   Electrons: max_spread=7.868926e+17  median_spread=1.210077e+00
+   Holes: max_spread=7.868912e+17  median_spread=1.210081e+00
+   NetDoping: max_spread=0.000000e+00  median_spread=0.000000e+00
+L5: n_x_columns=129 n_multi=109 n_singleton=20
+   Potential: max_spread=5.624375e-01  median_spread=8.599164e-07
+   Electrons: max_spread=7.257530e+17  median_spread=1.491679e+02
+   Holes: max_spread=7.257489e+17  median_spread=1.491684e+02
+   NetDoping: max_spread=0.000000e+00  median_spread=0.000000e+00
+
+==============================================================================================================
+TABLE 7: depletion recovery -- old y-collapsed vs center-yline vs volume-weighted (imported R1 node, donor side)
+==============================================================================================================
+L3 OLD(y-collapsed):        50%=1.2500e-06 90%=2.5000e-06 99%=3.7500e-06
+L3 NEW(center y-line):     50%=2.5000e-06 90%=3.7500e-06 99%=5.0000e-06  (y=-1.0000e-04, n=37)
+L3 NEW(volume-weighted):   50%=2.5000e-06 90%=3.7500e-06 99%=5.0000e-06  (n_columns=45)
+L4 OLD(y-collapsed):        50%=1.2500e-06 90%=2.5000e-06 99%=3.7500e-06
+L4 NEW(center y-line):     50%=2.5000e-06 90%=3.1250e-06 99%=4.3750e-06  (y=-1.0000e-04, n=53)
+L4 NEW(volume-weighted):   50%=2.5000e-06 90%=3.1250e-06 99%=4.3750e-06  (n_columns=71)
+L5 OLD(y-collapsed):        50%=1.5625e-06 90%=2.5000e-06 99%=3.7500e-06
+L5 NEW(center y-line):     50%=2.5000e-06 90%=3.1250e-06 99%=4.0625e-06  (y=-1.0000e-04, n=85)
+L5 NEW(volume-weighted):   50%=2.1875e-06 90%=2.8125e-06 99%=4.0625e-06  (n_columns=129)
+
+==============================================================================================================
+TABLE 8: structured control -- NodeVolume relerr, equilibrium, mesh quality (all cases)
+==============================================================================================================
+struct_L3_R1_node_fixed          n_nodes= 1209 eq_ok=False NodeVolume_relerr=2.228e-14 min_angle=14.04
+struct_L3_R2_node_fixed          n_nodes= 1209 eq_ok=True  NodeVolume_relerr=2.228e-14 min_angle=14.04
+struct_L3_R2_shift_fixed         n_nodes= 1209 eq_ok=True  NodeVolume_relerr=2.228e-14 min_angle=14.04
+struct_L4_R1_node_fixed          n_nodes= 1767 eq_ok=True  NodeVolume_relerr=3.176e-14 min_angle=7.13
+struct_L4_R2_node_fixed          n_nodes= 1767 eq_ok=True  NodeVolume_relerr=3.176e-14 min_angle=7.13
+struct_L4_R2_shift_fixed         n_nodes= 1767 eq_ok=True  NodeVolume_relerr=3.176e-14 min_angle=7.13
+struct_L5_R1_node_fixed          n_nodes= 2821 eq_ok=True  NodeVolume_relerr=7.941e-15 min_angle=3.58
+struct_L5_R2_node_fixed          n_nodes= 2821 eq_ok=True  NodeVolume_relerr=7.941e-15 min_angle=3.58
+struct_L5_R2_shift_fixed         n_nodes= 2821 eq_ok=True  NodeVolume_relerr=7.941e-15 min_angle=3.58
+struct_L4_R1_node_alternating    n_nodes= 1767 eq_ok=True  NodeVolume_relerr=3.176e-14 min_angle=7.13
+struct_L4_R1_node_H              n_nodes= 1767 eq_ok=True  NodeVolume_relerr=2.796e-14 min_angle=10.62
+struct_L4_R1_node_2H             n_nodes= 1767 eq_ok=True  NodeVolume_relerr=2.796e-14 min_angle=5.36
+
+==============================================================================================================
+TABLE 9: H/2H current scaling (structured, L4-equivalent, R1 node)
+==============================================================================================================
+H (y_extent=2.0um): contacts=['Si_xmin', 'Si_xmax'] bias_points:
+   V=-0.30  currents={'Si_xmin': -1.0936831502088849e-11, 'Si_xmax': 1.0936747902125287e-11}  conservation_error=8.360e-17
+   V=+0.00  currents={'Si_xmin': 9.765784104099149e-29, 'Si_xmax': -5.389062341146211e-29}  conservation_error=4.377e-29
+   V=+0.30  currents={'Si_xmin': 3.3291026047479117e-09, 'Si_xmax': -3.3291031700893635e-09}  conservation_error=5.653e-16
+   V=+0.40  currents={'Si_xmin': 2.4463678180090378e-08, 'Si_xmax': -2.4463666298701668e-08}  conservation_error=1.188e-14
+2H (y_extent=4.0um): contacts=['Si_xmin', 'Si_xmax'] bias_points:
+   V=-0.30  currents={'Si_xmin': -2.1873663004177698e-11, 'Si_xmax': 2.1873495804250574e-11}  conservation_error=1.672e-16
+   V=+0.00  currents={'Si_xmin': 1.8221125852204118e-28, 'Si_xmax': -9.423733033025158e-29}  conservation_error=8.797e-29
+   V=+0.30  currents={'Si_xmin': 6.658202177846913e-09, 'Si_xmax': -6.658206340178727e-09}  conservation_error=4.162e-15
+   V=+0.40  currents={'Si_xmin': 4.892735636018076e-08, 'Si_xmax': -4.892733259740333e-08}  conservation_error=2.376e-14
+V=-0.30: |I|(H)=1.0937e-11  |I|(2H)=2.1874e-11  ratio(2H/H)=2.0  contact_length_ratio=2.0  current/contact_length(H)=5.4684e-08  current/contact_length(2H)=5.4684e-08
+V=+0.00: |I|(H)=9.7658e-29  |I|(2H)=1.8221e-28  ratio(2H/H)=1.8658128889574646  contact_length_ratio=2.0  current/contact_length(H)=4.8829e-25  current/contact_length(2H)=4.5553e-25
+V=+0.30: |I|(H)=3.3291e-09  |I|(2H)=6.6582e-09  ratio(2H/H)=2.0  contact_length_ratio=2.0  current/contact_length(H)=1.6646e-05  current/contact_length(2H)=1.6646e-05
+V=+0.40: |I|(H)=2.4464e-08  |I|(2H)=4.8927e-08  ratio(2H/H)=2.0000000000000004  contact_length_ratio=2.0  current/contact_length(H)=1.2232e-04  current/contact_length(2H)=1.2232e-04
+
+==============================================================================================================
+TABLE 10: diagonal-orientation control (fixed vs alternating, L4 R1 node)
+==============================================================================================================
+fixed: eq_ok=True NodeVolume_relerr=3.176e-14 global_max_mag=236526.8 band_max_mag=236526.8
+alternating: eq_ok=True NodeVolume_relerr=3.176e-14 global_max_mag=236526.8 band_max_mag=236526.8

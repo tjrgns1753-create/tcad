@@ -1,0 +1,103 @@
+[
+  {
+    "label": "raw",
+    "n_points": 231,
+    "n_triangles": 400,
+    "total_abs_area_um2": 8.0,
+    "n_zero_area_triangles": 0,
+    "n_inverted_triangles": 0,
+    "edge_owner_counts": {
+      "1": 60,
+      "2": 570
+    },
+    "n_boundary_loops": 1,
+    "boundary_clean_manifold": true,
+    "n_hanging_nodes": 0,
+    "n_delaunay_violations": 0,
+    "n_confirmed_overlap_pairs": 0,
+    "confirmed_overlap_total_area_um2": 0,
+    "n_unknown_overlap_pairs": 36,
+    "n_duplicate_triangles": 0,
+    "n_non_manifold_edges": 0,
+    "n_interior_unconstrained_edges": 570,
+    "n_constrained_edges": 60
+  },
+  {
+    "label": "L1",
+    "n_points": 299,
+    "n_triangles": 534,
+    "total_abs_area_um2": 7.999999523162842,
+    "n_zero_area_triangles": 0,
+    "n_inverted_triangles": 0,
+    "edge_owner_counts": {
+      "1": 62,
+      "2": 770
+    },
+    "n_boundary_loops": 1,
+    "boundary_clean_manifold": true,
+    "n_hanging_nodes": 0,
+    "n_delaunay_violations": 18,
+    "n_confirmed_overlap_pairs": 0,
+    "confirmed_overlap_total_area_um2": 0,
+    "n_unknown_overlap_pairs": 39,
+    "n_duplicate_triangles": 0,
+    "n_non_manifold_edges": 0,
+    "n_interior_unconstrained_edges": 770,
+    "n_constrained_edges": 62,
+    "red_green_seed_marked_triangles": 20,
+    "n_triangles_before_pass": 400,
+    "n_triangles_after_pass": 534
+  },
+  {
+    "label": "L2",
+    "n_points": 437,
+    "n_triangles": 808,
+    "total_abs_area_um2": 8.0,
+    "n_zero_area_triangles": 0,
+    "n_inverted_triangles": 0,
+    "edge_owner_counts": {
+      "1": 64,
+      "2": 1180
+    },
+    "n_boundary_loops": 1,
+    "boundary_clean_manifold": true,
+    "n_hanging_nodes": 0,
+    "n_delaunay_violations": 54,
+    "n_confirmed_overlap_pairs": 0,
+    "confirmed_overlap_total_area_um2": 0,
+    "n_unknown_overlap_pairs": 53,
+    "n_duplicate_triangles": 0,
+    "n_non_manifold_edges": 0,
+    "n_interior_unconstrained_edges": 1180,
+    "n_constrained_edges": 64,
+    "red_green_seed_marked_triangles": 78,
+    "n_triangles_before_pass": 534,
+    "n_triangles_after_pass": 808
+  },
+  {
+    "label": "L3",
+    "n_points": 953,
+    "n_triangles": 1834,
+    "total_abs_area_um2": 8.0,
+    "n_zero_area_triangles": 0,
+    "n_inverted_triangles": 0,
+    "edge_owner_counts": {
+      "1": 70,
+      "2": 2716
+    },
+    "n_boundary_loops": 1,
+    "boundary_clean_manifold": true,
+    "n_hanging_nodes": 0,
+    "n_delaunay_violations": 58,
+    "n_confirmed_overlap_pairs": 0,
+    "confirmed_overlap_total_area_um2": 0,
+    "n_unknown_overlap_pairs": 190,
+    "n_duplicate_triangles": 0,
+    "n_non_manifold_edges": 0,
+    "n_interior_unconstrained_edges": 2716,
+    "n_constrained_edges": 70,
+    "red_green_seed_marked_triangles": 314,
+    "n_triangles_before_pass": 808,
+    "n_triangles_after_pass": 1834
+  }
+]

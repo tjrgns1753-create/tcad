@@ -1,0 +1,24 @@
+--- a/tcad/mesh/interface.py
++++ b/tcad/mesh/interface.py
+@@ -79,6 +79,13 @@
+         "B", "As") for the process log and any future report — never
+         read by doping_mapping.py or ViennaPS/DevSim, since neither
+         backend has any species-dependent physics. None if unset.
++    chemical_state : the declared activation state of the dopant this
++        region describes: "ACTIVE" (a user-declared, electrically active
++        analytic profile), "CHEMICAL" (dopant present, electrical
++        activation not modelled) or "UNKNOWN". It is a DECLARATION made
++        by whoever builds the region -- never inferred from `kind` or a
++        model name. None = not declared, which downstream reads as
++        "UNKNOWN" (fail closed).
+     """
+ 
+     region: str
+@@ -95,6 +102,7 @@
+     acceptor_peak_conc_cm3: Optional[float] = None
+     donor_species: Optional[str] = None
+     acceptor_species: Optional[str] = None
++    chemical_state: Optional[str] = None
+ 
+ 
+ @dataclass

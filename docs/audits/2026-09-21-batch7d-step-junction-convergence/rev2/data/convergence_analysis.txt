@@ -1,0 +1,207 @@
+====================================================================================================
+SECTION 9-10: per-bias-point log-current convergence, L0..L5, both geometries
+====================================================================================================
+
+-- 1d R1 node --
+  L0: 6/6 bias ok logI=[-8.1014, -6.8792, -5.9467, -4.7974, -3.348, -1.741] dlog_vs_prev_level=None
+  L1: 6/6 bias ok logI=[-8.1264, -6.9918, -5.9472, -4.7978, -3.348, -1.741] dlog_vs_prev_level=[-0.0251, -0.1126, -0.0005, -0.0004, 0.0, 0.0]
+  L2: 6/6 bias ok logI=[-7.8606, -6.8281, -5.9456, -4.798, -3.348, -1.741] dlog_vs_prev_level=[0.2659, 0.1637, 0.0017, -0.0002, -0.0, -0.0]
+  L3: 6/6 bias ok logI=[-7.3275, -6.9253, -5.9589, -4.7962, -3.3479, -1.741] dlog_vs_prev_level=[0.5331, -0.0972, -0.0133, 0.0018, 0.0001, 0.0]
+  L4: 6/6 bias ok logI=[-7.7126, -6.8505, -5.9424, -4.7975, -3.348, -1.741] dlog_vs_prev_level=[-0.3852, 0.0748, 0.0165, -0.0013, -0.0, 0.0]
+  L5: 6/6 bias ok logI=[-8.4455, -7.0783, -5.9554, -4.7982, -3.348, -1.741] dlog_vs_prev_level=[-0.7329, -0.2278, -0.013, -0.0007, -0.0, 0.0]
+
+-- 1d R1 shift --
+  L0: 6/6 bias ok logI=[-7.8993, -6.898, -5.9493, -4.7982, -3.3481, -1.7411] dlog_vs_prev_level=None
+  L1: 6/6 bias ok logI=[-7.7665, -6.9095, -5.9452, -4.7976, -3.348, -1.7411] dlog_vs_prev_level=[0.1328, -0.0114, 0.0041, 0.0006, 0.0001, 0.0001]
+  L2: 6/6 bias ok logI=[-7.8712, -6.8208, -5.9479, -4.7979, -3.348, -1.741] dlog_vs_prev_level=[-0.1047, 0.0886, -0.0027, -0.0003, -0.0, 0.0]
+  L3: 6/6 bias ok logI=[-7.3448, -6.7445, -5.971, -4.7961, -3.348, -1.741] dlog_vs_prev_level=[0.5264, 0.0764, -0.0231, 0.0018, 0.0, 0.0]
+  L4: 6/6 bias ok logI=[-7.6537, -6.875, -5.9504, -4.7972, -3.348, -1.741] dlog_vs_prev_level=[-0.3089, -0.1305, 0.0206, -0.0011, 0.0, 0.0]
+  L5: 6/6 bias ok logI=[-7.4715, -6.9053, -5.9356, -4.7994, -3.3479, -1.741] dlog_vs_prev_level=[0.1822, -0.0303, 0.0148, -0.0022, 0.0, 0.0]
+
+-- 1d R2 node --
+  L0: 6/6 bias ok logI=[-8.1629, -6.8648, -5.9468, -4.7974, -3.3478, -1.7409] dlog_vs_prev_level=None
+  L1: 6/6 bias ok logI=[-7.9419, -6.9176, -5.9428, -4.7975, -3.3479, -1.7409] dlog_vs_prev_level=[0.221, -0.0528, 0.0041, -0.0001, -0.0001, -0.0001]
+  L2: 6/6 bias ok logI=[-7.9999, -6.8877, -5.9522, -4.7982, -3.348, -1.741] dlog_vs_prev_level=[-0.058, 0.0299, -0.0094, -0.0007, -0.0001, -0.0001]
+  L3: 6/6 bias ok logI=[-7.9053, -6.7973, -5.9706, -4.7969, -3.348, -1.741] dlog_vs_prev_level=[0.0946, 0.0904, -0.0185, 0.0012, 0.0, -0.0]
+  L4: 6/6 bias ok logI=[-7.8169, -6.8963, -5.9312, -4.7984, -3.348, -1.741] dlog_vs_prev_level=[0.0884, -0.099, 0.0394, -0.0015, 0.0, 0.0]
+  L5: 6/6 bias ok logI=[-7.7128, -6.8716, -5.9379, -4.799, -3.348, -1.741] dlog_vs_prev_level=[0.1041, 0.0246, -0.0067, -0.0006, -0.0001, -0.0]
+
+-- 1d R2 shift --
+  L0: 6/6 bias ok logI=[-7.8993, -6.898, -5.9493, -4.7982, -3.3481, -1.7411] dlog_vs_prev_level=None
+  L1: 6/6 bias ok logI=[-7.7665, -6.9095, -5.9452, -4.7976, -3.348, -1.7411] dlog_vs_prev_level=[0.1328, -0.0114, 0.0041, 0.0006, 0.0001, 0.0001]
+  L2: 6/6 bias ok logI=[-7.8712, -6.8208, -5.9479, -4.7979, -3.348, -1.741] dlog_vs_prev_level=[-0.1047, 0.0886, -0.0027, -0.0003, -0.0, 0.0]
+  L3: 6/6 bias ok logI=[-7.3448, -6.7445, -5.971, -4.7961, -3.348, -1.741] dlog_vs_prev_level=[0.5264, 0.0764, -0.0231, 0.0018, 0.0, 0.0]
+  L4: 6/6 bias ok logI=[-7.6537, -6.875, -5.9504, -4.7972, -3.348, -1.741] dlog_vs_prev_level=[-0.3089, -0.1305, 0.0206, -0.0011, 0.0, 0.0]
+  L5: 6/6 bias ok logI=[-7.4715, -6.9053, -5.9356, -4.7994, -3.3479, -1.741] dlog_vs_prev_level=[0.1822, -0.0303, 0.0148, -0.0022, 0.0, 0.0]
+
+-- 2d R1 node --
+  L0: EQ_FAIL
+  L1: 0/1 bias ok logI=[None] dlog_vs_prev_level=None
+  L2: 0/1 bias ok logI=[None] dlog_vs_prev_level=[None]
+  L3: 4/4 bias ok logI=[-10.7065, -24.8163, -8.1907, -7.3347] dlog_vs_prev_level=None
+  L4: 4/4 bias ok logI=[-10.9581, -28.6548, -8.4862, -7.613] dlog_vs_prev_level=[-0.2516, -3.8385, -0.2955, -0.2783]
+  L5: 4/4 bias ok logI=[-10.8685, -30.3851, -8.7262, -7.8136] dlog_vs_prev_level=[0.0896, -1.7303, -0.24, -0.2006]
+
+-- 2d R1 shift --
+  L0: 2/3 bias ok logI=[-15.7947, -15.7951, None] dlog_vs_prev_level=None
+  L1: 2/3 bias ok logI=[-15.7844, -15.7849, None] dlog_vs_prev_level=[0.0104, 0.0102, None]
+  L2: EQ_FAIL
+  L3: 4/4 bias ok logI=[-11.9047, -23.8449, -10.2109, -8.7022] dlog_vs_prev_level=None
+  L4: 4/4 bias ok logI=[-10.8204, -28.3185, -9.4213, -8.2991] dlog_vs_prev_level=[1.0843, -4.4736, 0.7896, 0.4031]
+  L5: 4/4 bias ok logI=[-10.8948, -30.2759, -8.9687, -7.9804] dlog_vs_prev_level=[-0.0744, -1.9574, 0.4526, 0.3187]
+
+-- 2d R2 node --
+  L0: 2/3 bias ok logI=[-15.7686, -17.0539, None] dlog_vs_prev_level=None
+  L1: 2/3 bias ok logI=[-15.7696, -16.3011, None] dlog_vs_prev_level=[-0.001, 0.7527, None]
+  L2: 1/2 bias ok logI=[-15.7682, None] dlog_vs_prev_level=None
+  L3: 4/4 bias ok logI=[-11.9047, -24.6186, -10.2105, -8.7016] dlog_vs_prev_level=None
+  L4: 4/4 bias ok logI=[-10.8204, -28.4108, -9.4213, -8.299] dlog_vs_prev_level=[1.0843, -3.7922, 0.7892, 0.4026]
+  L5: 4/4 bias ok logI=[-10.8948, -31.2302, -8.9687, -7.9803] dlog_vs_prev_level=[-0.0744, -2.8194, 0.4526, 0.3187]
+
+-- 2d R2 shift --
+  L0: 2/3 bias ok logI=[-15.7947, -15.7951, None] dlog_vs_prev_level=None
+  L1: 2/3 bias ok logI=[-15.7844, -15.7849, None] dlog_vs_prev_level=[0.0104, 0.0102, None]
+  L2: EQ_FAIL
+  L3: 4/4 bias ok logI=[-11.9047, -23.8449, -10.2109, -8.7022] dlog_vs_prev_level=None
+  L4: 4/4 bias ok logI=[-10.8204, -28.3185, -9.4213, -8.2991] dlog_vs_prev_level=[1.0843, -4.4736, 0.7896, 0.4031]
+  L5: 4/4 bias ok logI=[-10.8948, -30.2759, -8.9687, -7.9804] dlog_vs_prev_level=[-0.0744, -1.9574, 0.4526, 0.3187]
+
+====================================================================================================
+SECTION 11: R1 vs R2 delta (same geometry/level/shift), log10|I| difference per bias point
+====================================================================================================
+
+-- 1d node --
+  L0: delta_log10|I|(R2-R1) per bias = [-0.061529, 0.014413, -9.2e-05, -2.6e-05, 0.000173, 0.000146]
+  L1: delta_log10|I|(R2-R1) per bias = [0.184548, 0.074285, 0.004487, 0.00032, 7.5e-05, 7.9e-05]
+  L2: delta_log10|I|(R2-R1) per bias = [-0.139317, -0.059559, -0.006594, -0.000136, 2e-06, 3.1e-05]
+  L3: delta_log10|I|(R2-R1) per bias = [-0.577815, 0.128035, -0.011751, -0.000738, -5.4e-05, 1.1e-05]
+  L4: delta_log10|I|(R2-R1) per bias = [-0.104252, -0.045798, 0.011205, -0.00093, 3e-06, 9e-06]
+  L5: delta_log10|I|(R2-R1) per bias = [0.732687, 0.206662, 0.017505, -0.000783, -3.4e-05, 3e-06]
+
+-- 1d shift --
+  L0: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  L1: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  L2: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  L3: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  L4: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  L5: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+-- 2d node --
+  L0: one or both UNAVAILABLE (R1 eq=False, R2 eq=True)
+  L1: delta_log10|I|(R2-R1) per bias = [None]
+  L2: delta_log10|I|(R2-R1) per bias = [None]
+  L3: delta_log10|I|(R2-R1) per bias = [-1.198177, 0.197686, -2.019805, -1.366838]
+  L4: delta_log10|I|(R2-R1) per bias = [0.137689, 0.243994, -0.935105, -0.685959]
+  L5: delta_log10|I|(R2-R1) per bias = [-0.026314, -0.845098, -0.242524, -0.16674]
+
+-- 2d shift --
+  L0: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, None]
+  L1: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, None]
+  L2: one or both UNAVAILABLE (R1 eq=False, R2 eq=False)
+  L3: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, 0.0, 0.0]
+  L4: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, 0.0, 0.0]
+  L5: delta_log10|I|(R2-R1) per bias = [0.0, 0.0, 0.0, 0.0]
+
+====================================================================================================
+SECTION 12: aligned vs shifted delta (same geometry/level/representation), log10|I| difference
+====================================================================================================
+
+-- 1d R1 --
+  L0: delta_log10|I|(shift-node) per bias = [0.202084, -0.018855, -0.002516, -0.000854, -0.000136, -0.000147]
+  L1: delta_log10|I|(shift-node) per bias = [0.359955, 0.082374, 0.002083, 0.000165, -6.4e-05, -7.8e-05]
+  L2: delta_log10|I|(shift-node) per bias = [-0.010656, 0.007317, -0.002324, 0.000144, -5.8e-05, -3.3e-05]
+  L3: delta_log10|I|(shift-node) per bias = [-0.017358, 0.180869, -0.012143, 0.00015, -8.5e-05, -1.5e-05]
+  L4: delta_log10|I|(shift-node) per bias = [0.058925, -0.024463, -0.007998, 0.000287, -2.3e-05, -8e-06]
+  L5: delta_log10|I|(shift-node) per bias = [0.973962, 0.173032, 0.019811, -0.001163, 4.6e-05, -7e-06]
+
+-- 1d R2 --
+  L0: delta_log10|I|(shift-node) per bias = [0.263614, -0.033268, -0.002424, -0.000828, -0.000309, -0.000293]
+  L1: delta_log10|I|(shift-node) per bias = [0.175407, 0.008089, -0.002404, -0.000155, -0.000139, -0.000157]
+  L2: delta_log10|I|(shift-node) per bias = [0.128661, 0.066875, 0.00427, 0.00028, -6.1e-05, -6.3e-05]
+  L3: delta_log10|I|(shift-node) per bias = [0.560456, 0.052834, -0.000392, 0.000887, -3e-05, -2.6e-05]
+  L4: delta_log10|I|(shift-node) per bias = [0.163177, 0.021336, -0.019204, 0.001217, -2.7e-05, -1.6e-05]
+  L5: delta_log10|I|(shift-node) per bias = [0.241275, -0.03363, 0.002306, -0.00038, 8e-05, -1e-05]
+
+-- 2d R1 --
+  L0: one or both UNAVAILABLE (node eq=False, shift eq=True)
+  L1: delta_log10|I|(shift-node) per bias = [None]
+  L2: one or both UNAVAILABLE (node eq=True, shift eq=False)
+  L3: delta_log10|I|(shift-node) per bias = [-1.198178, 0.971325, -2.020241, -1.367499]
+  L4: delta_log10|I|(shift-node) per bias = [0.137689, 0.336271, -0.935137, -0.686084]
+  L5: delta_log10|I|(shift-node) per bias = [-0.026314, 0.109144, -0.24253, -0.166767]
+
+-- 2d R2 --
+  L0: delta_log10|I|(shift-node) per bias = [-0.026152, 1.258735, None]
+  L1: delta_log10|I|(shift-node) per bias = [-0.014773, 0.516178, None]
+  L2: one or both UNAVAILABLE (node eq=True, shift eq=False)
+  L3: delta_log10|I|(shift-node) per bias = [-0.0, 0.773639, -0.000436, -0.000662]
+  L4: delta_log10|I|(shift-node) per bias = [-0.0, 0.092278, -3.3e-05, -0.000125]
+  L5: delta_log10|I|(shift-node) per bias = [-0.0, 0.954242, -6e-06, -2.7e-05]
+
+====================================================================================================
+SECTION 13: contact conservation error, and E-field / depletion trend
+====================================================================================================
+
+-- 1d R1 node --
+  L0: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=382710.0541026609 peak_E_analytic=394127.90434064483 E_ratio=0.971 depletion_donor_side={'recovery_50pct_cm': 2.3113738144517317e-06, 'recovery_90pct_cm': 3.125699585276154e-06, 'recovery_99pct_cm': 4.097337207559607e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.300267846092988e-06, 'recovery_90pct_cm': 3.1112898704891946e-06, 'recovery_99pct_cm': 4.078985526990462e-06}
+  L1: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=382979.7347990632 peak_E_analytic=394127.90434064483 E_ratio=0.9717 depletion_donor_side={'recovery_50pct_cm': 2.2903358487396837e-06, 'recovery_90pct_cm': 3.133009945833451e-06, 'recovery_99pct_cm': 4.090423615770563e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3343280201276917e-06, 'recovery_90pct_cm': 3.126607243375047e-06, 'recovery_99pct_cm': 4.0821840207619516e-06}
+  L2: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383162.8274756187 peak_E_analytic=394127.90434064483 E_ratio=0.9722 depletion_donor_side={'recovery_50pct_cm': 2.324530510409389e-06, 'recovery_90pct_cm': 3.0991165188831747e-06, 'recovery_99pct_cm': 4.0383983404215425e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3030546585894694e-06, 'recovery_90pct_cm': 3.1341951802578693e-06, 'recovery_99pct_cm': 4.083776329363292e-06}
+  L3: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383238.848297554 peak_E_analytic=394127.90434064483 E_ratio=0.9724 depletion_donor_side={'recovery_50pct_cm': 2.3010190013902936e-06, 'recovery_90pct_cm': 3.1234949092015565e-06, 'recovery_99pct_cm': 4.065794828454135e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3117431745972594e-06, 'recovery_90pct_cm': 3.1379716123990713e-06, 'recovery_99pct_cm': 4.0845707563140434e-06}
+  L4: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383256.9278503777 peak_E_analytic=394127.90434064483 E_ratio=0.9724 depletion_donor_side={'recovery_50pct_cm': 2.2897551971986407e-06, 'recovery_90pct_cm': 3.1042773029133e-06, 'recovery_99pct_cm': 4.038763505195682e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.316071574013034e-06, 'recovery_90pct_cm': 3.1398554631359265e-06, 'recovery_99pct_cm': 4.084967538851087e-06}
+  L5: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383268.2909713333 peak_E_analytic=394127.90434064483 E_ratio=0.9724 depletion_donor_side={'recovery_50pct_cm': 2.304033846439365e-06, 'recovery_90pct_cm': 3.1215870865041657e-06, 'recovery_99pct_cm': 4.060203310319175e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.318231822403427e-06, 'recovery_90pct_cm': 3.14079629950459e-06, 'recovery_99pct_cm': 4.085165822497202e-06}
+
+-- 1d R1 shift --
+  L0: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383289.2961883369 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3073738144517322e-06, 'recovery_90pct_cm': 3.1216995852761545e-06, 'recovery_99pct_cm': 4.093337207559608e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3042678460929874e-06, 'recovery_90pct_cm': 3.115289870489194e-06, 'recovery_99pct_cm': 4.082985526990462e-06}
+  L1: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383289.08363265736 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.337207734755808e-06, 'recovery_90pct_cm': 3.131009945833451e-06, 'recovery_99pct_cm': 4.088423615770563e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.336328020127692e-06, 'recovery_90pct_cm': 3.1286072433750472e-06, 'recovery_99pct_cm': 4.084184020761952e-06}
+  L2: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.88048639614 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3235305104093894e-06, 'recovery_90pct_cm': 3.098116518883175e-06, 'recovery_99pct_cm': 4.037398340421543e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.304054658589469e-06, 'recovery_90pct_cm': 3.135195180257869e-06, 'recovery_99pct_cm': 4.084776329363292e-06}
+  L3: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.75470930577 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3005190013902933e-06, 'recovery_90pct_cm': 3.122994909201556e-06, 'recovery_99pct_cm': 4.065294828454135e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3122431745972596e-06, 'recovery_90pct_cm': 3.1384716123990716e-06, 'recovery_99pct_cm': 4.085070756314044e-06}
+  L4: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.685755113 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.289505197198641e-06, 'recovery_90pct_cm': 3.1040273029133e-06, 'recovery_99pct_cm': 4.038513505195682e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3163215740130336e-06, 'recovery_90pct_cm': 3.140105463135926e-06, 'recovery_99pct_cm': 4.085217538851086e-06}
+  L5: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.6497729999 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3039088464393655e-06, 'recovery_90pct_cm': 3.1214620865041663e-06, 'recovery_99pct_cm': 4.060078310319175e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3183568224034265e-06, 'recovery_90pct_cm': 3.1409212995045895e-06, 'recovery_99pct_cm': 4.085290822497201e-06}
+
+-- 1d R2 node --
+  L0: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383289.5131360011 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3113738144517317e-06, 'recovery_90pct_cm': 3.125699585276154e-06, 'recovery_99pct_cm': 4.097337207559607e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.300267846092988e-06, 'recovery_90pct_cm': 3.1112898704891946e-06, 'recovery_99pct_cm': 4.078985526990462e-06}
+  L1: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383289.1098952816 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.2903358487396837e-06, 'recovery_90pct_cm': 3.133009945833451e-06, 'recovery_99pct_cm': 4.090423615770563e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3343280201276917e-06, 'recovery_90pct_cm': 3.126607243375047e-06, 'recovery_99pct_cm': 4.0821840207619516e-06}
+  L2: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.90469052846 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.324530510409389e-06, 'recovery_90pct_cm': 3.0991165188831747e-06, 'recovery_99pct_cm': 4.0383983404215425e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3030546585894694e-06, 'recovery_90pct_cm': 3.1341951802578693e-06, 'recovery_99pct_cm': 4.083776329363292e-06}
+  L3: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.7629196577 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3010190013902936e-06, 'recovery_90pct_cm': 3.1234949092015565e-06, 'recovery_99pct_cm': 4.065794828454135e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3117431745972594e-06, 'recovery_90pct_cm': 3.1379716123990713e-06, 'recovery_99pct_cm': 4.0845707563140434e-06}
+  L4: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.6872398169 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.2897551971986407e-06, 'recovery_90pct_cm': 3.1042773029133e-06, 'recovery_99pct_cm': 4.038763505195682e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.316071574013034e-06, 'recovery_90pct_cm': 3.1398554631359265e-06, 'recovery_99pct_cm': 4.084967538851087e-06}
+  L5: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.6497730154 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.304033846439365e-06, 'recovery_90pct_cm': 3.1215870865041657e-06, 'recovery_99pct_cm': 4.060203310319175e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.318231822403427e-06, 'recovery_90pct_cm': 3.14079629950459e-06, 'recovery_99pct_cm': 4.085165822497202e-06}
+
+-- 1d R2 shift --
+  L0: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383289.2961883369 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3073738144517322e-06, 'recovery_90pct_cm': 3.1216995852761545e-06, 'recovery_99pct_cm': 4.093337207559608e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3042678460929874e-06, 'recovery_90pct_cm': 3.115289870489194e-06, 'recovery_99pct_cm': 4.082985526990462e-06}
+  L1: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383289.08363265736 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.337207734755808e-06, 'recovery_90pct_cm': 3.131009945833451e-06, 'recovery_99pct_cm': 4.088423615770563e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.336328020127692e-06, 'recovery_90pct_cm': 3.1286072433750472e-06, 'recovery_99pct_cm': 4.084184020761952e-06}
+  L2: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.88048639614 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3235305104093894e-06, 'recovery_90pct_cm': 3.098116518883175e-06, 'recovery_99pct_cm': 4.037398340421543e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.304054658589469e-06, 'recovery_90pct_cm': 3.135195180257869e-06, 'recovery_99pct_cm': 4.084776329363292e-06}
+  L3: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.75470930577 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3005190013902933e-06, 'recovery_90pct_cm': 3.122994909201556e-06, 'recovery_99pct_cm': 4.065294828454135e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3122431745972596e-06, 'recovery_90pct_cm': 3.1384716123990716e-06, 'recovery_99pct_cm': 4.085070756314044e-06}
+  L4: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.685755113 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.289505197198641e-06, 'recovery_90pct_cm': 3.1040273029133e-06, 'recovery_99pct_cm': 4.038513505195682e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3163215740130336e-06, 'recovery_90pct_cm': 3.140105463135926e-06, 'recovery_99pct_cm': 4.085217538851086e-06}
+  L5: conservation_error=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] peak_E_solved=383288.6497729999 peak_E_analytic=394127.90434064483 E_ratio=0.9725 depletion_donor_side={'recovery_50pct_cm': 2.3039088464393655e-06, 'recovery_90pct_cm': 3.1214620865041663e-06, 'recovery_99pct_cm': 4.060078310319175e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.3183568224034265e-06, 'recovery_90pct_cm': 3.1409212995045895e-06, 'recovery_99pct_cm': 4.085290822497201e-06}
+
+-- 2d R1 node --
+  L0: N/A
+  L1: conservation_error=[None] peak_E_solved=134415.2506529324 peak_E_analytic=394127.90434064483 E_ratio=0.341 depletion_donor_side={'recovery_50pct_cm': 4.999999873689376e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 9.999999747378752e-06} depletion_acceptor_side={'recovery_50pct_cm': 4.999999873689376e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 9.999999747378752e-06}
+  L2: conservation_error=[None] peak_E_solved=262443.8597275957 peak_E_analytic=394127.90434064483 E_ratio=0.6659 depletion_donor_side={'recovery_50pct_cm': 2.499999936844688e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 4.999999873689376e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.499999936844688e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 4.999999873689376e-06}
+  L3: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=406609.0796629774 peak_E_analytic=394127.90434064483 E_ratio=1.0317 depletion_donor_side={'recovery_50pct_cm': 1.249999968422344e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.7500001326407073e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.249999968422344e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.7500001326407073e-06}
+  L4: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=526532.1017072409 peak_E_analytic=394127.90434064483 E_ratio=1.3359 depletion_donor_side={'recovery_50pct_cm': 1.249999968422344e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.7500001326407073e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.249999968422344e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.7500001326407073e-06}
+  L5: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=632037.1097677116 peak_E_analytic=394127.90434064483 E_ratio=1.6036 depletion_donor_side={'recovery_50pct_cm': 1.56249996052793e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.7500001326407073e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.56249996052793e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.7500001326407073e-06}
+
+-- 2d R1 shift --
+  L0: conservation_error=[0.0, 0.0, None] peak_E_solved=95092.73110222493 peak_E_analytic=394127.90434064483 E_ratio=0.2413 depletion_donor_side={'recovery_50pct_cm': 4.999999873689376e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 1.4999999621068127e-05} depletion_acceptor_side={'recovery_50pct_cm': 4.999999873689376e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 1.4999999621068127e-05}
+  L1: conservation_error=[0.0, 0.0, None] peak_E_solved=189094.61605095395 peak_E_analytic=394127.90434064483 E_ratio=0.4798 depletion_donor_side={'recovery_50pct_cm': 2.499999936844688e-06, 'recovery_90pct_cm': 7.499999810534064e-06, 'recovery_99pct_cm': 7.499999810534064e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.499999936844688e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 7.499999810534064e-06}
+  L2: N/A
+  L3: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=476578.449550824 peak_E_analytic=394127.90434064483 E_ratio=1.2092 depletion_donor_side={'recovery_50pct_cm': 1.874999952633516e-06, 'recovery_90pct_cm': 3.1250001484295353e-06, 'recovery_99pct_cm': 4.374999889478204e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.874999952633516e-06, 'recovery_90pct_cm': 3.12499992105586e-06, 'recovery_99pct_cm': 4.375000116851879e-06}
+  L4: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=561103.0636292305 peak_E_analytic=394127.90434064483 E_ratio=1.4237 depletion_donor_side={'recovery_50pct_cm': 1.5625000742147677e-06, 'recovery_90pct_cm': 2.187499944739102e-06, 'recovery_99pct_cm': 3.4375001405351213e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.56249996052793e-06, 'recovery_90pct_cm': 2.812499928950274e-06, 'recovery_99pct_cm': 3.437499913161446e-06}
+  L5: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=644397.1722026392 peak_E_analytic=394127.90434064483 E_ratio=1.635 depletion_donor_side={'recovery_50pct_cm': 1.406249964475137e-06, 'recovery_90pct_cm': 2.656249819210643e-06, 'recovery_99pct_cm': 3.5937501365879143e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.406249964475137e-06, 'recovery_90pct_cm': 2.656249932897481e-06, 'recovery_99pct_cm': 3.5937500229010766e-06}
+
+-- 2d R2 node --
+  L0: conservation_error=[0.0, 0.0, None] peak_E_solved=95092.73112054256 peak_E_analytic=394127.90434064483 E_ratio=0.2413 depletion_donor_side={'recovery_50pct_cm': 9.999999747378752e-06, 'recovery_90pct_cm': 9.999999747378752e-06, 'recovery_99pct_cm': 9.999999747378752e-06} depletion_acceptor_side={'recovery_50pct_cm': 9.999999747378752e-06, 'recovery_90pct_cm': 9.999999747378752e-06, 'recovery_99pct_cm': 1.9999999494757503e-05}
+  L1: conservation_error=[0.0, 0.0, None] peak_E_solved=189094.6166171546 peak_E_analytic=394127.90434064483 E_ratio=0.4798 depletion_donor_side={'recovery_50pct_cm': 4.999999873689376e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 4.999999873689376e-06} depletion_acceptor_side={'recovery_50pct_cm': 4.999999873689376e-06, 'recovery_90pct_cm': 9.999999747378752e-06, 'recovery_99pct_cm': 9.999999747378752e-06}
+  L2: conservation_error=[0.0, None] peak_E_solved=360301.12997605157 peak_E_analytic=394127.90434064483 E_ratio=0.9142 depletion_donor_side={'recovery_50pct_cm': 2.499999936844688e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 2.499999936844688e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.499999936844688e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 7.500000265281415e-06}
+  L3: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=476578.0631956792 peak_E_analytic=394127.90434064483 E_ratio=1.2092 depletion_donor_side={'recovery_50pct_cm': 1.249999968422344e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.7500001326407073e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.499999936844688e-06, 'recovery_90pct_cm': 3.7500001326407073e-06, 'recovery_99pct_cm': 4.999999873689376e-06}
+  L4: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=561101.6153944199 peak_E_analytic=394127.90434064483 E_ratio=1.4237 depletion_donor_side={'recovery_50pct_cm': 1.249999968422344e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.12499992105586e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.8750000663203537e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.7500001326407073e-06}
+  L5: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=644394.5263413277 peak_E_analytic=394127.90434064483 E_ratio=1.635 depletion_donor_side={'recovery_50pct_cm': 1.249999968422344e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 3.4375000268482836e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.56249996052793e-06, 'recovery_90pct_cm': 2.812499815263436e-06, 'recovery_99pct_cm': 3.7500001326407073e-06}
+
+-- 2d R2 shift --
+  L0: conservation_error=[0.0, 0.0, None] peak_E_solved=95092.73110222493 peak_E_analytic=394127.90434064483 E_ratio=0.2413 depletion_donor_side={'recovery_50pct_cm': 4.999999873689376e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 1.4999999621068127e-05} depletion_acceptor_side={'recovery_50pct_cm': 4.999999873689376e-06, 'recovery_90pct_cm': 4.999999873689376e-06, 'recovery_99pct_cm': 1.4999999621068127e-05}
+  L1: conservation_error=[0.0, 0.0, None] peak_E_solved=189094.61605095395 peak_E_analytic=394127.90434064483 E_ratio=0.4798 depletion_donor_side={'recovery_50pct_cm': 2.499999936844688e-06, 'recovery_90pct_cm': 7.499999810534064e-06, 'recovery_99pct_cm': 7.499999810534064e-06} depletion_acceptor_side={'recovery_50pct_cm': 2.499999936844688e-06, 'recovery_90pct_cm': 2.499999936844688e-06, 'recovery_99pct_cm': 7.499999810534064e-06}
+  L2: N/A
+  L3: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=476578.449550824 peak_E_analytic=394127.90434064483 E_ratio=1.2092 depletion_donor_side={'recovery_50pct_cm': 1.874999952633516e-06, 'recovery_90pct_cm': 3.1250001484295353e-06, 'recovery_99pct_cm': 4.374999889478204e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.874999952633516e-06, 'recovery_90pct_cm': 3.12499992105586e-06, 'recovery_99pct_cm': 4.375000116851879e-06}
+  L4: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=561103.0636292305 peak_E_analytic=394127.90434064483 E_ratio=1.4237 depletion_donor_side={'recovery_50pct_cm': 1.5625000742147677e-06, 'recovery_90pct_cm': 2.187499944739102e-06, 'recovery_99pct_cm': 3.4375001405351213e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.56249996052793e-06, 'recovery_90pct_cm': 2.812499928950274e-06, 'recovery_99pct_cm': 3.437499913161446e-06}
+  L5: conservation_error=[0.0, 0.0, 0.0, 0.0] peak_E_solved=644397.1722026392 peak_E_analytic=394127.90434064483 E_ratio=1.635 depletion_donor_side={'recovery_50pct_cm': 1.406249964475137e-06, 'recovery_90pct_cm': 2.656249819210643e-06, 'recovery_99pct_cm': 3.5937501365879143e-06} depletion_acceptor_side={'recovery_50pct_cm': 1.406249964475137e-06, 'recovery_90pct_cm': 2.656249932897481e-06, 'recovery_99pct_cm': 3.5937500229010766e-06}

@@ -1,0 +1,30 @@
+{
+ "H": {
+  "H1_abs_contribution_overcount": "CONFIRMED_BY_CONTROLLED_INTERVENTION",
+  "H2_right_triangle_degeneracy": "EXCLUDED_BY_CONTROLLED_INTERVENTION",
+  "H3_boundary_triangles_only": "EXCLUDED_BY_CONTROLLED_INTERVENTION",
+  "H4_interior_obtuse_also": "CONFIRMED_BY_CONTROLLED_INTERVENTION",
+  "H5_obtuse_without_non_Delaunay": "CONFIRMED_BY_CONTROLLED_INTERVENTION",
+  "H6_float32_primary_cause": "EXCLUDED_BY_CONTROLLED_INTERVENTION"
+ },
+ "evidence": {
+  "F3_reproduces_all": true,
+  "F4_reproduces_any_overcounting_obtuse": false,
+  "T4_family_ratios": {
+   "T4_mild_obtuse": 1.7142857142857146,
+   "T6_T4_mirror": 1.7142857142857146,
+   "T7_T4_rot90": 1.7142857142857146,
+   "T8_T4_x0.1": 1.7142857142857146,
+   "T9_T4_x10": 1.7142857142857146
+  },
+  "delaunay_obtuse_overcounting": [
+   "P5_interior_obtuse_Delaunay",
+   "P6_fan_obtuse_centre"
+  ],
+  "interior_obtuse_fixtures": [
+   "P3_kite_nonDelaunay",
+   "P5_interior_obtuse_Delaunay"
+  ],
+  "invariant": true
+ }
+}

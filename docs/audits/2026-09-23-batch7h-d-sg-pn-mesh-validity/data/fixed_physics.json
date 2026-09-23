@@ -1,0 +1,120 @@
+{
+ "analytic_reference": {
+  "E_peak_V_per_cm": 116584.6063412554,
+  "I_scale_2D_A_per_cm": 0.016567803600000004,
+  "J_scale_A_per_cm2": 1656.78036,
+  "L_Debye_um": 0.012607112121324551,
+  "V_T_V": 0.025887193125000003,
+  "V_bi_V": 0.8345045098471614,
+  "W_depletion_cm": 1.4315861004916531e-05,
+  "W_depletion_um": 0.1431586100491653,
+  "n_i_cm3": 10000000000.0,
+  "n_side_majority_n_cm3": 1e+17,
+  "n_side_minority_p_cm3": 1000.0,
+  "note": "depletion approximation = sanity/reference range only, not the exact DD solution",
+  "p_side_majority_p_cm3": 1e+17,
+  "p_side_minority_n_cm3": 1000.0,
+  "psi_n_contact_V": 0.4172522549235807,
+  "psi_p_contact_V": -0.4172522549235807,
+  "quasi_neutral_length_each_side_over_W": 2.9926296073165544,
+  "x_n_um": 0.07157930502458265,
+  "x_p_um": 0.07157930502458265
+ },
+ "spec": {
+  "L3_domain": {
+   "H_um": 2.0,
+   "x_um": [
+    -2.0,
+    2.0
+   ],
+   "y_um": [
+    -2.0,
+    0.0
+   ]
+  },
+  "T_K": 300.0,
+  "bias": {
+   "contact": "left (p-side); right grounded; forward = positive",
+   "continuation": "from the 0 V DD state in steps of 0.025 V: forward 0.025, 0.05, 0.075, 0.10; reverse run on a freshly rebuilt device: -0.025, -0.05, -0.075, -0.10; no step changed after results",
+   "targets_V": [
+    -0.1,
+    0.0,
+    0.05,
+    0.1
+   ]
+  },
+  "contacts": "left = boundary at x_min (p-side), right = boundary at x_max (n-side); ohmic via production setup_semiconductor_potential_equation / setup_drift_diffusion_equation (simple_physics helpers); top/bottom: no boundary condition (natural zero normal flux)",
+  "domain_synthetic_um": {
+   "x": [
+    -0.5,
+    0.5
+   ],
+   "y_2d": [
+    0.0,
+    0.1
+   ]
+  },
+  "doping": {
+   "NA_cm3": 1e+17,
+   "ND_cm3": 1e+17,
+   "ionization": "fully ionized, active",
+   "junction": "x = 0 um; p-side x < 0 (NetDoping = -NA), n-side x > 0 (NetDoping = +ND)",
+   "node_exactly_at_x0": "NetDoping = 0 (symmetric step: its dual cell is half p, half n); same rule for every mesh and 1D"
+  },
+  "models": {
+   "generation": "SRH (USRH < 0) only; no impact ionization, no optical",
+   "mobility": "constant mu_n, mu_p (simple_physics)",
+   "recombination": "SRH only, taun = taup = 1e-8 s (production setup_drift_diffusion_equation), n1 = p1 = n_i"
+  },
+  "reference_1d": {
+   "convergence": "successive-level differences in V_bi, psi, log10 n, log10 p and bias currents must decrease monotonically with refinement; otherwise ONE_DIMENSIONAL_REFERENCE_NOT_CONVERGED",
+   "dx_um": [
+    0.02,
+    0.01,
+    0.005,
+    0.0025
+   ],
+   "setup": "same physics, contacts, doping rule"
+  },
+  "silicon_parameters_devsim": {
+   "ElectronCharge": 1.6e-19,
+   "Permittivity": 9.8235e-13,
+   "T": 300.0,
+   "V_t": 0.025887193125000003,
+   "kT": 4.1419509e-21,
+   "mu_n": 400,
+   "mu_p": 200,
+   "n1": 10000000000.0,
+   "n_i": 10000000000.0,
+   "p1": 10000000000.0,
+   "q": "ERR Cannot find parameter \"q\"\n",
+   "taun": 1e-08,
+   "taup": 1e-08
+  },
+  "solver": {
+   "drift_diffusion": {
+    "absolute_error": 1e+30,
+    "maximum_iterations": 50,
+    "relative_error": 1e-10,
+    "type": "dc"
+   },
+   "poisson": {
+    "absolute_error": 1e-10,
+    "maximum_iterations": 50,
+    "relative_error": 1e-10,
+    "type": "dc"
+   }
+  },
+  "tolerances": {
+   "M2_identity_vs_1D_same_dx": "|dpsi| <= 1e-9 V at every node; bias current rel diff <= 1e-8 (M2 has the same x-lines as 1D dx=0.02)",
+   "agreement_vs_1D": "potential: max |psi_2D - psi_1D,finest(interp)| <= 3 U_psi + 1e-6 V, U_psi = max |psi_1D,0.02 - psi_1D,finest(interp)|; current: rel diff vs J_1D,finest*H <= 3 U_I + 1e-6, U_I = |J_0.02 - J_finest|/|J_finest|",
+   "block_sign": "expected off-diagonal sign of each same-variable Jacobian block = the sign observed on M2 D0; any strictly opposite sign is a violation",
+   "conservation": "|I_left + I_right| <= 1e-6 * max(|I_left|, |I_right|) + 1e-10 * I_scale",
+   "eq_current": "|I_contact| <= 1e-10 * I_scale (2D: A/cm, 1D: A/cm^2)",
+   "mass_action_eq": "max |n p / n_i^2 - 1| <= 1e-6 at 0 V",
+   "overshoot": "psi within [psi_left_contact, psi_right_contact] +- 1e-9 V; at 0 V n within [min, max] of contact n values *(1 +- 1e-9), same for p",
+   "positivity": "every node: n > 0, p > 0, finite",
+   "quasi_fermi_eq": "max |phi_n - phi_n(median)| and |phi_p - phi_p(median)| <= 1e-6 V at 0 V, phi_n = psi - V_T ln(n/n_i), phi_p = psi + V_T ln(p/n_i)"
+  }
+ }
+}

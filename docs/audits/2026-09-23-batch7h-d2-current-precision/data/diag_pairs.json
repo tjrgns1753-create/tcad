@@ -1,0 +1,326 @@
+{
+ "1D_h0.005_P12": {
+  "flags_set": {
+   "extended_model": true,
+   "extended_equation": true,
+   "extended_solver": false
+  },
+  "flags_at_start": {
+   "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+   "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+   "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+  },
+  "C-0.100": {
+   "ok": true,
+   "C0_left": -9.467798998974637e-08,
+   "mis_lr": 0.0,
+   "spread": 0.0,
+   "c0_vs_cut0": 0.0,
+   "dev_vs_py_dpsi_left": 0.0034794003371635637
+  },
+  "C+0.050": {
+   "ok": true,
+   "C0_left": 1.1141374680742117e-07,
+   "mis_lr": 0.0,
+   "spread": 1.1879045611602104e-16,
+   "c0_vs_cut0": 1.1879045611602104e-16,
+   "dev_vs_py_dpsi_left": 0.0029062063597580343
+  },
+  "C+0.100": {
+   "ok": true,
+   "C0_left": 3.9107038932793235e-07,
+   "mis_lr": 1.3537092208482517e-16,
+   "spread": 1.3537092208482517e-16,
+   "c0_vs_cut0": 1.3537092208482517e-16,
+   "dev_vs_py_dpsi_left": 3.348775090865337e-05
+  }
+ },
+ "1D_h0.005_P13": {
+  "flags_set": {
+   "extended_model": true,
+   "extended_equation": false,
+   "extended_solver": true
+  },
+  "flags_at_start": {
+   "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+   "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+   "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+  },
+  "C-0.100": {
+   "ok": true,
+   "C0_left": -9.498557795918582e-08,
+   "mis_lr": 0.0029910784709274206,
+   "spread": 0.004955973295741848,
+   "c0_vs_cut0": 0.0032487801059200325,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.050": {
+   "ok": true,
+   "C0_left": 1.1112281380845028e-07,
+   "mis_lr": 0.0005389760824094044,
+   "spread": 0.006565807642623588,
+   "c0_vs_cut0": 0.0026112845173311148,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.100": {
+   "ok": true,
+   "C0_left": 3.911145725257422e-07,
+   "mis_lr": 0.0012841036029281481,
+   "spread": 0.0013808800448047867,
+   "c0_vs_cut0": 0.00011298020845855397,
+   "dev_vs_py_dpsi_left": 0.0
+  }
+ },
+ "1D_h0.005_P23": {
+  "flags_set": {
+   "extended_model": false,
+   "extended_equation": true,
+   "extended_solver": true
+  },
+  "flags_at_start": {
+   "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+   "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+   "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+  },
+  "C-0.100": {
+   "ok": true,
+   "C0_left": -9.361750945918559e-08,
+   "mis_lr": 0.01157859452766706,
+   "spread": 0.016922692410681676,
+   "c0_vs_cut0": 0.011200919294656417,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.050": {
+   "ok": true,
+   "C0_left": 1.117803395726904e-07,
+   "mis_lr": 0.006295088842253409,
+   "spread": 0.002901271126512912,
+   "c0_vs_cut0": 0.0032903720213147357,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.100": {
+   "ok": true,
+   "C0_left": 3.910615555542218e-07,
+   "mis_lr": 0.0014198496256454698,
+   "spread": 0.0011819323709402496,
+   "c0_vs_cut0": 2.2589100346369994e-05,
+   "dev_vs_py_dpsi_left": 0.0
+  }
+ },
+ "1D_h0.00125_P12": {
+  "flags_set": {
+   "extended_model": true,
+   "extended_equation": true,
+   "extended_solver": false
+  },
+  "flags_at_start": {
+   "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+   "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+   "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+  },
+  "C-0.100": {
+   "ok": true,
+   "C0_left": -9.529517991329163e-08,
+   "mis_lr": 0.0,
+   "spread": 1.3888309789530563e-16,
+   "c0_vs_cut0": 1.3888309789530563e-16,
+   "dev_vs_py_dpsi_left": 0.012324996414443994
+  },
+  "C+0.050": {
+   "ok": true,
+   "C0_left": 1.1453737726390041e-07,
+   "mis_lr": 1.1555083691461284e-16,
+   "spread": 0.0,
+   "c0_vs_cut0": 0.0,
+   "dev_vs_py_dpsi_left": 0.005513022297693623
+  },
+  "C+0.100": {
+   "ok": true,
+   "C0_left": 4.04843731743645e-07,
+   "mis_lr": 1.3076541651116916e-16,
+   "spread": 1.3076541651116916e-16,
+   "c0_vs_cut0": 0.0,
+   "dev_vs_py_dpsi_left": 0.0063400645175810755
+  }
+ },
+ "1D_h0.00125_P13": {
+  "flags_set": {
+   "extended_model": true,
+   "extended_equation": false,
+   "extended_solver": true
+  },
+  "flags_at_start": {
+   "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+   "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+   "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+  },
+  "C-0.100": {
+   "ok": true,
+   "C0_left": -9.645967204609579e-08,
+   "mis_lr": 0.0023956974051940238,
+   "spread": 0.0341849967081639,
+   "c0_vs_cut0": 0.012219843021152695,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.050": {
+   "ok": true,
+   "C0_left": 1.1391192028636684e-07,
+   "mis_lr": 0.0009909926125528051,
+   "spread": 0.005617402661614639,
+   "c0_vs_cut0": 0.005460724129114261,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.100": {
+   "ok": true,
+   "C0_left": 4.075627224888828e-07,
+   "mis_lr": 0.010710869096233672,
+   "spread": 0.007311615533292474,
+   "c0_vs_cut0": 0.006716149096427939,
+   "dev_vs_py_dpsi_left": 0.0
+  }
+ },
+ "1D_h0.00125_P23": {
+  "flags_set": {
+   "extended_model": false,
+   "extended_equation": true,
+   "extended_solver": true
+  },
+  "flags_at_start": {
+   "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+   "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+   "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+  },
+  "C-0.100": {
+   "ok": true,
+   "C0_left": -9.077533016001498e-08,
+   "mis_lr": 0.06007418194394183,
+   "spread": 0.050839576439349554,
+   "c0_vs_cut0": 0.04742999351852033,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.050": {
+   "ok": true,
+   "C0_left": 1.1675409122940725e-07,
+   "mis_lr": 0.028942819485838874,
+   "spread": 0.02560536073349417,
+   "c0_vs_cut0": 0.019353630427337412,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.100": {
+   "ok": true,
+   "C0_left": 4.045084836597623e-07,
+   "mis_lr": 0.0032412475706329576,
+   "spread": 0.007744125357058486,
+   "c0_vs_cut0": 0.0008280916144896584,
+   "dev_vs_py_dpsi_left": 0.0
+  }
+ },
+ "1D_h0.0003125_P12": {
+  "flags_set": {
+   "extended_model": true,
+   "extended_equation": true,
+   "extended_solver": false
+  },
+  "flags_at_start": {
+   "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+   "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+   "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+  },
+  "C-0.100": {
+   "ok": true,
+   "C0_left": -9.533054171496733e-08,
+   "mis_lr": 1.388315807584518e-16,
+   "spread": 1.388315807584518e-16,
+   "c0_vs_cut0": 0.0,
+   "dev_vs_py_dpsi_left": 0.047552047721792445
+  },
+  "C+0.050": {
+   "ok": true,
+   "C0_left": 1.1461129225119889e-07,
+   "mis_lr": 0.0,
+   "spread": 1.1547631599721362e-16,
+   "c0_vs_cut0": 0.0,
+   "dev_vs_py_dpsi_left": 0.006168407265278609
+  },
+  "C+0.100": {
+   "ok": true,
+   "C0_left": 4.051220715328202e-07,
+   "mis_lr": 0.0,
+   "spread": 0.0,
+   "c0_vs_cut0": 0.0,
+   "dev_vs_py_dpsi_left": 0.012676381137866274
+  }
+ },
+ "1D_h0.0003125_P13": {
+  "flags_set": {
+   "extended_model": true,
+   "extended_equation": false,
+   "extended_solver": true
+  },
+  "flags_at_start": {
+   "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+   "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+   "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+  },
+  "C-0.100": {
+   "ok": true,
+   "C0_left": -9.013912597772619e-08,
+   "mis_lr": 0.009621699500614278,
+   "spread": 0.034817165359774485,
+   "c0_vs_cut0": 0.054457004474869126,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.050": {
+   "ok": true,
+   "C0_left": 1.1391191730746252e-07,
+   "mis_lr": 0.0009909796230610551,
+   "spread": 0.04559902455067048,
+   "c0_vs_cut0": 0.00610214769499097,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.100": {
+   "ok": true,
+   "C0_left": 4.110410740762814e-07,
+   "mis_lr": 0.002157849835921315,
+   "spread": 0.019787027332848716,
+   "c0_vs_cut0": 0.014610417958996976,
+   "dev_vs_py_dpsi_left": 0.0
+  }
+ },
+ "1D_h0.0003125_P23": {
+  "flags_set": {
+   "extended_model": false,
+   "extended_equation": true,
+   "extended_solver": true
+  },
+  "flags_at_start": {
+   "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+   "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+   "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+  },
+  "C-0.100": {
+   "ok": true,
+   "C0_left": -9.09873975220461e-08,
+   "mis_lr": 0.00020904036826857125,
+   "spread": 0.1442440752146644,
+   "c0_vs_cut0": 0.04555879075071323,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.050": {
+   "ok": true,
+   "C0_left": 1.1391191730746253e-07,
+   "mis_lr": 0.0009909796230612874,
+   "spread": 0.1029251147768549,
+   "c0_vs_cut0": 0.006102150545733123,
+   "dev_vs_py_dpsi_left": 0.0
+  },
+  "C+0.100": {
+   "ok": true,
+   "C0_left": 3.98824118759801e-07,
+   "mis_lr": 0.0241546257120676,
+   "spread": 0.020261350438913736,
+   "c0_vs_cut0": 0.015545817051793445,
+   "dev_vs_py_dpsi_left": 0.0
+  }
+ }
+}

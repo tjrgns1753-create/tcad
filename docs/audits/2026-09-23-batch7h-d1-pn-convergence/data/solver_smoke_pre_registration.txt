@@ -1,0 +1,64 @@
+R
+ (region: Si)
+ (contact: left)
+ (contact: right)
+nodes 52 x=0 nodes 0
+Creating Node Solution Potential
+number of equations 52
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37957e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37957e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37957e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37201e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37201e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37201e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14387e-01	AbsError: 1.25142e-01
+    Region: "Si"	RelError: 3.14387e-01	AbsError: 1.25142e-01
+      Equation: "PotentialEquation"	RelError: 3.14387e-01	AbsError: 1.25142e-01
+Iteration: 3
+  Device: "d"	RelError: 2.17896e-01	AbsError: 6.11548e-02
+    Region: "Si"	RelError: 2.17896e-01	AbsError: 6.11548e-02
+      Equation: "PotentialEquation"	RelError: 2.17896e-01	AbsError: 6.11548e-02
+Iteration: 4
+  Device: "d"	RelError: 2.03680e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 2.03680e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 2.03680e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 1.89165e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 1.89165e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 1.89165e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 4.94127e-02	AbsError: 2.01091e-02
+    Region: "Si"	RelError: 4.94127e-02	AbsError: 2.01091e-02
+      Equation: "PotentialEquation"	RelError: 4.94127e-02	AbsError: 2.01091e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 6.48140e-07	AbsError: 2.70438e-07
+    Region: "Si"	RelError: 6.48140e-07	AbsError: 2.70438e-07
+      Equation: "PotentialEquation"	RelError: 6.48140e-07	AbsError: 2.70438e-07
+Iteration: 10
+  Device: "d"	RelError: 1.42582e-12	AbsError: 5.94925e-13
+    Region: "Si"	RelError: 1.42582e-12	AbsError: 5.94925e-13
+      Equation: "PotentialEquation"	RelError: 1.42582e-12	AbsError: 5.94925e-13
+POISSON info keys ['converged', 'iterations', 'number_of_equations']
+{"converged": true, "iterations": [{"devices": [{"absolute_error": 0.1379573008279546, "name": "d", "regions": [{"absolute_error": 0.1379573008279546, "equations": [{"absolute_error": 0.1379573008279546, "absolute_error_node": 13, "name": "PotentialEquation", "relative_error": 0.9999999992751379, "relative_error_node": 13}], "name": "Si", "relative_error": 0.9999999992751379}], "relative_error": 0.9999999992751379}], "iteration": 0}, {"devices": [{"absolute_error": 0.1372009507532159, "name": "d", "regions": [{"absolute_error": 0.1372009507532159, "equations": [{"absolute_error": 0.1372009507532159, "absolute_error_node": 38, "name": "PotentialEquation", "relative_error": 0.49862560877219286, "relative_error_node": 38}], "name": "Si", "relative_error": 0.49862560877219286}], "relative_error": 0.49862560877219286}], "iteration": 1}, {"devices": [{"absolute_error": 0.1251417392667752, "name": "d", "regions": [{"absolute_error": 0.1251417392667752, "equations": [{"absolute_error": 0.1251417392667752, "absolute_error_node": 13, "name": "PotentialEquation", "relative_error": 0.3143869907211587, "relative_error_node": 13}], "name": "Si", "relative_error": 0.3143869907211587}], "relative_error": 0.3143869907211587}], "iteration": 2}, {"devices": [{"absolute_error": 0.06115479343615521, "name": "d", "regions": [{"absolute_error": 0.06115479343615521, "equations": [{"absolute_error": 0.06115479343615521, "absolute_error_node": 2, "name": "PotentialEquation", "relative_error": 0.217896
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 156
+Iteration: 0
+  Device: "d"	RelError: 1.15293e-12	AbsError: 1.00800e+03
+    Region: "Si"	RelError: 1.15293e-12	AbsError: 1.00800e+03
+      Equation: "ElectronContinuityEquation"	RelError: 5.43091e-13	AbsError: 4.96000e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.09566e-13	AbsError: 5.12000e+02
+      Equation: "PotentialEquation"	RelError: 2.73126e-16	AbsError: 1.13962e-16
+DD converged True n_iter 1
+{"devices": [{"absolute_error": 1008.0, "name": "d", "regions": [{"absolute_error": 1008.0, "equations": [{"absolute_error": 496.0, "absolute_error_node": 51, "name": "ElectronContinuityEquation", "relative_error": 5.430909993171222e-13, "relative_error_node": 51}, {"absolute_error": 512.0, "absolute_error_node": 0, "name": "HoleContinuityEquation", "relative_error": 6.095661324048503e-13, "relative_error_node": 0}, {"absolute_error": 1.139624147559433e-16, "absolute_error_node": 2, "name": "PotentialEquation", "relative_error": 2.7312594092392297e-16, "relative_error_node": 2}], "name": "Si", "relative_error": 1.1529302576628965e-12}], "relative_error": 1.1529302576628965e-12}], "iteration": 0}

@@ -1,0 +1,321 @@
+diff --git a/tcad/device/devsim/doping_mapping.py b/tcad/device/devsim/doping_mapping.py
+index fbc83d5..c5b734f 100644
+--- a/tcad/device/devsim/doping_mapping.py
++++ b/tcad/device/devsim/doping_mapping.py
+@@ -40,8 +40,22 @@ written to DevSim or any solve runs -- `apply_doping()` here and
+ call it first. Only the canonical `WaferStateV2` decides; a process
+ result's own `DopingProfile` is never a substitute for it. The gate
+ checks GEOMETRY before it trusts a number: a node passes only when
+-exactly one ACTIVE + MODELLED cell of the region's material contains it
+-(see `canonical_node_doping()`).
++exactly one ACTIVE + MODELLED cell OF THE DEVSIM REGION'S OWN MATERIAL
++contains it -- a cell of a DIFFERENT material merely sharing a boundary
++(e.g. Si's y_max == SiO2's y_min) is not ambiguity, since DevSim's
++`region` argument already names which electrical-analysis region the
++node belongs to; two cells whose rectangles overlap with positive area
++(a genuine inconsistency, not a shared edge) still blocks regardless of
++material (see `canonical_node_doping()` / `_ownership_problem()`).
++
++A node whose exact coordinates fall just outside every cell's bounds is
++tried once more with each axis SNAPPED onto the nearest cell boundary,
++but only within that boundary's own float32 mesh-serialization
++round-trip tolerance (`_float32_roundtrip_ulp_um()`) -- correcting for
++DevSim node coordinates being the mesh file's float32 vertex
++coordinates times `length_scale_to_cm` (see that function's own
++docstring), never for a real geometry mismatch. `net_doping_at()` is
++then queried at the SNAPPED point, not the raw one.
+ 
+ `apply_doping_symbolic()` below is the OLD kind-based
+ equation-string writer, preserved verbatim under its own name. It
+@@ -55,6 +69,8 @@ from __future__ import annotations
+ 
+ from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+ 
++import numpy as np
++
+ from tcad.device.devsim import backend
+ from tcad.mesh.interface import DopingProfile
+ 
+@@ -95,33 +111,47 @@ def canonical_node_doping(
+     exactly as `state.net_doping_at()` reports them.
+ 
+     Geometry first, then the number. A node passes only when EXACTLY ONE
+-    present cell of the canonical state contains it (closed bounds, no
+-    tolerance), that cell is ACTIVE + MODELLED (lifecycle ACTIVE, exact
+-    bounds), and its material is the DevSim region's material (regions
+-    are named after the mesh material they were imported from). Only
+-    then is `state.net_doping_at()` trusted, and only when it carries no
+-    physics_status and no None concentration. So a known-undoped 0.0 is
+-    accepted only for a node inside exactly one supported cell with no
+-    active attachment covering it -- never for a node no cell owns.
++    present, ACTIVE + MODELLED cell WHOSE MATERIAL IS THE DEVSIM REGION'S
++    OWN MATERIAL contains it -- a different-material cell merely
++    touching the same boundary (e.g. Si's y_max == SiO2's y_min, a
++    zero-area shared edge) is not ambiguity, since `region` already
++    names which electrical-analysis region this node belongs to; two
++    cells whose rectangles overlap with POSITIVE area is still blocked
++    regardless of material (a genuine geometry inconsistency, never a
++    benign shared edge -- see `_ownership_problem()`). Only once
++    ownership resolves is `state.net_doping_at()` trusted, and only when
++    it carries no physics_status and no None concentration. So a
++    known-undoped 0.0 is accepted only for a node inside exactly one
++    supported same-material cell with no active attachment covering it
++    -- never for a node no such cell owns.
++
++    A node whose EXACT coordinates fall outside every cell is tried once
++    more with coordinates SNAPPED onto the nearest cell boundary, but
++    only within that boundary's own float32 mesh-serialization
++    round-trip tolerance (`_float32_roundtrip_ulp_um()`) -- DevSim node
++    coordinates are the mesh's float32 vertex points times
++    `length_scale_to_cm` (`import_process_result`), so a node on a
++    canonical edge can read back up to 1 float32 ULP outside it (4.8 um
++    wide: x = 2.4000001 um). This corrects that serialization round-trip
++    only: an interior node is never snapped (the exact check already
++    passed it), and a node whose nearest boundary is farther than 1 ULP,
++    or that is within tolerance of 2+ DIFFERENT boundaries, is never
++    snapped either -- it stays blocked on its raw coordinates, a real
++    geometry mismatch. `net_doping_at()` is queried at the snapped point
++    when a snap applies, never the raw one.
+ 
+     Raises `UnsupportedDopingState` -- and the caller must then write no
+     doping, run no solve and report no number -- when `state` is None or
+-    not a canonical WaferStateV2, or when ANY node has zero or several
+-    owning cells, lies in a LEGACY_UNRESOLVED / UNRESOLVED cell or a
+-    cell without bounds, is owned by a cell of another material, or has
+-    an unknown canonical query. One such node blocks the whole region;
+-    an unknown is never replaced by 0.0, by the latest process result's
+-    DopingProfile, or by a legacy state. The exception's message and
+-    `physics_status` name the first blocked node (x/y um, region), the
+-    material instances and cells (material, lifecycle, bounds) found
+-    there, why it is blocked, the canonical query's own status there,
+-    and blocked/total node counts.
+-
+-    DevSim node coordinates are the mesh's float32 points scaled to cm
+-    (`import_process_result`), so a node on a canonical edge can read back
+-    one float32 unit outside it (4.8 um wide: x = 2.4000001 um). The gate
+-    compares them exactly and blocks such a node; it does not snap
+-    coordinates.
++    not a canonical WaferStateV2, or when ANY node (after any snap) has
++    zero or several same-material owning cells, a positive-area cell
++    overlap, lies in a LEGACY_UNRESOLVED / UNRESOLVED cell or a cell
++    without bounds, or has an unknown canonical query. One such node
++    blocks the whole region; an unknown is never replaced by 0.0, by the
++    latest process result's DopingProfile, or by a legacy state. The
++    exception's message and `physics_status` name the first blocked node
++    (x/y um, region), the material instances and cells (material,
++    lifecycle, bounds) found there, why it is blocked, the canonical
++    query's own status there, and blocked/total node counts.
+     """
+     from tcad.physics.wafer_state_v2 import WaferStateV2
+ 
+@@ -172,9 +202,26 @@ def canonical_node_doping(
+     else:
+         for x_um, y_um in points:
+             found = [c for c in bounded if _contains(c.bounds_um, x_um, y_um)]
+-            result = state.net_doping_at(x_um, y_um)
+-            status_entries = (result.physics_status or {}).get("entries", [])
++            if not found:
++                # Exact containment failed for every cell -- try once
++                # more with each axis snapped onto the nearest cell
++                # boundary, but only within that boundary's own float32
++                # round-trip tolerance (never for an interior node: this
++                # branch only runs when nothing already contains the
++                # raw point). net_doping_at() below then sees the
++                # SNAPPED point, not the raw one.
++                snap = _snap_to_canonical_boundary(x_um, y_um, bounded, length_scale_to_cm)
++                if snap is not None:
++                    x_um, y_um, found = snap
+             why = _ownership_problem(state, region, found)
++            # Once ownership resolves, query net_doping_at() FOR that
++            # exact cell -- not net_doping_at()'s own largest-y_max
++            # tie-break, which would silently pick a DIFFERENT material's
++            # cell merely sharing the same boundary (see
++            # canonical_node_doping()'s own docstring).
++            owner = _same_region_owner(region, found) if why is None else None
++            result = state.net_doping_at(x_um, y_um, owning_cell=owner)
++            status_entries = (result.physics_status or {}).get("entries", [])
+             if why is not None:
+                 node_entries = [_entry("canonical_cell_ownership", region, why)] + status_entries
+             elif result.physics_status is not None or None in (
+@@ -268,7 +315,20 @@ def _diagnosis(x_um: float, y_um: float, region: str, found: list, result, why:
+ def _ownership_problem(state: "WaferStateV2", region: str, found: list) -> Optional[str]:
+     """Why the present cells `found` at a node (bounds containing it, or
+     no bounds at all) do not make exactly one ACTIVE + MODELLED cell of
+-    `region`'s material its owner; None when they do."""
++    `region`'s material its owner; None when they do.
++
++    A cell of a DIFFERENT material merely present at this node (e.g. the
++    Si cell owning a Si/SiO2 interface node, with the SiO2 cell only
++    touching the same boundary) is not itself a problem -- DevSim's
++    `region` argument already names which electrical-analysis region
++    this node belongs to, so only cells of THAT material are owner
++    candidates. What IS always a problem: a cell with no exact bounds
++    (unknown geometry), a non-ACTIVE cell (stale/history geometry), two
++    cells whose rectangles overlap with POSITIVE area (a genuine
++    geometry inconsistency -- two solids occupying the same space, never
++    a benign shared edge), more than one same-material candidate (an
++    instance split across cells, or two instances touching -- Tier 2
++    territory), or none at all."""
+     unbounded = [c for c in found if c.bounds_um is None]
+     if unbounded:
+         c = unbounded[0]
+@@ -281,21 +341,152 @@ def _ownership_problem(state: "WaferStateV2", region: str, found: list) -> Optio
+         more = f" (and {len(inactive) - 1} more non-ACTIVE cell(s))" if len(inactive) > 1 else ""
+         return (f"cell {c.cell_id} containing this node has lifecycle {c.lifecycle}{more} "
+                 f"-- not ACTIVE modelled geometry")
++
++    overlap = _first_positive_area_overlap(found)
++    if overlap is not None:
++        a, b, rect = overlap
++        return (f"cell {a.cell_id} ({a.material}, bounds_um {a.bounds_um}) and cell "
++                f"{b.cell_id} ({b.material}, bounds_um {b.bounds_um}) physically overlap "
++                f"over a positive area {rect} -- two solids occupying the same space, an "
++                f"inconsistent canonical state")
++
++    same_region = [c for c in found if c.material == region]
++    if len(same_region) > 1:
++        return (f"{len(same_region)} ACTIVE modelled cells contain this node, so its owning "
++                f"material instance is ambiguous")
++    if same_region:
++        return None
+     if not found:
+         same = [f"{c.material_instance_id} {c.bounds_um}" for c in state.active_cells()
+                 if c.material == region and c.bounds_um is not None]
+         return (f"no ACTIVE modelled cell contains this node "
+                 f"(ACTIVE {region!r} cells: {_capped(same, 3, ', ') or 'none'})")
+-    if len(found) > 1:
+-        return (f"{len(found)} ACTIVE modelled cells contain this node, so its owning "
+-                f"material instance is ambiguous")
+-    if found[0].material != region:
+-        return (f"the only cell containing this node is {found[0].material} "
+-                f"(instance {found[0].material_instance_id}), not the DevSim region's "
+-                f"material {region!r}")
++    other = found[0]
++    more = f" (and {len(found) - 1} more)" if len(found) > 1 else ""
++    return (f"the only cell containing this node is material {other.material} "
++            f"(instance {other.material_instance_id}){more}, not the DevSim region's "
++            f"material {region!r}")
++
++
++def _same_region_owner(region: str, found: list):
++    """The unique ACTIVE cell of `found` whose material is `region`, or
++    None -- exactly the condition `_ownership_problem()` requires to
++    return None (ownership resolved). Kept separate from that function
++    (which only needs to know WHETHER ownership resolved) so
++    `canonical_node_doping()` can pass the actual resolved cell to
++    `state.net_doping_at(..., owning_cell=...)`."""
++    same = [c for c in found if c.material == region]
++    return same[0] if len(same) == 1 else None
++
++
++def _first_positive_area_overlap(cells: list):
++    """The first pair of `cells` (already ACTIVE, exact bounds) whose
++    rectangles overlap with POSITIVE area -- not merely a shared edge or
++    corner (a zero-area intersection, e.g. Si's y_max == SiO2's y_min).
++    A canonical WaferStateV2's own geometry should never produce a
++    positive-area overlap (etch/oxidation subtract exactly; see
++    wafer_state_v2._apply_geometry_change); this exists to catch it as a
++    genuine inconsistency rather than let it silently pick one cell.
++    Returns (cell_a, cell_b, overlap_bounds_um) or None."""
++    for i in range(len(cells)):
++        a = cells[i]
++        for j in range(i + 1, len(cells)):
++            b = cells[j]
++            x0 = max(a.bounds_um[0], b.bounds_um[0])
++            x1 = min(a.bounds_um[1], b.bounds_um[1])
++            y0 = max(a.bounds_um[2], b.bounds_um[2])
++            y1 = min(a.bounds_um[3], b.bounds_um[3])
++            if x1 > x0 and y1 > y0:
++                return a, b, (x0, x1, y0, y1)
+     return None
+ 
+ 
++def _float32_roundtrip_ulp_um(boundary_um: float, length_scale_to_cm: float) -> float:
++    """The maximum coordinate deviation (um) a canonical boundary at
++    `boundary_um` can pick up purely from being serialized to the mesh
++    file's float32 vertex coordinates and then scaled by
++    `length_scale_to_cm` on the way into a real DevSim node.
++
++    tcad.device.devsim.mesh_import.import_process_result computes
++    `points = raw_points * length_scale_to_cm` where `raw_points` is the
++    float32 array meshio read from the VTU file; a float32 numpy array
++    times a plain Python float stays float32 (NEP 50 weak-scalar
++    promotion -- confirmed against the installed numpy). So the node
++    DevSim actually holds is float32(boundary_um) * float32(
++    length_scale_to_cm), rounded to the nearest float32 -- exactly ONE
++    float32 ULP of that scaled value, converted back to um by dividing
++    by length_scale_to_cm. This is not an invented epsilon, a fraction
++    of grid_delta_um, or a fixed constant: it depends only on the
++    boundary's own magnitude and length_scale_to_cm, so it can never
++    grow with mesh resolution or a user-chosen process dimension.
++    Verified empirically for boundaries 0.6-50 um at length_scale_to_cm
++    =1e-4 -- the real observed round-trip error stayed within this
++    bound (1.5x-4.2x margin) in every case
++    (docs/audits/2026-09-17-tier1-1-r3/).
++    """
++    b32 = np.float32(abs(boundary_um))
++    s32 = np.float32(abs(length_scale_to_cm))
++    scaled = b32 * s32
++    return abs(float(np.spacing(scaled))) / abs(length_scale_to_cm)
++
++
++def _clamp_within_tolerance(x_um, y_um, bounds_um, length_scale_to_cm):
++    """`(x_um, y_um)` clamped onto `bounds_um`, only if every axis that
++    needs clamping is within THAT boundary's own
++    `_float32_roundtrip_ulp_um()` tolerance. None if any needed clamp
++    exceeds tolerance (a real gap, however small) or if the point
++    already lies exactly inside (nothing to snap -- the exact-match path
++    already handles that case, this function is only ever called when it
++    failed). Returns `(snapped_x, snapped_y, distance_um)`, `distance_um`
++    the largest single-axis correction applied."""
++    x0, x1, y0, y1 = bounds_um
++    sx, sy, dist, moved = x_um, y_um, 0.0, False
++    if x_um < x0:
++        gap = x0 - x_um
++        if gap > _float32_roundtrip_ulp_um(x0, length_scale_to_cm):
++            return None
++        sx, dist, moved = x0, max(dist, gap), True
++    elif x_um > x1:
++        gap = x_um - x1
++        if gap > _float32_roundtrip_ulp_um(x1, length_scale_to_cm):
++            return None
++        sx, dist, moved = x1, max(dist, gap), True
++    if y_um < y0:
++        gap = y0 - y_um
++        if gap > _float32_roundtrip_ulp_um(y0, length_scale_to_cm):
++            return None
++        sy, dist, moved = y0, max(dist, gap), True
++    elif y_um > y1:
++        gap = y_um - y1
++        if gap > _float32_roundtrip_ulp_um(y1, length_scale_to_cm):
++            return None
++        sy, dist, moved = y1, max(dist, gap), True
++    if not moved:
++        return None
++    return sx, sy, dist
++
++
++def _snap_to_canonical_boundary(x_um, y_um, bounded_cells, length_scale_to_cm):
++    """Try snapping `(x_um, y_um)` onto the boundary of each of
++    `bounded_cells` (see `_clamp_within_tolerance`). Cells that reach the
++    SAME snapped point are grouped together and returned as that point's
++    owners -- e.g. two cells that genuinely share the exact boundary
++    being snapped to. If cells reach 2+ DIFFERENT snapped points (the
++    node could snap to more than one distinct boundary), that is
++    ambiguous and no snap is applied. Returns
++    `(snapped_x, snapped_y, owning_cells)` or None (nothing within
++    tolerance, or ambiguous)."""
++    reachable: Dict[Tuple[float, float], list] = {}
++    for c in bounded_cells:
++        r = _clamp_within_tolerance(x_um, y_um, c.bounds_um, length_scale_to_cm)
++        if r is not None:
++            reachable.setdefault((r[0], r[1]), []).append(c)
++    if len(reachable) != 1:
++        return None
++    (sx, sy), cells = next(iter(reachable.items()))
++    return sx, sy, cells
++
++
+ def _query_text(result) -> str:
+     status = result.physics_status
+     if status is not None:

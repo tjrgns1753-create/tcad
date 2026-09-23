@@ -1,0 +1,86 @@
+--- a/tests/integration/test_measurement_canonical_state_gate_real.py
++++ b/tests/integration/test_measurement_canonical_state_gate_real.py
+@@ -4,9 +4,18 @@
+ canonical-state gate before any doping is written or any DevSim solve
+ runs. Real GUI (window withdrawn), real ViennaPS, real DevSim.
+ 
++B0 (Batch 7C) the same Gaussian Implant and Implant Windows requests made
++   through the GUI are process-like implant inputs; this project has no
++   implantation/activation model, so they are recorded CHEMICAL only:
++   run_doping() returns False, the attachments are CHEMICAL, and a MEASURE
++   afterwards writes 0 doping and runs 0 solves.
++
+ B1 (supported, accumulated) virgin 4 x 1 um wafer (grid 0.2 um) ->
+-   Gaussian Implant donor (P, peak 1e16 at x=0, straggle 0.5 um) ->
+-   Implant Windows (donor background 1e16, source/drain windows 1e16) ->
++   Gaussian donor (P, peak 1e16 at x=0, straggle 0.5 um) ->
++   Implant Windows (donor background 1e16, source/drain windows 1e16),
++   both DECLARED electrically ACTIVE through the recipe helpers
++   (chemical_state="ACTIVE": a user-declared analytic profile, not a
++   simulated implant) ->
+    MEASURE (the Implant Windows robust branch). Required: both
+    applications are attachments of the canonical state; the solve
+    really runs; the NetDoping DevSim actually solved with equals the
+@@ -253,10 +262,39 @@
+         app.withdraw()
+         _configure(app)
+         assert app._materialize_current_wafer(), "materializing the real ViennaPS wafer failed"
++        # B0: through the GUI these two kinds are CHEMICAL records (Batch 7C).
+         _set_gaussian_p_1e16(app)
+-        assert app.run_doping(silent=True)
++        assert app.run_doping(silent=True) is False, "a GUI Gaussian Implant must not be reported as an applied active doping"
+         _set_implant_windows_1e16(app)
+-        assert app.run_doping(silent=True)
++        assert app.run_doping(silent=True) is False, "a GUI Implant Windows must not be reported as an applied active doping"
++        metrics["B0_states"] = [(a.model, a.chemical_state) for a in app.wafer_state.attachments]
++        assert app.last_doped_result is None
++        metrics["B0"] = _measure(app, devsim, "B0 blocked: GUI Gaussian + Implant Windows are CHEMICAL")
++
++        # B1: the same physics, DECLARED electrically active through the recipe helpers.
++        app.reset()
++        _configure(app)
++        assert app._materialize_current_wafer(), "materializing the real ViennaPS wafer failed"
++        from tcad.mesh.viennaps_adapter import build_process_result
++        from tcad.physics.doping import apply_gaussian_implant_doping, apply_implant_windows_doping
++        from tcad.physics.wafer_state_accumulation import advance_wafer_state
++        pr = build_process_result({"final_mesh": app.last_final_mesh, "snapshots": []})
++        gauss = apply_gaussian_implant_doping(
++            pr, region="Si", junction_axis="x", peak_position_um=0.0, straggle_um=0.5,
++            donor_peak_conc_cm3=1e16, acceptor_peak_conc_cm3=0.0, donor_species="P",
++            chemical_state="ACTIVE")
++        windows_result = apply_implant_windows_doping(
++            pr, region="Si", axis="x", donor_background_cm3=1e16, acceptor_background_cm3=0.0,
++            windows=[
++                {"min_um": float(app.dope_win_src_min_var.get()), "max_um": float(app.dope_win_src_max_var.get()),
++                 "donor_conc_cm3": 1e16, "acceptor_conc_cm3": 0.0},
++                {"min_um": float(app.dope_win_drn_min_var.get()), "max_um": float(app.dope_win_drn_max_var.get()),
++                 "donor_conc_cm3": 1e16, "acceptor_conc_cm3": 0.0},
++            ],
++            chemical_state="ACTIVE")
++        app.wafer_state = advance_wafer_state(
++            advance_wafer_state(app.wafer_state, gauss, "doping"), windows_result, "doping")
++        app.last_doped_result = windows_result
+         metrics["B1_attachments"] = [
+             (a.model, a.species, a.polarity, a.support_instance_id, a.support_region_um)
+             for a in app.wafer_state.attachments]
+@@ -283,7 +321,7 @@
+         app.dope_uniform_region_var.set("Si")
+         app.dope_uniform_donor_var.set(1e16)
+         app.dope_uniform_acceptor_var.set(0.0)
+-        assert app.run_doping(silent=True)
++        assert app.run_doping(silent=True) is True
+         metrics["B2"] = _measure(app, devsim, "B2 supported: uniform apply_doping path")
+     finally:
+         for n, fn in originals.items():
+@@ -299,6 +337,11 @@
+     print("METRICS " + json.dumps(printable, default=str))
+     print("A_LOG_DELTA " + json.dumps(metrics["A"]["log_delta"]))
+ 
++    # ---- B0: the GUI kinds are CHEMICAL records, never measurable ----
++    b0 = metrics["B0"]
++    assert metrics["B0_states"] and all(state == "CHEMICAL" for _, state in metrics["B0_states"]), metrics["B0_states"]
++    assert b0["solve_calls"] == 0 and b0["doping_writes"] == 0 and not b0["currents_in_log"], b0
++
+     # ---- B1: supported, accumulated ----
+     b1 = metrics["B1"]
+     models = [m for m, *_ in metrics["B1_attachments"]]

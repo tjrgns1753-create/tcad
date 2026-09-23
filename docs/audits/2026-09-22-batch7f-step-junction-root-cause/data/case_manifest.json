@@ -1,0 +1,221 @@
+{
+  "batch": "7F",
+  "case_timeout_s": 900,
+  "created": "2026-09-22",
+  "imported_cases": [
+    {
+      "label": "imp_L3_R1_node",
+      "level": 3,
+      "mode": "imported",
+      "representation": "R1",
+      "shifted": false
+    },
+    {
+      "label": "imp_L3_R1_shift",
+      "level": 3,
+      "mode": "imported",
+      "representation": "R1",
+      "shifted": true
+    },
+    {
+      "label": "imp_L3_R2_node",
+      "level": 3,
+      "mode": "imported",
+      "representation": "R2",
+      "shifted": false
+    },
+    {
+      "label": "imp_L3_R2_shift",
+      "level": 3,
+      "mode": "imported",
+      "representation": "R2",
+      "shifted": true
+    },
+    {
+      "label": "imp_L4_R1_node",
+      "level": 4,
+      "mode": "imported",
+      "representation": "R1",
+      "shifted": false
+    },
+    {
+      "label": "imp_L4_R1_shift",
+      "level": 4,
+      "mode": "imported",
+      "representation": "R1",
+      "shifted": true
+    },
+    {
+      "label": "imp_L4_R2_node",
+      "level": 4,
+      "mode": "imported",
+      "representation": "R2",
+      "shifted": false
+    },
+    {
+      "label": "imp_L4_R2_shift",
+      "level": 4,
+      "mode": "imported",
+      "representation": "R2",
+      "shifted": true
+    },
+    {
+      "label": "imp_L5_R1_node",
+      "level": 5,
+      "mode": "imported",
+      "representation": "R1",
+      "shifted": false
+    },
+    {
+      "label": "imp_L5_R1_shift",
+      "level": 5,
+      "mode": "imported",
+      "representation": "R1",
+      "shifted": true
+    },
+    {
+      "label": "imp_L5_R2_node",
+      "level": 5,
+      "mode": "imported",
+      "representation": "R2",
+      "shifted": false
+    },
+    {
+      "label": "imp_L5_R2_shift",
+      "level": 5,
+      "mode": "imported",
+      "representation": "R2",
+      "shifted": true
+    }
+  ],
+  "levels": [
+    3,
+    4,
+    5
+  ],
+  "n_imported": 12,
+  "n_structured": 12,
+  "no_L6_or_above": true,
+  "rev2_local_spacing_cm_reused": {
+    "3": 1.249999968422344e-06,
+    "4": 6.24999984211172e-07,
+    "5": 3.12499992105586e-07
+  },
+  "rev2_source_files": {
+    "3": "docs/audits/2026-09-21-batch7d-step-junction-convergence/rev2/data/rev2_L0L3.json",
+    "4": "docs/audits/2026-09-21-batch7d-step-junction-convergence/rev2/data/rev2_L4L5.json",
+    "5": "docs/audits/2026-09-21-batch7d-step-junction-convergence/rev2/data/rev2_L4L5.json"
+  },
+  "structured_cases": [
+    {
+      "band_spacing_um": 0.01249999968422344,
+      "diagonal": "fixed",
+      "label": "struct_L3_R1_node_fixed",
+      "level_equiv": 3,
+      "mode": "structured",
+      "representation": "R1",
+      "shifted": false
+    },
+    {
+      "band_spacing_um": 0.01249999968422344,
+      "diagonal": "fixed",
+      "label": "struct_L3_R2_node_fixed",
+      "level_equiv": 3,
+      "mode": "structured",
+      "representation": "R2",
+      "shifted": false
+    },
+    {
+      "band_spacing_um": 0.01249999968422344,
+      "diagonal": "fixed",
+      "label": "struct_L3_R2_shift_fixed",
+      "level_equiv": 3,
+      "mode": "structured",
+      "representation": "R2",
+      "shifted": true
+    },
+    {
+      "band_spacing_um": 0.00624999984211172,
+      "diagonal": "fixed",
+      "label": "struct_L4_R1_node_fixed",
+      "level_equiv": 4,
+      "mode": "structured",
+      "representation": "R1",
+      "shifted": false
+    },
+    {
+      "band_spacing_um": 0.00624999984211172,
+      "diagonal": "fixed",
+      "label": "struct_L4_R2_node_fixed",
+      "level_equiv": 4,
+      "mode": "structured",
+      "representation": "R2",
+      "shifted": false
+    },
+    {
+      "band_spacing_um": 0.00624999984211172,
+      "diagonal": "fixed",
+      "label": "struct_L4_R2_shift_fixed",
+      "level_equiv": 4,
+      "mode": "structured",
+      "representation": "R2",
+      "shifted": true
+    },
+    {
+      "band_spacing_um": 0.00312499992105586,
+      "diagonal": "fixed",
+      "label": "struct_L5_R1_node_fixed",
+      "level_equiv": 5,
+      "mode": "structured",
+      "representation": "R1",
+      "shifted": false
+    },
+    {
+      "band_spacing_um": 0.00312499992105586,
+      "diagonal": "fixed",
+      "label": "struct_L5_R2_node_fixed",
+      "level_equiv": 5,
+      "mode": "structured",
+      "representation": "R2",
+      "shifted": false
+    },
+    {
+      "band_spacing_um": 0.00312499992105586,
+      "diagonal": "fixed",
+      "label": "struct_L5_R2_shift_fixed",
+      "level_equiv": 5,
+      "mode": "structured",
+      "representation": "R2",
+      "shifted": true
+    },
+    {
+      "band_spacing_um": 0.00624999984211172,
+      "diagonal": "alternating",
+      "label": "struct_L4_R1_node_alternating",
+      "level_equiv": 4,
+      "mode": "structured",
+      "representation": "R1",
+      "shifted": false
+    },
+    {
+      "band_spacing_um": 0.00624999984211172,
+      "diagonal": "fixed",
+      "label": "struct_L4_R1_node_H",
+      "level_equiv": 4,
+      "mode": "structured",
+      "representation": "R1",
+      "shifted": false,
+      "y_extent_um": 2.0
+    },
+    {
+      "band_spacing_um": 0.00624999984211172,
+      "diagonal": "fixed",
+      "label": "struct_L4_R1_node_2H",
+      "level_equiv": 4,
+      "mode": "structured",
+      "representation": "R1",
+      "shifted": false,
+      "y_extent_um": 4.0
+    }
+  ]
+}

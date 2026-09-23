@@ -1,0 +1,62 @@
+{
+  "label": "D2_top_oxide_trench_floor_bare",
+  "grid_delta_um": 0.02,
+  "oxide_thickness_um": 0.02,
+  "parsed_native_log": {
+    "substeps": 2,
+    "hours_simulated": 0.5,
+    "b_um2_per_hour": 0.010439,
+    "b_over_a_um_per_hour": 0.044911,
+    "native_seed_message_um": null,
+    "native_zero_seed_message": false,
+    "completion_log_found": true
+  },
+  "materials_native_before": [
+    "Si",
+    "SiO2"
+  ],
+  "materials_native_after": [
+    "Si",
+    "SiO2"
+  ],
+  "mesa_top_x=-1.0": {
+    "before_SiO2": null,
+    "after_SiO2": {
+      "x_um": -1.0,
+      "y_min_um": -0.008155133575201035,
+      "y_max_um": 0.022099608555436134,
+      "intersected_triangles": 6
+    },
+    "before_Si": {
+      "x_um": -1.0,
+      "y_min_um": -1.0,
+      "y_max_um": 0.0,
+      "intersected_triangles": 100
+    },
+    "after_Si": {
+      "x_um": -1.0,
+      "y_min_um": -1.0,
+      "y_max_um": -0.008155133575201035,
+      "intersected_triangles": 100
+    }
+  },
+  "trench_floor_x=0.0": {
+    "before_SiO2": null,
+    "after_SiO2": null,
+    "before_Si": {
+      "x_um": 0.0,
+      "y_min_um": -1.0,
+      "y_max_um": -0.5,
+      "intersected_triangles": 50
+    },
+    "after_Si": {
+      "x_um": 0.0,
+      "y_min_um": -1.0,
+      "y_max_um": -0.5,
+      "intersected_triangles": 50
+    },
+    "did_trench_floor_get_new_oxide": false,
+    "did_trench_floor_si_move": 0.0
+  },
+  "note": "Sidewall itself (surface-normal thickness at the vertical trench wall) is NOT measured here -- this audit's cross-section method is vertical-only (Item E's own scope). Only the horizontal trench FLOOR is checked, as a real enclosed bare-Si surface. The sidewall remains explicitly UNKNOWN."
+}

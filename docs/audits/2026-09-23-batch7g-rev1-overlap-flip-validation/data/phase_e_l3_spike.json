@@ -1,0 +1,126 @@
+{
+  "before": {
+    "label": "L3_before_flip",
+    "n_points": 2921,
+    "n_triangles": 5760,
+    "total_abs_area_um2": 8.0,
+    "n_zero_area": 0,
+    "n_inverted": 0,
+    "n_delaunay_violations": 68,
+    "n_hanging_nodes": 0,
+    "n_confirmed_overlap_pairs": 0,
+    "confirmed_overlap_area_um2": 0,
+    "n_unknown_overlap_pairs": 545,
+    "n_boundary_loops": 1,
+    "boundary_clean_manifold": true,
+    "n_constrained_edges": 80,
+    "material_tags_present": [
+      10
+    ]
+  },
+  "after": {
+    "label": "L3_after_flip",
+    "n_points": 2921,
+    "n_triangles": 5760,
+    "total_abs_area_um2": 8.0,
+    "n_zero_area": 0,
+    "n_inverted": 0,
+    "n_delaunay_violations": 0,
+    "n_hanging_nodes": 0,
+    "n_confirmed_overlap_pairs": 0,
+    "confirmed_overlap_area_um2": 0,
+    "n_unknown_overlap_pairs": 511,
+    "n_boundary_loops": 1,
+    "boundary_clean_manifold": true,
+    "n_constrained_edges": 80,
+    "material_tags_present": [
+      10
+    ]
+  },
+  "flip_report": {
+    "passes": [
+      {
+        "pass": 0,
+        "n_violations_before": 68,
+        "n_flips": 68,
+        "rejects": {
+          "not_convex": 0,
+          "opposite_sides_fail": 0,
+          "new_diag_not_inside": 0,
+          "area_not_preserved": 0,
+          "zero_area_new_tri": 0,
+          "overlap_would_increase": 0,
+          "triangle_already_touched": 0
+        }
+      },
+      {
+        "pass": 1,
+        "n_violations_before": 44,
+        "n_flips": 44,
+        "rejects": {
+          "not_convex": 0,
+          "opposite_sides_fail": 0,
+          "new_diag_not_inside": 0,
+          "area_not_preserved": 0,
+          "zero_area_new_tri": 0,
+          "overlap_would_increase": 0,
+          "triangle_already_touched": 0
+        }
+      },
+      {
+        "pass": 2,
+        "n_violations_before": 36,
+        "n_flips": 36,
+        "rejects": {
+          "not_convex": 0,
+          "opposite_sides_fail": 0,
+          "new_diag_not_inside": 0,
+          "area_not_preserved": 0,
+          "zero_area_new_tri": 0,
+          "overlap_would_increase": 0,
+          "triangle_already_touched": 0
+        }
+      },
+      {
+        "pass": 3,
+        "n_violations_before": 36,
+        "n_flips": 36,
+        "rejects": {
+          "not_convex": 0,
+          "opposite_sides_fail": 0,
+          "new_diag_not_inside": 0,
+          "area_not_preserved": 0,
+          "zero_area_new_tri": 0,
+          "overlap_would_increase": 0,
+          "triangle_already_touched": 0
+        }
+      },
+      {
+        "pass": 4,
+        "n_violations_before": 0,
+        "n_flips": 0
+      }
+    ],
+    "terminated": "no_violations_remaining",
+    "final_violations": 0,
+    "tolerance": {
+      "dtype": "float32",
+      "basis": "float32_ulp_at_max_abs_coord",
+      "max_abs_coord": 2.0,
+      "span": 4.0,
+      "length_tol": 2.384185791015625e-07,
+      "median_edge_len": 0.01250004768371582,
+      "safety_factor": 10.0,
+      "area_tol": 2.9802436074533034e-08
+    }
+  },
+  "coords_unchanged": true,
+  "same_triangle_count": true,
+  "material_tags_preserved": true,
+  "total_flips": 184,
+  "nodevolume_after_flip": {
+    "sum_NodeVolume_cm2": 8.39791174361485e-08,
+    "sum_barycentric_cm2": 7.999999925419011e-08,
+    "relative_error": 0.04973897773817765
+  }
+}

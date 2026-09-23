@@ -1,0 +1,140 @@
+{
+ "1D": {
+  "0.02": {
+   "n_nodes": 51,
+   "x0_nodes": 1,
+   "sum_NodeVolume_x0_cm": 2.0000000000000003e-06,
+   "stripe_width_um": 0.020000000000000004,
+   "fraction_of_domain": 0.020000000000000004,
+   "missing_acceptor_cm-2": 100000000000.00002,
+   "missing_donor_cm-2": 100000000000.00002,
+   "missing_total_over_side_inventory": 0.020000000000000004
+  },
+  "0.01": {
+   "n_nodes": 101,
+   "x0_nodes": 1,
+   "sum_NodeVolume_x0_cm": 1.0000000000000002e-06,
+   "stripe_width_um": 0.010000000000000002,
+   "fraction_of_domain": 0.010000000000000002,
+   "missing_acceptor_cm-2": 50000000000.00001,
+   "missing_donor_cm-2": 50000000000.00001,
+   "missing_total_over_side_inventory": 0.010000000000000002
+  },
+  "0.005": {
+   "n_nodes": 201,
+   "x0_nodes": 1,
+   "sum_NodeVolume_x0_cm": 5.000000000000001e-07,
+   "stripe_width_um": 0.005000000000000001,
+   "fraction_of_domain": 0.005000000000000001,
+   "missing_acceptor_cm-2": 25000000000.000004,
+   "missing_donor_cm-2": 25000000000.000004,
+   "missing_total_over_side_inventory": 0.005000000000000001
+  },
+  "0.0025": {
+   "n_nodes": 401,
+   "x0_nodes": 1,
+   "sum_NodeVolume_x0_cm": 2.5000000000000004e-07,
+   "stripe_width_um": 0.0025000000000000005,
+   "fraction_of_domain": 0.0025000000000000005,
+   "missing_acceptor_cm-2": 12500000000.000002,
+   "missing_donor_cm-2": 12500000000.000002,
+   "missing_total_over_side_inventory": 0.0025000000000000005
+  },
+  "0.00125": {
+   "n_nodes": 801,
+   "x0_nodes": 1,
+   "sum_NodeVolume_x0_cm": 1.2500000000000002e-07,
+   "stripe_width_um": 0.0012500000000000002,
+   "fraction_of_domain": 0.0012500000000000002,
+   "missing_acceptor_cm-2": 6250000000.000001,
+   "missing_donor_cm-2": 6250000000.000001,
+   "missing_total_over_side_inventory": 0.0012500000000000002
+  }
+ },
+ "2D_7HD_fixtures": {
+  "M1": {
+   "x0_nodes": 6,
+   "default": {
+    "sum_NodeVolume_x0_cm2": 1.4375000000000004e-11,
+    "fraction_of_domain": 0.014375000000000002,
+    "stripe_width_um": 0.014375,
+    "missing_total_cm-1_assuming_half_half": 1437500.0000000005
+   },
+   "signed": {
+    "sum_NodeVolume_x0_cm2": 1.4375000000000005e-11,
+    "fraction_of_domain": 0.014375000000000004,
+    "stripe_width_um": 0.014375000000000004,
+    "missing_total_cm-1_assuming_half_half": 1437500.0000000005
+   },
+   "signed_exact_split": {
+    "left_um2": 0.0007187500000000001,
+    "total_um2": 0.0014375000000000002,
+    "missing_acceptor_cm-1": 718750.0000000002,
+    "missing_donor_cm-1": 718750.0000000002
+   }
+  },
+  "M2": {
+   "x0_nodes": 6,
+   "default": {
+    "sum_NodeVolume_x0_cm2": 2.0000000000000005e-11,
+    "fraction_of_domain": 0.020000000000000004,
+    "stripe_width_um": 0.020000000000000004,
+    "missing_total_cm-1_assuming_half_half": 2000000.0000000005
+   },
+   "signed": {
+    "sum_NodeVolume_x0_cm2": 2.0000000000000005e-11,
+    "fraction_of_domain": 0.020000000000000004,
+    "stripe_width_um": 0.020000000000000004,
+    "missing_total_cm-1_assuming_half_half": 2000000.0000000005
+   },
+   "signed_exact_split": {
+    "left_um2": 0.001,
+    "total_um2": 0.002,
+    "missing_acceptor_cm-1": 1000000.0,
+    "missing_donor_cm-1": 1000000.0
+   }
+  },
+  "M3": {
+   "x0_nodes": 6,
+   "default": {
+    "sum_NodeVolume_x0_cm2": 2.0379312974838024e-11,
+    "fraction_of_domain": 0.020379312974838023,
+    "stripe_width_um": 0.020379312974838023,
+    "missing_total_cm-1_assuming_half_half": 2037931.2974838025
+   },
+   "signed": {
+    "sum_NodeVolume_x0_cm2": 2.0277750474838026e-11,
+    "fraction_of_domain": 0.020277750474838024,
+    "stripe_width_um": 0.020277750474838024,
+    "missing_total_cm-1_assuming_half_half": 2027775.0474838025
+   },
+   "signed_exact_split": {
+    "left_um2": 0.000973388671875,
+    "total_um2": 0.0020277750474838024,
+    "missing_acceptor_cm-1": 973388.671875,
+    "missing_donor_cm-1": 1054386.3756088025
+   }
+  },
+  "M4": {
+   "x0_nodes": 6,
+   "default": {
+    "sum_NodeVolume_x0_cm2": 1.0414028897545425e-10,
+    "fraction_of_domain": 0.10414028897545424,
+    "stripe_width_um": 0.10414028897545423,
+    "missing_total_cm-1_assuming_half_half": 10414028.897545425
+   },
+   "signed": {
+    "sum_NodeVolume_x0_cm2": 8.779356938740986e-12,
+    "fraction_of_domain": 0.008779356938740985,
+    "stripe_width_um": 0.008779356938740985,
+    "missing_total_cm-1_assuming_half_half": 877935.6938740986
+   },
+   "signed_exact_split": {
+    "left_um2": 0.0003801448883406925,
+    "total_um2": 0.000877935693874097,
+    "missing_acceptor_cm-1": 380144.88834069256,
+    "missing_donor_cm-1": 497790.80553340446
+   }
+  }
+ }
+}

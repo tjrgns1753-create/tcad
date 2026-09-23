@@ -1,0 +1,16 @@
+--- V = +0.10 V
+h=0.02      ok=True I_left=7.8669301e-08 I_right=-7.8672757e-08 KCL=4.39e-05 J_junc=7.860744461e-08 Jt[min,max]=[7.8496e-08,7.8693e-08] L:dpsi=429.0ulp q=1.78e-10 R:dpsi=-215.0ulp q=3.55e-10
+h=0.01      ok=True I_left=2.8067935e-07 I_right=-2.8087875e-07 KCL=7.10e-04 J_junc=2.807420837e-07 Jt[min,max]=[2.8045e-07,2.8101e-07] L:dpsi=787.0ulp q=3.55e-10 R:dpsi=-396.0ulp q=7.11e-10
+h=0.005     ok=True I_left=3.9106156e-07 I_right=-3.9151077e-07 KCL=1.15e-03 J_junc=3.910703890e-07 Jt[min,max]=[3.9042e-07,3.9168e-07] L:dpsi=549.0ulp q=7.11e-10 R:dpsi=-276.0ulp q=1.42e-09
+h=0.0025    ok=True I_left=4.0308747e-07 I_right=-4.0298534e-07 KCL=2.53e-04 J_junc=4.038313807e-07 Jt[min,max]=[4.0246e-07,4.0509e-07] L:dpsi=283.0ulp q=1.42e-09 R:dpsi=-142.0ulp q=2.84e-09
+h=0.00125   ok=True I_left=4.0450848e-07 I_right=-4.0277324e-07 KCL=4.29e-03 J_junc=4.048437314e-07 Jt[min,max]=[4.0226e-07,4.0752e-07] L:dpsi=142.0ulp q=2.84e-09 R:dpsi=-71.0ulp q=5.68e-09
+h=0.000625  ok=True I_left=4.0450847e-07 I_right=-4.0845757e-07 KCL=9.76e-03 J_junc=4.050671040e-07 Jt[min,max]=[3.9939e-07,4.1028e-07] L:dpsi=71.0ulp q=5.68e-09 R:dpsi=-36.0ulp q=1.14e-08
+h=0.0003125 ok=True I_left=4.1019280e-07 I_right=-4.0845757e-07 KCL=4.23e-03 J_junc=4.051220698e-07 Jt[min,max]=[3.9435e-07,4.1575e-07] L:dpsi=36.0ulp q=1.14e-08 R:dpsi=-18.0ulp q=2.27e-08
+--- V = -0.10 V
+h=0.02      ok=True I_left=-3.8201066e-08 I_right=3.8330945e-08 KCL=3.40e-03 J_junc=-3.815122908e-08 Jt[min,max]=[-3.8331e-08,-3.7993e-08] L:dpsi=-116.0ulp q=3.55e-10 R:dpsi=125.0ulp q=3.55e-10
+h=0.01      ok=True I_left=-9.4116011e-08 I_right=9.4383380e-08 KCL=2.84e-03 J_junc=-9.411943248e-08 Jt[min,max]=[-9.4422e-08,-9.3791e-08] L:dpsi=-133.0ulp q=7.11e-10 R:dpsi=134.0ulp q=7.11e-10
+h=0.005     ok=True I_left=-9.5038595e-08 I_right=9.4807503e-08 KCL=2.43e-03 J_junc=-9.467798998e-08 Jt[min,max]=[-9.5257e-08,-9.4070e-08] L:dpsi=-67.0ulp q=1.42e-09 R:dpsi=67.0ulp q=1.42e-09
+h=0.0025    ok=True I_left=-9.6459674e-08 I_right=9.6228585e-08 KCL=2.40e-03 J_junc=-9.518076452e-08 Jt[min,max]=[-9.6471e-08,-9.3929e-08] L:dpsi=-34.0ulp q=2.84e-09 R:dpsi=34.0ulp q=2.84e-09
+h=0.00125   ok=True I_left=-9.6459672e-08 I_right=9.6228584e-08 KCL=2.40e-03 J_junc=-9.529517991e-08 Jt[min,max]=[-9.7978e-08,-9.2593e-08] L:dpsi=-17.0ulp q=5.68e-09 R:dpsi=17.0ulp q=5.68e-09
+h=0.000625  ok=True I_left=-9.0987398e-08 I_right=9.0968378e-08 KCL=2.09e-04 J_junc=-9.532348463e-08 Jt[min,max]=[-1.0087e-07,-8.9715e-08] L:dpsi=-8.0ulp q=1.14e-08 R:dpsi=8.0ulp q=1.14e-08
+h=0.0003125 ok=True I_left=-9.0987398e-08 I_right=9.0968377e-08 KCL=2.09e-04 J_junc=-9.533054173e-08 Jt[min,max]=[-1.0718e-07,-8.4255e-08] L:dpsi=-4.0ulp q=2.27e-08 R:dpsi=4.0ulp q=2.27e-08

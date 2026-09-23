@@ -1,0 +1,78 @@
+{
+ "R0L3_dx0.02": {
+  "cfg": {
+   "id": "R0L3_dx0.02",
+   "kind": "1d",
+   "dx_um": 0.02,
+   "x_range_um": [
+    -2.0,
+    2.0
+   ]
+  },
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 97009.86610701973,
+  "B_ok": true,
+  "B_couple_model": "EdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 1.449954011156492e-10,
+  "B_max_abs_HoleCurrent_A_per_cm2": 7.24977005578246e-11,
+  "B_max_abs_ElectronCurrent_x_couple": 1.449954011156492e-10,
+  "B_max_abs_HoleCurrent_x_couple": 7.24977005578246e-11
+ },
+ "R0L3_dx0.01": {
+  "cfg": {
+   "id": "R0L3_dx0.01",
+   "kind": "1d",
+   "dx_um": 0.01,
+   "x_range_um": [
+    -2.0,
+    2.0
+   ]
+  },
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 104864.2437059301,
+  "B_ok": true,
+  "B_couple_model": "EdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 3.2017280456999985e-10,
+  "B_max_abs_HoleCurrent_A_per_cm2": 1.4882230178029753e-10,
+  "B_max_abs_ElectronCurrent_x_couple": 3.2017280456999985e-10,
+  "B_max_abs_HoleCurrent_x_couple": 1.4882230178029753e-10
+ },
+ "R0L3_dx0.005": {
+  "cfg": {
+   "id": "R0L3_dx0.005",
+   "kind": "1d",
+   "dx_um": 0.005,
+   "x_range_um": [
+    -2.0,
+    2.0
+   ]
+  },
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 108862.72943235177,
+  "B_ok": true,
+  "B_couple_model": "EdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 6.092528054118574e-10,
+  "B_max_abs_HoleCurrent_A_per_cm2": 3.046264027059287e-10,
+  "B_max_abs_ElectronCurrent_x_couple": 6.092528054118574e-10,
+  "B_max_abs_HoleCurrent_x_couple": 3.046264027059287e-10
+ },
+ "R0L3_dx0.0025": {
+  "cfg": {
+   "id": "R0L3_dx0.0025",
+   "kind": "1d",
+   "dx_um": 0.0025,
+   "x_range_um": [
+    -2.0,
+    2.0
+   ]
+  },
+  "A_ok": true,
+  "A_max_abs_ElectricField_V_per_cm": 110880.31052367539,
+  "B_ok": true,
+  "B_couple_model": "EdgeCouple",
+  "B_max_abs_ElectronCurrent_A_per_cm2": 1.402464574740004e-09,
+  "B_max_abs_HoleCurrent_A_per_cm2": 6.686572996961153e-10,
+  "B_max_abs_ElectronCurrent_x_couple": 1.402464574740004e-09,
+  "B_max_abs_HoleCurrent_x_couple": 6.686572996961153e-10
+ }
+}

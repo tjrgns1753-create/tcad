@@ -1,0 +1,108 @@
+--- a/tcad/physics/wafer_state_v2.py
++++ b/tcad/physics/wafer_state_v2.py
+@@ -44,6 +44,21 @@
+ 
+ UM2_TO_CM2 = 1.0e-8
+ 
++#: The ONLY legal dopant activation states. ACTIVE dopant may be used in an
++#: electrical donor/acceptor query; CHEMICAL is present/provenance only and
++#: UNKNOWN is undecided -- neither is ever electrical, and neither is ever
++#: read as 0.0 or summed as if it were ACTIVE (see `net_doping_at`).
++CHEMICAL_STATES = ("CHEMICAL", "ACTIVE", "UNKNOWN")
++
++
++def validate_chemical_state(value: Any) -> str:
++    """Return `value` if it is exactly one of `CHEMICAL_STATES`, else raise
++    ValueError immediately -- no coercion, no default, no guessing."""
++    if value not in CHEMICAL_STATES:
++        raise ValueError(
++            f"chemical_state must be exactly one of {CHEMICAL_STATES}, got {value!r}")
++    return value
++
+ 
+ # --------------------------------------------------------------------------
+ # Data model (design doc Sec5)
+@@ -87,6 +102,9 @@
+     provenance: Any = None
+     inventory_cm_per_depth: Optional[float] = None
+ 
++    def __post_init__(self) -> None:
++        validate_chemical_state(self.chemical_state)
++
+     @property
+     def support_is_exact(self) -> bool:
+         return self.support_region_um is not None
+@@ -312,6 +330,32 @@
+         acceptor = 0.0
+         if owning is not None:
+             for a in self.attachments_for_instance(owning.material_instance_id):
++                # Activation gate: only an ACTIVE attachment may supply an
++                # electrical donor/acceptor number. A CHEMICAL or UNKNOWN
++                # attachment covering this point (or with no known support,
++                # which may cover it) makes ALL THREE values None -- never
++                # 0.0 and never summed as if it were ACTIVE.
++                if a.chemical_state != "ACTIVE" and (
++                        a.support_region_um is None
++                        or _point_in(a.support_region_um, x_um, y_um)):
++                    return DopingQueryResult(
++                        donor_concentration=None, acceptor_concentration=None,
++                        net_doping=None,
++                        physics_status={
++                            "resolution": "UNSUPPORTED_BY_MODEL",
++                            "entries": [{
++                                "parameter": "dopant_activation_state",
++                                "material": owning.material,
++                                "resolution": "UNSUPPORTED_BY_MODEL",
++                                "provenance": "DERIVED",
++                                "note": f"attachment {a.attachment_id!r} covering this "
++                                        f"point has chemical_state {a.chemical_state!r}; "
++                                        f"only ACTIVE dopant is electrically usable "
++                                        f"(no activation model is available)",
++                            }],
++                            "notes": [],
++                        },
++                    )
+                 # An attachment whose 2D support is unknown, or whose
+                 # profile has no exact integral, does NOT get a local
+                 # numeric read either (review P0): "I do not know the
+@@ -933,11 +977,12 @@
+     support_instance_id: str,
+     support_region_um: Optional[Bounds],
+     model: str,
++    chemical_state: str,
+     inventory_integral: Optional[Callable[[Bounds], Optional[float]]] = None,
+     model_params: Optional[Dict[str, Any]] = None,
+-    chemical_state: str = "CHEMICAL",
+     provenance: Any = None,
+     step_seed: str = "",
++    refuse_reason: Optional[str] = None,
+ ) -> WaferStateV2:
+     """Bind a dopant profile to a specific material instance and 2D
+     support.
+@@ -956,11 +1001,24 @@
+     doping event and an `unresolved_inventory` ledger entry
+     (`total=None`, `UNKNOWN_GEOMETRIC_SUPPORT`), so nothing downstream
+     can read an electrical doping number for it.
++
++    `chemical_state` is REQUIRED (no default) and must be exactly one of
++    `CHEMICAL_STATES`, else ValueError: an ACTIVE attachment is the only
++    kind an electrical query may read; a CHEMICAL/UNKNOWN one is recorded
++    but stays electrically unsupported (see `WaferStateV2.net_doping_at`).
++
++    `refuse_reason`, when given, forces the refusal path with that reason
++    even though the attachment itself would be possible -- how a caller
++    refuses ONE request atomically when a sibling profile of the same
++    request cannot be attached (never a partially applied request).
+     """
++    validate_chemical_state(chemical_state)
+     ids = _IdGen(step_seed)
+     cells = _active_modelled_cells(state, support_instance_id)
+-    reason: Optional[str] = None
+-    if not cells:
++    reason: Optional[str] = refuse_reason
++    if reason is not None:
++        pass
++    elif not cells:
+         reason = (f"instance {support_instance_id!r} is not ACTIVE + MODELLED "
+                   f"(legacy / unresolved / nonexistent)")
+     elif support_region_um is None:

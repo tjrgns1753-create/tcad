@@ -1,0 +1,308 @@
+{
+ "levels": {
+  "R0_dx0.02": {
+   "dx_um": 0.02,
+   "all_ok": true,
+   "psiA_Linf_vs_finest_V": 0.001457067327185868,
+   "V_bi_numeric_V": 0.834504509847162,
+   "E_peak_V_per_cm": 97009.86610702128,
+   "W_um_B0": 0.11999999999999979,
+   "B0_contact_p_side_p_n_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_contact_n_side_n_p_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_currents_A_per_cm2": [
+    -4.01951688603894e-11,
+    8.039033772080255e-11
+   ],
+   "B0_qf_n_dev_V": 8.93729534823251e-15,
+   "B0_mass_action_dev": 3.423927807943983e-13,
+   "newton": {
+    "A": 10,
+    "B0": 1,
+    "C+0.025": 4,
+    "C+0.050": 4,
+    "C+0.075": 4,
+    "C+0.100": 4,
+    "Arev": 10,
+    "B0rev": 1,
+    "C-0.025": 4,
+    "C-0.050": 4,
+    "C-0.075": 4,
+    "C-0.100": 4
+   },
+   "J_C_-0.100_A_per_cm2": -1.3818624566612138e-07,
+   "Jrel_C_-0.100_vs_finest": 0.4540014412015246,
+   "J_C_+0.050_A_per_cm2": 2.6168839557533613e-07,
+   "Jrel_C_+0.050_vs_finest": 1.2830460367306527,
+   "J_C_+0.100_A_per_cm2": 9.509021358607794e-07,
+   "Jrel_C_+0.100_vs_finest": 1.3463297383978459
+  },
+  "R0_dx0.01": {
+   "dx_um": 0.01,
+   "all_ok": true,
+   "psiA_Linf_vs_finest_V": 0.00034068544660453837,
+   "V_bi_numeric_V": 0.834504509847162,
+   "E_peak_V_per_cm": 104864.24370593182,
+   "W_um_B0": 0.14000000000000043,
+   "B0_contact_p_side_p_n_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_contact_n_side_n_p_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_currents_A_per_cm2": [
+    -5.0423781640055986e-11,
+    1.0084756328010437e-10
+   ],
+   "B0_qf_n_dev_V": 7.216449660063518e-16,
+   "B0_mass_action_dev": 3.6193270602780103e-14,
+   "newton": {
+    "A": 11,
+    "B0": 1,
+    "C+0.025": 4,
+    "C+0.050": 4,
+    "C+0.075": 4,
+    "C+0.100": 4,
+    "Arev": 11,
+    "B0rev": 1,
+    "C-0.025": 4,
+    "C-0.050": 4,
+    "C-0.075": 4,
+    "C-0.100": 4
+   },
+   "J_C_-0.100_A_per_cm2": -9.337897470091042e-08,
+   "Jrel_C_-0.100_vs_finest": 0.017462532985426705,
+   "J_C_+0.050_A_per_cm2": 1.4532189243020903e-07,
+   "Jrel_C_+0.050_vs_finest": 0.2678306572729683,
+   "J_C_+0.100_A_per_cm2": 5.268964550102443e-07,
+   "Jrel_C_+0.100_vs_finest": 0.3001052104355986
+  },
+  "R0_dx0.005": {
+   "dx_um": 0.005,
+   "all_ok": true,
+   "psiA_Linf_vs_finest_V": 6.883928137768613e-05,
+   "V_bi_numeric_V": 0.834504509847162,
+   "E_peak_V_per_cm": 108862.72943234495,
+   "W_um_B0": 0.13000000000000095,
+   "B0_contact_p_side_p_n_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_contact_n_side_n_p_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_currents_A_per_cm2": [
+    1.5905091456000312e-10,
+    -3.1810182911994626e-10
+   ],
+   "B0_qf_n_dev_V": 1.6653345369377348e-16,
+   "B0_mass_action_dev": 1.27675647831893e-14,
+   "newton": {
+    "A": 11,
+    "B0": 1,
+    "C+0.025": 4,
+    "C+0.050": 4,
+    "C+0.075": 4,
+    "C+0.100": 4,
+    "Arev": 11,
+    "B0rev": 1,
+    "C-0.025": 4,
+    "C-0.050": 4,
+    "C-0.075": 4,
+    "C-0.100": 4
+   },
+   "J_C_-0.100_A_per_cm2": -9.501209024532924e-08,
+   "Jrel_C_-0.100_vs_finest": 0.0002788231032519,
+   "J_C_+0.050_A_per_cm2": 1.1642540022243929e-07,
+   "Jrel_C_+0.050_vs_finest": 0.01572921477176827,
+   "J_C_+0.100_A_per_cm2": 4.1382562897606594e-07,
+   "Jrel_C_+0.100_vs_finest": 0.021105477798501558
+  },
+  "R0_dx0.0025": {
+   "dx_um": 0.0025,
+   "all_ok": true,
+   "psiA_Linf_vs_finest_V": 0.0,
+   "V_bi_numeric_V": 0.834504509847162,
+   "E_peak_V_per_cm": 110880.31052366181,
+   "W_um_B0": 0.13500000000000123,
+   "B0_contact_p_side_p_n_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_contact_n_side_n_p_cm3": [
+    1.00000000000001e+17,
+    999.9999999999901
+   ],
+   "B0_currents_A_per_cm2": [
+    1.0603394304000257e-10,
+    -2.1206788607990405e-10
+   ],
+   "B0_qf_n_dev_V": 1.6653345369377348e-16,
+   "B0_mass_action_dev": 6.772360450213455e-15,
+   "newton": {
+    "A": 11,
+    "B0": 1,
+    "C+0.025": 4,
+    "C+0.050": 4,
+    "C+0.075": 4,
+    "C+0.100": 4,
+    "Arev": 11,
+    "B0rev": 1,
+    "C-0.025": 4,
+    "C-0.050": 4,
+    "C-0.075": 4,
+    "C-0.100": 4
+   },
+   "J_C_-0.100_A_per_cm2": -9.503858919969858e-08,
+   "Jrel_C_-0.100_vs_finest": 0.0,
+   "J_C_+0.050_A_per_cm2": 1.1462247863826559e-07,
+   "Jrel_C_+0.050_vs_finest": 0.0,
+   "J_C_+0.100_A_per_cm2": 4.0527216626853475e-07,
+   "Jrel_C_+0.100_vs_finest": 0.0
+  }
+ },
+ "finest": "R0_dx0.0025",
+ "U_psi_V": 0.001457067327185868,
+ "U_I": {
+  "C_-0.100": 0.4540014412015246,
+  "C_+0.050": 1.2830460367306527,
+  "C_+0.100": 1.3463297383978459
+ },
+ "monotone_psi_diff": true,
+ "monotone_J_diff": {
+  "C_-0.100": true,
+  "C_+0.050": true,
+  "C_+0.100": true
+ }
+}
+expected signs {'PotentialEquation': [-1], 'ElectronContinuityEquation': [1], 'HoleContinuityEquation': [-1], 'PotentialEquation@A': [-1]}
+
+== M1_D0 newton={'A': 11, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 11, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.000e-03 V tol=4.372e-03 agree=True Vbi=0.834505 yvar=5.55e-17 Epk=1.0448e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=5.03e-16 Ir=-1.01e-15 eqok=True cons=True qf=6.08e-15 ma=2.30e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1400 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.000e-03 V
+  C_-0.100: I=-1.183857e-12 ref=-9.503859e-13 rel=2.457e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=1.992656e-12 ref=1.146225e-12 rel=7.385e-01 tol=3.849e+00 agree=True cons=True over=4.2e-13
+  C_+0.100: I=7.229929e-12 ref=4.052722e-12 rel=7.840e-01 tol=4.039e+00 agree=True cons=True over=2.0e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M1_D1 newton={'A': 11, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 11, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.000e-03 V tol=4.372e-03 agree=True Vbi=0.834505 yvar=5.55e-17 Epk=1.0448e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=5.03e-16 Ir=-1.01e-15 eqok=True cons=True qf=6.25e-15 ma=2.49e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1400 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.000e-03 V
+  C_-0.100: I=-1.183857e-12 ref=-9.503859e-13 rel=2.457e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=1.992656e-12 ref=1.146225e-12 rel=7.385e-01 tol=3.849e+00 agree=True cons=True over=4.2e-13
+  C_+0.100: I=7.229929e-12 ref=4.052722e-12 rel=7.840e-01 tol=4.039e+00 agree=True cons=True over=2.0e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M1_D2 newton={'A': 11, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 11, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.000e-03 V tol=4.372e-03 agree=True Vbi=0.834505 yvar=5.55e-17 Epk=1.0448e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=5.03e-16 Ir=-1.01e-15 eqok=True cons=True qf=6.19e-15 ma=2.41e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1400 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.000e-03 V
+  C_-0.100: I=-1.183857e-12 ref=-9.503859e-13 rel=2.457e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=1.992656e-12 ref=1.146225e-12 rel=7.385e-01 tol=3.849e+00 agree=True cons=True over=4.2e-13
+  C_+0.100: I=7.229929e-12 ref=4.052722e-12 rel=7.840e-01 tol=4.039e+00 agree=True cons=True over=2.0e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M1_D3 newton={'A': 11, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 11, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.000e-03 V tol=4.372e-03 agree=True Vbi=0.834505 yvar=5.55e-17 Epk=1.0448e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=5.03e-16 Ir=-1.01e-15 eqok=True cons=True qf=6.27e-15 ma=2.42e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1400 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.000e-03 V
+  C_-0.100: I=-1.183857e-12 ref=-9.503859e-13 rel=2.457e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=1.992656e-12 ref=1.146225e-12 rel=7.385e-01 tol=3.849e+00 agree=True cons=True over=4.2e-13
+  C_+0.100: I=7.229929e-12 ref=4.052722e-12 rel=7.840e-01 tol=4.039e+00 agree=True cons=True over=2.0e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M2_D0 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.457e-03 V tol=4.372e-03 agree=True Vbi=0.834505 yvar=5.55e-17 Epk=9.7010e+04 over=5.55e-17 PEviol=0 M2id=6.62e-16
+  B: pos=True Il=-4.02e-16 Ir=8.04e-16 eqok=True cons=True qf=1.41e-14 ma=5.53e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1200 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.457e-03 V
+  C_-0.100: I=-1.381862e-12 ref=-9.503859e-13 rel=4.540e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0} M2id=1.92e-16
+  C_+0.050: I=2.616884e-12 ref=1.146225e-12 rel=1.283e+00 tol=3.849e+00 agree=True cons=True over=5.4e-13 M2id=2.02e-16
+  C_+0.100: I=9.509021e-12 ref=4.052722e-12 rel=1.346e+00 tol=4.039e+00 agree=True cons=True over=2.5e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0} M2id=3.34e-16
+
+== M2_D1 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.457e-03 V tol=4.372e-03 agree=True Vbi=0.834505 yvar=7.78e-18 Epk=9.7010e+04 over=5.55e-17 PEviol=0
+  B: pos=True Il=-4.02e-16 Ir=8.04e-16 eqok=True cons=True qf=1.39e-14 ma=5.45e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1200 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.457e-03 V
+  C_-0.100: I=-1.381862e-12 ref=-9.503859e-13 rel=4.540e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=2.616884e-12 ref=1.146225e-12 rel=1.283e+00 tol=3.849e+00 agree=True cons=True over=5.4e-13
+  C_+0.100: I=9.509021e-12 ref=4.052722e-12 rel=1.346e+00 tol=4.039e+00 agree=True cons=True over=2.5e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M2_D2 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.457e-03 V tol=4.372e-03 agree=True Vbi=0.834505 yvar=9.38e-18 Epk=9.7010e+04 over=5.55e-17 PEviol=0
+  B: pos=True Il=-4.02e-16 Ir=8.04e-16 eqok=True cons=True qf=1.40e-14 ma=5.52e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1200 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.457e-03 V
+  C_-0.100: I=-1.381862e-12 ref=-9.503859e-13 rel=4.540e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=2.616884e-12 ref=1.146225e-12 rel=1.283e+00 tol=3.849e+00 agree=True cons=True over=5.4e-13
+  C_+0.100: I=9.509021e-12 ref=4.052722e-12 rel=1.346e+00 tol=4.039e+00 agree=True cons=True over=2.5e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M2_D3 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.457e-03 V tol=4.372e-03 agree=True Vbi=0.834505 yvar=5.55e-17 Epk=9.7010e+04 over=5.55e-17 PEviol=0
+  B: pos=True Il=-4.02e-16 Ir=8.04e-16 eqok=True cons=True qf=1.41e-14 ma=5.53e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1200 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.457e-03 V
+  C_-0.100: I=-1.381862e-12 ref=-9.503859e-13 rel=4.540e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=2.616884e-12 ref=1.146225e-12 rel=1.283e+00 tol=3.849e+00 agree=True cons=True over=5.4e-13
+  C_+0.100: I=9.509021e-12 ref=4.052722e-12 rel=1.346e+00 tol=4.039e+00 agree=True cons=True over=2.5e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M3_D0 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=3.835e-02 V tol=4.372e-03 agree=False Vbi=0.834505 yvar=2.08e-02 Epk=1.5655e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=1.73e-16 Ir=1.18e-16 eqok=True cons=True qf=2.51e-14 ma=9.80e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1238 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=3.835e-02 V
+  C_-0.100: I=-1.341352e-12 ref=-9.503859e-13 rel=4.114e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=2.225602e-12 ref=1.146225e-12 rel=9.417e-01 tol=3.849e+00 agree=True cons=True over=4.3e-13
+  C_+0.100: I=8.047248e-12 ref=4.052722e-12 rel=9.856e-01 tol=4.039e+00 agree=True cons=True over=2.0e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M3_D1 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=7.528e-03 V tol=4.372e-03 agree=False Vbi=0.834505 yvar=4.62e-03 Epk=1.0003e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=3.52e-17 Ir=-3.29e-16 eqok=True cons=True qf=1.30e-14 ma=5.07e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1238 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=7.528e-03 V
+  C_-0.100: I=-1.399451e-12 ref=-9.503859e-13 rel=4.725e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=2.622742e-12 ref=1.146225e-12 rel=1.288e+00 tol=3.849e+00 agree=True cons=True over=5.5e-13
+  C_+0.100: I=9.533149e-12 ref=4.052722e-12 rel=1.352e+00 tol=4.039e+00 agree=True cons=True over=2.5e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M3_D2 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=1.592e-02 V tol=4.372e-03 agree=False Vbi=0.834505 yvar=5.21e-03 Epk=1.0107e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=6.79e-17 Ir=2.63e-16 eqok=True cons=True qf=2.53e-14 ma=1.01e-12 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1225 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.592e-02 V
+  C_-0.100: I=-1.385972e-12 ref=-9.503859e-13 rel=4.583e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=2.512907e-12 ref=1.146225e-12 rel=1.192e+00 tol=3.849e+00 agree=True cons=True over=5.8e-13
+  C_+0.100: I=9.127549e-12 ref=4.052722e-12 rel=1.252e+00 tol=4.039e+00 agree=True cons=True over=2.6e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M3_D3 newton={'A': 10, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 10, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=2.526e-02 V tol=4.372e-03 agree=False Vbi=0.834505 yvar=1.45e-02 Epk=1.5014e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=8.59e-17 Ir=2.49e-17 eqok=True cons=True qf=1.65e-14 ma=6.12e-13 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.1238 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=2.526e-02 V
+  C_-0.100: I=-1.372350e-12 ref=-9.503859e-13 rel=4.440e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=2.437915e-12 ref=1.146225e-12 rel=1.127e+00 tol=3.849e+00 agree=True cons=True over=4.0e-13
+  C_+0.100: I=8.835143e-12 ref=4.052722e-12 rel=1.180e+00 tol=4.039e+00 agree=True cons=True over=2.0e-12 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M4_D0 newton={'A': 11, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 11, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 6, 'C-0.100': 4} ok_all=True
+  A: Linf=2.427e-01 V tol=4.372e-03 agree=False Vbi=0.834505 yvar=4.23e-01 Epk=9.8461e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=-1.47e-15 Ir=-1.19e-15 eqok=True cons=True qf=3.43e-09 ma=1.33e-07 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.0862 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=2.427e-01 V
+  C_-0.100: I=-9.789942e-13 ref=-9.503859e-13 rel=3.010e-02 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=6.287219e-13 ref=1.146225e-12 rel=4.515e-01 tol=3.849e+00 agree=True cons=True over=1.2e-14
+  C_+0.100: I=2.296881e-12 ref=4.052722e-12 rel=4.332e-01 tol=4.039e+00 agree=True cons=True over=6.3e-14 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+
+== M4_D1 newton={'A': 50} ok_all=False
+
+== M4_D2 newton={'A': 10, 'B0': 8, 'C+0.025': 10, 'C+0.050': 10, 'C+0.075': 9, 'C+0.100': 10, 'Arev': 10, 'B0rev': 8, 'C-0.025': 8, 'C-0.050': 8, 'C-0.075': 8, 'C-0.100': 8} ok_all=True
+  A: Linf=1.730e-01 V tol=4.372e-03 agree=False Vbi=0.834505 yvar=1.13e-01 Epk=6.5500e+05 over=6.31e-03 PEviol=482
+  B: pos=True Il=2.65e-17 Ir=-2.65e-17 eqok=True cons=True qf=2.39e-06 ma=9.24e-05 nover=True pover=True viol={'PotentialEquation': 482, 'ElectronContinuityEquation': 482, 'HoleContinuityEquation': 482}
+     W=0.0800 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=1.730e-01 V
+  C_-0.100: I=-5.845409e-12 ref=-9.503859e-13 rel=5.151e+00 tol=1.362e+00 agree=False cons=True over=6.9e-03 viol={'PotentialEquation': 482, 'ElectronContinuityEquation': 482, 'HoleContinuityEquation': 482}
+  C_+0.050: I=6.179922e-12 ref=1.146225e-12 rel=4.392e+00 tol=3.849e+00 agree=False cons=True over=6.0e-03
+  C_+0.100: I=2.021904e-11 ref=4.052722e-12 rel=3.989e+00 tol=4.039e+00 agree=True cons=True over=5.6e-03 viol={'PotentialEquation': 482, 'ElectronContinuityEquation': 482, 'HoleContinuityEquation': 482}
+
+== M4_D3 newton={'A': 12, 'B0': 1, 'C+0.025': 4, 'C+0.050': 4, 'C+0.075': 4, 'C+0.100': 4, 'Arev': 12, 'B0rev': 1, 'C-0.025': 4, 'C-0.050': 4, 'C-0.075': 4, 'C-0.100': 4} ok_all=True
+  A: Linf=2.110e-01 V tol=4.372e-03 agree=False Vbi=0.834505 yvar=2.59e-01 Epk=7.2270e+05 over=5.55e-17 PEviol=0
+  B: pos=True Il=-9.25e-16 Ir=2.12e-16 eqok=True cons=True qf=9.84e-14 ma=3.79e-12 nover=False pover=False viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+     W=0.2600 um neut=0.00e+00 pside(p,n)=[1.0000000000000101e+17, 999.9999999999901] nside(n,p)=[1.0000000000000101e+17, 999.9999999999901] psiB_Linf=2.110e-01 V
+  C_-0.100: I=-1.178441e-12 ref=-9.503859e-13 rel=2.400e-01 tol=1.362e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}
+  C_+0.050: I=1.169861e-12 ref=1.146225e-12 rel=2.062e-02 tol=3.849e+00 agree=True cons=True over=5.6e-17
+  C_+0.100: I=4.077330e-12 ref=4.052722e-12 rel=6.072e-03 tol=4.039e+00 agree=True cons=True over=5.6e-17 viol={'PotentialEquation': 0, 'ElectronContinuityEquation': 0, 'HoleContinuityEquation': 0}

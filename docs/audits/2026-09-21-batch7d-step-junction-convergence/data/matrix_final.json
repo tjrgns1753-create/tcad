@@ -1,0 +1,2494 @@
+{
+  "1d": [
+    {
+      "label": "1d_L0_R1_node",
+      "level": 0,
+      "near_h_cm": 8e-09,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 275,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 6.23889494411721e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          1e+18,
+          1e+18
+        ],
+        [
+          4.993761e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": 7.918511105864528e-09,
+            "top": 6.733776675675002e-09
+          },
+          "conservation_error": 1.465228778153953e-08
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.3207147897975007e-07,
+            "top": 1.1972111582465853e-07
+          },
+          "conservation_error": 1.2350363155091542e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.130486680075818e-06,
+            "top": 1.138415226562419e-06
+          },
+          "conservation_error": 7.928546486601117e-09
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.5945713460482117e-05,
+            "top": 1.5929528628027748e-05
+          },
+          "conservation_error": 1.618483245436963e-08
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.00044873695498687965,
+            "top": 0.00044875973311207004
+          },
+          "conservation_error": 2.2778125190387778e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.018155078727083676,
+            "top": 0.018155059114030536
+          },
+          "conservation_error": 1.9613053139910797e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L0_R1_shift",
+      "level": 0,
+      "near_h_cm": 8e-09,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 275,
+      "xj_used_cm": 5.004000000000001e-06,
+      "junction_on_a_node": false,
+      "min_spacing_near_junction_cm": 7.999999999999754e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5.008e-06,
+          1e+18,
+          0.0
+        ],
+        [
+          5e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.261037439972013e-08,
+            "top": 7.932871461225003e-09
+          },
+          "conservation_error": 4.677502938495127e-09
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.264603423712217e-07,
+            "top": 1.2966653419536785e-07
+          },
+          "conservation_error": 3.206191824146157e-09
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1239567719621265e-06,
+            "top": 1.1356266821600587e-06
+          },
+          "conservation_error": 1.1669910197932266e-08
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.5914402290393405e-05,
+            "top": 1.592863328630803e-05
+          },
+          "conservation_error": 1.4230995914626704e-08
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.000448596908028949,
+            "top": 0.00044861113317293326
+          },
+          "conservation_error": 1.422514398424302e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.018148922954502003,
+            "top": 0.018148913882555517
+          },
+          "conservation_error": 9.07194648569476e-09
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L0_R2_node",
+      "level": 0,
+      "near_h_cm": 8e-09,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 275,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 6.23889494411721e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          1e+18,
+          0.0
+        ],
+        [
+          4.993761e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -6.872495360250159e-09,
+            "top": -8.387968316362503e-09
+          },
+          "conservation_error": 1.5260463676612662e-08
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.365281649896116e-07,
+            "top": 1.1480454693628746e-07
+          },
+          "conservation_error": 2.1723618053324133e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1302479564461592e-06,
+            "top": 1.1319976195793416e-06
+          },
+          "conservation_error": 1.7496631331823462e-09
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.5944757036262483e-05,
+            "top": 1.5932561693083717e-05
+          },
+          "conservation_error": 1.219534317876568e-08
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.00044891570110928525,
+            "top": 0.000448898805836193
+          },
+          "conservation_error": 1.689527309224094e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.018161184658238568,
+            "top": 0.01816118170597105
+          },
+          "conservation_error": 2.9522675172588553e-09
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L0_R2_shift",
+      "level": 0,
+      "near_h_cm": 8e-09,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 275,
+      "xj_used_cm": 5.004000000000001e-06,
+      "junction_on_a_node": false,
+      "min_spacing_near_junction_cm": 7.999999999999754e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5.008e-06,
+          1e+18,
+          0.0
+        ],
+        [
+          5e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.261037439972013e-08,
+            "top": 7.932871461225003e-09
+          },
+          "conservation_error": 4.677502938495127e-09
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.264603423712217e-07,
+            "top": 1.2966653419536785e-07
+          },
+          "conservation_error": 3.206191824146157e-09
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1239567719621265e-06,
+            "top": 1.1356266821600587e-06
+          },
+          "conservation_error": 1.1669910197932266e-08
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.5914402290393405e-05,
+            "top": 1.592863328630803e-05
+          },
+          "conservation_error": 1.4230995914626704e-08
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.000448596908028949,
+            "top": 0.00044861113317293326
+          },
+          "conservation_error": 1.422514398424302e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.018148922954502003,
+            "top": 0.018148913882555517
+          },
+          "conservation_error": 9.07194648569476e-09
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L1_R1_node",
+      "level": 1,
+      "near_h_cm": 4e-09,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 335,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 3.6006117196604195e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          1e+18,
+          1e+18
+        ],
+        [
+          4.996399e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -7.47438745647627e-09,
+            "top": -2.028002709412501e-09
+          },
+          "conservation_error": 9.50239016588877e-09
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.0189735827688569e-07,
+            "top": 1.258913728827831e-07
+          },
+          "conservation_error": 2.3994014605897418e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1291570539222991e-06,
+            "top": 1.1325542738569487e-06
+          },
+          "conservation_error": 3.397219934649626e-09
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.5929759832133928e-05,
+            "top": 1.5928437282686786e-05
+          },
+          "conservation_error": 1.3225494471417543e-09
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.00044876628937310053,
+            "top": 0.00044876706500882686
+          },
+          "conservation_error": 7.756357263280847e-10
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.018155434366463087,
+            "top": 0.018155452008895318
+          },
+          "conservation_error": 1.7642432230402516e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L1_R1_shift",
+      "level": 1,
+      "near_h_cm": 4e-09,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 335,
+      "xj_used_cm": 5.0020000000000006e-06,
+      "junction_on_a_node": false,
+      "min_spacing_near_junction_cm": 4.0000000000003005e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          0.0,
+          1e+18
+        ],
+        [
+          5.004e-06,
+          1e+18,
+          0.0
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": 1.7121054646847026e-08,
+            "top": -8.888108887537503e-09
+          },
+          "conservation_error": 8.232945759309522e-09
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.2317906961384616e-07,
+            "top": 1.2381953866067776e-07
+          },
+          "conservation_error": 6.404690468315964e-10
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1345852322906722e-06,
+            "top": 1.141776355284067e-06
+          },
+          "conservation_error": 7.191122993394835e-09
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.593579660016182e-05,
+            "top": 1.5930028887298334e-05
+          },
+          "conservation_error": 5.7677128634863405e-09
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.00044870054125819046,
+            "top": 0.0004486857416424616
+          },
+          "conservation_error": 1.4799615728885648e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.01815216938353258,
+            "top": 0.018152175918088813
+          },
+          "conservation_error": 6.5345562329233164e-09
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L1_R2_node",
+      "level": 1,
+      "near_h_cm": 4e-09,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 335,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 3.6006117196604195e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          1e+18,
+          0.0
+        ],
+        [
+          4.996399e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": 1.1432023948407717e-08,
+            "top": -4.9014811462875024e-09
+          },
+          "conservation_error": 6.530542802120214e-09
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.2090615503890858e-07,
+            "top": 1.2908930095889217e-07
+          },
+          "conservation_error": 8.183145919983591e-09
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1408826679890089e-06,
+            "top": 1.1426999864790135e-06
+          },
+          "conservation_error": 1.8173184900046006e-09
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.5941491244245367e-05,
+            "top": 1.5932419804390316e-05
+          },
+          "conservation_error": 9.071439855051696e-09
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.0004488441679458397,
+            "top": 0.0004488386142052145
+          },
+          "conservation_error": 5.55374062520932e-09
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.018158733233763415,
+            "top": 0.01815872087666398
+          },
+          "conservation_error": 1.2357099433979446e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L1_R2_shift",
+      "level": 1,
+      "near_h_cm": 4e-09,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 335,
+      "xj_used_cm": 5.0020000000000006e-06,
+      "junction_on_a_node": false,
+      "min_spacing_near_junction_cm": 4.0000000000003005e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          0.0,
+          1e+18
+        ],
+        [
+          5.004e-06,
+          1e+18,
+          0.0
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": 1.7121054646847026e-08,
+            "top": -8.888108887537503e-09
+          },
+          "conservation_error": 8.232945759309522e-09
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.2317906961384616e-07,
+            "top": 1.2381953866067776e-07
+          },
+          "conservation_error": 6.404690468315964e-10
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1345852322906722e-06,
+            "top": 1.141776355284067e-06
+          },
+          "conservation_error": 7.191122993394835e-09
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.593579660016182e-05,
+            "top": 1.5930028887298334e-05
+          },
+          "conservation_error": 5.7677128634863405e-09
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.00044870054125819046,
+            "top": 0.0004486857416424616
+          },
+          "conservation_error": 1.4799615728885648e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.01815216938353258,
+            "top": 0.018152175918088813
+          },
+          "conservation_error": 6.5345562329233164e-09
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L2_R1_node",
+      "level": 2,
+      "near_h_cm": 2e-09,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 399,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.0965109012821476e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          1e+18,
+          1e+18
+        ],
+        [
+          4.998903e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": 1.3786094747461718e-08,
+            "top": 3.612298928662501e-09
+          },
+          "conservation_error": 1.739839367612422e-08
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.4854714531844345e-07,
+            "top": 1.1298594653792007e-07
+          },
+          "conservation_error": 3.556119878052338e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1335040872228765e-06,
+            "top": 1.1424410549934323e-06
+          },
+          "conservation_error": 8.936967770555807e-09
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.592092316962907e-05,
+            "top": 1.592585994402059e-05
+          },
+          "conservation_error": 4.936774391519315e-09
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.00044875978322841893,
+            "top": 0.00044875233587652035
+          },
+          "conservation_error": 7.447351898582158e-09
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.01815517611829969,
+            "top": 0.01815514257309857
+          },
+          "conservation_error": 3.354520112033854e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L2_R1_shift",
+      "level": 2,
+      "near_h_cm": 2e-09,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 399,
+      "xj_used_cm": 5.001e-06,
+      "junction_on_a_node": false,
+      "min_spacing_near_junction_cm": 2.0000000000001503e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          0.0,
+          1e+18
+        ],
+        [
+          5.002e-06,
+          1e+18,
+          0.0
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.3451948788819321e-08,
+            "top": 3.1163003083875003e-09
+          },
+          "conservation_error": 1.0335648480431821e-08
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.510709417264015e-07,
+            "top": 1.238303554212092e-07
+          },
+          "conservation_error": 2.7240586305192303e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1274544927088902e-06,
+            "top": 1.1414057874305489e-06
+          },
+          "conservation_error": 1.3951294721658649e-08
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.592620268617908e-05,
+            "top": 1.5928423754057425e-05
+          },
+          "conservation_error": 2.2210678783460963e-09
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.0004486994160658611,
+            "top": 0.00044872207253341897
+          },
+          "conservation_error": 2.265646755785205e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.01815381471685342,
+            "top": 0.018153809616979447
+          },
+          "conservation_error": 5.099873974512281e-09
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L2_R2_node",
+      "level": 2,
+      "near_h_cm": 2e-09,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 399,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.0965109012821476e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          1e+18,
+          0.0
+        ],
+        [
+          4.998903e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.0002851148490961e-08,
+            "top": 7.969631275462502e-09
+          },
+          "conservation_error": 2.033219873028459e-09
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.2951073553754298e-07,
+            "top": 1.1411229365769341e-07
+          },
+          "conservation_error": 1.5398441879849573e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1164227345688397e-06,
+            "top": 1.1466123023839976e-06
+          },
+          "conservation_error": 3.018956781515793e-08
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.591594557995569e-05,
+            "top": 1.5928422201962506e-05
+          },
+          "conservation_error": 1.2476622006814795e-08
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.0004487622338013372,
+            "top": 0.00044878688784629915
+          },
+          "conservation_error": 2.4654044961959758e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.01815646131359833,
+            "top": 0.018156475718175937
+          },
+          "conservation_error": 1.440457760709668e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L2_R2_shift",
+      "level": 2,
+      "near_h_cm": 2e-09,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 399,
+      "xj_used_cm": 5.001e-06,
+      "junction_on_a_node": false,
+      "min_spacing_near_junction_cm": 2.0000000000001503e-09,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          0.0,
+          1e+18
+        ],
+        [
+          5.002e-06,
+          1e+18,
+          0.0
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.3451948788819321e-08,
+            "top": 3.1163003083875003e-09
+          },
+          "conservation_error": 1.0335648480431821e-08
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.510709417264015e-07,
+            "top": 1.238303554212092e-07
+          },
+          "conservation_error": 2.7240586305192303e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1274544927088902e-06,
+            "top": 1.1414057874305489e-06
+          },
+          "conservation_error": 1.3951294721658649e-08
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.592620268617908e-05,
+            "top": 1.5928423754057425e-05
+          },
+          "conservation_error": 2.2210678783460963e-09
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.0004486994160658611,
+            "top": 0.00044872207253341897
+          },
+          "conservation_error": 2.265646755785205e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.01815381471685342,
+            "top": 0.018153809616979447
+          },
+          "conservation_error": 5.099873974512281e-09
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L3_R1_node",
+      "level": 3,
+      "near_h_cm": 1e-09,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 465,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.2581972385082183e-10,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          1e+18,
+          1e+18
+        ],
+        [
+          4.999774e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -4.7046820549940125e-08,
+            "top": -2.1558854434500012e-09
+          },
+          "conservation_error": 4.9202705993390125e-08
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.1876078998786658e-07,
+            "top": 1.1592313132996792e-07
+          },
+          "conservation_error": 2.8376586578986615e-09
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.0993109929725313e-06,
+            "top": 1.1363366179957512e-06
+          },
+          "conservation_error": 3.702562502321984e-08
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.598786997789975e-05,
+            "top": 1.5931460769419124e-05
+          },
+          "conservation_error": 5.64092084806255e-08
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.000448820742328715,
+            "top": 0.0004487529323802765
+          },
+          "conservation_error": 6.78099484384756e-08
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.01815523075950449,
+            "top": 0.018155155173288456
+          },
+          "conservation_error": 7.558621603273585e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L3_R1_shift",
+      "level": 3,
+      "near_h_cm": 1e-09,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 465,
+      "xj_used_cm": 5.000500000000001e-06,
+      "junction_on_a_node": false,
+      "min_spacing_near_junction_cm": 9.999999999996516e-10,
+      "junction_node_donors_acceptors": [
+        [
+          5.001e-06,
+          1e+18,
+          0.0
+        ],
+        [
+          5e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -4.520350717970446e-08,
+            "top": -4.165767117675003e-09
+          },
+          "conservation_error": 4.936927429737946e-08
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.8011178479433088e-07,
+            "top": 1.1706600422391058e-07
+          },
+          "conservation_error": 6.30457805704203e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.0690006840671676e-06,
+            "top": 1.1362020251188985e-06
+          },
+          "conservation_error": 6.720134105173091e-08
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.599338785495471e-05,
+            "top": 1.5922890073369674e-05
+          },
+          "conservation_error": 7.049778158503623e-08
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.0004487331936106652,
+            "top": 0.00044874144831581286
+          },
+          "conservation_error": 8.25470514766993e-09
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.018154587370432757,
+            "top": 0.018154627847398512
+          },
+          "conservation_error": 4.0476965754848715e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L3_R2_node",
+      "level": 3,
+      "near_h_cm": 1e-09,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 465,
+      "xj_used_cm": 5e-06,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.2581972385082183e-10,
+      "junction_node_donors_acceptors": [
+        [
+          5e-06,
+          1e+18,
+          0.0
+        ],
+        [
+          4.999774e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": 1.2437003498626174e-08,
+            "top": 4.792237191300001e-09
+          },
+          "conservation_error": 1.7229240689926175e-08
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.5948059219536166e-07,
+            "top": 1.2242474659062902e-07
+          },
+          "conservation_error": 3.705584560473264e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.0699659022257717e-06,
+            "top": 1.1359073886294383e-06
+          },
+          "conservation_error": 6.594148640366669e-08
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.5960740024848413e-05,
+            "top": 1.5929494623951334e-05
+          },
+          "conservation_error": 3.124540089707921e-08
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.000448764443639095,
+            "top": 0.00044876714413857074
+          },
+          "conservation_error": 2.7004994757311857e-09
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.018155689761982056,
+            "top": 0.01815568302517405
+          },
+          "conservation_error": 6.736808007279382e-09
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    },
+    {
+      "label": "1d_L3_R2_shift",
+      "level": 3,
+      "near_h_cm": 1e-09,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 465,
+      "xj_used_cm": 5.000500000000001e-06,
+      "junction_on_a_node": false,
+      "min_spacing_near_junction_cm": 9.999999999996516e-10,
+      "junction_node_donors_acceptors": [
+        [
+          5.001e-06,
+          1e+18,
+          0.0
+        ],
+        [
+          5e-06,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": 60,
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_top": 0.0,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -4.520350717970446e-08,
+            "top": -4.165767117675003e-09
+          },
+          "conservation_error": 4.936927429737946e-08
+        },
+        {
+          "v_top": 0.1,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.8011178479433088e-07,
+            "top": 1.1706600422391058e-07
+          },
+          "conservation_error": 6.30457805704203e-08
+        },
+        {
+          "v_top": 0.2,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.0690006840671676e-06,
+            "top": 1.1362020251188985e-06
+          },
+          "conservation_error": 6.720134105173091e-08
+        },
+        {
+          "v_top": 0.3,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -1.599338785495471e-05,
+            "top": 1.5922890073369674e-05
+          },
+          "conservation_error": 7.049778158503623e-08
+        },
+        {
+          "v_top": 0.4,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.0004487331936106652,
+            "top": 0.00044874144831581286
+          },
+          "conservation_error": 8.25470514766993e-09
+        },
+        {
+          "v_top": 0.5,
+          "converged": true,
+          "iterations": 30,
+          "currents": {
+            "bot": -0.018154587370432757,
+            "top": 0.018154627847398512
+          },
+          "conservation_error": 4.0476965754848715e-08
+        }
+      ],
+      "contacts": [
+        "bot",
+        "top"
+      ]
+    }
+  ],
+  "2d": [
+    {
+      "label": "matrix_2d_isolated_B_L0_R1_node",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": [
+        100,
+        "Convergence failure!\n"
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L0_R1_shift",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": false,
+      "equilibrium_iterations": [
+        100,
+        "Convergence failure!\n"
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": null,
+      "V_bi_solved": null,
+      "V_bi_error": null,
+      "bias_points": [],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L0_R2_node",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.7038595746673204e-16,
+            "Si_xmax": 7.546940785500706e-17
+          },
+          "conservation_error": 9.491654961172498e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -8.833699194927075e-18,
+            "Si_xmax": 3.3174868390313878e-18
+          },
+          "conservation_error": 5.516212355895687e-18
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L0_R2_shift",
+      "level": 0,
+      "refine_levels_param": 1,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 299,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 9.999999747378752e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.1,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.7038595746673204e-16,
+            "Si_xmax": 7.546940785500706e-17
+          },
+          "conservation_error": 9.491654961172498e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -8.833699194927075e-18,
+            "Si_xmax": 3.3174868390313878e-18
+          },
+          "conservation_error": 5.516212355895687e-18
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L1_R1_node",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L1_R1_shift",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L1_R2_node",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.699874173980615e-16,
+            "Si_xmax": 7.744132040991602e-17
+          },
+          "conservation_error": 9.254609698814548e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -4.998881532072048e-17,
+            "Si_xmax": 1.8590832696445303e-17
+          },
+          "conservation_error": 3.139798262427518e-17
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L1_R2_shift",
+      "level": 1,
+      "refine_levels_param": 2,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 437,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 4.999999873689376e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.05,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.699874173980615e-16,
+            "Si_xmax": 7.744132040991602e-17
+          },
+          "conservation_error": 9.254609698814548e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -4.998881532072048e-17,
+            "Si_xmax": 1.8590832696445303e-17
+          },
+          "conservation_error": 3.139798262427518e-17
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L2_R1_node",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L2_R1_shift",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L2_R2_node",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.7051239000999442e-16,
+            "Si_xmax": 7.92190312578331e-17
+          },
+          "conservation_error": 9.129335875216132e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L2_R2_shift",
+      "level": 2,
+      "refine_levels_param": 3,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 953,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 2.499999482097337e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.025,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.7051239000999442e-16,
+            "Si_xmax": 7.92190312578331e-17
+          },
+          "conservation_error": 9.129335875216132e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": false,
+          "iterations": "Convergence failure!\n",
+          "currents": null,
+          "conservation_error": null
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L3_R1_node",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R1",
+      "shifted": false,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.9655551859218963e-11,
+            "Si_xmax": 1.9655461898135426e-11
+          },
+          "conservation_error": 8.996108353704107e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 1.5266546798197294e-25,
+            "Si_xmax": 3.343808246474842e-27
+          },
+          "conservation_error": 1.5600927622844778e-25
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 6.4462913717797595e-09,
+            "Si_xmax": -6.4462887150027606e-09
+          },
+          "conservation_error": 2.6567769989591622e-15
+        },
+        {
+          "v_n_contact": 0.4,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 4.626562947446115e-08,
+            "Si_xmax": -4.6265629770944894e-08
+          },
+          "conservation_error": 2.9648374630153584e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L3_R1_shift",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R1",
+      "shifted": true,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          1e+18
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.9655551859218963e-11,
+            "Si_xmax": 1.9655461898135426e-11
+          },
+          "conservation_error": 8.996108353704107e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 1.5266546798197294e-25,
+            "Si_xmax": 3.343808246474842e-27
+          },
+          "conservation_error": 1.5600927622844778e-25
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 6.4462913717797595e-09,
+            "Si_xmax": -6.4462887150027606e-09
+          },
+          "conservation_error": 2.6567769989591622e-15
+        },
+        {
+          "v_n_contact": 0.4,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 4.626562947446115e-08,
+            "Si_xmax": -4.6265629770944894e-08
+          },
+          "conservation_error": 2.9648374630153584e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L3_R2_node",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R2",
+      "shifted": false,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.2453968670814601e-12,
+            "Si_xmax": 1.245305892639806e-12
+          },
+          "conservation_error": 9.097444165410639e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 2.4067252074937716e-25,
+            "Si_xmax": -3.7503534145551104e-26
+          },
+          "conservation_error": 2.0316898660382605e-25
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 6.158929614084045e-11,
+            "Si_xmax": -6.1593207931858e-11
+          },
+          "conservation_error": 3.911791017558042e-15
+        },
+        {
+          "v_n_contact": 0.4,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 1.9880207093752693e-09,
+            "Si_xmax": -1.9880216195342085e-09
+          },
+          "conservation_error": 9.10158939157035e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    },
+    {
+      "label": "matrix_2d_isolated_B_L3_R2_shift",
+      "level": 3,
+      "refine_levels_param": 4,
+      "representation": "R2",
+      "shifted": true,
+      "n_nodes": 2921,
+      "xj_used_cm": 0.0,
+      "junction_on_a_node": true,
+      "min_spacing_near_junction_cm": 1.2499997410486685e-06,
+      "junction_node_donors_acceptors": [
+        [
+          0.0,
+          1e+18,
+          0.0
+        ],
+        [
+          -0.0125,
+          0.0,
+          1e+18
+        ]
+      ],
+      "equilibrium_converged": true,
+      "equilibrium_iterations": [
+        100,
+        100
+      ],
+      "V_t": 0.025887193125000003,
+      "n_i": 10000000000.0,
+      "V_bi_analytic": 0.9537194398253274,
+      "V_bi_solved": 0.9537194398253274,
+      "V_bi_error": 0.0,
+      "bias_points": [
+        {
+          "v_n_contact": -0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": -1.2453968670814601e-12,
+            "Si_xmax": 1.245305892639806e-12
+          },
+          "conservation_error": 9.097444165410639e-17
+        },
+        {
+          "v_n_contact": 0.0,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 2.4067252074937716e-25,
+            "Si_xmax": -3.7503534145551104e-26
+          },
+          "conservation_error": 2.0316898660382605e-25
+        },
+        {
+          "v_n_contact": 0.3,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 6.158929614084045e-11,
+            "Si_xmax": -6.1593207931858e-11
+          },
+          "conservation_error": 3.911791017558042e-15
+        },
+        {
+          "v_n_contact": 0.4,
+          "converged": true,
+          "iterations": 100,
+          "currents": {
+            "Si_xmin": 1.9880207093752693e-09,
+            "Si_xmax": -1.9880216195342085e-09
+          },
+          "conservation_error": 9.10158939157035e-16
+        }
+      ],
+      "contacts": [
+        "Si_xmin",
+        "Si_xmax"
+      ]
+    }
+  ]
+}

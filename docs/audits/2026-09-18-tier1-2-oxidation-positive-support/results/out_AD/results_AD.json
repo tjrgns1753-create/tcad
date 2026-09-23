@@ -1,0 +1,162 @@
+{
+  "A_preflight_capabilities": {
+    "A1_grid_delta": {
+      "available": true,
+      "value": 0.02,
+      "note": "domain.getGridDelta() -- reliable, always available."
+    },
+    "A2_materials_present_domain_wide": {
+      "available": true,
+      "value": [
+        "Si",
+        "SiO2"
+      ],
+      "note": "domain.getMaterialsInDomain() -- reliable for 'is material X present ANYWHERE in the domain', but this is a GLOBAL/domain-wide fact, not per-location. It cannot answer 'does THIS Si surface have oxide on it'. See D1/D3 below for the concrete failure this causes."
+    },
+    "A3_per_location_oxide_thickness": {
+      "available": "NOT NATIVELY -- constructed manually by this audit",
+      "note": "No ViennaPS/ViennaLS Python binding was found that returns 'oxide thickness at x' directly. The only reliable route found in this investigation is: export a real triangulated mesh (save_volume_mesh or save_locos_volume_mesh) and intersect triangles at a chosen x (this audit's own measure_common.material_summary/_vertical_triangle_interval, copied from the already-reviewed Rev.3.1 methodology). This requires an EXPORT (i.e. real I/O, non-trivial for a coarse preflight check) and requires knowing in advance whether the domain needs the LOCOS-aware exporter (see A7 below)."
+    },
+    "A4_min_oxide_band_domain_wide": {
+      "available": "NOT NATIVELY",
+      "note": "No single call returns 'the minimum oxide thickness anywhere in the domain'. Would have to be derived by sampling A3 at every x of interest -- expensive and geometry-shape-dependent (see D2: a sidewall needs a surface-normal sample, not a vertical one)."
+    },
+    "A5_partial_oxide_multi_surface_trench_sidewall": {
+      "available": "NOT NATIVELY, and NOT ATTEMPTED for a non-vertical surface",
+      "note": "This audit's measurement contract (Item E) only supports a VERTICAL (same-x) cross-section. A trench sidewall's true oxide thickness is surface-NORMAL, not vertical, and would read as a much larger 'vertical' distance for a near-vertical wall. No attempt to build a surface-normal measurement was made this round -- left explicitly UNKNOWN, see D2 and the 'not yet proven' list in REPORT.md."
+    },
+    "A6_locos_registration_before": {
+      "is_locos_registered": false,
+      "note": "False here because this domain was built directly via MakePlane, never passed through register_locos_export()."
+    },
+    "A7_locos_registration_after_explicit_call": {
+      "is_locos_registered": true,
+      "hint": [
+        [
+          "Material('Si')",
+          "Material('SiO2')"
+        ],
+        [
+          false,
+          true
+        ]
+      ],
+      "note": "register_locos_export() is an in-memory, id(domain)-keyed side table (tcad/backends/viennaps/io.py, _LOCOS_EXPORT_HINTS) -- it is NOT a property of the ViennaPS Domain object itself. Whether a domain 'needs' the LOCOS-aware exporter is knowledge that lives only in this Python-side table, populated by whichever ProcessStep built the domain."
+    },
+    "A8_locos_registration_survives_vpsd_reload": {
+      "is_locos_registered_on_reloaded_domain": false,
+      "materials_native_on_reloaded_domain": [
+        "Si",
+        "SiO2"
+      ],
+      "num_level_sets_reloaded": 2,
+      "note": "reloaded is a NEW Python object with a NEW id() (Reader creates a fresh vps.Domain() and populates it) -- so the id(domain)-keyed registration on the ORIGINAL domain object does not carry over. getMaterialsInDomain()/getNumberOfLevelSets() ARE preserved (real domain-native state, not a Python side table) -- so the geometry survives, but the WRAP-TOPOLOGY KNOWLEDGE needed to export it correctly does not, unless the caller re-registers it explicitly after every reload."
+    }
+  },
+  "D1_partial_lateral_oxide_thin": {
+    "label": "D1_partial_lateral_oxide_thin",
+    "materials_native_before": [
+      "Si",
+      "SiO2"
+    ],
+    "materials_native_after": [
+      "Si",
+      "SiO2"
+    ],
+    "parsed_native_log": {
+      "substeps": 4,
+      "hours_simulated": 0.5,
+      "b_um2_per_hour": 0.010439,
+      "b_over_a_um_per_hour": 0.044911,
+      "native_seed_message_um": null,
+      "native_zero_seed_message": false,
+      "completion_log_found": true
+    },
+    "global_getMaterialsInDomain_shows_SiO2": true,
+    "oxide_side_x=-0.5": {
+      "before_cross_section": {
+        "x_um": -0.5,
+        "y_min_um": 4.975124102202244e-05,
+        "y_max_um": 0.019999999552965164,
+        "intersected_triangles": 4
+      },
+      "after_cross_section": {
+        "x_um": -0.5,
+        "y_min_um": -0.008097590878605843,
+        "y_max_um": 0.030410941690206528,
+        "intersected_triangles": 10
+      }
+    },
+    "bare_side_x=0.5": {
+      "before_SiO2_cross_section": null,
+      "after_SiO2_cross_section": null,
+      "before_Si_cross_section": {
+        "x_um": 0.5,
+        "y_min_um": -0.5,
+        "y_max_um": 0.0,
+        "intersected_triangles": 100
+      },
+      "after_Si_cross_section": {
+        "x_um": 0.5,
+        "y_min_um": -0.5,
+        "y_max_um": 0.0,
+        "intersected_triangles": 100
+      },
+      "did_bare_side_get_a_new_local_oxide": false,
+      "did_bare_side_si_move_at_all": 0.0
+    }
+  },
+  "D3_thick_oxide_elsewhere": {
+    "label": "D3_thick_oxide_elsewhere_bare_target",
+    "materials_native_before": [
+      "Si",
+      "SiO2"
+    ],
+    "materials_native_after": [
+      "Si",
+      "SiO2"
+    ],
+    "parsed_native_log": {
+      "substeps": 4,
+      "hours_simulated": 0.5,
+      "b_um2_per_hour": 0.010439,
+      "b_over_a_um_per_hour": 0.044911,
+      "native_seed_message_um": null,
+      "native_zero_seed_message": false,
+      "completion_log_found": true
+    },
+    "global_getMaterialsInDomain_shows_SiO2": true,
+    "oxide_side_x=-0.5": {
+      "before_cross_section": {
+        "x_um": -0.5,
+        "y_min_um": 4.975124102202244e-05,
+        "y_max_um": 0.20000000298023224,
+        "intersected_triangles": 40
+      },
+      "after_cross_section": {
+        "x_um": -0.5,
+        "y_min_um": -0.0035033763851970434,
+        "y_max_um": 0.2047138810157776,
+        "intersected_triangles": 44
+      }
+    },
+    "bare_side_x=0.5": {
+      "before_SiO2_cross_section": null,
+      "after_SiO2_cross_section": null,
+      "before_Si_cross_section": {
+        "x_um": 0.5,
+        "y_min_um": -0.5,
+        "y_max_um": 0.0,
+        "intersected_triangles": 100
+      },
+      "after_Si_cross_section": {
+        "x_um": 0.5,
+        "y_min_um": -0.5,
+        "y_max_um": 0.0,
+        "intersected_triangles": 100
+      },
+      "did_bare_side_get_a_new_local_oxide": false,
+      "did_bare_side_si_move_at_all": 0.0
+    }
+  }
+}

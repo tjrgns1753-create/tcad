@@ -1,0 +1,72 @@
+{
+ "physics": {
+  "source": "identical to 7H-D data/fixed_physics.json (read-only): T=300 K, NA=ND=1e17 cm^-3 fully ionized, DEVSIM 2.11.0 SetSiliconParameters, taun=taup=1e-8 s (production setup), constant mobility, SRH only",
+  "domain_x_um": [-0.5, 0.5], "height_2d_um": 0.1, "height_2d_cm": 1e-05,
+  "junction": "J1: x<0 -> -NA, x>0 -> +ND, no node on x=0 (asserted). J0 (diagnostic, 1D only): x==0 -> 0",
+  "V_bi_analytic_V": 0.8345045098471614, "I_scale_2D_A_per_cm": 0.016567803600000004, "J_scale_1D_A_per_cm2": 1656.78036
+ },
+ "solver": {
+  "poisson": {"absolute_error": 1e-10, "relative_error": 1e-10, "maximum_iterations": 50},
+  "drift_diffusion": {"absolute_error": 1e30, "relative_error": 1e-10, "maximum_iterations": 50},
+  "acceptance": "info=True: converged == True AND final device relative update < relative_error. abs 1e30 for DD is never used as evidence of convergence."
+ },
+ "bias": {"contact": "left (p side), parameter left_bias", "forward_steps_V": [0.025, 0.05, 0.075, 0.1],
+          "reverse_steps_V_rebuilt_device": [-0.025, -0.05, -0.075, -0.1], "recorded_V": [-0.1, 0.0, 0.05, 0.1]},
+ "runs": {
+  "1D_J1_h_um": [0.02, 0.01, 0.005, 0.0025, 0.00125],
+  "1D_J0_h_um": [0.02, 0.01, 0.005, 0.0025, 0.00125],
+  "2D_h_um": [0.02, 0.01, 0.005, 0.0025],
+  "2D_variants": {"M1": ["D0"], "M2": ["D0"], "M3": ["D0", "D1"]},
+  "isolation": "one configuration per subprocess",
+  "stop_condition": "a run that exceeds 3600 s wall time, raises MemoryError or crashes is recorded as NOT_COMPLETED for that level; no retry with other settings; convergence analysis then uses the completed levels only"
+ },
+ "reference": {
+  "truth": "1D J1 at h=0.00125 um is the reference, not declared exact",
+  "interpolation": "per side (x<0 / x>0 nodes only, contacts included), local 4-point Lagrange (cubic) on the finer solution; applied to psi, ln n, ln p",
+  "U_ref_potential_V": "max over 1D J1 h=0.0025 nodes of |psi_0.0025 - I[psi_0.00125]| (equilibrium Poisson state)",
+  "U_ref_logc": "same for max(|ln n diff|, |ln p diff|) at the 0 V DD state",
+  "U_ref_current": "per bias |J_0.00125 - J_0.0025| / |J_0.00125|",
+  "reference_current_converged_iff": "U_ref_current <= 0.01 at every recorded bias",
+  "richardson": "observed order p from (0.005,0.0025,0.00125) and (0.01,0.005,0.0025); stable iff both in [0.5,4] and |p1-p2| <= 0.25; then the extrapolated J is reported as a supplement only"
+ },
+ "layer_A_same_h": {
+  "pair": "M2(h) D0 vs 1D J1(h), node by node at identical x",
+  "psi_V": 1e-09, "log_carrier": 1e-09, "current_rel": 1e-08,
+  "on_failure": "stop: fixture / equation / unit error"
+ },
+ "layer_B_convergence": {
+  "metrics": ["e_psi = Linf |psi - psi_ref| (equilibrium Poisson)", "e_logc = Linf max(|ln n - ref|,|ln p - ref|) at 0 V", "yvar_psi = max over exact-x columns with >=2 nodes of psi spread (0 V)", "yvar_logn = same for ln n", "e_I(V) = |I/H - J_ref(V)|/|J_ref(V)| for V in -0.10, +0.05, +0.10", "e_Vbi = |psi_right - psi_left - (psi_right - psi_left)_ref|", "e_Epeak = |max edge |ElectricField| - ref| / ref (equilibrium Poisson; ref = 1D finest)", "conservation (pass/fail)"],
+  "decreasing_iff": "strictly decreasing over >= 3 consecutive executed h levels ending at the finest executed level",
+  "at_floor_iff": "metric <= floor at every executed level (counts as pass)",
+  "floors": {"e_psi_V": 1e-06, "e_logc": 1e-06, "yvar_psi_V": 1e-06, "yvar_logn": 1e-06, "e_I": 1e-06, "e_Vbi_V": 1e-09, "e_Epeak": 1e-06}
+ },
+ "layer_C_finest": {
+  "potential": "e_psi <= max(5 * U_ref_potential, 1e-6 V)",
+  "current": "e_I(V) <= max(5 * U_ref_current(V), 0.02) at every bias; current-based approval only if the reference current is converged",
+  "floor_2pct_fixed": true
+ },
+ "equilibrium_checks": {
+  "positivity": "n > 0, p > 0, finite, every node, every recorded bias",
+  "eq_current": "|I_contact| <= 1e-10 * I_scale (2D A/cm, 1D A/cm^2 with J_scale)",
+  "conservation": "|I_left + I_right| <= 1e-6 * max(|I_left|,|I_right|) + 1e-10 * I_scale",
+  "quasi_fermi": "max |phi - median(phi)| <= 1e-6 V for phi_n and phi_p at 0 V",
+  "mass_action": "max |n p / n_i^2 - 1| <= 1e-6 at 0 V"
+ },
+ "contact_current_consistency": "M3 D0 and D1 at +0.10 V: |I_api(ECE,left) - sum_{edges with exactly one left-contact node} (+-) ElectronCurrent * couple_used| <= 1e-10 * |I_api| + 1e-30 A/cm",
+ "hypotheses": {
+  "H1": "CONFIRMED iff J0 stripe width / h is the same constant at every h (pre-solve, 1D) AND 1D |J_J0(h) - J_J1(h)|/|J_J1(h)| strictly decreases over all 5 h at every recorded bias; EXCLUDED iff that difference does not decrease at any bias; else INCONCLUSIVE",
+  "H2": "CONFIRMED iff for every bias and every consecutive h pair the level-to-level current change of J1 is <= that of J0; EXCLUDED iff J0's is smaller at every pair and bias; else INCONCLUSIVE",
+  "H3": "CONFIRMED iff M1 D0 and M2 D0 both: layer B decreasing-or-at-floor for e_psi, e_logc, yvar_psi, e_I(all V), e_Epeak; layer C potential and current pass; reference current converged; all equilibrium checks pass; EXCLUDED iff either fails layer C at the finest level with stagnation (e(finest)/e(previous) >= 0.8); else INCONCLUSIVE",
+  "H4": "CONFIRMED iff M3 D0 at the finest level fails layer C (potential or current) or has yvar_psi > max(5*U_ref_potential,1e-6 V), AND that failing metric stagnates (e(finest)/e(previous) >= 0.8); EXCLUDED iff M3 D0 meets every H3 condition; else INCONCLUSIVE",
+  "H5": "CONFIRMED iff M3 D1 meets every H3 condition AND 0 negative signed couples, 0 negative signed node volumes, every solve accepted, contact-current consistency passes; EXCLUDED iff M3 D1 fails layer C at the finest level with stagnation; else INCONCLUSIVE"
+ },
+ "verdicts": {
+  "A": "H3 CONFIRMED",
+  "B": "H5 CONFIRMED",
+  "C": "H4 CONFIRMED (never from one coarse grid)",
+  "D": "H1 CONFIRMED and H2 CONFIRMED",
+  "E": "reference current not converged (U_ref_current > 0.01 at any bias)",
+  "F": "any of M1/M2 D0 without decreasing errors over 3 levels in e_psi or e_I",
+  "G": "none of A-F decidable"
+ }
+}

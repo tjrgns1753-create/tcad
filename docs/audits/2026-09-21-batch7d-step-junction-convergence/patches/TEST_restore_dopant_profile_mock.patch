@@ -1,0 +1,43 @@
+--- a/tests/unit/test_dopant_profile_mock.py
++++ b/tests/unit/test_dopant_profile_mock.py
+@@ -78,13 +78,17 @@
+ 
+ 
+ def test_step_junction_matches_devsim_step_function():
+-    """Reproduces doping_mapping.py's real DevSim equations everywhere
+-    except the single junction coordinate. The legacy DevSim step()
+-    equations both fire at x == junction_position_um (step(z) is 1.0 for
+-    z >= 0), which double-dopes a mesh node sitting exactly on the
+-    junction. The canonical profile puts exactly ONE polarity at every x
+-    (Batch 7C Rev.2): donor for x >= junction, acceptor for x < junction.
+-    Finite-area concentrations are unchanged."""
++    """Reproduces doping_mapping.py's real DevSim equations exactly,
++    INCLUDING the boundary quirk: at x == junction_position_um, both
++    step() calls fire (DevSim's step(z) is 1.0 for z >= 0), so both
++    donor and acceptor profiles are non-zero there -- matching DEVSIM's
++    own official diode_common.py::SetNetDoping convention
++    (Acceptors = Na*step(xj-x), Donors = Nd*step(x-xj)). Batch 7C Rev.2
++    briefly made the junction coordinate strictly one-sided; Batch 7D
++    reverted that after Codex found it changed a real device's current
++    ratio (mesh/discontinuity sensitivity, not a physical fix) and
++    confirmed the junction LINE (measure-zero, not a finite area) is
++    not a compensated region regardless of this convention."""
+     doping = DopingProfile(kind="step_junction", regions=[
+         DopingRegion(region="Si", junction_axis="x", junction_position_um=1.0,
+                      donor_conc_cm3=1.0e18, acceptor_conc_cm3=2.0e18,
+@@ -98,13 +102,9 @@
+     assert donor.concentration_at(0.0, 0.0) == 0.0       # left of junction: no donor
+     assert acceptor.concentration_at(0.0, 0.0) == 2.0e18
+     assert acceptor.concentration_at(2.0, 0.0) == 0.0
+-    # the junction coordinate itself: ONE polarity only (donor side, x >= junction)
++    # boundary quirk, exactly matching DevSim's own step():
+     assert donor.concentration_at(1.0, 0.0) == 1.0e18
+-    assert acceptor.concentration_at(1.0, 0.0) == 0.0
+-    assert acceptor.concentration_at(1.0 - 1e-12, 0.0) == 2.0e18
+-    for x in (0.0, 0.999999, 1.0, 1.000001, 2.0):
+-        assert (donor.concentration_at(x, 0.0) > 0.0) + (acceptor.concentration_at(x, 0.0) > 0.0) == 1, \
+-            f"exactly one polarity must exist at x={x}"
++    assert acceptor.concentration_at(1.0, 0.0) == 2.0e18
+ 
+ 
+ def test_implant_windows_background_plus_windows():

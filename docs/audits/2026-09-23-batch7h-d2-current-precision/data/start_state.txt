@@ -1,0 +1,130 @@
+recorded_utc Wed Sep 23 12:07:41 UTC 2026
+HEAD 3ba940404fd19c88eaaccc96a39ffe8444fb8851
+branch claude/waferstate-v2
+staged 0
+--- git status --short
+ M CLAUDE.md
+ M README.md
+ A docs/superpowers/specs/2026-09-10-waferstate-v2-design.md
+ M examples/build_pn_diode.py
+ M examples/gaussian_implant_iv_config.json
+ M examples/implant_windows_iv_config.json
+ M examples/mos_cv_config.json
+ M examples/pn_junction_config.json
+ M tcad/characterization/robust_iv_sweep.py
+ M tcad/cli/run_pipeline.py
+ M tcad/device/devsim/doping_mapping.py
+ M tcad/device/devsim/solve.py
+ M tcad/mesh/interface.py
+ M tcad/mesh/viennaps_adapter.py
+ M tcad/physics/dopant_profile.py
+ M tcad/physics/doping.py
+ M tcad/physics/wafer_state.py
+ M tcad/physics/wafer_state_accumulation.py
+ A tcad/physics/wafer_state_v2.py
+ M tcad/process/etching/isotropic.py
+ M tcad/process/flow.py
+ M tcad/process/oxidation/locos.py
+ M tcad/process/oxidation/thermal.py
+ M tcad_2d_stagewise.py
+ M tests/integration/test_auto_refine_from_doping_real.py
+ M tests/integration/test_blanket_no_mask_real.py
+ M tests/integration/test_cad_negative_validation_real.py
+ M tests/integration/test_ce1_order_sensitive_geometry_real.py
+ M tests/integration/test_ce2_oxidation_conversion_unsupported_real.py
+ M tests/integration/test_device_fabrication_to_dc_sweep_real.py
+ M tests/integration/test_dopant_profile_matches_devsim_real.py
+ M tests/integration/test_doping_barrier_windows_real.py
+ M tests/integration/test_doping_donor_acceptor_all_kinds_real.py
+ M tests/integration/test_doping_mapping_per_node_real.py
+ M tests/integration/test_doping_mapping_recovery_real.py
+ M tests/integration/test_etch_selectivity_real.py
+ M tests/integration/test_gaussian_implant_doping_real.py
+ M tests/integration/test_gui_doping_color_overlay_real.py
+ M tests/integration/test_gui_headless_no_modal_hang_real.py
+ M tests/integration/test_gui_implant_windows_overlay_note_real.py
+ M tests/integration/test_gui_measurement_doping_kinds_real.py
+ M tests/integration/test_gui_process_state_chaining_real.py
+ M tests/integration/test_implant_windows_doping_real.py
+ M tests/integration/test_litho_lifecycle_state_real.py
+ M tests/integration/test_locos_birds_beak_real.py
+ M tests/integration/test_locos_chaining_real.py
+ M tests/integration/test_locos_contact_mode_fix_real.py
+ M tests/integration/test_locos_devsim_import_real.py
+ M tests/integration/test_mosfet_body_contact_real.py
+ M tests/integration/test_mosfet_gate_stack_cv_real.py
+ M tests/integration/test_mosfet_id_vds_real.py
+ M tests/integration/test_mosfet_id_vgs_real.py
+ M tests/integration/test_mosfet_vth_extraction_real.py
+ M tests/integration/test_oxidation_pr_etch_reaches_si_real.py
+ M tests/integration/test_phase13_process_flow_real.py
+ M tests/integration/test_phase14_flow_devsim_real.py
+ M tests/integration/test_phase7_doping_real.py
+ M tests/integration/test_phase8_pn_junction_real.py
+ M tests/integration/test_phase9_mos_cv_real.py
+ M tests/integration/test_physics_references_real.py
+ M tests/integration/test_physics_rules_real.py
+ M tests/integration/test_pin_placement_validation_real.py
+ M tests/integration/test_process_state_resume_real.py
+ M tests/integration/test_robust_iv_sweep_real.py
+ M tests/integration/test_thermal_anneal_acceptance_real.py
+ M tests/integration/test_voltage_probe_real.py
+ M tests/integration/test_wafer_state_accumulation_devsim_real.py
+ M tests/unit/test_dopant_profile_mock.py
+ M tests/unit/test_doping_staleness_mock.py
+ M tests/unit/test_doping_unsupported_hover_note_mock.py
+ M tests/unit/test_wafer_state_doping_mock.py
+ A tests/unit/test_wafer_state_v2_devsim_mapping_gate_mock.py
+ A tests/unit/test_wafer_state_v2_etch_conservation_mock.py
+ A tests/unit/test_wafer_state_v2_exact_inventory_mock.py
+ A tests/unit/test_wafer_state_v2_fail_closed_no_resurrection_mock.py
+ A tests/unit/test_wafer_state_v2_instance_not_name_mock.py
+ A tests/unit/test_wafer_state_v2_legacy_migration_fail_closed_mock.py
+ A tests/unit/test_wafer_state_v2_multi_extent_provenance_mock.py
+ A tests/unit/test_wafer_state_v2_no_last_step_category_mock.py
+ A tests/unit/test_wafer_state_v2_no_numeric_without_exact_integral_mock.py
+ A tests/unit/test_wafer_state_v2_oxidation_unsupported_mock.py
+ A tests/unit/test_wafer_state_v2_redeposit_no_resurrection_mock.py
+ A tests/unit/test_wafer_state_v2_remesh_preserved_mock.py
+ A tests/unit/test_wafer_state_v2_transform_structural_validation_mock.py
+ A tests/unit/test_wafer_state_v2_transform_targets_instance_mock.py
+ A tests/unit/test_wafer_state_v2_unsupported_returns_none_mock.py
+?? .serena/
+?? docs/audits/
+?? docs/handoffs/CLAUDE_CODE_NEW_SESSION_HANDOFF_2026-09-21.md
+?? docs/handoffs/waferstate-v2-caller-migration-status.md
+?? tcad/mesh/etch_diagnostics.py
+?? tcad/process/oxidation/zero_duration.py
+?? tests/integration/_explicit_chain_fixture.py
+?? tests/integration/_explicit_etch_fixture.py
+?? tests/integration/_explicit_oxide_fixture.py
+?? tests/integration/test_basic_potential_linear_precision_real.py
+?? tests/integration/test_dopant_activation_devsim_gate_real.py
+?? tests/integration/test_float32_boundary_snap_real.py
+?? tests/integration/test_measurement_canonical_state_gate_real.py
+?? tests/integration/test_oxidation_positive_time_unsupported_real.py
+?? tests/integration/test_oxidation_zero_duration_identity_real.py
+?? tests/integration/test_step_junction_2d_gate_mutations_real.py
+?? tests/integration/test_step_junction_2d_gate_real.py
+?? tests/integration/test_wafer_state_v2_initial_geometry_devsim_real.py
+?? tests/integration/test_waferstate_sequential_flow_real.py
+?? tests/unit/test_advance_wafer_state_result_contract_mock.py
+?? tests/unit/test_cli_doping_initial_state_branch_mock.py
+?? tests/unit/test_dopant_activation_compensation_mock.py
+?? tests/unit/test_dopant_rev2_contract_mock.py
+?? tests/unit/test_etch_material_summary_mock.py
+?? tests/unit/test_gui_doping_application_truthfulness_mock.py
+?? tests/unit/test_measurement_canonical_state_gate_mock.py
+?? tests/unit/test_measurement_entry_point_gate_mock.py
+?? tests/unit/test_step_junction_2d_gate_mock.py
+?? tests/unit/test_step_junction_2d_gate_precedence_mock.py
+?? tests/unit/test_wafer_state_v2_anneal_fail_closed_mock.py
+?? tests/unit/test_wafer_state_v2_apply_doping_barrier_mock.py
+?? tests/unit/test_wafer_state_v2_barrier_physics_mock.py
+?? tests/unit/test_wafer_state_v2_explicit_doping_target_mock.py
+?? tests/unit/test_wafer_state_v2_gate_stack_fallback_fail_closed_mock.py
+?? tests/unit/test_waferstate_sequential_advance_mock.py
+?? tests/unit/test_zero_duration_identity_state_contract_mock.py
+--- diff --check normal rc=0 stderr_lines=86 non_autocrlf=0
+--- diff --check clean rc=0 output_bytes=0
+python_processes=5 test_or_regression=0 (non-test python.exe = uv-cache MCP servers)

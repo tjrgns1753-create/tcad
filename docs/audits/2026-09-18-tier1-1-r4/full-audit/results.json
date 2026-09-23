@@ -1,0 +1,1133 @@
+{
+  "versions": {
+    "ViennaPS": "4.6.2",
+    "devsim": "2.11.0",
+    "numpy": "2.4.6",
+    "meshio": "5.3.5"
+  },
+  "environment": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "DEVSIM_MATH_LIBS": "mkl_rt.3.dll"
+  },
+  "planned": 124,
+  "complete": true,
+  "results": [
+    {
+      "test": "tests/unit/test_anneal_profile_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.234,
+      "budget_s": 60,
+      "log": "test_anneal_profile_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_cad_negative_validation_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.36,
+      "budget_s": 60,
+      "log": "test_cad_negative_validation_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_cli_doping_initial_state_branch_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.593,
+      "budget_s": 60,
+      "log": "test_cli_doping_initial_state_branch_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_dc_operating_point_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.11,
+      "budget_s": 60,
+      "log": "test_dc_operating_point_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_diffusion_model_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.265,
+      "budget_s": 60,
+      "log": "test_diffusion_model_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_dopant_models_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.235,
+      "budget_s": 60,
+      "log": "test_dopant_models_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_dopant_profile_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.25,
+      "budget_s": 60,
+      "log": "test_dopant_profile_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_doping_staleness_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 1.125,
+      "budget_s": 60,
+      "log": "test_doping_staleness_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_doping_unsupported_hover_note_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.812,
+      "budget_s": 60,
+      "log": "test_doping_unsupported_hover_note_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_gaussian_implant_no_existing_param_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.25,
+      "budget_s": 60,
+      "log": "test_gaussian_implant_no_existing_param_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_gui_error_dialog_visibility_gate_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.844,
+      "budget_s": 60,
+      "log": "test_gui_error_dialog_visibility_gate_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_gui_gate_stack_state_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.844,
+      "budget_s": 60,
+      "log": "test_gui_gate_stack_state_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_gui_litho_lifecycle_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.89,
+      "budget_s": 60,
+      "log": "test_gui_litho_lifecycle_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_gui_no_forced_order_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.844,
+      "budget_s": 60,
+      "log": "test_gui_no_forced_order_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_implant_windows_from_mask_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.265,
+      "budget_s": 60,
+      "log": "test_implant_windows_from_mask_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_mask_spans_from_openings_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.235,
+      "budget_s": 60,
+      "log": "test_mask_spans_from_openings_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_mesh_refine_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.344,
+      "budget_s": 60,
+      "log": "test_mesh_refine_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_phase1_bosch_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.265,
+      "budget_s": 60,
+      "log": "test_phase1_bosch_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_physics_tables_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.25,
+      "budget_s": 60,
+      "log": "test_physics_tables_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_physics_values_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.297,
+      "budget_s": 60,
+      "log": "test_physics_values_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_pin_model_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.375,
+      "budget_s": 60,
+      "log": "test_pin_model_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_resolver_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.25,
+      "budget_s": 60,
+      "log": "test_resolver_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_thermal_anneal_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.25,
+      "budget_s": 60,
+      "log": "test_thermal_anneal_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_doping_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.266,
+      "budget_s": 60,
+      "log": "test_wafer_state_doping_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_anneal_fail_closed_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.375,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_anneal_fail_closed_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_apply_doping_barrier_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.359,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_apply_doping_barrier_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_barrier_physics_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.266,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_barrier_physics_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_devsim_mapping_gate_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.359,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_devsim_mapping_gate_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_etch_conservation_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.266,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_etch_conservation_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_exact_inventory_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.265,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_exact_inventory_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_explicit_doping_target_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.266,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_explicit_doping_target_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_fail_closed_no_resurrection_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.281,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_fail_closed_no_resurrection_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_gate_stack_fallback_fail_closed_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.594,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_gate_stack_fallback_fail_closed_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_instance_not_name_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.281,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_instance_not_name_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_legacy_migration_fail_closed_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.266,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_legacy_migration_fail_closed_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_multi_extent_provenance_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.265,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_multi_extent_provenance_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_no_last_step_category_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.5,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_no_last_step_category_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_no_numeric_without_exact_integral_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.266,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_no_numeric_without_exact_integral_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_oxidation_unsupported_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.266,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_oxidation_unsupported_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_redeposit_no_resurrection_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.265,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_redeposit_no_resurrection_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_remesh_preserved_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.25,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_remesh_preserved_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_transform_structural_validation_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.36,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_transform_structural_validation_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_transform_targets_instance_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.25,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_transform_targets_instance_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_wafer_state_v2_unsupported_returns_none_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.25,
+      "budget_s": 60,
+      "log": "test_wafer_state_v2_unsupported_returns_none_mock.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_wafer_state_v2_initial_geometry_devsim_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 3.609,
+      "budget_s": 180,
+      "log": "test_wafer_state_v2_initial_geometry_devsim_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_physics_references_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 11.781,
+      "budget_s": 180,
+      "log": "test_physics_references_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_etch_selectivity_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 9.75,
+      "budget_s": 180,
+      "log": "test_etch_selectivity_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_order_independence_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 2.797,
+      "budget_s": 180,
+      "log": "test_order_independence_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_thermal_anneal_acceptance_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.781,
+      "budget_s": 180,
+      "log": "test_thermal_anneal_acceptance_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_thermal_anneal_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.875,
+      "budget_s": 180,
+      "log": "test_gui_thermal_anneal_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_ce1_order_sensitive_geometry_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.703,
+      "budget_s": 180,
+      "log": "test_ce1_order_sensitive_geometry_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_ce2_oxidation_conversion_unsupported_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 50.203,
+      "budget_s": 180,
+      "log": "test_ce2_oxidation_conversion_unsupported_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_ce3_implant_anneal_etch_implant_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.985,
+      "budget_s": 180,
+      "log": "test_ce3_implant_anneal_etch_implant_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_measurement_doping_kinds_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 0.672,
+      "budget_s": 180,
+      "log": "test_gui_measurement_doping_kinds_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_auto_refine_from_doping_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.046,
+      "budget_s": 180,
+      "log": "test_auto_refine_from_doping_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_blanket_no_mask_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 1.672,
+      "budget_s": 180,
+      "log": "test_blanket_no_mask_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_bosch_cycle_safety_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 10.641,
+      "budget_s": 180,
+      "log": "test_bosch_cycle_safety_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_bosch_drie_resist_mask_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 6.094,
+      "budget_s": 180,
+      "log": "test_bosch_drie_resist_mask_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_cad_negative_validation_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.656,
+      "budget_s": 180,
+      "log": "test_cad_negative_validation_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_deposition_mask_mode_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.656,
+      "budget_s": 180,
+      "log": "test_deposition_mask_mode_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_device_fabrication_to_dc_sweep_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 4.75,
+      "budget_s": 180,
+      "log": "test_device_fabrication_to_dc_sweep_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_device_lifecycle_repeat_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.938,
+      "budget_s": 180,
+      "log": "test_device_lifecycle_repeat_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_directional_deposition_growth_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 3.015,
+      "budget_s": 180,
+      "log": "test_directional_deposition_growth_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_dopant_profile_matches_devsim_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.86,
+      "budget_s": 180,
+      "log": "test_dopant_profile_matches_devsim_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_doping_barrier_windows_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.266,
+      "budget_s": 180,
+      "log": "test_doping_barrier_windows_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_doping_donor_acceptor_all_kinds_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.25,
+      "budget_s": 180,
+      "log": "test_doping_donor_acceptor_all_kinds_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_doping_mapping_per_node_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 0.641,
+      "budget_s": 180,
+      "log": "test_doping_mapping_per_node_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_doping_mapping_recovery_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 0.64,
+      "budget_s": 180,
+      "log": "test_doping_mapping_recovery_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_doping_overlay_surface_profile_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.719,
+      "budget_s": 180,
+      "log": "test_doping_overlay_surface_profile_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gate_contact_placement_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.687,
+      "budget_s": 180,
+      "log": "test_gate_contact_placement_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gate_patterning_remask_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.907,
+      "budget_s": 180,
+      "log": "test_gate_patterning_remask_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gate_stack_geometry_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.672,
+      "budget_s": 180,
+      "log": "test_gate_stack_geometry_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gaussian_implant_doping_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 0.64,
+      "budget_s": 180,
+      "log": "test_gaussian_implant_doping_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_geometric_trench_deposition_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.641,
+      "budget_s": 180,
+      "log": "test_geometric_trench_deposition_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_doping_color_overlay_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 48.172,
+      "budget_s": 180,
+      "log": "test_gui_doping_color_overlay_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_doping_donor_acceptor_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 5.968,
+      "budget_s": 180,
+      "log": "test_gui_doping_donor_acceptor_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_doping_survives_geometry_steps_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 2.579,
+      "budget_s": 180,
+      "log": "test_gui_doping_survives_geometry_steps_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_electrode_panel_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 2.109,
+      "budget_s": 180,
+      "log": "test_gui_electrode_panel_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_headless_no_modal_hang_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 5.141,
+      "budget_s": 180,
+      "log": "test_gui_headless_no_modal_hang_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_implant_windows_overlay_note_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 2.281,
+      "budget_s": 180,
+      "log": "test_gui_implant_windows_overlay_note_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_litho_placeholder_visibility_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 3.39,
+      "budget_s": 180,
+      "log": "test_gui_litho_placeholder_visibility_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_measurement_captures_physics_status_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 9.672,
+      "budget_s": 180,
+      "log": "test_gui_measurement_captures_physics_status_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_gui_process_state_chaining_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.875,
+      "budget_s": 180,
+      "log": "test_gui_process_state_chaining_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_implant_windows_doping_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 0.75,
+      "budget_s": 180,
+      "log": "test_implant_windows_doping_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_koh_crystallographic_wet_etch_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.578,
+      "budget_s": 180,
+      "log": "test_koh_crystallographic_wet_etch_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_litho_lifecycle_state_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 3.079,
+      "budget_s": 180,
+      "log": "test_litho_lifecycle_state_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_locos_birds_beak_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 6.484,
+      "budget_s": 180,
+      "log": "test_locos_birds_beak_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_locos_chaining_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 1.562,
+      "budget_s": 180,
+      "log": "test_locos_chaining_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_locos_contact_mode_fix_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.766,
+      "budget_s": 180,
+      "log": "test_locos_contact_mode_fix_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_locos_devsim_import_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.703,
+      "budget_s": 180,
+      "log": "test_locos_devsim_import_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_mask_spans_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.89,
+      "budget_s": 180,
+      "log": "test_mask_spans_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_mosfet_body_bias_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 3.219,
+      "budget_s": 180,
+      "log": "test_mosfet_body_bias_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_mosfet_body_contact_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 3.172,
+      "budget_s": 180,
+      "log": "test_mosfet_body_contact_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_mosfet_gate_stack_cv_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.016,
+      "budget_s": 180,
+      "log": "test_mosfet_gate_stack_cv_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_mosfet_id_vds_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 3.187,
+      "budget_s": 180,
+      "log": "test_mosfet_id_vds_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_mosfet_id_vgs_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 3.235,
+      "budget_s": 180,
+      "log": "test_mosfet_id_vgs_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_mosfet_vth_extraction_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 3.328,
+      "budget_s": 180,
+      "log": "test_mosfet_vth_extraction_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_oxidation_pr_etch_reaches_si_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 5.328,
+      "budget_s": 180,
+      "log": "test_oxidation_pr_etch_reaches_si_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase13_process_flow_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 2.437,
+      "budget_s": 180,
+      "log": "test_phase13_process_flow_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase14_flow_devsim_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.563,
+      "budget_s": 180,
+      "log": "test_phase14_flow_devsim_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase2_etching_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 3.969,
+      "budget_s": 180,
+      "log": "test_phase2_etching_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase3_deposition_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 1.25,
+      "budget_s": 180,
+      "log": "test_phase3_deposition_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase4_oxidation_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.75,
+      "budget_s": 180,
+      "log": "test_phase4_oxidation_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase5_devsim_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.703,
+      "budget_s": 180,
+      "log": "test_phase5_devsim_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase6_characterization_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 1.375,
+      "budget_s": 180,
+      "log": "test_phase6_characterization_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase7_doping_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 0.609,
+      "budget_s": 180,
+      "log": "test_phase7_doping_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase8_pn_junction_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.063,
+      "budget_s": 180,
+      "log": "test_phase8_pn_junction_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_phase9_mos_cv_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.265,
+      "budget_s": 180,
+      "log": "test_phase9_mos_cv_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_physics_rules_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 4.047,
+      "budget_s": 180,
+      "log": "test_physics_rules_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_pin_placement_validation_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.672,
+      "budget_s": 180,
+      "log": "test_pin_placement_validation_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_point_contact_import_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.656,
+      "budget_s": 180,
+      "log": "test_point_contact_import_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_pr_strip_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.594,
+      "budget_s": 180,
+      "log": "test_pr_strip_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_process_state_resume_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 2.328,
+      "budget_s": 180,
+      "log": "test_process_state_resume_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_resolver_wired_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 1.344,
+      "budget_s": 180,
+      "log": "test_resolver_wired_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_robust_iv_sweep_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 1.672,
+      "budget_s": 180,
+      "log": "test_robust_iv_sweep_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_status_propagation_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 1.219,
+      "budget_s": 180,
+      "log": "test_status_propagation_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_voltage_probe_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 0.625,
+      "budget_s": 180,
+      "log": "test_voltage_probe_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_wafer_state_accumulation_devsim_real.py",
+      "status": "FAIL",
+      "returncode": 1,
+      "seconds": 0.656,
+      "budget_s": 180,
+      "log": "test_wafer_state_accumulation_devsim_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_wafer_state_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 95.266,
+      "budget_s": 180,
+      "log": "test_wafer_state_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/integration/test_wet_etch_crystal_frame_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.625,
+      "budget_s": 180,
+      "log": "test_wet_etch_crystal_frame_real.log",
+      "is_new_since_baseline": false
+    },
+    {
+      "test": "tests/unit/test_measurement_canonical_state_gate_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.594,
+      "budget_s": 60,
+      "log": "test_measurement_canonical_state_gate_mock.log",
+      "is_new_since_baseline": true
+    },
+    {
+      "test": "tests/unit/test_measurement_entry_point_gate_mock.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 0.859,
+      "budget_s": 60,
+      "log": "test_measurement_entry_point_gate_mock.log",
+      "is_new_since_baseline": true
+    },
+    {
+      "test": "tests/integration/test_float32_boundary_snap_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 3.609,
+      "budget_s": 180,
+      "log": "test_float32_boundary_snap_real.log",
+      "is_new_since_baseline": true
+    },
+    {
+      "test": "tests/integration/test_measurement_canonical_state_gate_real.py",
+      "status": "PASS",
+      "returncode": 0,
+      "seconds": 3.062,
+      "budget_s": 180,
+      "log": "test_measurement_canonical_state_gate_real.log",
+      "is_new_since_baseline": true
+    }
+  ]
+}
