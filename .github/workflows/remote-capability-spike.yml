@@ -1,0 +1,93 @@
+# Capability spike ONLY. Answers one question: can a GitHub-hosted Windows runner install and
+# import the project's pinned ViennaPS / DevSim / MKL stack and run ONE small real physics test?
+# It does NOT run the regression suite and does NOT run any 7H-D2 long computation.
+# Triggered only by a push to the spike branch; never scheduled; no secrets used; no self-hosted runner.
+name: remote-capability-spike
+
+on:
+  push:
+    branches: [claude/remote-capability-spike]
+
+permissions:
+  contents: read
+
+jobs:
+  windows-spike:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PYTHONIOENCODING: utf-8
+      DEVSIM_MATH_LIBS: mkl_rt.3.dll
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Runner facts
+        run: |
+          New-Item -ItemType Directory -Force spike-logs | Out-Null
+          $o = @()
+          $o += "commit: $env:GITHUB_SHA"
+          $o += (Get-CimInstance Win32_OperatingSystem | ForEach-Object { "os: $($_.Caption) $($_.Version) $($_.OSArchitecture)" })
+          $pyv = python --version
+          $bits = python -c "import struct; print(struct.calcsize('P')*8)"
+          $o += "python: $pyv bits=$bits"
+          $o += "cpu: $((Get-CimInstance Win32_Processor | Select-Object -First 1).Name) cores=$env:NUMBER_OF_PROCESSORS"
+          $o += "ram_gb: $([math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory/1GB,1))"
+          $o | Tee-Object spike-logs/01_runner.txt
+
+      - name: Install pinned packages (same versions as the verified local environment)
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python.exe -m pip install --upgrade pip 2>&1 | Tee-Object spike-logs/02_install.txt
+          $pins = @(
+            "ViennaPS==4.6.2", "ViennaLS==5.8.5", "devsim==2.11.0",
+            "mkl==2026.1.0", "intel-openmp==2026.1.1", "tbb==2023.1.0",
+            "numpy==2.4.6", "meshio==5.3.5", "matplotlib==3.11.1", "pillow==12.3.0"
+          )
+          .\.venv\Scripts\python.exe -m pip install @pins 2>&1 | Tee-Object -Append spike-logs/02_install.txt
+          if ($LASTEXITCODE -ne 0) { throw "pip install failed (exit $LASTEXITCODE)" }
+          .\.venv\Scripts\python.exe -m pip freeze 2>&1 | Tee-Object spike-logs/03_freeze.txt
+
+      - name: Import check (ViennaPS, ViennaLS, DevSim, MKL)
+        run: |
+          $env:PATH = "$((Resolve-Path .\.venv\Library\bin).Path);$env:PATH"
+          Get-ChildItem .\.venv\Library\bin -Filter "mkl_rt*.dll" | Select-Object -ExpandProperty Name | Tee-Object spike-logs/04_mkl_dlls.txt
+          @'
+          import json, sys
+          import viennaps as vps
+          import viennals as vls
+          import devsim
+          info = devsim.get_parameter(name="info")
+          print("viennaps", getattr(vps, "__version__", "n/a"))
+          print("viennals", getattr(vls, "__version__", "n/a"))
+          print("devsim", info["version"], "extended_precision", info["extended_precision"],
+                "direct_solver", info["direct_solver"], "math_libraries", info["math_libraries"])
+          assert info["version"] == "2.11.0", info["version"]
+          assert any("mkl_rt" in m for m in info["math_libraries"]), info["math_libraries"]
+          print("IMPORT CHECK OK")
+          '@ | Set-Content -Encoding utf8 spike_import_check.py
+          .\.venv\Scripts\python.exe spike_import_check.py 2>&1 | Tee-Object spike-logs/05_import_check.txt
+          if ($LASTEXITCODE -ne 0) { throw "import check failed (exit $LASTEXITCODE)" }
+
+      - name: One small real physics test (ViennaPS etch -> DevSim Laplace solve)
+        run: |
+          $env:PATH = "$((Resolve-Path .\.venv\Library\bin).Path);$env:PATH"
+          $env:PYTHONPATH = $env:GITHUB_WORKSPACE
+          .\.venv\Scripts\python.exe tests\integration\test_phase5_devsim_real.py 2>&1 | Tee-Object spike-logs/06_test_phase5.txt
+          if ($LASTEXITCODE -ne 0) { throw "test_phase5_devsim_real.py failed (exit $LASTEXITCODE)" }
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spike-logs
+          path: spike-logs/
