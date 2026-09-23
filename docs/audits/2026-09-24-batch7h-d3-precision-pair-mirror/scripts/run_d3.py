@@ -14,7 +14,7 @@ import time
 
 sys.dont_write_bytecode = True
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))   # scripts -> batch -> audits -> docs -> repo root
 D3 = os.path.abspath(os.path.join(HERE, ".."))
 OUT = os.path.join(ROOT, "d3_out")
 PER_RUN_TIMEOUT_S = 1500
