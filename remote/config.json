@@ -1,0 +1,4 @@
+{
+ "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+ "note": "Codex review baseline on claude/waferstate-v2. Every run records whether tcad/, tests/, tcad_2d_stagewise.py and examples/ are identical to this SHA."
+}

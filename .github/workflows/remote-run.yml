@@ -1,0 +1,66 @@
+# Reusable remote runner. Runs ONE allowlisted profile (remote/profiles.py) selected by
+# remote/request.json on a GitHub-hosted Windows runner. Trigger: push to this branch only.
+# No schedule, no workflow_dispatch, no secrets, no self-hosted runner, nothing merged to main.
+name: remote-run
+
+on:
+  push:
+    branches: [claude/remote-runner]
+    paths:
+      - remote/request.json
+      - remote/profiles.py
+      - remote/run_profile.py
+      - remote/config.json
+      - remote/requirements-pinned.txt
+      - .github/workflows/remote-run.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: remote-run-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: windows-latest
+    timeout-minutes: 350          # hard ceiling; each profile also has its own timeout_s
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DEVSIM_MATH_LIBS: mkl_rt.3.dll
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONIOENCODING: utf-8
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # needed to compare the code paths with the review SHA
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pinned packages
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python.exe -m pip install --upgrade pip
+          .\.venv\Scripts\python.exe -m pip install -r remote/requirements-pinned.txt
+          if ($LASTEXITCODE -ne 0) { throw "pip install failed (exit $LASTEXITCODE)" }
+
+      - name: Run profile
+        run: |
+          $env:PATH = "$((Resolve-Path .\.venv\Library\bin).Path);$env:PATH"
+          .\.venv\Scripts\python.exe remote\run_profile.py --out remote-out
+          exit $LASTEXITCODE
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: remote-run-${{ github.run_number }}
+          path: remote-out/
+          if-no-files-found: error
+          retention-days: 30

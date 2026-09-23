@@ -1,0 +1,11 @@
+# Same versions as the verified local environment and the passing capability spike (run 35892522406).
+ViennaPS==4.6.2
+ViennaLS==5.8.5
+devsim==2.11.0
+mkl==2026.1.0
+intel-openmp==2026.1.1
+tbb==2023.1.0
+numpy==2.4.6
+meshio==5.3.5
+matplotlib==3.11.1
+pillow==12.3.0
