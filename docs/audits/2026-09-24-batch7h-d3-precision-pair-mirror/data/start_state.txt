@@ -1,0 +1,17 @@
+recorded_utc Wed Sep 23 17:20:26 UTC 2026
+branch claude/remote-runner
+HEAD a33b05621df0f08e865694a4e373876b502c99dc
+review_sha_on_origin 023bcb90f8b8a0972d6df84f097ca6387f0ab82a
+main_on_origin d60e9aed3c52ba33dc243f12894bf12f74db16f8
+staged 0  tracked-modified 0  untracked 1233
+--- git log -5
+a33b056 ci(remote): reusable allowlisted remote runner on GitHub-hosted Windows
+5395b01 ci(spike): remote Windows capability spike (install/import ViennaPS+DevSim+MKL, run one small test)
+023bcb9 docs(audits): add audit reports and reproduction scripts (batches through 7H-D2)
+49e5fc1 chore(waferstate-v2): snapshot working tree for shared Claude/Codex review
+3ba9404 fix: headless GUI modal-dialog hang -- replace unconditional messagebox popups with a visibility-gated notifier
+--- D2 audit dir (local, incl. raw runs) integrity vs its own SHA256SUMS:
+  rc=0
+--- D/D1/D2 tracked files identical to review SHA 023bcb9:
+  rc=0 (0 = identical)
+docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixtures_d1.json
