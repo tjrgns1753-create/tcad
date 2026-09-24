@@ -1,0 +1,36 @@
+{
+ "strict_json": {
+  "writer_ok": true,
+  "reader_rejects_NaN": true
+ },
+ "consistent": {
+  "got": "SHADOW_CONSISTENT",
+  "expected": "SHADOW_CONSISTENT",
+  "ok": true
+ },
+ "conservation_fail": {
+  "got": "SHADOW_INCONSISTENT",
+  "expected": "SHADOW_INCONSISTENT",
+  "ok": true
+ },
+ "not_converged": {
+  "got": "NOT_CONVERGED",
+  "expected": "NOT_CONVERGED",
+  "ok": true
+ },
+ "identity_fail": {
+  "got": "SHADOW_IDENTITY_FAIL",
+  "expected": "SHADOW_IDENTITY_FAIL",
+  "ok": true
+ },
+ "nonfinite_qf": {
+  "got": "SHADOW_INCONSISTENT",
+  "expected": "SHADOW_INCONSISTENT",
+  "ok": true
+ },
+ "undecidable": {
+  "got": "INCONCLUSIVE",
+  "expected": "INCONCLUSIVE",
+  "ok": true
+ }
+}
