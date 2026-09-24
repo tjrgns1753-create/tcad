@@ -1,0 +1,132 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-23T17:28:54.729209+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "d3-precision-mirror-001",
+  "profile": "d3_precision_mirror",
+  "params": {},
+  "note": "Batch 7H-D3: PLAN fixed in commit 959581c000a7873ff594f14b093330f9bc48e157 before this request."
+ },
+ "profile": "d3_precision_mirror",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/PLAN.md",
+   "sha256": "0bec82ccfa01aa3431657e26eaf8e8529c3c6414fff6dfc7a998711a916ae59a",
+   "bytes": 9181
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/PLAN.sha256",
+   "sha256": "cdd37e2f805b4ff0c4d03504b6a3bedbacf93d06b32f09f545ff596548598211",
+   "bytes": 142
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/PLAN_ERRATA.md",
+   "sha256": "90966ebfc08a7383af564c1a13d93eadb708f72ba5d3a06449270be66d72ce67",
+   "bytes": 555
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/run_d3.py",
+   "sha256": "f80a7b525da98ae23ad9c0460a60eb8e32cf00322696e46add65ef1579a3e2d4",
+   "bytes": 4257
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/worker_d3.py",
+   "sha256": "195e661cf7caabae0a92a87fd36a26d963f140be3d98e22a9110f36ed204cb76",
+   "bytes": 9254
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/analyze_d3.py",
+   "sha256": "449bf100555f8330c73ba18736c6426f5f210f37534312b14b43232780f6bd35",
+   "bytes": 14851
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixtures_d1.json",
+   "sha256": "80d65d513ff9f923ff35cfe54cd937214b33cd47571797a005013e6e82d9f7f5",
+   "bytes": 4245634
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/scripts/worker_d2.py",
+   "sha256": "353a4d3b4fa598fb2f8d68cc98892bf0b13bf3a1fac4f2a1cbcc664af4ef6f31",
+   "bytes": 10712
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/scripts/common_d2.py",
+   "sha256": "49b61187c2cc7576e4d1345a3da39504fb6bf93478894e28550ba04f449b744f",
+   "bytes": 3523
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/data/fixed_d2.json",
+   "sha256": "8c334488583b9e9d99e41490fdb1c77731584ceb2906055c7cd4def4da43b7ee",
+   "bytes": 6469
+  }
+ ],
+ "request_sha256": "ae41614d0d0a8a1c8f703cb1484714c92045b2f53cbace61c42d7eb7201382cb",
+ "source": {
+  "github_sha": "a960b014566150998bf06f8eafe516fcb22e3991",
+  "git_head": "a960b014566150998bf06f8eafe516fcb22e3991",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "35895798384",
+  "run_number": "2",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": true,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/run_d3.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-23T17:30:48.567714+00:00",
+ "duration_s": 113.839,
+ "outputs": [],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile (about 10 small runs, minutes). Nothing is omitted: every run JSON and the analysis are uploaded.",
+ "log": {
+  "file": "run.log",
+  "sha256": "b354481ed611006acb23bbe2281d34e730b3e7bc848abe3c3bc59ac922b6524b",
+  "bytes": 258617
+ },
+ "redactions": {}
+}

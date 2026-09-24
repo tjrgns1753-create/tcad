@@ -1,0 +1,198 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-23T17:33:11.861420+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "d3-precision-mirror-002",
+  "profile": "d3_precision_mirror",
+  "params": {},
+  "note": "Rerun of run 35895798384 (commit a960b01): identical code and PLAN except run_d3.py wrote d3_out one directory too high (docs/d3_out), so no result JSON reached the artifact. Only that path was corrected."
+ },
+ "profile": "d3_precision_mirror",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/PLAN.md",
+   "sha256": "0bec82ccfa01aa3431657e26eaf8e8529c3c6414fff6dfc7a998711a916ae59a",
+   "bytes": 9181
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/PLAN.sha256",
+   "sha256": "cdd37e2f805b4ff0c4d03504b6a3bedbacf93d06b32f09f545ff596548598211",
+   "bytes": 142
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/PLAN_ERRATA.md",
+   "sha256": "90966ebfc08a7383af564c1a13d93eadb708f72ba5d3a06449270be66d72ce67",
+   "bytes": 555
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/run_d3.py",
+   "sha256": "a1270ee2b1df4c805b9e85c3d9703a5ec85abb2a534770e02cf9a75d8084f506",
+   "bytes": 4315
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/worker_d3.py",
+   "sha256": "195e661cf7caabae0a92a87fd36a26d963f140be3d98e22a9110f36ed204cb76",
+   "bytes": 9254
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/analyze_d3.py",
+   "sha256": "449bf100555f8330c73ba18736c6426f5f210f37534312b14b43232780f6bd35",
+   "bytes": 14851
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixtures_d1.json",
+   "sha256": "80d65d513ff9f923ff35cfe54cd937214b33cd47571797a005013e6e82d9f7f5",
+   "bytes": 4245634
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/scripts/worker_d2.py",
+   "sha256": "353a4d3b4fa598fb2f8d68cc98892bf0b13bf3a1fac4f2a1cbcc664af4ef6f31",
+   "bytes": 10712
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/scripts/common_d2.py",
+   "sha256": "49b61187c2cc7576e4d1345a3da39504fb6bf93478894e28550ba04f449b744f",
+   "bytes": 3523
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/data/fixed_d2.json",
+   "sha256": "8c334488583b9e9d99e41490fdb1c77731584ceb2906055c7cd4def4da43b7ee",
+   "bytes": 6469
+  }
+ ],
+ "request_sha256": "371790ecd1647d68697666377d2f7ca0bc37bf04b50801eb7d99ee61bfcec7b7",
+ "source": {
+  "github_sha": "3888ea5cf84c06b8fdf483ae86541ed0753f2e98",
+  "git_head": "3888ea5cf84c06b8fdf483ae86541ed0753f2e98",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "35896298771",
+  "run_number": "3",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": true,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/run_d3.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-23T17:35:06.831002+00:00",
+ "duration_s": 114.97,
+ "outputs": [
+  {
+   "path": "d3_out/analysis_d3.json",
+   "bytes": 72844,
+   "sha256": "a534440cd2a3c04a68957bffa2c40e83bd4e70dbd82388b0fb993c3081580153"
+  },
+  {
+   "path": "d3_out/runs/E1_M2_D0_h0.005_P0.json",
+   "bytes": 38263,
+   "sha256": "b45f88294196a359b022a03ec3a1fcd0f882fe645e8b642b3e3a5179e7847d56"
+  },
+  {
+   "path": "d3_out/runs/E1_M2_D0_h0.005_P12.json",
+   "bytes": 39034,
+   "sha256": "c18543b6ecf64b4832311ad1b996e23f20f339a24f8336e8f29074a1d24240e3"
+  },
+  {
+   "path": "d3_out/runs/E1_M2_D0_h0.005_P4.json",
+   "bytes": 38877,
+   "sha256": "e155a3875e43f5500ac00c62bb841dd119288cf7c1bae0e66a5d71bf5ea1e4ca"
+  },
+  {
+   "path": "d3_out/runs/E2_1D_h0.005_P0_mirror.json",
+   "bytes": 37427,
+   "sha256": "e4b995cbc0eec7880048f82eb0cb1af8e2ae3fe022958475d7d89ff05f454de6"
+  },
+  {
+   "path": "d3_out/runs/E2_1D_h0.005_P0_orig.json",
+   "bytes": 37458,
+   "sha256": "7a05841facb74a6532a4ce100444b2c1fb7b1bdfb50986edc47acce4a88f2e1d"
+  },
+  {
+   "path": "d3_out/runs/E2_1D_h0.005_P4_mirror.json",
+   "bytes": 37982,
+   "sha256": "2e319bbcfd7a59273bf5aab817f70358531b2606f32cd9f8d8452629285be8d3"
+  },
+  {
+   "path": "d3_out/runs/E2_1D_h0.005_P4_orig.json",
+   "bytes": 38048,
+   "sha256": "431f2856c75e6314444d67b0a1b60fba669ce560c39e17861c64621dc4e2b57a"
+  },
+  {
+   "path": "d3_out/runs/E2_M1_h0.005_P0_mirror.json",
+   "bytes": 38286,
+   "sha256": "986695a01f2a172d4083a25ab39f87f2670e609eb3c174802b9e05d267c61f57"
+  },
+  {
+   "path": "d3_out/runs/E2_M1_h0.005_P0_orig.json",
+   "bytes": 38206,
+   "sha256": "c94f472890091f5dd1c27ce79e6827aa2f59a5ced1c934f692863447dc9fe5e8"
+  },
+  {
+   "path": "d3_out/runs/E2_M1_h0.005_P4_mirror.json",
+   "bytes": 39072,
+   "sha256": "ba141f77670bc63615e152ce4a536840a2f0605025b045e24d1c7b4c66c55719"
+  },
+  {
+   "path": "d3_out/runs/E2_M1_h0.005_P4_orig.json",
+   "bytes": 39114,
+   "sha256": "2d51d9e7f9598536619ff1af99d230130e940707529d49187484903fb98b288d"
+  },
+  {
+   "path": "d3_out/analysis_d3.md",
+   "bytes": 16572,
+   "sha256": "35d62580981688b9afdb5587b5e35e9f4eb84ed527af08e463cd2104541738e8"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile (about 10 small runs, minutes). Nothing is omitted: every run JSON and the analysis are uploaded.",
+ "log": {
+  "file": "run.log",
+  "sha256": "808ca3043671112cb04256a87282be6ed4967b91b01d7cbc38a7856e327ca9f4",
+  "bytes": 258617
+ },
+ "redactions": {}
+}
