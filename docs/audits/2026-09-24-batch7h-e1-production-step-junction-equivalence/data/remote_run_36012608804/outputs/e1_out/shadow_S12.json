@@ -1,0 +1,308 @@
+{
+ "variant": "S12",
+ "label": "AUDIT-ONLY SHADOW - not a production-supported result",
+ "flags_at_start": {
+  "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+  "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+  "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+ },
+ "flags_set": {
+  "extended_model": true,
+  "extended_equation": true,
+  "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+ },
+ "identity": {
+  "mesh_file_sha256_equal": true,
+  "x_sha256_equal": true,
+  "y_sha256_equal": true,
+  "elements_sha256_equal": true,
+  "contacts_equal": true,
+  "regions_equal": true,
+  "doping_sha256_equal": true,
+  "doping_node_order_proven": true,
+  "inventory_equal": true
+ },
+ "identity_ok": true,
+ "sweep": {
+  "sweep_contact": "Si_xmax",
+  "voltage": 0.3,
+  "fixed": {
+   "Si_xmin": 0.0
+  }
+ },
+ "equilibrium_0V": {
+  "C0": {
+   "Si_xmin": {
+    "n": -7.032398202901138e-47,
+    "p": 1.7712313890167743e-30,
+    "total": 1.7712313890167743e-30
+   },
+   "Si_xmax": {
+    "n": -2.6026052724559933e-30,
+    "p": 2.3044905687492805e-47,
+    "total": -2.6026052724559933e-30
+   }
+  },
+  "C1": {
+   "Si_xmin": {
+    "total": 1.7712313890167743e-30,
+    "n_edges": 201
+   },
+   "Si_xmax": {
+    "total": -2.6026052724559933e-30,
+    "n_edges": 201
+   }
+  },
+  "C2": {
+   "-0.25": {
+    "n": -6.177914009186343e-46,
+    "p": 1.765986861385835e-30,
+    "total": 1.7659868613858348e-30,
+    "n_edges": 201,
+    "nodes_on_cut": 0
+   },
+   "-0.10": {
+    "n": -6.931135322851452e-46,
+    "p": 1.7809464493247187e-30,
+    "total": 1.780946449324718e-30,
+    "n_edges": 1701,
+    "nodes_on_cut": 0
+   },
+   "+0.00": {
+    "n": 1.1474198594138422e-38,
+    "p": -4.398150774980251e-37,
+    "total": -4.283408789038867e-37,
+    "n_edges": 3201,
+    "nodes_on_cut": 1601
+   },
+   "+0.10": {
+    "n": 2.4898205638306985e-30,
+    "p": -5.787075917321738e-46,
+    "total": 2.4898205638306978e-30,
+    "n_edges": 1701,
+    "nodes_on_cut": 0
+   },
+   "+0.25": {
+    "n": 2.5581232278137316e-30,
+    "p": -4.920068170109336e-46,
+    "total": 2.5581232278137316e-30,
+    "n_edges": 201,
+    "nodes_on_cut": 0
+   }
+  },
+  "C3": {
+   "-0.25..-0.10": {
+    "dI_n": -7.532213136651089e-47,
+    "q_int_U": -8.249164350942554e-47,
+    "dI_p": 1.4959587938883583e-32,
+    "dI_total": 1.4959587938883233e-32
+   },
+   "-0.10..+0.00": {
+    "dI_n": 1.1474199287251954e-38,
+    "q_int_U": -1.2211449405223492e-42,
+    "dI_p": -1.780946889139796e-30,
+    "dI_total": -1.780946877665597e-30
+   },
+   "+0.00..+0.10": {
+    "dI_n": 2.4898205523565e-30,
+    "q_int_U": -2.414885877045176e-41,
+    "dI_p": 4.398150769193175e-37,
+    "dI_total": 2.4898209921715766e-30
+   },
+   "+0.10..+0.25": {
+    "dI_n": 6.830266398303313e-32,
+    "q_int_U": -8.118203121613151e-47,
+    "dI_p": 8.670077472124026e-47,
+    "dI_total": 6.830266398303383e-32
+   }
+  },
+  "positive_finite": true,
+  "qf_dev_V": 5.551115123125783e-17,
+  "mass_action_dev": 2.220446049250313e-16,
+  "psi_contact_V": {
+   "Si_xmin": -0.4768597199126636,
+   "Si_xmax": 0.4768597199126636
+  },
+  "max_abs_ElectricField_V_per_cm": 358113.0109421471,
+  "n_range": [
+   99.99999999999999,
+   1.0000000000000001e+18
+  ],
+  "p_range": [
+   99.99999999999999,
+   1.0000000000000001e+18
+  ],
+  "bias_readback": {
+   "Si_xmin": 0.0,
+   "Si_xmax": 0.0
+  }
+ },
+ "converged": true,
+ "production_routine_currents": [
+  {
+   "Si_xmin": -3.396207120790817e-11,
+   "Si_xmax": 3.396207120790816e-11
+  }
+ ],
+ "bias_point": {
+  "C0": {
+   "Si_xmin": {
+    "n": -1.1646911103255997e-16,
+    "p": -3.3961954738797135e-11,
+    "total": -3.396207120790817e-11
+   },
+   "Si_xmax": {
+    "n": 3.3962029124571384e-11,
+    "p": 4.2083336780983885e-17,
+    "total": 3.396207120790816e-11
+   }
+  },
+  "C1": {
+   "Si_xmin": {
+    "total": -3.396207120790817e-11,
+    "n_edges": 201
+   },
+   "Si_xmax": {
+    "total": 3.396207120790817e-11,
+    "n_edges": 201
+   }
+  },
+  "C2": {
+   "-0.25": {
+    "n": -2.6625812878922996e-16,
+    "p": -3.396180494977937e-11,
+    "total": -3.396207120790817e-11,
+    "n_edges": 201,
+    "nodes_on_cut": 0
+   },
+   "-0.10": {
+    "n": -2.888643606630231e-16,
+    "p": -3.39617823435475e-11,
+    "total": -3.396207120790817e-11,
+    "n_edges": 1701,
+    "nodes_on_cut": 0
+   },
+   "+0.00": {
+    "n": -1.0750114840546507e-11,
+    "p": -2.3211956367361658e-11,
+    "total": -3.396207120790817e-11,
+    "n_edges": 3201,
+    "nodes_on_cut": 1601
+   },
+   "+0.10": {
+    "n": -3.396187844028978e-11,
+    "p": -1.9276761838566371e-16,
+    "total": -3.396207120790817e-11,
+    "n_edges": 1701,
+    "nodes_on_cut": 0
+   },
+   "+0.25": {
+    "n": -3.396190073846243e-11,
+    "p": -1.7046944573402503e-16,
+    "total": -3.396207120790817e-11,
+    "n_edges": 201,
+    "nodes_on_cut": 0
+   }
+  },
+  "C3": {
+   "-0.25..-0.10": {
+    "dI_n": -2.2606231873793166e-17,
+    "q_int_U": -2.260623187379313e-17,
+    "dI_p": 2.2606231868996546e-17,
+    "dI_total": 0.0
+   },
+   "-0.10..+0.00": {
+    "dI_n": -1.0749825976185843e-11,
+    "q_int_U": -1.0749825976185843e-11,
+    "dI_p": 1.0749825976185843e-11,
+    "dI_total": 0.0
+   },
+   "+0.00..+0.10": {
+    "dI_n": -2.3211763599743274e-11,
+    "q_int_U": -2.3211763599743274e-11,
+    "dI_p": 2.3211763599743274e-11,
+    "dI_total": 0.0
+   },
+   "+0.10..+0.25": {
+    "dI_n": -2.2298172651346437e-17,
+    "q_int_U": -2.229817265163867e-17,
+    "dI_p": 2.2298172651638685e-17,
+    "dI_total": 0.0
+   }
+  },
+  "positive_finite": true,
+  "qf_dev_V": 0.2999985157630165,
+  "mass_action_dev": 0.9999907285420379,
+  "psi_contact_V": {
+   "Si_xmin": -0.4768597199126636,
+   "Si_xmax": 0.7768597199126636
+  },
+  "max_abs_ElectricField_V_per_cm": 417249.7877953134,
+  "n_range": [
+   0.07130128684648698,
+   1.0000000000000001e+18
+  ],
+  "p_range": [
+   0.09693990065975558,
+   1.0000000000000001e+18
+  ],
+  "bias_readback": {
+   "Si_xmin": 0.0,
+   "Si_xmax": 0.3
+  }
+ },
+ "solve_calls": [
+  {
+   "k": {
+    "type": "dc",
+    "absolute_error": 1.0,
+    "relative_error": 1e-06,
+    "maximum_iterations": 100
+   },
+   "ok": true,
+   "wall_s": 52.797
+  },
+  {
+   "k": {
+    "type": "dc",
+    "absolute_error": 10000000000.0,
+    "relative_error": 1e-06,
+    "maximum_iterations": 100
+   },
+   "ok": true,
+   "wall_s": 21.495
+  },
+  {
+   "k": {
+    "type": "dc",
+    "absolute_error": 10000000000.0,
+    "relative_error": 1e-06,
+    "maximum_iterations": 100
+   },
+   "ok": true,
+   "wall_s": 150.935
+  }
+ ],
+ "parameters": {
+  "Permittivity": 9.8235e-13,
+  "ElectronCharge": 1.6e-19,
+  "n_i": 10000000000.0,
+  "T": 300.0,
+  "kT": 4.1419509e-21,
+  "V_t": 0.025887193125000003,
+  "mu_n": 400.0,
+  "mu_p": 200.0,
+  "n1": 10000000000.0,
+  "p1": 10000000000.0,
+  "taun": 1e-08,
+  "taup": 1e-08
+ },
+ "flags_at_end": {
+  "extended_model": true,
+  "extended_equation": true,
+  "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+ },
+ "devices_left": [],
+ "wall_s": 234.2,
+ "states_npz_sha256": "21c180919af4c120dd79914c3e836481a7ac15453ee17c25073cc3e06c1d2af4"
+}

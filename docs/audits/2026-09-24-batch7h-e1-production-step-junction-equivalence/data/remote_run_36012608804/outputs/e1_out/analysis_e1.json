@@ -1,0 +1,530 @@
+{
+ "plan_sha256": "ef7a3eadcd4d2e16935f95696bda257dd47c5f91f351ea08fe8fec83fd030a57",
+ "plan_matches": true,
+ "control": {
+  "raised": true,
+  "reason_code": "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED",
+  "resolution": "UNSUPPORTED_BY_MODEL",
+  "total_nodes": 123861,
+  "blocked_nodes": 123861,
+  "first_line": "UNSUPPORTED_BY_MODEL (STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED): device 'gui_measure_device' region 'Si' carries an ACTIVE step_junction_v1 dopant attachment on a 2D DevSim device (123861 of 123861 mesh node(s) blocked). The canonical donor/acceptor/net concentrations are PRESERVED and remain di",
+  "solve_calls": 0,
+  "doping_writes": 0,
+  "writes": [],
+  "doping_models_absent_after": true,
+  "instrumented_names": [
+   "solve",
+   "node_model",
+   "set_node_values",
+   "edge_model"
+  ],
+  "net_doping_at_calls": 123861,
+  "verdict": "GATE_HELD"
+ },
+ "prod_error": null,
+ "shadows": {
+  "S0": {
+   "verdict": "SHADOW_INCONSISTENT",
+   "failed_checks": [
+    "lr_mismatch",
+    "cut_spread",
+    "left_vs_cut0",
+    "right_vs_cut0",
+    "c3_species",
+    "c3_total",
+    "zero_bias_currents"
+   ],
+   "undecidable": [],
+   "checks": {
+    "lr_mismatch": {
+     "value": 0.0039981104589926495,
+     "limit": 1e-05,
+     "ok": false
+    },
+    "cut_spread": {
+     "value": 0.0014723530435237376,
+     "limit": 1e-05,
+     "ok": false
+    },
+    "left_vs_cut0": {
+     "value": 0.0002455602015170807,
+     "limit": 1e-05,
+     "ok": false
+    },
+    "right_vs_cut0": {
+     "value": 0.004244652437319728,
+     "limit": 1e-05,
+     "ok": false
+    },
+    "c3_species": {
+     "value": 0.0017227382630488142,
+     "limit": 1e-05,
+     "ok": false
+    },
+    "c3_total": {
+     "value": 0.0017227382630487652,
+     "limit": 1e-05,
+     "ok": false
+    },
+    "positivity_bias": {
+     "ok": true
+    },
+    "positivity_0V": {
+     "ok": true
+    },
+    "zero_bias_currents": {
+     "ok": false
+    },
+    "qf_flatness_0V": {
+     "value": 7.077671781985373e-16,
+     "limit": 1e-06,
+     "ok": true
+    },
+    "mass_action_0V": {
+     "value": 2.5979218776228663e-14,
+     "limit": 1e-06,
+     "ok": true
+    }
+   }
+  },
+  "S12": {
+   "verdict": "SHADOW_CONSISTENT",
+   "failed_checks": [],
+   "undecidable": [],
+   "checks": {
+    "lr_mismatch": {
+     "value": 1.9028134344367524e-16,
+     "limit": 1e-05,
+     "ok": true
+    },
+    "cut_spread": {
+     "value": 0.0,
+     "limit": 1e-05,
+     "ok": true
+    },
+    "left_vs_cut0": {
+     "value": 0.0,
+     "limit": 1e-05,
+     "ok": true
+    },
+    "right_vs_cut0": {
+     "value": 1.9028134344367524e-16,
+     "limit": 1e-05,
+     "ok": true
+    },
+    "c3_species": {
+     "value": 1.412335079086094e-16,
+     "limit": 1e-05,
+     "ok": true
+    },
+    "c3_total": {
+     "value": 0.0,
+     "limit": 1e-05,
+     "ok": true
+    },
+    "positivity_bias": {
+     "ok": true
+    },
+    "positivity_0V": {
+     "ok": true
+    },
+    "zero_bias_currents": {
+     "ok": true
+    },
+    "qf_flatness_0V": {
+     "value": 5.551115123125783e-17,
+     "limit": 1e-06,
+     "ok": true
+    },
+    "mass_action_0V": {
+     "value": 2.220446049250313e-16,
+     "limit": 1e-06,
+     "ok": true
+    }
+   }
+  }
+ },
+ "comparison": [
+  {
+   "property": "domain Si x range (um)",
+   "production": [
+    -4.999999655410647,
+    4.999999655410647
+   ],
+   "benchmark_D2_D4": [
+    -0.5,
+    0.5
+   ],
+   "same": false
+  },
+  {
+   "property": "domain Si y range (um)",
+   "production": [
+    -4.999999655410647,
+    0.0
+   ],
+   "benchmark_D2_D4": [
+    0.0,
+    0.1
+   ],
+   "same": false
+  },
+  {
+   "property": "regions",
+   "production": [
+    "Si"
+   ],
+   "benchmark_D2_D4": [
+    "Si"
+   ],
+   "same": true
+  },
+  {
+   "property": "Si nodes / triangles",
+   "production": [
+    123861,
+    247000
+   ],
+   "benchmark_D2_D4": {
+    "M1": [
+     4242,
+     8040
+    ],
+    "M2": [
+     4242,
+     8040
+    ]
+   },
+   "same": false
+  },
+  {
+   "property": "angle classes",
+   "production": {
+    "acute": 0,
+    "right": 244000,
+    "obtuse": 3000
+   },
+   "benchmark_D2_D4": {
+    "M1": {
+     "acute": 7840,
+     "obtuse": 0,
+     "right": 200
+    },
+    "M2": {
+     "acute": 0,
+     "obtuse": 0,
+     "right": 8040
+    }
+   },
+   "same": null
+  },
+  {
+   "property": "max angle (deg)",
+   "production": 133.1528691874165,
+   "benchmark_D2_D4": 90.0,
+   "same": false
+  },
+  {
+   "property": "exact Delaunay violations",
+   "production": 200,
+   "benchmark_D2_D4": 0,
+   "same": false
+  },
+  {
+   "property": "boundary Gabriel violations",
+   "production": 0,
+   "benchmark_D2_D4": 0,
+   "same": true
+  },
+  {
+   "property": "negative signed edge couples",
+   "production": 200,
+   "benchmark_D2_D4": 0,
+   "same": false
+  },
+  {
+   "property": "negative signed node volumes",
+   "production": 200,
+   "benchmark_D2_D4": 0,
+   "same": false
+  },
+  {
+   "property": "DEVSIM sum NodeVolume / exact area",
+   "production": 1.0582519545990987,
+   "benchmark_D2_D4": 1.0,
+   "same": null
+  },
+  {
+   "property": "nodes exactly at x = 0",
+   "production": 1601,
+   "benchmark_D2_D4": 0,
+   "same": false
+  },
+  {
+   "property": "junction representation",
+   "production": "J0 (node on the junction, NetDoping = ND - NA there)",
+   "benchmark_D2_D4": "J1 (no node on x = 0, dual boundary exactly on x = 0)",
+   "same": false
+  },
+  {
+   "property": "NetDoping at x = 0 nodes (cm^-3)",
+   "production": [
+    0.0
+   ],
+   "benchmark_D2_D4": "no such node",
+   "same": null
+  },
+  {
+   "property": "N_A / N_D (cm^-3)",
+   "production": [
+    1e+18,
+    1e+18
+   ],
+   "benchmark_D2_D4": [
+    1e+17,
+    1e+17
+   ],
+   "same": false
+  },
+  {
+   "property": "dopant inventory donor / acceptor (cm^-1)",
+   "production": [
+    264641080672.59766,
+    264641073681.32043
+   ],
+   "benchmark_D2_D4": "N x side area exactly (J1)",
+   "same": null
+  },
+  {
+   "property": "x = 0 control-volume area (cm^2)",
+   "production": 1.56249985284376e-10,
+   "benchmark_D2_D4": 0.0,
+   "same": false
+  },
+  {
+   "property": "contacts",
+   "production": [
+    "Si_xmin",
+    "Si_xmax"
+   ],
+   "benchmark_D2_D4": [
+    "left",
+    "right"
+   ],
+   "same": null
+  },
+  {
+   "property": "contact x positions (um)",
+   "production": {
+    "x_min_nodes": 101,
+    "x_max_nodes": 101,
+    "x_min_um": -4.999999655410647,
+    "x_max_um": 4.999999655410647
+   },
+   "benchmark_D2_D4": [
+    -0.5,
+    0.5
+   ],
+   "same": null
+  },
+  {
+   "property": "mesh spacing near junction (um)",
+   "production": {
+    "distinct_x": 261,
+    "min_dx_um": 0.003124992000000007,
+    "max_dx_um": 0.05000038100000026,
+    "min_dx_within_0.1um_of_junction": 0.003124992000000007
+   },
+   "benchmark_D2_D4": "uniform 0.005 (M2) / irregular non-obtuse (M1), half cells at contacts",
+   "same": null
+  },
+  {
+   "property": "material parameters (S0 readback)",
+   "production": {
+    "Permittivity": 9.8235e-13,
+    "ElectronCharge": 1.6e-19,
+    "n_i": 10000000000.0,
+    "T": 300.0,
+    "kT": 4.1419509e-21,
+    "V_t": 0.025887193125000003,
+    "mu_n": 400.0,
+    "mu_p": 200.0,
+    "n1": 10000000000.0,
+    "p1": 10000000000.0,
+    "taun": 1e-08,
+    "taup": 1e-08
+   },
+   "benchmark_D2_D4": "same production setup functions (T 300 K, n_i 1e10, mu_n 400, mu_p 200, taun = taup 1e-8)",
+   "same": null
+  },
+  {
+   "property": "material parameters (S12 readback)",
+   "production": {
+    "Permittivity": 9.8235e-13,
+    "ElectronCharge": 1.6e-19,
+    "n_i": 10000000000.0,
+    "T": 300.0,
+    "kT": 4.1419509e-21,
+    "V_t": 0.025887193125000003,
+    "mu_n": 400.0,
+    "mu_p": 200.0,
+    "n1": 10000000000.0,
+    "p1": 10000000000.0,
+    "taun": 1e-08,
+    "taup": 1e-08
+   },
+   "benchmark_D2_D4": "same production setup functions (T 300 K, n_i 1e10, mu_n 400, mu_p 200, taun = taup 1e-8)",
+   "same": null
+  },
+  {
+   "property": "solver rule",
+   "production": "production routine: Poisson abs 1.0 / rel 1e-6; DD abs 1e10 / rel 1e-6; 100 it; no info",
+   "benchmark_D2_D4": {
+    "poisson": {
+     "absolute_error": 1e-10,
+     "relative_error": 1e-10,
+     "maximum_iterations": 50
+    },
+    "drift_diffusion": {
+     "absolute_error": 1e+30,
+     "relative_error": 1e-10,
+     "maximum_iterations": 50
+    },
+    "acceptance": "info=True converged AND final device relative update < 1e-10 (identical in every precision variant)"
+   },
+   "same": false
+  },
+  {
+   "property": "precision flags",
+   "production": "none (production default)",
+   "benchmark_D2_D4": "P12 / P4 in D3/D4",
+   "same": false
+  },
+  {
+   "property": "bias",
+   "production": "single jump to +0.3 V on the max-x (n) contact = 0.3 V reverse",
+   "benchmark_D2_D4": "p contact ramp 0.025 V steps to +-0.10 V",
+   "same": false
+  }
+ ],
+ "prechecks": {
+  "mesh_quality": {
+   "n_nodes": 123861,
+   "n_triangles": 247000,
+   "classes": {
+    "acute": 0,
+    "right": 244000,
+    "obtuse": 3000
+   },
+   "min_angle_deg": 1.8473444636057181,
+   "max_angle_deg": 133.1528691874165,
+   "all_ccw": false,
+   "exact_delaunay_violations_interior": 200,
+   "boundary_gabriel_violations": 0,
+   "exact_positive_overlaps": 0,
+   "signed_edge_couple": {
+    "negative": 200,
+    "zero": 121800,
+    "positive": 248860,
+    "min_cm": -3.3146315048021876e-06
+   },
+   "signed_node_volume": {
+    "negative": 200,
+    "zero": 0,
+    "positive": 123661,
+    "min_cm2": -2.3315422358870936e-12
+   },
+   "x0_column_nodes": 1601,
+   "left_contact_nodes": 101,
+   "right_contact_nodes": 101,
+   "area_exact_um2": "7205758410581640625/144115188075855872",
+   "devsim_sum_NodeVolume_over_exact_area": 1.0582519545990987
+  },
+  "doping": {
+   "nodes_x_eq_0": 1601,
+   "netdoping_at_x0_values": [
+    0.0
+   ],
+   "donors_at_x0": [
+    1e+18
+   ],
+   "acceptors_at_x0": [
+    1e+18
+   ],
+   "representation": "J0 (node on the junction, NetDoping = ND - NA there)",
+   "sum_NodeVolume_x0_cm2": 1.56249985284376e-10,
+   "inventory_donor_cm-1": 264641080672.59766,
+   "inventory_acceptor_cm-1": 264641073681.32043,
+   "exact_donor_cm-1": 264562955679.9555,
+   "exact_acceptor_cm-1": 264562948688.67816,
+   "exact_basis": "N x (NodeVolume of the side + half the x=0 CV); the exact geometric area split of the x=0 CVs is also given",
+   "region_area_from_NodeVolume_cm2": 5.291259043686336e-07,
+   "donor_nodes": 61130,
+   "acceptor_nodes": 61130,
+   "zero_net_nodes": 1601
+  },
+  "capture": {
+   "n_records": 123861,
+   "n_nodes": 123861,
+   "one_record_per_node_in_order": true,
+   "records_with_query_x_ne_node_x": 0,
+   "all_known": true,
+   "doping_sha256": {
+    "Donors": "1b68eef3aba4c5f840cf9a68752d9938ca4457009fb4034ec726b903efd4146f",
+    "Acceptors": "9a140a7d249ed55878513cf3bdccd55cee06e99aa25fb44e4592924f3c9c771e",
+    "NetDoping": "6e03dc2821de5d42b6a3deedf09919b0ad1bb0027606485bd3e4688c61deeb8f"
+   },
+   "direct_query_mismatch_nodes": 0
+  },
+  "barrier_windows": {
+   "status": "OK",
+   "value": []
+  },
+  "state": {
+   "n_attachments": 2,
+   "attachments": [
+    {
+     "model": "step_junction_v1",
+     "chemical_state": "ACTIVE",
+     "polarity": "donor"
+    },
+    {
+     "model": "step_junction_v1",
+     "chemical_state": "ACTIVE",
+     "polarity": "acceptor"
+    }
+   ],
+   "events_status": [
+    "MODELLED",
+    "MODELLED",
+    "MODELLED"
+   ],
+   "active_cells": [
+    {
+     "material": "Si",
+     "lifecycle": "ACTIVE",
+     "bounds_um": [
+      -5.0,
+      5.0,
+      -5.0,
+      0.0
+     ]
+    }
+   ]
+  },
+  "dimension": 2,
+  "contact_facts": {
+   "Si_xmin": {
+    "region": [
+     "Si"
+    ]
+   },
+   "Si_xmax": {
+    "region": [
+     "Si"
+    ]
+   }
+  }
+ },
+ "mesh_convergence": "UNVERIFIED (one production mesh; no refinement study registered)"
+}

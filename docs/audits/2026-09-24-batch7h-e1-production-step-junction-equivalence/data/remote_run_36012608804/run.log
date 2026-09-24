@@ -1,0 +1,356 @@
+[e1] GUI defaults reproduced: {'grid_delta_um': 0.05, 'x_extent_um': 10.0, 'y_extent_um': 8.0, 'silicon_depth_um': 5.0, 'pr_thickness_um': 1.0, 'mask_spans_um': [], 'doping': {'region': 'Si', 'junction_axis': 'x', 'junction_position_um': 0.0, 'donor_conc_cm3': 1e+18, 'acceptor_conc_cm3': 1e+18, 'chemical_state': 'ACTIVE'}, 'barrier': {'barrier_material': 'SiO2', 'axis': 'x', 'min_barrier_thickness_um': 0.0}, 'import': {'mesh_name': 'gui_measure_mesh', 'device_name': 'gui_measure_device', 'contact_regions': ['Si'], 'contact_axis': 'x', 'length_scale_to_cm': 0.0001, 'refine_near_um': 0.0, 'refine_axis': 'x'}, 'measure': {'source_pin': 'max', 'voltage': 0.3, 'gnd_voltage': 0.0}}
+
+[e1] ===== A production build + control + pre-checks =====
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 247000 Triangles.
+Physical group name Si has 370860 Lines.
+Physical group name Si has 123861 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device gui_measure_device has 123861 coordinates with max index 123860
+Region Si has 123861 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[prod_build_e1] control=GATE_HELD error=False
+
+[e1] A production build + control + pre-checks rc=0 in 99.9 s
+[e1] shadow allowed by PLAN: True
+
+[e1] ===== B shadow S0 =====
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 247000 Triangles.
+Physical group name Si has 370860 Lines.
+Physical group name Si has 123861 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device shadow_device has 123861 coordinates with max index 123860
+Region Si has 123861 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 123861
+Iteration: 0
+  Device: "shadow_device"	RelError: 1.00000e+00	AbsError: 3.15456e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15456e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15456e-01
+Iteration: 1
+  Device: "shadow_device"	RelError: 2.23239e+04	AbsError: 2.03078e-01
+    Region: "Si"	RelError: 2.23239e+04	AbsError: 2.03078e-01
+      Equation: "PotentialEquation"	RelError: 2.23239e+04	AbsError: 2.03078e-01
+Iteration: 2
+  Device: "shadow_device"	RelError: 1.17149e+03	AbsError: 1.09474e-01
+    Region: "Si"	RelError: 1.17149e+03	AbsError: 1.09474e-01
+      Equation: "PotentialEquation"	RelError: 1.17149e+03	AbsError: 1.09474e-01
+Iteration: 3
+  Device: "shadow_device"	RelError: 3.91523e+03	AbsError: 9.63726e-02
+    Region: "Si"	RelError: 3.91523e+03	AbsError: 9.63726e-02
+      Equation: "PotentialEquation"	RelError: 3.91523e+03	AbsError: 9.63726e-02
+Iteration: 4
+  Device: "shadow_device"	RelError: 7.08120e+03	AbsError: 9.15086e-02
+    Region: "Si"	RelError: 7.08120e+03	AbsError: 9.15086e-02
+      Equation: "PotentialEquation"	RelError: 7.08120e+03	AbsError: 9.15086e-02
+Iteration: 5
+  Device: "shadow_device"	RelError: 3.83627e+03	AbsError: 8.79173e-02
+    Region: "Si"	RelError: 3.83627e+03	AbsError: 8.79173e-02
+      Equation: "PotentialEquation"	RelError: 3.83627e+03	AbsError: 8.79173e-02
+Iteration: 6
+  Device: "shadow_device"	RelError: 3.72504e+03	AbsError: 7.98860e-02
+    Region: "Si"	RelError: 3.72504e+03	AbsError: 7.98860e-02
+      Equation: "PotentialEquation"	RelError: 3.72504e+03	AbsError: 7.98860e-02
+Iteration: 7
+  Device: "shadow_device"	RelError: 8.97822e+02	AbsError: 5.59556e-02
+    Region: "Si"	RelError: 8.97822e+02	AbsError: 5.59556e-02
+      Equation: "PotentialEquation"	RelError: 8.97822e+02	AbsError: 5.59556e-02
+Iteration: 8
+  Device: "shadow_device"	RelError: 7.63459e+02	AbsError: 4.93215e-02
+    Region: "Si"	RelError: 7.63459e+02	AbsError: 4.93215e-02
+      Equation: "PotentialEquation"	RelError: 7.63459e+02	AbsError: 4.93215e-02
+Iteration: 9
+  Device: "shadow_device"	RelError: 1.53145e+04	AbsError: 4.01338e-02
+    Region: "Si"	RelError: 1.53145e+04	AbsError: 4.01338e-02
+      Equation: "PotentialEquation"	RelError: 1.53145e+04	AbsError: 4.01338e-02
+Iteration: 10
+  Device: "shadow_device"	RelError: 4.52106e+05	AbsError: 2.95140e-02
+    Region: "Si"	RelError: 4.52106e+05	AbsError: 2.95140e-02
+      Equation: "PotentialEquation"	RelError: 4.52106e+05	AbsError: 2.95140e-02
+Iteration: 11
+  Device: "shadow_device"	RelError: 3.86255e+07	AbsError: 2.54364e-02
+    Region: "Si"	RelError: 3.86255e+07	AbsError: 2.54364e-02
+      Equation: "PotentialEquation"	RelError: 3.86255e+07	AbsError: 2.54364e-02
+Iteration: 12
+  Device: "shadow_device"	RelError: 9.12715e+03	AbsError: 1.37234e-06
+    Region: "Si"	RelError: 9.12715e+03	AbsError: 1.37234e-06
+      Equation: "PotentialEquation"	RelError: 9.12715e+03	AbsError: 1.37234e-06
+Iteration: 13
+  Device: "shadow_device"	RelError: 8.50555e-03	AbsError: 1.92008e-12
+    Region: "Si"	RelError: 8.50555e-03	AbsError: 1.92008e-12
+      Equation: "PotentialEquation"	RelError: 8.50555e-03	AbsError: 1.92008e-12
+Iteration: 14
+  Device: "shadow_device"	RelError: 3.37635e-07	AbsError: 9.21930e-17
+    Region: "Si"	RelError: 3.37635e-07	AbsError: 9.21930e-17
+      Equation: "PotentialEquation"	RelError: 3.37635e-07	AbsError: 9.21930e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 371583
+Iteration: 0
+  Device: "shadow_device"	RelError: 2.61795e-07	AbsError: 1.02400e+04
+    Region: "Si"	RelError: 2.61795e-07	AbsError: 1.02400e+04
+      Equation: "ElectronContinuityEquation"	RelError: 2.24805e-14	AbsError: 5.12000e+03
+      Equation: "HoleContinuityEquation"	RelError: 2.61356e-14	AbsError: 5.12000e+03
+      Equation: "PotentialEquation"	RelError: 2.61795e-07	AbsError: 1.63587e-16
+number of equations 371583
+Iteration: 0
+  Device: "shadow_device"	RelError: 1.99900e+03	AbsError: 6.20469e+17
+    Region: "Si"	RelError: 1.99900e+03	AbsError: 6.20469e+17
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 3.10234e+17
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 3.10234e+17
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 6.55878e-02
+Iteration: 1
+  Device: "shadow_device"	RelError: 1.99936e+03	AbsError: 1.04946e+17
+    Region: "Si"	RelError: 1.99936e+03	AbsError: 1.04946e+17
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 5.26388e+16
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 5.23073e+16
+      Equation: "PotentialEquation"	RelError: 1.36097e+00	AbsError: 5.97678e-02
+Iteration: 2
+  Device: "shadow_device"	RelError: 2.03393e+03	AbsError: 2.68354e+16
+    Region: "Si"	RelError: 2.03393e+03	AbsError: 2.68354e+16
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.48809e+16
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.19546e+16
+      Equation: "PotentialEquation"	RelError: 3.59303e+01	AbsError: 5.30119e-02
+Iteration: 3
+  Device: "shadow_device"	RelError: 1.99904e+03	AbsError: 5.43104e+15
+    Region: "Si"	RelError: 1.99904e+03	AbsError: 5.43104e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 3.87632e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.55473e+15
+      Equation: "PotentialEquation"	RelError: 1.03817e+00	AbsError: 4.50610e-02
+Iteration: 4
+  Device: "shadow_device"	RelError: 1.99806e+03	AbsError: 9.36308e+14
+    Region: "Si"	RelError: 1.99806e+03	AbsError: 9.36308e+14
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 9.16878e+14
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.94305e+13
+      Equation: "PotentialEquation"	RelError: 6.17586e-02	AbsError: 3.56213e-02
+Iteration: 5
+  Device: "shadow_device"	RelError: 1.00003e+03	AbsError: 2.49487e+14
+    Region: "Si"	RelError: 1.00003e+03	AbsError: 2.49487e+14
+      Equation: "ElectronContinuityEquation"	RelError: 1.00000e+00	AbsError: 2.14540e+14
+      Equation: "HoleContinuityEquation"	RelError: 9.98999e+02	AbsError: 3.49474e+13
+      Equation: "PotentialEquation"	RelError: 3.52983e-02	AbsError: 2.45586e-02
+Iteration: 6
+  Device: "shadow_device"	RelError: 1.30808e+00	AbsError: 5.03477e+14
+    Region: "Si"	RelError: 1.30808e+00	AbsError: 5.03477e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.86985e-01	AbsError: 4.92913e+14
+      Equation: "HoleContinuityEquation"	RelError: 1.00000e+00	AbsError: 1.05642e+13
+      Equation: "PotentialEquation"	RelError: 2.10997e-02	AbsError: 1.63915e-02
+Iteration: 7
+  Device: "shadow_device"	RelError: 2.71766e-01	AbsError: 8.11207e+14
+    Region: "Si"	RelError: 2.71766e-01	AbsError: 8.11207e+14
+      Equation: "ElectronContinuityEquation"	RelError: 1.95522e-02	AbsError: 7.68117e+14
+      Equation: "HoleContinuityEquation"	RelError: 2.51125e-01	AbsError: 4.30900e+13
+      Equation: "PotentialEquation"	RelError: 1.08912e-03	AbsError: 3.87914e-05
+Iteration: 8
+  Device: "shadow_device"	RelError: 7.57667e-05	AbsError: 1.11803e+11
+    Region: "Si"	RelError: 7.57667e-05	AbsError: 1.11803e+11
+      Equation: "ElectronContinuityEquation"	RelError: 1.51122e-05	AbsError: 1.09092e+11
+      Equation: "HoleContinuityEquation"	RelError: 6.05936e-05	AbsError: 2.71137e+09
+      Equation: "PotentialEquation"	RelError: 6.09185e-08	AbsError: 1.93777e-09
+Iteration: 9
+  Device: "shadow_device"	RelError: 2.14365e-12	AbsError: 2.20179e+03
+    Region: "Si"	RelError: 2.14365e-12	AbsError: 2.20179e+03
+      Equation: "ElectronContinuityEquation"	RelError: 3.74909e-13	AbsError: 1.94105e+03
+      Equation: "HoleContinuityEquation"	RelError: 1.76480e-12	AbsError: 2.60742e+02
+      Equation: "PotentialEquation"	RelError: 3.94053e-15	AbsError: 1.40511e-16
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+[shadow_e1] S0 identity_ok=True converged=True error=False
+
+[e1] B shadow S0 rc=0 in 66.7 s
+
+[e1] ===== B shadow S12 =====
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 247000 Triangles.
+Physical group name Si has 370860 Lines.
+Physical group name Si has 123861 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device shadow_device has 123861 coordinates with max index 123860
+Region Si has 123861 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 123861
+Iteration: 0
+  Device: "shadow_device"	RelError: 1.00000e+00	AbsError: 3.15456e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15456e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15456e-01
+Iteration: 1
+  Device: "shadow_device"	RelError: 2.23239e+04	AbsError: 2.03078e-01
+    Region: "Si"	RelError: 2.23239e+04	AbsError: 2.03078e-01
+      Equation: "PotentialEquation"	RelError: 2.23239e+04	AbsError: 2.03078e-01
+Iteration: 2
+  Device: "shadow_device"	RelError: 1.17149e+03	AbsError: 1.09474e-01
+    Region: "Si"	RelError: 1.17149e+03	AbsError: 1.09474e-01
+      Equation: "PotentialEquation"	RelError: 1.17149e+03	AbsError: 1.09474e-01
+Iteration: 3
+  Device: "shadow_device"	RelError: 3.91523e+03	AbsError: 9.63726e-02
+    Region: "Si"	RelError: 3.91523e+03	AbsError: 9.63726e-02
+      Equation: "PotentialEquation"	RelError: 3.91523e+03	AbsError: 9.63726e-02
+Iteration: 4
+  Device: "shadow_device"	RelError: 7.08120e+03	AbsError: 9.15086e-02
+    Region: "Si"	RelError: 7.08120e+03	AbsError: 9.15086e-02
+      Equation: "PotentialEquation"	RelError: 7.08120e+03	AbsError: 9.15086e-02
+Iteration: 5
+  Device: "shadow_device"	RelError: 3.83627e+03	AbsError: 8.79173e-02
+    Region: "Si"	RelError: 3.83627e+03	AbsError: 8.79173e-02
+      Equation: "PotentialEquation"	RelError: 3.83627e+03	AbsError: 8.79173e-02
+Iteration: 6
+  Device: "shadow_device"	RelError: 3.72504e+03	AbsError: 7.98860e-02
+    Region: "Si"	RelError: 3.72504e+03	AbsError: 7.98860e-02
+      Equation: "PotentialEquation"	RelError: 3.72504e+03	AbsError: 7.98860e-02
+Iteration: 7
+  Device: "shadow_device"	RelError: 8.97822e+02	AbsError: 5.59556e-02
+    Region: "Si"	RelError: 8.97822e+02	AbsError: 5.59556e-02
+      Equation: "PotentialEquation"	RelError: 8.97822e+02	AbsError: 5.59556e-02
+Iteration: 8
+  Device: "shadow_device"	RelError: 7.63459e+02	AbsError: 4.93215e-02
+    Region: "Si"	RelError: 7.63459e+02	AbsError: 4.93215e-02
+      Equation: "PotentialEquation"	RelError: 7.63459e+02	AbsError: 4.93215e-02
+Iteration: 9
+  Device: "shadow_device"	RelError: 1.53145e+04	AbsError: 4.01338e-02
+    Region: "Si"	RelError: 1.53145e+04	AbsError: 4.01338e-02
+      Equation: "PotentialEquation"	RelError: 1.53145e+04	AbsError: 4.01338e-02
+Iteration: 10
+  Device: "shadow_device"	RelError: 4.52106e+05	AbsError: 2.95140e-02
+    Region: "Si"	RelError: 4.52106e+05	AbsError: 2.95140e-02
+      Equation: "PotentialEquation"	RelError: 4.52106e+05	AbsError: 2.95140e-02
+Iteration: 11
+  Device: "shadow_device"	RelError: 3.86255e+07	AbsError: 2.54364e-02
+    Region: "Si"	RelError: 3.86255e+07	AbsError: 2.54364e-02
+      Equation: "PotentialEquation"	RelError: 3.86255e+07	AbsError: 2.54364e-02
+Iteration: 12
+  Device: "shadow_device"	RelError: 9.12715e+03	AbsError: 1.37234e-06
+    Region: "Si"	RelError: 9.12715e+03	AbsError: 1.37234e-06
+      Equation: "PotentialEquation"	RelError: 9.12715e+03	AbsError: 1.37234e-06
+Iteration: 13
+  Device: "shadow_device"	RelError: 8.50551e-03	AbsError: 1.92007e-12
+    Region: "Si"	RelError: 8.50551e-03	AbsError: 1.92007e-12
+      Equation: "PotentialEquation"	RelError: 8.50551e-03	AbsError: 1.92007e-12
+Iteration: 14
+  Device: "shadow_device"	RelError: 2.16779e-07	AbsError: 2.36011e-17
+    Region: "Si"	RelError: 2.16779e-07	AbsError: 2.36011e-17
+      Equation: "PotentialEquation"	RelError: 2.16779e-07	AbsError: 2.36011e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 371583
+Iteration: 0
+  Device: "shadow_device"	RelError: 1.55859e-07	AbsError: 1.20459e+02
+    Region: "Si"	RelError: 1.55859e-07	AbsError: 1.20459e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.42910e-16	AbsError: 5.35517e+01
+      Equation: "HoleContinuityEquation"	RelError: 7.42910e-16	AbsError: 6.69070e+01
+      Equation: "PotentialEquation"	RelError: 1.55859e-07	AbsError: 1.92319e-17
+number of equations 371583
+Iteration: 0
+  Device: "shadow_device"	RelError: 1.99900e+03	AbsError: 6.20469e+17
+    Region: "Si"	RelError: 1.99900e+03	AbsError: 6.20469e+17
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 3.10234e+17
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 3.10234e+17
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 6.55878e-02
+Iteration: 1
+  Device: "shadow_device"	RelError: 1.99936e+03	AbsError: 1.04946e+17
+    Region: "Si"	RelError: 1.99936e+03	AbsError: 1.04946e+17
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 5.26388e+16
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 5.23073e+16
+      Equation: "PotentialEquation"	RelError: 1.36097e+00	AbsError: 5.97678e-02
+Iteration: 2
+  Device: "shadow_device"	RelError: 2.03393e+03	AbsError: 2.68354e+16
+    Region: "Si"	RelError: 2.03393e+03	AbsError: 2.68354e+16
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.48809e+16
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.19546e+16
+      Equation: "PotentialEquation"	RelError: 3.59303e+01	AbsError: 5.30119e-02
+Iteration: 3
+  Device: "shadow_device"	RelError: 1.99904e+03	AbsError: 5.43104e+15
+    Region: "Si"	RelError: 1.99904e+03	AbsError: 5.43104e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 3.87632e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.55473e+15
+      Equation: "PotentialEquation"	RelError: 1.03817e+00	AbsError: 4.50610e-02
+Iteration: 4
+  Device: "shadow_device"	RelError: 1.99806e+03	AbsError: 9.36308e+14
+    Region: "Si"	RelError: 1.99806e+03	AbsError: 9.36308e+14
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 9.16878e+14
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.94305e+13
+      Equation: "PotentialEquation"	RelError: 6.17586e-02	AbsError: 3.56213e-02
+Iteration: 5
+  Device: "shadow_device"	RelError: 1.00003e+03	AbsError: 2.49487e+14
+    Region: "Si"	RelError: 1.00003e+03	AbsError: 2.49487e+14
+      Equation: "ElectronContinuityEquation"	RelError: 1.00000e+00	AbsError: 2.14540e+14
+      Equation: "HoleContinuityEquation"	RelError: 9.98999e+02	AbsError: 3.49474e+13
+      Equation: "PotentialEquation"	RelError: 3.52983e-02	AbsError: 2.45586e-02
+Iteration: 6
+  Device: "shadow_device"	RelError: 1.30808e+00	AbsError: 5.03477e+14
+    Region: "Si"	RelError: 1.30808e+00	AbsError: 5.03477e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.86985e-01	AbsError: 4.92913e+14
+      Equation: "HoleContinuityEquation"	RelError: 1.00000e+00	AbsError: 1.05642e+13
+      Equation: "PotentialEquation"	RelError: 2.10997e-02	AbsError: 1.63915e-02
+Iteration: 7
+  Device: "shadow_device"	RelError: 2.71766e-01	AbsError: 8.11207e+14
+    Region: "Si"	RelError: 2.71766e-01	AbsError: 8.11207e+14
+      Equation: "ElectronContinuityEquation"	RelError: 1.95522e-02	AbsError: 7.68117e+14
+      Equation: "HoleContinuityEquation"	RelError: 2.51125e-01	AbsError: 4.30900e+13
+      Equation: "PotentialEquation"	RelError: 1.08912e-03	AbsError: 3.87914e-05
+Iteration: 8
+  Device: "shadow_device"	RelError: 7.57667e-05	AbsError: 1.11803e+11
+    Region: "Si"	RelError: 7.57667e-05	AbsError: 1.11803e+11
+      Equation: "ElectronContinuityEquation"	RelError: 1.51122e-05	AbsError: 1.09092e+11
+      Equation: "HoleContinuityEquation"	RelError: 6.05936e-05	AbsError: 2.71137e+09
+      Equation: "PotentialEquation"	RelError: 6.09185e-08	AbsError: 1.93777e-09
+Iteration: 9
+  Device: "shadow_device"	RelError: 2.07574e-12	AbsError: 2.11416e+03
+    Region: "Si"	RelError: 2.07574e-12	AbsError: 2.11416e+03
+      Equation: "ElectronContinuityEquation"	RelError: 3.10577e-13	AbsError: 1.92521e+03
+      Equation: "HoleContinuityEquation"	RelError: 1.76110e-12	AbsError: 1.88946e+02
+      Equation: "PotentialEquation"	RelError: 4.06193e-15	AbsError: 9.24195e-17
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+[shadow_e1] S12 identity_ok=True converged=True error=False
+
+[e1] B shadow S12 rc=0 in 234.8 s
+
+[e1] ===== C analysis =====
+{
+ "plan_matches": true,
+ "control": "GATE_HELD",
+ "shadows": {
+  "S0": "SHADOW_INCONSISTENT",
+  "S12": "SHADOW_CONSISTENT"
+ }
+}
+
+[e1] C analysis rc=0 in 0.2 s
+[e1] outputs: ['analysis_e1.json', 'prod.json', 'prod_arrays.npz', 'shadow_S0.json', 'shadow_S0_states.npz', 'shadow_S12.json', 'shadow_S12_states.npz']

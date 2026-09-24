@@ -1,0 +1,231 @@
+{
+ "gui_defaults": {
+  "grid_delta_um": 0.05,
+  "x_extent_um": 10.0,
+  "y_extent_um": 8.0,
+  "silicon_depth_um": 5.0,
+  "pr_thickness_um": 1.0,
+  "mask_spans_um": [],
+  "doping": {
+   "region": "Si",
+   "junction_axis": "x",
+   "junction_position_um": 0.0,
+   "donor_conc_cm3": 1e+18,
+   "acceptor_conc_cm3": 1e+18,
+   "chemical_state": "ACTIVE"
+  },
+  "barrier": {
+   "barrier_material": "SiO2",
+   "axis": "x",
+   "min_barrier_thickness_um": 0.0
+  },
+  "import": {
+   "mesh_name": "gui_measure_mesh",
+   "device_name": "gui_measure_device",
+   "contact_regions": [
+    "Si"
+   ],
+   "contact_axis": "x",
+   "length_scale_to_cm": 0.0001,
+   "refine_near_um": 0.0,
+   "refine_axis": "x"
+  },
+  "measure": {
+   "source_pin": "max",
+   "voltage": 0.3,
+   "gnd_voltage": 0.0
+  }
+ },
+ "mesh_file": {
+  "name": "wafer_volume.vtu",
+  "sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a"
+ },
+ "barrier_windows": {
+  "status": "OK",
+  "value": []
+ },
+ "state": {
+  "n_attachments": 2,
+  "attachments": [
+   {
+    "model": "step_junction_v1",
+    "chemical_state": "ACTIVE",
+    "polarity": "donor"
+   },
+   {
+    "model": "step_junction_v1",
+    "chemical_state": "ACTIVE",
+    "polarity": "acceptor"
+   }
+  ],
+  "events_status": [
+   "MODELLED",
+   "MODELLED",
+   "MODELLED"
+  ],
+  "active_cells": [
+   {
+    "material": "Si",
+    "lifecycle": "ACTIVE",
+    "bounds_um": [
+     -5.0,
+     5.0,
+     -5.0,
+     0.0
+    ]
+   }
+  ]
+ },
+ "dimension": 2,
+ "regions": [
+  "Si"
+ ],
+ "contacts": [
+  "Si_xmin",
+  "Si_xmax"
+ ],
+ "region_facts": {
+  "Si": {
+   "material": "Si",
+   "n_nodes": 123861,
+   "n_elements": 247000,
+   "x_range_um": [
+    -4.999999655410647,
+    4.999999655410647
+   ],
+   "y_range_um": [
+    -4.999999655410647,
+    0.0
+   ],
+   "x_sha256": "f9353f60d0ac664d3fe3c6952edce20708526d38d26deccebef46600c9161a4b",
+   "y_sha256": "3818a0b5f2585e9a4a1a6c566a89a7102da3201d56ea39b9ecab6e8fe9ad0ef3",
+   "elements_sha256": "4bb0d371b62f071961935d4091b29a4fe2d18a89c56c61fed873648c17fc102f",
+   "sum_NodeVolume_cm2": 5.291259043686336e-07
+  }
+ },
+ "contact_facts": {
+  "Si_xmin": {
+   "region": [
+    "Si"
+   ]
+  },
+  "Si_xmax": {
+   "region": [
+    "Si"
+   ]
+  }
+ },
+ "control": {
+  "raised": true,
+  "reason_code": "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED",
+  "resolution": "UNSUPPORTED_BY_MODEL",
+  "total_nodes": 123861,
+  "blocked_nodes": 123861,
+  "first_line": "UNSUPPORTED_BY_MODEL (STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED): device 'gui_measure_device' region 'Si' carries an ACTIVE step_junction_v1 dopant attachment on a 2D DevSim device (123861 of 123861 mesh node(s) blocked). The canonical donor/acceptor/net concentrations are PRESERVED and remain di",
+  "solve_calls": 0,
+  "doping_writes": 0,
+  "writes": [],
+  "doping_models_absent_after": true,
+  "instrumented_names": [
+   "solve",
+   "node_model",
+   "set_node_values",
+   "edge_model"
+  ],
+  "net_doping_at_calls": 123861,
+  "verdict": "GATE_HELD"
+ },
+ "capture": {
+  "n_records": 123861,
+  "n_nodes": 123861,
+  "one_record_per_node_in_order": true,
+  "records_with_query_x_ne_node_x": 0,
+  "all_known": true,
+  "doping_sha256": {
+   "Donors": "1b68eef3aba4c5f840cf9a68752d9938ca4457009fb4034ec726b903efd4146f",
+   "Acceptors": "9a140a7d249ed55878513cf3bdccd55cee06e99aa25fb44e4592924f3c9c771e",
+   "NetDoping": "6e03dc2821de5d42b6a3deedf09919b0ad1bb0027606485bd3e4688c61deeb8f"
+  },
+  "direct_query_mismatch_nodes": 0
+ },
+ "doping_prechecks": {
+  "nodes_x_eq_0": 1601,
+  "netdoping_at_x0_values": [
+   0.0
+  ],
+  "donors_at_x0": [
+   1e+18
+  ],
+  "acceptors_at_x0": [
+   1e+18
+  ],
+  "representation": "J0 (node on the junction, NetDoping = ND - NA there)",
+  "sum_NodeVolume_x0_cm2": 1.56249985284376e-10,
+  "inventory_donor_cm-1": 264641080672.59766,
+  "inventory_acceptor_cm-1": 264641073681.32043,
+  "exact_donor_cm-1": 264562955679.9555,
+  "exact_acceptor_cm-1": 264562948688.67816,
+  "exact_basis": "N x (NodeVolume of the side + half the x=0 CV); the exact geometric area split of the x=0 CVs is also given",
+  "region_area_from_NodeVolume_cm2": 5.291259043686336e-07,
+  "donor_nodes": 61130,
+  "acceptor_nodes": 61130,
+  "zero_net_nodes": 1601
+ },
+ "mesh_quality": {
+  "n_nodes": 123861,
+  "n_triangles": 247000,
+  "classes": {
+   "acute": 0,
+   "right": 244000,
+   "obtuse": 3000
+  },
+  "min_angle_deg": 1.8473444636057181,
+  "max_angle_deg": 133.1528691874165,
+  "all_ccw": false,
+  "exact_delaunay_violations_interior": 200,
+  "boundary_gabriel_violations": 0,
+  "exact_positive_overlaps": 0,
+  "signed_edge_couple": {
+   "negative": 200,
+   "zero": 121800,
+   "positive": 248860,
+   "min_cm": -3.3146315048021876e-06
+  },
+  "signed_node_volume": {
+   "negative": 200,
+   "zero": 0,
+   "positive": 123661,
+   "min_cm2": -2.3315422358870936e-12
+  },
+  "x0_column_nodes": 1601,
+  "left_contact_nodes": 101,
+  "right_contact_nodes": 101,
+  "area_exact_um2": "7205758410581640625/144115188075855872",
+  "devsim_sum_NodeVolume_over_exact_area": 1.0582519545990987
+ },
+ "contact_x_um": {
+  "x_min_nodes": 101,
+  "x_max_nodes": 101,
+  "x_min_um": -4.999999655410647,
+  "x_max_um": 4.999999655410647
+ },
+ "mesh_spacing": {
+  "distinct_x": 261,
+  "min_dx_um": 0.003124992000000007,
+  "max_dx_um": 0.05000038100000026,
+  "min_dx_within_0.1um_of_junction": 0.003124992000000007
+ },
+ "devices_left": [],
+ "arrays_npz_sha256": "feac96436528b8ecf9f184c4a0fbb44ea25e427cb7467dfc35c7395009eab64f",
+ "arrays": [
+  "Acceptors",
+  "Donors",
+  "NetDoping",
+  "NodeVolume",
+  "elements",
+  "query_x_um",
+  "query_y_um",
+  "x",
+  "y"
+ ]
+}

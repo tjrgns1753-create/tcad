@@ -1,0 +1,203 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-24T14:25:29.023354+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e1-production-step-junction-001",
+  "profile": "e1_production_step_junction",
+  "params": {},
+  "note": "Batch 7H-E1. PLAN fixed in commit 628895894b6d16bd47970095dfae68f7413ca266 before this code and request."
+ },
+ "profile": "e1_production_step_junction",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.md",
+   "sha256": "080c8d8920fd19dedaf155d7dabcba8e7a67f60d3be9e1b1f354ac651e424377",
+   "bytes": 7704
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.sha256",
+   "sha256": "f4435b65a529615407f41db65763aed588280925cefac6014f5d8d9dac306bde",
+   "bytes": 142
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/run_e1.py",
+   "sha256": "78d179173e8323ae24e6e5972135502a8b546ba2df01c8ddba780b916cf4f569",
+   "bytes": 3288
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
+   "sha256": "1de514d5462281a8c09b4029ce60a7f565f12e55c6c05b50c1406ae27fddde7a",
+   "bytes": 2905
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/prod_build_e1.py",
+   "sha256": "afe83f8ee4107791aa6262012de35522016c333216941d43c296f0398c8d300c",
+   "bytes": 13909
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/shadow_e1.py",
+   "sha256": "ae3e0cfd23fdb948a2baf147f05b26972b41aa9474aa3db4e10edc4c67d64abc",
+   "bytes": 11923
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/analyze_e1.py",
+   "sha256": "a33af74238e5df7bcd7af1c8f92e3b294a5841a784e168b16af72726bb95063a",
+   "bytes": 8229
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d-sg-pn-mesh-validity/scripts/build_fixtures_7hd.py",
+   "sha256": "d1f30967a4bfe561a10fc11483598cf6fde34ce554224515e23d164c36cb00eb",
+   "bytes": 4650
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d-sg-pn-mesh-validity/scripts/meshes_7hd.py",
+   "sha256": "57c018bacb650e8ef434235c2808bb98913ff63a22d4bab9431b7d593d9628c8",
+   "bytes": 3662
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d-sg-pn-mesh-validity/scripts/sg_lib.py",
+   "sha256": "295490cb9e61c33732b051d14d45ecabb31b12118147abe3a4c091d58f28afbf",
+   "bytes": 10079
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-c-flux-discretization/scripts/meshes.py",
+   "sha256": "b636449f5ca4e160d6eef815c8f62a81e6c6922a9eb2cfeafa5186aa10749028",
+   "bytes": 7507
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-b-nodevolume-mechanism/scripts/formulas.py",
+   "sha256": "f1e443b9165e7bb9cdfeb424e093fa1b441529d18ed19c0aa8957fb503e37e37",
+   "bytes": 3509
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-exact-flip-certification/scripts/exact_flip.py",
+   "sha256": "208faf53c28ece53e8555f1bc0a8eb05663edd6f387bdef852def2cd43db443c",
+   "bytes": 8268
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-exact-flip-certification/scripts/exact_geometry.py",
+   "sha256": "04588f7eedad5f5f61e6ba586086629f8341e457f0c812550212cf4ae3536efb",
+   "bytes": 10073
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/data/fixed_d2.json",
+   "sha256": "8c334488583b9e9d99e41490fdb1c77731584ceb2906055c7cd4def4da43b7ee",
+   "bytes": 6469
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixtures_d1.json",
+   "sha256": "80d65d513ff9f923ff35cfe54cd937214b33cd47571797a005013e6e82d9f7f5",
+   "bytes": 4245634
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "d328e1fc5e78b9b178687d16d2afa5fa9f2c5092a066c9fb2c450b966e9a5176",
+   "bytes": 398690
+  }
+ ],
+ "request_sha256": "6cf6609fd9945dc5e9b6de08cf1e160363eb365f6f1d5794931941fd8e202d03",
+ "source": {
+  "github_sha": "7688b41fb1a16da62ccf9dbe69bf1fb29fc201a6",
+  "git_head": "7688b41fb1a16da62ccf9dbe69bf1fb29fc201a6",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36012608804",
+  "run_number": "5",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": true,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/run_e1.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-24T14:32:11.026588+00:00",
+ "duration_s": 402.003,
+ "outputs": [
+  {
+   "path": "e1_out/analysis_e1.json",
+   "bytes": 11542,
+   "sha256": "118ca30e6251034e61ad73a5e6b9950543d605661dfa9a89fa2f0f14bd27cd4d"
+  },
+  {
+   "path": "e1_out/prod.json",
+   "bytes": 5535,
+   "sha256": "70b4f8c47890681879613bbd881be42b031f5716abb0e01c58b5e7de1bffce73"
+  },
+  {
+   "path": "e1_out/shadow_S0.json",
+   "bytes": 7093,
+   "sha256": "584b5943e9b59d8886cc25ecbd21be27abb2d0a126475ecbaaf6c8e5dbe786f9"
+  },
+  {
+   "path": "e1_out/shadow_S12.json",
+   "bytes": 7003,
+   "sha256": "f56767abf473422ccf8b34895a3ed2e20527aa92cfd079869c1352062c9e1cb8"
+  },
+  {
+   "path": "e1_out/prod_arrays.npz",
+   "bytes": 1137796,
+   "sha256": "feac96436528b8ecf9f184c4a0fbb44ea25e427cb7467dfc35c7395009eab64f"
+  },
+  {
+   "path": "e1_out/shadow_S0_states.npz",
+   "bytes": 1567624,
+   "sha256": "85b120dcab7f87f8c3f09f2960dc06ca06b98c199da42b61056b1890ff8632fe"
+  },
+  {
+   "path": "e1_out/shadow_S12_states.npz",
+   "bytes": 1391890,
+   "sha256": "21c180919af4c120dd79914c3e836481a7ac15453ee17c25073cc3e06c1d2af4"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile. Production mesh is regenerated by ViennaPS from the GUI defaults in common_e1.py.",
+ "log": {
+  "file": "run.log",
+  "sha256": "019becd079b262a57b6fac91b117b709b155fe58abeb4722a9e644b5b7a8b9ab",
+  "bytes": 20316
+ },
+ "redactions": {}
+}
