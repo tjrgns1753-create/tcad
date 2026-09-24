@@ -1,0 +1,2637 @@
+[d4] 6 runs; PLAN sha256 3a53e29b24a7d29aee198a57f8e06f604d243d73babf1b1926ec11fc6fb32912 pinned 3a53e29b24a7d29aee198a57f8e06f604d243d73babf1b1926ec11fc6fb32912 match=True
+[d4]   D4_M1_D0_h0.005_P12
+[d4]   D4_M1_D0_h0.005_P4
+[d4]   D4_M1_D0_h0.00125_P12
+[d4]   D4_M1_D0_h0.00125_P4
+[d4]   D4_M2_D0_h0.00125_P12
+[d4]   D4_M2_D0_h0.00125_P4
+[d4] fixture gate: {"regeneration_exit_code": 0, "regeneration_s": 138.1, "sha256": "e2c018a62292c4f4f9e215a8aa525148c15a618bc50792c141318a6a81f3a6f2", "match": true}
+
+[d4] ===== D4_M1_D0_h0.005_P12 =====
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 8040 Triangles.
+Physical group name Si has 12281 Lines.
+Physical group name Si has 4242 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 20 Lines.
+Physical group name left has 21 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 20 Lines.
+Physical group name right has 21 Points.
+Device d has 4242 coordinates with max index 4241
+Region Si has 4242 nodes.
+Contact left in region Si with 21 nodes
+Contact right in region Si with 21 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN A
+number of equations 4242
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+    Region: "Si"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+      Equation: "PotentialEquation"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+Iteration: 4
+  Device: "d"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+    Region: "Si"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+      Equation: "PotentialEquation"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+    Region: "Si"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+      Equation: "PotentialEquation"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+Iteration: 10
+  Device: "d"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+    Region: "Si"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+      Equation: "PotentialEquation"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+### SOLVE-END A
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 4.55670e-15	AbsError: 2.18967e+01
+    Region: "Si"	RelError: 4.55670e-15	AbsError: 2.18967e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.56182e-15	AbsError: 1.06915e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.56182e-15	AbsError: 1.12052e+01
+      Equation: "PotentialEquation"	RelError: 1.43307e-15	AbsError: 4.04310e-17
+### SOLVE-END B0
+### SOLVE-BEGIN C+0.025
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 1.80227e+00	AbsError: 5.57271e+15
+    Region: "Si"	RelError: 1.80227e+00	AbsError: 5.57271e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.76875e-01	AbsError: 2.78636e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.76814e-01	AbsError: 2.78636e+15
+      Equation: "PotentialEquation"	RelError: 8.48578e-01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.84100e-01	AbsError: 1.77067e+14
+    Region: "Si"	RelError: 4.84100e-01	AbsError: 1.77067e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.41952e-01	AbsError: 8.85335e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.41909e-01	AbsError: 8.85335e+13
+      Equation: "PotentialEquation"	RelError: 2.40046e-04	AbsError: 6.00910e-05
+Iteration: 2
+  Device: "d"	RelError: 8.21512e-04	AbsError: 3.07195e+10
+    Region: "Si"	RelError: 8.21512e-04	AbsError: 3.07195e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.10745e-04	AbsError: 1.53598e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.10753e-04	AbsError: 1.53598e+10
+      Equation: "PotentialEquation"	RelError: 1.39439e-08	AbsError: 4.88028e-09
+Iteration: 3
+  Device: "d"	RelError: 1.05117e-10	AbsError: 5.25777e+02
+    Region: "Si"	RelError: 1.05117e-10	AbsError: 5.25777e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.25557e-11	AbsError: 2.57244e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.25599e-11	AbsError: 2.68533e+02
+      Equation: "PotentialEquation"	RelError: 1.46819e-15	AbsError: 4.24388e-17
+Iteration: 4
+  Device: "d"	RelError: 3.08474e-15	AbsError: 1.24887e+01
+    Region: "Si"	RelError: 3.08474e-15	AbsError: 1.24887e+01
+      Equation: "ElectronContinuityEquation"	RelError: 8.54158e-16	AbsError: 5.27106e+00
+      Equation: "HoleContinuityEquation"	RelError: 8.54158e-16	AbsError: 7.21765e+00
+      Equation: "PotentialEquation"	RelError: 1.37643e-15	AbsError: 2.21117e-17
+### SOLVE-END C+0.025
+### SOLVE-BEGIN C+0.050
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 6.59988e+00	AbsError: 5.67889e+15
+    Region: "Si"	RelError: 6.59988e+00	AbsError: 5.67889e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.82855e-01	AbsError: 2.83945e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.82817e-01	AbsError: 2.83945e+15
+      Equation: "PotentialEquation"	RelError: 5.63421e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.94072e-01	AbsError: 1.83669e+14
+    Region: "Si"	RelError: 4.94072e-01	AbsError: 1.83669e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.46211e-01	AbsError: 9.18347e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.46185e-01	AbsError: 9.18347e+13
+      Equation: "PotentialEquation"	RelError: 1.67574e-03	AbsError: 6.16055e-05
+Iteration: 2
+  Device: "d"	RelError: 8.42167e-04	AbsError: 3.25998e+10
+    Region: "Si"	RelError: 8.42167e-04	AbsError: 3.25998e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.21029e-04	AbsError: 1.62999e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.21034e-04	AbsError: 1.62999e+10
+      Equation: "PotentialEquation"	RelError: 1.04346e-07	AbsError: 5.14675e-09
+Iteration: 3
+  Device: "d"	RelError: 1.14703e-10	AbsError: 5.45764e+02
+    Region: "Si"	RelError: 1.14703e-10	AbsError: 5.45764e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.73622e-11	AbsError: 2.73267e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.73387e-11	AbsError: 2.72496e+02
+      Equation: "PotentialEquation"	RelError: 1.69763e-15	AbsError: 4.66706e-17
+Iteration: 4
+  Device: "d"	RelError: 5.90818e-15	AbsError: 7.50162e+00
+    Region: "Si"	RelError: 5.90818e-15	AbsError: 7.50162e+00
+      Equation: "ElectronContinuityEquation"	RelError: 5.50991e-16	AbsError: 3.33270e+00
+      Equation: "HoleContinuityEquation"	RelError: 5.50991e-16	AbsError: 4.16892e+00
+      Equation: "PotentialEquation"	RelError: 4.80620e-15	AbsError: 1.42636e-17
+### SOLVE-END C+0.050
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+### SOLVE-BEGIN C+0.075
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 2.18879e+00	AbsError: 5.76634e+15
+    Region: "Si"	RelError: 2.18879e+00	AbsError: 5.76634e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.86543e-01	AbsError: 2.88317e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.86520e-01	AbsError: 2.88317e+15
+      Equation: "PotentialEquation"	RelError: 1.21572e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.97406e-01	AbsError: 1.89900e+14
+    Region: "Si"	RelError: 4.97406e-01	AbsError: 1.89900e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.48521e-01	AbsError: 9.49499e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.48505e-01	AbsError: 9.49499e+13
+      Equation: "PotentialEquation"	RelError: 3.79470e-04	AbsError: 6.30528e-05
+Iteration: 2
+  Device: "d"	RelError: 8.61400e-04	AbsError: 3.37336e+10
+    Region: "Si"	RelError: 8.61400e-04	AbsError: 3.37336e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.30685e-04	AbsError: 1.68668e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.30690e-04	AbsError: 1.68668e+10
+      Equation: "PotentialEquation"	RelError: 2.53859e-08	AbsError: 5.45130e-09
+Iteration: 3
+  Device: "d"	RelError: 1.25789e-10	AbsError: 6.07343e+02
+    Region: "Si"	RelError: 1.25789e-10	AbsError: 6.07343e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.29044e-11	AbsError: 3.09308e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.28823e-11	AbsError: 2.98035e+02
+      Equation: "PotentialEquation"	RelError: 2.43381e-15	AbsError: 5.25367e-17
+Iteration: 4
+  Device: "d"	RelError: 2.00419e-15	AbsError: 8.73675e+00
+    Region: "Si"	RelError: 2.00419e-15	AbsError: 8.73675e+00
+      Equation: "ElectronContinuityEquation"	RelError: 5.21448e-16	AbsError: 4.39771e+00
+      Equation: "HoleContinuityEquation"	RelError: 5.21448e-16	AbsError: 4.33904e+00
+      Equation: "PotentialEquation"	RelError: 9.61294e-16	AbsError: 1.34988e-17
+### SOLVE-END C+0.075
+### SOLVE-BEGIN C+0.100
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 1.53465e+00	AbsError: 5.87400e+15
+    Region: "Si"	RelError: 1.53465e+00	AbsError: 5.87400e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.88581e-01	AbsError: 2.93700e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.88568e-01	AbsError: 2.93700e+15
+      Equation: "PotentialEquation"	RelError: 5.57503e-01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.99869e-01	AbsError: 1.98136e+14
+    Region: "Si"	RelError: 4.99869e-01	AbsError: 1.98136e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.49684e-01	AbsError: 9.90680e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.49672e-01	AbsError: 9.90680e+13
+      Equation: "PotentialEquation"	RelError: 5.12932e-04	AbsError: 6.47944e-05
+Iteration: 2
+  Device: "d"	RelError: 8.84093e-04	AbsError: 3.61805e+10
+    Region: "Si"	RelError: 8.84093e-04	AbsError: 3.61805e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.42026e-04	AbsError: 1.80902e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.42030e-04	AbsError: 1.80902e+10
+      Equation: "PotentialEquation"	RelError: 3.69293e-08	AbsError: 5.77603e-09
+Iteration: 3
+  Device: "d"	RelError: 1.36877e-10	AbsError: 6.56444e+02
+    Region: "Si"	RelError: 1.36877e-10	AbsError: 6.56444e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.84494e-11	AbsError: 3.27680e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.84271e-11	AbsError: 3.28764e+02
+      Equation: "PotentialEquation"	RelError: 2.16947e-16	AbsError: 5.82763e-17
+Iteration: 4
+  Device: "d"	RelError: 2.01113e-15	AbsError: 1.09774e+01
+    Region: "Si"	RelError: 2.01113e-15	AbsError: 1.09774e+01
+      Equation: "ElectronContinuityEquation"	RelError: 6.63510e-16	AbsError: 5.74057e+00
+      Equation: "HoleContinuityEquation"	RelError: 6.63511e-16	AbsError: 5.23680e+00
+      Equation: "PotentialEquation"	RelError: 6.84108e-16	AbsError: 1.71764e-17
+### SOLVE-END C+0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 8040 Triangles.
+Physical group name Si has 12281 Lines.
+Physical group name Si has 4242 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 20 Lines.
+Physical group name left has 21 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 20 Lines.
+Physical group name right has 21 Points.
+Device d has 4242 coordinates with max index 4241
+Region Si has 4242 nodes.
+Contact left in region Si with 21 nodes
+Contact right in region Si with 21 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN Arev
+number of equations 4242
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+    Region: "Si"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+      Equation: "PotentialEquation"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+Iteration: 4
+  Device: "d"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+    Region: "Si"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+      Equation: "PotentialEquation"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+    Region: "Si"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+      Equation: "PotentialEquation"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+Iteration: 10
+  Device: "d"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+    Region: "Si"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+      Equation: "PotentialEquation"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+### SOLVE-END Arev
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0rev
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 4.55670e-15	AbsError: 2.18967e+01
+    Region: "Si"	RelError: 4.55670e-15	AbsError: 2.18967e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.56182e-15	AbsError: 1.06915e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.56182e-15	AbsError: 1.12052e+01
+      Equation: "PotentialEquation"	RelError: 1.43307e-15	AbsError: 4.04310e-17
+### SOLVE-END B0rev
+### SOLVE-BEGIN C-0.025
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 2.13388e+01	AbsError: 5.57271e+15
+    Region: "Si"	RelError: 2.13388e+01	AbsError: 5.57271e+15
+      Equation: "ElectronContinuityEquation"	RelError: 1.03108e+01	AbsError: 2.78636e+15
+      Equation: "HoleContinuityEquation"	RelError: 1.02825e+01	AbsError: 2.78636e+15
+      Equation: "PotentialEquation"	RelError: 7.45426e-01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.56774e+00	AbsError: 1.72168e+14
+    Region: "Si"	RelError: 1.56774e+00	AbsError: 1.72168e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.83992e-01	AbsError: 8.60841e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.83523e-01	AbsError: 8.60841e+13
+      Equation: "PotentialEquation"	RelError: 2.19516e-04	AbsError: 5.91023e-05
+Iteration: 2
+  Device: "d"	RelError: 1.77377e-03	AbsError: 2.97571e+10
+    Region: "Si"	RelError: 1.77377e-03	AbsError: 2.97571e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.86828e-04	AbsError: 1.48786e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.86926e-04	AbsError: 1.48786e+10
+      Equation: "PotentialEquation"	RelError: 1.18161e-08	AbsError: 4.64780e-09
+Iteration: 3
+  Device: "d"	RelError: 2.58266e-10	AbsError: 4.65353e+02
+    Region: "Si"	RelError: 2.58266e-10	AbsError: 4.65353e+02
+      Equation: "ElectronContinuityEquation"	RelError: 1.29224e-10	AbsError: 2.31410e+02
+      Equation: "HoleContinuityEquation"	RelError: 1.29041e-10	AbsError: 2.33942e+02
+      Equation: "PotentialEquation"	RelError: 7.38023e-16	AbsError: 3.85192e-17
+Iteration: 4
+  Device: "d"	RelError: 3.00050e-15	AbsError: 7.61792e+00
+    Region: "Si"	RelError: 3.00050e-15	AbsError: 7.61792e+00
+      Equation: "ElectronContinuityEquation"	RelError: 8.33034e-16	AbsError: 4.94456e+00
+      Equation: "HoleContinuityEquation"	RelError: 8.33033e-16	AbsError: 2.67336e+00
+      Equation: "PotentialEquation"	RelError: 1.33443e-15	AbsError: 2.15649e-17
+### SOLVE-END C-0.025
+### SOLVE-BEGIN C-0.050
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 1.77443e+01	AbsError: 5.50119e+15
+    Region: "Si"	RelError: 1.77443e+01	AbsError: 5.50119e+15
+      Equation: "ElectronContinuityEquation"	RelError: 7.41404e+00	AbsError: 2.75060e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.39289e+00	AbsError: 2.75060e+15
+      Equation: "PotentialEquation"	RelError: 2.93740e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.43876e+00	AbsError: 1.67697e+14
+    Region: "Si"	RelError: 1.43876e+00	AbsError: 1.67697e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.19300e-01	AbsError: 8.38487e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.18636e-01	AbsError: 8.38487e+13
+      Equation: "PotentialEquation"	RelError: 8.25556e-04	AbsError: 5.78258e-05
+Iteration: 2
+  Device: "d"	RelError: 1.73273e-03	AbsError: 2.84904e+10
+    Region: "Si"	RelError: 1.73273e-03	AbsError: 2.84904e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.66232e-04	AbsError: 1.42452e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.66461e-04	AbsError: 1.42452e+10
+      Equation: "PotentialEquation"	RelError: 4.16172e-08	AbsError: 4.42863e-09
+Iteration: 3
+  Device: "d"	RelError: 1.78656e-10	AbsError: 4.48796e+02
+    Region: "Si"	RelError: 1.78656e-10	AbsError: 4.48796e+02
+      Equation: "ElectronContinuityEquation"	RelError: 8.94017e-11	AbsError: 2.22032e+02
+      Equation: "HoleContinuityEquation"	RelError: 8.92487e-11	AbsError: 2.26764e+02
+      Equation: "PotentialEquation"	RelError: 5.21527e-15	AbsError: 3.52872e-17
+Iteration: 4
+  Device: "d"	RelError: 5.23817e-15	AbsError: 1.45676e+01
+    Region: "Si"	RelError: 5.23817e-15	AbsError: 1.45676e+01
+      Equation: "ElectronContinuityEquation"	RelError: 7.88047e-16	AbsError: 1.05250e+01
+      Equation: "HoleContinuityEquation"	RelError: 7.88043e-16	AbsError: 4.04257e+00
+      Equation: "PotentialEquation"	RelError: 3.66208e-15	AbsError: 2.04003e-17
+### SOLVE-END C-0.050
+### SOLVE-BEGIN C-0.075
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 1.24715e+01	AbsError: 5.40290e+15
+    Region: "Si"	RelError: 1.24715e+01	AbsError: 5.40290e+15
+      Equation: "ElectronContinuityEquation"	RelError: 5.48652e+00	AbsError: 2.70145e+15
+      Equation: "HoleContinuityEquation"	RelError: 5.46906e+00	AbsError: 2.70145e+15
+      Equation: "PotentialEquation"	RelError: 1.51597e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.29670e+00	AbsError: 1.61410e+14
+    Region: "Si"	RelError: 1.29670e+00	AbsError: 1.61410e+14
+      Equation: "ElectronContinuityEquation"	RelError: 6.48535e-01	AbsError: 8.07050e+13
+      Equation: "HoleContinuityEquation"	RelError: 6.47758e-01	AbsError: 8.07050e+13
+      Equation: "PotentialEquation"	RelError: 4.06464e-04	AbsError: 5.64913e-05
+Iteration: 2
+  Device: "d"	RelError: 1.67998e-03	AbsError: 2.68311e+10
+    Region: "Si"	RelError: 1.67998e-03	AbsError: 2.68311e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.39698e-04	AbsError: 1.34155e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.40259e-04	AbsError: 1.34155e+10
+      Equation: "PotentialEquation"	RelError: 1.92250e-08	AbsError: 4.20142e-09
+Iteration: 3
+  Device: "d"	RelError: 1.30328e-10	AbsError: 4.13483e+02
+    Region: "Si"	RelError: 1.30328e-10	AbsError: 4.13483e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.50214e-11	AbsError: 2.04850e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.53053e-11	AbsError: 2.08634e+02
+      Equation: "PotentialEquation"	RelError: 1.83790e-15	AbsError: 3.14412e-17
+Iteration: 4
+  Device: "d"	RelError: 3.40745e-15	AbsError: 1.24308e+01
+    Region: "Si"	RelError: 3.40745e-15	AbsError: 1.24308e+01
+      Equation: "ElectronContinuityEquation"	RelError: 7.15281e-16	AbsError: 6.16949e+00
+      Equation: "HoleContinuityEquation"	RelError: 7.15270e-16	AbsError: 6.26135e+00
+      Equation: "PotentialEquation"	RelError: 1.97690e-15	AbsError: 1.85166e-17
+### SOLVE-END C-0.075
+### SOLVE-BEGIN C-0.100
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 9.10599e+00	AbsError: 5.33673e+15
+    Region: "Si"	RelError: 9.10599e+00	AbsError: 5.33673e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.25948e+00	AbsError: 2.66836e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.24394e+00	AbsError: 2.66836e+15
+      Equation: "PotentialEquation"	RelError: 6.02568e-01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.16488e+00	AbsError: 1.57098e+14
+    Region: "Si"	RelError: 1.16488e+00	AbsError: 1.57098e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.82830e-01	AbsError: 7.85491e+13
+      Equation: "HoleContinuityEquation"	RelError: 5.81792e-01	AbsError: 7.85491e+13
+      Equation: "PotentialEquation"	RelError: 2.59428e-04	AbsError: 5.52548e-05
+Iteration: 2
+  Device: "d"	RelError: 1.60867e-03	AbsError: 2.59952e+10
+    Region: "Si"	RelError: 1.60867e-03	AbsError: 2.59952e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.03641e-04	AbsError: 1.29976e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.05017e-04	AbsError: 1.29976e+10
+      Equation: "PotentialEquation"	RelError: 1.15324e-08	AbsError: 4.00369e-09
+Iteration: 3
+  Device: "d"	RelError: 9.83493e-11	AbsError: 3.76322e+02
+    Region: "Si"	RelError: 9.83493e-11	AbsError: 3.76322e+02
+      Equation: "ElectronContinuityEquation"	RelError: 4.88764e-11	AbsError: 1.88870e+02
+      Equation: "HoleContinuityEquation"	RelError: 4.94726e-11	AbsError: 1.87453e+02
+      Equation: "PotentialEquation"	RelError: 3.22495e-16	AbsError: 2.83729e-17
+### SOLVE-END C-0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+
+[worker_d4] wrote D4_M1_D0_h0.005_P12.json error=False
+
+[d4] D4_M1_D0_h0.005_P12 completed=True in 24.8 s
+
+[d4] ===== D4_M1_D0_h0.005_P4 =====
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 8040 Triangles.
+Physical group name Si has 12281 Lines.
+Physical group name Si has 4242 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 20 Lines.
+Physical group name left has 21 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 20 Lines.
+Physical group name right has 21 Points.
+Device d has 4242 coordinates with max index 4241
+Region Si has 4242 nodes.
+Contact left in region Si with 21 nodes
+Contact right in region Si with 21 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN A
+number of equations 4242
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+    Region: "Si"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+      Equation: "PotentialEquation"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+Iteration: 4
+  Device: "d"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+    Region: "Si"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+      Equation: "PotentialEquation"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+    Region: "Si"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+      Equation: "PotentialEquation"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+Iteration: 10
+  Device: "d"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+    Region: "Si"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+      Equation: "PotentialEquation"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+### SOLVE-END A
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 8.26601e-21	AbsError: 8.01727e-04
+    Region: "Si"	RelError: 8.26601e-21	AbsError: 8.01727e-04
+      Equation: "ElectronContinuityEquation"	RelError: 4.00865e-21	AbsError: 4.00865e-04
+      Equation: "HoleContinuityEquation"	RelError: 4.00865e-21	AbsError: 4.00861e-04
+      Equation: "PotentialEquation"	RelError: 2.48705e-22	AbsError: 1.03773e-22
+### SOLVE-END B0
+### SOLVE-BEGIN C+0.025
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 1.80227e+00	AbsError: 5.57271e+15
+    Region: "Si"	RelError: 1.80227e+00	AbsError: 5.57271e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.76875e-01	AbsError: 2.78636e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.76814e-01	AbsError: 2.78636e+15
+      Equation: "PotentialEquation"	RelError: 8.48578e-01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.84100e-01	AbsError: 1.77067e+14
+    Region: "Si"	RelError: 4.84100e-01	AbsError: 1.77067e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.41952e-01	AbsError: 8.85335e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.41909e-01	AbsError: 8.85335e+13
+      Equation: "PotentialEquation"	RelError: 2.40046e-04	AbsError: 6.00910e-05
+Iteration: 2
+  Device: "d"	RelError: 8.21512e-04	AbsError: 3.07195e+10
+    Region: "Si"	RelError: 8.21512e-04	AbsError: 3.07195e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.10745e-04	AbsError: 1.53598e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.10753e-04	AbsError: 1.53598e+10
+      Equation: "PotentialEquation"	RelError: 1.39438e-08	AbsError: 4.88028e-09
+Iteration: 3
+  Device: "d"	RelError: 1.05116e-10	AbsError: 5.14852e+02
+    Region: "Si"	RelError: 1.05116e-10	AbsError: 5.14852e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.25558e-11	AbsError: 2.57433e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.25598e-11	AbsError: 2.57420e+02
+      Equation: "PotentialEquation"	RelError: 1.07351e-16	AbsError: 4.17266e-17
+Iteration: 4
+  Device: "d"	RelError: 7.43319e-24	AbsError: 2.70822e-08
+    Region: "Si"	RelError: 7.43319e-24	AbsError: 2.70822e-08
+      Equation: "ElectronContinuityEquation"	RelError: 3.30429e-24	AbsError: 1.21086e-08
+      Equation: "HoleContinuityEquation"	RelError: 2.94763e-24	AbsError: 1.49736e-08
+      Equation: "PotentialEquation"	RelError: 1.18127e-24	AbsError: 5.60061e-26
+### SOLVE-END C+0.025
+### SOLVE-BEGIN C+0.050
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 6.59988e+00	AbsError: 5.67889e+15
+    Region: "Si"	RelError: 6.59988e+00	AbsError: 5.67889e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.82855e-01	AbsError: 2.83945e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.82817e-01	AbsError: 2.83945e+15
+      Equation: "PotentialEquation"	RelError: 5.63421e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.94072e-01	AbsError: 1.83669e+14
+    Region: "Si"	RelError: 4.94072e-01	AbsError: 1.83669e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.46211e-01	AbsError: 9.18347e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.46185e-01	AbsError: 9.18347e+13
+      Equation: "PotentialEquation"	RelError: 1.67574e-03	AbsError: 6.16055e-05
+Iteration: 2
+  Device: "d"	RelError: 8.42167e-04	AbsError: 3.25998e+10
+    Region: "Si"	RelError: 8.42167e-04	AbsError: 3.25998e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.21029e-04	AbsError: 1.62999e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.21034e-04	AbsError: 1.62999e+10
+      Equation: "PotentialEquation"	RelError: 1.04346e-07	AbsError: 5.14675e-09
+Iteration: 3
+  Device: "d"	RelError: 1.14701e-10	AbsError: 5.36551e+02
+    Region: "Si"	RelError: 1.14701e-10	AbsError: 5.36551e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.73622e-11	AbsError: 2.68260e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.73388e-11	AbsError: 2.68291e+02
+      Equation: "PotentialEquation"	RelError: 1.27591e-16	AbsError: 4.63569e-17
+Iteration: 4
+  Device: "d"	RelError: 3.21464e-23	AbsError: 2.37115e-08
+    Region: "Si"	RelError: 3.21464e-23	AbsError: 2.37115e-08
+      Equation: "ElectronContinuityEquation"	RelError: 2.24195e-24	AbsError: 1.10635e-08
+      Equation: "HoleContinuityEquation"	RelError: 1.13860e-24	AbsError: 1.26480e-08
+      Equation: "PotentialEquation"	RelError: 2.87658e-23	AbsError: 6.81377e-26
+### SOLVE-END C+0.050
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+### SOLVE-BEGIN C+0.075
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 2.18879e+00	AbsError: 5.76634e+15
+    Region: "Si"	RelError: 2.18879e+00	AbsError: 5.76634e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.86543e-01	AbsError: 2.88317e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.86520e-01	AbsError: 2.88317e+15
+      Equation: "PotentialEquation"	RelError: 1.21572e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.97406e-01	AbsError: 1.89900e+14
+    Region: "Si"	RelError: 4.97406e-01	AbsError: 1.89900e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.48521e-01	AbsError: 9.49499e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.48505e-01	AbsError: 9.49499e+13
+      Equation: "PotentialEquation"	RelError: 3.79470e-04	AbsError: 6.30528e-05
+Iteration: 2
+  Device: "d"	RelError: 8.61400e-04	AbsError: 3.37336e+10
+    Region: "Si"	RelError: 8.61400e-04	AbsError: 3.37336e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.30685e-04	AbsError: 1.68668e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.30690e-04	AbsError: 1.68668e+10
+      Equation: "PotentialEquation"	RelError: 2.53859e-08	AbsError: 5.45130e-09
+Iteration: 3
+  Device: "d"	RelError: 1.25787e-10	AbsError: 6.01039e+02
+    Region: "Si"	RelError: 1.25787e-10	AbsError: 6.01039e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.29045e-11	AbsError: 3.00520e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.28823e-11	AbsError: 3.00519e+02
+      Equation: "PotentialEquation"	RelError: 1.53432e-16	AbsError: 5.19231e-17
+Iteration: 4
+  Device: "d"	RelError: 4.50999e-24	AbsError: 2.28475e-08
+    Region: "Si"	RelError: 4.50999e-24	AbsError: 2.28475e-08
+      Equation: "ElectronContinuityEquation"	RelError: 2.05019e-24	AbsError: 1.18824e-08
+      Equation: "HoleContinuityEquation"	RelError: 1.19630e-24	AbsError: 1.09650e-08
+      Equation: "PotentialEquation"	RelError: 1.26350e-24	AbsError: 2.73276e-26
+### SOLVE-END C+0.075
+### SOLVE-BEGIN C+0.100
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 1.53465e+00	AbsError: 5.87400e+15
+    Region: "Si"	RelError: 1.53465e+00	AbsError: 5.87400e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.88581e-01	AbsError: 2.93700e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.88568e-01	AbsError: 2.93700e+15
+      Equation: "PotentialEquation"	RelError: 5.57503e-01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.99869e-01	AbsError: 1.98136e+14
+    Region: "Si"	RelError: 4.99869e-01	AbsError: 1.98136e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.49684e-01	AbsError: 9.90680e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.49672e-01	AbsError: 9.90680e+13
+      Equation: "PotentialEquation"	RelError: 5.12932e-04	AbsError: 6.47944e-05
+Iteration: 2
+  Device: "d"	RelError: 8.84093e-04	AbsError: 3.61805e+10
+    Region: "Si"	RelError: 8.84093e-04	AbsError: 3.61805e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.42026e-04	AbsError: 1.80902e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.42030e-04	AbsError: 1.80902e+10
+      Equation: "PotentialEquation"	RelError: 3.69293e-08	AbsError: 5.77603e-09
+Iteration: 3
+  Device: "d"	RelError: 1.36877e-10	AbsError: 6.48032e+02
+    Region: "Si"	RelError: 1.36877e-10	AbsError: 6.48032e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.84494e-11	AbsError: 3.24018e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.84271e-11	AbsError: 3.24014e+02
+      Equation: "PotentialEquation"	RelError: 1.84782e-16	AbsError: 5.81083e-17
+Iteration: 4
+  Device: "d"	RelError: 5.44399e-24	AbsError: 3.22000e-08
+    Region: "Si"	RelError: 5.44399e-24	AbsError: 3.22000e-08
+      Equation: "ElectronContinuityEquation"	RelError: 1.25021e-24	AbsError: 1.68418e-08
+      Equation: "HoleContinuityEquation"	RelError: 2.47472e-24	AbsError: 1.53582e-08
+      Equation: "PotentialEquation"	RelError: 1.71905e-24	AbsError: 5.65183e-26
+### SOLVE-END C+0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 8040 Triangles.
+Physical group name Si has 12281 Lines.
+Physical group name Si has 4242 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 20 Lines.
+Physical group name left has 21 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 20 Lines.
+Physical group name right has 21 Points.
+Device d has 4242 coordinates with max index 4241
+Region Si has 4242 nodes.
+Contact left in region Si with 21 nodes
+Contact right in region Si with 21 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN Arev
+number of equations 4242
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37949e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37193e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14428e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+    Region: "Si"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+      Equation: "PotentialEquation"	RelError: 5.26493e-01	AbsError: 6.12227e-02
+Iteration: 4
+  Device: "d"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 8.37069e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 2.90437e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+    Region: "Si"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+      Equation: "PotentialEquation"	RelError: 5.20424e-02	AbsError: 2.17306e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+    Region: "Si"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+      Equation: "PotentialEquation"	RelError: 1.63403e-06	AbsError: 6.81804e-07
+Iteration: 10
+  Device: "d"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+    Region: "Si"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+      Equation: "PotentialEquation"	RelError: 8.20808e-12	AbsError: 3.42484e-12
+### SOLVE-END Arev
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0rev
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 8.26601e-21	AbsError: 8.01727e-04
+    Region: "Si"	RelError: 8.26601e-21	AbsError: 8.01727e-04
+      Equation: "ElectronContinuityEquation"	RelError: 4.00865e-21	AbsError: 4.00865e-04
+      Equation: "HoleContinuityEquation"	RelError: 4.00865e-21	AbsError: 4.00861e-04
+      Equation: "PotentialEquation"	RelError: 2.48705e-22	AbsError: 1.03773e-22
+### SOLVE-END B0rev
+### SOLVE-BEGIN C-0.025
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 2.13388e+01	AbsError: 5.57271e+15
+    Region: "Si"	RelError: 2.13388e+01	AbsError: 5.57271e+15
+      Equation: "ElectronContinuityEquation"	RelError: 1.03108e+01	AbsError: 2.78636e+15
+      Equation: "HoleContinuityEquation"	RelError: 1.02825e+01	AbsError: 2.78636e+15
+      Equation: "PotentialEquation"	RelError: 7.45426e-01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.56774e+00	AbsError: 1.72168e+14
+    Region: "Si"	RelError: 1.56774e+00	AbsError: 1.72168e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.83992e-01	AbsError: 8.60841e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.83523e-01	AbsError: 8.60841e+13
+      Equation: "PotentialEquation"	RelError: 2.19516e-04	AbsError: 5.91023e-05
+Iteration: 2
+  Device: "d"	RelError: 1.77377e-03	AbsError: 2.97571e+10
+    Region: "Si"	RelError: 1.77377e-03	AbsError: 2.97571e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.86828e-04	AbsError: 1.48786e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.86926e-04	AbsError: 1.48786e+10
+      Equation: "PotentialEquation"	RelError: 1.18161e-08	AbsError: 4.64780e-09
+Iteration: 3
+  Device: "d"	RelError: 2.58265e-10	AbsError: 4.63158e+02
+    Region: "Si"	RelError: 2.58265e-10	AbsError: 4.63158e+02
+      Equation: "ElectronContinuityEquation"	RelError: 1.29224e-10	AbsError: 2.31579e+02
+      Equation: "HoleContinuityEquation"	RelError: 1.29041e-10	AbsError: 2.31579e+02
+      Equation: "PotentialEquation"	RelError: 9.19156e-17	AbsError: 3.79575e-17
+Iteration: 4
+  Device: "d"	RelError: 5.37626e-24	AbsError: 9.31466e-13
+    Region: "Si"	RelError: 5.37626e-24	AbsError: 9.31466e-13
+      Equation: "ElectronContinuityEquation"	RelError: 1.14161e-24	AbsError: 2.15015e-13
+      Equation: "HoleContinuityEquation"	RelError: 4.23440e-24	AbsError: 7.16451e-13
+      Equation: "PotentialEquation"	RelError: 2.37649e-28	AbsError: 4.12469e-30
+### SOLVE-END C-0.025
+### SOLVE-BEGIN C-0.050
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 1.77443e+01	AbsError: 5.50119e+15
+    Region: "Si"	RelError: 1.77443e+01	AbsError: 5.50119e+15
+      Equation: "ElectronContinuityEquation"	RelError: 7.41404e+00	AbsError: 2.75060e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.39289e+00	AbsError: 2.75060e+15
+      Equation: "PotentialEquation"	RelError: 2.93740e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.43876e+00	AbsError: 1.67697e+14
+    Region: "Si"	RelError: 1.43876e+00	AbsError: 1.67697e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.19300e-01	AbsError: 8.38487e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.18636e-01	AbsError: 8.38487e+13
+      Equation: "PotentialEquation"	RelError: 8.25556e-04	AbsError: 5.78258e-05
+Iteration: 2
+  Device: "d"	RelError: 1.73273e-03	AbsError: 2.84904e+10
+    Region: "Si"	RelError: 1.73273e-03	AbsError: 2.84904e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.66232e-04	AbsError: 1.42452e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.66461e-04	AbsError: 1.42452e+10
+      Equation: "PotentialEquation"	RelError: 4.16172e-08	AbsError: 4.42863e-09
+Iteration: 3
+  Device: "d"	RelError: 1.78650e-10	AbsError: 4.44853e+02
+    Region: "Si"	RelError: 1.78650e-10	AbsError: 4.44853e+02
+      Equation: "ElectronContinuityEquation"	RelError: 8.94017e-11	AbsError: 2.22426e+02
+      Equation: "HoleContinuityEquation"	RelError: 8.92487e-11	AbsError: 2.22426e+02
+      Equation: "PotentialEquation"	RelError: 8.34188e-17	AbsError: 3.44176e-17
+Iteration: 4
+  Device: "d"	RelError: 7.21577e-25	AbsError: 1.34063e-12
+    Region: "Si"	RelError: 7.21577e-25	AbsError: 1.34063e-12
+      Equation: "ElectronContinuityEquation"	RelError: 1.67945e-25	AbsError: 6.53577e-13
+      Equation: "HoleContinuityEquation"	RelError: 5.53528e-25	AbsError: 6.87050e-13
+      Equation: "PotentialEquation"	RelError: 1.03646e-28	AbsError: 1.55026e-30
+### SOLVE-END C-0.050
+### SOLVE-BEGIN C-0.075
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 1.24715e+01	AbsError: 5.40290e+15
+    Region: "Si"	RelError: 1.24715e+01	AbsError: 5.40290e+15
+      Equation: "ElectronContinuityEquation"	RelError: 5.48652e+00	AbsError: 2.70145e+15
+      Equation: "HoleContinuityEquation"	RelError: 5.46906e+00	AbsError: 2.70145e+15
+      Equation: "PotentialEquation"	RelError: 1.51597e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.29670e+00	AbsError: 1.61410e+14
+    Region: "Si"	RelError: 1.29670e+00	AbsError: 1.61410e+14
+      Equation: "ElectronContinuityEquation"	RelError: 6.48535e-01	AbsError: 8.07050e+13
+      Equation: "HoleContinuityEquation"	RelError: 6.47758e-01	AbsError: 8.07050e+13
+      Equation: "PotentialEquation"	RelError: 4.06464e-04	AbsError: 5.64913e-05
+Iteration: 2
+  Device: "d"	RelError: 1.67998e-03	AbsError: 2.68311e+10
+    Region: "Si"	RelError: 1.67998e-03	AbsError: 2.68311e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.39698e-04	AbsError: 1.34155e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.40259e-04	AbsError: 1.34155e+10
+      Equation: "PotentialEquation"	RelError: 1.92250e-08	AbsError: 4.20142e-09
+Iteration: 3
+  Device: "d"	RelError: 1.30327e-10	AbsError: 4.08005e+02
+    Region: "Si"	RelError: 1.30327e-10	AbsError: 4.08005e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.50213e-11	AbsError: 2.04002e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.53052e-11	AbsError: 2.04002e+02
+      Equation: "PotentialEquation"	RelError: 7.54845e-17	AbsError: 3.11142e-17
+Iteration: 4
+  Device: "d"	RelError: 6.05411e-25	AbsError: 1.20746e-12
+    Region: "Si"	RelError: 6.05411e-25	AbsError: 1.20746e-12
+      Equation: "ElectronContinuityEquation"	RelError: 2.99802e-25	AbsError: 6.27186e-13
+      Equation: "HoleContinuityEquation"	RelError: 3.05486e-25	AbsError: 5.80269e-13
+      Equation: "PotentialEquation"	RelError: 1.23132e-28	AbsError: 2.48806e-30
+### SOLVE-END C-0.075
+### SOLVE-BEGIN C-0.100
+number of equations 12726
+Iteration: 0
+  Device: "d"	RelError: 9.10599e+00	AbsError: 5.33673e+15
+    Region: "Si"	RelError: 9.10599e+00	AbsError: 5.33673e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.25948e+00	AbsError: 2.66836e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.24394e+00	AbsError: 2.66836e+15
+      Equation: "PotentialEquation"	RelError: 6.02568e-01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.16488e+00	AbsError: 1.57098e+14
+    Region: "Si"	RelError: 1.16488e+00	AbsError: 1.57098e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.82830e-01	AbsError: 7.85491e+13
+      Equation: "HoleContinuityEquation"	RelError: 5.81792e-01	AbsError: 7.85491e+13
+      Equation: "PotentialEquation"	RelError: 2.59428e-04	AbsError: 5.52548e-05
+Iteration: 2
+  Device: "d"	RelError: 1.60867e-03	AbsError: 2.59952e+10
+    Region: "Si"	RelError: 1.60867e-03	AbsError: 2.59952e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.03641e-04	AbsError: 1.29976e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.05017e-04	AbsError: 1.29976e+10
+      Equation: "PotentialEquation"	RelError: 1.15324e-08	AbsError: 4.00369e-09
+Iteration: 3
+  Device: "d"	RelError: 9.83490e-11	AbsError: 3.70319e+02
+    Region: "Si"	RelError: 9.83490e-11	AbsError: 3.70319e+02
+      Equation: "ElectronContinuityEquation"	RelError: 4.88764e-11	AbsError: 1.85159e+02
+      Equation: "HoleContinuityEquation"	RelError: 4.94725e-11	AbsError: 1.85159e+02
+      Equation: "PotentialEquation"	RelError: 6.86455e-17	AbsError: 2.83318e-17
+### SOLVE-END C-0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+
+[worker_d4] wrote D4_M1_D0_h0.005_P4.json error=False
+
+[d4] D4_M1_D0_h0.005_P4 completed=True in 26.5 s
+
+[d4] ===== D4_M1_D0_h0.00125_P12 =====
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 128160 Triangles.
+Physical group name Si has 193121 Lines.
+Physical group name Si has 64962 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 80 Lines.
+Physical group name left has 81 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 80 Lines.
+Physical group name right has 81 Points.
+Device d has 64962 coordinates with max index 64961
+Region Si has 64962 nodes.
+Contact left in region Si with 81 nodes
+Contact right in region Si with 81 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN A
+number of equations 64962
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+    Region: "Si"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+      Equation: "PotentialEquation"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+Iteration: 4
+  Device: "d"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+    Region: "Si"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+      Equation: "PotentialEquation"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+    Region: "Si"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+      Equation: "PotentialEquation"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+Iteration: 10
+  Device: "d"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+    Region: "Si"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+      Equation: "PotentialEquation"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+### SOLVE-END A
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.14911e-15	AbsError: 7.37224e+00
+    Region: "Si"	RelError: 3.14911e-15	AbsError: 7.37224e+00
+      Equation: "ElectronContinuityEquation"	RelError: 6.97185e-16	AbsError: 2.85554e+00
+      Equation: "HoleContinuityEquation"	RelError: 6.97185e-16	AbsError: 4.51670e+00
+      Equation: "PotentialEquation"	RelError: 1.75474e-15	AbsError: 1.80482e-17
+### SOLVE-END B0
+### SOLVE-BEGIN C+0.025
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.22377e+00	AbsError: 5.59251e+15
+    Region: "Si"	RelError: 3.22377e+00	AbsError: 5.59251e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.76834e-01	AbsError: 2.79625e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.76775e-01	AbsError: 2.79625e+15
+      Equation: "PotentialEquation"	RelError: 2.27016e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.84171e-01	AbsError: 1.77352e+14
+    Region: "Si"	RelError: 4.84171e-01	AbsError: 1.77352e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.41938e-01	AbsError: 8.86760e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.41894e-01	AbsError: 8.86760e+13
+      Equation: "PotentialEquation"	RelError: 3.39821e-04	AbsError: 5.99135e-05
+Iteration: 2
+  Device: "d"	RelError: 8.27474e-04	AbsError: 3.09466e+10
+    Region: "Si"	RelError: 8.27474e-04	AbsError: 3.09466e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.13722e-04	AbsError: 1.54733e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.13730e-04	AbsError: 1.54733e+10
+      Equation: "PotentialEquation"	RelError: 2.22090e-08	AbsError: 5.09353e-09
+Iteration: 3
+  Device: "d"	RelError: 1.11698e-10	AbsError: 4.74992e+02
+    Region: "Si"	RelError: 1.11698e-10	AbsError: 4.74992e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.58450e-11	AbsError: 2.42837e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.58489e-11	AbsError: 2.32155e+02
+      Equation: "PotentialEquation"	RelError: 4.60327e-15	AbsError: 5.00867e-17
+Iteration: 4
+  Device: "d"	RelError: 4.19087e-15	AbsError: 8.08221e+00
+    Region: "Si"	RelError: 4.19087e-15	AbsError: 8.08221e+00
+      Equation: "ElectronContinuityEquation"	RelError: 6.38678e-16	AbsError: 5.83759e+00
+      Equation: "HoleContinuityEquation"	RelError: 6.38679e-16	AbsError: 2.24461e+00
+      Equation: "PotentialEquation"	RelError: 2.91351e-15	AbsError: 1.65336e-17
+### SOLVE-END C+0.025
+### SOLVE-BEGIN C+0.050
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 8.03129e+00	AbsError: 5.68388e+15
+    Region: "Si"	RelError: 8.03129e+00	AbsError: 5.68388e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.82846e-01	AbsError: 2.84194e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.82808e-01	AbsError: 2.84194e+15
+      Equation: "PotentialEquation"	RelError: 7.06564e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.94490e-01	AbsError: 1.83709e+14
+    Region: "Si"	RelError: 4.94490e-01	AbsError: 1.83709e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.46208e-01	AbsError: 9.18544e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.46182e-01	AbsError: 9.18544e+13
+      Equation: "PotentialEquation"	RelError: 2.09971e-03	AbsError: 6.13810e-05
+Iteration: 2
+  Device: "d"	RelError: 8.47558e-04	AbsError: 3.25448e+10
+    Region: "Si"	RelError: 8.47558e-04	AbsError: 3.25448e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.23703e-04	AbsError: 1.62724e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.23709e-04	AbsError: 1.62724e+10
+      Equation: "PotentialEquation"	RelError: 1.46605e-07	AbsError: 5.38225e-09
+Iteration: 3
+  Device: "d"	RelError: 1.20854e-10	AbsError: 5.10047e+02
+    Region: "Si"	RelError: 1.20854e-10	AbsError: 5.10047e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.04228e-11	AbsError: 2.52547e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.04249e-11	AbsError: 2.57501e+02
+      Equation: "PotentialEquation"	RelError: 6.01115e-15	AbsError: 5.52203e-17
+Iteration: 4
+  Device: "d"	RelError: 1.25769e-14	AbsError: 6.07568e+00
+    Region: "Si"	RelError: 1.25769e-14	AbsError: 6.07568e+00
+      Equation: "ElectronContinuityEquation"	RelError: 7.90701e-16	AbsError: 2.50428e+00
+      Equation: "HoleContinuityEquation"	RelError: 7.90701e-16	AbsError: 3.57139e+00
+      Equation: "PotentialEquation"	RelError: 1.09955e-14	AbsError: 2.04690e-17
+### SOLVE-END C+0.050
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+### SOLVE-BEGIN C+0.075
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 8.96732e+00	AbsError: 5.78066e+15
+    Region: "Si"	RelError: 8.96732e+00	AbsError: 5.78066e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.86542e-01	AbsError: 2.89033e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.86520e-01	AbsError: 2.89033e+15
+      Equation: "PotentialEquation"	RelError: 7.99425e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 5.00715e-01	AbsError: 1.90584e+14
+    Region: "Si"	RelError: 5.00715e-01	AbsError: 1.90584e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.48522e-01	AbsError: 9.52921e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.48506e-01	AbsError: 9.52921e+13
+      Equation: "PotentialEquation"	RelError: 3.68698e-03	AbsError: 6.29288e-05
+Iteration: 2
+  Device: "d"	RelError: 8.68391e-04	AbsError: 3.42644e+10
+    Region: "Si"	RelError: 8.68391e-04	AbsError: 3.42644e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.34055e-04	AbsError: 1.71322e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.34060e-04	AbsError: 1.71322e+10
+      Equation: "PotentialEquation"	RelError: 2.75618e-07	AbsError: 5.69652e-09
+Iteration: 3
+  Device: "d"	RelError: 1.31906e-10	AbsError: 5.50086e+02
+    Region: "Si"	RelError: 1.31906e-10	AbsError: 5.50086e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.59615e-11	AbsError: 2.76030e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.59385e-11	AbsError: 2.74056e+02
+      Equation: "PotentialEquation"	RelError: 6.12607e-15	AbsError: 6.08168e-17
+Iteration: 4
+  Device: "d"	RelError: 1.80716e-14	AbsError: 1.40766e+01
+    Region: "Si"	RelError: 1.80716e-14	AbsError: 1.40766e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.02959e-15	AbsError: 6.91385e+00
+      Equation: "HoleContinuityEquation"	RelError: 1.02959e-15	AbsError: 7.16277e+00
+      Equation: "PotentialEquation"	RelError: 1.60124e-14	AbsError: 2.66531e-17
+### SOLVE-END C+0.075
+### SOLVE-BEGIN C+0.100
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.94918e+01	AbsError: 5.88213e+15
+    Region: "Si"	RelError: 1.94918e+01	AbsError: 5.88213e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.88583e-01	AbsError: 2.94106e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.88569e-01	AbsError: 2.94106e+15
+      Equation: "PotentialEquation"	RelError: 1.85146e+01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 5.11229e-01	AbsError: 1.98030e+14
+    Region: "Si"	RelError: 5.11229e-01	AbsError: 1.98030e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.49683e-01	AbsError: 9.90149e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.49672e-01	AbsError: 9.90149e+13
+      Equation: "PotentialEquation"	RelError: 1.18747e-02	AbsError: 6.45518e-05
+Iteration: 2
+  Device: "d"	RelError: 8.90852e-04	AbsError: 3.61039e+10
+    Region: "Si"	RelError: 8.90852e-04	AbsError: 3.61039e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.44947e-04	AbsError: 1.80520e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.44952e-04	AbsError: 1.80520e+10
+      Equation: "PotentialEquation"	RelError: 9.52539e-07	AbsError: 6.03970e-09
+Iteration: 3
+  Device: "d"	RelError: 1.43704e-10	AbsError: 6.00699e+02
+    Region: "Si"	RelError: 1.43704e-10	AbsError: 6.00699e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.18345e-11	AbsError: 3.09465e+02
+      Equation: "HoleContinuityEquation"	RelError: 7.18114e-11	AbsError: 2.91233e+02
+      Equation: "PotentialEquation"	RelError: 5.81908e-14	AbsError: 6.97738e-17
+Iteration: 4
+  Device: "d"	RelError: 5.23296e-14	AbsError: 1.96887e+01
+    Region: "Si"	RelError: 5.23296e-14	AbsError: 1.96887e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.39859e-15	AbsError: 1.08089e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.39859e-15	AbsError: 8.87980e+00
+      Equation: "PotentialEquation"	RelError: 4.95324e-14	AbsError: 3.62056e-17
+### SOLVE-END C+0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 128160 Triangles.
+Physical group name Si has 193121 Lines.
+Physical group name Si has 64962 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 80 Lines.
+Physical group name left has 81 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 80 Lines.
+Physical group name right has 81 Points.
+Device d has 64962 coordinates with max index 64961
+Region Si has 64962 nodes.
+Contact left in region Si with 81 nodes
+Contact right in region Si with 81 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN Arev
+number of equations 64962
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+    Region: "Si"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+      Equation: "PotentialEquation"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+Iteration: 4
+  Device: "d"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+    Region: "Si"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+      Equation: "PotentialEquation"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+    Region: "Si"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+      Equation: "PotentialEquation"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+Iteration: 10
+  Device: "d"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+    Region: "Si"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+      Equation: "PotentialEquation"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+### SOLVE-END Arev
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0rev
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.14911e-15	AbsError: 7.37224e+00
+    Region: "Si"	RelError: 3.14911e-15	AbsError: 7.37224e+00
+      Equation: "ElectronContinuityEquation"	RelError: 6.97185e-16	AbsError: 2.85554e+00
+      Equation: "HoleContinuityEquation"	RelError: 6.97185e-16	AbsError: 4.51670e+00
+      Equation: "PotentialEquation"	RelError: 1.75474e-15	AbsError: 1.80482e-17
+### SOLVE-END B0rev
+### SOLVE-BEGIN C-0.025
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 2.28801e+01	AbsError: 5.59251e+15
+    Region: "Si"	RelError: 2.28801e+01	AbsError: 5.59251e+15
+      Equation: "ElectronContinuityEquation"	RelError: 1.02919e+01	AbsError: 2.79625e+15
+      Equation: "HoleContinuityEquation"	RelError: 1.02644e+01	AbsError: 2.79625e+15
+      Equation: "PotentialEquation"	RelError: 2.32387e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.56712e+00	AbsError: 1.73288e+14
+    Region: "Si"	RelError: 1.56712e+00	AbsError: 1.73288e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.83643e-01	AbsError: 8.66438e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.83173e-01	AbsError: 8.66438e+13
+      Equation: "PotentialEquation"	RelError: 3.03699e-04	AbsError: 5.89743e-05
+Iteration: 2
+  Device: "d"	RelError: 1.79216e-03	AbsError: 2.98606e+10
+    Region: "Si"	RelError: 1.79216e-03	AbsError: 2.98606e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.96020e-04	AbsError: 1.49303e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.96121e-04	AbsError: 1.49303e+10
+      Equation: "PotentialEquation"	RelError: 1.86077e-08	AbsError: 4.87876e-09
+Iteration: 3
+  Device: "d"	RelError: 2.71256e-10	AbsError: 4.44208e+02
+    Region: "Si"	RelError: 2.71256e-10	AbsError: 4.44208e+02
+      Equation: "ElectronContinuityEquation"	RelError: 1.35724e-10	AbsError: 2.24069e+02
+      Equation: "HoleContinuityEquation"	RelError: 1.35530e-10	AbsError: 2.20139e+02
+      Equation: "PotentialEquation"	RelError: 2.14423e-15	AbsError: 4.56099e-17
+Iteration: 4
+  Device: "d"	RelError: 8.44555e-15	AbsError: 2.44825e+01
+    Region: "Si"	RelError: 8.44555e-15	AbsError: 2.44825e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.29145e-15	AbsError: 1.28012e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.29145e-15	AbsError: 1.16813e+01
+      Equation: "PotentialEquation"	RelError: 5.86266e-15	AbsError: 3.34320e-17
+### SOLVE-END C-0.025
+### SOLVE-BEGIN C-0.050
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.83371e+01	AbsError: 5.50590e+15
+    Region: "Si"	RelError: 1.83371e+01	AbsError: 5.50590e+15
+      Equation: "ElectronContinuityEquation"	RelError: 7.39812e+00	AbsError: 2.75295e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.37624e+00	AbsError: 2.75295e+15
+      Equation: "PotentialEquation"	RelError: 3.56273e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.43828e+00	AbsError: 1.67600e+14
+    Region: "Si"	RelError: 1.43828e+00	AbsError: 1.67600e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.18988e-01	AbsError: 8.38002e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.18365e-01	AbsError: 8.38002e+13
+      Equation: "PotentialEquation"	RelError: 9.30478e-04	AbsError: 5.76224e-05
+Iteration: 2
+  Device: "d"	RelError: 1.74724e-03	AbsError: 2.84378e+10
+    Region: "Si"	RelError: 1.74724e-03	AbsError: 2.84378e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.73478e-04	AbsError: 1.42189e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.73712e-04	AbsError: 1.42189e+10
+      Equation: "PotentialEquation"	RelError: 5.35785e-08	AbsError: 4.62955e-09
+Iteration: 3
+  Device: "d"	RelError: 1.87896e-10	AbsError: 4.19892e+02
+    Region: "Si"	RelError: 1.87896e-10	AbsError: 4.19892e+02
+      Equation: "ElectronContinuityEquation"	RelError: 9.40235e-11	AbsError: 2.04114e+02
+      Equation: "HoleContinuityEquation"	RelError: 9.38664e-11	AbsError: 2.15778e+02
+      Equation: "PotentialEquation"	RelError: 6.41596e-15	AbsError: 4.16476e-17
+Iteration: 4
+  Device: "d"	RelError: 7.64152e-15	AbsError: 1.56416e+01
+    Region: "Si"	RelError: 7.64152e-15	AbsError: 1.56416e+01
+      Equation: "ElectronContinuityEquation"	RelError: 8.53275e-16	AbsError: 6.70443e+00
+      Equation: "HoleContinuityEquation"	RelError: 8.53276e-16	AbsError: 8.93719e+00
+      Equation: "PotentialEquation"	RelError: 5.93497e-15	AbsError: 2.20889e-17
+### SOLVE-END C-0.050
+### SOLVE-BEGIN C-0.075
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.99432e+01	AbsError: 5.42262e+15
+    Region: "Si"	RelError: 1.99432e+01	AbsError: 5.42262e+15
+      Equation: "ElectronContinuityEquation"	RelError: 5.47246e+00	AbsError: 2.71131e+15
+      Equation: "HoleContinuityEquation"	RelError: 5.45454e+00	AbsError: 2.71131e+15
+      Equation: "PotentialEquation"	RelError: 9.01619e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.29928e+00	AbsError: 1.62210e+14
+    Region: "Si"	RelError: 1.29928e+00	AbsError: 1.62210e+14
+      Equation: "ElectronContinuityEquation"	RelError: 6.48517e-01	AbsError: 8.11052e+13
+      Equation: "HoleContinuityEquation"	RelError: 6.47728e-01	AbsError: 8.11052e+13
+      Equation: "PotentialEquation"	RelError: 3.03789e-03	AbsError: 5.63326e-05
+Iteration: 2
+  Device: "d"	RelError: 1.69389e-03	AbsError: 2.71669e+10
+    Region: "Si"	RelError: 1.69389e-03	AbsError: 2.71669e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.46585e-04	AbsError: 1.35835e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.47141e-04	AbsError: 1.35835e+10
+      Equation: "PotentialEquation"	RelError: 1.64701e-07	AbsError: 4.39882e-09
+Iteration: 3
+  Device: "d"	RelError: 1.40718e-10	AbsError: 3.88324e+02
+    Region: "Si"	RelError: 1.40718e-10	AbsError: 3.88324e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.01993e-11	AbsError: 1.98382e+02
+      Equation: "HoleContinuityEquation"	RelError: 7.04984e-11	AbsError: 1.89943e+02
+      Equation: "PotentialEquation"	RelError: 2.05444e-14	AbsError: 3.75477e-17
+Iteration: 4
+  Device: "d"	RelError: 1.17285e-14	AbsError: 8.94739e+00
+    Region: "Si"	RelError: 1.17285e-14	AbsError: 8.94739e+00
+      Equation: "ElectronContinuityEquation"	RelError: 6.14609e-16	AbsError: 4.48397e+00
+      Equation: "HoleContinuityEquation"	RelError: 6.14614e-16	AbsError: 4.46342e+00
+      Equation: "PotentialEquation"	RelError: 1.04993e-14	AbsError: 1.59106e-17
+### SOLVE-END C-0.075
+### SOLVE-BEGIN C-0.100
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 2.10896e+01	AbsError: 5.34218e+15
+    Region: "Si"	RelError: 2.10896e+01	AbsError: 5.34218e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.26583e+00	AbsError: 2.67109e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.24892e+00	AbsError: 2.67109e+15
+      Equation: "PotentialEquation"	RelError: 1.25749e+01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.16939e+00	AbsError: 1.57133e+14
+    Region: "Si"	RelError: 1.16939e+00	AbsError: 1.57133e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.82278e-01	AbsError: 7.85663e+13
+      Equation: "HoleContinuityEquation"	RelError: 5.81280e-01	AbsError: 7.85663e+13
+      Equation: "PotentialEquation"	RelError: 5.82826e-03	AbsError: 5.51025e-05
+Iteration: 2
+  Device: "d"	RelError: 1.62249e-03	AbsError: 2.59528e+10
+    Region: "Si"	RelError: 1.62249e-03	AbsError: 2.59528e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.10390e-04	AbsError: 1.29764e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.11801e-04	AbsError: 1.29764e+10
+      Equation: "PotentialEquation"	RelError: 2.98029e-07	AbsError: 4.18457e-09
+Iteration: 3
+  Device: "d"	RelError: 1.06236e-10	AbsError: 3.54075e+02
+    Region: "Si"	RelError: 1.06236e-10	AbsError: 3.54075e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.27942e-11	AbsError: 1.68816e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.34046e-11	AbsError: 1.85259e+02
+      Equation: "PotentialEquation"	RelError: 3.76477e-14	AbsError: 3.74403e-17
+Iteration: 4
+  Device: "d"	RelError: 2.43094e-14	AbsError: 9.46386e+00
+    Region: "Si"	RelError: 2.43094e-14	AbsError: 9.46386e+00
+      Equation: "ElectronContinuityEquation"	RelError: 8.31575e-16	AbsError: 4.53364e+00
+      Equation: "HoleContinuityEquation"	RelError: 8.31561e-16	AbsError: 4.93022e+00
+      Equation: "PotentialEquation"	RelError: 2.26463e-14	AbsError: 2.15272e-17
+### SOLVE-END C-0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+
+[worker_d4] wrote D4_M1_D0_h0.00125_P12.json error=False
+
+[d4] D4_M1_D0_h0.00125_P12 completed=True in 388.5 s
+
+[d4] ===== D4_M1_D0_h0.00125_P4 =====
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 128160 Triangles.
+Physical group name Si has 193121 Lines.
+Physical group name Si has 64962 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 80 Lines.
+Physical group name left has 81 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 80 Lines.
+Physical group name right has 81 Points.
+Device d has 64962 coordinates with max index 64961
+Region Si has 64962 nodes.
+Contact left in region Si with 81 nodes
+Contact right in region Si with 81 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN A
+number of equations 64962
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+    Region: "Si"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+      Equation: "PotentialEquation"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+Iteration: 4
+  Device: "d"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+    Region: "Si"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+      Equation: "PotentialEquation"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+    Region: "Si"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+      Equation: "PotentialEquation"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+Iteration: 10
+  Device: "d"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+    Region: "Si"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+      Equation: "PotentialEquation"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+### SOLVE-END A
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.34947e-19	AbsError: 3.24868e-02
+    Region: "Si"	RelError: 3.34947e-19	AbsError: 3.24868e-02
+      Equation: "ElectronContinuityEquation"	RelError: 1.62435e-19	AbsError: 1.62435e-02
+      Equation: "HoleContinuityEquation"	RelError: 1.62435e-19	AbsError: 1.62434e-02
+      Equation: "PotentialEquation"	RelError: 1.00778e-20	AbsError: 4.20498e-21
+### SOLVE-END B0
+### SOLVE-BEGIN C+0.025
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.22377e+00	AbsError: 5.59251e+15
+    Region: "Si"	RelError: 3.22377e+00	AbsError: 5.59251e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.76834e-01	AbsError: 2.79625e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.76775e-01	AbsError: 2.79625e+15
+      Equation: "PotentialEquation"	RelError: 2.27016e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.84171e-01	AbsError: 1.77352e+14
+    Region: "Si"	RelError: 4.84171e-01	AbsError: 1.77352e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.41938e-01	AbsError: 8.86760e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.41894e-01	AbsError: 8.86760e+13
+      Equation: "PotentialEquation"	RelError: 3.39821e-04	AbsError: 5.99135e-05
+Iteration: 2
+  Device: "d"	RelError: 8.27474e-04	AbsError: 3.09466e+10
+    Region: "Si"	RelError: 8.27474e-04	AbsError: 3.09466e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.13722e-04	AbsError: 1.54733e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.13730e-04	AbsError: 1.54733e+10
+      Equation: "PotentialEquation"	RelError: 2.22091e-08	AbsError: 5.09353e-09
+Iteration: 3
+  Device: "d"	RelError: 1.11694e-10	AbsError: 4.70610e+02
+    Region: "Si"	RelError: 1.11694e-10	AbsError: 4.70610e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.58450e-11	AbsError: 2.35301e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.58489e-11	AbsError: 2.35309e+02
+      Equation: "PotentialEquation"	RelError: 1.32946e-16	AbsError: 4.93275e-17
+Iteration: 4
+  Device: "d"	RelError: 8.20912e-23	AbsError: 1.36520e-07
+    Region: "Si"	RelError: 8.20912e-23	AbsError: 1.36520e-07
+      Equation: "ElectronContinuityEquation"	RelError: 3.19481e-23	AbsError: 6.78638e-08
+      Equation: "HoleContinuityEquation"	RelError: 4.12349e-23	AbsError: 6.86563e-08
+      Equation: "PotentialEquation"	RelError: 8.90816e-24	AbsError: 3.22891e-25
+### SOLVE-END C+0.025
+### SOLVE-BEGIN C+0.050
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 8.03129e+00	AbsError: 5.68388e+15
+    Region: "Si"	RelError: 8.03129e+00	AbsError: 5.68388e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.82846e-01	AbsError: 2.84194e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.82808e-01	AbsError: 2.84194e+15
+      Equation: "PotentialEquation"	RelError: 7.06564e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.94490e-01	AbsError: 1.83709e+14
+    Region: "Si"	RelError: 4.94490e-01	AbsError: 1.83709e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.46208e-01	AbsError: 9.18544e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.46182e-01	AbsError: 9.18544e+13
+      Equation: "PotentialEquation"	RelError: 2.09971e-03	AbsError: 6.13810e-05
+Iteration: 2
+  Device: "d"	RelError: 8.47558e-04	AbsError: 3.25448e+10
+    Region: "Si"	RelError: 8.47558e-04	AbsError: 3.25448e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.23703e-04	AbsError: 1.62724e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.23709e-04	AbsError: 1.62724e+10
+      Equation: "PotentialEquation"	RelError: 1.46605e-07	AbsError: 5.38225e-09
+Iteration: 3
+  Device: "d"	RelError: 1.20849e-10	AbsError: 5.07674e+02
+    Region: "Si"	RelError: 1.20849e-10	AbsError: 5.07674e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.04229e-11	AbsError: 2.53868e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.04248e-11	AbsError: 2.53806e+02
+      Equation: "PotentialEquation"	RelError: 8.76681e-16	AbsError: 5.48095e-17
+Iteration: 4
+  Device: "d"	RelError: 6.36534e-23	AbsError: 1.33654e-07
+    Region: "Si"	RelError: 6.36534e-23	AbsError: 1.33654e-07
+      Equation: "ElectronContinuityEquation"	RelError: 2.77579e-23	AbsError: 6.81183e-08
+      Equation: "HoleContinuityEquation"	RelError: 3.13986e-23	AbsError: 6.55359e-08
+      Equation: "PotentialEquation"	RelError: 4.49696e-24	AbsError: 1.93807e-25
+### SOLVE-END C+0.050
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+### SOLVE-BEGIN C+0.075
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 8.96732e+00	AbsError: 5.78066e+15
+    Region: "Si"	RelError: 8.96732e+00	AbsError: 5.78066e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.86542e-01	AbsError: 2.89033e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.86520e-01	AbsError: 2.89033e+15
+      Equation: "PotentialEquation"	RelError: 7.99425e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 5.00715e-01	AbsError: 1.90584e+14
+    Region: "Si"	RelError: 5.00715e-01	AbsError: 1.90584e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.48522e-01	AbsError: 9.52921e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.48506e-01	AbsError: 9.52921e+13
+      Equation: "PotentialEquation"	RelError: 3.68698e-03	AbsError: 6.29288e-05
+Iteration: 2
+  Device: "d"	RelError: 8.68391e-04	AbsError: 3.42644e+10
+    Region: "Si"	RelError: 8.68391e-04	AbsError: 3.42644e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.34055e-04	AbsError: 1.71322e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.34060e-04	AbsError: 1.71322e+10
+      Equation: "PotentialEquation"	RelError: 2.75618e-07	AbsError: 5.69652e-09
+Iteration: 3
+  Device: "d"	RelError: 1.31902e-10	AbsError: 5.46359e+02
+    Region: "Si"	RelError: 1.31902e-10	AbsError: 5.46359e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.59616e-11	AbsError: 2.73123e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.59385e-11	AbsError: 2.73235e+02
+      Equation: "PotentialEquation"	RelError: 1.53296e-15	AbsError: 6.10168e-17
+Iteration: 4
+  Device: "d"	RelError: 1.32159e-22	AbsError: 1.13553e-07
+    Region: "Si"	RelError: 1.32159e-22	AbsError: 1.13553e-07
+      Equation: "ElectronContinuityEquation"	RelError: 2.49963e-23	AbsError: 6.04816e-08
+      Equation: "HoleContinuityEquation"	RelError: 3.05725e-23	AbsError: 5.30716e-08
+      Equation: "PotentialEquation"	RelError: 7.65901e-23	AbsError: 2.06833e-25
+### SOLVE-END C+0.075
+### SOLVE-BEGIN C+0.100
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.94918e+01	AbsError: 5.88213e+15
+    Region: "Si"	RelError: 1.94918e+01	AbsError: 5.88213e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.88583e-01	AbsError: 2.94106e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.88569e-01	AbsError: 2.94106e+15
+      Equation: "PotentialEquation"	RelError: 1.85146e+01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 5.11229e-01	AbsError: 1.98030e+14
+    Region: "Si"	RelError: 5.11229e-01	AbsError: 1.98030e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.49683e-01	AbsError: 9.90149e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.49672e-01	AbsError: 9.90149e+13
+      Equation: "PotentialEquation"	RelError: 1.18747e-02	AbsError: 6.45518e-05
+Iteration: 2
+  Device: "d"	RelError: 8.90852e-04	AbsError: 3.61039e+10
+    Region: "Si"	RelError: 8.90852e-04	AbsError: 3.61039e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.44947e-04	AbsError: 1.80520e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.44952e-04	AbsError: 1.80520e+10
+      Equation: "PotentialEquation"	RelError: 9.52541e-07	AbsError: 6.03970e-09
+Iteration: 3
+  Device: "d"	RelError: 1.43652e-10	AbsError: 5.91864e+02
+    Region: "Si"	RelError: 1.43652e-10	AbsError: 5.91864e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.18347e-11	AbsError: 2.95950e+02
+      Equation: "HoleContinuityEquation"	RelError: 7.18115e-11	AbsError: 2.95914e+02
+      Equation: "PotentialEquation"	RelError: 6.20923e-15	AbsError: 6.85522e-17
+Iteration: 4
+  Device: "d"	RelError: 4.59360e-22	AbsError: 1.92452e-07
+    Region: "Si"	RelError: 4.59360e-22	AbsError: 1.92452e-07
+      Equation: "ElectronContinuityEquation"	RelError: 4.35326e-23	AbsError: 9.24236e-08
+      Equation: "HoleContinuityEquation"	RelError: 5.96808e-23	AbsError: 1.00028e-07
+      Equation: "PotentialEquation"	RelError: 3.56146e-22	AbsError: 6.06719e-25
+### SOLVE-END C+0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 128160 Triangles.
+Physical group name Si has 193121 Lines.
+Physical group name Si has 64962 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 80 Lines.
+Physical group name left has 81 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 80 Lines.
+Physical group name right has 81 Points.
+Device d has 64962 coordinates with max index 64961
+Region Si has 64962 nodes.
+Contact left in region Si with 81 nodes
+Contact right in region Si with 81 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN Arev
+number of equations 64962
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+    Region: "Si"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+      Equation: "PotentialEquation"	RelError: 1.58089e+00	AbsError: 6.12241e-02
+Iteration: 4
+  Device: "d"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 8.51010e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 4.14731e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+    Region: "Si"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+      Equation: "PotentialEquation"	RelError: 6.17740e-02	AbsError: 2.57867e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+    Region: "Si"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+      Equation: "PotentialEquation"	RelError: 7.44204e-06	AbsError: 3.10521e-06
+Iteration: 10
+  Device: "d"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+    Region: "Si"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+      Equation: "PotentialEquation"	RelError: 5.53509e-11	AbsError: 2.30953e-11
+### SOLVE-END Arev
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0rev
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.34947e-19	AbsError: 3.24868e-02
+    Region: "Si"	RelError: 3.34947e-19	AbsError: 3.24868e-02
+      Equation: "ElectronContinuityEquation"	RelError: 1.62435e-19	AbsError: 1.62435e-02
+      Equation: "HoleContinuityEquation"	RelError: 1.62435e-19	AbsError: 1.62434e-02
+      Equation: "PotentialEquation"	RelError: 1.00778e-20	AbsError: 4.20498e-21
+### SOLVE-END B0rev
+### SOLVE-BEGIN C-0.025
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 2.28801e+01	AbsError: 5.59251e+15
+    Region: "Si"	RelError: 2.28801e+01	AbsError: 5.59251e+15
+      Equation: "ElectronContinuityEquation"	RelError: 1.02919e+01	AbsError: 2.79625e+15
+      Equation: "HoleContinuityEquation"	RelError: 1.02644e+01	AbsError: 2.79625e+15
+      Equation: "PotentialEquation"	RelError: 2.32387e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.56712e+00	AbsError: 1.73288e+14
+    Region: "Si"	RelError: 1.56712e+00	AbsError: 1.73288e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.83643e-01	AbsError: 8.66438e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.83173e-01	AbsError: 8.66438e+13
+      Equation: "PotentialEquation"	RelError: 3.03699e-04	AbsError: 5.89743e-05
+Iteration: 2
+  Device: "d"	RelError: 1.79216e-03	AbsError: 2.98606e+10
+    Region: "Si"	RelError: 1.79216e-03	AbsError: 2.98606e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.96020e-04	AbsError: 1.49303e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.96121e-04	AbsError: 1.49303e+10
+      Equation: "PotentialEquation"	RelError: 1.86077e-08	AbsError: 4.87876e-09
+Iteration: 3
+  Device: "d"	RelError: 2.71254e-10	AbsError: 4.41561e+02
+    Region: "Si"	RelError: 2.71254e-10	AbsError: 4.41561e+02
+      Equation: "ElectronContinuityEquation"	RelError: 1.35724e-10	AbsError: 2.20780e+02
+      Equation: "HoleContinuityEquation"	RelError: 1.35530e-10	AbsError: 2.20780e+02
+      Equation: "PotentialEquation"	RelError: 1.09353e-16	AbsError: 4.50674e-17
+Iteration: 4
+  Device: "d"	RelError: 1.60018e-23	AbsError: 3.89661e-12
+    Region: "Si"	RelError: 1.60018e-23	AbsError: 3.89661e-12
+      Equation: "ElectronContinuityEquation"	RelError: 1.10642e-23	AbsError: 2.11510e-12
+      Equation: "HoleContinuityEquation"	RelError: 4.93722e-24	AbsError: 1.78151e-12
+      Equation: "PotentialEquation"	RelError: 3.55853e-28	AbsError: 8.08594e-30
+### SOLVE-END C-0.025
+### SOLVE-BEGIN C-0.050
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.83371e+01	AbsError: 5.50590e+15
+    Region: "Si"	RelError: 1.83371e+01	AbsError: 5.50590e+15
+      Equation: "ElectronContinuityEquation"	RelError: 7.39812e+00	AbsError: 2.75295e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.37624e+00	AbsError: 2.75295e+15
+      Equation: "PotentialEquation"	RelError: 3.56273e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.43828e+00	AbsError: 1.67600e+14
+    Region: "Si"	RelError: 1.43828e+00	AbsError: 1.67600e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.18988e-01	AbsError: 8.38002e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.18365e-01	AbsError: 8.38002e+13
+      Equation: "PotentialEquation"	RelError: 9.30478e-04	AbsError: 5.76224e-05
+Iteration: 2
+  Device: "d"	RelError: 1.74724e-03	AbsError: 2.84378e+10
+    Region: "Si"	RelError: 1.74724e-03	AbsError: 2.84378e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.73478e-04	AbsError: 1.42189e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.73712e-04	AbsError: 1.42189e+10
+      Equation: "PotentialEquation"	RelError: 5.35785e-08	AbsError: 4.62955e-09
+Iteration: 3
+  Device: "d"	RelError: 1.87890e-10	AbsError: 4.10232e+02
+    Region: "Si"	RelError: 1.87890e-10	AbsError: 4.10232e+02
+      Equation: "ElectronContinuityEquation"	RelError: 9.40236e-11	AbsError: 2.05116e+02
+      Equation: "HoleContinuityEquation"	RelError: 9.38665e-11	AbsError: 2.05116e+02
+      Equation: "PotentialEquation"	RelError: 1.68878e-16	AbsError: 4.07192e-17
+Iteration: 4
+  Device: "d"	RelError: 1.04084e-23	AbsError: 9.53728e-12
+    Region: "Si"	RelError: 1.04084e-23	AbsError: 9.53728e-12
+      Equation: "ElectronContinuityEquation"	RelError: 8.16036e-24	AbsError: 4.54186e-12
+      Equation: "HoleContinuityEquation"	RelError: 2.24549e-24	AbsError: 4.99542e-12
+      Equation: "PotentialEquation"	RelError: 2.59058e-27	AbsError: 1.79857e-29
+### SOLVE-END C-0.050
+### SOLVE-BEGIN C-0.075
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.99432e+01	AbsError: 5.42262e+15
+    Region: "Si"	RelError: 1.99432e+01	AbsError: 5.42262e+15
+      Equation: "ElectronContinuityEquation"	RelError: 5.47246e+00	AbsError: 2.71131e+15
+      Equation: "HoleContinuityEquation"	RelError: 5.45454e+00	AbsError: 2.71131e+15
+      Equation: "PotentialEquation"	RelError: 9.01619e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.29928e+00	AbsError: 1.62210e+14
+    Region: "Si"	RelError: 1.29928e+00	AbsError: 1.62210e+14
+      Equation: "ElectronContinuityEquation"	RelError: 6.48517e-01	AbsError: 8.11052e+13
+      Equation: "HoleContinuityEquation"	RelError: 6.47728e-01	AbsError: 8.11052e+13
+      Equation: "PotentialEquation"	RelError: 3.03789e-03	AbsError: 5.63326e-05
+Iteration: 2
+  Device: "d"	RelError: 1.69389e-03	AbsError: 2.71669e+10
+    Region: "Si"	RelError: 1.69389e-03	AbsError: 2.71669e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.46585e-04	AbsError: 1.35835e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.47141e-04	AbsError: 1.35835e+10
+      Equation: "PotentialEquation"	RelError: 1.64701e-07	AbsError: 4.39882e-09
+Iteration: 3
+  Device: "d"	RelError: 1.40698e-10	AbsError: 3.79812e+02
+    Region: "Si"	RelError: 1.40698e-10	AbsError: 3.79812e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.01993e-11	AbsError: 1.89906e+02
+      Equation: "HoleContinuityEquation"	RelError: 7.04985e-11	AbsError: 1.89906e+02
+      Equation: "PotentialEquation"	RelError: 4.58830e-16	AbsError: 3.68900e-17
+Iteration: 4
+  Device: "d"	RelError: 3.67071e-24	AbsError: 3.42710e-12
+    Region: "Si"	RelError: 3.67071e-24	AbsError: 3.42710e-12
+      Equation: "ElectronContinuityEquation"	RelError: 1.28027e-24	AbsError: 1.90304e-12
+      Equation: "HoleContinuityEquation"	RelError: 2.38891e-24	AbsError: 1.52406e-12
+      Equation: "PotentialEquation"	RelError: 1.52612e-27	AbsError: 5.88091e-30
+### SOLVE-END C-0.075
+### SOLVE-BEGIN C-0.100
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 2.10896e+01	AbsError: 5.34218e+15
+    Region: "Si"	RelError: 2.10896e+01	AbsError: 5.34218e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.26583e+00	AbsError: 2.67109e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.24892e+00	AbsError: 2.67109e+15
+      Equation: "PotentialEquation"	RelError: 1.25749e+01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.16939e+00	AbsError: 1.57133e+14
+    Region: "Si"	RelError: 1.16939e+00	AbsError: 1.57133e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.82278e-01	AbsError: 7.85663e+13
+      Equation: "HoleContinuityEquation"	RelError: 5.81280e-01	AbsError: 7.85663e+13
+      Equation: "PotentialEquation"	RelError: 5.82826e-03	AbsError: 5.51025e-05
+Iteration: 2
+  Device: "d"	RelError: 1.62249e-03	AbsError: 2.59528e+10
+    Region: "Si"	RelError: 1.62249e-03	AbsError: 2.59528e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.10390e-04	AbsError: 1.29764e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.11801e-04	AbsError: 1.29764e+10
+      Equation: "PotentialEquation"	RelError: 2.98029e-07	AbsError: 4.18457e-09
+Iteration: 3
+  Device: "d"	RelError: 1.06199e-10	AbsError: 3.52551e+02
+    Region: "Si"	RelError: 1.06199e-10	AbsError: 3.52551e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.27942e-11	AbsError: 1.76275e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.34044e-11	AbsError: 1.76275e+02
+      Equation: "PotentialEquation"	RelError: 7.33233e-16	AbsError: 3.35032e-17
+Iteration: 4
+  Device: "d"	RelError: 2.14432e-24	AbsError: 2.44698e-12
+    Region: "Si"	RelError: 2.14432e-24	AbsError: 2.44698e-12
+      Equation: "ElectronContinuityEquation"	RelError: 7.76863e-25	AbsError: 8.80386e-13
+      Equation: "HoleContinuityEquation"	RelError: 1.36063e-24	AbsError: 1.56660e-12
+      Equation: "PotentialEquation"	RelError: 6.83127e-27	AbsError: 7.89347e-30
+### SOLVE-END C-0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+
+[worker_d4] wrote D4_M1_D0_h0.00125_P4.json error=False
+
+[d4] D4_M1_D0_h0.00125_P4 completed=True in 422.1 s
+
+[d4] ===== D4_M2_D0_h0.00125_P12 =====
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 128160 Triangles.
+Physical group name Si has 193121 Lines.
+Physical group name Si has 64962 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 80 Lines.
+Physical group name left has 81 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 80 Lines.
+Physical group name right has 81 Points.
+Device d has 64962 coordinates with max index 64961
+Region Si has 64962 nodes.
+Contact left in region Si with 81 nodes
+Contact right in region Si with 81 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN A
+number of equations 64962
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+    Region: "Si"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+      Equation: "PotentialEquation"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+Iteration: 4
+  Device: "d"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+    Region: "Si"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+      Equation: "PotentialEquation"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+    Region: "Si"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+      Equation: "PotentialEquation"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+Iteration: 10
+  Device: "d"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+    Region: "Si"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+      Equation: "PotentialEquation"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+Iteration: 11
+  Device: "d"	RelError: 1.16531e-14	AbsError: 8.22321e-17
+    Region: "Si"	RelError: 1.16531e-14	AbsError: 8.22321e-17
+      Equation: "PotentialEquation"	RelError: 1.16531e-14	AbsError: 8.22321e-17
+### SOLVE-END A
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 8.92849e-15	AbsError: 2.43186e+01
+    Region: "Si"	RelError: 8.92849e-15	AbsError: 2.43186e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.61816e-15	AbsError: 8.80207e+00
+      Equation: "HoleContinuityEquation"	RelError: 1.61816e-15	AbsError: 1.55166e+01
+      Equation: "PotentialEquation"	RelError: 5.69216e-15	AbsError: 4.18897e-17
+### SOLVE-END B0
+### SOLVE-BEGIN C+0.025
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.22371e+00	AbsError: 5.59112e+15
+    Region: "Si"	RelError: 3.22371e+00	AbsError: 5.59112e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.76835e-01	AbsError: 2.79556e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.76776e-01	AbsError: 2.79556e+15
+      Equation: "PotentialEquation"	RelError: 2.27010e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.84172e-01	AbsError: 1.77352e+14
+    Region: "Si"	RelError: 4.84172e-01	AbsError: 1.77352e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.41938e-01	AbsError: 8.86758e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.41894e-01	AbsError: 8.86758e+13
+      Equation: "PotentialEquation"	RelError: 3.39778e-04	AbsError: 5.99162e-05
+Iteration: 2
+  Device: "d"	RelError: 8.27389e-04	AbsError: 3.09466e+10
+    Region: "Si"	RelError: 8.27389e-04	AbsError: 3.09466e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.13679e-04	AbsError: 1.54733e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.13687e-04	AbsError: 1.54733e+10
+      Equation: "PotentialEquation"	RelError: 2.21673e-08	AbsError: 5.08651e-09
+Iteration: 3
+  Device: "d"	RelError: 1.11585e-10	AbsError: 4.95675e+02
+    Region: "Si"	RelError: 1.11585e-10	AbsError: 4.95675e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.57846e-11	AbsError: 2.31446e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.57892e-11	AbsError: 2.64229e+02
+      Equation: "PotentialEquation"	RelError: 1.16820e-14	AbsError: 7.02781e-17
+Iteration: 4
+  Device: "d"	RelError: 1.17729e-14	AbsError: 2.94309e+01
+    Region: "Si"	RelError: 1.17729e-14	AbsError: 2.94309e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.81576e-15	AbsError: 1.29964e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.81576e-15	AbsError: 1.64345e+01
+      Equation: "PotentialEquation"	RelError: 8.14142e-15	AbsError: 4.70048e-17
+### SOLVE-END C+0.025
+### SOLVE-BEGIN C+0.050
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.65887e+00	AbsError: 5.68377e+15
+    Region: "Si"	RelError: 3.65887e+00	AbsError: 5.68377e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.82846e-01	AbsError: 2.84188e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.82808e-01	AbsError: 2.84188e+15
+      Equation: "PotentialEquation"	RelError: 2.69321e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.92995e-01	AbsError: 1.83709e+14
+    Region: "Si"	RelError: 4.92995e-01	AbsError: 1.83709e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.46209e-01	AbsError: 9.18543e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.46182e-01	AbsError: 9.18543e+13
+      Equation: "PotentialEquation"	RelError: 6.03980e-04	AbsError: 6.13729e-05
+Iteration: 2
+  Device: "d"	RelError: 8.47047e-04	AbsError: 3.24786e+10
+    Region: "Si"	RelError: 8.47047e-04	AbsError: 3.24786e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.23500e-04	AbsError: 1.62393e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.23505e-04	AbsError: 1.62393e+10
+      Equation: "PotentialEquation"	RelError: 4.20994e-08	AbsError: 5.37428e-09
+Iteration: 3
+  Device: "d"	RelError: 1.20674e-10	AbsError: 4.88927e+02
+    Region: "Si"	RelError: 1.20674e-10	AbsError: 4.88927e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.03269e-11	AbsError: 2.18710e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.03296e-11	AbsError: 2.70217e+02
+      Equation: "PotentialEquation"	RelError: 1.75294e-14	AbsError: 9.52278e-17
+Iteration: 4
+  Device: "d"	RelError: 2.63397e-14	AbsError: 6.36775e+01
+    Region: "Si"	RelError: 2.63397e-14	AbsError: 6.36775e+01
+      Equation: "ElectronContinuityEquation"	RelError: 3.99127e-15	AbsError: 4.28939e+01
+      Equation: "HoleContinuityEquation"	RelError: 3.99127e-15	AbsError: 2.07836e+01
+      Equation: "PotentialEquation"	RelError: 1.83572e-14	AbsError: 1.03323e-16
+### SOLVE-END C+0.050
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+### SOLVE-BEGIN C+0.075
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.75181e+00	AbsError: 5.78055e+15
+    Region: "Si"	RelError: 3.75181e+00	AbsError: 5.78055e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.86543e-01	AbsError: 2.89027e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.86520e-01	AbsError: 2.89027e+15
+      Equation: "PotentialEquation"	RelError: 2.77875e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.98100e-01	AbsError: 1.90501e+14
+    Region: "Si"	RelError: 4.98100e-01	AbsError: 1.90501e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.48522e-01	AbsError: 9.52505e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.48505e-01	AbsError: 9.52505e+13
+      Equation: "PotentialEquation"	RelError: 1.07238e-03	AbsError: 6.29096e-05
+Iteration: 2
+  Device: "d"	RelError: 8.67950e-04	AbsError: 3.41117e+10
+    Region: "Si"	RelError: 8.67950e-04	AbsError: 3.41117e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.33932e-04	AbsError: 1.70559e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.33937e-04	AbsError: 1.70559e+10
+      Equation: "PotentialEquation"	RelError: 8.00347e-08	AbsError: 5.68987e-09
+Iteration: 3
+  Device: "d"	RelError: 1.31815e-10	AbsError: 5.59833e+02
+    Region: "Si"	RelError: 1.31815e-10	AbsError: 5.59833e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.59111e-11	AbsError: 2.87156e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.58880e-11	AbsError: 2.72678e+02
+      Equation: "PotentialEquation"	RelError: 1.60731e-14	AbsError: 7.71321e-17
+Iteration: 4
+  Device: "d"	RelError: 1.62290e-14	AbsError: 4.23879e+01
+    Region: "Si"	RelError: 1.62290e-14	AbsError: 4.23879e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.18047e-15	AbsError: 2.15292e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.18047e-15	AbsError: 2.08586e+01
+      Equation: "PotentialEquation"	RelError: 1.18681e-14	AbsError: 5.64462e-17
+### SOLVE-END C+0.075
+### SOLVE-BEGIN C+0.100
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.45201e+00	AbsError: 5.88201e+15
+    Region: "Si"	RelError: 3.45201e+00	AbsError: 5.88201e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.88583e-01	AbsError: 2.94101e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.88569e-01	AbsError: 2.94101e+15
+      Equation: "PotentialEquation"	RelError: 2.47485e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 5.00771e-01	AbsError: 1.97794e+14
+    Region: "Si"	RelError: 5.00771e-01	AbsError: 1.97794e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.49683e-01	AbsError: 9.88970e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.49672e-01	AbsError: 9.88970e+13
+      Equation: "PotentialEquation"	RelError: 1.41656e-03	AbsError: 6.45549e-05
+Iteration: 2
+  Device: "d"	RelError: 8.89923e-04	AbsError: 3.60124e+10
+    Region: "Si"	RelError: 8.89923e-04	AbsError: 3.60124e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.44902e-04	AbsError: 1.80062e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.44907e-04	AbsError: 1.80062e+10
+      Equation: "PotentialEquation"	RelError: 1.13437e-07	AbsError: 6.03416e-09
+Iteration: 3
+  Device: "d"	RelError: 1.43544e-10	AbsError: 6.00953e+02
+    Region: "Si"	RelError: 1.43544e-10	AbsError: 6.00953e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.17788e-11	AbsError: 3.03108e+02
+      Equation: "HoleContinuityEquation"	RelError: 7.17557e-11	AbsError: 2.97844e+02
+      Equation: "PotentialEquation"	RelError: 9.15105e-15	AbsError: 7.14256e-17
+Iteration: 4
+  Device: "d"	RelError: 1.41031e-14	AbsError: 4.52052e+01
+    Region: "Si"	RelError: 1.41031e-14	AbsError: 4.52052e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.18915e-15	AbsError: 2.18092e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.18914e-15	AbsError: 2.33959e+01
+      Equation: "PotentialEquation"	RelError: 9.72484e-15	AbsError: 5.66707e-17
+### SOLVE-END C+0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 128160 Triangles.
+Physical group name Si has 193121 Lines.
+Physical group name Si has 64962 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 80 Lines.
+Physical group name left has 81 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 80 Lines.
+Physical group name right has 81 Points.
+Device d has 64962 coordinates with max index 64961
+Region Si has 64962 nodes.
+Contact left in region Si with 81 nodes
+Contact right in region Si with 81 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN Arev
+number of equations 64962
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+    Region: "Si"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+      Equation: "PotentialEquation"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+Iteration: 4
+  Device: "d"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+    Region: "Si"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+      Equation: "PotentialEquation"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+    Region: "Si"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+      Equation: "PotentialEquation"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+Iteration: 10
+  Device: "d"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+    Region: "Si"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+      Equation: "PotentialEquation"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+Iteration: 11
+  Device: "d"	RelError: 1.16531e-14	AbsError: 8.22321e-17
+    Region: "Si"	RelError: 1.16531e-14	AbsError: 8.22321e-17
+      Equation: "PotentialEquation"	RelError: 1.16531e-14	AbsError: 8.22321e-17
+### SOLVE-END Arev
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0rev
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 8.92849e-15	AbsError: 2.43186e+01
+    Region: "Si"	RelError: 8.92849e-15	AbsError: 2.43186e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.61816e-15	AbsError: 8.80207e+00
+      Equation: "HoleContinuityEquation"	RelError: 1.61816e-15	AbsError: 1.55166e+01
+      Equation: "PotentialEquation"	RelError: 5.69216e-15	AbsError: 4.18897e-17
+### SOLVE-END B0rev
+### SOLVE-BEGIN C-0.025
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 2.28807e+01	AbsError: 5.59112e+15
+    Region: "Si"	RelError: 2.28807e+01	AbsError: 5.59112e+15
+      Equation: "ElectronContinuityEquation"	RelError: 1.02922e+01	AbsError: 2.79556e+15
+      Equation: "HoleContinuityEquation"	RelError: 1.02647e+01	AbsError: 2.79556e+15
+      Equation: "PotentialEquation"	RelError: 2.32381e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.56708e+00	AbsError: 1.73153e+14
+    Region: "Si"	RelError: 1.56708e+00	AbsError: 1.73153e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.83630e-01	AbsError: 8.65765e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.83147e-01	AbsError: 8.65765e+13
+      Equation: "PotentialEquation"	RelError: 3.03664e-04	AbsError: 5.89642e-05
+Iteration: 2
+  Device: "d"	RelError: 1.79120e-03	AbsError: 2.98610e+10
+    Region: "Si"	RelError: 1.79120e-03	AbsError: 2.98610e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.95540e-04	AbsError: 1.49305e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.95640e-04	AbsError: 1.49305e+10
+      Equation: "PotentialEquation"	RelError: 1.85699e-08	AbsError: 4.87527e-09
+Iteration: 3
+  Device: "d"	RelError: 2.71046e-10	AbsError: 4.72125e+02
+    Region: "Si"	RelError: 2.71046e-10	AbsError: 4.72125e+02
+      Equation: "ElectronContinuityEquation"	RelError: 1.35607e-10	AbsError: 2.50815e+02
+      Equation: "HoleContinuityEquation"	RelError: 1.35415e-10	AbsError: 2.21310e+02
+      Equation: "PotentialEquation"	RelError: 2.30456e-14	AbsError: 1.27589e-16
+Iteration: 4
+  Device: "d"	RelError: 9.16447e-15	AbsError: 3.44226e+01
+    Region: "Si"	RelError: 9.16447e-15	AbsError: 3.44226e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.69747e-15	AbsError: 1.15629e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.69748e-15	AbsError: 2.28597e+01
+      Equation: "PotentialEquation"	RelError: 5.76951e-15	AbsError: 4.39430e-17
+### SOLVE-END C-0.025
+### SOLVE-BEGIN C-0.050
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.83367e+01	AbsError: 5.50210e+15
+    Region: "Si"	RelError: 1.83367e+01	AbsError: 5.50210e+15
+      Equation: "ElectronContinuityEquation"	RelError: 7.39845e+00	AbsError: 2.75105e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.37657e+00	AbsError: 2.75105e+15
+      Equation: "PotentialEquation"	RelError: 3.56166e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.43805e+00	AbsError: 1.67264e+14
+    Region: "Si"	RelError: 1.43805e+00	AbsError: 1.67264e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.18975e-01	AbsError: 8.36318e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.18331e-01	AbsError: 8.36318e+13
+      Equation: "PotentialEquation"	RelError: 7.41861e-04	AbsError: 5.76109e-05
+Iteration: 2
+  Device: "d"	RelError: 1.74700e-03	AbsError: 2.84382e+10
+    Region: "Si"	RelError: 1.74700e-03	AbsError: 2.84382e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.73364e-04	AbsError: 1.42191e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.73598e-04	AbsError: 1.42191e+10
+      Equation: "PotentialEquation"	RelError: 4.26341e-08	AbsError: 4.62629e-09
+Iteration: 3
+  Device: "d"	RelError: 1.87741e-10	AbsError: 4.18186e+02
+    Region: "Si"	RelError: 1.87741e-10	AbsError: 4.18186e+02
+      Equation: "ElectronContinuityEquation"	RelError: 9.39417e-11	AbsError: 2.13063e+02
+      Equation: "HoleContinuityEquation"	RelError: 9.37818e-11	AbsError: 2.05123e+02
+      Equation: "PotentialEquation"	RelError: 1.78058e-14	AbsError: 6.91531e-17
+Iteration: 4
+  Device: "d"	RelError: 1.76818e-14	AbsError: 2.14379e+01
+    Region: "Si"	RelError: 1.76818e-14	AbsError: 2.14379e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.91557e-15	AbsError: 1.07544e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.91557e-15	AbsError: 1.06835e+01
+      Equation: "PotentialEquation"	RelError: 1.38506e-14	AbsError: 4.95887e-17
+### SOLVE-END C-0.050
+### SOLVE-BEGIN C-0.075
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.99547e+01	AbsError: 5.41888e+15
+    Region: "Si"	RelError: 1.99547e+01	AbsError: 5.41888e+15
+      Equation: "ElectronContinuityEquation"	RelError: 5.47271e+00	AbsError: 2.70944e+15
+      Equation: "HoleContinuityEquation"	RelError: 5.45457e+00	AbsError: 2.70944e+15
+      Equation: "PotentialEquation"	RelError: 9.02745e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.29900e+00	AbsError: 1.62037e+14
+    Region: "Si"	RelError: 1.29900e+00	AbsError: 1.62037e+14
+      Equation: "ElectronContinuityEquation"	RelError: 6.48366e-01	AbsError: 8.10183e+13
+      Equation: "HoleContinuityEquation"	RelError: 6.47592e-01	AbsError: 8.10183e+13
+      Equation: "PotentialEquation"	RelError: 3.04167e-03	AbsError: 5.63351e-05
+Iteration: 2
+  Device: "d"	RelError: 1.69273e-03	AbsError: 2.70849e+10
+    Region: "Si"	RelError: 1.69273e-03	AbsError: 2.70849e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.45994e-04	AbsError: 1.35424e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.46567e-04	AbsError: 1.35424e+10
+      Equation: "PotentialEquation"	RelError: 1.64575e-07	AbsError: 4.39578e-09
+Iteration: 3
+  Device: "d"	RelError: 1.40680e-10	AbsError: 4.36111e+02
+    Region: "Si"	RelError: 1.40680e-10	AbsError: 4.36111e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.01050e-11	AbsError: 1.82835e+02
+      Equation: "HoleContinuityEquation"	RelError: 7.04117e-11	AbsError: 2.53276e+02
+      Equation: "PotentialEquation"	RelError: 1.63173e-13	AbsError: 2.17017e-16
+Iteration: 4
+  Device: "d"	RelError: 5.99645e-14	AbsError: 5.44647e+01
+    Region: "Si"	RelError: 5.99645e-14	AbsError: 5.44647e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.88332e-15	AbsError: 3.03045e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.88332e-15	AbsError: 2.41602e+01
+      Equation: "PotentialEquation"	RelError: 5.41978e-14	AbsError: 7.46412e-17
+### SOLVE-END C-0.075
+### SOLVE-BEGIN C-0.100
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 2.10576e+01	AbsError: 5.34141e+15
+    Region: "Si"	RelError: 2.10576e+01	AbsError: 5.34141e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.26261e+00	AbsError: 2.67070e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.24639e+00	AbsError: 2.67070e+15
+      Equation: "PotentialEquation"	RelError: 1.25486e+01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.16939e+00	AbsError: 1.57132e+14
+    Region: "Si"	RelError: 1.16939e+00	AbsError: 1.57132e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.82287e-01	AbsError: 7.85662e+13
+      Equation: "HoleContinuityEquation"	RelError: 5.81289e-01	AbsError: 7.85662e+13
+      Equation: "PotentialEquation"	RelError: 5.81604e-03	AbsError: 5.51049e-05
+Iteration: 2
+  Device: "d"	RelError: 1.62227e-03	AbsError: 2.58872e+10
+    Region: "Si"	RelError: 1.62227e-03	AbsError: 2.58872e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.10280e-04	AbsError: 1.29436e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.11691e-04	AbsError: 1.29436e+10
+      Equation: "PotentialEquation"	RelError: 2.96794e-07	AbsError: 4.18172e-09
+Iteration: 3
+  Device: "d"	RelError: 1.06197e-10	AbsError: 3.89404e+02
+    Region: "Si"	RelError: 1.06197e-10	AbsError: 3.89404e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.27008e-11	AbsError: 2.37702e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.33228e-11	AbsError: 1.51702e+02
+      Equation: "PotentialEquation"	RelError: 1.73763e-13	AbsError: 1.62559e-16
+Iteration: 4
+  Device: "d"	RelError: 4.73847e-14	AbsError: 3.24954e+01
+    Region: "Si"	RelError: 4.73847e-14	AbsError: 3.24954e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.15682e-15	AbsError: 1.85857e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.15700e-15	AbsError: 1.39098e+01
+      Equation: "PotentialEquation"	RelError: 4.30709e-14	AbsError: 5.58387e-17
+### SOLVE-END C-0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+
+[worker_d4] wrote D4_M2_D0_h0.00125_P12.json error=False
+
+[d4] D4_M2_D0_h0.00125_P12 completed=True in 377.7 s
+
+[d4] ===== D4_M2_D0_h0.00125_P4 =====
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 128160 Triangles.
+Physical group name Si has 193121 Lines.
+Physical group name Si has 64962 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 80 Lines.
+Physical group name left has 81 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 80 Lines.
+Physical group name right has 81 Points.
+Device d has 64962 coordinates with max index 64961
+Region Si has 64962 nodes.
+Contact left in region Si with 81 nodes
+Contact right in region Si with 81 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN A
+number of equations 64962
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+    Region: "Si"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+      Equation: "PotentialEquation"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+Iteration: 4
+  Device: "d"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+    Region: "Si"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+      Equation: "PotentialEquation"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+    Region: "Si"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+      Equation: "PotentialEquation"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+Iteration: 10
+  Device: "d"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+    Region: "Si"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+      Equation: "PotentialEquation"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+Iteration: 11
+  Device: "d"	RelError: 5.46717e-20	AbsError: 2.28119e-20
+    Region: "Si"	RelError: 5.46717e-20	AbsError: 2.28119e-20
+      Equation: "PotentialEquation"	RelError: 5.46717e-20	AbsError: 2.28119e-20
+### SOLVE-END A
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.84329e-32	AbsError: 3.22402e-15
+    Region: "Si"	RelError: 3.84329e-32	AbsError: 3.22402e-15
+      Equation: "ElectronContinuityEquation"	RelError: 1.75544e-32	AbsError: 1.75544e-15
+      Equation: "HoleContinuityEquation"	RelError: 1.80061e-32	AbsError: 1.46858e-15
+      Equation: "PotentialEquation"	RelError: 2.87248e-33	AbsError: 5.48935e-34
+### SOLVE-END B0
+### SOLVE-BEGIN C+0.025
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.22371e+00	AbsError: 5.59112e+15
+    Region: "Si"	RelError: 3.22371e+00	AbsError: 5.59112e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.76835e-01	AbsError: 2.79556e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.76776e-01	AbsError: 2.79556e+15
+      Equation: "PotentialEquation"	RelError: 2.27010e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.84172e-01	AbsError: 1.77352e+14
+    Region: "Si"	RelError: 4.84172e-01	AbsError: 1.77352e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.41938e-01	AbsError: 8.86758e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.41894e-01	AbsError: 8.86758e+13
+      Equation: "PotentialEquation"	RelError: 3.39778e-04	AbsError: 5.99162e-05
+Iteration: 2
+  Device: "d"	RelError: 8.27389e-04	AbsError: 3.09466e+10
+    Region: "Si"	RelError: 8.27389e-04	AbsError: 3.09466e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.13679e-04	AbsError: 1.54733e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.13687e-04	AbsError: 1.54733e+10
+      Equation: "PotentialEquation"	RelError: 2.21673e-08	AbsError: 5.08651e-09
+Iteration: 3
+  Device: "d"	RelError: 1.11574e-10	AbsError: 4.64674e+02
+    Region: "Si"	RelError: 1.11574e-10	AbsError: 4.64674e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.57848e-11	AbsError: 2.32433e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.57888e-11	AbsError: 2.32241e+02
+      Equation: "PotentialEquation"	RelError: 1.25575e-16	AbsError: 4.87565e-17
+Iteration: 4
+  Device: "d"	RelError: 1.21606e-22	AbsError: 1.31686e-07
+    Region: "Si"	RelError: 1.21606e-22	AbsError: 1.31686e-07
+      Equation: "ElectronContinuityEquation"	RelError: 5.49989e-23	AbsError: 5.46957e-08
+      Equation: "HoleContinuityEquation"	RelError: 4.94581e-23	AbsError: 7.69898e-08
+      Equation: "PotentialEquation"	RelError: 1.71493e-23	AbsError: 2.93962e-25
+### SOLVE-END C+0.025
+### SOLVE-BEGIN C+0.050
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.65887e+00	AbsError: 5.68377e+15
+    Region: "Si"	RelError: 3.65887e+00	AbsError: 5.68377e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.82846e-01	AbsError: 2.84188e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.82808e-01	AbsError: 2.84188e+15
+      Equation: "PotentialEquation"	RelError: 2.69321e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.92995e-01	AbsError: 1.83709e+14
+    Region: "Si"	RelError: 4.92995e-01	AbsError: 1.83709e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.46209e-01	AbsError: 9.18543e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.46182e-01	AbsError: 9.18543e+13
+      Equation: "PotentialEquation"	RelError: 6.03980e-04	AbsError: 6.13729e-05
+Iteration: 2
+  Device: "d"	RelError: 8.47047e-04	AbsError: 3.24786e+10
+    Region: "Si"	RelError: 8.47047e-04	AbsError: 3.24786e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.23500e-04	AbsError: 1.62393e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.23505e-04	AbsError: 1.62393e+10
+      Equation: "PotentialEquation"	RelError: 4.20994e-08	AbsError: 5.37428e-09
+Iteration: 3
+  Device: "d"	RelError: 1.20656e-10	AbsError: 5.03309e+02
+    Region: "Si"	RelError: 1.20656e-10	AbsError: 5.03309e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.03271e-11	AbsError: 2.51688e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.03290e-11	AbsError: 2.51622e+02
+      Equation: "PotentialEquation"	RelError: 1.65641e-16	AbsError: 5.44779e-17
+Iteration: 4
+  Device: "d"	RelError: 1.69534e-22	AbsError: 1.16950e-07
+    Region: "Si"	RelError: 1.69534e-22	AbsError: 1.16950e-07
+      Equation: "ElectronContinuityEquation"	RelError: 7.05490e-23	AbsError: 4.96701e-08
+      Equation: "HoleContinuityEquation"	RelError: 8.13324e-23	AbsError: 6.72803e-08
+      Equation: "PotentialEquation"	RelError: 1.76529e-23	AbsError: 2.81662e-25
+### SOLVE-END C+0.050
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+### SOLVE-BEGIN C+0.075
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.75181e+00	AbsError: 5.78055e+15
+    Region: "Si"	RelError: 3.75181e+00	AbsError: 5.78055e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.86543e-01	AbsError: 2.89027e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.86520e-01	AbsError: 2.89027e+15
+      Equation: "PotentialEquation"	RelError: 2.77875e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 4.98100e-01	AbsError: 1.90501e+14
+    Region: "Si"	RelError: 4.98100e-01	AbsError: 1.90501e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.48522e-01	AbsError: 9.52505e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.48505e-01	AbsError: 9.52505e+13
+      Equation: "PotentialEquation"	RelError: 1.07238e-03	AbsError: 6.29096e-05
+Iteration: 2
+  Device: "d"	RelError: 8.67950e-04	AbsError: 3.41117e+10
+    Region: "Si"	RelError: 8.67950e-04	AbsError: 3.41117e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.33932e-04	AbsError: 1.70559e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.33937e-04	AbsError: 1.70559e+10
+      Equation: "PotentialEquation"	RelError: 8.00350e-08	AbsError: 5.68987e-09
+Iteration: 3
+  Device: "d"	RelError: 1.31800e-10	AbsError: 5.46927e+02
+    Region: "Si"	RelError: 1.31800e-10	AbsError: 5.46927e+02
+      Equation: "ElectronContinuityEquation"	RelError: 6.59113e-11	AbsError: 2.73509e+02
+      Equation: "HoleContinuityEquation"	RelError: 6.58882e-11	AbsError: 2.73418e+02
+      Equation: "PotentialEquation"	RelError: 3.79735e-16	AbsError: 6.08297e-17
+Iteration: 4
+  Device: "d"	RelError: 1.23477e-22	AbsError: 1.36961e-07
+    Region: "Si"	RelError: 1.23477e-22	AbsError: 1.36961e-07
+      Equation: "ElectronContinuityEquation"	RelError: 2.60938e-23	AbsError: 6.73941e-08
+      Equation: "HoleContinuityEquation"	RelError: 6.89465e-23	AbsError: 6.95666e-08
+      Equation: "PotentialEquation"	RelError: 2.84368e-23	AbsError: 1.79103e-25
+### SOLVE-END C+0.075
+### SOLVE-BEGIN C+0.100
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.45201e+00	AbsError: 5.88201e+15
+    Region: "Si"	RelError: 3.45201e+00	AbsError: 5.88201e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.88583e-01	AbsError: 2.94101e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.88569e-01	AbsError: 2.94101e+15
+      Equation: "PotentialEquation"	RelError: 2.47485e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 5.00771e-01	AbsError: 1.97794e+14
+    Region: "Si"	RelError: 5.00771e-01	AbsError: 1.97794e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.49683e-01	AbsError: 9.88970e+13
+      Equation: "HoleContinuityEquation"	RelError: 2.49672e-01	AbsError: 9.88970e+13
+      Equation: "PotentialEquation"	RelError: 1.41656e-03	AbsError: 6.45549e-05
+Iteration: 2
+  Device: "d"	RelError: 8.89923e-04	AbsError: 3.60124e+10
+    Region: "Si"	RelError: 8.89923e-04	AbsError: 3.60124e+10
+      Equation: "ElectronContinuityEquation"	RelError: 4.44902e-04	AbsError: 1.80062e+10
+      Equation: "HoleContinuityEquation"	RelError: 4.44907e-04	AbsError: 1.80062e+10
+      Equation: "PotentialEquation"	RelError: 1.13437e-07	AbsError: 6.03416e-09
+Iteration: 3
+  Device: "d"	RelError: 1.43536e-10	AbsError: 5.92952e+02
+    Region: "Si"	RelError: 1.43536e-10	AbsError: 5.92952e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.17790e-11	AbsError: 2.96511e+02
+      Equation: "HoleContinuityEquation"	RelError: 7.17559e-11	AbsError: 2.96441e+02
+      Equation: "PotentialEquation"	RelError: 6.60845e-16	AbsError: 6.86000e-17
+Iteration: 4
+  Device: "d"	RelError: 1.62458e-22	AbsError: 1.95006e-07
+    Region: "Si"	RelError: 1.62458e-22	AbsError: 1.95006e-07
+      Equation: "ElectronContinuityEquation"	RelError: 5.70202e-23	AbsError: 8.69803e-08
+      Equation: "HoleContinuityEquation"	RelError: 8.04305e-23	AbsError: 1.08025e-07
+      Equation: "PotentialEquation"	RelError: 2.50070e-23	AbsError: 4.38532e-25
+### SOLVE-END C+0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 128160 Triangles.
+Physical group name Si has 193121 Lines.
+Physical group name Si has 64962 Points.
+Physical group name left has 0 Tetrahedra.
+Physical group name left has 0 Triangles.
+Physical group name left has 80 Lines.
+Physical group name left has 81 Points.
+Physical group name right has 0 Tetrahedra.
+Physical group name right has 0 Triangles.
+Physical group name right has 80 Lines.
+Physical group name right has 81 Points.
+Device d has 64962 coordinates with max index 64961
+Region Si has 64962 nodes.
+Contact left in region Si with 81 nodes
+Contact right in region Si with 81 nodes
+Creating Node Solution Potential
+### SOLVE-BEGIN Arev
+number of equations 64962
+Iteration: 0
+  Device: "d"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.37948e-01
+Iteration: 1
+  Device: "d"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+    Region: "Si"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+      Equation: "PotentialEquation"	RelError: 4.98626e-01	AbsError: 1.37192e-01
+Iteration: 2
+  Device: "d"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+    Region: "Si"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+      Equation: "PotentialEquation"	RelError: 3.14429e-01	AbsError: 1.25170e-01
+Iteration: 3
+  Device: "d"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+    Region: "Si"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+      Equation: "PotentialEquation"	RelError: 1.58086e+00	AbsError: 6.12242e-02
+Iteration: 4
+  Device: "d"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 7.40414e-01	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "d"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 3.43393e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "d"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "d"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+    Region: "Si"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+      Equation: "PotentialEquation"	RelError: 5.67390e-02	AbsError: 2.36887e-02
+Iteration: 8
+  Device: "d"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "d"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+    Region: "Si"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+      Equation: "PotentialEquation"	RelError: 1.05053e-05	AbsError: 4.38337e-06
+Iteration: 10
+  Device: "d"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+    Region: "Si"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+      Equation: "PotentialEquation"	RelError: 1.32685e-10	AbsError: 5.53629e-11
+Iteration: 11
+  Device: "d"	RelError: 5.46717e-20	AbsError: 2.28119e-20
+    Region: "Si"	RelError: 5.46717e-20	AbsError: 2.28119e-20
+      Equation: "PotentialEquation"	RelError: 5.46717e-20	AbsError: 2.28119e-20
+### SOLVE-END Arev
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+### SOLVE-BEGIN B0rev
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 3.84329e-32	AbsError: 3.22402e-15
+    Region: "Si"	RelError: 3.84329e-32	AbsError: 3.22402e-15
+      Equation: "ElectronContinuityEquation"	RelError: 1.75544e-32	AbsError: 1.75544e-15
+      Equation: "HoleContinuityEquation"	RelError: 1.80061e-32	AbsError: 1.46858e-15
+      Equation: "PotentialEquation"	RelError: 2.87248e-33	AbsError: 5.48935e-34
+### SOLVE-END B0rev
+### SOLVE-BEGIN C-0.025
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 2.28807e+01	AbsError: 5.59112e+15
+    Region: "Si"	RelError: 2.28807e+01	AbsError: 5.59112e+15
+      Equation: "ElectronContinuityEquation"	RelError: 1.02922e+01	AbsError: 2.79556e+15
+      Equation: "HoleContinuityEquation"	RelError: 1.02647e+01	AbsError: 2.79556e+15
+      Equation: "PotentialEquation"	RelError: 2.32381e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.56708e+00	AbsError: 1.73153e+14
+    Region: "Si"	RelError: 1.56708e+00	AbsError: 1.73153e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.83630e-01	AbsError: 8.65765e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.83147e-01	AbsError: 8.65765e+13
+      Equation: "PotentialEquation"	RelError: 3.03664e-04	AbsError: 5.89642e-05
+Iteration: 2
+  Device: "d"	RelError: 1.79120e-03	AbsError: 2.98610e+10
+    Region: "Si"	RelError: 1.79120e-03	AbsError: 2.98610e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.95540e-04	AbsError: 1.49305e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.95640e-04	AbsError: 1.49305e+10
+      Equation: "PotentialEquation"	RelError: 1.85699e-08	AbsError: 4.87527e-09
+Iteration: 3
+  Device: "d"	RelError: 2.71023e-10	AbsError: 4.42191e+02
+    Region: "Si"	RelError: 2.71023e-10	AbsError: 4.42191e+02
+      Equation: "ElectronContinuityEquation"	RelError: 1.35607e-10	AbsError: 2.21095e+02
+      Equation: "HoleContinuityEquation"	RelError: 1.35416e-10	AbsError: 2.21095e+02
+      Equation: "PotentialEquation"	RelError: 1.09038e-16	AbsError: 4.49540e-17
+Iteration: 4
+  Device: "d"	RelError: 8.12928e-23	AbsError: 7.03671e-12
+    Region: "Si"	RelError: 8.12928e-23	AbsError: 7.03671e-12
+      Equation: "ElectronContinuityEquation"	RelError: 5.49552e-23	AbsError: 2.75092e-12
+      Equation: "HoleContinuityEquation"	RelError: 2.63366e-23	AbsError: 4.28579e-12
+      Equation: "PotentialEquation"	RelError: 1.03804e-27	AbsError: 1.44190e-29
+### SOLVE-END C-0.025
+### SOLVE-BEGIN C-0.050
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.83367e+01	AbsError: 5.50210e+15
+    Region: "Si"	RelError: 1.83367e+01	AbsError: 5.50210e+15
+      Equation: "ElectronContinuityEquation"	RelError: 7.39845e+00	AbsError: 2.75105e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.37657e+00	AbsError: 2.75105e+15
+      Equation: "PotentialEquation"	RelError: 3.56166e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.43805e+00	AbsError: 1.67264e+14
+    Region: "Si"	RelError: 1.43805e+00	AbsError: 1.67264e+14
+      Equation: "ElectronContinuityEquation"	RelError: 7.18975e-01	AbsError: 8.36318e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.18331e-01	AbsError: 8.36318e+13
+      Equation: "PotentialEquation"	RelError: 7.41861e-04	AbsError: 5.76109e-05
+Iteration: 2
+  Device: "d"	RelError: 1.74700e-03	AbsError: 2.84382e+10
+    Region: "Si"	RelError: 1.74700e-03	AbsError: 2.84382e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.73364e-04	AbsError: 1.42191e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.73598e-04	AbsError: 1.42191e+10
+      Equation: "PotentialEquation"	RelError: 4.26340e-08	AbsError: 4.62629e-09
+Iteration: 3
+  Device: "d"	RelError: 1.87725e-10	AbsError: 4.10812e+02
+    Region: "Si"	RelError: 1.87725e-10	AbsError: 4.10812e+02
+      Equation: "ElectronContinuityEquation"	RelError: 9.39425e-11	AbsError: 2.05406e+02
+      Equation: "HoleContinuityEquation"	RelError: 9.37824e-11	AbsError: 2.05406e+02
+      Equation: "PotentialEquation"	RelError: 1.32418e-16	AbsError: 4.05991e-17
+Iteration: 4
+  Device: "d"	RelError: 5.08188e-23	AbsError: 1.32708e-11
+    Region: "Si"	RelError: 5.08188e-23	AbsError: 1.32708e-11
+      Equation: "ElectronContinuityEquation"	RelError: 2.96642e-23	AbsError: 4.92393e-12
+      Equation: "HoleContinuityEquation"	RelError: 2.11461e-23	AbsError: 8.34686e-12
+      Equation: "PotentialEquation"	RelError: 8.49799e-27	AbsError: 3.98711e-29
+### SOLVE-END C-0.050
+### SOLVE-BEGIN C-0.075
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 1.99547e+01	AbsError: 5.41888e+15
+    Region: "Si"	RelError: 1.99547e+01	AbsError: 5.41888e+15
+      Equation: "ElectronContinuityEquation"	RelError: 5.47271e+00	AbsError: 2.70944e+15
+      Equation: "HoleContinuityEquation"	RelError: 5.45457e+00	AbsError: 2.70944e+15
+      Equation: "PotentialEquation"	RelError: 9.02745e+00	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.29900e+00	AbsError: 1.62037e+14
+    Region: "Si"	RelError: 1.29900e+00	AbsError: 1.62037e+14
+      Equation: "ElectronContinuityEquation"	RelError: 6.48366e-01	AbsError: 8.10183e+13
+      Equation: "HoleContinuityEquation"	RelError: 6.47592e-01	AbsError: 8.10183e+13
+      Equation: "PotentialEquation"	RelError: 3.04167e-03	AbsError: 5.63351e-05
+Iteration: 2
+  Device: "d"	RelError: 1.69273e-03	AbsError: 2.70849e+10
+    Region: "Si"	RelError: 1.69273e-03	AbsError: 2.70849e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.45994e-04	AbsError: 1.35424e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.46567e-04	AbsError: 1.35424e+10
+      Equation: "PotentialEquation"	RelError: 1.64575e-07	AbsError: 4.39578e-09
+Iteration: 3
+  Device: "d"	RelError: 1.40517e-10	AbsError: 3.80345e+02
+    Region: "Si"	RelError: 1.40517e-10	AbsError: 3.80345e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.01058e-11	AbsError: 1.90172e+02
+      Equation: "HoleContinuityEquation"	RelError: 7.04107e-11	AbsError: 1.90172e+02
+      Equation: "PotentialEquation"	RelError: 4.48865e-16	AbsError: 3.67715e-17
+Iteration: 4
+  Device: "d"	RelError: 6.82360e-24	AbsError: 2.21824e-11
+    Region: "Si"	RelError: 6.82360e-24	AbsError: 2.21824e-11
+      Equation: "ElectronContinuityEquation"	RelError: 2.36413e-24	AbsError: 9.94430e-12
+      Equation: "HoleContinuityEquation"	RelError: 4.45524e-24	AbsError: 1.22381e-11
+      Equation: "PotentialEquation"	RelError: 4.23803e-27	AbsError: 3.45181e-29
+### SOLVE-END C-0.075
+### SOLVE-BEGIN C-0.100
+number of equations 194886
+Iteration: 0
+  Device: "d"	RelError: 2.10576e+01	AbsError: 5.34141e+15
+    Region: "Si"	RelError: 2.10576e+01	AbsError: 5.34141e+15
+      Equation: "ElectronContinuityEquation"	RelError: 4.26261e+00	AbsError: 2.67070e+15
+      Equation: "HoleContinuityEquation"	RelError: 4.24639e+00	AbsError: 2.67070e+15
+      Equation: "PotentialEquation"	RelError: 1.25486e+01	AbsError: 2.50000e-02
+Iteration: 1
+  Device: "d"	RelError: 1.16939e+00	AbsError: 1.57132e+14
+    Region: "Si"	RelError: 1.16939e+00	AbsError: 1.57132e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.82287e-01	AbsError: 7.85662e+13
+      Equation: "HoleContinuityEquation"	RelError: 5.81289e-01	AbsError: 7.85662e+13
+      Equation: "PotentialEquation"	RelError: 5.81604e-03	AbsError: 5.51049e-05
+Iteration: 2
+  Device: "d"	RelError: 1.62227e-03	AbsError: 2.58872e+10
+    Region: "Si"	RelError: 1.62227e-03	AbsError: 2.58872e+10
+      Equation: "ElectronContinuityEquation"	RelError: 8.10280e-04	AbsError: 1.29436e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.11691e-04	AbsError: 1.29436e+10
+      Equation: "PotentialEquation"	RelError: 2.96794e-07	AbsError: 4.18172e-09
+Iteration: 3
+  Device: "d"	RelError: 1.06024e-10	AbsError: 3.50750e+02
+    Region: "Si"	RelError: 1.06024e-10	AbsError: 3.50750e+02
+      Equation: "ElectronContinuityEquation"	RelError: 5.26997e-11	AbsError: 1.75375e+02
+      Equation: "HoleContinuityEquation"	RelError: 5.33231e-11	AbsError: 1.75375e+02
+      Equation: "PotentialEquation"	RelError: 7.16425e-16	AbsError: 3.34169e-17
+Iteration: 4
+  Device: "d"	RelError: 4.27614e-24	AbsError: 1.45481e-11
+    Region: "Si"	RelError: 4.27614e-24	AbsError: 1.45481e-11
+      Equation: "ElectronContinuityEquation"	RelError: 2.56478e-24	AbsError: 6.51719e-12
+      Equation: "HoleContinuityEquation"	RelError: 1.68671e-24	AbsError: 8.03093e-12
+      Equation: "PotentialEquation"	RelError: 2.46535e-26	AbsError: 4.01498e-29
+### SOLVE-END C-0.100
+Replacing Edge Model x@n0 in region Si of material Si
+Replacing Edge Model x@n1 in region Si of material Si
+Replacing Edge Model node_index@n0 in region Si of material Si
+Replacing Edge Model node_index@n1 in region Si of material Si
+
+[worker_d4] wrote D4_M2_D0_h0.00125_P4.json error=False
+
+[d4] D4_M2_D0_h0.00125_P4 completed=True in 361.8 s
+{
+ "EVIDENCE_INTEGRITY": "EVIDENCE_INTEGRITY_PASS",
+ "integrity_errors": [],
+ "P12_generality": "P12_MATCHES_P4_FOR_TESTED_NONOBTUSE_DEFAULT_FIXTURES_AND_BIASES",
+ "node_state": "NODE_STATE_MATCHES_ON_TESTED_FIXTURES",
+ "per_fixture": {
+  "M1_D0_h0.005": {
+   "current": "PASS",
+   "node_state": "MATCHES"
+  },
+  "M1_D0_h0.00125": {
+   "current": "PASS",
+   "node_state": "MATCHES"
+  },
+  "M2_D0_h0.00125": {
+   "current": "PASS",
+   "node_state": "MATCHES"
+  }
+ }
+}
+[d4] output scrub replacements: 0; runs not completed: []; analysis rc=0 (0 = integrity pass)

@@ -1,0 +1,213 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-24T12:36:21.418482+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "d4-precision-generality-001",
+  "profile": "d4_precision_generality",
+  "params": {},
+  "note": "Batch 7H-D4. PLAN fixed in commit 18d678de81ebdff84c162665d9bb38340c7c48cb before this code and request."
+ },
+ "profile": "d4_precision_generality",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d4-precision-generality/PLAN.md",
+   "sha256": "7b9717d8a3deb988d262e368765bf2a9b9728ae01751133ffdc19414e94ef96e",
+   "bytes": 8779
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d4-precision-generality/PLAN.sha256",
+   "sha256": "9a4d5a4dbec9f5f54680ee9bdd77ae54344fdf468a9c20bcc94d9fbc0fe4b11c",
+   "bytes": 142
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d4-precision-generality/scripts/run_d4.py",
+   "sha256": "ba40e45c7e800ece1905ab7a28dafaa16845a4c2d8f640edd982532a730747d2",
+   "bytes": 5192
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d4-precision-generality/scripts/worker_d4.py",
+   "sha256": "d5e98a4b43575a7aeb4ceded8c1475b3568902e0a4c04ad2f45c8edc4652fc08",
+   "bytes": 6466
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d4-precision-generality/scripts/analyze_d4.py",
+   "sha256": "2998a2022934c61e03cc4bbc0ff978e7e9653784a4c5f8c0f5c5156c9f5705e6",
+   "bytes": 17799
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/worker_d3.py",
+   "sha256": "195e661cf7caabae0a92a87fd36a26d963f140be3d98e22a9110f36ed204cb76",
+   "bytes": 9254
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-d3-precision-pair-mirror/scripts/analyze_d3.py",
+   "sha256": "449bf100555f8330c73ba18736c6426f5f210f37534312b14b43232780f6bd35",
+   "bytes": 14851
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/scripts/build_fixtures_d2.py",
+   "sha256": "b46118dc17e2156cfdc672265829963897af78f4c959b25fcd75cce35dcf5f07",
+   "bytes": 2436
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/scripts/worker_d2.py",
+   "sha256": "353a4d3b4fa598fb2f8d68cc98892bf0b13bf3a1fac4f2a1cbcc664af4ef6f31",
+   "bytes": 10712
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/scripts/common_d2.py",
+   "sha256": "49b61187c2cc7576e4d1345a3da39504fb6bf93478894e28550ba04f449b744f",
+   "bytes": 3523
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d2-current-precision/data/fixed_d2.json",
+   "sha256": "8c334488583b9e9d99e41490fdb1c77731584ceb2906055c7cd4def4da43b7ee",
+   "bytes": 6469
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixtures_d1.json",
+   "sha256": "80d65d513ff9f923ff35cfe54cd937214b33cd47571797a005013e6e82d9f7f5",
+   "bytes": 4245634
+  }
+ ],
+ "request_sha256": "f85e94cc4320a9d4dca29450bb9c770fd7022a03390e21c2ef47cb40caafcd68",
+ "source": {
+  "github_sha": "a5a3489890c70cc3d2c80a95969e785f72a97137",
+  "git_head": "a5a3489890c70cc3d2c80a95969e785f72a97137",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36000025313",
+  "run_number": "4",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": true,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-24-batch7h-d4-precision-generality/scripts/run_d4.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-24T13:05:21.839781+00:00",
+ "duration_s": 1740.421,
+ "outputs": [
+  {
+   "path": "d4_out/analysis_d4_mode_d4.json",
+   "bytes": 39301,
+   "sha256": "8d32b0b011703c73f37c8c783620f8df546d372a1090ba78441e89d3bff762d2"
+  },
+  {
+   "path": "d4_out/fixture_gate.json",
+   "bytes": 1889,
+   "sha256": "d5f9765ff90c9d5643d9a9e42d3ba9a99af58f7787b1db5a18684a6bfedd41e0"
+  },
+  {
+   "path": "d4_out/runs/D4_M1_D0_h0.00125_P12.json",
+   "bytes": 39685,
+   "sha256": "9b6cd2af99a0948767778a479812ee279ca41c5d8bab577595815ec0d940377a"
+  },
+  {
+   "path": "d4_out/runs/D4_M1_D0_h0.00125_P4.json",
+   "bytes": 39608,
+   "sha256": "62508b89e80e4d94d161d8e536222210a59329e64b5c87b8d0cc81c083a3bbcf"
+  },
+  {
+   "path": "d4_out/runs/D4_M1_D0_h0.005_P12.json",
+   "bytes": 39593,
+   "sha256": "5fa40ef7069b5810f49b9939e49b8960ca31c05f5d37048a4ccaf6b2623b4ce4"
+  },
+  {
+   "path": "d4_out/runs/D4_M1_D0_h0.005_P4.json",
+   "bytes": 39615,
+   "sha256": "3d12c2f9d1f6c1b71d5e2e9318fe379c831e2b9defbf48a6a9bce193c29ae44e"
+  },
+  {
+   "path": "d4_out/runs/D4_M2_D0_h0.00125_P12.json",
+   "bytes": 39574,
+   "sha256": "32e20b986089b68674a924944327b108aab87367eec95c18112d40a78628cd37"
+  },
+  {
+   "path": "d4_out/runs/D4_M2_D0_h0.00125_P4.json",
+   "bytes": 39513,
+   "sha256": "b1490f8723a218dba7542db2cf5d369775d03c6bc030bb167496e6cf63196472"
+  },
+  {
+   "path": "d4_out/runs/D4_M1_D0_h0.00125_P12.npz",
+   "bytes": 252294,
+   "sha256": "38f0cad914111b97aef4477813fe8ac3ec021911f6b179c893bc29e109463833"
+  },
+  {
+   "path": "d4_out/runs/D4_M1_D0_h0.00125_P4.npz",
+   "bytes": 220544,
+   "sha256": "0dc86b53479a3927e156d05f54e4db17266e29512cff1dbb3cd74f53134998bc"
+  },
+  {
+   "path": "d4_out/runs/D4_M1_D0_h0.005_P12.npz",
+   "bytes": 49215,
+   "sha256": "9a9839368e5ec324816a8e56c3abb02151a283f52fc3ebd50422ec6162db3404"
+  },
+  {
+   "path": "d4_out/runs/D4_M1_D0_h0.005_P4.npz",
+   "bytes": 44538,
+   "sha256": "9f7e505e2d9d070a110059e84103b9f04ca79ff61c3d9d9cddec286659b52829"
+  },
+  {
+   "path": "d4_out/runs/D4_M2_D0_h0.00125_P12.npz",
+   "bytes": 179666,
+   "sha256": "3919a5433586b7c63bd82abd816143f64aa3fd5100678455ffa6c8b7fc80006a"
+  },
+  {
+   "path": "d4_out/runs/D4_M2_D0_h0.00125_P4.npz",
+   "bytes": 139504,
+   "sha256": "777cb8f21a0a031b15b77f826e563be55200c5277afc762a1f573627a9f255fc"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile. fixtures_d2.json is regenerated by build_fixtures_d2.py and hash-gated (e2c018a6...).",
+ "log": {
+  "file": "run.log",
+  "sha256": "8a379552be2932e7bed26d8f691a9e419d38959a7caad49a465240fff2b18256",
+  "bytes": 146861
+ },
+ "redactions": {}
+}

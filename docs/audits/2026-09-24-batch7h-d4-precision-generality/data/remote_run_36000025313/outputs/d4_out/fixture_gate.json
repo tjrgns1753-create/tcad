@@ -1,0 +1,9 @@
+{
+ "expected_sha256": "e2c018a62292c4f4f9e215a8aa525148c15a618bc50792c141318a6a81f3a6f2",
+ "regeneration_exit_code": 0,
+ "regeneration_s": 138.1,
+ "stdout_tail": "as 0 Tetrahedra.\nPhysical group name right has 0 Triangles.\nPhysical group name right has 80 Lines.\nPhysical group name right has 81 Points.\nDevice q has 64962 coordinates with max index 64961\nRegion Si has 64962 nodes.\nContact left in region Si with 81 nodes\nContact right in region Si with 81 nodes\nM3_h0.00125 {\"n_nodes\": 64962, \"n_triangles\": 128160, \"classes\": {\"acute\": 112282, \"right\": 806, \"obtuse\": 15072}, \"min_angle_deg\": 21.370622269342412, \"max_angle_deg\": 114.77514056883427, \"all_ccw\": true, \"exact_delaunay_violations_interior\": 0, \"boundary_gabriel_violations\": 0, \"exact_positive_overlaps\": 0, \"signed_edge_couple\": {\"negative\": 0, \"zero\": 400, \"positive\": 192721, \"min_cm\": 0.0}, \"signed_node_volume\": {\"negative\": 0, \"zero\": 0, \"positive\": 64962, \"min_cm2\": 1.9531250000000418e-15}, \"x0_column_nodes\": 0, \"left_contact_nodes\": 81, \"right_contact_nodes\": 81, \"area_exact_um2\": \"3602879701896397/36028797018963968\", \"h_um\": 0.00125, \"zero_doped_junction_nodes\": 0, \"inventory\": {\"default\": {\"acceptor_cm-1\": 51836182.85542912, \"donor_cm-1\": 51836182.85542912, \"rel_asymmetry\": 0.0, \"sum_over_area\": 1.0367236571080116}, \"signed\": {\"acceptor_cm-1\": 50000000.000000015, \"donor_cm-1\": 50000000.000000015, \"rel_asymmetry\": 0.0, \"sum_over_area\": 0.9999999999994496}}, \"j2\": {\"n_triangles_clipped_exactly\": 1440, \"n_nodes_with_exact_pieces\": 810, \"n_nodes_cv_crossing_x0\": 0, \"J2_equals_J1\": true}}\nfixtures_d2.json sha256 e2c018a62292c4f4f9e215a8aa525148c15a618bc50792c141318a6a81f3a6f2\n",
+ "stderr_tail": "",
+ "sha256": "e2c018a62292c4f4f9e215a8aa525148c15a618bc50792c141318a6a81f3a6f2",
+ "match": true
+}
