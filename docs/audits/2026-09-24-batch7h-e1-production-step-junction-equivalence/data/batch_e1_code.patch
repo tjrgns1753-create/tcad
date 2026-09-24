@@ -1,0 +1,962 @@
+diff --git a/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.md b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.md
+new file mode 100644
+index 0000000..d93efac
+--- /dev/null
++++ b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.md
+@@ -0,0 +1,80 @@
++# Batch 7H-E1 PLAN (fixed BEFORE any ViennaPS / DEVSIM execution of this batch; never edited after results)
++
++Execution location: everything that runs ViennaPS or DEVSIM (production mesh generation, control, shadow) runs on a
++GitHub-hosted Windows runner (`claude/remote-runner`, profile `e1_production_step_junction`). Locally only code reading,
++code writing, static checks and synthetic-input analyzer tests.
++
++## 0. Question and limits
++Is the production 2D step-junction path (what a user builds) physically equivalent to the D2/D4 benchmark fixtures?
++Precision-flag comparison is not repeated. D4's approved result (P12 == P4 on three synthetic non-obtuse fixtures) does not
++extend to the production mesh. Nothing here releases `STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED`, changes production
++flags or code, or merges anything. A shadow result is never "supported in production".
++
++## 1. Production path followed (read-only mapping; full file:line table in REPORT)
++The one production path that reaches the 2D step-junction gate today (the CLI `run_pipeline()` stops earlier, documented in
++`tests/integration/test_step_junction_2d_gate_real.py` module docstring): GUI materialize wafer
++(`tcad_2d_stagewise.py:254-285`, `make_mask_spans` + `save_volume_mesh`) -> `run_doping` (`:5028`, `build_process_result`,
++`apply_step_junction_doping` at `:5110`, `advance_wafer_state(..., "doping", barrier_windows, "x")` at `:5278`, initial state
++`initial_wafer_state_from_recipe` at `:3854`) -> `run_measurement` (`:5704`, `import_process_result` at `:5822` with
++`refine_near_um` = junction position, `apply_doping` at `:5891`, `run_pn_junction_iv_sweep` at `:5895`).
++The run reproduces this sequence by calling the same library functions with the GUI default arguments (the GUI itself is not
++executed): Wafer width 10 um, silicon depth 5 um, y extent 8 um, grid 0.05 um (`tcad/core/models.py:22-23,100`), no resist
++spans, mask height max(pr 1.0, 0.1) = 1.0 um, substrate depth 6 um, floor 5 um; step junction region Si, axis x, position
++0 um, donor = acceptor = 1e18 cm^-3, ACTIVE (`tcad_2d_stagewise.py:4823-4837`); barrier windows from
++`derive_barrier_covered_windows(..., "SiO2", "x", min 0.0)` (`:5228-5236`, threshold default `:4938-4940`); import mesh
++`gui_measure_mesh`, device `gui_measure_device`, contact regions [Si], axis x, length scale 1e-4, refine near 0.0 on x
++(half width 0.1 um, 4 levels = import defaults); measurement source pin max, 0.3 V, other contact 0 V (`:5583-5624`).
++
++## 2. Control (production gate, must hold)
++On the production device, `apply_doping` is called unmodified. Instrumented without changing behaviour: counts of
++`devsim.solve`, and of `node_model` / `set_node_values` / `edge_model` calls naming Donors, Acceptors or NetDoping; every
++`WaferStateV2.net_doping_at` return value is recorded in call order (observation of the values the gate computes before it
++raises). `GATE_HELD` iff `UnsupportedDopingState` with reason_code `STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED`, 0 solves,
++0 doping writes, and NetDoping absent afterwards. Otherwise `GATE_NOT_HELD` and STOP (no shadow).
++
++## 3. Pre-checks on the production mesh (recorded before any shadow solve)
++Node / triangle counts; exact angle classes, min/max angle, exact Delaunay and boundary-Gabriel violations, signed edge-couple
++and signed node-volume negatives (7H-D `quality()`); DEVSIM default sum NodeVolume / exact area; nodes with x = 0 exactly and
++the doping written there (J0 / J1); regions, materials and contact node sets with their x positions; dopant inventory
++sum(Donors x NodeVolume), sum(Acceptors x NodeVolume) versus the exact area integral N x area(side); recorded canonical values
++versus a direct `state.net_doping_at` query at every node (count of differences). Nothing here is graded as PASS; it is the
++equivalence table. A benchmark property is called "same" only if the numbers / hashes match.
++
++## 4. Shadow (audit-only, never production)
++Only if `GATE_HELD` and identity holds: the same mesh file (sha256), imported with the same arguments into a new device whose
++node coordinates and element list sha256 equal the control device's; Donors / Acceptors / NetDoping written with the public
++DEVSIM API from the recorded canonical per-node arrays (sha256 recorded; node order proven by coordinate equality with the
++recorded query coordinates). Any mismatch: `SHADOW_IDENTITY_FAIL`, no shadow solve, INCONCLUSIVE.
++Then the unmodified production routine `run_pn_junction_iv_sweep(device, "Si", contacts, sweep_contact = max-x contact,
++[0.3], fixed_contacts = {min-x contact: 0.0})` runs exactly as the GUI calls it (its own tolerances: Poisson abs 1.0 / rel 1e-6,
++drift-diffusion abs 1e10 / rel 1e-6, 100 iterations, single bias jump). Two shadow runs, each its own subprocess:
++* S0: no precision flag set (production default; flags left unset, read back);
++* S12: `extended_model` = `extended_equation` = True, `extended_solver` unset-default False (audit variant; D4's result does
++  not cover this mesh, so everything is recorded independently).
++`devsim.solve` is wrapped only to snapshot after each call; after the second call (0 V drift-diffusion) and after the bias
++solve: contact currents per species, the five 7H-D2 cuts (x = -0.25, -0.10, 0, +0.10, +0.25 um; node on a cut to the R side),
++C3 residuals, carrier positivity / finiteness, max |ElectricField| on edges, contact potentials, material parameters read back.
++
++## 5. Shadow verdicts (per run; thresholds reused unchanged from 7H-D1/D2/D3, none new)
++* `NOT_CONVERGED` if the production routine raises.
++* positivity: n, p > 0 and finite at 0 V and 0.3 V.
++* equilibrium (0 V): |I_contact| and |I_cut| <= 1e-6 x |I(0.3 V)| of the same run; quasi-Fermi flatness <= 1e-6 V; max |n p / n_i^2 - 1| <= 1e-6.
++* conservation (0.3 V): |I_L + I_R| / |I_L|, five-cut spread, |I_L - I_cut(0)|, |I_R + I_cut(0)| (relative) <= 1e-5; C3 species and total <= 1e-5 |I_cut(0)|.
++* denominator rule: a relative comparison with |reference| < 1e-6 x max cut |I| is UNDECIDABLE (INCONCLUSIVE, never PASS).
++`SHADOW_CONSISTENT` iff converged and all hold; `SHADOW_INCONSISTENT` iff converged and any fails; `INCONCLUSIVE` iff only
++undecidable. Analytic depletion-approximation values are reported as reference ranges only, not graded (n_i 1e10 cm^-3,
++eps 9.8235e-13 F/cm, T 300 K, V_T 0.025887 V, N_A = N_D = 1e18 cm^-3, abrupt junction, full depletion, infinite neutral
++regions): V_bi 0.95372 V, W(0 V) 0.0484 um, W(0.3 V reverse) 0.0555 um, E_peak 3.94e5 / 4.52e5 V/cm, L_D 0.0040 um.
++They are not the exact solution of a finite-domain drift-diffusion problem.
++Mesh convergence: only one production mesh is run, so it is `UNVERIFIED` by construction; no convergence claim is made.
++
++## 6. JSON and artifacts
++New JSON is written with `allow_nan=False`; a non-finite diagnostic is stored as null with an explicit status field, and every
++new JSON file is re-read with a strict parser. D4's original files are not touched. Artifact: summary, sanitized log, all JSON,
++node arrays (npz) with sha256; budget 200 MB, anything omitted is listed with its sha256 and the regeneration note.
++
++## 7. Stop conditions (report UNSUPPORTED_BY_MODEL grounds, do not adapt)
++Geometry / doping support not exactly mappable; shadow and production mesh node / element or doping inventory mismatch;
++flag / parameter / contact readback mismatch; non-convergence, conservation failure or non-physical carriers are reported as
++results (not repaired); anything that would need a DEVSIM internal change or a numerical correction. No threshold, mesh,
++material parameter or bias is changed after a result is seen.
+diff --git a/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.sha256 b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.sha256
+new file mode 100644
+index 0000000..37df1a0
+--- /dev/null
++++ b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.sha256
+@@ -0,0 +1,2 @@
++ef7a3eadcd4d2e16935f95696bda257dd47c5f91f351ea08fe8fec83fd030a57  PLAN.md (sha256 of the LF-normalized file)
++fixed_utc 2026-09-24T14:18:19Z
+diff --git a/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/analyze_e1.py b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/analyze_e1.py
+new file mode 100644
+index 0000000..12c8d24
+--- /dev/null
++++ b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/analyze_e1.py
+@@ -0,0 +1,127 @@
++"""Batch 7H-E1 analysis: PLAN sections 2-5 verdicts + production-vs-benchmark comparison table. Strict JSON output.
++usage: analyze_e1.py <work dir> <out dir>"""
++import json
++import math
++import os
++import sys
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, HERE)
++import common_e1 as ce  # noqa: E402
++
++TAU, ZERO, DEN, QF, MA = 1e-5, 1e-6, 1e-6, 1e-6, 1e-6
++PLAN_SHA = "ef7a3eadcd4d2e16935f95696bda257dd47c5f91f351ea08fe8fec83fd030a57"
++
++
++def num(v):
++    return v if isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) else None
++
++
++def shadow_verdict(s):
++    if s is None:
++        return {"verdict": "NOT_RUN"}
++    if not s.get("identity_ok"):
++        return {"verdict": "SHADOW_IDENTITY_FAIL", "identity": s.get("identity")}
++    if not s.get("converged"):
++        return {"verdict": "NOT_CONVERGED", "error": s.get("error"), "solve_calls": s.get("solve_calls")}
++    eq, bp = s.get("equilibrium_0V"), s["bias_point"]
++    c = list(bp["C0"])
++    L, R = bp["C0"][c[0]]["total"], bp["C0"][c[1]]["total"]
++    cuts = [v["total"] for v in bp["C2"].values()]
++    i0 = bp["C2"]["+0.00"]["total"]
++    scale = max(abs(v) for v in cuts)
++    chk, undec = {}, []
++
++    def rel(name, a, ref, limit):
++        if ref == 0 or abs(ref) < DEN * scale:
++            undec.append(name)
++            chk[name] = {"value": None, "status": "UNDECIDABLE_DENOMINATOR"}
++            return
++        v = abs(a) / abs(ref)
++        chk[name] = {"value": v, "limit": limit, "ok": v <= limit}
++    rel("lr_mismatch", L + R, L, TAU)
++    med = sorted(cuts)[2]
++    rel("cut_spread", max(abs(v - med) for v in cuts), med, TAU)
++    rel("left_vs_cut0", (L - i0) if c[0].endswith("xmin") else (L + i0), i0, TAU)
++    rel("right_vs_cut0", (R + i0) if c[1].endswith("xmax") else (R - i0), i0, TAU)
++    rel("c3_species", max(max(abs(v["dI_n"] - v["q_int_U"]), abs(v["dI_p"] + v["q_int_U"])) for v in bp["C3"].values()), i0, TAU)
++    rel("c3_total", max(abs(v["dI_total"]) for v in bp["C3"].values()), i0, TAU)
++    chk["positivity_bias"] = {"ok": bool(bp["positive_finite"])}
++    if eq is None:
++        chk["equilibrium"] = {"ok": False, "status": "NO_0V_SNAPSHOT"}
++    else:
++        chk["positivity_0V"] = {"ok": bool(eq["positive_finite"])}
++        zc = all(abs(eq["C0"][k]["total"]) <= ZERO * abs(bp["C0"][k]["total"]) for k in c)
++        zk = all(abs(eq["C2"][k]["total"]) <= ZERO * abs(bp["C2"][k]["total"]) for k in eq["C2"])
++        chk["zero_bias_currents"] = {"ok": bool(zc and zk)}
++        qf, ma = num(eq["qf_dev_V"]), num(eq["mass_action_dev"])
++        chk["qf_flatness_0V"] = {"value": qf, "limit": QF, "ok": qf is not None and qf <= QF}
++        chk["mass_action_0V"] = {"value": ma, "limit": MA, "ok": ma is not None and ma <= MA}
++    fails = [k for k, v in chk.items() if v.get("ok") is False]
++    v = "SHADOW_INCONSISTENT" if fails else ("INCONCLUSIVE" if undec else "SHADOW_CONSISTENT")
++    return {"verdict": v, "failed_checks": fails, "undecidable": undec, "checks": chk}
++
++
++def bench():
++    f1 = json.load(open(os.path.join(ROOT, "docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixtures_d1.json"), encoding="utf-8"))
++    fx = json.load(open(os.path.join(ROOT, "docs/audits/2026-09-23-batch7h-d2-current-precision/data/fixed_d2.json"), encoding="utf-8"))
++    return {k: f1[k]["quality"] for k in ("M1_h0.005", "M2_h0.005")}, fx
++
++
++def main():
++    work, outd = sys.argv[1], sys.argv[2]
++    os.makedirs(outd, exist_ok=True)
++    prod = ce.load_strict(os.path.join(work, "prod.json"))
++    sh = {v: (ce.load_strict(os.path.join(work, f"shadow_{v}.json")) if os.path.exists(os.path.join(work, f"shadow_{v}.json")) else None)
++          for v in ("S0", "S12")}
++    plan = ce.sha(open(os.path.join(HERE, "..", "PLAN.md"), "rb").read().replace(b"\r\n", b"\n"))
++    out = {"plan_sha256": plan, "plan_matches": plan == PLAN_SHA, "control": prod.get("control"),
++           "prod_error": prod.get("error"), "shadows": {v: shadow_verdict(s) for v, s in sh.items()}}
++    q, dp = prod.get("mesh_quality", {}), prod.get("doping_prechecks", {})
++    qb, fx = bench()
++    b1, b2 = qb["M1_h0.005"], qb["M2_h0.005"]
++    rows = []
++
++    def row(name, p, b, same):
++        rows.append({"property": name, "production": p, "benchmark_D2_D4": b, "same": same})
++    pr = prod.get("region_facts", {}).get("Si", {})
++    row("domain Si x range (um)", pr.get("x_range_um"), [-0.5, 0.5], pr.get("x_range_um") == [-0.5, 0.5])
++    row("domain Si y range (um)", pr.get("y_range_um"), [0.0, 0.1], pr.get("y_range_um") == [0.0, 0.1])
++    row("regions", prod.get("regions"), ["Si"], prod.get("regions") == ["Si"])
++    row("Si nodes / triangles", [q.get("n_nodes"), q.get("n_triangles")], {"M1": [b1["n_nodes"], b1["n_triangles"]], "M2": [b2["n_nodes"], b2["n_triangles"]]}, False)
++    row("angle classes", q.get("classes"), {"M1": b1["classes"], "M2": b2["classes"]}, None)
++    row("max angle (deg)", q.get("max_angle_deg"), 90.0, q.get("max_angle_deg") is not None and q.get("max_angle_deg") <= 90.0)
++    row("exact Delaunay violations", q.get("exact_delaunay_violations_interior"), 0, q.get("exact_delaunay_violations_interior") == 0)
++    row("boundary Gabriel violations", q.get("boundary_gabriel_violations"), 0, q.get("boundary_gabriel_violations") == 0)
++    row("negative signed edge couples", (q.get("signed_edge_couple") or {}).get("negative"), 0, (q.get("signed_edge_couple") or {}).get("negative") == 0)
++    row("negative signed node volumes", (q.get("signed_node_volume") or {}).get("negative"), 0, (q.get("signed_node_volume") or {}).get("negative") == 0)
++    row("DEVSIM sum NodeVolume / exact area", q.get("devsim_sum_NodeVolume_over_exact_area"), 1.0, None)
++    row("nodes exactly at x = 0", dp.get("nodes_x_eq_0"), 0, dp.get("nodes_x_eq_0") == 0)
++    row("junction representation", dp.get("representation"), "J1 (no node on x = 0, dual boundary exactly on x = 0)", dp.get("nodes_x_eq_0") == 0)
++    row("NetDoping at x = 0 nodes (cm^-3)", dp.get("netdoping_at_x0_values"), "no such node", None)
++    row("N_A / N_D (cm^-3)", [ce.GUI["doping"]["acceptor_conc_cm3"], ce.GUI["doping"]["donor_conc_cm3"]], [1e17, 1e17], False)
++    row("dopant inventory donor / acceptor (cm^-1)", [dp.get("inventory_donor_cm-1"), dp.get("inventory_acceptor_cm-1")], "N x side area exactly (J1)", None)
++    row("x = 0 control-volume area (cm^2)", dp.get("sum_NodeVolume_x0_cm2"), 0.0, dp.get("sum_NodeVolume_x0_cm2") == 0.0)
++    row("contacts", prod.get("contacts"), ["left", "right"], None)
++    row("contact x positions (um)", prod.get("contact_x_um"), [-0.5, 0.5], None)
++    row("mesh spacing near junction (um)", prod.get("mesh_spacing"), "uniform 0.005 (M2) / irregular non-obtuse (M1), half cells at contacts", None)
++    for v, s in sh.items():
++        if s and s.get("parameters"):
++            row(f"material parameters ({v} readback)", s["parameters"], "same production setup functions (T 300 K, n_i 1e10, mu_n 400, mu_p 200, taun = taup 1e-8)", None)
++    row("solver rule", "production routine: Poisson abs 1.0 / rel 1e-6; DD abs 1e10 / rel 1e-6; 100 it; no info", fx["solver"], False)
++    row("precision flags", "none (production default)", "P12 / P4 in D3/D4", False)
++    row("bias", "single jump to +0.3 V on the max-x (n) contact = 0.3 V reverse", "p contact ramp 0.025 V steps to +-0.10 V", False)
++    out["comparison"] = rows
++    out["prechecks"] = {"mesh_quality": q, "doping": dp, "capture": prod.get("capture"), "barrier_windows": prod.get("barrier_windows"),
++                        "state": prod.get("state"), "dimension": prod.get("dimension"), "contact_facts": prod.get("contact_facts")}
++    out["mesh_convergence"] = "UNVERIFIED (one production mesh; no refinement study registered)"
++    ce.dump_strict(out, os.path.join(outd, "analysis_e1.json"))
++    print(json.dumps({"plan_matches": out["plan_matches"], "control": (out["control"] or {}).get("verdict"),
++                      "shadows": {k: v["verdict"] for k, v in out["shadows"].items()}}, indent=1))
++    return 0
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py
+new file mode 100644
+index 0000000..3190760
+--- /dev/null
++++ b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py
+@@ -0,0 +1,69 @@
++"""Batch 7H-E1 shared constants and helpers (no ViennaPS/DEVSIM import at module level).
++
++GUI default arguments reproduced by the production build (source lines in PLAN.md section 1):
++Wafer width 10 um, silicon depth 5 um (tcad/core/models.py:22-23), grid 0.05 um (:100), y extent 8 um and
++mask height max(pr_thickness 1.0, 0.1) (tcad_2d_stagewise.py materialize branch), step junction Si / x / 0 um /
++1e18 / 1e18 ACTIVE (:4823-4837), barrier threshold 0.0 (:4938-4940), measurement: source pin max, 0.3 V (:5595-5624),
++length scale 1e-4, refine near the junction position on the junction axis (:5779-5786)."""
++import hashlib
++import json
++import math
++import os
++import re
++
++GUI = {
++    "grid_delta_um": 0.05, "x_extent_um": 10.0, "y_extent_um": 8.0, "silicon_depth_um": 5.0,
++    "pr_thickness_um": 1.0, "mask_spans_um": [],
++    "doping": {"region": "Si", "junction_axis": "x", "junction_position_um": 0.0,
++               "donor_conc_cm3": 1.0e18, "acceptor_conc_cm3": 1.0e18, "chemical_state": "ACTIVE"},
++    "barrier": {"barrier_material": "SiO2", "axis": "x", "min_barrier_thickness_um": 0.0},
++    "import": {"mesh_name": "gui_measure_mesh", "device_name": "gui_measure_device", "contact_regions": ["Si"],
++               "contact_axis": "x", "length_scale_to_cm": 1.0e-4, "refine_near_um": 0.0, "refine_axis": "x"},
++    "measure": {"source_pin": "max", "voltage": 0.3, "gnd_voltage": 0.0},
++}
++REASON = "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED"
++USER_PATH = re.compile(r"[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s\"']+")
++
++
++def sha(b):
++    return hashlib.sha256(b).hexdigest()
++
++
++def sha_file(p):
++    return sha(open(p, "rb").read())
++
++
++def finite_or_status(v):
++    """Strict-JSON value: finite float as is; non-finite -> {'value': None, 'status': 'NONFINITE_<kind>'}."""
++    if isinstance(v, float) and not math.isfinite(v):
++        return {"value": None, "status": "NONFINITE_" + ("NAN" if math.isnan(v) else ("POS_INF" if v > 0 else "NEG_INF"))}
++    return v
++
++
++def strict(o):
++    if isinstance(o, dict):
++        return {k: strict(v) for k, v in o.items()}
++    if isinstance(o, (list, tuple)):
++        return [strict(v) for v in o]
++    if hasattr(o, "item") and not isinstance(o, (str, bytes)):
++        try:
++            o = o.item()
++        except (ValueError, AttributeError):
++            pass
++    if isinstance(o, float):
++        return finite_or_status(o)
++    return o
++
++
++def dump_strict(obj, path):
++    text = json.dumps(strict(obj), indent=1, allow_nan=False, default=str)
++    text = USER_PATH.sub("<USERPROFILE>", text)
++    with open(path, "w", encoding="utf-8", newline="\n") as f:
++        f.write(text + "\n")
++    load_strict(path)
++
++
++def load_strict(path):
++    def bad(c):
++        raise ValueError(f"non-strict JSON constant {c} in {os.path.basename(path)}")
++    return json.loads(open(path, encoding="utf-8").read(), parse_constant=bad)
+diff --git a/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/prod_build_e1.py b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/prod_build_e1.py
+new file mode 100644
+index 0000000..5583215
+--- /dev/null
++++ b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/prod_build_e1.py
+@@ -0,0 +1,229 @@
++"""Batch 7H-E1 step A: production build + control + pre-checks (one subprocess, remote only).
++
++Reproduces the GUI sequence with the GUI default arguments by calling the SAME production library functions
++(no production code is modified; the GUI itself is not executed):
++  materialize wafer (make_mask_spans + save_volume_mesh) -> initial_wafer_state_from_recipe ->
++  advance_wafer_state(state, mesh ProcessResult, None)  [GUI _sync_wafer_state_geometry] ->
++  build_process_result + apply_step_junction_doping + derive_barrier_covered_windows ->
++  advance_wafer_state(state, doped, "doping", barrier_windows, "x") -> import_process_result -> apply_doping (CONTROL).
++Instrumentation only observes: devsim.solve / doping-model write counts, and every WaferStateV2.net_doping_at return value.
++usage: prod_build_e1.py <work dir>   -> <work>/prod.json, <work>/prod_arrays.npz, <work>/wafer mesh files"""
++import json
++import os
++import sys
++import traceback
++
++sys.dont_write_bytecode = True
++os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, HERE)
++sys.path.insert(0, ROOT)
++sys.path.insert(0, os.path.join(ROOT, "docs", "audits", "2026-09-23-batch7h-d-sg-pn-mesh-validity", "scripts"))
++import common_e1 as ce  # noqa: E402
++
++UM = 1e-4
++WRITE_NAMES = {"Donors", "Acceptors", "NetDoping"}
++
++
++def build(work, out):
++    import devsim
++    from tcad.backends.viennaps import session as vs
++    from tcad.backends.viennaps.io import save_volume_mesh
++    from tcad.mesh.viennaps_adapter import build_process_result
++    from tcad.physics.doping import apply_step_junction_doping
++    from tcad.physics.wafer_state_accumulation import initial_wafer_state_from_recipe, advance_wafer_state
++    from tcad.device.devsim.mesh_import import import_process_result, derive_barrier_covered_windows
++    g = ce.GUI
++    domain = vs.make_mask_spans(grid_delta_um=g["grid_delta_um"], x_extent_um=g["x_extent_um"], y_extent_um=g["y_extent_um"],
++                                spans_um=[tuple(s) for s in g["mask_spans_um"]], mask_height_um=max(g["pr_thickness_um"], 0.1),
++                                substrate_depth_um=g["silicon_depth_um"] + 1.0)
++    mesh_path = save_volume_mesh(domain, os.path.join(work, "wafer"), floor_depth_um=g["silicon_depth_um"])
++    out["mesh_file"] = {"name": os.path.basename(mesh_path), "sha256": ce.sha_file(mesh_path)}
++    state = initial_wafer_state_from_recipe({"x_extent_um": g["x_extent_um"], "silicon_depth_um": g["silicon_depth_um"],
++                                             "grid_delta_um": g["grid_delta_um"]})
++    sync_pr = build_process_result({"final_mesh": mesh_path, "snapshots": [], "state_transition": None})
++    state = advance_wafer_state(state, sync_pr, None)
++    process_result = build_process_result({"final_mesh": mesh_path, "snapshots": []})
++    d = g["doping"]
++    doped = apply_step_junction_doping(process_result, region=d["region"], junction_axis=d["junction_axis"],
++                                       junction_position_um=d["junction_position_um"], donor_conc_cm3=d["donor_conc_cm3"],
++                                       acceptor_conc_cm3=d["acceptor_conc_cm3"], chemical_state=d["chemical_state"])
++    try:
++        b = g["barrier"]
++        barrier = derive_barrier_covered_windows(doped, doped_region=d["region"], barrier_material=b["barrier_material"],
++                                                 axis=b["axis"], min_barrier_thickness_um=b["min_barrier_thickness_um"])
++        out["barrier_windows"] = {"status": "OK", "value": barrier}
++    except Exception as e:  # noqa: BLE001 - the GUI catches this and uses None
++        barrier = None
++        out["barrier_windows"] = {"status": "EXCEPTION_GUI_USES_NONE", "error": repr(e)[:200]}
++    state = advance_wafer_state(state, doped, "doping", barrier_windows=barrier, barrier_axis="x")
++    out["state"] = {"n_attachments": len(state.attachments),
++                    "attachments": [{"model": a.model, "chemical_state": a.chemical_state, "polarity": a.polarity}
++                                    for a in state.attachments],
++                    "events_status": [getattr(e, "model_status", None) for e in state.events],
++                    "active_cells": [{"material": c.material, "lifecycle": c.lifecycle, "bounds_um": c.bounds_um}
++                                     for c in state.active_cells()]}
++    i = g["import"]
++    imported = import_process_result(doped, mesh_name=i["mesh_name"], device_name=i["device_name"],
++                                     contact_regions=i["contact_regions"], contact_axis=i["contact_axis"],
++                                     length_scale_to_cm=i["length_scale_to_cm"], refine_near_um=i["refine_near_um"],
++                                     refine_axis=i["refine_axis"])
++    return devsim, imported, state, doped
++
++
++def device_facts(dv, imported, out, arrays):
++    dev = imported.device
++    out["dimension"] = int(dv.get_dimension(device=dev))
++    out["regions"] = list(dv.get_region_list(device=dev))
++    out["contacts"] = list(imported.contacts)
++    reg = {}
++    for r in out["regions"]:
++        x = np.array(dv.get_node_model_values(device=dev, region=r, name="x"))
++        y = np.array(dv.get_node_model_values(device=dev, region=r, name="y"))
++        el = np.array(dv.get_element_node_list(device=dev, region=r), dtype=np.int64)
++        nv = np.array(dv.get_node_model_values(device=dev, region=r, name="NodeVolume"))
++        reg[r] = {"material": dv.get_material(device=dev, region=r), "n_nodes": int(len(x)), "n_elements": int(len(el)),
++                  "x_range_um": [float(x.min() / UM), float(x.max() / UM)], "y_range_um": [float(y.min() / UM), float(y.max() / UM)],
++                  "x_sha256": ce.sha(x.tobytes()), "y_sha256": ce.sha(y.tobytes()), "elements_sha256": ce.sha(el.tobytes()),
++                  "sum_NodeVolume_cm2": float(nv.sum())}
++        if r == "Si":
++            arrays.update({"x": x, "y": y, "elements": el, "NodeVolume": nv})
++    out["region_facts"] = reg
++    out["contact_facts"] = {c: {"region": list(dv.get_region_list(device=dev, contact=c))} for c in imported.contacts}
++
++
++def control(dv, imported, state, out):
++    from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
++    from tcad.physics.wafer_state_v2 import WaferStateV2
++    counts = {"solve": 0, "doping_writes": 0, "writes": []}
++    rec = []
++    orig = {n: getattr(dv, n) for n in ("solve", "node_model", "set_node_values", "edge_model")}
++    orig_q = WaferStateV2.net_doping_at
++
++    def w_solve(*a, **k):
++        counts["solve"] += 1
++        return orig["solve"](*a, **k)
++
++    def mk(name):
++        def w(*a, **k):
++            if k.get("name") in WRITE_NAMES:
++                counts["doping_writes"] += 1
++                counts["writes"].append(f"{name}:{k.get('name')}")
++            return orig[name](*a, **k)
++        return w
++
++    def q(self, x_um, y_um, *a, **k):
++        r = orig_q(self, x_um, y_um, *a, **k)
++        rec.append((float(x_um), float(y_um), r.donor_concentration, r.acceptor_concentration, r.net_doping,
++                    r.physics_status is None))
++        return r
++    dv.solve = w_solve
++    for n in ("node_model", "set_node_values", "edge_model"):
++        setattr(dv, n, mk(n))
++    WaferStateV2.net_doping_at = q
++    import devsim as _dvmod
++    patched_module = [n for n in ("solve", "node_model", "set_node_values", "edge_model") if getattr(_dvmod, n) is not orig[n]]
++    try:
++        apply_doping(imported.device, "Si", state, length_scale_to_cm=ce.GUI["import"]["length_scale_to_cm"])
++        out["control"] = {"raised": False}
++    except UnsupportedDopingState as e:
++        st = e.physics_status
++        out["control"] = {"raised": True, "reason_code": st.get("reason_code"), "resolution": st.get("resolution"),
++                          "total_nodes": st.get("total_nodes"), "blocked_nodes": st.get("blocked_nodes"),
++                          "first_line": str(e).splitlines()[0][:300]}
++    except Exception as e:  # noqa: BLE001
++        out["control"] = {"raised": True, "other_exception": repr(e)[:300]}
++    finally:
++        for n, f in orig.items():
++            setattr(dv, n, f)
++        WaferStateV2.net_doping_at = orig_q
++    netdoping_absent = True
++    for m in WRITE_NAMES:
++        try:
++            dv.get_node_model_values(device=imported.device, region="Si", name=m)
++            netdoping_absent = False
++        except dv.error:
++            pass
++    out["control"].update({"solve_calls": counts["solve"], "doping_writes": counts["doping_writes"], "writes": counts["writes"],
++                           "doping_models_absent_after": netdoping_absent, "instrumented_names": patched_module,
++                           "net_doping_at_calls": len(rec)})
++    c = out["control"]
++    c["verdict"] = "GATE_HELD" if (c.get("reason_code") == ce.REASON and c["solve_calls"] == 0 and c["doping_writes"] == 0
++                                   and netdoping_absent) else "GATE_NOT_HELD"
++    return rec
++
++
++def prechecks(dv, imported, state, rec, out, arrays):
++    import build_fixtures_7hd as bf7  # 7H-D quality(), read-only
++    x, y, el, nv = arrays["x"], arrays["y"], arrays["elements"], arrays["NodeVolume"]
++    n = len(x)
++    qx = np.array([r[0] for r in rec]) if rec else np.array([])
++    out["capture"] = {"n_records": len(rec), "n_nodes": n}
++    ok_capture = len(rec) == n and np.allclose(qx, x / UM, rtol=0, atol=1e-9)
++    snapped = int(np.sum(np.abs(qx - x / UM) > 0)) if len(rec) == n else None
++    out["capture"].update({"one_record_per_node_in_order": bool(ok_capture), "records_with_query_x_ne_node_x": snapped,
++                           "all_known": bool(all(r[5] for r in rec))})
++    if ok_capture:
++        donors = np.array([r[2] for r in rec], dtype=float)
++        acceptors = np.array([r[3] for r in rec], dtype=float)
++        nets = np.array([r[4] for r in rec], dtype=float)
++        arrays.update({"Donors": donors, "Acceptors": acceptors, "NetDoping": nets,
++                       "query_x_um": qx, "query_y_um": np.array([r[1] for r in rec])})
++        out["capture"]["doping_sha256"] = {k: ce.sha(arrays[k].tobytes()) for k in ("Donors", "Acceptors", "NetDoping")}
++        direct = np.array([[q.donor_concentration, q.acceptor_concentration, q.net_doping]
++                           for q in (state.net_doping_at(float(xx / UM), float(yy / UM)) for xx, yy in zip(x, y))], dtype=float)
++        out["capture"]["direct_query_mismatch_nodes"] = int(np.sum(np.any(direct != np.column_stack([donors, acceptors, nets]), axis=1)))
++        on0 = x == 0.0
++        area = float(nv.sum())
++        Lm, Rm = x < 0, x > 0
++        d = ce.GUI["doping"]
++        out["doping_prechecks"] = {
++            "nodes_x_eq_0": int(on0.sum()), "netdoping_at_x0_values": sorted(set(float(v) for v in nets[on0])),
++            "donors_at_x0": sorted(set(float(v) for v in donors[on0])), "acceptors_at_x0": sorted(set(float(v) for v in acceptors[on0])),
++            "representation": "J0 (node on the junction, NetDoping = ND - NA there)" if on0.any() else "no node on the junction",
++            "sum_NodeVolume_x0_cm2": float(nv[on0].sum()),
++            "inventory_donor_cm-1": float((donors * nv).sum()), "inventory_acceptor_cm-1": float((acceptors * nv).sum()),
++            "exact_donor_cm-1": d["donor_conc_cm3"] * float(nv[Rm].sum() + 0.5 * nv[on0].sum()),
++            "exact_acceptor_cm-1": d["acceptor_conc_cm3"] * float(nv[Lm].sum() + 0.5 * nv[on0].sum()),
++            "exact_basis": "N x (NodeVolume of the side + half the x=0 CV); the exact geometric area split of the x=0 CVs is also given",
++            "region_area_from_NodeVolume_cm2": area,
++            "donor_nodes": int((nets > 0).sum()), "acceptor_nodes": int((nets < 0).sum()), "zero_net_nodes": int((nets == 0).sum())}
++    P = np.column_stack([x / UM, y / UM])
++    tris = [[int(a), int(b), int(c)] for a, b, c in el]
++    out["mesh_quality"] = bf7.quality(P, tris)
++    out["mesh_quality"]["devsim_sum_NodeVolume_over_exact_area"] = float(nv.sum() / (sum(bf7.sl.fm.tri_area(P[t] * UM) for t in tris)))
++    out["contact_x_um"] = {"x_min_nodes": int(np.sum(x == x.min())), "x_max_nodes": int(np.sum(x == x.max())),
++                           "x_min_um": float(x.min() / UM), "x_max_um": float(x.max() / UM)}
++    xs = np.unique(np.round(x / UM, 9))
++    dx = np.diff(xs)
++    out["mesh_spacing"] = {"distinct_x": int(len(xs)), "min_dx_um": float(dx.min()), "max_dx_um": float(dx.max()),
++                           "min_dx_within_0.1um_of_junction": float(dx[np.abs(xs[:-1]) < 0.1].min()) if np.any(np.abs(xs[:-1]) < 0.1) else None}
++
++
++def main():
++    work = os.path.abspath(sys.argv[1])
++    os.makedirs(work, exist_ok=True)
++    out, arrays = {"gui_defaults": ce.GUI}, {}
++    try:
++        dv, imported, state, doped = build(work, out)
++        device_facts(dv, imported, out, arrays)
++        rec = control(dv, imported, state, out)
++        prechecks(dv, imported, state, rec, out, arrays)
++        dv.delete_device(device=imported.device)
++        dv.delete_mesh(mesh=imported.mesh)
++        out["devices_left"] = list(dv.get_device_list())
++    except Exception as e:  # noqa: BLE001
++        out["error"] = repr(e)[:500]
++        out["traceback"] = traceback.format_exc()[-2000:]
++    np.savez_compressed(os.path.join(work, "prod_arrays.npz"), **arrays)
++    out["arrays_npz_sha256"] = ce.sha_file(os.path.join(work, "prod_arrays.npz"))
++    out["arrays"] = sorted(arrays)
++    ce.dump_strict(out, os.path.join(work, "prod.json"))
++    print(f"[prod_build_e1] control={out.get('control', {}).get('verdict')} error={'error' in out}", flush=True)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/run_e1.py b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/run_e1.py
+new file mode 100644
+index 0000000..4ab19dc
+--- /dev/null
++++ b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/run_e1.py
+@@ -0,0 +1,74 @@
++"""Batch 7H-E1 driver (remote profile entry). A: production build + control + pre-checks; B: shadows S0, S12 only if
++the control held and the capture is complete; C: analysis. Refuses to run outside a GitHub-hosted runner.
++Exit 0 only if step A produced prod.json without error and the analysis ran (physics verdicts are in analysis_e1.json).
++Outputs: <repo>/e1_out (not committed)."""
++import argparse
++import os
++import shutil
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++OUT = os.path.join(ROOT, "e1_out")
++WORK = os.path.join(ROOT, "e1_work")
++sys.path.insert(0, HERE)
++import common_e1 as ce  # noqa: E402
++
++
++def step(name, args, timeout):
++    t = time.time()
++    print(f"\n[e1] ===== {name} =====", flush=True)
++    try:
++        p = subprocess.run([sys.executable, *args], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
++        print(p.stdout[-200000:], flush=True)
++        if p.stderr.strip():
++            print("[e1][stderr]", p.stderr[-4000:], flush=True)
++        rc = p.returncode
++    except subprocess.TimeoutExpired:
++        print(f"[e1] NOT_COMPLETED: {name} timeout {timeout} s", flush=True)
++        rc = "timeout"
++    print(f"[e1] {name} rc={rc} in {time.time() - t:.1f} s", flush=True)
++    return rc
++
++
++def main():
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--validate-only", action="store_true")
++    a = ap.parse_args()
++    hosted = os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
++    print(f"[e1] GUI defaults reproduced: {ce.GUI}", flush=True)
++    if a.validate_only:
++        return 0
++    if not hosted:
++        print("[e1] refusing to run: not a GitHub-hosted runner", flush=True)
++        return 2
++    os.makedirs(WORK, exist_ok=True)
++    os.makedirs(OUT, exist_ok=True)
++    step("A production build + control + pre-checks", [os.path.join(HERE, "prod_build_e1.py"), WORK], 7200)
++    prod_path = os.path.join(WORK, "prod.json")
++    if not os.path.exists(prod_path):
++        print("[e1] STOP: prod.json missing", flush=True)
++        return 1
++    prod = ce.load_strict(prod_path)
++    go = ("error" not in prod and (prod.get("control") or {}).get("verdict") == "GATE_HELD"
++          and (prod.get("capture") or {}).get("one_record_per_node_in_order") and (prod.get("capture") or {}).get("all_known"))
++    print(f"[e1] shadow allowed by PLAN: {bool(go)}", flush=True)
++    if go:
++        for v in ("S0", "S12"):
++            step(f"B shadow {v}", [os.path.join(HERE, "shadow_e1.py"), WORK, v], 7200)
++    rc = step("C analysis", [os.path.join(HERE, "analyze_e1.py"), WORK, OUT], 3600)
++    for f in os.listdir(WORK):
++        if f.endswith((".json", ".npz")):
++            shutil.copyfile(os.path.join(WORK, f), os.path.join(OUT, f))
++    for f in os.listdir(OUT):
++        if f.endswith(".json"):
++            ce.load_strict(os.path.join(OUT, f))     # every JSON must parse strictly
++    print(f"[e1] outputs: {sorted(os.listdir(OUT))}", flush=True)
++    return 0 if "error" not in prod and rc == 0 else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/shadow_e1.py b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/shadow_e1.py
+new file mode 100644
+index 0000000..40c9c48
+--- /dev/null
++++ b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/shadow_e1.py
+@@ -0,0 +1,203 @@
++"""Batch 7H-E1 step B: AUDIT-ONLY SHADOW (never production), one variant per subprocess, remote only.
++
++Same mesh file (sha256 checked) imported with the same production arguments into a new device; node coordinates and
++element list must hash-equal the control device; Donors / Acceptors / NetDoping are written with the public DEVSIM API
++from the canonical per-node arrays recorded during the control (sha256 checked, node order proven). Then the UNMODIFIED
++production routine run_pn_junction_iv_sweep runs exactly as the GUI calls it. devsim.solve is wrapped only to snapshot
++after each call. Measurements (C0/C1/C2/C3) follow the 7H-D2 worker definitions, rewritten for this device's contact
++names (worker_d2.measure hard-codes contacts 'left'/'right').
++usage: shadow_e1.py <work dir> <S0|S12>   -> <work>/shadow_<V>.json, <work>/shadow_<V>_states.npz"""
++import json
++import os
++import sys
++import time
++import traceback
++
++sys.dont_write_bytecode = True
++os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, HERE)
++sys.path.insert(0, ROOT)
++import common_e1 as ce  # noqa: E402
++
++UM, Q = 1e-4, 1.6e-19
++CUTS_UM = (-0.25, -0.10, 0.0, 0.10, 0.25)
++FLAGS = ("extended_model", "extended_equation", "extended_solver")
++PARAMS = ("Permittivity", "ElectronCharge", "n_i", "T", "kT", "V_t", "mu_n", "mu_p", "n1", "p1", "taun", "taup")
++
++
++def flags(dv):
++    out = {}
++    for n in FLAGS:
++        try:
++            out[n] = dv.get_parameter(name=n)
++        except Exception as e:  # noqa: BLE001
++            out[n] = "UNSET: " + str(e).strip()[:50]
++    return out
++
++
++def measure(dv, dev, contacts):
++    nv = lambda n: np.array(dv.get_node_model_values(device=dev, region="Si", name=n))  # noqa: E731
++    ev = lambda n: np.array(dv.get_edge_model_values(device=dev, region="Si", name=n))  # noqa: E731
++    x, psi, n, p = nv("x"), nv("Potential"), nv("Electrons"), nv("Holes")
++    usrh, vol = nv("USRH"), nv("NodeVolume")
++    for m in ("x", "node_index"):
++        dv.edge_from_node_model(device=dev, region="Si", node_model=m)
++    n0, n1 = ev("node_index@n0").astype(int), ev("node_index@n1").astype(int)
++    cpl = ev("EdgeCouple")
++    Fn, Fp = ev("ElectronCurrent") * cpl, ev("HoleCurrent") * cpl
++    out = {"C0": {}, "C1": {}, "C2": {}, "C3": {}}
++    for c in contacts:
++        e_ = float(dv.get_contact_current(device=dev, contact=c, equation="ElectronContinuityEquation"))
++        h_ = float(dv.get_contact_current(device=dev, contact=c, equation="HoleContinuityEquation"))
++        out["C0"][c] = {"n": e_, "p": h_, "total": e_ + h_}
++    for c, cset in ((contacts[0], x == x.min()), (contacts[1], x == x.max())):
++        a, b = cset[n0], cset[n1]
++        s = np.where(a & ~b, 1.0, np.where(b & ~a, -1.0, 0.0))
++        out["C1"][c] = {"total": float(np.sum(s * (Fn + Fp))), "n_edges": int(np.count_nonzero(s))}
++    xum = x / UM
++    for xc in CUTS_UM:
++        L = xum < xc
++        a, b = L[n0], L[n1]
++        s = np.where(a & ~b, 1.0, np.where(b & ~a, -1.0, 0.0))
++        out["C2"][f"{xc:+.2f}"] = {"n": float(np.sum(s * Fn)), "p": float(np.sum(s * Fp)), "total": float(np.sum(s * (Fn + Fp))),
++                                   "n_edges": int(np.count_nonzero(s)), "nodes_on_cut": int(np.sum(xum == xc))}
++    ks = [f"{xc:+.2f}" for xc in CUTS_UM]
++    for ka, kb, xa, xb in zip(ks[:-1], ks[1:], CUTS_UM[:-1], CUTS_UM[1:]):
++        m = (xum >= xa) & (xum < xb)
++        g = float(Q * np.sum(usrh[m] * vol[m]))
++        out["C3"][f"{ka}..{kb}"] = {"dI_n": out["C2"][kb]["n"] - out["C2"][ka]["n"], "q_int_U": g,
++                                    "dI_p": out["C2"][kb]["p"] - out["C2"][ka]["p"],
++                                    "dI_total": out["C2"][kb]["total"] - out["C2"][ka]["total"]}
++    vt = float(dv.get_parameter(device=dev, region="Si", name="V_t"))
++    ni = float(dv.get_parameter(device=dev, region="Si", name="n_i"))
++    fin = bool(np.all(np.isfinite(n)) and np.all(np.isfinite(p)) and np.all(np.isfinite(psi)))
++    out["positive_finite"] = bool(fin and n.min() > 0 and p.min() > 0)
++    if fin and n.min() > 0 and p.min() > 0:
++        phin, phip = psi - vt * np.log(n / ni), psi + vt * np.log(p / ni)
++        out["qf_dev_V"] = float(max(np.max(np.abs(phin - np.median(phin))), np.max(np.abs(phip - np.median(phip)))))
++        out["mass_action_dev"] = float(np.max(np.abs(n * p / ni ** 2 - 1)))
++    else:
++        out["qf_dev_V"] = {"value": None, "status": "CARRIERS_NOT_POSITIVE_FINITE"}
++        out["mass_action_dev"] = {"value": None, "status": "CARRIERS_NOT_POSITIVE_FINITE"}
++    out["psi_contact_V"] = {contacts[0]: float(psi[x == x.min()].mean()), contacts[1]: float(psi[x == x.max()].mean())}
++    out["max_abs_ElectricField_V_per_cm"] = float(np.max(np.abs(ev("ElectricField"))))
++    out["n_range"] = [float(n.min()), float(n.max())]
++    out["p_range"] = [float(p.min()), float(p.max())]
++    out["bias_readback"] = {c: float(dv.get_parameter(device=dev, name=f"{c}_bias")) for c in contacts}
++    return out, {"psi": psi, "n": n, "p": p}
++
++
++def main():
++    work, var = os.path.abspath(sys.argv[1]), sys.argv[2]
++    import devsim as dv
++    from tcad.mesh.viennaps_adapter import build_process_result
++    from tcad.physics.doping import apply_step_junction_doping
++    from tcad.device.devsim.mesh_import import import_process_result
++    from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
++    prod = ce.load_strict(os.path.join(work, "prod.json"))
++    arr = np.load(os.path.join(work, "prod_arrays.npz"))
++    out = {"variant": var, "label": "AUDIT-ONLY SHADOW - not a production-supported result", "flags_at_start": flags(dv)}
++    states = {}
++    t0 = time.time()
++    try:
++        if var == "S12":
++            dv.set_parameter(name="extended_model", value=True)
++            dv.set_parameter(name="extended_equation", value=True)
++        out["flags_set"] = flags(dv)
++        mesh = os.path.join(work, prod["mesh_file"]["name"])
++        g = ce.GUI
++        ident = {"mesh_file_sha256_equal": ce.sha_file(mesh) == prod["mesh_file"]["sha256"]}
++        pr = build_process_result({"final_mesh": mesh, "snapshots": []})
++        d = g["doping"]
++        doped = apply_step_junction_doping(pr, region=d["region"], junction_axis=d["junction_axis"],
++                                           junction_position_um=d["junction_position_um"], donor_conc_cm3=d["donor_conc_cm3"],
++                                           acceptor_conc_cm3=d["acceptor_conc_cm3"], chemical_state=d["chemical_state"])
++        i = dict(g["import"])
++        i["mesh_name"], i["device_name"] = "shadow_mesh", "shadow_device"
++        imp = import_process_result(doped, mesh_name=i["mesh_name"], device_name=i["device_name"], contact_regions=i["contact_regions"],
++                                    contact_axis=i["contact_axis"], length_scale_to_cm=i["length_scale_to_cm"],
++                                    refine_near_um=i["refine_near_um"], refine_axis=i["refine_axis"])
++        dev = imp.device
++        x = np.array(dv.get_node_model_values(device=dev, region="Si", name="x"))
++        y = np.array(dv.get_node_model_values(device=dev, region="Si", name="y"))
++        el = np.array(dv.get_element_node_list(device=dev, region="Si"), dtype=np.int64)
++        pf = prod["region_facts"]["Si"]
++        ident.update({"x_sha256_equal": ce.sha(x.tobytes()) == pf["x_sha256"], "y_sha256_equal": ce.sha(y.tobytes()) == pf["y_sha256"],
++                      "elements_sha256_equal": ce.sha(el.tobytes()) == pf["elements_sha256"],
++                      "contacts_equal": list(imp.contacts) == prod["contacts"],
++                      "regions_equal": list(dv.get_region_list(device=dev)) == prod["regions"],
++                      "doping_sha256_equal": all(ce.sha(arr[k].tobytes()) == prod["capture"]["doping_sha256"][k]
++                                                 for k in ("Donors", "Acceptors", "NetDoping")),
++                      "doping_node_order_proven": bool(np.array_equal(arr["query_x_um"], x / UM) and np.array_equal(arr["query_y_um"], y / UM))})
++        nvol = np.array(dv.get_node_model_values(device=dev, region="Si", name="NodeVolume"))
++        ident["inventory_equal"] = (float((arr["Donors"] * nvol).sum()) == prod["doping_prechecks"]["inventory_donor_cm-1"]
++                                    and float((arr["Acceptors"] * nvol).sum()) == prod["doping_prechecks"]["inventory_acceptor_cm-1"])
++        out["identity"] = ident
++        out["identity_ok"] = all(ident.values())
++        if not out["identity_ok"]:
++            out["status"] = "SHADOW_IDENTITY_FAIL"
++            raise SystemExit
++        for name in ("Donors", "Acceptors", "NetDoping"):       # same public calls as tcad apply_doping writes
++            dv.node_model(device=dev, region="Si", name=name, equation="0")
++            dv.set_node_values(device=dev, region="Si", name=name, values=[float(v) for v in arr[name]])
++        contacts = list(imp.contacts)
++        src = contacts[1] if g["measure"]["source_pin"] == "max" else contacts[0]
++        gnd = contacts[0] if src == contacts[1] else contacts[1]
++        out["sweep"] = {"sweep_contact": src, "voltage": g["measure"]["voltage"], "fixed": {gnd: g["measure"]["gnd_voltage"]}}
++        calls = []
++        orig = dv.solve
++
++        def snap(*a, **k):
++            t = time.time()
++            try:
++                r = orig(*a, **k)
++                calls.append({"k": {kk: vv for kk, vv in k.items()}, "ok": True, "wall_s": round(time.time() - t, 3)})
++                return r
++            except Exception as e:  # noqa: BLE001
++                calls.append({"k": {kk: vv for kk, vv in k.items()}, "ok": False, "error": repr(e)[:200], "wall_s": round(time.time() - t, 3)})
++                raise
++            finally:
++                if len(calls) == 2 and calls[-1]["ok"] and "equilibrium_0V" not in out:
++                    m, s = measure(dv, dev, contacts)
++                    out["equilibrium_0V"] = m
++                    states.update({f"{kk}_0V": v for kk, v in s.items()})
++        dv.solve = snap
++        try:
++            res = run_pn_junction_iv_sweep(device=dev, region="Si", all_contacts=contacts, sweep_contact=src,
++                                           sweep_voltages=[g["measure"]["voltage"]], fixed_contacts={gnd: g["measure"]["gnd_voltage"]})
++            out["converged"] = True
++            out["production_routine_currents"] = [pt.currents for pt in res.points]
++            m, s = measure(dv, dev, contacts)
++            out["bias_point"] = m
++            states.update({f"{kk}_bias": v for kk, v in s.items()})
++        except Exception as e:  # noqa: BLE001
++            out["converged"] = False
++            out["error"] = repr(e)[:300]
++        finally:
++            dv.solve = orig
++        out["solve_calls"] = calls
++        out["parameters"] = {p: float(dv.get_parameter(device=dev, region="Si", name=p)) for p in PARAMS}
++        out["flags_at_end"] = flags(dv)
++        dv.delete_device(device=dev)
++        dv.delete_mesh(mesh=imp.mesh)
++        out["devices_left"] = list(dv.get_device_list())
++    except SystemExit:
++        pass
++    except Exception as e:  # noqa: BLE001
++        out["error"] = repr(e)[:500]
++        out["traceback"] = traceback.format_exc()[-2000:]
++    out["wall_s"] = round(time.time() - t0, 1)
++    if states:
++        p = os.path.join(work, f"shadow_{var}_states.npz")
++        np.savez_compressed(p, **states)
++        out["states_npz_sha256"] = ce.sha_file(p)
++    ce.dump_strict(out, os.path.join(work, f"shadow_{var}.json"))
++    print(f"[shadow_e1] {var} identity_ok={out.get('identity_ok')} converged={out.get('converged')} error={'error' in out}", flush=True)
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/synthetic_e1_test.py b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/synthetic_e1_test.py
+new file mode 100644
+index 0000000..eaa8780
+--- /dev/null
++++ b/docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/synthetic_e1_test.py
+@@ -0,0 +1,76 @@
++"""Batch 7H-E1 SYNTHETIC test (no physics, no ViennaPS/DEVSIM): strict-JSON handling and analyze_e1 verdict logic.
++Cases: consistent, conservation_fail, not_converged, identity_fail, nonfinite_qf, undecidable.
++usage: synthetic_e1_test.py <work dir>"""
++import copy
++import json
++import os
++import subprocess
++import sys
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++sys.path.insert(0, HERE)
++import common_e1 as ce  # noqa: E402
++
++CUTS = ["-0.25", "-0.10", "+0.00", "+0.10", "+0.25"]
++
++
++def point(I, scale0=1.0):
++    return {"C0": {"Si_xmin": {"n": 0.3 * I, "p": 0.7 * I, "total": I}, "Si_xmax": {"n": -0.3 * I, "p": -0.7 * I, "total": -I}},
++            "C1": {}, "C2": {c: {"n": 0.3 * I, "p": 0.7 * I, "total": I * scale0} for c in CUTS},
++            "C3": {f"{a}..{b}": {"dI_n": 0.0, "dI_p": 0.0, "q_int_U": 0.0, "dI_total": 0.0} for a, b in zip(CUTS[:-1], CUTS[1:])},
++            "positive_finite": True, "qf_dev_V": 1e-12, "mass_action_dev": 1e-12}
++
++
++def shadow(case):
++    s = {"identity_ok": True, "converged": True, "parameters": {"T": 300.0}, "bias_point": point(-2e-15), "equilibrium_0V": point(1e-30)}
++    if case == "conservation_fail":
++        s["bias_point"]["C2"]["+0.10"]["total"] *= 1 + 1e-3
++    if case == "not_converged":
++        s.update({"converged": False, "error": "Convergence failure"})
++    if case == "identity_fail":
++        s.update({"identity_ok": False, "identity": {"x_sha256_equal": False}})
++    if case == "nonfinite_qf":
++        s["equilibrium_0V"]["qf_dev_V"] = float("nan")
++    if case == "undecidable":        # every current exactly 0: all relative checks undecidable, none failing
++        s["bias_point"], s["equilibrium_0V"] = point(0.0), point(0.0)
++    return s
++
++
++def main():
++    work = os.path.abspath(sys.argv[1])
++    res, ok_all = {}, True
++    # strict JSON: NaN/Inf become status objects and the file parses strictly
++    p = os.path.join(work, "strict.json")
++    os.makedirs(work, exist_ok=True)
++    ce.dump_strict({"a": float("nan"), "b": [float("inf"), 1.0]}, p)
++    txt = open(p, encoding="utf-8").read()
++    strict_ok = "NaN" not in txt and "Infinity" not in txt and ce.load_strict(p)["a"]["status"] == "NONFINITE_NAN"
++    try:
++        open(p, "w").write('{"x": NaN}')
++        ce.load_strict(p)
++        rejects = False
++    except ValueError:
++        rejects = True
++    res["strict_json"] = {"writer_ok": strict_ok, "reader_rejects_NaN": rejects}
++    ok_all = ok_all and strict_ok and rejects
++    want = {"consistent": "SHADOW_CONSISTENT", "conservation_fail": "SHADOW_INCONSISTENT", "not_converged": "NOT_CONVERGED",
++            "identity_fail": "SHADOW_IDENTITY_FAIL", "nonfinite_qf": "SHADOW_INCONSISTENT", "undecidable": "INCONCLUSIVE"}
++    prod = {"control": {"verdict": "GATE_HELD"}, "contacts": ["Si_xmin", "Si_xmax"], "regions": ["Si"],
++            "region_facts": {"Si": {"x_range_um": [-5, 5], "y_range_um": [-5, 0]}}, "mesh_quality": {}, "doping_prechecks": {}}
++    for case, w in want.items():
++        d = os.path.join(work, case)
++        os.makedirs(d, exist_ok=True)
++        ce.dump_strict(prod, os.path.join(d, "prod.json"))
++        ce.dump_strict(shadow(case), os.path.join(d, "shadow_S0.json"))
++        subprocess.run([sys.executable, os.path.join(HERE, "analyze_e1.py"), d, os.path.join(d, "out")], capture_output=True, text=True)
++        got = ce.load_strict(os.path.join(d, "out", "analysis_e1.json"))["shadows"]["S0"]["verdict"]
++        res[case] = {"got": got, "expected": w, "ok": got == w}
++        ok_all = ok_all and got == w
++        print(case, res[case])
++    print("strict_json", res["strict_json"], "ALL_OK", ok_all)
++    json.dump(res, open(os.path.join(work, "synthetic_e1_results.json"), "w"), indent=1)
++    return 0 if ok_all else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/remote/profiles.py b/remote/profiles.py
+index 254165b..f57d548 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -65,6 +65,34 @@ PROFILES = {
+         "outputs": [{"glob": "d4_out/**/*.json", "max_mb": 50}, {"glob": "d4_out/**/*.npz", "max_mb": 50}],
+         "regenerate": "Rerun the profile. fixtures_d2.json is regenerated by build_fixtures_d2.py and hash-gated (e2c018a6...).",
+     },
++    "e1_production_step_junction": {
++        "description": "Batch 7H-E1: production GUI step-junction path (ViennaPS mesh -> WaferStateV2 -> DEVSIM import), gate control, pre-checks, audit-only shadows S0/S12.",
++        "entry": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/run_e1.py",
++        "args": [],
++        "params": {},
++        "timeout_s": 18000,
++        "inputs": [
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.md",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/PLAN.sha256",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/run_e1.py",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/prod_build_e1.py",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/shadow_e1.py",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/analyze_e1.py",
++            "docs/audits/2026-09-23-batch7h-d-sg-pn-mesh-validity/scripts/build_fixtures_7hd.py",
++            "docs/audits/2026-09-23-batch7h-d-sg-pn-mesh-validity/scripts/meshes_7hd.py",
++            "docs/audits/2026-09-23-batch7h-d-sg-pn-mesh-validity/scripts/sg_lib.py",
++            "docs/audits/2026-09-23-batch7h-c-flux-discretization/scripts/meshes.py",
++            "docs/audits/2026-09-23-batch7h-b-nodevolume-mechanism/scripts/formulas.py",
++            "docs/audits/2026-09-23-batch7h-exact-flip-certification/scripts/exact_flip.py",
++            "docs/audits/2026-09-23-batch7h-exact-flip-certification/scripts/exact_geometry.py",
++            "docs/audits/2026-09-23-batch7h-d2-current-precision/data/fixed_d2.json",
++            "docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixtures_d1.json",
++            "tcad_2d_stagewise.py",
++        ],
++        "outputs": [{"glob": "e1_out/**/*.json", "max_mb": 50}, {"glob": "e1_out/**/*.npz", "max_mb": 50}],
++        "regenerate": "Rerun the profile. Production mesh is regenerated by ViennaPS from the GUI defaults in common_e1.py.",
++    },
+ }
+ 
+ # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.
+diff --git a/remote/request.json b/remote/request.json
+index 37da834..360947e 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -1,7 +1,7 @@
+ {
+  "schema": 1,
+- "request_id": "d4-precision-generality-001",
+- "profile": "d4_precision_generality",
++ "request_id": "e1-production-step-junction-001",
++ "profile": "e1_production_step_junction",
+  "params": {},
+- "note": "Batch 7H-D4. PLAN fixed in commit 18d678de81ebdff84c162665d9bb38340c7c48cb before this code and request."
++ "note": "Batch 7H-E1. PLAN fixed in commit 628895894b6d16bd47970095dfae68f7413ca266 before this code and request."
+ }
