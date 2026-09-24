@@ -1,0 +1,128 @@
+{
+ "good": {
+  "got": [
+   "EVIDENCE_INTEGRITY_PASS",
+   "P12_MATCHES_P4_FOR_TESTED_NONOBTUSE_DEFAULT_FIXTURES_AND_BIASES",
+   "NODE_STATE_MATCHES_ON_TESTED_FIXTURES"
+  ],
+  "expected": [
+   "EVIDENCE_INTEGRITY_PASS",
+   "P12_MATCHES_P4_FOR_TESTED_NONOBTUSE_DEFAULT_FIXTURES_AND_BIASES",
+   "NODE_STATE_MATCHES_ON_TESTED_FIXTURES"
+  ],
+  "ok": true,
+  "first_error": null
+ },
+ "node_diff": {
+  "got": [
+   "EVIDENCE_INTEGRITY_PASS",
+   "P12_MATCHES_P4_FOR_TESTED_NONOBTUSE_DEFAULT_FIXTURES_AND_BIASES",
+   "NODE_STATE_DIFFERS"
+  ],
+  "expected": [
+   "EVIDENCE_INTEGRITY_PASS",
+   "P12_MATCHES_P4_FOR_TESTED_NONOBTUSE_DEFAULT_FIXTURES_AND_BIASES",
+   "NODE_STATE_DIFFERS"
+  ],
+  "ok": true,
+  "first_error": null
+ },
+ "cur_diff": {
+  "got": [
+   "EVIDENCE_INTEGRITY_PASS",
+   "P12_DIFFERS_FROM_P4_ON_TESTED_FIXTURE",
+   "NODE_STATE_MATCHES_ON_TESTED_FIXTURES"
+  ],
+  "expected": [
+   "EVIDENCE_INTEGRITY_PASS",
+   "P12_DIFFERS_FROM_P4_ON_TESTED_FIXTURE",
+   "NODE_STATE_MATCHES_ON_TESTED_FIXTURES"
+  ],
+  "ok": true,
+  "first_error": null
+ },
+ "npz_missing": {
+  "got": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "expected": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "ok": true,
+  "first_error": "D4_M1_D0_h0.00125_P4: node-state archive missing"
+ },
+ "npz_tamper": {
+  "got": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "expected": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "ok": true,
+  "first_error": "D4_M1_D0_h0.00125_P4: node-state archive hash mismatch"
+ },
+ "run_missing": {
+  "got": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "expected": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "ok": true,
+  "first_error": "missing run file D4_M2_D0_h0.00125_P12.json"
+ },
+ "field_gone": {
+  "got": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "expected": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "ok": true,
+  "first_error": "D4_M1_D0_h0.005_P12: missing required field identical_to_stored"
+ },
+ "bad_flags": {
+  "got": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "expected": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "ok": true,
+  "first_error": "D4_M1_D0_h0.005_P12: flags_set {'extended_model': True, 'extended_equation': True, 'extended_solver': True} != target {'extended_model': True, 'extended_equation': True, 'extended_solver': False}"
+ },
+ "not_conv": {
+  "got": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "expected": [
+   "EVIDENCE_INTEGRITY_FAIL",
+   "P12_GENERALITY_INCONCLUSIVE",
+   "NODE_STATE_INCONCLUSIVE"
+  ],
+  "ok": true,
+  "first_error": "D4_M2_D0_h0.00125_P4: step C-0.075 not accepted (ok=True, converged=True, rel=1e-08)"
+ }
+}

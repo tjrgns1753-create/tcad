@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "d3-precision-mirror-002",
- "profile": "d3_precision_mirror",
+ "request_id": "d4-precision-generality-001",
+ "profile": "d4_precision_generality",
  "params": {},
- "note": "Rerun of run 35895798384 (commit a960b01): identical code and PLAN except run_d3.py wrote d3_out one directory too high (docs/d3_out), so no result JSON reached the artifact. Only that path was corrected."
+ "note": "Batch 7H-D4. PLAN fixed in commit 18d678de81ebdff84c162665d9bb38340c7c48cb before this code and request."
 }

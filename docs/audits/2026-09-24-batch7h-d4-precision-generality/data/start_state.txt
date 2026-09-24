@@ -1,0 +1,13 @@
+recorded_utc Thu Sep 24 12:28:44 UTC 2026
+branch claude/remote-runner
+HEAD e16e67a81cdb69d518450e0951b3212bd10fbcc6
+origin/claude/remote-runner e16e67a81cdb69d518450e0951b3212bd10fbcc6
+origin/claude/waferstate-v2 023bcb90f8b8a0972d6df84f097ca6387f0ab82a
+origin/main d60e9aed3c52ba33dc243f12894bf12f74db16f8
+review_sha 023bcb90f8b8a0972d6df84f097ca6387f0ab82a
+staged 0  tracked-modified 0  untracked 1233
+diff --check normal rc=0
+diff --check clean-env rc=0
+production/tests vs review SHA rc=0 (0 = identical)
+remote runs in progress: 0
+local python.exe=5 compute_processes=0 (non-compute = uv-cache MCP servers)

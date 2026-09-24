@@ -1,0 +1,100 @@
+{
+ "baseline": {
+  "old_d3_analyzer": {
+   "E1": "PASS",
+   "E2": "MIRROR_PASS",
+   "identity_all_ok": true,
+   "plan_hash_matches": true
+  },
+  "new_d4_analyzer": {
+   "integrity": "EVIDENCE_INTEGRITY_PASS",
+   "E1": "PASS",
+   "E2": "MIRROR_PASS",
+   "first_integrity_errors": [],
+   "exit_code": 0
+  }
+ },
+ "A": {
+  "old_d3_analyzer": {
+   "E1": "PASS",
+   "E2": "MIRROR_PASS",
+   "identity_all_ok": false,
+   "plan_hash_matches": true
+  },
+  "new_d4_analyzer": {
+   "integrity": "EVIDENCE_INTEGRITY_FAIL",
+   "E1": "BLOCKED_BY_EVIDENCE_INTEGRITY",
+   "E2": "BLOCKED_BY_EVIDENCE_INTEGRITY",
+   "first_integrity_errors": [
+    "E1_M2_D0_h0.005_P12: fixture.identical_to_stored = False, expected True"
+   ],
+   "exit_code": 3
+  }
+ },
+ "B": {
+  "old_d3_analyzer": {
+   "E1": "PASS",
+   "E2": "MIRROR_PASS",
+   "identity_all_ok": true,
+   "plan_hash_matches": false
+  },
+  "new_d4_analyzer": {
+   "integrity": "EVIDENCE_INTEGRITY_FAIL",
+   "E1": "BLOCKED_BY_EVIDENCE_INTEGRITY",
+   "E2": "BLOCKED_BY_EVIDENCE_INTEGRITY",
+   "first_integrity_errors": [
+    "PLAN hash mismatch: file 49f251be1a2bebe00a3f3e37078a6d77b133981e7051c2385427f79106b20ba5 recorded eb6096a9ffc8a338a86dafee5f8f6fee88bf8bc93ac1eaea3fc2f8b62eee1071 pinned eb6096a9ffc8a338a86dafee5f8f6fee88bf8bc93ac1eaea3fc2f8b62eee1071"
+   ],
+   "exit_code": 3
+  }
+ },
+ "C": {
+  "old_d3_analyzer": {
+   "E1": "PASS",
+   "E2": "MIRROR_PASS",
+   "identity_all_ok": true,
+   "plan_hash_matches": true
+  },
+  "new_d4_analyzer": {
+   "integrity": "EVIDENCE_INTEGRITY_FAIL",
+   "E1": "BLOCKED_BY_EVIDENCE_INTEGRITY",
+   "E2": "BLOCKED_BY_EVIDENCE_INTEGRITY",
+   "first_integrity_errors": [
+    "missing run file E2_M1_h0.005_P4_mirror.json"
+   ],
+   "exit_code": 3
+  }
+ },
+ "D": {
+  "old_d3_analyzer": {
+   "E1": "PASS",
+   "E2": "MIRROR_PASS",
+   "identity_all_ok": true,
+   "plan_hash_matches": true
+  },
+  "new_d4_analyzer": {
+   "integrity": "EVIDENCE_INTEGRITY_FAIL",
+   "E1": "BLOCKED_BY_EVIDENCE_INTEGRITY",
+   "E2": "BLOCKED_BY_EVIDENCE_INTEGRITY",
+   "first_integrity_errors": [
+    "E1_M2_D0_h0.005_P12: missing required field identical_to_stored"
+   ],
+   "exit_code": 3
+  }
+ },
+ "summary": {
+  "old_false_pass": {
+   "A": true,
+   "B": true,
+   "C": true,
+   "D": true
+  },
+  "new_blocks": {
+   "A": true,
+   "B": true,
+   "C": true,
+   "D": true
+  },
+  "baseline_reproduced": true
+ }
+}
