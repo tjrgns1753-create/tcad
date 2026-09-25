@@ -1,0 +1,162 @@
+{
+ "trace": [
+  {
+   "k": 0,
+   "trace_equals_production": true,
+   "exact_area_equal_S0": true,
+   "n_triangles": 240,
+   "n_obtuse_float": 0,
+   "origin_len_ok": true,
+   "kinds_len_ok": true
+  },
+  {
+   "k": 1,
+   "trace_equals_production": true,
+   "exact_area_equal_S0": true,
+   "n_triangles": 396,
+   "n_obtuse_float": 12,
+   "origin_len_ok": true,
+   "kinds_len_ok": true
+  },
+  {
+   "k": 2,
+   "trace_equals_production": true,
+   "exact_area_equal_S0": true,
+   "n_triangles": 996,
+   "n_obtuse_float": 36,
+   "origin_len_ok": true,
+   "kinds_len_ok": true
+  },
+  {
+   "k": 3,
+   "trace_equals_production": true,
+   "exact_area_equal_S0": true,
+   "n_triangles": 3348,
+   "n_obtuse_float": 84,
+   "origin_len_ok": true,
+   "kinds_len_ok": true
+  },
+  {
+   "k": 4,
+   "trace_equals_production": true,
+   "exact_area_equal_S0": true,
+   "n_triangles": 12660,
+   "n_obtuse_float": 180,
+   "origin_len_ok": true,
+   "kinds_len_ok": true
+  }
+ ],
+ "ccw": {
+  "n_reoriented": 4220,
+  "all_ccw_after": true,
+  "same_vertex_sets": true
+ },
+ "budget": {
+  "min": 2.009718347115232e-14,
+  "max": 4.4076611800138456e-13
+ },
+ "verdict_cases": {
+  "shape_first_bad_2": {
+   "got": [
+    "FIRST_BAD_STAGE=2",
+    "NO_ORIENTATION_EFFECT",
+    "SHAPE_CAUSE"
+   ],
+   "want": [
+    "FIRST_BAD_STAGE=2",
+    "NO_ORIENTATION_EFFECT",
+    "SHAPE_CAUSE"
+   ],
+   "candidate_allowed": true,
+   "ok": true
+  },
+  "pre_existing": {
+   "got": [
+    "NO_ORIENTATION_EFFECT",
+    "PRE_EXISTING"
+   ],
+   "want": [
+    "NO_ORIENTATION_EFFECT",
+    "PRE_EXISTING"
+   ],
+   "candidate_allowed": false,
+   "ok": true
+  },
+  "orientation_cause": {
+   "got": [
+    "FIRST_BAD_STAGE=2",
+    "ORIENTATION_CAUSE",
+    "ORIENTATION_EFFECT"
+   ],
+   "want": [
+    "FIRST_BAD_STAGE=2",
+    "ORIENTATION_CAUSE",
+    "ORIENTATION_EFFECT"
+   ],
+   "candidate_allowed": false,
+   "ok": true
+  },
+  "i3_fail": {
+   "got": [
+    "INCONCLUSIVE"
+   ],
+   "want": [
+    "INCONCLUSIVE"
+   ],
+   "candidate_allowed": false,
+   "ok": true
+  },
+  "c_rt_fail": {
+   "got": [
+    "FIRST_BAD_STAGE=2"
+   ],
+   "want": [
+    "FIRST_BAD_STAGE=2"
+   ],
+   "candidate_allowed": false,
+   "ok": true
+  },
+  "identity_fail": {
+   "got": [
+    "INCONCLUSIVE",
+    "NO_ORIENTATION_EFFECT"
+   ],
+   "want": [
+    "INCONCLUSIVE",
+    "NO_ORIENTATION_EFFECT"
+   ],
+   "candidate_allowed": false,
+   "ok": true
+  },
+  "area_differs": {
+   "got": [
+    "INCONCLUSIVE",
+    "NO_ORIENTATION_EFFECT"
+   ],
+   "want": [
+    "INCONCLUSIVE",
+    "NO_ORIENTATION_EFFECT"
+   ],
+   "candidate_allowed": false,
+   "ok": true
+  },
+  "f3_unexplained": {
+   "got": [
+    "FIRST_BAD_STAGE=2",
+    "NO_ORIENTATION_EFFECT"
+   ],
+   "want": [
+    "FIRST_BAD_STAGE=2",
+    "NO_ORIENTATION_EFFECT"
+   ],
+   "candidate_allowed": false,
+   "ok": true
+  }
+ },
+ "candidate_cases": [
+  "CANDIDATE_PASSES_AUDIT_CHECKS",
+  "CANDIDATE_REJECTED",
+  "CANDIDATE_REJECTED"
+ ],
+ "ALL_OK": true
+}
