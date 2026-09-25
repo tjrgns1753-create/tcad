@@ -1,0 +1,16 @@
+recorded_utc Fri Sep 25 14:36:37 UTC 2026
+branch claude/remote-runner
+HEAD 668da8f9a093dae9784a7fa98355129852794963
+origin/claude/remote-runner 668da8f9a093dae9784a7fa98355129852794963
+origin/claude/waferstate-v2 023bcb90f8b8a0972d6df84f097ca6387f0ab82a
+origin/main d60e9aed3c52ba33dc243f12894bf12f74db16f8
+review_sha 023bcb90f8b8a0972d6df84f097ca6387f0ab82a
+staged 0 tracked-modified 0
+remote jobs not completed: 0
+diff --check normal rc=0
+diff --check clean rc=0
+production/tests vs review SHA rc=0
+checkpoint A verdict: RAW_EVIDENCE_PORTABLE (commit 668da8f9)
+E4 candidate_e4.vtu sha256 (portable) 85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297
+E4 candidate_e4.npz sha256 740a643ed6c965b11ea179993eff2701d87b3c0a9a5990ace71fb2e5df482329
+serena MCP: not re-checked this turn yet
