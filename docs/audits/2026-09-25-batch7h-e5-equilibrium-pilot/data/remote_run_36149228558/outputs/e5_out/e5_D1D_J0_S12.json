@@ -1,0 +1,114 @@
+{
+ "label": "D1D_J0_S12",
+ "device_kind": "1D",
+ "doping_kind": "J0",
+ "variant": "S12",
+ "solve_calls": [
+  {
+   "k": {
+    "absolute_error": 1.0,
+    "relative_error": 1e-06,
+    "maximum_iterations": 100
+   },
+   "ok": true,
+   "error": null,
+   "wall_s": 295.546,
+   "converged": false,
+   "n_iterations": 100,
+   "final_device_relative_error": 6.021453814826827e-08,
+   "final_device_absolute_error": 1.115671786764014e-17,
+   "final_equations": {
+    "PotentialEquation": {
+     "abs": 1.115671786764014e-17,
+     "rel": 6.021453814826827e-08
+    }
+   }
+  }
+ ],
+ "flags": {
+  "extended_model": true,
+  "extended_equation": true,
+  "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+ },
+ "mesh_1d": {
+  "n_nodes": 3201,
+  "h_um": 0.003125,
+  "x_half_um": 5.0
+ },
+ "contacts": [
+  "left",
+  "right"
+ ],
+ "doping": {
+  "n_nodes": 3201,
+  "n_x0_nodes": 1,
+  "kind": "J0"
+ },
+ "poisson_converged": false,
+ "status": "POISSON_NOT_CONVERGED",
+ "poisson_measure": {
+  "psi_contact_V": {
+   "left": 0.0,
+   "right": 0.0
+  },
+  "max_abs_ElectricField_V_per_cm": 0.0,
+  "psi_range_V": [
+   0.0,
+   0.0
+  ],
+  "psi_finite": true,
+  "two_d": false
+ },
+ "cut_profile_poisson_only": {
+  "row_y_um": 0.0,
+  "cuts": {
+   "-0.25": {
+    "x_actual_um": -0.25,
+    "n_nodes": 1,
+    "Potential_V": 0.0,
+    "NetDoping_cm-3": -1e+18
+   },
+   "-0.10": {
+    "x_actual_um": -0.1,
+    "n_nodes": 1,
+    "Potential_V": 0.0,
+    "NetDoping_cm-3": -1e+18
+   },
+   "+0.00": {
+    "x_actual_um": 0.0,
+    "n_nodes": 1,
+    "Potential_V": 0.0,
+    "NetDoping_cm-3": 0.0
+   },
+   "+0.10": {
+    "x_actual_um": 0.1,
+    "n_nodes": 1,
+    "Potential_V": 0.0,
+    "NetDoping_cm-3": 1e+18
+   },
+   "+0.25": {
+    "x_actual_um": 0.25,
+    "n_nodes": 1,
+    "Potential_V": 0.0,
+    "NetDoping_cm-3": 1e+18
+   }
+  }
+ },
+ "doping_integrals": {
+  "kind": "J0",
+  "donor_NodeVolume_integral": 500156250000000.0,
+  "acceptor_NodeVolume_integral": 500156250000000.0,
+  "geometric_continuum_reference": 0.0,
+  "all_finite": true
+ },
+ "analytic_reference": {
+  "assumptions": "Sze & Ng, Physics of Semiconductor Devices 3rd ed. ch.2; abrupt symmetric junction, full depletion, infinite neutral regions, DEVSIM's own eps/V_t/n_i/q (not textbook constants); NOT the PDE solution, an idealized zero-width-junction estimate",
+  "V_bi_V": 0.9537194398253274,
+  "W_0V_um": 0.04839644335362906,
+  "L_D_um": 0.003986718902050262,
+  "eps_F_cm": 9.8235e-13,
+  "V_t_V": 0.025887193125000003,
+  "n_i_cm-3": 10000000000.0
+ },
+ "wall_s": 295.6
+}

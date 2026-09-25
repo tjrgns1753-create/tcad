@@ -28,9 +28,19 @@ def log(msg):
 
 
 def run_one(dv, work, label, kind_device, kind_doping, variant):
-    """One of the 6 registered runs. Returns the result dict; never raises (errors are captured in it)."""
+    """One of the 6 registered runs. Returns the result dict; never raises (errors are captured in it).
+    Device/mesh cleanup ALWAYS runs (finally), win or crash, so one run's failure can never leak a device into the
+    next run's solve() call (devsim.solve() has no device filter -- a leaked device corrupts an unrelated solve;
+    see CLAUDE.md's own documented case of this exact failure mode)."""
     out = {"label": label, "device_kind": kind_device, "doping_kind": kind_doping, "variant": variant, "solve_calls": []}
+    out["devices_registered_at_start"] = list(dv.get_device_list())
+    if out["devices_registered_at_start"]:
+        out["status"] = "STOP_LEAKED_DEVICE_FROM_PRIOR_RUN"
+        out["wall_s"] = 0.0
+        log(f"{label}: STOP -- devices already registered at start: {out['devices_registered_at_start']}")
+        return out
     t0 = time.time()
+    created = {"device": None, "mesh": None}
     try:
         if variant == "S12":
             dv.set_parameter(name="extended_model", value=True)
@@ -45,10 +55,12 @@ def run_one(dv, work, label, kind_device, kind_doping, variant):
                 out["stop"] = "MESH_INPUT_IDENTITY_FAIL"
                 return out
             device = imp.device
+            created["device"], created["mesh"] = imp.device, imp.mesh
             contacts = sorted(imp.contacts)  # Si_xmin, Si_xmax -> xmin first, matches shadow_e1.measure()'s convention
         else:
             xs = de5.grid_1d_um(de5.H_UM, kind_doping)
             contacts = de5.build_1d(dv, xs, device)
+            created["device"], created["mesh"] = device, "m_" + device
             out["mesh_1d"] = {"n_nodes": len(xs), "h_um": de5.H_UM, "x_half_um": de5.X_HALF_UM}
         out["contacts"] = contacts
         out["doping"] = de5.write_doping(dv, device, region, kind_doping)
@@ -72,7 +84,7 @@ def run_one(dv, work, label, kind_device, kind_doping, variant):
                 out["cut_profile"] = de5.cut_profile(dv, device, region, CUTS_UM)
                 out["doping_integrals"] = de5.doping_integrals(dv, device, region, kind_doping)
             else:
-                m = se1.measure(dv, device, contacts)
+                m, states = se1.measure(dv, device, contacts)   # measure() returns (metrics_dict, raw_state_arrays)
                 out["equilibrium_measure"] = m
                 out["cut_profile"] = de5.cut_profile(dv, device, region, CUTS_UM)
                 out["doping_integrals"] = de5.doping_integrals(dv, device, region, kind_doping)
@@ -82,17 +94,21 @@ def run_one(dv, work, label, kind_device, kind_doping, variant):
                           and m["psi_contact_V"][contacts[0]] != m["psi_contact_V"][contacts[1]])
                 out["status"] = "CONVERGED_OK" if phys_ok else "CONVERGED_BUT_PHYSICALLY_INVALID"
         out["analytic_reference"] = de5.analytic_reference(dv, device, region)
-        if kind_device == "2D":
-            dv.delete_device(device=device)
-            dv.delete_mesh(mesh=imp.mesh)
-        else:
-            dv.delete_device(device=device)
-            dv.delete_mesh(mesh="m_" + device)
     except Exception as e:  # noqa: BLE001
         out["error"] = repr(e)[:500]
         out["traceback"] = traceback.format_exc()[-3000:]
         out["status"] = out.get("status", "ERROR")
     finally:
+        if created["device"] is not None:
+            try:
+                dv.delete_device(device=created["device"])
+            except Exception as e:  # noqa: BLE001
+                out["cleanup_device_error"] = repr(e)[:200]
+        if created["mesh"] is not None:
+            try:
+                dv.delete_mesh(mesh=created["mesh"])
+            except Exception as e:  # noqa: BLE001
+                out["cleanup_mesh_error"] = repr(e)[:200]
         if variant == "S12":   # only S12 ever set these True; restore E1's own "leave S0 untouched/unset" convention
             try:
                 dv.set_parameter(name="extended_model", value=False)

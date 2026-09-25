@@ -1,0 +1,16 @@
+{
+ "label": "D2D_S12",
+ "device_kind": "2D",
+ "doping_kind": "J0",
+ "variant": "S12",
+ "solve_calls": [],
+ "flags": {
+  "extended_model": true,
+  "extended_equation": true,
+  "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+ },
+ "error": "error('A mesh already exists with name \"e5_d2d_mesh\"\\n')",
+ "traceback": "Traceback (most recent call last):\n  File \"D:\\a\\tcad\\tcad\\docs\\audits\\2026-09-25-batch7h-e5-equilibrium-pilot\\scripts\\stage_e5.py\", line 42, in run_one\n    imp, ident = de5.import_e4_candidate(work)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\docs\\audits\\2026-09-25-batch7h-e5-equilibrium-pilot\\scripts\\devices_e5.py\", line 89, in import_e4_candidate\n    imp = import_process_result(result, mesh_name=\"e5_d2d_mesh\", device_name=\"e5_d2d_device\",\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\tcad\\device\\devsim\\mesh_import.py\", line 1186, in import_process_result\n    module.create_gmsh_mesh(\ndevsim_py3.error: A mesh already exists with name \"e5_d2d_mesh\"\n\n",
+ "status": "ERROR",
+ "wall_s": 1.1
+}
