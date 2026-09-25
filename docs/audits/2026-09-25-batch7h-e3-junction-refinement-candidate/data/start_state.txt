@@ -1,0 +1,14 @@
+recorded_utc Fri Sep 25 13:01:03 UTC 2026
+branch claude/remote-runner
+HEAD 90e020948b031f2b4853b3fa31683fe88fdbf9f3
+origin/claude/remote-runner 90e020948b031f2b4853b3fa31683fe88fdbf9f3
+origin/claude/waferstate-v2 023bcb90f8b8a0972d6df84f097ca6387f0ab82a
+origin/main d60e9aed3c52ba33dc243f12894bf12f74db16f8
+review_sha 023bcb90f8b8a0972d6df84f097ca6387f0ab82a
+staged 0 tracked-modified 0 untracked 1984
+remote jobs not completed: 0
+diff --check normal rc=0
+diff --check clean rc=0
+production/tests vs review SHA rc=0
+serena MCP: connection failed at session start again (Skipping connection, recent failure cached) -> rg + direct reading fallback
+claude_md: only ./CLAUDE.md present (no user-level ~/.claude/CLAUDE.md file found)

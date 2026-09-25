@@ -1,0 +1,66 @@
+{
+ "null_control_cannot_exclude_cause": {
+  "verdict": {
+   "verdict": "CONTROL_NOT_POWERED",
+   "label": "orientation",
+   "n_changed": 0,
+   "n_total": 247000,
+   "reason": "the orientation manipulation altered 0 of 247000 elements; comparing an unmodified input to itself cannot exclude a cause"
+  },
+  "ok": true
+ },
+ "null_control_no_effect_claim_either": {
+  "verdict": {
+   "verdict": "CONTROL_NOT_POWERED",
+   "label": "orientation",
+   "n_changed": 0,
+   "n_total": 247000,
+   "reason": "the orientation manipulation altered 0 of 247000 elements; comparing an unmodified input to itself cannot exclude a cause"
+  },
+  "ok": true
+ },
+ "reverse_all_windings_powered_all_ccw_input": {
+  "n_changed": 2,
+  "n_total": 2,
+  "ok": true
+ },
+ "reverse_all_windings_powered_all_cw_input": {
+  "n_changed": 2,
+  "n_total": 2,
+  "ok": true
+ },
+ "powered_control_no_effect": {
+  "verdict": {
+   "verdict": "ORIENTATION_NO_EFFECT",
+   "label": "orientation",
+   "n_changed": 247000,
+   "n_total": 247000,
+   "changed_fraction": 1.0,
+   "effect_metric": null
+  },
+  "ok": true
+ },
+ "powered_control_effect": {
+  "verdict": {
+   "verdict": "ORIENTATION_EFFECT",
+   "label": "orientation",
+   "n_changed": 247000,
+   "n_total": 247000,
+   "changed_fraction": 1.0,
+   "effect_metric": null
+  },
+  "ok": true
+ },
+ "partially_powered_control": {
+  "verdict": {
+   "verdict": "SHAPE_EFFECT",
+   "label": "shape",
+   "n_changed": 1600,
+   "n_total": 247000,
+   "changed_fraction": 0.006477732793522267,
+   "effect_metric": null
+  },
+  "ok": true
+ },
+ "ALL_OK": true
+}
