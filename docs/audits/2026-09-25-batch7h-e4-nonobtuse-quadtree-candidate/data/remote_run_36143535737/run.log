@@ -1,0 +1,28 @@
+[e4] GUI defaults (E1): {'grid_delta_um': 0.05, 'x_extent_um': 10.0, 'y_extent_um': 8.0, 'silicon_depth_um': 5.0, 'pr_thickness_um': 1.0, 'mask_spans_um': [], 'doping': {'region': 'Si', 'junction_axis': 'x', 'junction_position_um': 0.0, 'donor_conc_cm3': 1e+18, 'acceptor_conc_cm3': 1e+18, 'chemical_state': 'ACTIVE'}, 'barrier': {'barrier_material': 'SiO2', 'axis': 'x', 'min_barrier_thickness_um': 0.0}, 'import': {'mesh_name': 'gui_measure_mesh', 'device_name': 'gui_measure_device', 'contact_regions': ['Si'], 'contact_axis': 'x', 'length_scale_to_cm': 0.0001, 'refine_near_um': 0.0, 'refine_axis': 'x'}, 'measure': {'source_pin': 'max', 'voltage': 0.3, 'gnd_voltage': 0.0}}
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e4      6.2s] candidate: 128067 nodes, 255400 triangles (build 0.1s)
+[e4     10.6s] exact checks (4.2s): obtuse 0 area_eq True boundary lost 0 added 132
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 255400 Triangles.
+Physical group name Si has 383466 Lines.
+Physical group name Si has 128067 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e4_device has 128067 coordinates with max index 128066
+Region Si has 128067 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e4     15.6s] import + read 2.6s: 128067 DEVSIM nodes, contacts ['Si_xmax', 'Si_xmin']
+[e4    156.0s] ratio 1.0 tau 8.518e-11 obtuse {'acute': 3000, 'right': 252400, 'obtuse': 0} delaunay 0 (140.4s)
+[e4    159.1s] verdict GEOMETRY_CANDIDATE_ONLY failed=[]
+[e4    159.1s] done: error=False devices_left=[] solve_calls=0
+
+[e4] stage_e4 rc=0 in 159.3 s
+[e4] outputs: ['candidate_e4.npz', 'candidate_e4.vtu', 'e4_result.json', 'wafer_volume.vtu']

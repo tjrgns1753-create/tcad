@@ -1,0 +1,12 @@
+Line-ending normalization of committed raw remote evidence (recorded 2026-09-25, Batch 7H-E4).
+Cause: system git config core.autocrlf=true (C:/Program Files/Git/etc/gitconfig); no .gitattributes in the repo.
+Files whose runner artifact bytes have CRLF are stored in git as LF (index i/lf, worktree w/crlf).
+On this machine checkout restores CRLF, so sha256 == artifact/summary hash. On a checkout with autocrlf=false the file is LF and its sha256 is the 'blob_LF_sha256' below, NOT the recorded artifact hash.
+Nothing was edited; this note lists both hashes so a verifier on any checkout can match.
+
+path | worktree(CRLF)=artifact sha256 | committed/staged blob (LF) sha256
+docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/C_ccw.vtu | 82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767 | 7696bf0c8a28c987a2520a11c4a6d8d9b5715b44e09d1e719037a35676d3aeeb
+docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/C_rt.vtu | 82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767 | 7696bf0c8a28c987a2520a11c4a6d8d9b5715b44e09d1e719037a35676d3aeeb
+docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/candidate_flip.vtu | d5a73665f0531078a704e72bdbb2f26c908eb228547385edce1f028fae331f04 | 893bf0be93fee998a8e6e6a001fc74c25556c86ebaa3e6d9ba668dda625ed555
+docs/audits/2026-09-25-batch7h-e3-junction-refinement-candidate/data/remote_run_36139990927/outputs/e3_out/candidate.vtu | 9ea67bd567caf354a6e07e80ae2724eb5e9a86d45eddfcd58800974499734ec0 | ea92884876c951dd14fd43324c3cb2074e40a5b9b0a19bcd92de1c823d8d019c
+docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu | 85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297 | 7482df16b5cbfceb2919908312bb3d1567f60e8ec6b8906742b8938d9e657870
