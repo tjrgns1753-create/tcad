@@ -1,0 +1,7 @@
+# Batch 7H-E4 checkpoint A: audit remote-run raw .vtu artifacts are hash-pinned tool output (meshio-written mesh files),
+# never intended as diffable text. Without this, core.autocrlf normalizes their line endings on checkout, so their
+# checked-out bytes can differ from the sha256 recorded in the run's summary.json depending on the checkout's own
+# autocrlf setting. -text disables that normalization so the committed bytes are exactly the runner's artifact bytes on
+# every checkout. Narrow on purpose: only *_out/*.vtu under docs/audits/*/data/remote_run_*/outputs/, not production
+# mesh files, not source .vtu anywhere else in the repo.
+docs/audits/*/data/remote_run_*/outputs/*_out/*.vtu -text

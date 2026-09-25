@@ -1,0 +1,24 @@
+Batch 7H-E4 Checkpoint A verification (recorded before commit).
+Method: git add --renormalize under new .gitattributes rule (-text on docs/audits/*/data/remote_run_*/outputs/*_out/*.vtu);
+cross-checked with 'git -c core.autocrlf={true,false} checkout-index' from the staged index, both giving byte-identical output.
+E2_flip: docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/candidate_flip.vtu
+  staged_blob_sha256=d5a73665f0531078a704e72bdbb2f26c908eb228547385edce1f028fae331f04
+  remote_summary_sha256=d5a73665f0531078a704e72bdbb2f26c908eb228547385edce1f028fae331f04
+  match=YES
+E4_cand: docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu
+  staged_blob_sha256=85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297
+  remote_summary_sha256=85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297
+  match=YES
+E3_cand: docs/audits/2026-09-25-batch7h-e3-junction-refinement-candidate/data/remote_run_36139990927/outputs/e3_out/candidate.vtu
+  staged_blob_sha256=9ea67bd567caf354a6e07e80ae2724eb5e9a86d45eddfcd58800974499734ec0
+  remote_summary_sha256=9ea67bd567caf354a6e07e80ae2724eb5e9a86d45eddfcd58800974499734ec0
+  match=YES
+E2_C_rt: docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/C_rt.vtu
+  staged_blob_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
+  remote_summary_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
+  match=YES
+E2_C_ccw: docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/C_ccw.vtu
+  staged_blob_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
+  remote_summary_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
+  match=YES
+checkout_true_vs_false: all 5 equal (see checkoutA_verify inline above), ALL_MATCH_SUMMARY=YES
