@@ -1,0 +1,15 @@
+recorded_utc Fri Sep 25 13:40:41 UTC 2026
+branch claude/remote-runner
+HEAD 190516ca15e020155fb870127c519cc6231c7352
+origin/claude/remote-runner 190516ca15e020155fb870127c519cc6231c7352
+origin/claude/waferstate-v2 023bcb90f8b8a0972d6df84f097ca6387f0ab82a
+origin/main d60e9aed3c52ba33dc243f12894bf12f74db16f8
+review_sha 023bcb90f8b8a0972d6df84f097ca6387f0ab82a
+staged 0 tracked-modified 0
+remote jobs not completed: 0
+diff --check normal rc=0
+diff --check clean rc=0
+production/tests vs review SHA rc=0
+E2 artifact hashes: match
+E3 artifact hashes: match
+serena MCP: connection failed (Skipping connection, recent failure cached) -> rg + direct reading fallback

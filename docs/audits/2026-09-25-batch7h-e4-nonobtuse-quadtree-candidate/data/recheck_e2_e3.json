@@ -1,0 +1,401 @@
+{
+ "continuum_reference_cm-1": 250000000000.0,
+ "N_cm-3": 1e+18,
+ "rule_reproduces_E1_query_on_S4": true,
+ "rule_reproduces_E3_query": true,
+ "x0_blocks": [
+  {
+   "label": "E2 S0",
+   "doping_source": "RULE-APPLIED (wafer_state_v2.py:743-744), validated against the queried arrays on S4 and E3",
+   "n_nodes": 20301,
+   "n_x0_nodes": 101,
+   "F2_area_x0_cm2": 2.499999764550016e-09,
+   "F2_area_xpos_cm2": 2.487499656587909e-07,
+   "F2_area_xneg_cm2": 2.487499656587909e-07,
+   "F2_area_total_cm2": 4.999999310821319e-07,
+   "NodeVolume_area_x0_cm2": 2.499999764550016e-09,
+   "NodeVolume_area_total_cm2": 4.999999310821319e-07,
+   "donor_F2_total_cm-1": 251249965423.34094,
+   "donor_F2_x0_part_cm-1": 2499999764.550016,
+   "donor_F2_minus_continuum_cm-1": 1249965423.3409424,
+   "donor_F2_minus_continuum_rel": 0.00499986169336377,
+   "donor_NodeVolume_total_cm-1": 251249965423.34094,
+   "donor_NodeVolume_x0_part_cm-1": 2499999764.550016,
+   "acceptor_F2_total_cm-1": 251249965423.34094,
+   "acceptor_F2_x0_part_cm-1": 2499999764.550016,
+   "acceptor_F2_minus_continuum_cm-1": 1249965423.3409424,
+   "acceptor_F2_minus_continuum_rel": 0.00499986169336377,
+   "acceptor_NodeVolume_total_cm-1": 251249965423.34094,
+   "acceptor_NodeVolume_x0_part_cm-1": 2499999764.550016,
+   "first_column_distance_left_cm": 4.999999873689376e-06,
+   "first_column_distance_right_cm": 4.999999873689376e-06,
+   "height_cm": 0.0004999999655410647,
+   "FORMULA_donor_gap_N_H_hleft_over_2_cm-1": 1249999882.275008,
+   "FORMULA_acceptor_gap_N_H_hright_over_2_cm-1": 1249999882.275008
+  },
+  {
+   "label": "E2 S1",
+   "doping_source": "RULE-APPLIED (wafer_state_v2.py:743-744), validated against the queried arrays on S4 and E3",
+   "n_nodes": 21605,
+   "n_x0_nodes": 201,
+   "F2_area_x0_cm2": 1.249999882275008e-09,
+   "F2_area_xpos_cm2": 2.493749655999284e-07,
+   "F2_area_xneg_cm2": 2.493749655999285e-07,
+   "F2_area_total_cm2": 4.999999310821319e-07,
+   "NodeVolume_area_x0_cm2": 1.249999882275008e-09,
+   "NodeVolume_area_total_cm2": 5.024999307375838e-07,
+   "donor_F2_total_cm-1": 250624965482.20343,
+   "donor_F2_x0_part_cm-1": 1249999882.2750077,
+   "donor_F2_minus_continuum_cm-1": 624965482.2034302,
+   "donor_F2_minus_continuum_rel": 0.0024998619288137207,
+   "donor_NodeVolume_total_cm-1": 251874966039.79913,
+   "donor_NodeVolume_x0_part_cm-1": 1249999882.2750077,
+   "acceptor_F2_total_cm-1": 250624965482.20343,
+   "acceptor_F2_x0_part_cm-1": 1249999882.2750077,
+   "acceptor_F2_minus_continuum_cm-1": 624965482.2034302,
+   "acceptor_F2_minus_continuum_rel": 0.0024998619288137207,
+   "acceptor_NodeVolume_total_cm-1": 251874964580.0597,
+   "acceptor_NodeVolume_x0_part_cm-1": 1249999882.2750077,
+   "first_column_distance_left_cm": 2.499999936844688e-06,
+   "first_column_distance_right_cm": 2.499999936844688e-06,
+   "height_cm": 0.0004999999655410647,
+   "FORMULA_donor_gap_N_H_hleft_over_2_cm-1": 624999941.137504,
+   "FORMULA_acceptor_gap_N_H_hright_over_2_cm-1": 624999941.137504
+  },
+  {
+   "label": "E2 S2",
+   "doping_source": "RULE-APPLIED (wafer_state_v2.py:743-744), validated against the queried arrays on S4 and E3",
+   "n_nodes": 26613,
+   "n_x0_nodes": 401,
+   "F2_area_x0_cm2": 6.24999941137504e-10,
+   "F2_area_xpos_cm2": 2.4968746557049715e-07,
+   "F2_area_xneg_cm2": 2.4968746557049715e-07,
+   "F2_area_total_cm2": 4.999999310821319e-07,
+   "NodeVolume_area_x0_cm2": 6.24999941137504e-10,
+   "NodeVolume_area_total_cm2": 5.064843040490548e-07,
+   "donor_F2_total_cm-1": 250312465511.63464,
+   "donor_F2_x0_part_cm-1": 624999941.1375039,
+   "donor_F2_minus_continuum_cm-1": 312465511.63464355,
+   "donor_F2_minus_continuum_rel": 0.0012498620465385742,
+   "donor_NodeVolume_total_cm-1": 253554653023.75323,
+   "donor_NodeVolume_x0_part_cm-1": 624999941.1375039,
+   "acceptor_F2_total_cm-1": 250312465511.6347,
+   "acceptor_F2_x0_part_cm-1": 624999941.1375039,
+   "acceptor_F2_minus_continuum_cm-1": 312465511.6347046,
+   "acceptor_F2_minus_continuum_rel": 0.0012498620465388184,
+   "acceptor_NodeVolume_total_cm-1": 253554650966.43912,
+   "acceptor_NodeVolume_x0_part_cm-1": 624999941.1375039,
+   "first_column_distance_left_cm": 1.249999968422344e-06,
+   "first_column_distance_right_cm": 1.249999968422344e-06,
+   "height_cm": 0.0004999999655410647,
+   "FORMULA_donor_gap_N_H_hleft_over_2_cm-1": 312499970.568752,
+   "FORMULA_acceptor_gap_N_H_hright_over_2_cm-1": 312499970.568752
+  },
+  {
+   "label": "E2 S3",
+   "doping_source": "RULE-APPLIED (wafer_state_v2.py:743-744), validated against the queried arrays on S4 and E3",
+   "n_nodes": 46229,
+   "n_x0_nodes": 801,
+   "F2_area_x0_cm2": 3.12499970568752e-10,
+   "F2_area_xpos_cm2": 2.498437155557815e-07,
+   "F2_area_xneg_cm2": 2.4984371555578156e-07,
+   "F2_area_total_cm2": 4.999999310821319e-07,
+   "NodeVolume_area_x0_cm2": 3.12499970568752e-10,
+   "NodeVolume_area_total_cm2": 5.140819593259176e-07,
+   "donor_F2_total_cm-1": 250156215526.35028,
+   "donor_F2_x0_part_cm-1": 312499970.56875205,
+   "donor_F2_minus_continuum_cm-1": 156215526.35028076,
+   "donor_F2_minus_continuum_rel": 0.0006248621054011231,
+   "donor_NodeVolume_total_cm-1": 257197231288.7448,
+   "donor_NodeVolume_x0_part_cm-1": 312499970.56875205,
+   "acceptor_F2_total_cm-1": 250156215526.35028,
+   "acceptor_F2_x0_part_cm-1": 312499970.56875205,
+   "acceptor_F2_minus_continuum_cm-1": 156215526.35028076,
+   "acceptor_F2_minus_continuum_rel": 0.0006248621054011231,
+   "acceptor_NodeVolume_total_cm-1": 257197228007.74155,
+   "acceptor_NodeVolume_x0_part_cm-1": 312499970.56875205,
+   "first_column_distance_left_cm": 6.24999984211172e-07,
+   "first_column_distance_right_cm": 6.24999984211172e-07,
+   "height_cm": 0.0004999999655410647,
+   "FORMULA_donor_gap_N_H_hleft_over_2_cm-1": 156249985.284376,
+   "FORMULA_acceptor_gap_N_H_hright_over_2_cm-1": 156249985.284376
+  },
+  {
+   "label": "E2 S4",
+   "doping_source": "QUERIED (E1 WaferStateV2.net_doping_at capture, prod_arrays.npz; same node order as S4 by E2 I3)",
+   "n_nodes": 123861,
+   "n_x0_nodes": 1601,
+   "F2_area_x0_cm2": 1.56249985284376e-10,
+   "F2_area_xpos_cm2": 2.499218405484237e-07,
+   "F2_area_xneg_cm2": 2.499218405484237e-07,
+   "F2_area_total_cm2": 4.999999310821319e-07,
+   "NodeVolume_area_x0_cm2": 1.56249985284376e-10,
+   "NodeVolume_area_total_cm2": 5.291259043686336e-07,
+   "donor_F2_total_cm-1": 250078090533.7081,
+   "donor_F2_x0_part_cm-1": 156249985.28437603,
+   "donor_F2_minus_continuum_cm-1": 78090533.70809937,
+   "donor_F2_minus_continuum_rel": 0.0003123621348323975,
+   "donor_NodeVolume_total_cm-1": 264641080672.59766,
+   "donor_NodeVolume_x0_part_cm-1": 156249985.28437603,
+   "acceptor_F2_total_cm-1": 250078090533.70807,
+   "acceptor_F2_x0_part_cm-1": 156249985.28437603,
+   "acceptor_F2_minus_continuum_cm-1": 78090533.70806885,
+   "acceptor_F2_minus_continuum_rel": 0.0003123621348322754,
+   "acceptor_NodeVolume_total_cm-1": 264641073681.32043,
+   "acceptor_NodeVolume_x0_part_cm-1": 156249985.28437603,
+   "first_column_distance_left_cm": 3.12499992105586e-07,
+   "first_column_distance_right_cm": 3.12499992105586e-07,
+   "height_cm": 0.0004999999655410647,
+   "FORMULA_donor_gap_N_H_hleft_over_2_cm-1": 78124992.642188,
+   "FORMULA_acceptor_gap_N_H_hright_over_2_cm-1": 78124992.642188
+  },
+  {
+   "label": "E2 exact-flip candidate",
+   "doping_source": "QUERIED (E1 arrays; identical point array to S4, E2 candidate points_identical=true)",
+   "n_nodes": 123861,
+   "n_x0_nodes": 1601,
+   "F2_area_x0_cm2": 1.56249985284376e-10,
+   "F2_area_xpos_cm2": 2.4992184054842377e-07,
+   "F2_area_xneg_cm2": 2.4992184054842377e-07,
+   "F2_area_total_cm2": 4.999999310821319e-07,
+   "NodeVolume_area_x0_cm2": 1.56249985284376e-10,
+   "NodeVolume_area_total_cm2": 5.100829509335998e-07,
+   "donor_F2_total_cm-1": 250078090533.70813,
+   "donor_F2_x0_part_cm-1": 156249985.28437603,
+   "donor_F2_minus_continuum_cm-1": 78090533.70812988,
+   "donor_F2_minus_continuum_rel": 0.00031236213483251955,
+   "donor_NodeVolume_total_cm-1": 255119600459.44205,
+   "donor_NodeVolume_x0_part_cm-1": 156249985.28437603,
+   "acceptor_F2_total_cm-1": 250078090533.70807,
+   "acceptor_F2_x0_part_cm-1": 156249985.28437603,
+   "acceptor_F2_minus_continuum_cm-1": 78090533.70806885,
+   "acceptor_F2_minus_continuum_rel": 0.0003123621348322754,
+   "acceptor_NodeVolume_total_cm-1": 255119600459.44208,
+   "acceptor_NodeVolume_x0_part_cm-1": 156249985.28437603,
+   "first_column_distance_left_cm": 3.12499992105586e-07,
+   "first_column_distance_right_cm": 3.12499992105586e-07,
+   "height_cm": 0.0004999999655410647,
+   "FORMULA_donor_gap_N_H_hleft_over_2_cm-1": 78124992.642188,
+   "FORMULA_acceptor_gap_N_H_hright_over_2_cm-1": 78124992.642188
+  },
+  {
+   "label": "E3 graded candidate",
+   "doping_source": "QUERIED (E3 WaferStateV2.net_doping_at per node, candidate.npz)",
+   "n_nodes": 39817,
+   "n_x0_nodes": 1601,
+   "F2_area_x0_cm2": 1.56249985284376e-10,
+   "F2_area_xpos_cm2": 2.4992184054842377e-07,
+   "F2_area_xneg_cm2": 2.499218405484237e-07,
+   "F2_area_total_cm2": 4.99999931082132e-07,
+   "NodeVolume_area_x0_cm2": 1.56249985284376e-10,
+   "NodeVolume_area_total_cm2": 5.04687430436554e-07,
+   "donor_F2_total_cm-1": 250078090533.70813,
+   "donor_F2_x0_part_cm-1": 156249985.28437603,
+   "donor_F2_minus_continuum_cm-1": 78090533.70812988,
+   "donor_F2_minus_continuum_rel": 0.00031236213483251955,
+   "donor_NodeVolume_total_cm-1": 252421840667.55045,
+   "donor_NodeVolume_x0_part_cm-1": 156249985.28437603,
+   "acceptor_F2_total_cm-1": 250078090533.7081,
+   "acceptor_F2_x0_part_cm-1": 156249985.28437603,
+   "acceptor_F2_minus_continuum_cm-1": 78090533.70809937,
+   "acceptor_F2_minus_continuum_rel": 0.0003123621348323975,
+   "acceptor_NodeVolume_total_cm-1": 252421839754.2879,
+   "acceptor_NodeVolume_x0_part_cm-1": 156249985.28437603,
+   "first_column_distance_left_cm": 3.12499992105586e-07,
+   "first_column_distance_right_cm": 3.12499992105586e-07,
+   "height_cm": 0.0004999999655410647,
+   "FORMULA_donor_gap_N_H_hleft_over_2_cm-1": 78124992.642188,
+   "FORMULA_acceptor_gap_N_H_hright_over_2_cm-1": 78124992.642188
+  }
+ ],
+ "resolution_S4_vs_E3": {
+  "x0_nodes_S4": 1601,
+  "x0_nodes_E3": 1601,
+  "x0_y_sets_equal": true,
+  "x0_y_spacing_S4_min_max_cm": [
+   3.124296199530363e-07,
+   3.1257513910532e-07
+  ],
+  "x0_y_spacing_E3_min_max_cm": [
+   3.124296199530363e-07,
+   3.1257513910532e-07
+  ],
+  "first_columns_S4_cm": [
+   -3.12499992105586e-07,
+   3.12499992105586e-07
+  ],
+  "first_columns_E3_cm": [
+   -3.12499992105586e-07,
+   3.12499992105586e-07
+  ],
+  "bands": {
+   "0.0-0.025um": {
+    "S0": {
+     "n_edges": 502,
+     "max_edge_um": 0.0707109464390145,
+     "median_edge_um": 0.05000000328436727,
+     "max_horizontal_edge_um": 0.04999999873689376,
+     "max_vertical_edge_um": 0.0500003807246685,
+     "min_edge_um": 0.0499995076097548
+    },
+    "S4": {
+     "n_edges": 78416,
+     "max_edge_um": 0.004419949476034609,
+     "median_edge_um": 0.0031250237952917814,
+     "max_horizontal_edge_um": 0.003125001057924237,
+     "max_vertical_edge_um": 0.0031257513910531998,
+     "min_edge_um": 0.003124296199530363
+    },
+    "E3": {
+     "n_edges": 51212,
+     "max_edge_um": 0.00883928071019592,
+     "median_edge_um": 0.003125169314444065,
+     "max_horizontal_edge_um": 0.006250000978980097,
+     "max_vertical_edge_um": 0.0062506296671926975,
+     "min_edge_um": 0.003124296199530363
+    }
+   },
+   "0.025-0.05um": {
+    "S0": {
+     "n_edges": 200,
+     "max_edge_um": 0.0500003807246685,
+     "median_edge_um": 0.050000012379314285,
+     "max_horizontal_edge_um": null,
+     "max_vertical_edge_um": 0.0500003807246685,
+     "min_edge_um": 0.0499995076097548
+    },
+    "S4": {
+     "n_edges": 76816,
+     "max_edge_um": 0.004419949476034609,
+     "median_edge_um": 0.0031250237952917814,
+     "max_horizontal_edge_um": 0.003125001057924237,
+     "max_vertical_edge_um": 0.0031257513910531998,
+     "min_edge_um": 0.003124296199530363
+    },
+    "E3": {
+     "n_edges": 5604,
+     "max_edge_um": 0.017678149814165885,
+     "median_edge_um": 0.012500095181167126,
+     "max_horizontal_edge_um": 0.012500001957960194,
+     "max_vertical_edge_um": 0.01250067725777626,
+     "min_edge_um": 0.012499513104557991
+    }
+   },
+   "0.05-0.1um": {
+    "S0": {
+     "n_edges": 602,
+     "max_edge_um": 0.0707109464390145,
+     "median_edge_um": 0.050000007831840776,
+     "max_horizontal_edge_um": 0.04999999873689376,
+     "max_vertical_edge_um": 0.0500003807246685,
+     "min_edge_um": 0.0499995076097548
+    },
+    "S4": {
+     "n_edges": 153632,
+     "max_edge_um": 0.00441995269119912,
+     "median_edge_um": 0.0031250237952917814,
+     "max_horizontal_edge_um": 0.003125005605397746,
+     "max_vertical_edge_um": 0.0031257513910531998,
+     "min_edge_um": 0.003124296199530363
+    },
+    "E3": {
+     "n_edges": 2804,
+     "max_edge_um": 0.035355476435044476,
+     "median_edge_um": 0.02500011760275811,
+     "max_horizontal_edge_um": 0.025000003915920388,
+     "max_vertical_edge_um": 0.02500019036233425,
+     "min_edge_um": 0.024999608285725117
+    }
+   },
+   "0.1-0.15um": {
+    "S0": {
+     "n_edges": 402,
+     "max_edge_um": 0.07071095287008895,
+     "median_edge_um": 0.050000007831840776,
+     "max_horizontal_edge_um": 0.050000007831840776,
+     "max_vertical_edge_um": null,
+     "min_edge_um": 0.050000007831840776
+    },
+    "S4": {
+     "n_edges": 3402,
+     "max_edge_um": 0.07071095287008895,
+     "median_edge_um": 0.05590169802530333,
+     "max_horizontal_edge_um": 0.050000007831840776,
+     "max_vertical_edge_um": null,
+     "min_edge_um": 0.050000007831840776
+    },
+    "E3": {
+     "n_edges": 602,
+     "max_edge_um": 0.07071095287008895,
+     "median_edge_um": 0.05590169802530333,
+     "max_horizontal_edge_um": 0.050000007831840776,
+     "max_vertical_edge_um": null,
+     "min_edge_um": 0.050000007831840776
+    }
+   },
+   "0.15-0.2um": {
+    "S0": {
+     "n_edges": 802,
+     "max_edge_um": 0.07071094000794066,
+     "median_edge_um": 0.050000007831840776,
+     "max_horizontal_edge_um": 0.04999998964194674,
+     "max_vertical_edge_um": 0.0500003807246685,
+     "min_edge_um": 0.0499995076097548
+    },
+    "S4": {
+     "n_edges": 802,
+     "max_edge_um": 0.07071094000794066,
+     "median_edge_um": 0.050000007831840776,
+     "max_horizontal_edge_um": 0.04999998964194674,
+     "max_vertical_edge_um": 0.0500003807246685,
+     "min_edge_um": 0.0499995076097548
+    },
+    "E3": {
+     "n_edges": 802,
+     "max_edge_um": 0.07071094000794066,
+     "median_edge_um": 0.050000007831840776,
+     "max_horizontal_edge_um": 0.04999998964194674,
+     "max_vertical_edge_um": 0.0500003807246685,
+     "min_edge_um": 0.0499995076097548
+    }
+   }
+  }
+ },
+ "boundary_S0_vs_E3": {
+  "S0_boundary_points": 600,
+  "E3_boundary_points": 632,
+  "lost": 0,
+  "new": 32,
+  "new_points_on_top_line_y0": 16,
+  "new_points_on_bottom_line": 16,
+  "new_points_on_left_or_right_line": 0,
+  "new_points_x_range_um": [
+   -0.07500000298023224,
+   0.07500000298023224
+  ],
+  "bounding_box_S0": [
+   -5.0,
+   5.0,
+   -5.0,
+   0.0
+  ],
+  "bounding_box_E3": [
+   -5.0,
+   5.0,
+   -5.0,
+   0.0
+  ],
+  "left_contact_nodes_S0_E3": [
+   101,
+   101
+  ],
+  "right_contact_nodes_S0_E3": [
+   101,
+   101
+  ],
+  "left_contact_sets_equal": true,
+  "right_contact_sets_equal": true,
+  "polyline_note": "every new point lies exactly on an existing straight boundary line (checked per point above); the outer polygon's corner set and bounding box are unchanged, so the boundary SHAPE is unchanged; only its subdivision changed",
+  "corners_present_in_both": true
+ }
+}
