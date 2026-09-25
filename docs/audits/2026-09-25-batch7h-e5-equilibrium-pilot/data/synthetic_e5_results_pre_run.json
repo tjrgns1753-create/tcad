@@ -1,0 +1,29 @@
+{
+ "h0.02_J0_matches_D1": true,
+ "h0.02_J1_matches_D1": true,
+ "h0.01_J0_matches_D1": true,
+ "h0.01_J1_matches_D1": true,
+ "h0.005_J0_matches_D1": true,
+ "h0.005_J1_matches_D1": true,
+ "h0.0025_J0_matches_D1": true,
+ "h0.0025_J1_matches_D1": true,
+ "h0.00125_J0_matches_D1": true,
+ "h0.00125_J1_matches_D1": true,
+ "runtime_J0": {
+  "n": 3201,
+  "has_x0": true,
+  "min": -5.0,
+  "max": 5.0,
+  "symmetric": true
+ },
+ "runtime_J1": {
+  "n": 3202,
+  "has_x0": false,
+  "min": -5.0,
+  "max": 5.0,
+  "symmetric": true,
+  "min_abs_x": 0.0015625
+ },
+ "J0_donor_acceptor_both_full_at_x0": true,
+ "ALL_OK": true
+}
