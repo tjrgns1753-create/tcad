@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e3-junction-refinement-candidate-001",
- "profile": "e3_junction_refinement_candidate",
+ "request_id": "e4-nonobtuse-quadtree-candidate-001",
+ "profile": "e4_nonobtuse_quadtree_candidate",
  "params": {},
- "note": "Batch 7H-E3. PLAN fixed in commit 55056142afeea20d498742c09d6df67ae327bff5 before this code and request."
+ "note": "Batch 7H-E4. PLAN fixed in commit de697598e675ca9fe49e757200817c4ff1e9e9e9 before this code and request."
 }

@@ -1,0 +1,70 @@
+{
+ "build": {
+  "x_lines_um": {
+   "+": {
+    "X01": 0.10000000149011612,
+    "X0106": 0.10625000298023224,
+    "X01125": 0.11249999701976776,
+    "X0125": 0.125,
+    "X015": 0.15000000596046448,
+    "X02": 0.20000000298023224
+   },
+   "-": {
+    "X01": -0.10000000149011612,
+    "X0106": -0.10625000298023224,
+    "X01125": -0.11249999701976776,
+    "X0125": -0.125,
+    "X015": -0.15000000596046448,
+    "X02": -0.20000000298023224
+   }
+  },
+  "s4_triangles": 8440,
+  "kept_fine": 8192,
+  "kept_base": 96,
+  "removed_strip": 152,
+  "new_nodes": 174,
+  "new_triangles": 488,
+  "n_nodes": 4479,
+  "n_triangles": 8776,
+  "unreferenced_nodes": 0,
+  "s4_tags_single_value": true
+ },
+ "exact": {
+  "exact_area_um2": "13421773/67108864",
+  "exact_area_S0_um2": "13421773/67108864",
+  "exact_area_equal_S0": true,
+  "n_nonpositive_orientation": 0,
+  "n_obtuse_exact": 0,
+  "n_duplicate_triangles": 0,
+  "n_non_manifold_edges": 0,
+  "n_boundary_edges": 180,
+  "n_boundary_edges_off_outer_lines": 0,
+  "boundary_points_S0": 48,
+  "boundary_points_candidate": 180,
+  "boundary_points_lost": 0,
+  "boundary_points_added": 132,
+  "bbox_equal": true,
+  "left_contact_set_equal": true,
+  "right_contact_set_equal": true,
+  "left_right_contact_nodes": [
+   5,
+   5
+  ]
+ },
+ "removed_equals_generated_area": true,
+ "fine_region_identical": true,
+ "S4": {
+  "sum_F3_over_area": 1.58251955189554,
+  "sum_F2_over_area": 1.0,
+  "max_rel_F3_minus_F2": 6.774655685038457
+ },
+ "candidate": {
+  "sum_F3_over_area": 0.9999999999999998,
+  "sum_F2_over_area": 0.9999999999999998,
+  "max_rel_F3_minus_F2": 0.0
+ },
+ "x0_y_equal": true,
+ "bands_candidate_le_S4_first3": true,
+ "negative_control_obtuse_detected": true,
+ "ALL_OK": true
+}
