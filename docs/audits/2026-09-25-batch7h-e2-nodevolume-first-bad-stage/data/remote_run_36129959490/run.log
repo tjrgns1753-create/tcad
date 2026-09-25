@@ -1,0 +1,150 @@
+[e2] GUI defaults (E1): {'grid_delta_um': 0.05, 'x_extent_um': 10.0, 'y_extent_um': 8.0, 'silicon_depth_um': 5.0, 'pr_thickness_um': 1.0, 'mask_spans_um': [], 'doping': {'region': 'Si', 'junction_axis': 'x', 'junction_position_um': 0.0, 'donor_conc_cm3': 1e+18, 'acceptor_conc_cm3': 1e+18, 'chemical_state': 'ACTIVE'}, 'barrier': {'barrier_material': 'SiO2', 'axis': 'x', 'min_barrier_thickness_um': 0.0}, 'import': {'mesh_name': 'gui_measure_mesh', 'device_name': 'gui_measure_device', 'contact_regions': ['Si'], 'contact_axis': 'x', 'length_scale_to_cm': 0.0001, 'refine_near_um': 0.0, 'refine_axis': 'x'}, 'measure': {'source_pin': 'max', 'voltage': 0.3, 'gnd_voltage': 0.0}}
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e2      0.4s] input mesh equal to E1: True
+[e2      3.2s] stage S0
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 40000 Triangles.
+Physical group name Si has 60300 Lines.
+Physical group name Si has 20301 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e2_s0_device has 20301 coordinates with max index 20300
+Region Si has 20301 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e2     20.6s] S0: nodes 20301 ratio 1.0 tau 1.341e-11 I1 True I2 True 
+[e2     20.6s] stage S1
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 42600 Triangles.
+Physical group name Si has 64204 Lines.
+Physical group name Si has 21605 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e2_s1_device has 21605 coordinates with max index 21604
+Region Si has 21605 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e2     40.1s] S1: nodes 21605 ratio 1.0050000000000825 tau 1.430e-11 I1 True I2 True 
+[e2     40.1s] stage S2
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 52600 Triangles.
+Physical group name Si has 79212 Lines.
+Physical group name Si has 26613 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e2_s2_device has 26613 coordinates with max index 26612
+Region Si has 26613 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e2     65.4s] S2: nodes 26613 ratio 1.0129687477214029 tau 1.769e-11 I1 True I2 True 
+[e2     65.4s] stage S3
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 91800 Triangles.
+Physical group name Si has 138028 Lines.
+Physical group name Si has 46229 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e2_s3_device has 46229 coordinates with max index 46228
+Region Si has 46229 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e2    111.8s] S3: nodes 46229 ratio 1.0281640603695854 tau 3.086e-11 I1 True I2 True 
+[e2    111.8s] stage S4
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 247000 Triangles.
+Physical group name Si has 370860 Lines.
+Physical group name Si has 123861 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device gui_measure_device has 123861 coordinates with max index 123860
+Region Si has 123861 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e2    257.6s] S4: nodes 123861 ratio 1.0582519546022044 tau 8.279e-11 I1 True I2 True True
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 247000 Triangles.
+Physical group name Si has 370860 Lines.
+Physical group name Si has 123861 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e2_c_rt_device has 123861 coordinates with max index 123860
+Region Si has 123861 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e2    400.0s] C_rt: ratio 1.0582519546022044 reoriented 0
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 247000 Triangles.
+Physical group name Si has 370860 Lines.
+Physical group name Si has 123861 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e2_c_ccw_device has 123861 coordinates with max index 123860
+Region Si has 123861 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e2    549.0s] C_ccw: ratio 1.0582519546022044 reoriented 0
+[e2    549.0s] decision ['FIRST_BAD_STAGE=1', 'NO_ORIENTATION_EFFECT', 'SHAPE_CAUSE'] withheld []
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 247000 Triangles.
+Physical group name Si has 370860 Lines.
+Physical group name Si has 123861 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e2_cand_device has 123861 coordinates with max index 123860
+Region Si has 123861 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e2    765.3s] candidate CANDIDATE_REJECTED failed ['ratio_within_tau', 'inventory_donor_within_tau', 'inventory_acceptor_within_tau']
+[e2    765.5s] done: error=False devices_left=[] solve_calls=0
+
+[e2] stage_e2 rc=0 in 765.9 s
+[e2] outputs: ['C_ccw.vtu', 'C_rt.vtu', 'candidate.npz', 'candidate_flip.vtu', 'e2_result.json', 'stage_S0.npz', 'stage_S1.npz', 'stage_S2.npz', 'stage_S3.npz', 'stage_S4.npz', 'wafer_volume.vtu']

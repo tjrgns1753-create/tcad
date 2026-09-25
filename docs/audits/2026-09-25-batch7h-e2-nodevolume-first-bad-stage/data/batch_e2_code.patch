@@ -1,0 +1,1032 @@
+diff --git a/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/PLAN.md b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/PLAN.md
+new file mode 100644
+index 0000000..066ab11
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/PLAN.md
+@@ -0,0 +1,111 @@
++# Batch 7H-E2 PLAN: first stage and minimal cause of the production-mesh NodeVolume excess
++(fixed BEFORE any ViennaPS / DEVSIM execution of this batch; never edited after results)
++
++Execution location: everything that runs ViennaPS or DEVSIM (mesh regeneration, DEVSIM import, model reads) runs on a
++GitHub-hosted Windows runner (`claude/remote-runner`, profile `e2_nodevolume_first_bad_stage`). Locally: code reading and
++writing, static checks, pure-array / synthetic-input tests of the audit helpers only.
++
++## 0. Question and limits
++E1 found DEVSIM sum(NodeVolume) / triangle area = 1.05825195 on the production GUI mesh, with 3000 obtuse triangles and 200
++non-Delaunay edges at |x| = 0.10-0.15 um. E2 asks: at which refinement pass does the excess first appear, and is it caused by
++triangle orientation, by triangle shape, or was it already present before refinement? Only mesh geometry and DEVSIM's own
++default geometric models (NodeVolume, EdgeCouple, EdgeLength) are read. No Poisson, drift-diffusion or any `devsim.solve`
++call runs; no doping is written to any DEVSIM device. Production code, tests, the gate
++`STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED`, precision flags and DEVSIM internals are not changed. Mesh convergence is not
++addressed. A candidate that passes its audit checks is still not applied to production.
++
++## 1. Fixed input (the E1 wafer mesh)
++The raw wafer mesh is regenerated with the exact E1 calls (`tcad.backends.viennaps.session.make_mask_spans` with the GUI
++defaults of E1 `common_e1.GUI`, then `tcad.backends.viennaps.io.save_volume_mesh(floor 5 um)`), then
++`build_process_result` and `apply_step_junction_doping` exactly as E1 `prod_build_e1.build()` (doping only rides on the
++ProcessResult; it is never written to DEVSIM here). The file's sha256 must equal the E1 value
++`cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a`. If it differs: `MESH_INPUT_IDENTITY_FAIL`, every causal
++verdict is withheld, the run stops after recording the difference. The mesh file is kept as an artifact.
++
++## 2. Stages S0-S4 (production path, only the pass count varies)
++The production call is `import_process_result(result, contact_regions=["Si"], contact_axis="x", length_scale_to_cm=1e-4,
++refine_near_um=0.0, refine_axis="x")`; with `refine_half_width_um` and `refine_levels` unset it uses 0.1 um and 4
++(`tcad/device/devsim/mesh_import.py:974-987`), i.e. `refine_mesh_near(points, triangles, tags, |cx - 0| < 0.1, levels=4)`
++(`tcad/device/devsim/mesh_refine.py:157-186`), whose loop is deterministic, so pass k of the 4-pass run is the same array as
++`levels=k`. Stage Sk (k = 0..3) is the same production call with the public argument `refine_levels=k`; S4 is the E1 call
++verbatim (argument omitted, E1 mesh / device names). Each stage is imported into its own DEVSIM device, read, and deleted
++(`delete_device` + `delete_mesh`); `get_device_list()` must be empty at the end.
++
++Identities (each recorded; a failure withholds every causal verdict that depends on that stage):
++* I1 (trace): an audit copy of `_refine_once` (verbatim logic plus parent / split-kind recording) run for k passes must give
++  points, triangles and tags array-equal to production `refine_mesh_near(..., levels=k)` for every k = 0..4.
++* I2 (import): DEVSIM node x, y equal `refined_points * 1e-4` computed exactly as production does, node by node, bit for bit;
++  DEVSIM element list equal to the refined triangle list (exact order; if only equal as a multiset of sorted triples, that is
++  recorded and the mapping used).
++* I3 (E1 match): S4 x / y / element sha256 equal E1 `prod.json` (`f9353f60...`, `3818a0b5...`, `4bb0d371...`); S4 NodeVolume
++  array equals the E1 `prod_arrays.npz` NodeVolume array element by element; contacts and regions equal E1. If I3 fails,
++  STOP: nothing is interpreted as a cause experiment.
++* I4 (cross-stage): exact total area (exact rational sum of |orient| over the exact binary values of the coordinates) equal at
++  every stage; contact node coordinate sets (`Si_xmin`, `Si_xmax`) equal at every stage; all triangles carry the Si tag; the
++  region list is `["Si"]`. A difference stops the causal comparison of the stages it involves.
++
++## 3. Recorded per stage (and per control)
++sha256 of x, y, elements, triangle tags; node / triangle counts; contact names and node counts; float64 triangle-area sum
++and exact area (from the DEVSIM coordinates); DEVSIM sum NodeVolume and ratio sum NodeVolume / exact area; 7H-D `quality()`
++(angle classes, min / max angle, exact Delaunay violations, boundary Gabriel violations, exact positive overlaps, signed
++edge-couple and signed node-volume negatives, orientation); 7H-B per-node rules F2 (signed circumcentric dual, sums to the
++area) and F3 (DEVSIM rule identified in 7H-B: absolute element couples) evaluated on the DEVSIM coordinates, and
++max |NodeVolume - F3| / F3 per node; excess sum(NodeVolume) - area versus sum(F3 - F2); the distinct |x| (um, 6 decimals)
++of nodes with F3 - F2 above the per-node budget and of obtuse-triangle vertices; the lineage of every obtuse triangle and of
++both triangles of every Delaunay-violating edge (origin S0 triangle index, its S0 class and coordinates, and the split kind
++at each pass: unchanged / red corner child / red centre child / green child).
++
++EdgeCouple readback (public API only): `edge_from_node_model(node_model="node_index")` to obtain `node_index@n0/@n1`, then
++`EdgeCouple` and `EdgeLength`. Compared per edge with the 7H-B predictions G1 (signed sum of element couples) and G2 (sum of
++absolute element couples). Reported for every edge with G1 < 0: how many DEVSIM values are negative, exactly zero, positive,
++and max |EdgeCouple - G2| and |EdgeCouple - G1| relative to max |G2|. Also checked: NodeVolume equals
++sum over incident edges of 0.25 * EdgeCouple * EdgeLength. If the edge models cannot be read: `EDGECOUPLE_UNKNOWN`.
++
++## 4. Error budgets (fixed now)
++Coordinates: every quantity above is computed from the coordinates DEVSIM itself holds (read back), so float32 serialization
++of the ViennaPS file enters both sides of every comparison identically and contributes zero. u = 2^-53.
++* Per node: |NodeVolume_i - F3_i| <= b_i * F3_i with b_i = 2^-46 / sin(theta_i), theta_i = smallest interior angle of the
++  triangles incident to node i (128 u for a <= 64-operation element-local computation, times the first-order conditioning
++  1 / sin(theta) of the cotangent). All F3 contributions are non-negative, so F3_i is the sum of their magnitudes.
++* Per stage: |sum NodeVolume / area - 1| <= tau_k = (N_nodes + N_triangles) * 2^-52 + max_i b_i (recursive summation of both
++  sums plus the worst per-node term). The same tau_k bounds |(sum NodeVolume - area) - sum(F3 - F2)| / area.
++These are not adjusted after results.
++
++## 5. Controls
++* C_rt (writer round trip): the S4 refined arrays written unchanged (same dtype, same order, cell data `Material`) with
++  meshio to a new `.vtu`, re-read (array-equal check), and imported with the same production call but `refine_near_um`
++  unset (no refinement). Must reproduce S4's x, y, elements and NodeVolume exactly; otherwise the orientation and
++  candidate comparisons are `INCONCLUSIVE`.
++* C_ccw (orientation only): the same as C_rt, but each triangle whose exact orientation is negative has two vertices swapped
++  so every triangle is counter-clockwise. Coordinates and the triangle vertex sets are unchanged; this is the same mesh, not a
++  new mesh. Compared node by node with C_rt.
++
++## 6. Verdicts (all that hold are reported; none is merged into another)
++* `PRE_EXISTING`: S0 ratio outside tau_0.
++* `FIRST_BAD_STAGE = k`: S0..S(k-1) within their tau, Sk outside tau_k, and I1, I2, I4 hold for S(k-1) and Sk (and I3).
++* `ORIENTATION_EFFECT`: C_ccw NodeVolume differs from C_rt at any node beyond b_i. `ORIENTATION_CAUSE`: that, and C_ccw's
++  ratio is within tau. `NO_ORIENTATION_EFFECT`: C_ccw equals C_rt within b_i at every node.
++* `SHAPE_CAUSE` (at the first bad stage and at S4): NodeVolume equals F3 within b_i at every node, the excess equals
++  sum(F3 - F2) within tau, every node with F3 - F2 > b_i F3 is a vertex of an obtuse triangle, and `NO_ORIENTATION_EFFECT`.
++* `INCONCLUSIVE`: any required identity fails, C_rt fails, or the excess is not explained by F3.
++
++## 7. Optional repair candidate (at most one, audit copy only)
++Runs only if `FIRST_BAD_STAGE` is determined, `SHAPE_CAUSE` holds and `NO_ORIENTATION_EFFECT` holds; otherwise
++`CANDIDATE_NOT_RUN`. Candidate: 7H-A `exact_flip` (exact incircle, exact convexity / area / overlap checks, Lawson
++termination) on the S4 arrays, protected edges = every boundary edge (outer boundary, contacts) plus every edge with both
++end points exactly on x = 0 (junction line); only interior edges between two Si triangles are eligible. Nodes and
++coordinates are never moved. Accepted as `CANDIDATE_PASSES_AUDIT_CHECKS` only if all hold:
++(a) exact invariants versus S4: identical point array, boundary edge set, interface set (empty), x = 0 edge set, tag
++counter and exact total area; no duplicate, zero-area or non-manifold triangle; exact positive-area overlaps 0; flip loop
++terminated with no exact violation left; (b) DEVSIM import through the C_rt writer path: same contacts with the same node
++sets, same region; (c) |sum NodeVolume / area - 1| <= tau; (d) dopant inventory: with the E1 canonical per-node Donors /
++Acceptors arrays (same node order, proven by I3 and the identical point array), sum(N x NodeVolume) equals sum(N x F2) of the
++candidate mesh within tau, per species; also reported against the continuum N x 25 um^2 per side. Any failure:
++`CANDIDATE_REJECTED`, the phenomenon stays `UNSUPPORTED_BY_MODEL`. No DEVSIM EdgeCouple or NodeVolume is overwritten, and
++nothing is applied to production.
++
++## 8. JSON, artifacts, stop conditions
++New JSON is written with `allow_nan=False` (non-finite values become null plus an explicit status) and re-read with a strict
++parser. Artifact: summary, sanitized log, all JSON, per-stage node arrays (npz), the regenerated wafer `.vtu`, the C_ccw and
++candidate `.vtu` files, with sha256. Stop / withhold conditions: sections 1, 2 (I3), 5 (C_rt). No physics solve on any mesh.
++No threshold, budget, stage definition or candidate is changed after a result is seen.
+diff --git a/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/PLAN.sha256 b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/PLAN.sha256
+new file mode 100644
+index 0000000..46784c6
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/PLAN.sha256
+@@ -0,0 +1 @@
++92e87eadb6c2317b3edab7c4e51b88653cc5cf5050fc87fcd97f304782b41c6b  PLAN.md
+diff --git a/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/run_e2.py b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/run_e2.py
+new file mode 100644
+index 0000000..73501fb
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/run_e2.py
+@@ -0,0 +1,49 @@
++"""Batch 7H-E2 driver (remote profile entry). Refuses to run outside a GitHub-hosted runner.
++Runs stage_e2.py in a subprocess, then strict-parses every JSON output. Outputs: <repo>/e2_out (not committed)."""
++import argparse
++import os
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++OUT = os.path.join(ROOT, "e2_out")
++sys.path.insert(0, os.path.join(ROOT, "docs", "audits", "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import common_e1 as ce  # noqa: E402
++
++
++def main():
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--validate-only", action="store_true")
++    a = ap.parse_args()
++    hosted = os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
++    print(f"[e2] GUI defaults (E1): {ce.GUI}", flush=True)
++    if a.validate_only:
++        return 0
++    if not hosted:
++        print("[e2] refusing to run: not a GitHub-hosted runner", flush=True)
++        return 2
++    os.makedirs(OUT, exist_ok=True)
++    t = time.time()
++    try:
++        p = subprocess.run([sys.executable, os.path.join(HERE, "stage_e2.py"), OUT], cwd=ROOT, capture_output=True, text=True,
++                           encoding="utf-8", errors="replace", timeout=16000)
++        print(p.stdout[-300000:], flush=True)
++        if p.stderr.strip():
++            print("[e2][stderr]", p.stderr[-6000:], flush=True)
++        rc = p.returncode
++    except subprocess.TimeoutExpired:
++        print("[e2] NOT_COMPLETED: stage_e2 timeout 16000 s", flush=True)
++        rc = "timeout"
++    print(f"[e2] stage_e2 rc={rc} in {time.time() - t:.1f} s", flush=True)
++    for f in os.listdir(OUT):
++        if f.endswith(".json"):
++            ce.load_strict(os.path.join(OUT, f))
++    print(f"[e2] outputs: {sorted(os.listdir(OUT))}", flush=True)
++    return 0 if rc == 0 else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/stage_e2.py b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/stage_e2.py
+new file mode 100644
+index 0000000..8d66f6e
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/stage_e2.py
+@@ -0,0 +1,416 @@
++"""Batch 7H-E2 remote worker (PLAN sections 1-8). Mesh geometry and DEVSIM default geometric models only:
++no devsim.solve, no doping written to DEVSIM. usage: stage_e2.py <out dir>"""
++import collections
++import dataclasses
++import json
++import os
++import sys
++import time
++import traceback
++
++sys.dont_write_bytecode = True
++os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++AUD = os.path.join(ROOT, "docs", "audits")
++E1 = os.path.join(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence")
++sys.path.insert(0, HERE)
++sys.path.insert(0, ROOT)
++sys.path.insert(0, os.path.join(E1, "scripts"))
++sys.path.insert(0, os.path.join(AUD, "2026-09-23-batch7h-d-sg-pn-mesh-validity", "scripts"))
++import common_e1 as ce  # noqa: E402  (E1, read-only: GUI defaults, strict JSON, sha)
++import trace_refine_e2 as tr  # noqa: E402
++import verdicts_e2 as vd  # noqa: E402
++
++UM = 1e-4
++E1_MESH_SHA = "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a"
++E1_PROD = os.path.join(E1, "data", "remote_run_36012608804", "outputs", "e1_out", "prod.json")
++E1_NPZ = os.path.join(E1, "data", "remote_run_36012608804", "outputs", "e1_out", "prod_arrays.npz")
++T0 = time.time()
++
++
++def log(msg):
++    print(f"[e2 {time.time() - T0:8.1f}s] {msg}", flush=True)
++
++
++def regen(outd, rec):
++    from tcad.backends.viennaps import session as vs
++    from tcad.backends.viennaps.io import save_volume_mesh
++    from tcad.mesh.viennaps_adapter import build_process_result
++    from tcad.physics.doping import apply_step_junction_doping
++    g = ce.GUI
++    domain = vs.make_mask_spans(grid_delta_um=g["grid_delta_um"], x_extent_um=g["x_extent_um"], y_extent_um=g["y_extent_um"],
++                                spans_um=[tuple(s) for s in g["mask_spans_um"]], mask_height_um=max(g["pr_thickness_um"], 0.1),
++                                substrate_depth_um=g["silicon_depth_um"] + 1.0)
++    mesh_path = save_volume_mesh(domain, os.path.join(outd, "wafer"), floor_depth_um=g["silicon_depth_um"])
++    sha = ce.sha_file(mesh_path)
++    rec["input_mesh"] = {"name": os.path.basename(mesh_path), "sha256": sha, "e1_sha256": E1_MESH_SHA, "equal": sha == E1_MESH_SHA}
++    pr = build_process_result({"final_mesh": mesh_path, "snapshots": []})
++    d = g["doping"]
++    doped = apply_step_junction_doping(pr, region=d["region"], junction_axis=d["junction_axis"],
++                                       junction_position_um=d["junction_position_um"], donor_conc_cm3=d["donor_conc_cm3"],
++                                       acceptor_conc_cm3=d["acceptor_conc_cm3"], chemical_state=d["chemical_state"])
++    return doped
++
++
++def raw_arrays(result):
++    import meshio
++    m = meshio.read(result.volume_mesh_path)
++    blk = next(c for c in m.cells if c.type == "triangle")
++    bi = m.cells.index(blk)
++    return m.points, blk.data, m.cell_data[result.material_field][bi]
++
++
++def do_import(result, k, name, refine=True):
++    from tcad.device.devsim.mesh_import import import_process_result
++    i = ce.GUI["import"]
++    kw = dict(contact_regions=i["contact_regions"], contact_axis=i["contact_axis"], length_scale_to_cm=i["length_scale_to_cm"])
++    if refine:
++        kw.update(refine_near_um=i["refine_near_um"], refine_axis=i["refine_axis"])
++        if k is not None:
++            kw["refine_levels"] = k
++    return import_process_result(result, mesh_name=name + "_mesh", device_name=name + "_device", **kw)
++
++
++def read_device(dv, imp):
++    dev = imp.device
++    g = lambda n: np.array(dv.get_node_model_values(device=dev, region="Si", name=n))  # noqa: E731
++    x, y, nv = g("x"), g("y"), g("NodeVolume")
++    el = np.array(dv.get_element_node_list(device=dev, region="Si"), dtype=np.int64)
++    contacts = {}
++    for c in imp.contacts:
++        try:
++            nodes = sorted({int(v) for e in dv.get_element_node_list(device=dev, region="Si", contact=c) for v in e})
++            mode = "get_element_node_list(contact)"
++        except Exception:  # noqa: BLE001
++            sel = x == (x.min() if c.endswith("min") else x.max())
++            nodes, mode = sorted(np.where(sel)[0].tolist()), "x extreme (fallback)"
++        contacts[c] = {"n_nodes": len(nodes), "mode": mode,
++                       "coords_sha256": ce.sha(np.round(np.column_stack([x[nodes], y[nodes]]), 30).tobytes())}
++    edge = {}
++    try:
++        dv.edge_from_node_model(device=dev, region="Si", node_model="node_index")
++        ge = lambda n: np.array(dv.get_edge_model_values(device=dev, region="Si", name=n))  # noqa: E731
++        edge = {"n0": ge("node_index@n0").astype(np.int64), "n1": ge("node_index@n1").astype(np.int64),
++                "EdgeCouple": ge("EdgeCouple"), "EdgeLength": ge("EdgeLength")}
++    except Exception as e:  # noqa: BLE001
++        edge = {"error": repr(e)[:300]}
++    return {"x": x, "y": y, "nv": nv, "el": el, "contacts": contacts, "regions": list(dv.get_region_list(device=dev)),
++            "edge": edge}
++
++
++def release(dv, imp):
++    dv.delete_device(device=imp.device)
++    dv.delete_mesh(mesh=imp.mesh)
++
++
++def exact_obtuse(P, tris, cand):
++    """Exact classification (Fraction dot products) for triangles in `cand`; returns the obtuse subset."""
++    from fractions import Fraction as F
++    out = []
++    for t in cand:
++        a, b, c = (P[v] for v in tris[t])
++        pts = [(F(float(p[0])), F(float(p[1]))) for p in (a, b, c)]
++        for k in range(3):
++            o, p, q = pts[k], pts[(k + 1) % 3], pts[(k + 2) % 3]
++            if (p[0] - o[0]) * (q[0] - o[0]) + (p[1] - o[1]) * (q[1] - o[1]) < 0:
++                out.append(int(t))
++                break
++    return out
++
++
++def analyze(d, label, extra=None):
++    """Everything of PLAN section 3 for one imported device (coordinates as DEVSIM holds them)."""
++    import build_fixtures_7hd as bf7
++    fm = bf7.sl.fm
++    ef = bf7.ef
++    eg = bf7.eg
++    x, y, nv, el = d["x"], d["y"], d["nv"], d["el"]
++    tris = [[int(a), int(b), int(c)] for a, b, c in el]
++    Pc = np.column_stack([x, y])
++    P = Pc / UM
++    n = len(x)
++    area_exact = tr.exact_area(Pc, tris)
++    area = float(area_exact)
++    f2 = fm.node_areas(Pc, tris, "F2")
++    f3 = fm.node_areas(Pc, tris, "F3")
++    b = tr.node_budget(Pc, tris, n)
++    tau = (n + len(tris)) * 2.0 ** -52 + float(b.max())
++    rel = np.abs(nv - f3) / f3
++    exc_nodes = np.where((f3 - f2) > b * f3)[0]
++    maxang = tr.max_angle_deg_per_triangle(Pc, tris)
++    obt = exact_obtuse(Pc, tris, np.where(maxang > 89.99)[0])
++    obt_vertices = {v for t in obt for v in tris[t]}
++    q = bf7.quality(P, tris)
++    ipts, _ = eg.exact_integer_points(P)
++    owners, bset, _, _ = eg.edge_sets(tris, [0] * len(tris))
++    viol = ef.exact_violations(ipts, tris, [0] * len(tris), frozenset(e for e, _ in bset))
++    r = {"label": label, "n_nodes": n, "n_triangles": len(tris), "regions": d["regions"],
++         "x_sha256": ce.sha(x.tobytes()), "y_sha256": ce.sha(y.tobytes()), "elements_sha256": ce.sha(el.tobytes()),
++         "NodeVolume_sha256": ce.sha(nv.tobytes()), "contacts": d["contacts"],
++         "contact_nodes_sha256": ce.sha(json.dumps({c: v["coords_sha256"] for c, v in sorted(d["contacts"].items())}).encode()),
++         "exact_area_cm2": f"{area_exact.numerator}/{area_exact.denominator}", "area_cm2": area,
++         "float_triangle_area_sum_cm2": float(sum(fm.tri_area(Pc[t]) for t in tris)),
++         "sum_NodeVolume_cm2": float(nv.sum()), "ratio": float(nv.sum() / area), "tau": tau,
++         "excess_over_area": float((nv.sum() - area) / area), "sum_F3_minus_F2_over_area": float((f3 - f2).sum() / area),
++         "sum_F2_over_area": float(f2.sum() / area),
++         "excess_explained_by_F3_within_tau": bool(abs((nv.sum() - area) - (f3 - f2).sum()) / area <= tau),
++         "f3_max_rel_error": float(rel.max()), "f3_nodes_beyond_budget": int((np.abs(nv - f3) > b * f3).sum()),
++         "f3_all_nodes_within_budget": bool((np.abs(nv - f3) <= b * f3).all()),
++         "budget_max_b_i": float(b.max()),
++         "n_nodes_F3_gt_F2": int(len(exc_nodes)),
++         "f3_excess_nodes_all_obtuse_vertices": bool(set(exc_nodes.tolist()) <= obt_vertices),
++         "excess_node_abs_x_um": sorted({round(abs(float(v)), 6) for v in P[exc_nodes, 0]}),
++         "n_obtuse_exact": len(obt), "obtuse_vertex_abs_x_um": sorted({round(abs(float(P[v, 0])), 6) for v in obt_vertices}),
++         "max_angle_deg": float(maxang.max()), "quality_7hd": q, "n_delaunay_violations_exact": len(viol),
++         "delaunay_violation_edge_abs_x_um": sorted({(round(abs(float(P[e[0], 0])), 6), round(abs(float(P[e[1], 0])), 6))
++                                                     for e, *_ in viol}),
++         "tags_all_si": d["regions"] == ["Si"]}
++    ed = d["edge"]
++    if "error" in ed:
++        r["edgecouple"] = {"status": "EDGECOUPLE_UNKNOWN", "error": ed["error"]}
++    else:
++        g1, g2, _ = fm.edge_couple_predictions(Pc, tris)
++        keys = [(min(a, b_), max(a, b_)) for a, b_ in zip(ed["n0"], ed["n1"])]
++        G1 = np.array([g1[k] for k in keys])
++        G2 = np.array([g2[k] for k in keys])
++        ec, L = ed["EdgeCouple"], ed["EdgeLength"]
++        neg = G1 < 0
++        scale = float(np.abs(G2).max())
++        nv_from_edges = np.zeros(n)
++        np.add.at(nv_from_edges, ed["n0"], 0.25 * ec * L)
++        np.add.at(nv_from_edges, ed["n1"], 0.25 * ec * L)
++        r["edgecouple"] = {"status": "READ", "n_edges": int(len(ec)), "n_G1_negative": int(neg.sum()),
++                           "devsim_at_G1_negative": {"negative": int((ec[neg] < 0).sum()), "zero": int((ec[neg] == 0).sum()),
++                                                     "positive": int((ec[neg] > 0).sum())},
++                           "devsim_negative_total": int((ec < 0).sum()),
++                           "max_abs_EC_minus_G2_over_maxG2": float(np.abs(ec - G2).max() / scale),
++                           "max_abs_EC_minus_G1_over_maxG2": float(np.abs(ec - G1).max() / scale),
++                           "at_G1_negative_max_abs_EC_minus_G2_over_maxG2": float(np.abs(ec[neg] - G2[neg]).max() / scale) if neg.any() else None,
++                           "at_G1_negative_max_abs_EC_minus_G1_over_maxG2": float(np.abs(ec[neg] - G1[neg]).max() / scale) if neg.any() else None,
++                           "NodeVolume_vs_sum_quarter_EC_L_max_rel": float(np.abs(nv - nv_from_edges).max() / nv.max())}
++        d["G1"], d["G2"] = G1, G2
++    d.update({"F2": f2, "F3": f3, "b": b, "obtuse": np.array(obt, dtype=np.int64)})
++    if extra:
++        r.update(extra)
++    return r, viol
++
++
++def lineage(k, dmap, origin, kinds, s0_P, s0_T, tri_list, viol):
++    """Lineage of obtuse triangles and of Delaunay-violating edge triangles at stage k (dmap: DEVSIM tri -> traced tri)."""
++    from fractions import Fraction as F
++
++    def s0_class(t):
++        pts = [(F(float(p[0])), F(float(p[1]))) for p in (s0_P[v] for v in s0_T[t])]
++        dots = [(pts[(j + 1) % 3][0] - pts[j][0]) * (pts[(j + 2) % 3][0] - pts[j][0]) +
++                (pts[(j + 1) % 3][1] - pts[j][1]) * (pts[(j + 2) % 3][1] - pts[j][1]) for j in range(3)]
++        return "obtuse" if min(dots) < 0 else ("right" if min(dots) == 0 else "acute")
++
++    def rec(t_dev):
++        t = dmap[t_dev]
++        o = int(origin[k][t])
++        return {"origin_S0_triangle": o, "origin_class": s0_class(o),
++                "origin_vertices_um": [[float(v) for v in s0_P[i][:2]] for i in s0_T[o]],
++                "kinds": [tr.KIND_NAMES[j] for j in kinds[k][t]]}
++    obt = [rec(int(t)) for t in tri_list]
++    pat = collections.Counter((r["origin_class"], tuple(r["kinds"])) for r in obt)
++    vrec = [{"edge": [int(e[0]), int(e[1])], "t1": rec(int(t1)), "t2": rec(int(t2))} for e, t1, t2, *_ in viol]
++    vpat = collections.Counter((a["t1"]["origin_class"], tuple(a["t1"]["kinds"]), a["t2"]["origin_class"], tuple(a["t2"]["kinds"]))
++                               for a in vrec)
++    return {"obtuse_patterns": [{"origin_class": c, "kinds": list(kk), "count": n} for (c, kk), n in pat.most_common()],
++            "obtuse_distinct_origins": len({r["origin_S0_triangle"] for r in obt}),
++            "obtuse_examples": obt[:6],
++            "violation_patterns": [{"t1": [a, list(b)], "t2": [c, list(dd)], "count": n} for (a, b, c, dd), n in vpat.most_common()],
++            "violation_examples": vrec[:4]}
++
++
++def write_vtu(path, points, tris, tags, field):
++    import meshio
++    meshio.write(path, meshio.Mesh(points, [("triangle", np.asarray(tris))], cell_data={field: [np.asarray(tags)]}))
++    m = meshio.read(path)
++    blk = next(c for c in m.cells if c.type == "triangle")
++    ok = (np.array_equal(m.points, points) and m.points.dtype == points.dtype and np.array_equal(blk.data, tris)
++          and np.array_equal(m.cell_data[field][m.cells.index(blk)], tags))
++    return ok
++
++
++def main():
++    outd = os.path.abspath(sys.argv[1])
++    os.makedirs(outd, exist_ok=True)
++    import devsim as dv
++    res = {"plan_sha256_expected": "92e87eadb6c2317b3edab7c4e51b88653cc5cf5050fc87fcd97f304782b41c6b", "stages": [],
++           "solve_calls": 0}
++    real_solve = dv.solve
++
++    def trap(*a, **k):
++        res["solve_calls"] += 1
++        raise RuntimeError("E2 forbids devsim.solve")
++    dv.solve = trap
++    try:
++        doped = regen(outd, res)
++        log(f"input mesh equal to E1: {res['input_mesh']['equal']}")
++        if not res["input_mesh"]["equal"]:
++            res["stop"] = "MESH_INPUT_IDENTITY_FAIL"
++            return finish(outd, res)
++        from tcad.device.devsim.mesh_refine import refine_mesh_near
++        p0, t0, g0 = raw_arrays(doped)
++        i = ce.GUI["import"]
++        ax = {"x": 0, "y": 1}[i["refine_axis"]]
++        pred = lambda c: abs(c[ax] - i["refine_near_um"]) < 0.1  # noqa: E731  (production default half width)
++        states, origin, kinds = tr.refine_traced(p0, t0, g0, pred, 4)
++        res["n_passes_traced"] = len(states) - 1
++        e1 = ce.load_strict(E1_PROD)
++        e1a = np.load(E1_NPZ)
++        stage_arrays = {}
++        for k in range(5):
++            log(f"stage S{k}")
++            pp, tt, gg = refine_mesh_near(p0, t0, g0, pred, levels=k)
++            sp, st, sg = states[min(k, len(states) - 1)]
++            i1 = bool(np.array_equal(pp, sp) and np.array_equal(tt, st) and np.array_equal(gg, sg))
++            name = "gui_measure" if k == 4 else f"e2_s{k}"
++            imp = do_import(doped, None if k == 4 else k, name)
++            d = read_device(dv, imp)
++            release(dv, imp)
++            pc = pp * i["length_scale_to_cm"]
++            i2_xy = bool(len(d["x"]) == len(pc) and np.array_equal(d["x"], pc[:, 0].astype(float))
++                         and np.array_equal(d["y"], pc[:, 1].astype(float)))
++            if i2_xy:
++                nmap = np.arange(len(pc))
++            else:   # DEVSIM node -> traced node by exact coordinates (recorded, never assumed)
++                key = {(float(a), float(b)): j for j, (a, b) in enumerate(zip(pc[:, 0], pc[:, 1]))}
++                nm = [key.get((float(a), float(b))) for a, b in zip(d["x"], d["y"])]
++                nmap = np.array([m if m is not None else -1 for m in nm])
++            el_m = nmap[d["el"]]
++            if i2_xy and np.array_equal(d["el"], tt):
++                i2_mode, dmap = "exact_order", np.arange(len(tt))
++            else:
++                lut = {tuple(sorted(t)): j for j, t in enumerate(tt.tolist())}
++                dm = [lut.get(tuple(sorted(t))) for t in el_m.tolist()] if (nmap >= 0).all() else [None]
++                ok = None not in dm and len(set(dm)) == len(tt) == len(el_m) and len(set(nmap.tolist())) == len(pc)
++                i2_mode = ("coordinate_mapped_" if not i2_xy else "") + "multiset_of_sorted_triples" if ok else "MISMATCH"
++                dmap = np.array([m if m is not None else -1 for m in dm])
++            ident = {"I1": i1, "I2": bool(i2_xy and i2_mode != "MISMATCH"), "I2_xy_bit_equal": i2_xy, "I2_element_mode": i2_mode}
++            r, viol = analyze(d, f"S{k}", {"k": k})
++            if k == 4:
++                reg = e1["region_facts"]["Si"]
++                ident["I3"] = bool(r["x_sha256"] == reg["x_sha256"] and r["y_sha256"] == reg["y_sha256"]
++                                   and r["elements_sha256"] == reg["elements_sha256"]
++                                   and np.array_equal(d["nv"], e1a["NodeVolume"])
++                                   and sorted(d["contacts"]) == sorted(e1["contacts"]) and d["regions"] == e1["regions"])
++            r["identity"] = ident
++            if i2_mode != "MISMATCH":
++                r["lineage"] = lineage(min(k, len(states) - 1), dmap, origin, kinds, p0, t0, d["obtuse"].tolist(), viol)
++            res["stages"].append(r)
++            stage_arrays[k] = d
++            np.savez_compressed(os.path.join(outd, f"stage_S{k}.npz"), x=d["x"], y=d["y"], elements=d["el"], NodeVolume=d["nv"],
++                                F2=d["F2"], F3=d["F3"], budget=d["b"], obtuse=d["obtuse"],
++                                **({"edge_n0": d["edge"]["n0"], "edge_n1": d["edge"]["n1"], "EdgeCouple": d["edge"]["EdgeCouple"],
++                                    "EdgeLength": d["edge"]["EdgeLength"], "G1": d["G1"], "G2": d["G2"]} if "G1" in d else {}),
++                                origin_S0=origin[min(k, len(states) - 1)],
++                                kinds=np.array([sum(v * 4 ** j for j, v in enumerate(kk)) for kk in kinds[min(k, len(states) - 1)]]))
++            log(f"S{k}: nodes {r['n_nodes']} ratio {r['ratio']!r} tau {r['tau']:.3e} I1 {i1} I2 {ident['I2']} {ident.get('I3', '')}")
++        i3 = bool(res["stages"][4]["identity"].get("I3"))
++        # controls
++        p4, t4, g4 = states[-1]
++        field = doped.material_field
++        s4 = stage_arrays[4]
++        controls = {}
++        for label, tris in (("C_rt", t4), ("C_ccw", None)):
++            if tris is None:
++                tris, nflip = tr.ccw_only(p4, t4)
++            else:
++                nflip = 0
++            path = os.path.join(outd, f"{label}.vtu")
++            wr = write_vtu(path, p4, tris, g4, field)
++            imp = do_import(dataclasses.replace(doped, volume_mesh_path=path), None, "e2_" + label.lower(), refine=False)
++            d = read_device(dv, imp)
++            release(dv, imp)
++            r, _ = analyze(d, label, {"writer_roundtrip_exact": wr, "n_triangles_reoriented": nflip,
++                                       "vtu_sha256": ce.sha_file(path)})
++            b = s4["b"]
++            r["n_nodes_beyond_budget_vs_S4"] = int((np.abs(d["nv"] - s4["nv"]) > b * s4["nv"]).sum()) if len(d["nv"]) == len(s4["nv"]) else None
++            if label == "C_rt":
++                r["reproduces_S4"] = bool(wr and np.array_equal(d["x"], s4["x"]) and np.array_equal(d["y"], s4["y"])
++                                          and np.array_equal(d["el"], s4["el"]) and np.array_equal(d["nv"], s4["nv"]))
++                rt = d
++            else:
++                r["max_abs_NodeVolume_diff_vs_rt_rel"] = float(np.abs(d["nv"] - rt["nv"]).max() / rt["nv"].max())
++                r["n_nodes_beyond_budget_vs_rt"] = int((np.abs(d["nv"] - rt["nv"]) > rt["b"] * rt["nv"]).sum())
++                r["points_identical"] = bool(np.array_equal(d["x"], rt["x"]) and np.array_equal(d["y"], rt["y"]))
++                r["same_vertex_sets"] = bool(np.array_equal(np.sort(d["el"], 1), np.sort(rt["el"], 1)))
++            controls[label] = r
++            log(f"{label}: ratio {r['ratio']!r} reoriented {nflip}")
++        res["controls"] = controls
++        dec = vd.decide(res["stages"], i3, controls.get("C_rt"), controls.get("C_ccw"))
++        res["decision"] = dec
++        log(f"decision {dec['verdicts']} withheld {dec['withheld']}")
++        res["candidate"] = candidate(dv, doped, dec, p4, t4, g4, field, s4, e1a, outd) if dec["candidate_allowed"] else \
++            {"verdict": "CANDIDATE_NOT_RUN", "reason": "PLAN section 7 preconditions not met"}
++    except Exception as e:  # noqa: BLE001
++        res["error"] = repr(e)[:500]
++        res["traceback"] = traceback.format_exc()[-3000:]
++    finally:
++        dv.solve = real_solve
++        res["devices_left"] = list(dv.get_device_list())
++    return finish(outd, res)
++
++
++def candidate(dv, doped, dec, p4, t4, g4, field, s4, e1a, outd):
++    import build_fixtures_7hd as bf7
++    ef, eg, fm = bf7.ef, bf7.eg, bf7.sl.fm
++    c = {}
++    tris0 = [[int(v) for v in t] for t in t4]
++    P2 = np.asarray(p4)[:, :2]
++    owners, bset, iset, _ = eg.edge_sets(tris0, g4)
++    x0_edges = frozenset(e for e in owners if P2[e[0], 0] == 0.0 and P2[e[1], 0] == 0.0)
++    protected = frozenset(e for e, _ in bset) | x0_edges
++    tris1, tags1, info = ef.exact_flip(P2, tris0, g4, protected=protected, max_passes=200)
++    c["flip"] = {"terminated": info["terminated"], "n_flips": len(info["history"]), "passes": len(info["passes"])}
++    ipts, K = eg.exact_integer_points(P2)
++    inv0, inv1 = eg.mesh_exact_invariants(ipts, tris0, g4), eg.mesh_exact_invariants(ipts, tris1, tags1)
++    own1, _, _, _ = eg.edge_sets(tris1, tags1)
++    x0_after = frozenset(e for e in own1 if P2[e[0], 0] == 0.0 and P2[e[1], 0] == 0.0)
++    scan, _ = eg.global_exact_scan(ipts, tris1, K)
++    c.update({"points_identical": True, "boundary_edges_equal": inv0["boundary_edge_set"] == inv1["boundary_edge_set"],
++              "interface_edges_equal": inv0["interface_edge_set"] == inv1["interface_edge_set"],
++              "x0_edges_equal": x0_edges == x0_after, "tag_counter_equal": inv0["tag_counter"] == inv1["tag_counter"],
++              "exact_area_equal": inv0["total_area2_int"] == inv1["total_area2_int"],
++              "no_duplicate_zero_nonmanifold": not (inv1["duplicate_triangle_set"] or inv1["zero_area_set"] or inv1["non_manifold_edge_set"]),
++              "no_positive_overlap": scan["counts"]["EXACT_POSITIVE_AREA_OVERLAP"] == 0,
++              "flip_terminated_clean": info["terminated"] == "no_exact_violations_remaining"})
++    path = os.path.join(outd, "candidate_flip.vtu")
++    tri_arr = np.array(tris1, dtype=t4.dtype)
++    tag_arr = np.array(tags1, dtype=g4.dtype)
++    c["writer_roundtrip_exact"] = write_vtu(path, p4, tri_arr, tag_arr, field)
++    c["vtu_sha256"] = ce.sha_file(path)
++    imp = do_import(dataclasses.replace(doped, volume_mesh_path=path), None, "e2_cand", refine=False)
++    d = read_device(dv, imp)
++    release(dv, imp)
++    r, _ = analyze(d, "candidate")
++    c["analysis"] = r
++    c["points_identical"] = bool(np.array_equal(d["x"], s4["x"]) and np.array_equal(d["y"], s4["y"]))
++    c["contacts_equal"] = {k: v["coords_sha256"] for k, v in d["contacts"].items()} == \
++        {k: v["coords_sha256"] for k, v in s4["contacts"].items()}
++    c["regions_equal"] = d["regions"] == s4["regions"]
++    c["ratio_within_tau"] = abs(r["ratio"] - 1.0) <= r["tau"]
++    don, acc = e1a["Donors"], e1a["Acceptors"]
++    for nm, N in (("donor", don), ("acceptor", acc)):
++        inv_dev, inv_f2 = float((N * d["nv"]).sum()), float((N * d["F2"]).sum())
++        c[f"inventory_{nm}_cm-1"] = {"devsim": inv_dev, "exact_dual_F2": inv_f2, "continuum_N_x_25um2": 1e18 * 25.0 * UM * UM}
++        c[f"inventory_{nm}_within_tau"] = abs(inv_dev - inv_f2) / inv_f2 <= r["tau"]
++    np.savez_compressed(os.path.join(outd, "candidate.npz"), elements=d["el"], NodeVolume=d["nv"], F2=d["F2"], F3=d["F3"])
++    c.update(vd.candidate_verdict(c))
++    log(f"candidate {c['verdict']} failed {c['failed']}")
++    return c
++
++
++def finish(outd, res):
++    ce.dump_strict(res, os.path.join(outd, "e2_result.json"))
++    log(f"done: error={'error' in res} devices_left={res.get('devices_left')} solve_calls={res['solve_calls']}")
++    return 0 if "error" not in res else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/synthetic_e2_test.py b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/synthetic_e2_test.py
+new file mode 100644
+index 0000000..21730b4
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/synthetic_e2_test.py
+@@ -0,0 +1,113 @@
++"""Batch 7H-E2 SYNTHETIC test (no ViennaPS / DEVSIM): trace copy == production refine_mesh_near on a synthetic
++structured right-triangle grid with mixed orientation; CCW-only control; exact area invariance; verdict rules.
++usage: synthetic_e2_test.py <work dir>"""
++import copy
++import json
++import os
++import sys
++
++sys.dont_write_bytecode = True
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, HERE)
++sys.path.insert(0, ROOT)
++import trace_refine_e2 as tr  # noqa: E402
++import verdicts_e2 as vd  # noqa: E402
++from tcad.device.devsim.mesh_refine import refine_mesh_near  # noqa: E402  (pure numpy)
++
++
++def grid(h=0.05, x0=-0.5, x1=0.5, y0=-0.3, y1=0.0):
++    xs = np.arange(round((x1 - x0) / h) + 1) * h + x0
++    ys = np.arange(round((y1 - y0) / h) + 1) * h + y0
++    P = np.array([(x, y, 0.0) for y in ys for x in xs], dtype=np.float32)
++    nx = len(xs)
++    T = []
++    for j in range(len(ys) - 1):
++        for i in range(nx - 1):
++            a, b, c, d = j * nx + i, j * nx + i + 1, (j + 1) * nx + i, (j + 1) * nx + i + 1
++            t1, t2 = (a, b, d), (a, d, c)
++            if (i + j) % 3 == 0:          # mixed orientation, as in the E1 mesh (all_ccw false)
++                t1, t2 = (a, d, b), (a, c, d)
++            T += [t1, t2]
++    return P, np.array(T, dtype=np.int64), np.full(len(T), 1.0)
++
++
++def main():
++    work = os.path.abspath(sys.argv[1])
++    os.makedirs(work, exist_ok=True)
++    res, ok = {}, True
++    P, T, G = grid()
++    pred = lambda c: abs(c[0] - 0.0) < 0.1  # noqa: E731
++    states, origin, kinds = tr.refine_traced(P, T, G, pred, 4)
++    i1 = []
++    a0 = tr.exact_area(P[:, :2], T)
++    for k in range(5):
++        pp, tt, gg = refine_mesh_near(P, T, G, pred, levels=k)
++        sp, st, sg = states[k]
++        eq = bool(np.array_equal(pp, sp) and np.array_equal(tt, st) and np.array_equal(gg, sg))
++        area_eq = tr.exact_area(sp[:, :2], st) == a0
++        n_obt = int((tr.max_angle_deg_per_triangle(sp[:, :2], st) > 90.0 + 1e-9).sum())
++        i1.append({"k": k, "trace_equals_production": eq, "exact_area_equal_S0": area_eq, "n_triangles": len(st),
++                   "n_obtuse_float": n_obt, "origin_len_ok": len(origin[k]) == len(st), "kinds_len_ok": len(kinds[k]) == len(st)})
++        ok &= eq and area_eq and len(origin[k]) == len(st)
++    res["trace"] = i1
++    t4 = states[4][1]
++    ccw, nflip = tr.ccw_only(states[4][0], t4)
++    all_pos = all(tr.exact_orient2(*(states[4][0][v] for v in t)) > 0 for t in ccw)
++    same_sets = bool(np.array_equal(np.sort(ccw, 1), np.sort(t4, 1)))
++    res["ccw"] = {"n_reoriented": nflip, "all_ccw_after": all_pos, "same_vertex_sets": same_sets}
++    ok &= all_pos and same_sets and nflip > 0
++    b = tr.node_budget(states[4][0][:, :2], t4, len(states[4][0]))
++    res["budget"] = {"min": float(b.min()), "max": float(b.max())}
++    ok &= bool(np.all(b > 0) and np.all(b < 1e-10))
++
++    # verdict rules on synthetic stage records
++    def st(k, ratio, **kw):
++        r = {"k": k, "ratio": ratio, "tau": 1e-11, "identity": {"I1": True, "I2": True}, "exact_area_cm2": "1/2",
++             "contact_nodes_sha256": "c", "tags_all_si": True, "regions": ["Si"], "f3_all_nodes_within_budget": True,
++             "excess_explained_by_F3_within_tau": True, "f3_excess_nodes_all_obtuse_vertices": True}
++        r.update(kw)
++        return r
++    good = [st(0, 1.0), st(1, 1.0), st(2, 1.01), st(3, 1.03), st(4, 1.058)]
++    rt = {"reproduces_S4": True, "ratio": 1.058, "tau": 1e-11}
++    ccw_same = {"n_nodes_beyond_budget_vs_rt": 0, "ratio": 1.058, "tau": 1e-11}
++    ccw_fix = {"n_nodes_beyond_budget_vs_rt": 10, "ratio": 1.0, "tau": 1e-11}
++    cases = {
++        "shape_first_bad_2": (vd.decide(good, True, rt, ccw_same), {"FIRST_BAD_STAGE=2", "NO_ORIENTATION_EFFECT", "SHAPE_CAUSE"}, True),
++        "pre_existing": (vd.decide([st(0, 1.001)] + good[1:], True, rt, ccw_same), {"PRE_EXISTING", "NO_ORIENTATION_EFFECT"}, False),
++        "orientation_cause": (vd.decide(good, True, rt, ccw_fix), {"FIRST_BAD_STAGE=2", "ORIENTATION_EFFECT", "ORIENTATION_CAUSE"}, False),
++        "i3_fail": (vd.decide(good, False, rt, ccw_same), {"INCONCLUSIVE"}, False),
++        "c_rt_fail": (vd.decide(good, True, {"reproduces_S4": False}, ccw_same), {"FIRST_BAD_STAGE=2"}, False),
++        "identity_fail": (vd.decide([good[0], st(1, 1.0, identity={"I1": False, "I2": True})] + good[2:], True, rt, ccw_same),
++                          {"NO_ORIENTATION_EFFECT", "INCONCLUSIVE"}, False),
++        "area_differs": (vd.decide([good[0], st(1, 1.0, exact_area_cm2="3/5")] + good[2:], True, rt, ccw_same),
++                         {"NO_ORIENTATION_EFFECT", "INCONCLUSIVE"}, False),
++        "f3_unexplained": (vd.decide([*good[:2], st(2, 1.01, excess_explained_by_F3_within_tau=False), *good[3:]], True, rt, ccw_same),
++                           {"FIRST_BAD_STAGE=2", "NO_ORIENTATION_EFFECT"}, False),
++    }
++    res["verdict_cases"] = {}
++    for name, (dec, want, cand) in cases.items():
++        got = set(dec["verdicts"])
++        good_case = got == want and dec["candidate_allowed"] == cand
++        res["verdict_cases"][name] = {"got": sorted(got), "want": sorted(want), "candidate_allowed": dec["candidate_allowed"],
++                                      "ok": good_case}
++        ok &= good_case
++    full = {k: True for k in ("points_identical", "boundary_edges_equal", "interface_edges_equal", "x0_edges_equal",
++                              "tag_counter_equal", "exact_area_equal", "no_duplicate_zero_nonmanifold", "no_positive_overlap",
++                              "flip_terminated_clean", "contacts_equal", "regions_equal", "ratio_within_tau",
++                              "inventory_donor_within_tau", "inventory_acceptor_within_tau")}
++    bad = copy.deepcopy(full)
++    bad["ratio_within_tau"] = False
++    cv = [vd.candidate_verdict(full)["verdict"], vd.candidate_verdict(bad)["verdict"], vd.candidate_verdict({})["verdict"]]
++    res["candidate_cases"] = cv
++    ok &= cv == ["CANDIDATE_PASSES_AUDIT_CHECKS", "CANDIDATE_REJECTED", "CANDIDATE_REJECTED"]
++    res["ALL_OK"] = bool(ok)
++    json.dump(res, open(os.path.join(work, "synthetic_e2_results.json"), "w"), indent=1, default=str)
++    print(json.dumps(res, indent=1, default=str))
++    return 0 if ok else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/trace_refine_e2.py b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/trace_refine_e2.py
+new file mode 100644
+index 0000000..6d60f08
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/trace_refine_e2.py
+@@ -0,0 +1,162 @@
++"""Batch 7H-E2 audit copy of the production red-green pass (pure numpy, no DEVSIM / ViennaPS).
++
++`refine_once_traced` is the logic of `tcad/device/devsim/mesh_refine.py::_refine_once` copied verbatim, plus two recorded
++arrays per output triangle: the index of its parent triangle in the pass input, and its split kind. Its output arrays are
++proven equal to production `refine_mesh_near(levels=k)` at run time (PLAN I1); production code is never modified.
++Kinds: 0 unchanged, 1 red corner child, 2 red centre child, 3 green child."""
++from fractions import Fraction
++from typing import Dict, List, Tuple
++
++import numpy as np
++
++KIND_NAMES = {0: "unchanged", 1: "red_corner", 2: "red_centre", 3: "green"}
++
++
++def _edge_key(a, b):
++    return (a, b) if a < b else (b, a)
++
++
++def refine_once_traced(points, triangles, tags, marked):
++    n_tri = len(triangles)
++    edge_owners: Dict[Tuple[int, int], List[int]] = {}
++    for ti in range(n_tri):
++        v0, v1, v2 = (int(x) for x in triangles[ti])
++        for a, b in ((v0, v1), (v1, v2), (v2, v0)):
++            edge_owners.setdefault(_edge_key(a, b), []).append(ti)
++    red = marked.copy()
++    changed = True
++    while changed:
++        changed = False
++        for ti in range(n_tri):
++            if red[ti]:
++                continue
++            v0, v1, v2 = (int(x) for x in triangles[ti])
++            broken = 0
++            for a, b in ((v0, v1), (v1, v2), (v2, v0)):
++                owners = edge_owners[_edge_key(a, b)]
++                if any(red[o] for o in owners if o != ti):
++                    broken += 1
++            if broken >= 2:
++                red[ti] = True
++                changed = True
++    new_points = list(points)
++    midpoint_cache: Dict[Tuple[int, int], int] = {}
++
++    def midpoint(a, b):
++        key = _edge_key(a, b)
++        if key not in midpoint_cache:
++            new_points.append((points[a] + points[b]) / 2.0)
++            midpoint_cache[key] = len(new_points) - 1
++        return midpoint_cache[key]
++
++    new_triangles, new_tags, parent, kind = [], [], [], []
++    for ti in range(n_tri):
++        v0, v1, v2 = (int(x) for x in triangles[ti])
++        tag = int(tags[ti])
++        if red[ti]:
++            m01, m12, m20 = midpoint(v0, v1), midpoint(v1, v2), midpoint(v2, v0)
++            new_triangles += [(v0, m01, m20), (v1, m12, m01), (v2, m20, m12), (m01, m12, m20)]
++            new_tags += [tag] * 4
++            parent += [ti] * 4
++            kind += [1, 1, 1, 2]
++            continue
++        broken_edges = []
++        for apex, ea, eb in ((v2, v0, v1), (v0, v1, v2), (v1, v2, v0)):
++            owners = edge_owners[_edge_key(ea, eb)]
++            if any(red[o] for o in owners if o != ti):
++                broken_edges.append((apex, ea, eb))
++        if not broken_edges:
++            new_triangles.append((v0, v1, v2))
++            new_tags.append(tag)
++            parent.append(ti)
++            kind.append(0)
++        elif len(broken_edges) == 1:
++            apex, ea, eb = broken_edges[0]
++            m = midpoint(ea, eb)
++            new_triangles += [(apex, ea, m), (apex, m, eb)]
++            new_tags += [tag, tag]
++            parent += [ti, ti]
++            kind += [3, 3]
++        else:
++            raise AssertionError("red-green closure invariant violated")
++    return (np.array(new_points, dtype=points.dtype), np.array(new_triangles, dtype=triangles.dtype),
++            np.array(new_tags, dtype=tags.dtype), np.array(parent, dtype=np.int64), np.array(kind, dtype=np.int8))
++
++
++def refine_traced(points, triangles, tags, predicate, levels):
++    """Same loop as production refine_mesh_near; returns every pass state plus lineage.
++    states[k] = (points, triangles, tags) after k passes; origin[k][t] = S0 triangle index of stage-k triangle t;
++    kinds[k][t] = tuple of split kinds over passes 1..k."""
++    states = [(points, triangles, tags)]
++    origin = [np.arange(len(triangles), dtype=np.int64)]
++    kinds = [[()] * len(triangles)]
++    for _ in range(levels):
++        centroids = points[triangles].mean(axis=1)
++        marked = np.array([predicate(c) for c in centroids], dtype=bool)
++        if not marked.any():
++            break
++        points, triangles, tags, par, knd = refine_once_traced(points, triangles, tags, marked)
++        origin.append(origin[-1][par])
++        prev = kinds[-1]
++        kinds.append([prev[p] + (int(k),) for p, k in zip(par, knd)])
++        states.append((points, triangles, tags))
++    return states, origin, kinds
++
++
++def exact_orient2(p, q, r):
++    """Twice the signed area with the exact binary values of the float coordinates."""
++    px, py, qx, qy, rx, ry = (Fraction(float(v)) for v in (p[0], p[1], q[0], q[1], r[0], r[1]))
++    return (qx - px) * (ry - py) - (qy - py) * (rx - px)
++
++
++def ccw_only(points, triangles):
++    """Same vertex sets; a triangle with negative exact orientation gets vertices 1 and 2 swapped."""
++    out = np.array(triangles, copy=True)
++    flipped = 0
++    for i, (a, b, c) in enumerate(out):
++        o = exact_orient2(points[a], points[b], points[c])
++        if o < 0:
++            out[i] = (a, c, b)
++            flipped += 1
++        elif o == 0:
++            raise ValueError(f"zero-area triangle {i}")
++    return out, flipped
++
++
++def exact_area(points, triangles):
++    return sum(abs(exact_orient2(points[a], points[b], points[c])) for a, b, c in triangles) / 2
++
++
++def min_angle_deg_per_triangle(P, tris):
++    P = np.asarray(P, dtype=float)
++    T = np.asarray(tris, dtype=np.int64)
++    out = np.full(len(T), 180.0)
++    for k in range(3):
++        a, b, c = T[:, k], T[:, (k + 1) % 3], T[:, (k + 2) % 3]
++        u, v = P[b] - P[a], P[c] - P[a]
++        ang = np.degrees(np.arctan2(np.abs(u[:, 0] * v[:, 1] - u[:, 1] * v[:, 0]), (u * v).sum(1)))
++        out = np.minimum(out, ang)
++    return out
++
++
++def max_angle_deg_per_triangle(P, tris):
++    P = np.asarray(P, dtype=float)
++    T = np.asarray(tris, dtype=np.int64)
++    out = np.zeros(len(T))
++    for k in range(3):
++        a, b, c = T[:, k], T[:, (k + 1) % 3], T[:, (k + 2) % 3]
++        u, v = P[b] - P[a], P[c] - P[a]
++        ang = np.degrees(np.arctan2(np.abs(u[:, 0] * v[:, 1] - u[:, 1] * v[:, 0]), (u * v).sum(1)))
++        out = np.maximum(out, ang)
++    return out
++
++
++def node_budget(P, tris, n_nodes):
++    """PLAN section 4: b_i = 2^-46 / sin(theta_i), theta_i = smallest angle of the triangles incident to node i."""
++    tmin = min_angle_deg_per_triangle(P, tris)
++    th = np.full(n_nodes, 90.0)
++    for t, a in zip(tris, tmin):
++        for v in t:
++            if a < th[v]:
++                th[v] = a
++    return 2.0 ** -46 / np.sin(np.radians(th))
+diff --git a/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/verdicts_e2.py b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/verdicts_e2.py
+new file mode 100644
+index 0000000..a2ea03b
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/verdicts_e2.py
+@@ -0,0 +1,82 @@
++"""Batch 7H-E2 verdict rules (PLAN sections 2, 5, 6, 7). Pure Python; tested on synthetic records locally."""
++
++
++def within(rec):
++    r, t = rec.get("ratio"), rec.get("tau")
++    return None if r is None or t is None else abs(r - 1.0) <= t
++
++
++def identities_ok(rec):
++    i = rec.get("identity", {})
++    return bool(i.get("I1")) and bool(i.get("I2"))
++
++
++def cross_stage(stages):
++    """I4: exact area, contact node sets, tags and regions equal to S0 at every stage."""
++    s0 = stages[0]
++    bad = []
++    for s in stages:
++        for key in ("exact_area_cm2", "contact_nodes_sha256"):
++            if s.get(key) != s0.get(key):
++                bad.append({"stage": s["k"], "field": key})
++        if not s.get("tags_all_si") or s.get("regions") != ["Si"]:
++            bad.append({"stage": s["k"], "field": "tags/regions"})
++    return {"ok": not bad, "differences": bad}
++
++
++def decide(stages, i3_ok, c_rt, c_ccw):
++    """stages: list of per-stage records (k = 0..4, in order). c_rt / c_ccw: control records or None."""
++    out = {"withheld": [], "verdicts": [], "candidate_allowed": False}
++    if not i3_ok:
++        out["withheld"].append("I3_FAIL: S4 does not reproduce the E1 production mesh; no causal verdict")
++        out["verdicts"].append("INCONCLUSIVE")
++        return out
++    i4 = cross_stage(stages)
++    out["I4"] = i4
++    w = [within(s) for s in stages]
++    out["within_tau"] = w
++    if w[0] is False:
++        out["verdicts"].append("PRE_EXISTING")
++    first = next((k for k, v in enumerate(w) if v is False), None)
++    out["first_outside_tau"] = first
++    if first is None:
++        out["verdicts"].append("NO_STAGE_OUTSIDE_TAU")
++    elif first > 0:
++        pair = [stages[first - 1], stages[first]]
++        if all(identities_ok(s) for s in pair) and i4["ok"] and all(v is True for v in w[:first]):
++            out["verdicts"].append(f"FIRST_BAD_STAGE={first}")
++            out["first_bad_stage"] = first
++        else:
++            out["withheld"].append(f"FIRST_BAD_STAGE withheld: identities or I4 fail for S{first - 1}/S{first}")
++    orient = None
++    if c_rt is None or not c_rt.get("reproduces_S4"):
++        out["withheld"].append("C_rt does not reproduce S4: orientation and candidate comparisons INCONCLUSIVE")
++    elif c_ccw is not None:
++        if c_ccw.get("n_nodes_beyond_budget_vs_rt", 1) > 0:
++            orient = "ORIENTATION_EFFECT"
++            out["verdicts"].append("ORIENTATION_EFFECT")
++            if within(c_ccw):
++                out["verdicts"].append("ORIENTATION_CAUSE")
++        else:
++            orient = "NO_ORIENTATION_EFFECT"
++            out["verdicts"].append("NO_ORIENTATION_EFFECT")
++    fb = out.get("first_bad_stage")
++    if fb is not None and orient == "NO_ORIENTATION_EFFECT":
++        shape = all(stages[k].get("f3_all_nodes_within_budget") and stages[k].get("excess_explained_by_F3_within_tau")
++                    and stages[k].get("f3_excess_nodes_all_obtuse_vertices") for k in (fb, len(stages) - 1))
++        if shape:
++            out["verdicts"].append("SHAPE_CAUSE")
++    if not any(v.startswith("FIRST_BAD_STAGE") or v in ("PRE_EXISTING", "SHAPE_CAUSE", "ORIENTATION_CAUSE")
++               for v in out["verdicts"]):
++        out["verdicts"].append("INCONCLUSIVE")
++    out["candidate_allowed"] = fb is not None and orient == "NO_ORIENTATION_EFFECT" and "SHAPE_CAUSE" in out["verdicts"]
++    return out
++
++
++def candidate_verdict(c):
++    """PLAN section 7 (a)-(d); every item must be True."""
++    keys = ("points_identical", "boundary_edges_equal", "interface_edges_equal", "x0_edges_equal", "tag_counter_equal",
++            "exact_area_equal", "no_duplicate_zero_nonmanifold", "no_positive_overlap", "flip_terminated_clean",
++            "contacts_equal", "regions_equal", "ratio_within_tau", "inventory_donor_within_tau", "inventory_acceptor_within_tau")
++    failed = [k for k in keys if c.get(k) is not True]
++    return {"verdict": "CANDIDATE_PASSES_AUDIT_CHECKS" if not failed else "CANDIDATE_REJECTED", "failed": failed}
+diff --git a/remote/profiles.py b/remote/profiles.py
+index f57d548..3883d91 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -93,6 +93,36 @@ PROFILES = {
+         "outputs": [{"glob": "e1_out/**/*.json", "max_mb": 50}, {"glob": "e1_out/**/*.npz", "max_mb": 50}],
+         "regenerate": "Rerun the profile. Production mesh is regenerated by ViennaPS from the GUI defaults in common_e1.py.",
+     },
++    "e2_nodevolume_first_bad_stage": {
++        "description": "Batch 7H-E2: production-mesh NodeVolume excess, refinement passes 0-4 + writer / CCW controls + one conditional exact-flip candidate. No solve.",
++        "entry": "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/run_e2.py",
++        "args": [],
++        "params": {},
++        "timeout_s": 18000,
++        "inputs": [
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/PLAN.md",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/PLAN.sha256",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/run_e2.py",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/stage_e2.py",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/trace_refine_e2.py",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/verdicts_e2.py",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/data/remote_run_36012608804/outputs/e1_out/prod.json",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/data/remote_run_36012608804/outputs/e1_out/prod_arrays.npz",
++            "docs/audits/2026-09-23-batch7h-d-sg-pn-mesh-validity/scripts/build_fixtures_7hd.py",
++            "docs/audits/2026-09-23-batch7h-d-sg-pn-mesh-validity/scripts/meshes_7hd.py",
++            "docs/audits/2026-09-23-batch7h-d-sg-pn-mesh-validity/scripts/sg_lib.py",
++            "docs/audits/2026-09-23-batch7h-c-flux-discretization/scripts/meshes.py",
++            "docs/audits/2026-09-23-batch7h-b-nodevolume-mechanism/scripts/formulas.py",
++            "docs/audits/2026-09-23-batch7h-exact-flip-certification/scripts/exact_flip.py",
++            "docs/audits/2026-09-23-batch7h-exact-flip-certification/scripts/exact_geometry.py",
++            "tcad/device/devsim/mesh_import.py",
++            "tcad/device/devsim/mesh_refine.py",
++        ],
++        "outputs": [{"glob": "e2_out/**/*.json", "max_mb": 50}, {"glob": "e2_out/**/*.npz", "max_mb": 50},
++                    {"glob": "e2_out/**/*.vtu", "max_mb": 50}],
++        "regenerate": "Rerun the profile. The wafer mesh is regenerated by ViennaPS and hash-gated against E1 (cfae97d4...).",
++    },
+ }
+ 
+ # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.
+diff --git a/remote/request.json b/remote/request.json
+index 360947e..4bc621e 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -1,7 +1,7 @@
+ {
+  "schema": 1,
+- "request_id": "e1-production-step-junction-001",
+- "profile": "e1_production_step_junction",
++ "request_id": "e2-nodevolume-first-bad-stage-001",
++ "profile": "e2_nodevolume_first_bad_stage",
+  "params": {},
+- "note": "Batch 7H-E1. PLAN fixed in commit 628895894b6d16bd47970095dfae68f7413ca266 before this code and request."
++ "note": "Batch 7H-E2. PLAN fixed in commit d60182beec71602c2a148e8eb1131283dcd6571f before this code and request."
+ }

@@ -1,0 +1,7 @@
+wafer_volume.vtu sha256 cfae97d4aca233b5 stored-triangle orientation: {'positive': 40000, 'negative': 0, 'zero': 0}
+C_rt.vtu sha256 82fa87b04f7fb212 stored-triangle orientation: {'positive': 247000, 'negative': 0, 'zero': 0}
+C_ccw.vtu sha256 82fa87b04f7fb212 stored-triangle orientation: {'positive': 247000, 'negative': 0, 'zero': 0}
+candidate_flip.vtu sha256 d5a73665f0531078 stored-triangle orientation: {'positive': 247000, 'negative': 0, 'zero': 0}
+DEVSIM get_element_node_list orientation S0: {'positive': 20000, 'negative': 20000, 'zero': 0}
+DEVSIM get_element_node_list orientation S4: {'positive': 123500, 'negative': 123500, 'zero': 0}
+DEVSIM element list equal to stored list: False ; equal as multiset of sorted triples: True
