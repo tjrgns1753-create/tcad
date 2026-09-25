@@ -1,0 +1,811 @@
+diff --git a/.gitattributes b/.gitattributes
+new file mode 100644
+index 0000000..0128333
+--- /dev/null
++++ b/.gitattributes
+@@ -0,0 +1,7 @@
++# Batch 7H-E4 checkpoint A: audit remote-run raw .vtu artifacts are hash-pinned tool output (meshio-written mesh files),
++# never intended as diffable text. Without this, core.autocrlf normalizes their line endings on checkout, so their
++# checked-out bytes can differ from the sha256 recorded in the run's summary.json depending on the checkout's own
++# autocrlf setting. -text disables that normalization so the committed bytes are exactly the runner's artifact bytes on
++# every checkout. Narrow on purpose: only *_out/*.vtu under docs/audits/*/data/remote_run_*/outputs/, not production
++# mesh files, not source .vtu anywhere else in the repo.
++docs/audits/*/data/remote_run_*/outputs/*_out/*.vtu -text
+diff --git a/docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/checkpointA_after.txt b/docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/checkpointA_after.txt
+new file mode 100644
+index 0000000..1409e96
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/checkpointA_after.txt
+@@ -0,0 +1,24 @@
++Batch 7H-E4 Checkpoint A verification (recorded before commit).
++Method: git add --renormalize under new .gitattributes rule (-text on docs/audits/*/data/remote_run_*/outputs/*_out/*.vtu);
++cross-checked with 'git -c core.autocrlf={true,false} checkout-index' from the staged index, both giving byte-identical output.
++E2_flip: docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/candidate_flip.vtu
++  staged_blob_sha256=d5a73665f0531078a704e72bdbb2f26c908eb228547385edce1f028fae331f04
++  remote_summary_sha256=d5a73665f0531078a704e72bdbb2f26c908eb228547385edce1f028fae331f04
++  match=YES
++E4_cand: docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu
++  staged_blob_sha256=85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297
++  remote_summary_sha256=85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297
++  match=YES
++E3_cand: docs/audits/2026-09-25-batch7h-e3-junction-refinement-candidate/data/remote_run_36139990927/outputs/e3_out/candidate.vtu
++  staged_blob_sha256=9ea67bd567caf354a6e07e80ae2724eb5e9a86d45eddfcd58800974499734ec0
++  remote_summary_sha256=9ea67bd567caf354a6e07e80ae2724eb5e9a86d45eddfcd58800974499734ec0
++  match=YES
++E2_C_rt: docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/C_rt.vtu
++  staged_blob_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
++  remote_summary_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
++  match=YES
++E2_C_ccw: docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/C_ccw.vtu
++  staged_blob_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
++  remote_summary_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
++  match=YES
++checkout_true_vs_false: all 5 equal (see checkoutA_verify inline above), ALL_MATCH_SUMMARY=YES
+diff --git a/docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/checkpointA_before.txt b/docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/checkpointA_before.txt
+new file mode 100644
+index 0000000..c41563b
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/checkpointA_before.txt
+@@ -0,0 +1,26 @@
++recorded_utc Fri Sep 25 14:30:46 UTC 2026
++E2_flip path=docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/candidate_flip.vtu
++  working_tree_sha256=d5a73665f0531078a704e72bdbb2f26c908eb228547385edce1f028fae331f04
++  git_blob_sha256=893bf0be93fee998a8e6e6a001fc74c25556c86ebaa3e6d9ba668dda625ed555
++  remote_summary_sha256=d5a73665f0531078a704e72bdbb2f26c908eb228547385edce1f028fae331f04
++  wt==summary: yes  blob==summary: NO
++E4_cand path=docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu
++  working_tree_sha256=85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297
++  git_blob_sha256=7482df16b5cbfceb2919908312bb3d1567f60e8ec6b8906742b8938d9e657870
++  remote_summary_sha256=85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297
++  wt==summary: yes  blob==summary: NO
++E3_cand path=docs/audits/2026-09-25-batch7h-e3-junction-refinement-candidate/data/remote_run_36139990927/outputs/e3_out/candidate.vtu
++  working_tree_sha256=9ea67bd567caf354a6e07e80ae2724eb5e9a86d45eddfcd58800974499734ec0
++  git_blob_sha256=ea92884876c951dd14fd43324c3cb2074e40a5b9b0a19bcd92de1c823d8d019c
++  remote_summary_sha256=9ea67bd567caf354a6e07e80ae2724eb5e9a86d45eddfcd58800974499734ec0
++  wt==summary: yes  blob==summary: NO
++E2_C_rt path=docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/C_rt.vtu
++  working_tree_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
++  git_blob_sha256=7696bf0c8a28c987a2520a11c4a6d8d9b5715b44e09d1e719037a35676d3aeeb
++  remote_summary_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
++  wt==summary: yes  blob==summary: NO
++E2_C_ccw path=docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/data/remote_run_36129959490/outputs/e2_out/C_ccw.vtu
++  working_tree_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
++  git_blob_sha256=7696bf0c8a28c987a2520a11c4a6d8d9b5715b44e09d1e719037a35676d3aeeb
++  remote_summary_sha256=82fa87b04f7fb21205637936c9720425f91e0fca1e5aa7ea1c7314e77c4d5767
++  wt==summary: yes  blob==summary: NO
+diff --git a/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/BUGFIX_NOTE_1.md b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/BUGFIX_NOTE_1.md
+new file mode 100644
+index 0000000..6b87a0a
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/BUGFIX_NOTE_1.md
+@@ -0,0 +1,48 @@
++# Batch 7H-E5 bugfix note 1 (script bug, not a PLAN/design change)
++
++First remote run (`data/remote_run_36149228558`, request `e5-equilibrium-pilot-001`, commit `3084a3dd99f4b18f982570ce077e53cb49dd164f`)
++found two implementation bugs in `scripts/stage_e5.py`, not physics findings. `PLAN.md`/`PLAN.sha256` are unchanged; the
++device definitions, doping rule, solver tolerances and observation list are all unchanged. Kept as historical evidence
++(not deleted); a second run follows with the fix, same PLAN, same request id pattern.
++
++## Bug 1: `se1.measure()` return value was mis-unpacked
++`shadow_e1.py:91` returns `(metrics_dict, raw_state_arrays)`. `stage_e5.py` did `m = se1.measure(...)` and then treated
++`m` as the dict directly (`m.get(...)`, `m["psi_contact_V"]`), crashing with `AttributeError: 'tuple' object has no
++attribute 'get'` at the very end of `D2D_S0` — AFTER both solve calls had already succeeded
++(`e5_D2D_S0.json`: `poisson_converged: true`, `dd_converged: true`, 2 solve calls). The Poisson-only measurement taken
++just before the crash is real and worth keeping as a preview: `psi_contact_V` +-0.4768597199126637 V (matches V_bi/2 to
++10+ digits against every prior 7H-E batch's own V_bi = 0.95372 V figure), `y_symmetry_max_spread_V` 3.9e-16 (real,
++near-machine-precision y-independence), `max_abs_ElectricField_V_per_cm` 358113.0 (matches 7H-E1's own S12 0 V figure
++3.581130e5 V/cm to 6 digits). This is evidence the device construction, doping rule and equation setup are correct; the
++crash is purely in the post-solve Python bookkeeping. Fix: `m, states = se1.measure(dv, device, contacts)`.
++
++## Bug 2: cleanup only ran on the success path
++`stage_e5.py`'s `dv.delete_device()`/`dv.delete_mesh()` calls sat at the end of the `try` block, not in a `finally`. Bug
++1's crash skipped them, leaving `e5_d2d_device` (and its mesh) registered. The next run, `D2D_S12`, tried to create a
++mesh with the same name and failed outright
++(`devsim_py3.error: A mesh already exists with name "e5_d2d_mesh"`), leaving `e5_d2d_device` registered for the
++remaining 4 runs too (`e5_result.json`: `"devices_left": ["e5_d2d_device"]` at the very end). `devsim.solve()` has no
++device filter — it solves every registered device — so this is the exact leaked-device failure mode CLAUDE.md's own
++"Completed" section already documents from an earlier investigation ("Leaking a perfectly healthy uniform device was
++enough to turn a converging implant_windows solve into Convergence failure!"). The subsequent 1D runs' reported
++`POISSON_NOT_CONVERGED` (D1D_J0 at both precision variants, and — unexpectedly, since D1's own J1 comparison group
++always converged in that project's history — D1D_J1 at both variants too) are `psi_range_V: [0.0, 0.0]` at EVERY node:
++the Newton iteration made literally zero progress from its zero initial guess, for 100 iterations (D1D_J0) or until an
++early stop (D1D_J1, 10 iterations). This is not the oscillating-but-nonzero pattern 7H-D1's own real J0 finding showed
++(`REPORT.md`: "absolute update 3.5e-17 V, relative oscillating 5.8e-9 / 6.2e-9"); a flat zero solution most plausibly
++means the equation the solver actually assembled was corrupted by the second, unrelated leaked device — not a genuine
++result about J0 or J1 convergence at production doping/domain scale. This is recorded as a real but INCONCLUSIVE
++observation, not attributed to either device's own physics, and the whole batch is rerun clean to get an answer that is
++not confounded this way.
++
++Fix: device/mesh cleanup moved into a `finally` block, keyed off what was actually created (tracked explicitly, not
++assumed), so a crash mid-run can never skip cleanup again. A new pre-flight check (`dv.get_device_list()` must be empty
++before a run starts) now stops immediately with `STOP_LEAKED_DEVICE_FROM_PRIOR_RUN` if this ever recurs, rather than
++letting a leak silently propagate through the remaining runs the way it did here.
++
++## What is NOT changed
++Device definitions (D2D/D1D_J0/D1D_J1), the J0/J1 doping rule, solver tolerances (Poisson 1.0/1e-6/100,
++DD 1e10/1e-6/100), the precision-variant pair (S0/S12), the observation list, the analytic-reference formula, and every
++number in `PLAN.md` (sha256 unchanged, `924395fb86a72658853a9b8ffd7827cdb0ddf6c1473d55609af09764ce8802fa`). This is a
++straightforward Python bugfix (an unpacking error and a missing `finally`), not a reinterpretation of any physics or a
++change to any pre-registered threshold.
+diff --git a/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.md b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.md
+new file mode 100644
+index 0000000..e2a20b2
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.md
+@@ -0,0 +1,144 @@
++# Batch 7H-E5 PLAN: 0 V equilibrium electrical pilot on the 7H-E4 candidate (audit-only)
++(fixed BEFORE any ViennaPS / DEVSIM execution of this batch; never edited after results)
++
++Corresponds to "Checkpoint B" of this turn's instructions; run only because Checkpoint A ("Checkpoint A" =
++`docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/checkpointA_*.txt`) returned
++`RAW_EVIDENCE_PORTABLE` (commit `668da8f9a093dae9784a7fa98355129852794963`).
++
++Execution location: DEVSIM import and every `devsim.solve` call run on a GitHub-hosted Windows runner
++(`claude/remote-runner`, profile `e5_equilibrium_pilot`). Locally: code reading and writing, static checks, read-only
++analysis of existing arrays, synthetic tests.
++
++## 0. Question, scope, hard limits
++Is the 0 V equilibrium Poisson / semiconductor state on the 7H-E4 candidate mesh physically and numerically sane? This is
++the FIRST electrical experiment on any 7H-E mesh. Out of scope, explicitly: I-V curves, forward or reverse bias, MOS,
++any process geometry other than 7H-E1's single-Si planar wafer with one step junction at x = 0. No change to `tcad/`,
++`tests/`, `tcad_2d_stagewise.py`, the GUI path, DEVSIM internals, or the gate `STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED`
++— that gate is not called, not bypassed, not reasoned around; this batch builds its OWN device in an audit script, the
++same AUDIT-ONLY-SHADOW method 7H-E1 already used and labelled (`shadow_e1.py`), never presented as a production result.
++**Maximum verdict, even if every solve converges cleanly: `EQUILIBRIUM_PILOT_ONLY`.** One mesh, one bias point (0 V), no
++claim about 2D mesh convergence, current accuracy, or general PN behaviour. 7H-E4's own `GEOMETRY_CANDIDATE_ONLY` verdict
++is UNCHANGED by anything this batch finds; an electrical failure here does not get folded back into a geometric verdict,
++and a geometric pass here is not claimed as an electrical one.
++
++## 1. Path correspondence (file:line, checked directly — Serena MCP unavailable this session too, same as 7H-E1-E4)
++* Doping equation (the real, gated production rule, reused verbatim as the PRIMARY condition — never substituted):
++  `tcad/device/devsim/doping_mapping.py:864,868` — `Donors = donor_conc_cm3*step(x-x_j)`,
++  `Acceptors = acceptor_conc_cm3*step(x_j-x)`; DEVSIM `step(0) = 1`, so the x = 0 node carries BOTH species at full
++  strength (J0). Independently documented at `tcad/physics/wafer_state_v2.py:743-744` and, for the SAME formula in the
++  audit fixture line, `docs/audits/2026-09-23-batch7h-d1-pn-convergence/scripts/common_d1.py:47-53` (`set_doping`,
++  `rule="J1"` builds the staggered comparison; a `rule="J0"` variant is added here, not editing that file).
++* Node-array write mechanism (public API, no gate call): `node_model` + `set_node_values`, exactly as
++  `docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/shadow_e1.py:144-145` already does and
++  labels `"AUDIT-ONLY SHADOW - not a production-supported result"`.
++* Equilibrium equations (production, unmodified, called directly — not through the gated `apply_doping`):
++  `tcad/device/devsim/semiconductor_equation.py:50-91` — `setup_semiconductor_potential_equation()` (Poisson-only) and
++  `setup_drift_diffusion_equation()` (adds Electrons/Holes, `IntrinsicElectrons`/`IntrinsicHoles` initial values, taun =
++  taup = 1e-8 s).
++* Solver tolerances (production default, the PRIMARY condition): `tcad/characterization/pn_junction_iv_sweep.py:88-93` —
++  Poisson `absolute_error=1.0, relative_error=1e-6, maximum_iterations=100`; drift-diffusion
++  `absolute_error=1e10, relative_error=1e-6, maximum_iterations=100`. Only the first two of that function's three solve
++  calls are reproduced (Poisson, then DD at 0 V); its third call (the bias ramp) is never made — 0 V only.
++* Reference tolerance (D1/D2, cited for comparison, NOT run as an alternate "enhanced" attempt to reach a different
++  verdict): `docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixed_d1.json` — Poisson
++  `absolute_error=1e-10, relative_error=1e-10, maximum_iterations=50`. D1's own 1D J0 Poisson-only solve at THIS
++  tolerance never converged at any of 5 mesh sizes (`REPORT.md`: "J0 1D: Poisson not accepted at any h" — absolute
++  update stuck at 3.5e-17 V, relative error oscillating 5.8e-9 / 6.2e-9 for the full 50 iterations) — at N = 1e17,
++  domain +-0.5 um. 7H-E5 uses N = 1e18 (production's real value) and domain +-5 um; whether D1's stall recurs at
++  production's own tolerance (1e-6, not 1e-10) and doping level is exactly this batch's PRIMARY, non-hypothetical
++  question, not assumed either way.
++* Precision variants (reused exactly as 7H-E1's already-reviewed S0/S12 pair, not a new axis): S0 = no flag set; S12 =
++  `extended_model = extended_equation = True`, `extended_solver` left at its default False. Reported as two SEPARATE
++  verdicts per device, never merged into one "pass".
++
++## 2. Devices (all built by a NEW audit script; none calls `apply_doping` or any GUI/CLI entry point)
++All Si, T = 300 K, `donor_conc_cm3 = acceptor_conc_cm3 = 1e18` (7H-E1's `common_e1.GUI["doping"]`, i.e. production's own
++GUI default — not D1's 1e17), junction at x = 0.
++
++**D2D — the real 7H-E4 candidate, J0 (the primary target).** Input:
++`docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu`
++sha256 `85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297` and `candidate_e4.npz` sha256
++`740a643ed6c965b11ea179993eff2701d87b3c0a9a5990ace71fb2e5df482329` (both re-verified `RAW_EVIDENCE_PORTABLE` this
++session). Imported exactly as 7H-E4's own `stage_e4.py` did (`import_process_result`, `contact_regions=["Si"]`,
++`contact_axis="x"`, `length_scale_to_cm=1e-4`, no internal refinement — the mesh is already final). Mismatch on either
++sha256: `MESH_INPUT_IDENTITY_FAIL`, stop before any solve.
++
++**D1D_J0 — a 1D companion with the SAME domain half-width (5 um) and the SAME doping rule (J0, node exactly at x = 0),
++built with `create_1d_mesh`/`add_1d_contact`/`add_1d_region` exactly as
++`docs/audits/2026-09-23-batch7h-d1-pn-convergence/scripts/common_d1.py:30-39` (`build_1d`), scaled from that file's
++X_HALF = 0.5 to 5.0 um. Node spacing h = 0.003125 um uniformly across the whole domain (the finest local spacing 7H-E4's
++candidate actually achieves at the junction, measured in `docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/e4_result.json`'s `resolution.candidate.x0_line`) — 3201 nodes, node positions
++k h for k = -1600..1600 (includes x = 0), contacts at the domain edges. This is a deliberately UNIFORM reference, not a
++copy of 7H-E4's graded structure; the point is a cheap, direct, same-doping-same-domain-same-h-at-the-junction check on
++whether the 2D result's own convergence behaviour is visible in 1D too.
++
++**D1D_J1 — a SEPARATE, clearly labelled comparison group.** Same domain, doping level and h; nodes at +-(2k+1) h/2 (no
++node at x = 0), the exact formula in `meshes_d1.py:33-45` (`cols_right`, `grid_1d` kind `"J1"`), scaled to X_HALF = 5.0.
++This is reported as its own device with its own verdict, never substituted for D1D_J0 or D2D, and never described as "the
++J0 result."
++
++Contacts on the 1D devices are named `left` / `right` (matching `common_d1.py`'s own convention) to keep them visibly a
++separate companion device, not the real 2D device's own contact objects.
++
++## 3. Solve sequence (identical structure for every device x precision variant; 6 total: {D2D, D1D_J0, D1D_J1} x {S0, S12})
++1. Write `NetDoping` via the J0 or J1 rule above (Donors/Acceptors written too, for the doping-integral checks).
++2. `setup_semiconductor_potential_equation` + `solve(type="dc", absolute_error=1.0, relative_error=1e-6,
++   maximum_iterations=100, info=True)` — call 1 (Poisson). Record DEVSIM's own `converged`, the final device
++   `relative_error` / `absolute_error` from the `info=True` result (same fields D1's `common_d1.py:59-77` `solve()`
++   reads — reused pattern, not a new metric).
++3. **If and only if call 1's `converged` is True**: `setup_drift_diffusion_equation` + `solve(absolute_error=1e10,
++   relative_error=1e-6, maximum_iterations=100, info=True)` — call 2 (DD at 0 V). If call 1 did not converge, call 2 is
++   NOT made, and the device is reported failed at the Poisson stage — never silently proceeding as if equilibrium were
++   reached.
++4. No retry with unchanged settings. S0 and S12 are the only two registered attempts per device; each is its own
++   complete run (a fresh device, mesh re-imported or 1D mesh rebuilt), reported separately, never merged.
++5. Every `devsim.solve` call is counted (a module-level wrapper, as 7H-E1's shadow already does); the total per device
++   and the grand total across all 6 runs is reported. `devsim.solve` is never trapped in this batch (unlike 7H-E2/E3/E4,
++   which forbade it) — that is the entire point of this batch.
++
++## 4. Pre-registered observations (recorded for whichever calls actually ran; a call that did not run reports `null`, not
++an invented value)
++* Raw solver state: `converged`, final device `relative_error`, `absolute_error`, iteration count, per-equation
++  residuals, for calls 1 and 2 separately.
++* **y-direction symmetry (2D only, D2D)**: Potential at several fixed x (0, +-0.05, +-0.15 um) sampled at every distinct
++  y; max - min at each x reported. 1D physics has no y-dependence, so a real asymmetry here — not attributable to mesh
++  y-spacing alone, since the y-grid is uniform (7H-E4's build kept the base row spacing) — is a physical/numerical defect,
++  not merely a display artifact.
++* Potential, ElectricField (magnitude), and NetDoping along a straight line through the junction centre: for D2D, the
++  row at the mesh's own middle y (the closest actual node row to y = -2.5 um); for the 1D devices, the whole line. Values
++  at the 5 x positions -0.25, -0.10, 0(if present), +0.10, +0.25 um (matching 7H-D2's own cut convention).
++* Mass-action deviation `max|n p / n_i^2 - 1|` and quasi-Fermi flatness `max|phi_n - phi_n(median)|`,
++  `max|phi_p - phi_p(median)|` at 0 V — same formulas 7H-E1's `shadow_e1.py measure()` already computes, reused, not
++  redefined.
++* Both contact potentials (`psi_contact_V`), and the bias-parameter readback (`{contact}_bias`, must read 0.0).
++* Donor / acceptor / net doping integrals: the DEVSIM NodeVolume integral (real device quantity) and, for D2D only, the
++  same-mesh signed-F2 integral (7H-B rule, already computed for D2D's own mesh in 7H-E4); for the 1D devices, only the
++  NodeVolume integral is meaningful (no 2D dual to compute). The geometric continuum reference (N x domain half-length,
++  here N x 5 um in appropriate units) is reported alongside, never called the physical truth.
++* Analytic references (Sze & Ng depletion approximation, ch. 2, formulas already used in 7H-E1's and 7H-E4's own PLANs;
++  assumptions restated, not re-derived): at N_A = N_D = 1e18 cm^-3, T = 300 K — V_bi = V_T ln(N_A N_D / n_i^2), W(0 V) =
++  sqrt(2 eps V_bi / q x (N_A+N_D)/(N_A N_D)), L_D = sqrt(eps V_T / (q N)). Computed once, using DEVSIM's own parameters
++  (eps, V_T, n_i, read back from the device, not textbook constants), reported as `analytic_reference`, explicitly
++  labelled "not the PDE solution, an idealized zero-width-junction estimate."
++
++## 5. Failure recording (no tuning to force PASS)
++A device whose Poisson call does not converge is recorded as `POISSON_NOT_CONVERGED` for that precision variant, with
++the raw final residual/update and iteration count — never re-attempted with a hand-adjusted initial guess. A device whose
++solve reports `converged = True` but whose y-symmetry spread exceeds 1e-6 V (the same absolute tolerance 7H-E1 used for
++quasi-Fermi flatness), or whose donor/acceptor NodeVolume integral is non-finite, or whose contact potentials are equal
++(no built-in potential resolved) is recorded as `CONVERGED_BUT_PHYSICALLY_INVALID` — a numerically-reported success is not
++by itself accepted as a pass. Whether a 2D J0 Poisson failure (if it occurs) matches D1's own 1D J0 stall (oscillating
++residual, not diverging) or is a distinct failure mode is decided from the actual recorded residual TRACE (per-iteration,
++if DEVSIM's `info=True` result exposes it; otherwise from the final value only, and the comparison is marked
++`INCONCLUSIVE_NO_TRACE` rather than guessed).
++
++## 6. Stop conditions (fail-closed)
++Section 2's mesh-identity check; DEVSIM import error; any non-finite value in section 4's outputs; artifact hash mismatch
++after download. No PN/DD ramp beyond 0 V is ever attempted regardless of how cleanly 0 V converges.
++
++## 7. Artifacts, strictness, cost
++Strict JSON (`allow_nan=False`; non-finite -> null + explicit status; re-read with a strict parser). Expected wall time:
++under 2500 s for all 6 runs (D2D's 128067-node import is the only large one, ~3 s per 7H-E4's own measurement; each
++solve call capped at 100 iterations). Hard subprocess timeout 8000 s. Artifact: summary, sanitized log, per-device-per-
++variant JSON, potential/field/doping state npz. No solver tolerance, device definition, or observation list in this PLAN
++is changed after a result is seen. Exactly one remote run for this batch (no duplicate dispatch).
+diff --git a/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.sha256 b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.sha256
+new file mode 100644
+index 0000000..5cde6ea
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.sha256
+@@ -0,0 +1 @@
++924395fb86a72658853a9b8ffd7827cdb0ddf6c1473d55609af09764ce8802fa  PLAN.md
+diff --git a/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/devices_e5.py b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/devices_e5.py
+new file mode 100644
+index 0000000..e01c450
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/devices_e5.py
+@@ -0,0 +1,200 @@
++"""Batch 7H-E5 device builders and measurement (PLAN sections 2-4). AUDIT-ONLY SHADOW devices -- built by a new script,
++never through apply_doping or any GUI/CLI entry point. Reused, unmodified: production node-write pattern
++(shadow_e1.py:144-145), production equilibrium setup functions (semiconductor_equation.py:50-91), production solver
++tolerances (pn_junction_iv_sweep.py:88-93), 1D mesh method (common_d1.py:30-53), J0/J1 node-position formula
++(meshes_d1.py:33-45, generalized here by X_HALF instead of D1's fixed 0.5)."""
++import os
++import sys
++
++import numpy as np
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++AUD = os.path.join(ROOT, "docs", "audits")
++sys.path.insert(0, os.path.join(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import common_e1 as ce  # noqa: E402
++import shadow_e1 as se1  # noqa: E402  (E1, read-only: measure(), flags(), PARAMS)
++
++UM = 1e-4
++X_HALF_UM = 5.0
++N_CONC = 1e18                        # donor_conc_cm3 = acceptor_conc_cm3 (common_e1.GUI["doping"])
++H_UM = 0.003125                      # E4 candidate's own finest junction spacing (e4_result.json resolution.candidate.x0_line)
++E4_VTU_SHA = "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297"
++E4_NPZ_SHA = "740a643ed6c965b11ea179993eff2701d87b3c0a9a5990ace71fb2e5df482329"
++E4_VTU = os.path.join(AUD, "2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate", "data", "remote_run_36143535737",
++                       "outputs", "e4_out", "candidate_e4.vtu")
++
++
++def cols_right(h, x_half):
++    """meshes_d1.py:37-40 (cols_right), generalized from X_HALF=0.5 to an arbitrary half-width."""
++    n = int(round(x_half / h))
++    return [(2 * k + 1) * x_half / (2 * n) for k in range(n)]
++
++
++def grid_1d_um(h, kind, x_half=X_HALF_UM):
++    """meshes_d1.py:42-45 (grid_1d), generalized. kind 'J1': +-(2k+1)h/2 and +-x_half; 'J0': k h (includes x=0)."""
++    n = int(round(x_half / h))
++    if kind == "J1":
++        c = cols_right(h, x_half)
++        return sorted([-x_half, x_half] + c + [-v for v in c])
++    return [(k - n) * x_half / n for k in range(2 * n + 1)]
++
++
++def build_1d(dv, xs_um, device):
++    """common_d1.py:30-39 (build_1d), unmodified logic, contacts named left/right (D1's own convention)."""
++    m = "m_" + device
++    dv.create_1d_mesh(mesh=m)
++    for i, x in enumerate(xs_um):
++        tag = "left" if i == 0 else ("right" if i == len(xs_um) - 1 else None)
++        h = (xs_um[1] - xs_um[0]) if i == 0 else (x - xs_um[i - 1])
++        if tag:
++            dv.add_1d_mesh_line(mesh=m, pos=x * UM, ps=h * UM, tag=tag)
++        else:
++            dv.add_1d_mesh_line(mesh=m, pos=x * UM, ps=h * UM)
++    dv.add_1d_contact(mesh=m, name="left", tag="left", material="metal")
++    dv.add_1d_contact(mesh=m, name="right", tag="right", material="metal")
++    dv.add_1d_region(mesh=m, material="Si", region="Si", tag1="left", tag2="right")
++    dv.finalize_mesh(mesh=m)
++    dv.create_device(mesh=m, device=device)
++    return ["left", "right"]
++
++
++def write_doping(dv, device, region, kind):
++    """doping_mapping.py:864,868 (Donors/Acceptors step() equations); DEVSIM step(0)=1 gives J0's dual assignment.
++    kind: 'J0' (real production rule, includes a node exactly at x=0) or 'J1' (staggered comparison, no such node).
++    Written via node_model+set_node_values (shadow_e1.py:144-145), never through apply_doping."""
++    x = np.array(dv.get_node_model_values(device=device, region=region, name="x")) / UM
++    if kind == "J1":
++        assert not np.any(x == 0.0), "J1 mesh has a node on the junction"
++        donors, acceptors = np.where(x > 0, N_CONC, 0.0), np.where(x < 0, N_CONC, 0.0)
++    else:
++        donors, acceptors = np.where(x >= 0, N_CONC, 0.0), np.where(x <= 0, N_CONC, 0.0)
++    for name, vals in (("Donors", donors), ("Acceptors", acceptors), ("NetDoping", donors - acceptors)):
++        dv.node_model(device=device, region=region, name=name, equation="0")
++        dv.set_node_values(device=device, region=region, name=name, values=[float(v) for v in vals])
++    return {"n_nodes": int(len(x)), "n_x0_nodes": int(np.sum(x == 0.0)), "kind": kind}
++
++
++def import_e4_candidate(work):
++    """PLAN section 2 D2D. Regenerates nothing -- reuses the already-portable, hash-verified 7H-E4 artifact directly,
++    inspected the same way every E1-E4 script did (build_process_result reads the mesh's own Material tags)."""
++    import shutil
++    from tcad.device.devsim.mesh_import import import_process_result
++    from tcad.mesh.viennaps_adapter import build_process_result
++    vtu_sha = ce.sha_file(E4_VTU)
++    ident = {"vtu_sha256": vtu_sha, "expected": E4_VTU_SHA, "equal": vtu_sha == E4_VTU_SHA}
++    local = os.path.join(work, "candidate_e4.vtu")
++    shutil.copyfile(E4_VTU, local)
++    result = build_process_result({"final_mesh": local, "snapshots": []})
++    imp = import_process_result(result, mesh_name="e5_d2d_mesh", device_name="e5_d2d_device",
++                                contact_regions=["Si"], contact_axis="x", length_scale_to_cm=UM)
++    return imp, ident
++
++
++def solve_call(dv, calls, **kw):
++    """One devsim.solve() call, counted and recorded. Never retried with unchanged settings (PLAN section 3.4)."""
++    import time
++    t = time.time()
++    try:
++        r = dv.solve(type="dc", info=True, **kw)
++        ok, err = True, None
++    except Exception as e:  # noqa: BLE001
++        r, ok, err = None, False, repr(e)[:300]
++    rec = {"k": kw, "ok": ok, "error": err, "wall_s": round(time.time() - t, 3)}
++    if r:
++        last = r["iterations"][-1]["devices"][0]
++        rec.update({"converged": bool(r["converged"]), "n_iterations": len(r["iterations"]),
++                    "final_device_relative_error": last["relative_error"], "final_device_absolute_error": last["absolute_error"],
++                    "final_equations": {e["name"]: {"abs": e["absolute_error"], "rel": e["relative_error"]}
++                                        for reg in last["regions"] for e in reg["equations"]}})
++    else:
++        rec["converged"] = False
++    calls.append(rec)
++    return rec
++
++
++def measure_poisson(dv, device, region, contacts):
++    """PLAN section 4, Poisson-only stage: Potential, y-symmetry (2D only), ElectricField, contact potentials."""
++    x = np.array(dv.get_node_model_values(device=device, region=region, name="x")) / UM
++    psi = np.array(dv.get_node_model_values(device=device, region=region, name="Potential"))
++    ef = np.array(dv.get_edge_model_values(device=device, region=region, name="ElectricField"))
++    out = {"psi_contact_V": {c: float(psi[x == (x.min() if c == contacts[0] else x.max())].mean()) for c in contacts},
++           "max_abs_ElectricField_V_per_cm": float(np.max(np.abs(ef))), "psi_range_V": [float(psi.min()), float(psi.max())],
++           "psi_finite": bool(np.all(np.isfinite(psi)))}
++    try:
++        y = np.array(dv.get_node_model_values(device=device, region=region, name="y")) / UM
++        two_d = bool(np.any(y != y[0]))
++    except Exception:  # noqa: BLE001
++        two_d, y = False, None
++    out["two_d"] = two_d
++    if two_d:
++        sym = {}
++        for xc in (0.0, 0.05, -0.05, 0.15, -0.15):
++            m = np.abs(x - xc) < 1e-6
++            if m.sum() > 1:
++                vals = psi[m]
++                sym[f"{xc:+.3f}"] = {"n_y": int(m.sum()), "spread_V": float(vals.max() - vals.min())}
++        out["y_symmetry"] = sym
++        out["y_symmetry_max_spread_V"] = max((v["spread_V"] for v in sym.values()), default=None)
++    return out
++
++
++def cut_profile(dv, device, region, x_um_list):
++    """Potential / ElectricField(magnitude, per-edge nearest) / NetDoping at specific x positions, at the mesh's own
++    middle-y row for 2D (nearest actual node row to the mid-depth), or the single 1D line."""
++    x = np.array(dv.get_node_model_values(device=device, region=region, name="x")) / UM
++    psi = np.array(dv.get_node_model_values(device=device, region=region, name="Potential"))
++    nd = np.array(dv.get_node_model_values(device=device, region=region, name="NetDoping"))
++    try:
++        y = np.array(dv.get_node_model_values(device=device, region=region, name="y")) / UM
++        y_mid = sorted(np.unique(y))[len(np.unique(y)) // 2]
++        row = np.abs(y - y_mid) < 1e-9
++    except Exception:  # noqa: BLE001
++        row, y_mid = np.ones(len(x), dtype=bool), None
++    out = {"row_y_um": y_mid, "cuts": {}}
++    for xc in x_um_list:
++        m = row & (np.abs(x - xc) < 1e-6)
++        if not m.any():
++            j = np.argmin(np.abs(x[row] - xc))
++            xr = x[row]
++            m = row & (np.abs(x - xr[j]) < 1e-9)
++        out["cuts"][f"{xc:+.2f}"] = {"x_actual_um": float(x[m].mean()), "n_nodes": int(m.sum()),
++                                     "Potential_V": float(psi[m].mean()), "NetDoping_cm-3": float(nd[m].mean())}
++    return out
++
++
++def doping_integrals(dv, device, region, kind):
++    """PLAN section 4: DEVSIM NodeVolume integral (real device quantity) + geometric continuum reference, kept separate."""
++    x = np.array(dv.get_node_model_values(device=device, region=region, name="x")) / UM
++    nv = np.array(dv.get_node_model_values(device=device, region=region, name="NodeVolume"))
++    don = np.array(dv.get_node_model_values(device=device, region=region, name="Donors"))
++    acc = np.array(dv.get_node_model_values(device=device, region=region, name="Acceptors"))
++    out = {"kind": kind}
++    for nm, c in (("donor", don), ("acceptor", acc)):
++        out[f"{nm}_NodeVolume_integral"] = float((c * nv).sum())
++    try:
++        y = np.array(dv.get_node_model_values(device=device, region=region, name="y")) / UM
++        depth = float(y.max() - y.min())
++    except Exception:  # noqa: BLE001
++        depth = 1.0
++    out["geometric_continuum_reference"] = N_CONC * depth * X_HALF_UM * UM * UM
++    out["all_finite"] = bool(np.all(np.isfinite(don)) and np.all(np.isfinite(acc)) and np.all(np.isfinite(nv)))
++    return out
++
++
++def analytic_reference(dv, device, region):
++    """Sze & Ng depletion approximation, ch. 2 (already used in 7H-E1/E4's own PLANs), DEVSIM's own parameters
++    (not textbook constants). Explicitly an idealized zero-width-junction estimate, never the PDE solution."""
++    import math
++    eps = float(dv.get_parameter(device=device, region=region, name="Permittivity"))
++    vt = float(dv.get_parameter(device=device, region=region, name="V_t"))
++    ni = float(dv.get_parameter(device=device, region=region, name="n_i"))
++    q = float(dv.get_parameter(device=device, region=region, name="ElectronCharge"))
++    na = nd = N_CONC
++    vbi = vt * math.log(na * nd / ni ** 2)
++    w_cm = math.sqrt(2 * eps * vbi / q * (na + nd) / (na * nd))
++    ld_cm = math.sqrt(eps * vt / (q * N_CONC))
++    return {"assumptions": "Sze & Ng, Physics of Semiconductor Devices 3rd ed. ch.2; abrupt symmetric junction, full "
++                           "depletion, infinite neutral regions, DEVSIM's own eps/V_t/n_i/q (not textbook constants); "
++                           "NOT the PDE solution, an idealized zero-width-junction estimate",
++            "V_bi_V": vbi, "W_0V_um": w_cm / UM, "L_D_um": ld_cm / UM, "eps_F_cm": eps, "V_t_V": vt, "n_i_cm-3": ni}
+diff --git a/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/run_e5.py b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/run_e5.py
+new file mode 100644
+index 0000000..4f8c098
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/run_e5.py
+@@ -0,0 +1,50 @@
++"""Batch 7H-E5 driver (remote profile entry). Refuses to run outside a GitHub-hosted runner.
++Runs stage_e5.py in a subprocess (real devsim.solve calls -- not trapped), then strict-parses every JSON output.
++Outputs: <repo>/e5_out (not committed)."""
++import argparse
++import os
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++OUT = os.path.join(ROOT, "e5_out")
++sys.path.insert(0, os.path.join(ROOT, "docs", "audits", "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import common_e1 as ce  # noqa: E402
++
++
++def main():
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--validate-only", action="store_true")
++    a = ap.parse_args()
++    hosted = os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
++    print("[e5] Batch 7H-E5: 0V equilibrium pilot, 6 runs {D2D,D1D_J0,D1D_J1}x{S0,S12}", flush=True)
++    if a.validate_only:
++        return 0
++    if not hosted:
++        print("[e5] refusing to run: not a GitHub-hosted runner", flush=True)
++        return 2
++    os.makedirs(OUT, exist_ok=True)
++    t = time.time()
++    try:
++        p = subprocess.run([sys.executable, os.path.join(HERE, "stage_e5.py"), OUT], cwd=ROOT, capture_output=True, text=True,
++                           encoding="utf-8", errors="replace", timeout=8000)
++        print(p.stdout[-300000:], flush=True)
++        if p.stderr.strip():
++            print("[e5][stderr]", p.stderr[-6000:], flush=True)
++        rc = p.returncode
++    except subprocess.TimeoutExpired:
++        print("[e5] NOT_COMPLETED: stage_e5 timeout 8000 s", flush=True)
++        rc = "timeout"
++    print(f"[e5] stage_e5 rc={rc} in {time.time() - t:.1f} s", flush=True)
++    for f in os.listdir(OUT):
++        if f.endswith(".json"):
++            ce.load_strict(os.path.join(OUT, f))
++    print(f"[e5] outputs: {sorted(os.listdir(OUT))}", flush=True)
++    return 0 if rc == 0 else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/stage_e5.py b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/stage_e5.py
+new file mode 100644
+index 0000000..95785e7
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/stage_e5.py
+@@ -0,0 +1,146 @@
++"""Batch 7H-E5 remote worker (PLAN sections 2-6). Runs {D2D, D1D_J0, D1D_J1} x {S0, S12}, 6 independent runs, each its
++own device, own precision setting, own solve calls, own JSON. devsim.solve is NOT trapped in this batch -- unlike
++7H-E2/E3/E4, running real solves is the whole point. usage: stage_e5.py <out dir>"""
++import os
++import sys
++import time
++import traceback
++
++sys.dont_write_bytecode = True
++os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++sys.path.insert(0, HERE)
++E1S = os.path.join(HERE, "..", "..", "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts")
++sys.path.insert(0, os.path.abspath(E1S))
++import common_e1 as ce  # noqa: E402
++import shadow_e1 as se1  # noqa: E402  (measure(): qf/mass-action/currents, reused after DD succeeds)
++import devices_e5 as de5  # noqa: E402
++
++PLAN_SHA = "924395fb86a72658853a9b8ffd7827cdb0ddf6c1473d55609af09764ce8802fa"
++CUTS_UM = [-0.25, -0.10, 0.0, 0.10, 0.25]
++T0 = time.time()
++
++
++def log(msg):
++    print(f"[e5 {time.time() - T0:8.1f}s] {msg}", flush=True)
++
++
++def run_one(dv, work, label, kind_device, kind_doping, variant):
++    """One of the 6 registered runs. Returns the result dict; never raises (errors are captured in it).
++    Device/mesh cleanup ALWAYS runs (finally), win or crash, so one run's failure can never leak a device into the
++    next run's solve() call (devsim.solve() has no device filter -- a leaked device corrupts an unrelated solve;
++    see CLAUDE.md's own documented case of this exact failure mode)."""
++    out = {"label": label, "device_kind": kind_device, "doping_kind": kind_doping, "variant": variant, "solve_calls": []}
++    out["devices_registered_at_start"] = list(dv.get_device_list())
++    if out["devices_registered_at_start"]:
++        out["status"] = "STOP_LEAKED_DEVICE_FROM_PRIOR_RUN"
++        out["wall_s"] = 0.0
++        log(f"{label}: STOP -- devices already registered at start: {out['devices_registered_at_start']}")
++        return out
++    t0 = time.time()
++    created = {"device": None, "mesh": None}
++    try:
++        if variant == "S12":
++            dv.set_parameter(name="extended_model", value=True)
++            dv.set_parameter(name="extended_equation", value=True)
++        out["flags"] = se1.flags(dv)
++        device = f"e5_{label}"
++        region = "Si"
++        if kind_device == "2D":
++            imp, ident = de5.import_e4_candidate(work)
++            out["mesh_identity"] = ident
++            if not ident["equal"]:
++                out["stop"] = "MESH_INPUT_IDENTITY_FAIL"
++                return out
++            device = imp.device
++            created["device"], created["mesh"] = imp.device, imp.mesh
++            contacts = sorted(imp.contacts)  # Si_xmin, Si_xmax -> xmin first, matches shadow_e1.measure()'s convention
++        else:
++            xs = de5.grid_1d_um(de5.H_UM, kind_doping)
++            contacts = de5.build_1d(dv, xs, device)
++            created["device"], created["mesh"] = device, "m_" + device
++            out["mesh_1d"] = {"n_nodes": len(xs), "h_um": de5.H_UM, "x_half_um": de5.X_HALF_UM}
++        out["contacts"] = contacts
++        out["doping"] = de5.write_doping(dv, device, region, kind_doping)
++
++        from tcad.device.devsim.semiconductor_equation import setup_semiconductor_potential_equation, setup_drift_diffusion_equation
++        setup_semiconductor_potential_equation(device, region, contacts, 300.0)
++        c1 = de5.solve_call(dv, out["solve_calls"], absolute_error=1.0, relative_error=1e-6, maximum_iterations=100)
++        out["poisson_converged"] = c1["converged"]
++        if not c1["converged"]:
++            out["status"] = "POISSON_NOT_CONVERGED"
++            out["poisson_measure"] = de5.measure_poisson(dv, device, region, contacts)
++            out["cut_profile_poisson_only"] = de5.cut_profile(dv, device, region, CUTS_UM)
++            out["doping_integrals"] = de5.doping_integrals(dv, device, region, kind_doping)
++        else:
++            out["poisson_measure"] = de5.measure_poisson(dv, device, region, contacts)
++            setup_drift_diffusion_equation(device, region, contacts)
++            c2 = de5.solve_call(dv, out["solve_calls"], absolute_error=1e10, relative_error=1e-6, maximum_iterations=100)
++            out["dd_converged"] = c2["converged"]
++            if not c2["converged"]:
++                out["status"] = "DD_NOT_CONVERGED"
++                out["cut_profile"] = de5.cut_profile(dv, device, region, CUTS_UM)
++                out["doping_integrals"] = de5.doping_integrals(dv, device, region, kind_doping)
++            else:
++                m, states = se1.measure(dv, device, contacts)   # measure() returns (metrics_dict, raw_state_arrays)
++                out["equilibrium_measure"] = m
++                out["cut_profile"] = de5.cut_profile(dv, device, region, CUTS_UM)
++                out["doping_integrals"] = de5.doping_integrals(dv, device, region, kind_doping)
++                y_bad = out["poisson_measure"].get("y_symmetry_max_spread_V")
++                phys_ok = (bool(m.get("positive_finite")) and (y_bad is None or y_bad <= 1e-6)
++                          and out["doping_integrals"]["all_finite"]
++                          and m["psi_contact_V"][contacts[0]] != m["psi_contact_V"][contacts[1]])
++                out["status"] = "CONVERGED_OK" if phys_ok else "CONVERGED_BUT_PHYSICALLY_INVALID"
++        out["analytic_reference"] = de5.analytic_reference(dv, device, region)
++    except Exception as e:  # noqa: BLE001
++        out["error"] = repr(e)[:500]
++        out["traceback"] = traceback.format_exc()[-3000:]
++        out["status"] = out.get("status", "ERROR")
++    finally:
++        if created["device"] is not None:
++            try:
++                dv.delete_device(device=created["device"])
++            except Exception as e:  # noqa: BLE001
++                out["cleanup_device_error"] = repr(e)[:200]
++        if created["mesh"] is not None:
++            try:
++                dv.delete_mesh(mesh=created["mesh"])
++            except Exception as e:  # noqa: BLE001
++                out["cleanup_mesh_error"] = repr(e)[:200]
++        if variant == "S12":   # only S12 ever set these True; restore E1's own "leave S0 untouched/unset" convention
++            try:
++                dv.set_parameter(name="extended_model", value=False)
++                dv.set_parameter(name="extended_equation", value=False)
++            except Exception:  # noqa: BLE001
++                pass
++    out["wall_s"] = round(time.time() - t0, 1)
++    log(f"{label}: status={out.get('status')} poisson_converged={out.get('poisson_converged')} "
++        f"dd_converged={out.get('dd_converged')} calls={len(out['solve_calls'])} ({out['wall_s']}s)")
++    return out
++
++
++def main():
++    outd = os.path.abspath(sys.argv[1])
++    os.makedirs(outd, exist_ok=True)
++    import devsim as dv
++    results = {"plan_sha256_expected": PLAN_SHA, "runs": {}}
++    total_calls = 0
++    for kind_device, kind_doping, dev_label in (("2D", "J0", "D2D"), ("1D", "J0", "D1D_J0"), ("1D", "J1", "D1D_J1")):
++        for variant in ("S0", "S12"):
++            label = f"{dev_label}_{variant}"
++            log(f"===== {label} =====")
++            r = run_one(dv, outd, label, kind_device, kind_doping, variant)
++            results["runs"][label] = r
++            total_calls += len(r.get("solve_calls", []))
++            ce.dump_strict(r, os.path.join(outd, f"e5_{label}.json"))
++    results["devices_left"] = list(dv.get_device_list())
++    results["total_solve_calls"] = total_calls
++    ce.dump_strict(results, os.path.join(outd, "e5_result.json"))
++    log(f"done: devices_left={results['devices_left']} total_solve_calls={total_calls}")
++    return 0 if not results["devices_left"] else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/synthetic_e5_test.py b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/synthetic_e5_test.py
+new file mode 100644
+index 0000000..37d65b3
+--- /dev/null
++++ b/docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/synthetic_e5_test.py
+@@ -0,0 +1,50 @@
++"""Batch 7H-E5 SYNTHETIC test (no ViennaPS / DEVSIM): grid_1d_um()/cols_right() reproduce D1's own meshes_d1.py values
++exactly at X_HALF=0.5 (the file this batch generalizes, read-only, not modified), and behave correctly at this batch's
++actual runtime parameters (h=0.003125, X_HALF=5.0). usage: synthetic_e5_test.py <out json>"""
++import json
++import os
++import sys
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, HERE)
++sys.path.insert(0, os.path.join(ROOT, "docs", "audits", "2026-09-23-batch7h-d1-pn-convergence", "scripts"))
++import devices_e5 as de5  # noqa: E402
++import meshes_d1 as md1  # noqa: E402  (D1, read-only: the original fixed-0.5 formula this batch generalizes)
++
++
++def main():
++    res, ok = {}, True
++    for h in (0.02, 0.01, 0.005, 0.0025, 0.00125):
++        for kind in ("J0", "J1"):
++            want = md1.grid_1d(h, kind)
++            got = de5.grid_1d_um(h, kind, x_half=0.5)
++            same = len(want) == len(got) and all(abs(a - b) < 1e-12 for a, b in zip(want, got))
++            res[f"h{h}_{kind}_matches_D1"] = same
++            ok &= same
++    xs_j0 = de5.grid_1d_um(de5.H_UM, "J0")
++    xs_j1 = de5.grid_1d_um(de5.H_UM, "J1")
++    res["runtime_J0"] = {"n": len(xs_j0), "has_x0": 0.0 in xs_j0, "min": xs_j0[0], "max": xs_j0[-1],
++                         "symmetric": abs(xs_j0[0] + xs_j0[-1]) < 1e-9}
++    res["runtime_J1"] = {"n": len(xs_j1), "has_x0": 0.0 in xs_j1, "min": xs_j1[0], "max": xs_j1[-1],
++                         "symmetric": abs(xs_j1[0] + xs_j1[-1]) < 1e-9,
++                         "min_abs_x": min(abs(v) for v in xs_j1)}
++    ok &= res["runtime_J0"]["has_x0"] and res["runtime_J0"]["n"] == 3201 and res["runtime_J0"]["symmetric"]
++    ok &= (not res["runtime_J1"]["has_x0"]) and res["runtime_J1"]["symmetric"]
++    ok &= abs(res["runtime_J1"]["min_abs_x"] - de5.H_UM / 2) < 1e-9
++    # doping rule (pure logic, no devsim): J0 both species full strength at x=0; J1 excludes x=0 by construction
++    import numpy as np
++    x = np.array(xs_j0)
++    don0, acc0 = np.where(x >= 0, de5.N_CONC, 0.0), np.where(x <= 0, de5.N_CONC, 0.0)
++    at0 = x == 0.0
++    res["J0_donor_acceptor_both_full_at_x0"] = bool((don0[at0] == de5.N_CONC).all() and (acc0[at0] == de5.N_CONC).all())
++    ok &= res["J0_donor_acceptor_both_full_at_x0"]
++    res["ALL_OK"] = bool(ok)
++    json.dump(res, open(sys.argv[1], "w"), indent=1, default=str)
++    print(json.dumps(res, indent=1, default=str))
++    return 0 if ok else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/remote/profiles.py b/remote/profiles.py
+index 39ef2b1..24da8ac 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -196,6 +196,35 @@ PROFILES = {
+                     {"glob": "e4_out/**/*.vtu", "max_mb": 50}],
+         "regenerate": "Rerun the profile. The wafer mesh is regenerated by ViennaPS and hash-gated against E1-E3 (cfae97d4...).",
+     },
++    "e5_equilibrium_pilot": {
++        "description": "Batch 7H-E5: 0V equilibrium electrical pilot on the 7H-E4 candidate mesh (audit-only device, real devsim.solve calls, no bias ramp). 6 runs: {D2D,D1D_J0,D1D_J1}x{S0,S12}.",
++        "entry": "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/run_e5.py",
++        "args": [],
++        "params": {},
++        "timeout_s": 10000,
++        "inputs": [
++            "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.md",
++            "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.sha256",
++            "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/run_e5.py",
++            "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/stage_e5.py",
++            "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/devices_e5.py",
++            "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu",
++            "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/e4_result.json",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/shadow_e1.py",
++            "docs/audits/2026-09-23-batch7h-d1-pn-convergence/scripts/common_d1.py",
++            "docs/audits/2026-09-23-batch7h-d1-pn-convergence/scripts/meshes_d1.py",
++            "docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixed_d1.json",
++            "tcad/device/devsim/semiconductor_equation.py",
++            "tcad/device/devsim/doping_mapping.py",
++            "tcad/device/devsim/mesh_import.py",
++            "tcad/mesh/viennaps_adapter.py",
++            "tcad/characterization/pn_junction_iv_sweep.py",
++            "tcad/physics/wafer_state_v2.py",
++        ],
++        "outputs": [{"glob": "e5_out/**/*.json", "max_mb": 50}],
++        "regenerate": "Rerun the profile. All 6 runs are built and solved fresh each time; no cached state.",
++    },
+ }
+ 
+ # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.
+diff --git a/remote/request.json b/remote/request.json
+index 34ae37a..8339157 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -1,7 +1,7 @@
+ {
+  "schema": 1,
+- "request_id": "e4-nonobtuse-quadtree-candidate-001",
+- "profile": "e4_nonobtuse_quadtree_candidate",
++ "request_id": "e5-equilibrium-pilot-002",
++ "profile": "e5_equilibrium_pilot",
+  "params": {},
+- "note": "Batch 7H-E4. PLAN fixed in commit de697598e675ca9fe49e757200817c4ff1e9e9e9 before this code and request."
++ "note": "Batch 7H-E5 rerun (script bugfix, see BUGFIX_NOTE_1.md; PLAN unchanged, commit fd9881ec012465af1936326dd2a64079582d1468)."
+ }

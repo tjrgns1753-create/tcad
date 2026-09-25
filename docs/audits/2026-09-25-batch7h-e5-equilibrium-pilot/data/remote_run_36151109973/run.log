@@ -1,0 +1,381 @@
+[e5] Batch 7H-E5: 0V equilibrium pilot, 6 runs {D2D,D1D_J0,D1D_J1}x{S0,S12}
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e5      0.0s] ===== D2D_S0 =====
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 255400 Triangles.
+Physical group name Si has 383466 Lines.
+Physical group name Si has 128067 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e5_d2d_device has 128067 coordinates with max index 128066
+Region Si has 128067 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 128067
+Iteration: 0
+  Device: "e5_d2d_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e5_d2d_device"	RelError: 1.08651e+00	AbsError: 1.90981e-01
+    Region: "Si"	RelError: 1.08651e+00	AbsError: 1.90981e-01
+      Equation: "PotentialEquation"	RelError: 1.08651e+00	AbsError: 1.90981e-01
+Iteration: 2
+  Device: "e5_d2d_device"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+Iteration: 3
+  Device: "e5_d2d_device"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e5_d2d_device"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e5_d2d_device"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e5_d2d_device"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e5_d2d_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e5_d2d_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e5_d2d_device"	RelError: 2.41211e-07	AbsError: 5.31442e-17
+    Region: "Si"	RelError: 2.41211e-07	AbsError: 5.31442e-17
+      Equation: "PotentialEquation"	RelError: 2.41211e-07	AbsError: 5.31442e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 384201
+Iteration: 0
+  Device: "e5_d2d_device"	RelError: 2.03421e-07	AbsError: 1.02400e+04
+    Region: "Si"	RelError: 2.03421e-07	AbsError: 1.02400e+04
+      Equation: "ElectronContinuityEquation"	RelError: 2.24518e-14	AbsError: 5.12000e+03
+      Equation: "HoleContinuityEquation"	RelError: 2.69405e-14	AbsError: 5.12000e+03
+      Equation: "PotentialEquation"	RelError: 2.03421e-07	AbsError: 1.43742e-16
+[e5     20.3s] D2D_S0: status=CONVERGED_OK poisson_converged=True dd_converged=True calls=2 (20.3s)
+[e5     20.3s] ===== D2D_S12 =====
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 255400 Triangles.
+Physical group name Si has 383466 Lines.
+Physical group name Si has 128067 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e5_d2d_device has 128067 coordinates with max index 128066
+Region Si has 128067 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 128067
+Iteration: 0
+  Device: "e5_d2d_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e5_d2d_device"	RelError: 4.85622e-01	AbsError: 1.90981e-01
+    Region: "Si"	RelError: 4.85622e-01	AbsError: 1.90981e-01
+      Equation: "PotentialEquation"	RelError: 4.85622e-01	AbsError: 1.90981e-01
+Iteration: 2
+  Device: "e5_d2d_device"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+Iteration: 3
+  Device: "e5_d2d_device"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e5_d2d_device"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e5_d2d_device"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e5_d2d_device"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e5_d2d_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e5_d2d_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e5_d2d_device"	RelError: 2.56729e-07	AbsError: 2.56729e-17
+    Region: "Si"	RelError: 2.56729e-07	AbsError: 2.56729e-17
+      Equation: "PotentialEquation"	RelError: 2.56729e-07	AbsError: 2.56729e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 384201
+Iteration: 0
+  Device: "e5_d2d_device"	RelError: 1.91825e-07	AbsError: 1.44282e+02
+    Region: "Si"	RelError: 1.91825e-07	AbsError: 1.44282e+02
+      Equation: "ElectronContinuityEquation"	RelError: 7.41005e-16	AbsError: 7.64920e+01
+      Equation: "HoleContinuityEquation"	RelError: 7.41005e-16	AbsError: 6.77896e+01
+      Equation: "PotentialEquation"	RelError: 1.91825e-07	AbsError: 1.91825e-17
+[e5     86.2s] D2D_S12: status=CONVERGED_OK poisson_converged=True dd_converged=True calls=2 (65.9s)
+[e5     86.2s] ===== D1D_J0_S0 =====
+right
+ (region: Si)
+ (contact: left)
+ (contact: right)
+Creating Node Solution Potential
+number of equations 3201
+Iteration: 0
+  Device: "e5_D1D_J0_S0"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e5_D1D_J0_S0"	RelError: 1.25039e+01	AbsError: 1.91005e-01
+    Region: "Si"	RelError: 1.25039e+01	AbsError: 1.91005e-01
+      Equation: "PotentialEquation"	RelError: 1.25039e+01	AbsError: 1.91005e-01
+Iteration: 2
+  Device: "e5_D1D_J0_S0"	RelError: 9.18734e-01	AbsError: 8.48348e-02
+    Region: "Si"	RelError: 9.18734e-01	AbsError: 8.48348e-02
+      Equation: "PotentialEquation"	RelError: 9.18734e-01	AbsError: 8.48348e-02
+Iteration: 3
+  Device: "e5_D1D_J0_S0"	RelError: 2.36911e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 2.36911e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 2.36911e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e5_D1D_J0_S0"	RelError: 2.20040e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 2.20040e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 2.20040e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e5_D1D_J0_S0"	RelError: 1.59532e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.59532e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.59532e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e5_D1D_J0_S0"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e5_D1D_J0_S0"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e5_D1D_J0_S0"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e5_D1D_J0_S0"	RelError: 3.18428e-08	AbsError: 1.31591e-09
+    Region: "Si"	RelError: 3.18428e-08	AbsError: 1.31591e-09
+      Equation: "PotentialEquation"	RelError: 3.18428e-08	AbsError: 1.31591e-09
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 9603
+Iteration: 0
+  Device: "e5_D1D_J0_S0"	RelError: 1.87372e-07	AbsError: 1.02400e+04
+    Region: "Si"	RelError: 1.87372e-07	AbsError: 1.02400e+04
+      Equation: "ElectronContinuityEquation"	RelError: 1.96154e-14	AbsError: 5.12000e+03
+      Equation: "HoleContinuityEquation"	RelError: 1.53933e-14	AbsError: 5.12000e+03
+      Equation: "PotentialEquation"	RelError: 1.87372e-07	AbsError: 1.34477e-16
+[e5     86.5s] D1D_J0_S0: status=CONVERGED_OK poisson_converged=True dd_converged=True calls=2 (0.3s)
+[e5     86.5s] ===== D1D_J0_S12 =====
+right
+ (region: Si)
+ (contact: left)
+ (contact: right)
+Creating Node Solution Potential
+number of equations 3201
+Iteration: 0
+  Device: "e5_D1D_J0_S12"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e5_D1D_J0_S12"	RelError: 1.31993e+01	AbsError: 1.91005e-01
+    Region: "Si"	RelError: 1.31993e+01	AbsError: 1.91005e-01
+      Equation: "PotentialEquation"	RelError: 1.31993e+01	AbsError: 1.91005e-01
+Iteration: 2
+  Device: "e5_D1D_J0_S12"	RelError: 9.87398e-01	AbsError: 8.48348e-02
+    Region: "Si"	RelError: 9.87398e-01	AbsError: 8.48348e-02
+      Equation: "PotentialEquation"	RelError: 9.87398e-01	AbsError: 8.48348e-02
+Iteration: 3
+  Device: "e5_D1D_J0_S12"	RelError: 2.36911e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 2.36911e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 2.36911e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e5_D1D_J0_S12"	RelError: 2.20040e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 2.20040e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 2.20040e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e5_D1D_J0_S12"	RelError: 1.59532e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.59532e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.59532e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e5_D1D_J0_S12"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e5_D1D_J0_S12"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e5_D1D_J0_S12"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e5_D1D_J0_S12"	RelError: 2.46992e-08	AbsError: 1.31591e-09
+    Region: "Si"	RelError: 2.46992e-08	AbsError: 1.31591e-09
+      Equation: "PotentialEquation"	RelError: 2.46992e-08	AbsError: 1.31591e-09
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 9603
+Iteration: 0
+  Device: "e5_D1D_J0_S12"	RelError: 5.34848e-08	AbsError: 1.40058e+03
+    Region: "Si"	RelError: 5.34848e-08	AbsError: 1.40058e+03
+      Equation: "ElectronContinuityEquation"	RelError: 7.00290e-16	AbsError: 7.00290e+02
+      Equation: "HoleContinuityEquation"	RelError: 7.00290e-16	AbsError: 7.00290e+02
+      Equation: "PotentialEquation"	RelError: 5.34848e-08	AbsError: 1.81286e-17
+[e5     87.5s] D1D_J0_S12: status=CONVERGED_OK poisson_converged=True dd_converged=True calls=2 (1.0s)
+[e5     87.5s] ===== D1D_J1_S0 =====
+right
+ (region: Si)
+ (contact: left)
+ (contact: right)
+Creating Node Solution Potential
+number of equations 3202
+Iteration: 0
+  Device: "e5_D1D_J1_S0"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e5_D1D_J1_S0"	RelError: 4.85622e-01	AbsError: 1.91005e-01
+    Region: "Si"	RelError: 4.85622e-01	AbsError: 1.91005e-01
+      Equation: "PotentialEquation"	RelError: 4.85622e-01	AbsError: 1.91005e-01
+Iteration: 2
+  Device: "e5_D1D_J1_S0"	RelError: 3.11888e-01	AbsError: 8.48144e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 8.48144e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 8.48144e-02
+Iteration: 3
+  Device: "e5_D1D_J1_S0"	RelError: 3.38142e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 3.38142e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 3.38142e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e5_D1D_J1_S0"	RelError: 3.52267e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 3.52267e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 3.52267e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e5_D1D_J1_S0"	RelError: 2.96206e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 2.96206e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 2.96206e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e5_D1D_J1_S0"	RelError: 1.92799e-01	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 1.92799e-01	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 1.92799e-01	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e5_D1D_J1_S0"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e5_D1D_J1_S0"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e5_D1D_J1_S0"	RelError: 1.12507e-06	AbsError: 5.36500e-07
+    Region: "Si"	RelError: 1.12507e-06	AbsError: 5.36500e-07
+      Equation: "PotentialEquation"	RelError: 1.12507e-06	AbsError: 5.36500e-07
+Iteration: 10
+  Device: "e5_D1D_J1_S0"	RelError: 4.37612e-12	AbsError: 2.08679e-12
+    Region: "Si"	RelError: 4.37612e-12	AbsError: 2.08679e-12
+      Equation: "PotentialEquation"	RelError: 4.37612e-12	AbsError: 2.08679e-12
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 9606
+Iteration: 0
+  Device: "e5_D1D_J1_S0"	RelError: 4.28503e-14	AbsError: 1.02400e+04
+    Region: "Si"	RelError: 4.28503e-14	AbsError: 1.02400e+04
+      Equation: "ElectronContinuityEquation"	RelError: 1.37664e-14	AbsError: 5.12000e+03
+      Equation: "HoleContinuityEquation"	RelError: 2.87892e-14	AbsError: 5.12000e+03
+      Equation: "PotentialEquation"	RelError: 2.94692e-16	AbsError: 1.40527e-16
+[e5     87.7s] D1D_J1_S0: status=CONVERGED_OK poisson_converged=True dd_converged=True calls=2 (0.2s)
+[e5     87.7s] ===== D1D_J1_S12 =====
+right
+ (region: Si)
+ (contact: left)
+ (contact: right)
+Creating Node Solution Potential
+number of equations 3202
+Iteration: 0
+  Device: "e5_D1D_J1_S12"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e5_D1D_J1_S12"	RelError: 4.85622e-01	AbsError: 1.91005e-01
+    Region: "Si"	RelError: 4.85622e-01	AbsError: 1.91005e-01
+      Equation: "PotentialEquation"	RelError: 4.85622e-01	AbsError: 1.91005e-01
+Iteration: 2
+  Device: "e5_D1D_J1_S12"	RelError: 3.11888e-01	AbsError: 8.48144e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 8.48144e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 8.48144e-02
+Iteration: 3
+  Device: "e5_D1D_J1_S12"	RelError: 3.38142e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 3.38142e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 3.38142e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e5_D1D_J1_S12"	RelError: 3.52267e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 3.52267e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 3.52267e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e5_D1D_J1_S12"	RelError: 2.96206e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 2.96206e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 2.96206e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e5_D1D_J1_S12"	RelError: 1.92799e-01	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 1.92799e-01	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 1.92799e-01	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e5_D1D_J1_S12"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e5_D1D_J1_S12"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e5_D1D_J1_S12"	RelError: 1.12507e-06	AbsError: 5.36500e-07
+    Region: "Si"	RelError: 1.12507e-06	AbsError: 5.36500e-07
+      Equation: "PotentialEquation"	RelError: 1.12507e-06	AbsError: 5.36500e-07
+Iteration: 10
+  Device: "e5_D1D_J1_S12"	RelError: 4.37617e-12	AbsError: 2.08682e-12
+    Region: "Si"	RelError: 4.37617e-12	AbsError: 2.08682e-12
+      Equation: "PotentialEquation"	RelError: 4.37617e-12	AbsError: 2.08682e-12
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 9606
+Iteration: 0
+  Device: "e5_D1D_J1_S12"	RelError: 8.06188e-16	AbsError: 2.22054e+01
+    Region: "Si"	RelError: 8.06188e-16	AbsError: 2.22054e+01
+      Equation: "ElectronContinuityEquation"	RelError: 3.56400e-16	AbsError: 1.46722e+01
+      Equation: "HoleContinuityEquation"	RelError: 3.56400e-16	AbsError: 7.53321e+00
+      Equation: "PotentialEquation"	RelError: 9.33879e-17	AbsError: 9.22619e-18
+[e5     88.8s] D1D_J1_S12: status=CONVERGED_OK poisson_converged=True dd_converged=True calls=2 (1.0s)
+[e5     88.8s] done: devices_left=[] total_solve_calls=12
+
+[e5] stage_e5 rc=0 in 89.0 s
+[e5] outputs: ['candidate_e4.vtu', 'e5_D1D_J0_S0.json', 'e5_D1D_J0_S12.json', 'e5_D1D_J1_S0.json', 'e5_D1D_J1_S12.json', 'e5_D2D_S0.json', 'e5_D2D_S12.json', 'e5_result.json']

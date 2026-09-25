@@ -1,0 +1,251 @@
+{
+ "label": "D1D_J1_S12",
+ "device_kind": "1D",
+ "doping_kind": "J1",
+ "variant": "S12",
+ "solve_calls": [
+  {
+   "k": {
+    "absolute_error": 1.0,
+    "relative_error": 1e-06,
+    "maximum_iterations": 100
+   },
+   "ok": true,
+   "error": null,
+   "wall_s": 0.752,
+   "converged": true,
+   "n_iterations": 11,
+   "final_device_relative_error": 4.376173631282008e-12,
+   "final_device_absolute_error": 2.08682093253994e-12,
+   "final_equations": {
+    "PotentialEquation": {
+     "abs": 2.08682093253994e-12,
+     "rel": 4.376173631282008e-12
+    }
+   }
+  },
+  {
+   "k": {
+    "absolute_error": 10000000000.0,
+    "relative_error": 1e-06,
+    "maximum_iterations": 100
+   },
+   "ok": true,
+   "error": null,
+   "wall_s": 0.139,
+   "converged": true,
+   "n_iterations": 1,
+   "final_device_relative_error": 8.061875389982206e-16,
+   "final_device_absolute_error": 22.205362656346455,
+   "final_equations": {
+    "ElectronContinuityEquation": {
+     "abs": 14.672155655824977,
+     "rel": 3.5639980454260067e-16
+    },
+    "HoleContinuityEquation": {
+     "abs": 7.533207000521477,
+     "rel": 3.563998045426156e-16
+    },
+    "PotentialEquation": {
+     "abs": 9.226190569906837e-18,
+     "rel": 9.338792991300439e-17
+    }
+   }
+  }
+ ],
+ "devices_registered_at_start": [],
+ "flags": {
+  "extended_model": true,
+  "extended_equation": true,
+  "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+ },
+ "mesh_1d": {
+  "n_nodes": 3202,
+  "h_um": 0.003125,
+  "x_half_um": 5.0
+ },
+ "contacts": [
+  "left",
+  "right"
+ ],
+ "doping": {
+  "n_nodes": 3202,
+  "n_x0_nodes": 0,
+  "kind": "J1"
+ },
+ "poisson_converged": true,
+ "poisson_measure": {
+  "psi_contact_V": {
+   "left": -0.4768597199126636,
+   "right": 0.4768597199126636
+  },
+  "max_abs_ElectricField_V_per_cm": 382716.98662828986,
+  "psi_range_V": [
+   -0.4768597199126636,
+   0.4768597199126636
+  ],
+  "psi_finite": true,
+  "two_d": false
+ },
+ "dd_converged": true,
+ "equilibrium_measure": {
+  "C0": {
+   "left": {
+    "n": -2.0027460686193643e-42,
+    "p": 6.721338359685838e-27,
+    "total": 6.721338359685837e-27
+   },
+   "right": {
+    "n": -3.316419934989093e-26,
+    "p": -4.421423363058384e-43,
+    "total": -3.316419934989093e-26
+   }
+  },
+  "C1": {
+   "left": {
+    "total": 6.721338359685837e-27,
+    "n_edges": 1
+   },
+   "right": {
+    "total": -3.316419934989093e-26,
+    "n_edges": 1
+   }
+  },
+  "C2": {
+   "-0.25": {
+    "n": -6.338221627240995e-42,
+    "p": 6.897391268642431e-27,
+    "total": 6.897391268642425e-27,
+    "n_edges": 1,
+    "nodes_on_cut": 0
+   },
+   "-0.10": {
+    "n": -6.694951935620461e-42,
+    "p": 7.799107940151241e-27,
+    "total": 7.799107940151234e-27,
+    "n_edges": 1,
+    "nodes_on_cut": 0
+   },
+   "+0.00": {
+    "n": 7.367574644240164e-34,
+    "p": -1.4450094317125797e-33,
+    "total": -7.082519672885633e-34,
+    "n_edges": 1,
+    "nodes_on_cut": 0
+   },
+   "+0.10": {
+    "n": 3.769046862563249e-26,
+    "p": -3.5000642359079395e-42,
+    "total": 3.7690468625632483e-26,
+    "n_edges": 1,
+    "nodes_on_cut": 0
+   },
+   "+0.25": {
+    "n": 4.337706648307241e-26,
+    "p": -2.8009204826918004e-42,
+    "total": 4.337706648307241e-26,
+    "n_edges": 1,
+    "nodes_on_cut": 0
+   }
+  },
+  "C3": {
+   "-0.25..-0.10": {
+    "dI_n": -3.5673030837946667e-43,
+    "q_int_U": -3.3048045420832156e-43,
+    "dI_p": 9.017166715088105e-28,
+    "dI_total": 9.01716671508809e-28
+   },
+   "-0.10..+0.00": {
+    "dI_n": 7.367574711189683e-34,
+    "q_int_U": -6.210210538627197e-38,
+    "dI_p": -7.799109385160673e-27,
+    "dI_total": -7.799108648403201e-27
+   },
+   "+0.00..+0.10": {
+    "dI_n": 3.7690467888875023e-26,
+    "q_int_U": -6.149950491327999e-38,
+    "dI_p": 1.4450094282125155e-33,
+    "dI_total": 3.769046933388445e-26
+   },
+   "+0.10..+0.25": {
+    "dI_n": 5.68659785743992e-27,
+    "q_int_U": -3.277266748366438e-43,
+    "dI_p": 6.991437532161391e-43,
+    "dI_total": 5.686597857439926e-27
+   }
+  },
+  "positive_finite": true,
+  "qf_dev_V": 5.551115123125783e-17,
+  "mass_action_dev": 2.220446049250313e-16,
+  "psi_contact_V": {
+   "left": -0.4768597199126636,
+   "right": 0.4768597199126636
+  },
+  "max_abs_ElectricField_V_per_cm": 382716.9866282898,
+  "n_range": [
+   99.99999999999999,
+   1.0000000000000001e+18
+  ],
+  "p_range": [
+   99.99999999999999,
+   1.0000000000000001e+18
+  ],
+  "bias_readback": {
+   "left": 0.0,
+   "right": 0.0
+  }
+ },
+ "cut_profile": {
+  "row_y_um": 0.0,
+  "cuts": {
+   "-0.25": {
+    "x_actual_um": -0.2484375,
+    "n_nodes": 1,
+    "Potential_V": -0.4768597199126636,
+    "NetDoping_cm-3": -1e+18
+   },
+   "-0.10": {
+    "x_actual_um": -0.10156250000000001,
+    "n_nodes": 1,
+    "Potential_V": -0.47685971982866915,
+    "NetDoping_cm-3": -1e+18
+   },
+   "+0.00": {
+    "x_actual_um": -0.0015625,
+    "n_nodes": 1,
+    "Potential_V": -0.05979952916067029,
+    "NetDoping_cm-3": -1e+18
+   },
+   "+0.10": {
+    "x_actual_um": 0.0984375,
+    "n_nodes": 1,
+    "Potential_V": 0.4768597197321496,
+    "NetDoping_cm-3": 1e+18
+   },
+   "+0.25": {
+    "x_actual_um": 0.2484375,
+    "n_nodes": 1,
+    "Potential_V": 0.4768597199126636,
+    "NetDoping_cm-3": 1e+18
+   }
+  }
+ },
+ "doping_integrals": {
+  "kind": "J1",
+  "donor_NodeVolume_integral": 500000000000000.0,
+  "acceptor_NodeVolume_integral": 500000000000000.0,
+  "geometric_continuum_reference": 0.0,
+  "all_finite": true
+ },
+ "status": "CONVERGED_OK",
+ "analytic_reference": {
+  "assumptions": "Sze & Ng, Physics of Semiconductor Devices 3rd ed. ch.2; abrupt symmetric junction, full depletion, infinite neutral regions, DEVSIM's own eps/V_t/n_i/q (not textbook constants); NOT the PDE solution, an idealized zero-width-junction estimate",
+  "V_bi_V": 0.9537194398253274,
+  "W_0V_um": 0.04839644335362906,
+  "L_D_um": 0.003986718902050262,
+  "eps_F_cm": 9.8235e-13,
+  "V_t_V": 0.025887193125000003,
+  "n_i_cm-3": 10000000000.0
+ },
+ "wall_s": 1.0
+}

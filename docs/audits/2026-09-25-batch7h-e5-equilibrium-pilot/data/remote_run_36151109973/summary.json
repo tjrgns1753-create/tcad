@@ -1,0 +1,208 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-25T14:59:41.649881+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e5-equilibrium-pilot-002",
+  "profile": "e5_equilibrium_pilot",
+  "params": {},
+  "note": "Batch 7H-E5 rerun (script bugfix, see BUGFIX_NOTE_1.md; PLAN unchanged, commit fd9881ec012465af1936326dd2a64079582d1468)."
+ },
+ "profile": "e5_equilibrium_pilot",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.md",
+   "sha256": "8bf595022e5962629dec10ed029d852e3d0c633e14c23ec1461b3b7dc4071bd1",
+   "bytes": 13433
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/PLAN.sha256",
+   "sha256": "c3fcd23dae1abe4962a9f7bcfce9659b08bf3c736a09d0d59eb68917f4d5038f",
+   "bytes": 75
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/run_e5.py",
+   "sha256": "80fc60a29b56135c4555e504b699482f7cf09670b350daf75ca586681875290b",
+   "bytes": 2123
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/stage_e5.py",
+   "sha256": "4b1674f1c7d2a6a4084bb7f1c03face38c57d4c478266dcd1ca4f6efff98f8d9",
+   "bytes": 7875
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/devices_e5.py",
+   "sha256": "f8d036eb9b6579ae5b950988a53e4cccbe6208b108313d3e7ef8225a069ac4bd",
+   "bytes": 11289
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu",
+   "sha256": "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297",
+   "bytes": 2413965
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/e4_result.json",
+   "sha256": "0d3dfcd46be8437557afeb487a1d44ba1bcc2be92daa1a811f8c9e6d451dccc4",
+   "bytes": 11999
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
+   "sha256": "1de514d5462281a8c09b4029ce60a7f565f12e55c6c05b50c1406ae27fddde7a",
+   "bytes": 2905
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/shadow_e1.py",
+   "sha256": "ae3e0cfd23fdb948a2baf147f05b26972b41aa9474aa3db4e10edc4c67d64abc",
+   "bytes": 11923
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d1-pn-convergence/scripts/common_d1.py",
+   "sha256": "f593e4e35b4232cfc5772441c96feb19e44277def84b878799ff0e6213cd784f",
+   "bytes": 3615
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d1-pn-convergence/scripts/meshes_d1.py",
+   "sha256": "8c566eab366402cb42d8bfe7cb35d70d6fb43deb44e80d98ffd58e697cd00928",
+   "bytes": 3479
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-d1-pn-convergence/data/fixed_d1.json",
+   "sha256": "2e6b775d09f5ba470afd49dcacbe72c0e0182bb6c292757d0817af0bf11434b8",
+   "bytes": 6094
+  },
+  {
+   "path": "tcad/device/devsim/semiconductor_equation.py",
+   "sha256": "3de029f1bb9be99490721da0ec1dd8d9f2b055f8e93be8d046d957bb05df3370",
+   "bytes": 7129
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "c907e6e7a086bfc6767f1cb23468625896fac47986dbd01f145766c2793cd62d",
+   "bytes": 59336
+  },
+  {
+   "path": "tcad/mesh/viennaps_adapter.py",
+   "sha256": "b1a7eb5ae219a794e8a807c169621331a03e08dcae5240fd3428421342f2b8eb",
+   "bytes": 3680
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "3201d3313c85711620b4e0f599e57843721f0f812a927aca46cdead01f4c2762",
+   "bytes": 5441
+  },
+  {
+   "path": "tcad/physics/wafer_state_v2.py",
+   "sha256": "4a161c8db3516b58a0037b166286c245067700a5dcfba142109dd03eefd6ab2d",
+   "bytes": 60276
+  }
+ ],
+ "request_sha256": "cc716c6a714bc6a7701dc0dccba1d26d715aca24a80b7d67cf177cdca7d5539b",
+ "source": {
+  "github_sha": "e3141f3f5d2489bdbf782746befc7570b05a317c",
+  "git_head": "e3141f3f5d2489bdbf782746befc7570b05a317c",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36151109973",
+  "run_number": "10",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": true,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-25-batch7h-e5-equilibrium-pilot/scripts/run_e5.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-25T15:01:11.014241+00:00",
+ "duration_s": 89.364,
+ "outputs": [
+  {
+   "path": "e5_out/e5_D1D_J0_S0.json",
+   "bytes": 5530,
+   "sha256": "16fbfd93cfa3b864c26dc8b0fa2fadcc2277f0bb4b8f5e8ea4e485ed9e34b088"
+  },
+  {
+   "path": "e5_out/e5_D1D_J0_S12.json",
+   "bytes": 5821,
+   "sha256": "f9b399a1f97c6f451ff7a5f68252a958544f582f39a9250dc9afa7ea5d970b43"
+  },
+  {
+   "path": "e5_out/e5_D1D_J1_S0.json",
+   "bytes": 5594,
+   "sha256": "c519721316f3ba25963a3d7411a41934e8f89c3ba1e0507d112007606451790f"
+  },
+  {
+   "path": "e5_out/e5_D1D_J1_S12.json",
+   "bytes": 5843,
+   "sha256": "3682791f7cb2c70f343b8ecd628fc9f47ce2e6b6911edf9fcadec883eadaae63"
+  },
+  {
+   "path": "e5_out/e5_D2D_S0.json",
+   "bytes": 6404,
+   "sha256": "9e75e117ad67ef41f0c20515f4185251f6b581fe9e1f02bacb03bb00c9a8b85e"
+  },
+  {
+   "path": "e5_out/e5_D2D_S12.json",
+   "bytes": 6507,
+   "sha256": "814ea919a1869daac88d82939fb087f2e93631160f561dba09fbf948f1e9522a"
+  },
+  {
+   "path": "e5_out/e5_result.json",
+   "bytes": 39041,
+   "sha256": "d470e8a7d1b515fb0607d3b00e02b31dd26f2a7d0979103bf2e6dac2a360d6cd"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile. All 6 runs are built and solved fresh each time; no cached state.",
+ "log": {
+  "file": "run.log",
+  "sha256": "bafac4fa726e28b2f05185ed46e0adcbb0fd22abaef97afff591629e6299f9ae",
+  "bytes": 20387
+ },
+ "redactions": {}
+}
