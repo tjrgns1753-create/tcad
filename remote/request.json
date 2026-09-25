@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e5-equilibrium-pilot-001",
+ "request_id": "e5-equilibrium-pilot-002",
  "profile": "e5_equilibrium_pilot",
  "params": {},
- "note": "Batch 7H-E5. PLAN fixed in commit fd9881ec012465af1936326dd2a64079582d1468 before this code and request."
+ "note": "Batch 7H-E5 rerun (script bugfix, see BUGFIX_NOTE_1.md; PLAN unchanged, commit fd9881ec012465af1936326dd2a64079582d1468)."
 }
