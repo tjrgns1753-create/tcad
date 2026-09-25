@@ -1,0 +1,781 @@
+{
+ "plan_sha256_expected": "0302f032a6f8980d08ed73a4722dd46ea308a906e815278d1e36f1286e82041b",
+ "ring_half_widths_um": [
+  0.1,
+  0.05,
+  0.025,
+  0.0125
+ ],
+ "solve_calls": 0,
+ "input_mesh": {
+  "name": "wafer_volume.vtu",
+  "sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a",
+  "e1_sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a",
+  "equal": true
+ },
+ "barrier_windows": {
+  "status": "OK",
+  "value": []
+ },
+ "s0": {
+  "n_nodes": 20301,
+  "n_triangles": 40000,
+  "exact_area_cm2": "50/1"
+ },
+ "s4_baseline_reuse": {
+  "x_sha256": "f9353f60d0ac664d3fe3c6952edce20708526d38d26deccebef46600c9161a4b",
+  "y_sha256": "3818a0b5f2585e9a4a1a6c566a89a7102da3201d56ea39b9ecab6e8fe9ad0ef3",
+  "e1_x_sha256": "f9353f60d0ac664d3fe3c6952edce20708526d38d26deccebef46600c9161a4b",
+  "e1_y_sha256": "3818a0b5f2585e9a4a1a6c566a89a7102da3201d56ea39b9ecab6e8fe9ad0ef3",
+  "xy_bit_equal": true,
+  "elements_multiset_equal_to_E2_S4": true,
+  "n_triangles_reproduced": 247000,
+  "n_triangles_E2_S4": 247000,
+  "ok": true
+ },
+ "candidate_build_wall_s": 2.044038772583008,
+ "candidate_raw": {
+  "n_nodes": 39817,
+  "n_triangles": 79000
+ },
+ "geometric_invariants": {
+  "boundary_points_bit_identical": false,
+  "n_boundary_points": 600,
+  "tags_single_value": true,
+  "n_nodes_exactly_x0": 1601,
+  "x0_coords_exactly_zero": true,
+  "exact_area_cm2": "50/1",
+  "exact_area_equal_S0": true,
+  "n_duplicate_triangles": 0,
+  "n_zero_area": 0,
+  "n_inverted": 0,
+  "n_non_manifold_edges": 0,
+  "n_exact_positive_overlaps": 0,
+  "conforming": true
+ },
+ "resolution": {
+  "n_edges_near_junction": 59220,
+  "min_edge_length_near_junction_um": 0.003124713897705078,
+  "s4_target_um": 0.003124296199530363,
+  "not_coarser_than_S4": false
+ },
+ "writer_roundtrip_exact": true,
+ "vtu_sha256": "9ea67bd567caf354a6e07e80ae2724eb5e9a86d45eddfcd58800974499734ec0",
+ "import_wall_s": 0.6698169708251953,
+ "candidate_analysis": {
+  "label": "candidate",
+  "n_nodes": 39817,
+  "n_triangles": 79000,
+  "regions": [
+   "Si"
+  ],
+  "x_sha256": "beeb113a396329e20b66c7d62d7f19b32bc3afb28b5cd25c9e6d387f2a73d039",
+  "y_sha256": "14b8a34482d0c5f8bdacca41bf80ece28fd3a044c993c9c1408068f0aa1b1883",
+  "elements_sha256": "2cd0132b3de826962696bc7dfdfd1d7757c6bdd88a67248fbe88022aa79a01b9",
+  "NodeVolume_sha256": "0c06a6f7616aa056de109638ca0043f3a4f9ac67a0b802dc5fbf01211c0f0695",
+  "contacts": {
+   "Si_xmin": {
+    "n_nodes": 101,
+    "mode": "get_element_node_list(contact)",
+    "coords_sha256": "35a293eb9f530d2e45e08e54d593b7ded659ba529d11a950839eb1b55c817250"
+   },
+   "Si_xmax": {
+    "n_nodes": 101,
+    "mode": "get_element_node_list(contact)",
+    "coords_sha256": "19bfa27eecdf1a505f65792549e76f0d486587328ad23990d7c51d2c5c61a236"
+   }
+  },
+  "contact_nodes_sha256": "c1829799c257a17be26f842b43ce1a97790e7273bf0796522f5cb2a6e73853f6",
+  "exact_area_cm2": "18446741531089/36893488147419103232",
+  "area_cm2": 4.999999310821319e-07,
+  "float_triangle_area_sum_cm2": 4.999999310822594e-07,
+  "sum_NodeVolume_cm2": 5.04687430436554e-07,
+  "ratio": 1.0093750000010542,
+  "tau": 2.642762494997201e-11,
+  "excess_over_area": 0.009375000001054217,
+  "sum_F3_minus_F2_over_area": 0.009375000001054207,
+  "sum_F2_over_area": 1.0000000000000002,
+  "excess_explained_by_F3_within_tau": true,
+  "f3_max_rel_error": 2.1769025884642907e-16,
+  "f3_nodes_beyond_budget": 0,
+  "f3_all_nodes_within_budget": true,
+  "budget_max_b_i": 4.4951126594563624e-14,
+  "n_nodes_F3_gt_F2": 6000,
+  "f3_excess_nodes_all_obtuse_vertices": true,
+  "excess_node_abs_x_um": [
+   0.0125,
+   0.01875,
+   0.025,
+   0.0375,
+   0.05,
+   0.075,
+   0.1,
+   0.15
+  ],
+  "n_obtuse_exact": 3000,
+  "obtuse_vertex_abs_x_um": [
+   0.0125,
+   0.01875,
+   0.025,
+   0.0375,
+   0.05,
+   0.075,
+   0.1,
+   0.15
+  ],
+  "max_angle_deg": 116.57055791832816,
+  "quality_7hd": {
+   "n_nodes": 39817,
+   "n_triangles": 79000,
+   "classes": {
+    "acute": 0,
+    "right": 76000,
+    "obtuse": 3000
+   },
+   "min_angle_deg": 18.429655732694098,
+   "max_angle_deg": 116.57055791832816,
+   "all_ccw": false,
+   "exact_delaunay_violations_interior": 3000,
+   "boundary_gabriel_violations": 0,
+   "exact_positive_overlaps": 0,
+   "signed_edge_couple": {
+    "negative": 3000,
+    "zero": 35000,
+    "positive": 80816,
+    "min_cm": -1.767787005553742e-06
+   },
+   "signed_node_volume": {
+    "negative": 0,
+    "zero": 0,
+    "positive": 39817,
+    "min_cm2": 4.882812253299565e-14
+   },
+   "x0_column_nodes": 1601,
+   "left_contact_nodes": 101,
+   "right_contact_nodes": 101,
+   "area_exact_um2": "7205758410581640625/144115188075855872"
+  },
+  "n_delaunay_violations_exact": 3000,
+  "delaunay_violation_edge_abs_x_um": [
+   [
+    0.0125,
+    0.01875
+   ],
+   [
+    0.01875,
+    0.0125
+   ],
+   [
+    0.025,
+    0.0375
+   ],
+   [
+    0.0375,
+    0.025
+   ],
+   [
+    0.05,
+    0.075
+   ],
+   [
+    0.075,
+    0.05
+   ],
+   [
+    0.1,
+    0.15
+   ],
+   [
+    0.15,
+    0.1
+   ]
+  ],
+  "tags_all_si": true,
+  "edgecouple": {
+   "status": "READ",
+   "n_edges": 118816,
+   "n_G1_negative": 3000,
+   "devsim_at_G1_negative": {
+    "negative": 0,
+    "zero": 0,
+    "positive": 3000
+   },
+   "devsim_negative_total": 0,
+   "max_abs_EC_minus_G2_over_maxG2": 1.694057925473223e-16,
+   "max_abs_EC_minus_G1_over_maxG2": 0.7071114758911025,
+   "at_G1_negative_max_abs_EC_minus_G2_over_maxG2": 4.2351448136830576e-17,
+   "at_G1_negative_max_abs_EC_minus_G1_over_maxG2": 0.7071114758911025,
+   "NodeVolume_vs_sum_quarter_EC_L_max_rel": 2.1209623952343027e-16
+  },
+  "ring_half_widths_um": [
+   0.1,
+   0.05,
+   0.025,
+   0.0125
+  ],
+  "lineage_n_delaunay_violations": 3000
+ },
+ "doping_candidate": {
+  "label": "candidate",
+  "all_finite": true,
+  "donor_devsim_NodeVolume_cm-1": 252421840667.55045,
+  "donor_same_mesh_F2_cm-1": 250078090533.70813,
+  "donor_geometric_continuum_cm-1": 250000000000.0,
+  "acceptor_devsim_NodeVolume_cm-1": 252421839754.2879,
+  "acceptor_same_mesh_F2_cm-1": 250078090533.7081,
+  "acceptor_geometric_continuum_cm-1": 250000000000.0
+ },
+ "s4_reused_geometry": {
+  "label": "S4",
+  "n_nodes": 123861,
+  "n_triangles": 247000,
+  "regions": [
+   "Si"
+  ],
+  "x_sha256": "f9353f60d0ac664d3fe3c6952edce20708526d38d26deccebef46600c9161a4b",
+  "y_sha256": "3818a0b5f2585e9a4a1a6c566a89a7102da3201d56ea39b9ecab6e8fe9ad0ef3",
+  "elements_sha256": "4bb0d371b62f071961935d4091b29a4fe2d18a89c56c61fed873648c17fc102f",
+  "NodeVolume_sha256": "cb90e69b543caf2784b30d7712bbbeec95ec4a05f8bea7cfe6e74311f1190ccd",
+  "contacts": {
+   "Si_xmin": {
+    "n_nodes": 101,
+    "mode": "get_element_node_list(contact)",
+    "coords_sha256": "35a293eb9f530d2e45e08e54d593b7ded659ba529d11a950839eb1b55c817250"
+   },
+   "Si_xmax": {
+    "n_nodes": 101,
+    "mode": "get_element_node_list(contact)",
+    "coords_sha256": "19bfa27eecdf1a505f65792549e76f0d486587328ad23990d7c51d2c5c61a236"
+   }
+  },
+  "contact_nodes_sha256": "c1829799c257a17be26f842b43ce1a97790e7273bf0796522f5cb2a6e73853f6",
+  "exact_area_cm2": "18446741531089/36893488147419103232",
+  "area_cm2": 4.999999310821319e-07,
+  "float_triangle_area_sum_cm2": 4.999999310835993e-07,
+  "sum_NodeVolume_cm2": 5.291259043686336e-07,
+  "ratio": 1.0582519546022044,
+  "tau": 8.278851326793283e-11,
+  "excess_over_area": 0.05825195460220455,
+  "sum_F3_minus_F2_over_area": 0.058251954602204704,
+  "sum_F2_over_area": 1.0,
+  "excess_explained_by_F3_within_tau": true,
+  "f3_max_rel_error": 4.0065261538041125e-16,
+  "f3_nodes_beyond_budget": 0,
+  "f3_all_nodes_within_budget": true,
+  "budget_max_b_i": 4.408290408307922e-13,
+  "n_nodes_F3_gt_F2": 3200,
+  "f3_excess_nodes_all_obtuse_vertices": true,
+  "excess_node_abs_x_um": [
+   0.1,
+   0.15
+  ],
+  "n_obtuse_exact": 3000,
+  "obtuse_vertex_abs_x_um": [
+   0.1,
+   0.15
+  ],
+  "max_angle_deg": 133.1528691874165,
+  "quality_7hd": {
+   "n_nodes": 123861,
+   "n_triangles": 247000,
+   "classes": {
+    "acute": 0,
+    "right": 244000,
+    "obtuse": 3000
+   },
+   "min_angle_deg": 1.8473444636057181,
+   "max_angle_deg": 133.1528691874165,
+   "all_ccw": false,
+   "exact_delaunay_violations_interior": 200,
+   "boundary_gabriel_violations": 0,
+   "exact_positive_overlaps": 0,
+   "signed_edge_couple": {
+    "negative": 200,
+    "zero": 121800,
+    "positive": 248860,
+    "min_cm": -3.3146315048021876e-06
+   },
+   "signed_node_volume": {
+    "negative": 200,
+    "zero": 0,
+    "positive": 123661,
+    "min_cm2": -2.3315422358870936e-12
+   },
+   "x0_column_nodes": 1601,
+   "left_contact_nodes": 101,
+   "right_contact_nodes": 101,
+   "area_exact_um2": "7205758410581640625/144115188075855872"
+  },
+  "n_delaunay_violations_exact": 200,
+  "delaunay_violation_edge_abs_x_um": [
+   [
+    0.1,
+    0.15
+   ],
+   [
+    0.15,
+    0.1
+   ]
+  ],
+  "tags_all_si": true,
+  "edgecouple": {
+   "status": "READ",
+   "n_edges": 370860,
+   "n_G1_negative": 200,
+   "devsim_at_G1_negative": {
+    "negative": 0,
+    "zero": 0,
+    "positive": 200
+   },
+   "devsim_negative_total": 0,
+   "max_abs_EC_minus_G2_over_maxG2": 1.3182518972088091e-16,
+   "max_abs_EC_minus_G1_over_maxG2": 1.031723567286866,
+   "at_G1_negative_max_abs_EC_minus_G2_over_maxG2": 6.591259486044046e-17,
+   "at_G1_negative_max_abs_EC_minus_G1_over_maxG2": 1.031723567286866,
+   "NodeVolume_vs_sum_quarter_EC_L_max_rel": 2.670979513040354e-16
+  },
+  "k": 4,
+  "identity": {
+   "I1": true,
+   "I2": true,
+   "I2_xy_bit_equal": true,
+   "I2_element_mode": "multiset_of_sorted_triples",
+   "I3": true
+  },
+  "lineage": {
+   "obtuse_patterns": [
+    {
+     "origin_class": "right",
+     "kinds": [
+      "green",
+      "green",
+      "green",
+      "green"
+     ],
+     "count": 3000
+    }
+   ],
+   "obtuse_distinct_origins": 200,
+   "obtuse_examples": [
+    {
+     "origin_S0_triangle": 594,
+     "origin_class": "right",
+     "origin_vertices_um": [
+      [
+       -0.15000000596046448,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.900000095367432
+      ]
+     ],
+     "kinds": [
+      "green",
+      "green",
+      "green",
+      "green"
+     ]
+    },
+    {
+     "origin_S0_triangle": 594,
+     "origin_class": "right",
+     "origin_vertices_um": [
+      [
+       -0.15000000596046448,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.900000095367432
+      ]
+     ],
+     "kinds": [
+      "green",
+      "green",
+      "green",
+      "green"
+     ]
+    },
+    {
+     "origin_S0_triangle": 594,
+     "origin_class": "right",
+     "origin_vertices_um": [
+      [
+       -0.15000000596046448,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.900000095367432
+      ]
+     ],
+     "kinds": [
+      "green",
+      "green",
+      "green",
+      "green"
+     ]
+    },
+    {
+     "origin_S0_triangle": 594,
+     "origin_class": "right",
+     "origin_vertices_um": [
+      [
+       -0.15000000596046448,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.900000095367432
+      ]
+     ],
+     "kinds": [
+      "green",
+      "green",
+      "green",
+      "green"
+     ]
+    },
+    {
+     "origin_S0_triangle": 594,
+     "origin_class": "right",
+     "origin_vertices_um": [
+      [
+       -0.15000000596046448,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.900000095367432
+      ]
+     ],
+     "kinds": [
+      "green",
+      "green",
+      "green",
+      "green"
+     ]
+    },
+    {
+     "origin_S0_triangle": 594,
+     "origin_class": "right",
+     "origin_vertices_um": [
+      [
+       -0.15000000596046448,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.949999809265137
+      ],
+      [
+       -0.10000000149011612,
+       -4.900000095367432
+      ]
+     ],
+     "kinds": [
+      "green",
+      "green",
+      "green",
+      "green"
+     ]
+    }
+   ],
+   "violation_patterns": [
+    {
+     "t1": [
+      "right",
+      [
+       "unchanged",
+       "unchanged",
+       "unchanged",
+       "unchanged"
+      ]
+     ],
+     "t2": [
+      "right",
+      [
+       "green",
+       "green",
+       "green",
+       "green"
+      ]
+     ],
+     "count": 200
+    }
+   ],
+   "violation_examples": [
+    {
+     "edge": [
+      97,
+      299
+     ],
+     "t1": {
+      "origin_S0_triangle": 595,
+      "origin_class": "right",
+      "origin_vertices_um": [
+       [
+        -0.15000000596046448,
+        -4.949999809265137
+       ],
+       [
+        -0.10000000149011612,
+        -4.900000095367432
+       ],
+       [
+        -0.15000000596046448,
+        -4.900000095367432
+       ]
+      ],
+      "kinds": [
+       "unchanged",
+       "unchanged",
+       "unchanged",
+       "unchanged"
+      ]
+     },
+     "t2": {
+      "origin_S0_triangle": 594,
+      "origin_class": "right",
+      "origin_vertices_um": [
+       [
+        -0.15000000596046448,
+        -4.949999809265137
+       ],
+       [
+        -0.10000000149011612,
+        -4.949999809265137
+       ],
+       [
+        -0.10000000149011612,
+        -4.900000095367432
+       ]
+      ],
+      "kinds": [
+       "green",
+       "green",
+       "green",
+       "green"
+      ]
+     }
+    },
+    {
+     "edge": [
+      98,
+      19996
+     ],
+     "t1": {
+      "origin_S0_triangle": 195,
+      "origin_class": "right",
+      "origin_vertices_um": [
+       [
+        -0.15000000596046448,
+        -5.0
+       ],
+       [
+        -0.10000000149011612,
+        -4.949999809265137
+       ],
+       [
+        -0.15000000596046448,
+        -4.949999809265137
+       ]
+      ],
+      "kinds": [
+       "unchanged",
+       "unchanged",
+       "unchanged",
+       "unchanged"
+      ]
+     },
+     "t2": {
+      "origin_S0_triangle": 194,
+      "origin_class": "right",
+      "origin_vertices_um": [
+       [
+        -0.15000000596046448,
+        -5.0
+       ],
+       [
+        -0.10000000149011612,
+        -5.0
+       ],
+       [
+        -0.10000000149011612,
+        -4.949999809265137
+       ]
+      ],
+      "kinds": [
+       "green",
+       "green",
+       "green",
+       "green"
+      ]
+     }
+    },
+    {
+     "edge": [
+      102,
+      304
+     ],
+     "t1": {
+      "origin_S0_triangle": 604,
+      "origin_class": "right",
+      "origin_vertices_um": [
+       [
+        0.10000000149011612,
+        -4.949999809265137
+       ],
+       [
+        0.15000000596046448,
+        -4.949999809265137
+       ],
+       [
+        0.15000000596046448,
+        -4.900000095367432
+       ]
+      ],
+      "kinds": [
+       "unchanged",
+       "unchanged",
+       "unchanged",
+       "unchanged"
+      ]
+     },
+     "t2": {
+      "origin_S0_triangle": 605,
+      "origin_class": "right",
+      "origin_vertices_um": [
+       [
+        0.10000000149011612,
+        -4.949999809265137
+       ],
+       [
+        0.15000000596046448,
+        -4.900000095367432
+       ],
+       [
+        0.10000000149011612,
+        -4.900000095367432
+       ]
+      ],
+      "kinds": [
+       "green",
+       "green",
+       "green",
+       "green"
+      ]
+     }
+    },
+    {
+     "edge": [
+      103,
+      20001
+     ],
+     "t1": {
+      "origin_S0_triangle": 204,
+      "origin_class": "right",
+      "origin_vertices_um": [
+       [
+        0.10000000149011612,
+        -5.0
+       ],
+       [
+        0.15000000596046448,
+        -5.0
+       ],
+       [
+        0.15000000596046448,
+        -4.949999809265137
+       ]
+      ],
+      "kinds": [
+       "unchanged",
+       "unchanged",
+       "unchanged",
+       "unchanged"
+      ]
+     },
+     "t2": {
+      "origin_S0_triangle": 205,
+      "origin_class": "right",
+      "origin_vertices_um": [
+       [
+        0.10000000149011612,
+        -5.0
+       ],
+       [
+        0.15000000596046448,
+        -4.949999809265137
+       ],
+       [
+        0.10000000149011612,
+        -4.949999809265137
+       ]
+      ],
+      "kinds": [
+       "green",
+       "green",
+       "green",
+       "green"
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "doping_S4_reused": {
+  "label": "S4 (reused from E1/E2, not recomputed)",
+  "donor_devsim_NodeVolume_cm-1": 264641080672.59766,
+  "donor_same_mesh_F2_cm-1": 250078090533.7081,
+  "donor_geometric_continuum_cm-1": 250000000000.0,
+  "acceptor_devsim_NodeVolume_cm-1": 264641073681.32043,
+  "acceptor_same_mesh_F2_cm-1": 250078090533.70807,
+  "acceptor_geometric_continuum_cm-1": 250000000000.0
+ },
+ "candidate": {
+  "verdict": "CANDIDATE_REJECTED",
+  "checks": {
+   "input_identity": true,
+   "s4_baseline_reuse": true,
+   "boundary_bit_identical": false,
+   "tags_single_value": true,
+   "x0_coords_exact": true,
+   "exact_area_equal_S0": true,
+   "conforming_no_duplicate_zero_inverted": true,
+   "no_exact_overlaps": true,
+   "resolution_not_coarser_than_S4": false,
+   "ratio_within_tau": false,
+   "all_finite": true,
+   "devices_left_empty": true
+  },
+  "failed": [
+   "boundary_bit_identical",
+   "resolution_not_coarser_than_S4",
+   "ratio_within_tau"
+  ],
+  "note": "geometry and DEVSIM's own default integration weight ONLY -- not evidence of electrical accuracy, 2D mesh convergence, or applicability beyond the E1 single-Si planar-wafer scope (PLAN section 0)."
+ },
+ "devices_left": []
+}

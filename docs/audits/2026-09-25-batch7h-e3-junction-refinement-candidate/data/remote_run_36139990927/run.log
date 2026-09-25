@@ -1,0 +1,29 @@
+[e3] GUI defaults (E1): {'grid_delta_um': 0.05, 'x_extent_um': 10.0, 'y_extent_um': 8.0, 'silicon_depth_um': 5.0, 'pr_thickness_um': 1.0, 'mask_spans_um': [], 'doping': {'region': 'Si', 'junction_axis': 'x', 'junction_position_um': 0.0, 'donor_conc_cm3': 1e+18, 'acceptor_conc_cm3': 1e+18, 'chemical_state': 'ACTIVE'}, 'barrier': {'barrier_material': 'SiO2', 'axis': 'x', 'min_barrier_thickness_um': 0.0}, 'import': {'mesh_name': 'gui_measure_mesh', 'device_name': 'gui_measure_device', 'contact_regions': ['Si'], 'contact_axis': 'x', 'length_scale_to_cm': 0.0001, 'refine_near_um': 0.0, 'refine_axis': 'x'}, 'measure': {'source_pin': 'max', 'voltage': 0.3, 'gnd_voltage': 0.0}}
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e3      0.5s] input mesh equal to E1: True
+[e3      4.2s] S4 baseline reuse ok: True
+[e3      6.3s] candidate raw: 39817 nodes, 79000 triangles (2.0s)
+[e3     17.7s] invariants: True area_eq_S0: True resolution: not_coarser=False
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 79000 Triangles.
+Physical group name Si has 118816 Lines.
+Physical group name Si has 39817 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e3_candidate_device has 39817 coordinates with max index 39816
+Region Si has 39817 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e3     19.1s] import + read: 0.7s, 39817 DEVSIM nodes
+[e3     54.4s] candidate verdict CANDIDATE_REJECTED failed=['boundary_bit_identical', 'resolution_not_coarser_than_S4', 'ratio_within_tau']
+[e3     54.4s] done: error=False devices_left=[] solve_calls=0
+
+[e3] stage_e3 rc=0 in 54.6 s
+[e3] outputs: ['candidate.npz', 'candidate.vtu', 'e3_result.json', 'wafer_volume.vtu']
