@@ -167,7 +167,18 @@ not asserted as "better cancellation behaviour."
 ## 4. Final verdict, re-bounded
 
 **Claims that remain supportable, restated precisely:**
-* All 12 `devsim.solve()` calls (both runs) report `converged: true` from DEVSIM's own `info=True` result.
+* *(Corrected 2026-09-28; the original bullet read "All 12 `devsim.solve()` calls (both runs) report
+  `converged: true`", which was wrong — the two runs have different counts and must not be pooled.)* Recounted
+  directly from each run's six per-run `e5_*.json` `solve_calls` arrays (`e5_result.json` excluded, it is an aggregate
+  of the same calls):
+
+  | run | per-run files | recorded solve calls | `converged: true` |
+  |---|---|---|---|
+  | `remote_run_36149228558` (first, FAILED) | 6 | 6 (D2D_S0: 2, D2D_S12: 0, each 1D: 1) | 2 (both D2D_S0) |
+  | `remote_run_36151109973` (clean rerun) | 6 | 12 (2 per file) | 12 |
+
+  Only the clean rerun's 12 calls all report `converged: true` from DEVSIM's own `info=True` result. `ERRATUM_1.md`
+  F1's "All 12" (line 271, not edited) likewise refers to the clean rerun only.
 * The Poisson equation's own residual (`PotentialEquation`, e.g. D2D S0: `rel=2.412e-07` after 10 iterations,
   `data/remote_run_36151109973/.../e5_D2D_S0.json` `solve_calls[0]`) is a real, non-trivial convergence result — this
   equation is not subject to section 1's initialization-identity argument (that argument applies only to the DD
