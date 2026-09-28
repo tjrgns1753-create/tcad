@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e5-equilibrium-pilot-002",
- "profile": "e5_equilibrium_pilot",
+ "request_id": "e6a-mesh-family-001",
+ "profile": "e6a_mesh_family",
  "params": {},
- "note": "Batch 7H-E5 rerun (script bugfix, see BUGFIX_NOTE_1.md; PLAN unchanged, commit fd9881ec012465af1936326dd2a64079582d1468)."
+ "note": "Batch 7H-E6A. PLAN fixed in commit f9a9cfaa175d9162072ff6b51b8ae8e81b83642c (PLAN.md LF sha256 5dcda927...) before this code and request."
 }
