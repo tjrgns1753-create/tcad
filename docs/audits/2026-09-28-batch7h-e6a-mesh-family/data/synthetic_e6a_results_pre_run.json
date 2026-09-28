@@ -1,0 +1,146 @@
+{
+ "LLUR_L3": {
+  "counts": [
+   1782,
+   947
+  ],
+  "predicted": [
+   1782,
+   947
+  ],
+  "counts_ok": true,
+  "construction_ok": true,
+  "exact_ok": true,
+  "resolution_ok": true,
+  "n_obtuse": 0,
+  "n_template_cells": 42,
+  "delta_L_um": 1.432746648788799e-06,
+  "x0_max_dev_um": 8.940696715961649e-09,
+  "unreferenced": 0,
+  "mutations_caught": {
+   "flip_orientation": true,
+   "delete_interior_triangle": true,
+   "duplicate_triangle": true,
+   "hanging_node": true,
+   "obtuse_one_ulp": true,
+   "overlapping_triangle": true,
+   "boundary_gap": true
+  }
+ },
+ "LLUR_L4": {
+  "counts": [
+   6582,
+   3381
+  ],
+  "predicted": [
+   6582,
+   3381
+  ],
+  "counts_ok": true,
+  "construction_ok": true,
+  "exact_ok": true,
+  "resolution_ok": true,
+  "n_obtuse": 0,
+  "n_template_cells": 90,
+  "delta_L_um": 1.908466219902212e-06,
+  "x0_max_dev_um": 1.1920928954904653e-08,
+  "unreferenced": 0,
+  "x0_nested_in_previous": true,
+  "fine_x_nested_in_previous": true,
+  "bit_identical_to_E4_build_candidate": true
+ },
+ "LLUR_L5": {
+  "counts": [
+   25398,
+   12855
+  ],
+  "predicted": [
+   25398,
+   12855
+  ],
+  "counts_ok": true,
+  "construction_ok": true,
+  "exact_ok": true,
+  "resolution_ok": true,
+  "n_obtuse": 0,
+  "n_template_cells": 186,
+  "delta_L_um": 2.384744584560481e-06,
+  "x0_max_dev_um": 8.94069671639533e-09,
+  "unreferenced": 0,
+  "x0_nested_in_previous": true,
+  "fine_x_nested_in_previous": true
+ },
+ "LRUL_L3": {
+  "counts": [
+   1782,
+   947
+  ],
+  "predicted": [
+   1782,
+   947
+  ],
+  "counts_ok": true,
+  "construction_ok": true,
+  "exact_ok": true,
+  "resolution_ok": true,
+  "n_obtuse": 0,
+  "n_template_cells": 42,
+  "delta_L_um": 1.432746648788799e-06,
+  "x0_max_dev_um": 8.940696715961649e-09,
+  "unreferenced": 0,
+  "mutations_caught": {
+   "flip_orientation": true,
+   "delete_interior_triangle": true,
+   "duplicate_triangle": true,
+   "hanging_node": true,
+   "obtuse_one_ulp": true,
+   "overlapping_triangle": true,
+   "boundary_gap": true
+  }
+ },
+ "LRUL_L4": {
+  "counts": [
+   6582,
+   3381
+  ],
+  "predicted": [
+   6582,
+   3381
+  ],
+  "counts_ok": true,
+  "construction_ok": true,
+  "exact_ok": true,
+  "resolution_ok": true,
+  "n_obtuse": 0,
+  "n_template_cells": 90,
+  "delta_L_um": 1.908466219902212e-06,
+  "x0_max_dev_um": 1.1920928954904653e-08,
+  "unreferenced": 0,
+  "x0_nested_in_previous": true,
+  "fine_x_nested_in_previous": true,
+  "bit_identical_to_E4_build_candidate": true
+ },
+ "LRUL_L5": {
+  "counts": [
+   25398,
+   12855
+  ],
+  "predicted": [
+   25398,
+   12855
+  ],
+  "counts_ok": true,
+  "construction_ok": true,
+  "exact_ok": true,
+  "resolution_ok": true,
+  "n_obtuse": 0,
+  "n_template_cells": 186,
+  "delta_L_um": 2.384744584560481e-06,
+  "x0_max_dev_um": 8.94069671639533e-09,
+  "unreferenced": 0,
+  "x0_nested_in_previous": true,
+  "fine_x_nested_in_previous": true
+ },
+ "L2_rejected": true,
+ "ALL_OK": true
+}
