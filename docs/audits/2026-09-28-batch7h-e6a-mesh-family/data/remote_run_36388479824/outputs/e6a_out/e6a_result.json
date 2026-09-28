@@ -1,0 +1,174 @@
+{
+ "plan_sha256_LF_expected": "5dcda927588941a2b88713434ab841e6346180e82ee33793336968d1981a87ba",
+ "runner": {
+  "cpu_count": 4,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "RUNNER_OS": "Windows",
+  "RUNNER_ARCH": "X64",
+  "RUNNER_ENVIRONMENT": "github-hosted",
+  "ImageOS": "win25-vs2026",
+  "ImageVersion": "20260922.246.2",
+  "total_physical_bytes": 17174360064
+ },
+ "envelopes": {
+  "L3": {
+   "T": 95400,
+   "N": 48033,
+   "memory_bytes": 1513686016,
+   "time_s": 178.51080657791698
+  },
+  "L4": {
+   "T": 255400,
+   "N": 128067,
+   "memory_bytes": 2251000832,
+   "time_s": 477.90000000000003
+  },
+  "L5": {
+   "T": 882600,
+   "N": 441733,
+   "memory_bytes": 5141206016,
+   "time_s": 1651.5056382145656
+  }
+ },
+ "inputs": {
+  "docs/audits/2026-09-28-batch7h-e6a-mesh-family/PLAN.md": {
+   "kind": "text",
+   "sha256": "5dcda927588941a2b88713434ab841e6346180e82ee33793336968d1981a87ba",
+   "expected": "5dcda927588941a2b88713434ab841e6346180e82ee33793336968d1981a87ba",
+   "equal": true
+  },
+  "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu": {
+   "kind": "binary",
+   "sha256": "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297",
+   "expected": "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297",
+   "equal": true
+  },
+  "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.npz": {
+   "kind": "binary",
+   "sha256": "740a643ed6c965b11ea179993eff2701d87b3c0a9a5990ace71fb2e5df482329",
+   "expected": "740a643ed6c965b11ea179993eff2701d87b3c0a9a5990ace71fb2e5df482329",
+   "equal": true
+  },
+  "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/e4_result.json": {
+   "kind": "text",
+   "sha256": "3fdf069717fff85b28602bc55ae1294e836aa4d6baf5c223c0b5420de97d2299",
+   "expected": "3fdf069717fff85b28602bc55ae1294e836aa4d6baf5c223c0b5420de97d2299",
+   "equal": true
+  }
+ },
+ "stages": {
+  "regen": {
+   "rc": 0,
+   "wall_s": 0.6588196754455566
+  },
+  "L3": {
+   "rc": 0,
+   "wall_s": 14.659793376922607
+  },
+  "L4": {
+   "rc": 0,
+   "wall_s": 39.36684560775757
+  },
+  "L5": {
+   "rc": 0,
+   "wall_s": 125.92164969444275
+  }
+ },
+ "labels": {
+  "L3": "PASS",
+  "L4": "PASS",
+  "L5": "PASS"
+ },
+ "l5_measured_gate": {
+  "run": true,
+  "peak_L3": 193695744,
+  "peak_L4": 459726848,
+  "mem_pred_proportional": 1588703665.0148785,
+  "mem_pred_linear": 1502568775.6799998,
+  "mem_pred": 1588703665.0148785,
+  "mem_limit": 8589934592,
+  "t_L4_s": 39.36684560775757,
+  "t_pred_L5_s": 204.0633003136658,
+  "elapsed_s": 54.71391153335571,
+  "time_limit_s": 7200.0
+ },
+ "cross_level": {
+  "L3_in_L4": {
+   "x0_y_nested": true,
+   "fine_x_nested": true
+  },
+  "L4_in_L5": {
+   "x0_y_nested": true,
+   "fine_x_nested": true
+  }
+ },
+ "level_summary": {
+  "L3": {
+   "pass": true,
+   "failed_checks": [],
+   "stop": null,
+   "error": null,
+   "memory": {
+    "peak_working_set_bytes": 199802880,
+    "peak_private_bytes": 193695744,
+    "working_set_bytes": 74444800
+   },
+   "wall_s": 14.659793376922607,
+   "solve_calls": 0
+  },
+  "L4": {
+   "pass": true,
+   "failed_checks": [],
+   "stop": null,
+   "error": null,
+   "memory": {
+    "peak_working_set_bytes": 451543040,
+    "peak_private_bytes": 459726848,
+    "working_set_bytes": 85426176
+   },
+   "wall_s": 39.36684560775757,
+   "solve_calls": 0
+  },
+  "L5": {
+   "pass": true,
+   "failed_checks": [],
+   "stop": null,
+   "error": null,
+   "memory": {
+    "peak_working_set_bytes": 1364762624,
+    "peak_private_bytes": 1425637376,
+    "working_set_bytes": 78209024
+   },
+   "wall_s": 125.92164969444275,
+   "solve_calls": 0
+  }
+ },
+ "total_wall_s": 180.64824151992798,
+ "output_files": {
+  "level_L3.json": "ec3230bd7316cee41a9199ea2f02f0fb3dc705fdf956ece130f7720aa3feab83",
+  "level_L3.npz": "d61a1555b3daf5aa597dc02f4aa71e454c5adaeb3d08766964f93f269d4b24bf",
+  "level_L3.vtu": "5820d1d27443c0862df3b14634aa0fa8753f20895e2204a650256e98862a1734",
+  "level_L4.json": "c67aa7c2f397056840645131914e4ed168be0916b4cd6839d698523c3b781501",
+  "level_L4.npz": "d274564968f2de0501fb932c474e127d0ae1d38878d66361b3e93add87ece9d4",
+  "level_L4.vtu": "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297",
+  "level_L5.json": "425e956b40f60650b4b02d69159d87d020de952e2bdbdb215ddaff75ed8e6915",
+  "level_L5.npz": "7d56a93b2dd96e938eab059dbf1e3db605b8371a772e7f8061bc20b293b795ee",
+  "level_L5.vtu": "907f688e71af3bc0ebd15ea20bfbcd9fec5e9ade1d867e50f0b24da6c48e8c70",
+  "regen.json": "fe1ca0ac7d82ed92e8e0aedbe503434e08718814c57da9b95812b0a3f66388ee",
+  "wafer_volume.vtu": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a"
+ },
+ "missing_expected_files": [],
+ "verdict": {
+  "verdict": "GEOMETRY_FAMILY_CANDIDATE_ONLY",
+  "labels": {
+   "L3": "PASS",
+   "L4": "PASS",
+   "L5": "PASS"
+  },
+  "stop": null,
+  "cross_level_nested": true,
+  "missing_expected_files": [],
+  "note": "geometry and DEVSIM default integration weight only; not Poisson/current mesh convergence, not current accuracy, not biased I-V, not production step-junction or process-order support"
+ }
+}

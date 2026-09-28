@@ -1,0 +1,243 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-28T06:51:31.029342+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6a-mesh-family-001",
+  "profile": "e6a_mesh_family",
+  "params": {},
+  "note": "Batch 7H-E6A. PLAN fixed in commit f9a9cfaa175d9162072ff6b51b8ae8e81b83642c (PLAN.md LF sha256 5dcda927...) before this code and request."
+ },
+ "profile": "e6a_mesh_family",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/PLAN.md",
+   "sha256": "1165041dba74409cc66a00a0359d934cb69cf038d3f08f21b72d05766f1ce372",
+   "bytes": 16323
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/PLAN.sha256",
+   "sha256": "134f5573a19a63b4039b2cdbb072efbaa2de6ac52118a37f946bc39254cb48f4",
+   "bytes": 75
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/run_e6a.py",
+   "sha256": "016e48ffc46cb0a843e6487512cfb290132a1eb99cb2d22b3ab0af13fc779f4a",
+   "bytes": 11688
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/stage_e6a.py",
+   "sha256": "c78a1cd201a05b83d7c5b51726eb39ffaf1fbaab2c30d2a2fbd5794314ed42ba",
+   "bytes": 15762
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/family_e6a.py",
+   "sha256": "a87efad3c3e24e9d42c6e5fa1e97ed6464b15ff3501a2eb3ce96f3d52e3e3c87",
+   "bytes": 18769
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/scripts/quadtree_e4.py",
+   "sha256": "273ed87535468688db424794cc40b83841410ce00c6b9e43b0ff6ab994612b38",
+   "bytes": 10075
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu",
+   "sha256": "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297",
+   "bytes": 2413965
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.npz",
+   "sha256": "740a643ed6c965b11ea179993eff2701d87b3c0a9a5990ace71fb2e5df482329",
+   "bytes": 2449630
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/e4_result.json",
+   "sha256": "0d3dfcd46be8437557afeb487a1d44ba1bcc2be92daa1a811f8c9e6d451dccc4",
+   "bytes": 11999
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/stage_e2.py",
+   "sha256": "4cd382615607952e27764404d4d8d042edd6c75b40af3dea56f6ab64cbd18913",
+   "bytes": 23889
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/trace_refine_e2.py",
+   "sha256": "95959ad8003f59f58e3d0cbe6e80029b1b82eee9f685b4d5bea8d7358ba8815c",
+   "bytes": 6682
+  },
+  {
+   "path": "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/verdicts_e2.py",
+   "sha256": "b99e9e1c4bb13f0c70ebc95250879b502213927de5e1f1111b7f83c1a30108d9",
+   "bytes": 4042
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
+   "sha256": "1de514d5462281a8c09b4029ce60a7f565f12e55c6c05b50c1406ae27fddde7a",
+   "bytes": 2905
+  },
+  {
+   "path": "docs/audits/2026-09-23-batch7h-b-nodevolume-mechanism/scripts/formulas.py",
+   "sha256": "f1e443b9165e7bb9cdfeb424e093fa1b441529d18ed19c0aa8957fb503e37e37",
+   "bytes": 3509
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "c907e6e7a086bfc6767f1cb23468625896fac47986dbd01f145766c2793cd62d",
+   "bytes": 59336
+  },
+  {
+   "path": "tcad/device/devsim/mesh_refine.py",
+   "sha256": "dd95968966a6217b06943d2d26440ca45021cae9a51993fd2fe836e24836fe2e",
+   "bytes": 9594
+  },
+  {
+   "path": "tcad/mesh/viennaps_adapter.py",
+   "sha256": "b1a7eb5ae219a794e8a807c169621331a03e08dcae5240fd3428421342f2b8eb",
+   "bytes": 3680
+  },
+  {
+   "path": "tcad/physics/doping.py",
+   "sha256": "5bca505bb74632e590b14eab74ea4a77eb0feebeb9996e235fa0e013b95829d1",
+   "bytes": 18912
+  },
+  {
+   "path": "tcad/backends/viennaps/io.py",
+   "sha256": "22f3a7f6ab47fc4d7ab215958115a9cd9c170a728e49091a53c982af8b299d61",
+   "bytes": 44738
+  },
+  {
+   "path": "tcad/backends/viennaps/session.py",
+   "sha256": "84f7883612da81b09b6a3e7fe85a64985a0e200a3f2a9d87846eb0f2c2b3a7ec",
+   "bytes": 28025
+  }
+ ],
+ "request_sha256": "af50947b7634fbffb6fca35dc65f7d3ef871bcddf282ec0c5dd757cfea262257",
+ "source": {
+  "github_sha": "17b444f1fed3fb75b97c40162cdf607e53bd8b09",
+  "git_head": "17b444f1fed3fb75b97c40162cdf607e53bd8b09",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36388479824",
+  "run_number": "11",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": true,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/run_e6a.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-28T06:54:32.767221+00:00",
+ "duration_s": 181.738,
+ "outputs": [
+  {
+   "path": "e6a_out/e6a_result.json",
+   "bytes": 5177,
+   "sha256": "882ed0fbc87f5ede0fcdaacafb5eaffab0d6915aee3b897509e05b8ff30ed3bc"
+  },
+  {
+   "path": "e6a_out/level_L3.json",
+   "bytes": 10120,
+   "sha256": "ec3230bd7316cee41a9199ea2f02f0fb3dc705fdf956ece130f7720aa3feab83"
+  },
+  {
+   "path": "e6a_out/level_L4.json",
+   "bytes": 10888,
+   "sha256": "c67aa7c2f397056840645131914e4ed168be0916b4cd6839d698523c3b781501"
+  },
+  {
+   "path": "e6a_out/level_L5.json",
+   "bytes": 10742,
+   "sha256": "425e956b40f60650b4b02d69159d87d020de952e2bdbdb215ddaff75ed8e6915"
+  },
+  {
+   "path": "e6a_out/regen.json",
+   "bytes": 1409,
+   "sha256": "fe1ca0ac7d82ed92e8e0aedbe503434e08718814c57da9b95812b0a3f66388ee"
+  },
+  {
+   "path": "e6a_out/level_L3.npz",
+   "bytes": 1335442,
+   "sha256": "d61a1555b3daf5aa597dc02f4aa71e454c5adaeb3d08766964f93f269d4b24bf"
+  },
+  {
+   "path": "e6a_out/level_L4.npz",
+   "bytes": 3839613,
+   "sha256": "d274564968f2de0501fb932c474e127d0ae1d38878d66361b3e93add87ece9d4"
+  },
+  {
+   "path": "e6a_out/level_L5.npz",
+   "bytes": 13765907,
+   "sha256": "7d56a93b2dd96e938eab059dbf1e3db605b8371a772e7f8061bc20b293b795ee"
+  },
+  {
+   "path": "e6a_out/level_L3.vtu",
+   "bytes": 864703,
+   "sha256": "5820d1d27443c0862df3b14634aa0fa8753f20895e2204a650256e98862a1734"
+  },
+  {
+   "path": "e6a_out/level_L4.vtu",
+   "bytes": 2413965,
+   "sha256": "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297"
+  },
+  {
+   "path": "e6a_out/level_L5.vtu",
+   "bytes": 8562425,
+   "sha256": "907f688e71af3bc0ebd15ea20bfbcd9fec5e9ade1d867e50f0b24da6c48e8c70"
+  },
+  {
+   "path": "e6a_out/wafer_volume.vtu",
+   "bytes": 337128,
+   "sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile. The wafer mesh is regenerated by ViennaPS and hash-gated (cfae97d4...); every level is rebuilt.",
+ "log": {
+  "file": "run.log",
+  "sha256": "ae207d6480f16fa1494840476b14268608f5b967238cfb39124929663dcdc684",
+  "bytes": 4175
+ },
+ "redactions": {}
+}

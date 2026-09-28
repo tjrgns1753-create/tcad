@@ -1,0 +1,394 @@
+{
+ "mode": "level",
+ "L": 3,
+ "solve_calls": 0,
+ "checks": {
+  "input_identity": true,
+  "construction_counts": true,
+  "no_unreferenced_nodes": true,
+  "x_lines_are_mid32_recursion": true,
+  "x_lines_strictly_ordered": true,
+  "sl_points_prefix_bit_identical": true,
+  "fine_rows_identical_to_S_L": true,
+  "base_rows_identical_to_S_L": true,
+  "base_region_equal_S0_coordinate_triples": true,
+  "hanging_midpoints_owned": true,
+  "B1_orientation_positive": true,
+  "B2_no_obtuse": true,
+  "B3_no_duplicates": true,
+  "B4_tiling_T2": true,
+  "B4_tiling_T3": true,
+  "B5_area_equals_rect": true,
+  "B5_area_equals_S0": true,
+  "B6_boundary_points_lost_0": true,
+  "B6_bbox_equal": true,
+  "B6_contacts_equal_S0": true,
+  "B6_tags": true,
+  "C_resolution": true,
+  "writer_roundtrip_exact": true,
+  "D2_coordinates_equal_scaled_construction": true,
+  "D2_elements_count": true,
+  "D2_regions": true,
+  "D2_contacts": true,
+  "D3_ratio_within_tau": true,
+  "D4_nodevolume_eq_F3_within_budget": true,
+  "all_finite": true,
+  "devices_left_empty": true,
+  "solve_calls_0": true
+ },
+ "wall_s": {
+  "production_refine": 1.4054529666900635,
+  "build": 0.03367209434509277,
+  "exact_checks": 0.6276915073394775,
+  "resolution": 0.2624247074127197,
+  "import_read": 1.4597280025482178,
+  "nodevolume": 9.912009954452515
+ },
+ "wafer_sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a",
+ "build": {
+  "L": 3,
+  "sl_triangles": 91800,
+  "kept_fine": 51200,
+  "kept_base": 38400,
+  "removed_strip": 2200,
+  "new_nodes": 1804,
+  "new_triangles": 5800,
+  "n_nodes": 48033,
+  "n_triangles": 95400,
+  "unreferenced_nodes": 0,
+  "sl_tags_single_value": true,
+  "x_lines_um": {
+   "+": {
+    "X01": 0.10000000149011612,
+    "X015": 0.15000000596046448,
+    "X02": 0.20000000298023224,
+    "m": [
+     0.15000000596046448,
+     0.125,
+     0.11249999701976776
+    ]
+   },
+   "-": {
+    "X01": -0.10000000149011612,
+    "X015": -0.15000000596046448,
+    "X02": -0.20000000298023224,
+    "m": [
+     -0.15000000596046448,
+     -0.125,
+     -0.11249999701976776
+    ]
+   }
+  },
+  "columns": {
+   "+": [
+    {
+     "x": [
+      0.10000000149011612,
+      0.11249999701976776
+     ],
+     "level": 2,
+     "kind": "T"
+    },
+    {
+     "x": [
+      0.11249999701976776,
+      0.125
+     ],
+     "level": 2,
+     "kind": "R"
+    },
+    {
+     "x": [
+      0.125,
+      0.15000000596046448
+     ],
+     "level": 1,
+     "kind": "T"
+    },
+    {
+     "x": [
+      0.15000000596046448,
+      0.20000000298023224
+     ],
+     "level": 0,
+     "kind": "T"
+    }
+   ],
+   "-": [
+    {
+     "x": [
+      -0.10000000149011612,
+      -0.11249999701976776
+     ],
+     "level": 2,
+     "kind": "T"
+    },
+    {
+     "x": [
+      -0.11249999701976776,
+      -0.125
+     ],
+     "level": 2,
+     "kind": "R"
+    },
+    {
+     "x": [
+      -0.125,
+      -0.15000000596046448
+     ],
+     "level": 1,
+     "kind": "T"
+    },
+    {
+     "x": [
+      -0.15000000596046448,
+      -0.20000000298023224
+     ],
+     "level": 0,
+     "kind": "T"
+    }
+   ]
+  }
+ },
+ "predicted": {
+  "T": 95400,
+  "N": 48033
+ },
+ "construction": {
+  "x_lines_are_mid32_recursion": true,
+  "x_lines_strictly_ordered": true,
+  "sl_points_prefix_bit_identical": true,
+  "fine_rows_identical_to_S_L": true,
+  "base_rows_identical_to_S_L": true,
+  "base_region_equal_S0_coordinate_triples": true,
+  "n_base_S0": 38400,
+  "n_template_cells": 1400,
+  "long_edges_present": 0,
+  "half_edges_not_owned_twice": 0,
+  "hanging_midpoints_owned": true
+ },
+ "exact": {
+  "exact_area_um2": "50/1",
+  "exact_rect_area_um2": "50/1",
+  "exact_area_S0_um2": "50/1",
+  "area_equals_rect": true,
+  "area_equals_S0": true,
+  "n_nonpositive_orientation": 0,
+  "n_obtuse_exact": 0,
+  "n_duplicate_triangles": 0,
+  "n_edges": 143432,
+  "n_edges_owner_gt2": 0,
+  "n_two_owner_edges_same_direction": 0,
+  "n_one_owner_edges": 664,
+  "n_one_owner_edges_off_boundary": 0,
+  "boundary_chains": {
+   "bottom": {
+    "n_edges": 232,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   },
+   "right": {
+    "n_edges": 100,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   },
+   "top": {
+    "n_edges": 232,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   },
+   "left": {
+    "n_edges": 100,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   }
+  },
+  "tiling_T2_ok": true,
+  "tiling_T3_ok": true,
+  "boundary_points_S0": 600,
+  "boundary_points": 664,
+  "boundary_points_lost": 0,
+  "boundary_points_added": 64,
+  "bbox_equal": true,
+  "left_contact_set_equal": true,
+  "right_contact_set_equal": true,
+  "contact_nodes_left_right": [
+   101,
+   101
+  ],
+  "tags_single_equal_S0": true
+ },
+ "resolution": {
+  "h_L_um": 0.00625,
+  "e0_um": 2.8610229492465056e-07,
+  "delta_L_um": 1.4662742614749563e-06,
+  "C1_x0_nodes": 801,
+  "C1_x0_count_ok": true,
+  "C1_x0_equal_S_L": true,
+  "C2_x0_spacing_min_median_max": [
+   0.006249904632568359,
+   0.0062499940395355225,
+   0.0062503814697265625
+  ],
+  "C2_x0_max_abs_dev": 3.8146972656215306e-07,
+  "C2_ok": true,
+  "C3_fine_x_lines": 33,
+  "C3_fine_x_count_ok": true,
+  "C3_fine_x_max_abs_dev": 5.960464477886007e-09,
+  "C3_ok": true,
+  "C4_column_width_max_abs_dev": 5.960464476151284e-09,
+  "C4_ok": true,
+  "bands": {
+   "0.0-0.025": {
+    "n_edges": 18408,
+    "min_edge_um": 0.006249904632568359,
+    "median_edge_um": 0.006250000558793545,
+    "max_edge_um": 0.008839104903892748,
+    "max_horizontal_um": 0.006250000558793545,
+    "max_vertical_um": 0.0062503814697265625
+   },
+   "0.025-0.05": {
+    "n_edges": 19208,
+    "min_edge_um": 0.006249904632568359,
+    "median_edge_um": 0.006250001490116119,
+    "max_edge_um": 0.008839105562417212,
+    "max_horizontal_um": 0.006250001490116119,
+    "max_vertical_um": 0.0062503814697265625
+   },
+   "0.05-0.1": {
+    "n_edges": 38416,
+    "min_edge_um": 0.006249904632568359,
+    "median_edge_um": 0.006250001490116119,
+    "max_edge_um": 0.008839105562417212,
+    "max_horizontal_um": 0.006250001490116119,
+    "max_vertical_um": 0.0062503814697265625
+   },
+   "0.1-0.15": {
+    "n_edges": 8406,
+    "min_edge_um": 0.006249904632568359,
+    "median_edge_um": 0.01250004768371582,
+    "max_edge_um": 0.027950982999931987,
+    "max_horizontal_um": 0.025000005960464478,
+    "max_vertical_um": 0.012500286102294922
+   },
+   "0.15-0.2": {
+    "n_edges": 1002,
+    "min_edge_um": 0.024999618530273438,
+    "median_edge_um": 0.04999999701976776,
+    "max_edge_um": 0.055901739421573116,
+    "max_horizontal_um": 0.04999999701976776,
+    "max_vertical_um": 0.02500009536743164
+   }
+  },
+  "bands_S0": {
+   "0.0-0.025": {
+    "n_edges": 100,
+    "min_edge_um": 0.04999971389770508,
+    "median_edge_um": 0.04999995231628418,
+    "max_edge_um": 0.05000019073486328,
+    "max_horizontal_um": null,
+    "max_vertical_um": 0.05000019073486328
+   },
+   "0.025-0.05": {
+    "n_edges": 402,
+    "min_edge_um": 0.05000000074505806,
+    "median_edge_um": 0.05000000074505806,
+    "max_edge_um": 0.07071081351553321,
+    "max_horizontal_um": 0.05000000074505806,
+    "max_vertical_um": null
+   },
+   "0.05-0.1": {
+    "n_edges": 602,
+    "min_edge_um": 0.04999971389770508,
+    "median_edge_um": 0.05000000074505806,
+    "max_edge_um": 0.07071081351553321,
+    "max_horizontal_um": 0.05000000074505806,
+    "max_vertical_um": 0.05000019073486328
+   },
+   "0.1-0.15": {
+    "n_edges": 602,
+    "min_edge_um": 0.04999971389770508,
+    "median_edge_um": 0.05000000447034836,
+    "max_edge_um": 0.07071081614970628,
+    "max_horizontal_um": 0.05000000447034836,
+    "max_vertical_um": 0.05000019073486328
+   },
+   "0.15-0.2": {
+    "n_edges": 602,
+    "min_edge_um": 0.04999971389770508,
+    "median_edge_um": 0.04999999701976776,
+    "max_edge_um": 0.07071081088136023,
+    "max_horizontal_um": 0.04999999701976776,
+    "max_vertical_um": 0.05000019073486328
+   }
+  },
+  "C5_near_ok": true,
+  "C5_outer_ok": true,
+  "ok": true
+ },
+ "vtu_sha256": "5820d1d27443c0862df3b14634aa0fa8753f20895e2204a650256e98862a1734",
+ "devsim": {
+  "n_nodes": 48033,
+  "n_elements": 95400,
+  "regions": [
+   "Si"
+  ],
+  "contacts": {
+   "Si_xmin": {
+    "n_nodes": 101,
+    "mode": "get_element_node_list(contact)",
+    "coords_sha256": "35a293eb9f530d2e45e08e54d593b7ded659ba529d11a950839eb1b55c817250"
+   },
+   "Si_xmax": {
+    "n_nodes": 101,
+    "mode": "get_element_node_list(contact)",
+    "coords_sha256": "19bfa27eecdf1a505f65792549e76f0d486587328ad23990d7c51d2c5c61a236"
+   }
+  },
+  "e4_contacts_coords_sha256": {
+   "Si_xmin": "35a293eb9f530d2e45e08e54d593b7ded659ba529d11a950839eb1b55c817250",
+   "Si_xmax": "19bfa27eecdf1a505f65792549e76f0d486587328ad23990d7c51d2c5c61a236"
+  }
+ },
+ "nodevolume": {
+  "n_nodes": 48033,
+  "n_triangles": 95400,
+  "exact_area_cm2": "18446741531089/36893488147419103232",
+  "area_cm2": 4.999999310821319e-07,
+  "sum_NodeVolume_cm2": 4.999999310821319e-07,
+  "ratio": 1.0,
+  "tau": 3.188030125421774e-11,
+  "ratio_within_tau": true,
+  "budget_max_b_i": 3.177743600571888e-14,
+  "f3_max_rel_error": 1.7599551063942217e-16,
+  "f3_nodes_beyond_budget": 0,
+  "f3_all_nodes_within_budget": true,
+  "F3_minus_F2_max_rel_reported": 0.0,
+  "x_sha256": "4e3cdd7dde516212f0a812108e685605d08875dde7961868e11e516c3389d86f",
+  "y_sha256": "8a5fa1ce54d62d1c9c4731e50470133bae2b9ff5d502d021d6c2fcabb0acb1ab",
+  "elements_sha256": "5f37a88dc657b2a52b7f5789b0cf133dcda16f98c0b4ccf83da317fe8b575135",
+  "NodeVolume_sha256": "a8f7772bcdfcf81f6c0b6f0b26ef132eb2b8de6e9a250104d5a5df836e7ac3b0",
+  "edgecouple": {
+   "status": "READ",
+   "n_edges": 143432,
+   "negative": 0,
+   "zero": 29745,
+   "positive": 113687,
+   "n_G1_negative": 0,
+   "max_abs_EC_minus_G2_over_maxG2": 1.694057925473223e-16,
+   "max_abs_EC_minus_G1_over_maxG2": 1.694057925473223e-16
+  }
+ },
+ "devices_left": [],
+ "memory": {
+  "peak_working_set_bytes": 199802880,
+  "peak_private_bytes": 193695744,
+  "working_set_bytes": 74444800
+ },
+ "failed_checks": [],
+ "level_pass": true
+}

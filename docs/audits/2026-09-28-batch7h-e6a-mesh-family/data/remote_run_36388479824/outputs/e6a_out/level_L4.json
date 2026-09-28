@@ -1,0 +1,432 @@
+{
+ "mode": "level",
+ "L": 4,
+ "solve_calls": 0,
+ "checks": {
+  "input_identity": true,
+  "construction_counts": true,
+  "no_unreferenced_nodes": true,
+  "x_lines_are_mid32_recursion": true,
+  "x_lines_strictly_ordered": true,
+  "sl_points_prefix_bit_identical": true,
+  "fine_rows_identical_to_S_L": true,
+  "base_rows_identical_to_S_L": true,
+  "base_region_equal_S0_coordinate_triples": true,
+  "hanging_midpoints_owned": true,
+  "B1_orientation_positive": true,
+  "B2_no_obtuse": true,
+  "B3_no_duplicates": true,
+  "B4_tiling_T2": true,
+  "B4_tiling_T3": true,
+  "B5_area_equals_rect": true,
+  "B5_area_equals_S0": true,
+  "B6_boundary_points_lost_0": true,
+  "B6_bbox_equal": true,
+  "B6_contacts_equal_S0": true,
+  "B6_tags": true,
+  "C_resolution": true,
+  "L4_reproduction": true,
+  "writer_roundtrip_exact": true,
+  "D2_coordinates_equal_scaled_construction": true,
+  "D2_elements_count": true,
+  "D2_regions": true,
+  "D2_contacts": true,
+  "D3_ratio_within_tau": true,
+  "D4_nodevolume_eq_F3_within_budget": true,
+  "all_finite": true,
+  "devices_left_empty": true,
+  "solve_calls_0": true
+ },
+ "wall_s": {
+  "production_refine": 2.416037082672119,
+  "build": 0.09533977508544922,
+  "exact_checks": 1.1242618560791016,
+  "resolution": 0.6173522472381592,
+  "import_read": 4.1525702476501465,
+  "nodevolume": 26.78110694885254
+ },
+ "wafer_sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a",
+ "build": {
+  "L": 4,
+  "sl_triangles": 247000,
+  "kept_fine": 204800,
+  "kept_base": 38400,
+  "removed_strip": 3800,
+  "new_nodes": 4206,
+  "new_triangles": 12200,
+  "n_nodes": 128067,
+  "n_triangles": 255400,
+  "unreferenced_nodes": 0,
+  "sl_tags_single_value": true,
+  "x_lines_um": {
+   "+": {
+    "X01": 0.10000000149011612,
+    "X015": 0.15000000596046448,
+    "X02": 0.20000000298023224,
+    "m": [
+     0.15000000596046448,
+     0.125,
+     0.11249999701976776,
+     0.10625000298023224
+    ]
+   },
+   "-": {
+    "X01": -0.10000000149011612,
+    "X015": -0.15000000596046448,
+    "X02": -0.20000000298023224,
+    "m": [
+     -0.15000000596046448,
+     -0.125,
+     -0.11249999701976776,
+     -0.10625000298023224
+    ]
+   }
+  },
+  "columns": {
+   "+": [
+    {
+     "x": [
+      0.10000000149011612,
+      0.10625000298023224
+     ],
+     "level": 3,
+     "kind": "T"
+    },
+    {
+     "x": [
+      0.10625000298023224,
+      0.11249999701976776
+     ],
+     "level": 3,
+     "kind": "R"
+    },
+    {
+     "x": [
+      0.11249999701976776,
+      0.125
+     ],
+     "level": 2,
+     "kind": "T"
+    },
+    {
+     "x": [
+      0.125,
+      0.15000000596046448
+     ],
+     "level": 1,
+     "kind": "T"
+    },
+    {
+     "x": [
+      0.15000000596046448,
+      0.20000000298023224
+     ],
+     "level": 0,
+     "kind": "T"
+    }
+   ],
+   "-": [
+    {
+     "x": [
+      -0.10000000149011612,
+      -0.10625000298023224
+     ],
+     "level": 3,
+     "kind": "T"
+    },
+    {
+     "x": [
+      -0.10625000298023224,
+      -0.11249999701976776
+     ],
+     "level": 3,
+     "kind": "R"
+    },
+    {
+     "x": [
+      -0.11249999701976776,
+      -0.125
+     ],
+     "level": 2,
+     "kind": "T"
+    },
+    {
+     "x": [
+      -0.125,
+      -0.15000000596046448
+     ],
+     "level": 1,
+     "kind": "T"
+    },
+    {
+     "x": [
+      -0.15000000596046448,
+      -0.20000000298023224
+     ],
+     "level": 0,
+     "kind": "T"
+    }
+   ]
+  }
+ },
+ "predicted": {
+  "T": 255400,
+  "N": 128067
+ },
+ "construction": {
+  "x_lines_are_mid32_recursion": true,
+  "x_lines_strictly_ordered": true,
+  "sl_points_prefix_bit_identical": true,
+  "fine_rows_identical_to_S_L": true,
+  "base_rows_identical_to_S_L": true,
+  "base_region_equal_S0_coordinate_triples": true,
+  "n_base_S0": 38400,
+  "n_template_cells": 3000,
+  "long_edges_present": 0,
+  "half_edges_not_owned_twice": 0,
+  "hanging_midpoints_owned": true
+ },
+ "exact": {
+  "exact_area_um2": "50/1",
+  "exact_rect_area_um2": "50/1",
+  "exact_area_S0_um2": "50/1",
+  "area_equals_rect": true,
+  "area_equals_S0": true,
+  "n_nonpositive_orientation": 0,
+  "n_obtuse_exact": 0,
+  "n_duplicate_triangles": 0,
+  "n_edges": 383466,
+  "n_edges_owner_gt2": 0,
+  "n_two_owner_edges_same_direction": 0,
+  "n_one_owner_edges": 732,
+  "n_one_owner_edges_off_boundary": 0,
+  "boundary_chains": {
+   "bottom": {
+    "n_edges": 266,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   },
+   "right": {
+    "n_edges": 100,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   },
+   "top": {
+    "n_edges": 266,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   },
+   "left": {
+    "n_edges": 100,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   }
+  },
+  "tiling_T2_ok": true,
+  "tiling_T3_ok": true,
+  "boundary_points_S0": 600,
+  "boundary_points": 732,
+  "boundary_points_lost": 0,
+  "boundary_points_added": 132,
+  "bbox_equal": true,
+  "left_contact_set_equal": true,
+  "right_contact_set_equal": true,
+  "contact_nodes_left_right": [
+   101,
+   101
+  ],
+  "tags_single_equal_S0": true
+ },
+ "resolution": {
+  "h_L_um": 0.003125,
+  "e0_um": 2.8610229492465056e-07,
+  "delta_L_um": 1.9252300262452907e-06,
+  "C1_x0_nodes": 1601,
+  "C1_x0_count_ok": true,
+  "C1_x0_equal_S_L": true,
+  "C2_x0_spacing_min_median_max": [
+   0.003124713897705078,
+   0.0031249523162841797,
+   0.0031251907348632812
+  ],
+  "C2_x0_max_abs_dev": 2.8610229492204847e-07,
+  "C2_ok": true,
+  "C3_fine_x_lines": 65,
+  "C3_fine_x_count_ok": true,
+  "C3_fine_x_max_abs_dev": 4.4703483579808245e-09,
+  "C3_ok": true,
+  "C4_column_width_max_abs_dev": 5.960464477886007e-09,
+  "C4_ok": true,
+  "bands": {
+   "0.0-0.025": {
+    "n_edges": 75216,
+    "min_edge_um": 0.003124713897705078,
+    "median_edge_um": 0.0031250007450580597,
+    "max_edge_um": 0.004419552781208606,
+    "max_horizontal_um": 0.0031250007450580597,
+    "max_vertical_um": 0.0031251907348632812
+   },
+   "0.025-0.05": {
+    "n_edges": 76816,
+    "min_edge_um": 0.003124713897705078,
+    "median_edge_um": 0.0031250007450580597,
+    "max_edge_um": 0.004419552781208606,
+    "max_horizontal_um": 0.0031250007450580597,
+    "max_vertical_um": 0.0031251907348632812
+   },
+   "0.05-0.1": {
+    "n_edges": 153632,
+    "min_edge_um": 0.003124713897705078,
+    "median_edge_um": 0.003125004470348358,
+    "max_edge_um": 0.00441955541530735,
+    "max_horizontal_um": 0.003125004470348358,
+    "max_vertical_um": 0.0031251907348632812
+   },
+   "0.1-0.15": {
+    "n_edges": 18808,
+    "min_edge_um": 0.003124713897705078,
+    "median_edge_um": 0.006250143051147461,
+    "max_edge_um": 0.027950982999931987,
+    "max_horizontal_um": 0.025000005960464478,
+    "max_vertical_um": 0.012500286102294922
+   },
+   "0.15-0.2": {
+    "n_edges": 1002,
+    "min_edge_um": 0.024999618530273438,
+    "median_edge_um": 0.04999999701976776,
+    "max_edge_um": 0.055901739421573116,
+    "max_horizontal_um": 0.04999999701976776,
+    "max_vertical_um": 0.02500009536743164
+   }
+  },
+  "bands_S0": {
+   "0.0-0.025": {
+    "n_edges": 100,
+    "min_edge_um": 0.04999971389770508,
+    "median_edge_um": 0.04999995231628418,
+    "max_edge_um": 0.05000019073486328,
+    "max_horizontal_um": null,
+    "max_vertical_um": 0.05000019073486328
+   },
+   "0.025-0.05": {
+    "n_edges": 402,
+    "min_edge_um": 0.05000000074505806,
+    "median_edge_um": 0.05000000074505806,
+    "max_edge_um": 0.07071081351553321,
+    "max_horizontal_um": 0.05000000074505806,
+    "max_vertical_um": null
+   },
+   "0.05-0.1": {
+    "n_edges": 602,
+    "min_edge_um": 0.04999971389770508,
+    "median_edge_um": 0.05000000074505806,
+    "max_edge_um": 0.07071081351553321,
+    "max_horizontal_um": 0.05000000074505806,
+    "max_vertical_um": 0.05000019073486328
+   },
+   "0.1-0.15": {
+    "n_edges": 602,
+    "min_edge_um": 0.04999971389770508,
+    "median_edge_um": 0.05000000447034836,
+    "max_edge_um": 0.07071081614970628,
+    "max_horizontal_um": 0.05000000447034836,
+    "max_vertical_um": 0.05000019073486328
+   },
+   "0.15-0.2": {
+    "n_edges": 602,
+    "min_edge_um": 0.04999971389770508,
+    "median_edge_um": 0.04999999701976776,
+    "max_edge_um": 0.07071081088136023,
+    "max_horizontal_um": 0.04999999701976776,
+    "max_vertical_um": 0.05000019073486328
+   }
+  },
+  "C5_near_ok": true,
+  "C5_outer_ok": true,
+  "ok": true
+ },
+ "l4_reproduction": {
+  "n_nodes": [
+   128067,
+   128067
+  ],
+  "n_triangles": [
+   255400,
+   255400
+  ],
+  "node_set_equal": true,
+  "no_duplicate_coordinates": true,
+  "triangle_coordinate_multiset_equal": true,
+  "tags_equal": true,
+  "outer_boundary_set_equal": true,
+  "contact_sets_equal": true,
+  "arrays_equal_in_order_reported_only": true,
+  "ok": true,
+  "nodevolume_equal_E4_by_coordinate_reported_only": true
+ },
+ "vtu_sha256": "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297",
+ "devsim": {
+  "n_nodes": 128067,
+  "n_elements": 255400,
+  "regions": [
+   "Si"
+  ],
+  "contacts": {
+   "Si_xmin": {
+    "n_nodes": 101,
+    "mode": "get_element_node_list(contact)",
+    "coords_sha256": "35a293eb9f530d2e45e08e54d593b7ded659ba529d11a950839eb1b55c817250"
+   },
+   "Si_xmax": {
+    "n_nodes": 101,
+    "mode": "get_element_node_list(contact)",
+    "coords_sha256": "19bfa27eecdf1a505f65792549e76f0d486587328ad23990d7c51d2c5c61a236"
+   }
+  },
+  "e4_contacts_coords_sha256": {
+   "Si_xmin": "35a293eb9f530d2e45e08e54d593b7ded659ba529d11a950839eb1b55c817250",
+   "Si_xmax": "19bfa27eecdf1a505f65792549e76f0d486587328ad23990d7c51d2c5c61a236"
+  }
+ },
+ "nodevolume": {
+  "n_nodes": 128067,
+  "n_triangles": 255400,
+  "exact_area_cm2": "18446741531089/36893488147419103232",
+  "area_cm2": 4.999999310821319e-07,
+  "sum_NodeVolume_cm2": 4.999999310821319e-07,
+  "ratio": 1.0,
+  "tau": 8.5178560689229e-11,
+  "ratio_within_tau": true,
+  "budget_max_b_i": 3.1782172442024506e-14,
+  "f3_max_rel_error": 1.7599845319355483e-16,
+  "f3_nodes_beyond_budget": 0,
+  "f3_all_nodes_within_budget": true,
+  "F3_minus_F2_max_rel_reported": 0.0,
+  "x_sha256": "a2d1052abbb4a4049f671d1469de379ee10096bf20e1c5d9ae305e4e5e11d9b7",
+  "y_sha256": "271b25c0555ccb9d7c33da61ee4c84d13e1c87f587ab5f553a7a80aa7d3e249b",
+  "elements_sha256": "7cd2f756d9428a716bd3c112107886335b1428dcb3d0715f114b9a35ea67cd9e",
+  "NodeVolume_sha256": "f43289c231b076268ccd1a7de39f93c58ab166581c80308a95603568843f0c5d",
+  "edgecouple": {
+   "status": "READ",
+   "n_edges": 383466,
+   "negative": 0,
+   "zero": 61082,
+   "positive": 322384,
+   "n_G1_negative": 0,
+   "max_abs_EC_minus_G2_over_maxG2": 1.694057925473223e-16,
+   "max_abs_EC_minus_G1_over_maxG2": 1.694057925473223e-16
+  }
+ },
+ "devices_left": [],
+ "memory": {
+  "peak_working_set_bytes": 451543040,
+  "peak_private_bytes": 459726848,
+  "working_set_bytes": 85426176
+ },
+ "failed_checks": [],
+ "level_pass": true
+}

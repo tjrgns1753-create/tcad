@@ -1,0 +1,65 @@
+{
+ "mode": "regen",
+ "gui": {
+  "grid_delta_um": 0.05,
+  "x_extent_um": 10.0,
+  "y_extent_um": 8.0,
+  "silicon_depth_um": 5.0,
+  "pr_thickness_um": 1.0,
+  "mask_spans_um": [],
+  "doping": {
+   "region": "Si",
+   "junction_axis": "x",
+   "junction_position_um": 0.0,
+   "donor_conc_cm3": 1e+18,
+   "acceptor_conc_cm3": 1e+18,
+   "chemical_state": "ACTIVE"
+  },
+  "barrier": {
+   "barrier_material": "SiO2",
+   "axis": "x",
+   "min_barrier_thickness_um": 0.0
+  },
+  "import": {
+   "mesh_name": "gui_measure_mesh",
+   "device_name": "gui_measure_device",
+   "contact_regions": [
+    "Si"
+   ],
+   "contact_axis": "x",
+   "length_scale_to_cm": 0.0001,
+   "refine_near_um": 0.0,
+   "refine_axis": "x"
+  },
+  "measure": {
+   "source_pin": "max",
+   "voltage": 0.3,
+   "gnd_voltage": 0.0
+  }
+ },
+ "input_mesh": {
+  "name": "wafer_volume.vtu",
+  "sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a",
+  "e1_sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a",
+  "equal": true
+ },
+ "s0": {
+  "n_nodes": 20301,
+  "n_triangles": 40000,
+  "n_x_lines": 201,
+  "n_y_lines": 101,
+  "tags": [
+   10
+  ],
+  "points_dtype": "float32",
+  "e0_um": 2.8610229492465056e-07
+ },
+ "s0_shape_ok": true,
+ "input_identity_ok": true,
+ "wafer_path": "wafer_volume.vtu",
+ "memory": {
+  "peak_working_set_bytes": 54530048,
+  "peak_private_bytes": 40181760,
+  "working_set_bytes": 53202944
+ }
+}

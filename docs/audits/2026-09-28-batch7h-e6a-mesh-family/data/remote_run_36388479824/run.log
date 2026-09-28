@@ -1,0 +1,74 @@
+[e6a] envelopes: {'L3': {'T': 95400, 'N': 48033, 'memory_bytes': 1513686016, 'time_s': 178.51080657791698}, 'L4': {'T': 255400, 'N': 128067, 'memory_bytes': 2251000832, 'time_s': 477.90000000000003}, 'L5': {'T': 882600, 'N': 441733, 'memory_bytes': 5141206016, 'time_s': 1651.5056382145656}}
+[e6a      0.4s] regen: identity_ok=True error=False
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6a      1.7s] L3: 48033 nodes, 95400 triangles (predicted 48033, 95400)
+[e6a      2.3s] L3: exact checks 0.6s obtuse 0 T2 True T3 True
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 95400 Triangles.
+Physical group name Si has 143432 Lines.
+Physical group name Si has 48033 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6a_L3_device has 48033 coordinates with max index 48032
+Region Si has 48033 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e6a     14.1s] L3: ratio 1.0 tau 3.188e-11 F3 within budget True (9.9s)
+[e6a     14.4s] L3: pass=True stop=None failed=[] error=False
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6a      2.7s] L4: 128067 nodes, 255400 triangles (predicted 128067, 255400)
+[e6a      3.9s] L4: exact checks 1.1s obtuse 0 T2 True T3 True
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 255400 Triangles.
+Physical group name Si has 383466 Lines.
+Physical group name Si has 128067 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6a_L4_device has 128067 coordinates with max index 128066
+Region Si has 128067 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e6a     38.2s] L4: ratio 1.0 tau 8.518e-11 F3 within budget True (26.8s)
+[e6a     39.1s] L4: pass=True stop=None failed=[] error=False
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6a      5.9s] L5: 441733 nodes, 882600 triangles (predicted 441733, 882600)
+[e6a      9.2s] L5: exact checks 3.4s obtuse 0 T2 True T3 True
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 882600 Triangles.
+Physical group name Si has 1324332 Lines.
+Physical group name Si has 441733 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6a_L5_device has 441733 coordinates with max index 441732
+Region Si has 441733 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e6a    122.5s] L5: ratio 1.0 tau 2.941e-10 F3 within budget True (94.4s)
+[e6a    125.7s] L5: pass=True stop=None failed=[] error=False
+
+[e6a] verdict {'verdict': 'GEOMETRY_FAMILY_CANDIDATE_ONLY', 'labels': {'L3': 'PASS', 'L4': 'PASS', 'L5': 'PASS'}, 'stop': None, 'cross_level_nested': True, 'missing_expected_files': [], 'note': 'geometry and DEVSIM default integration weight only; not Poisson/current mesh convergence, not current accuracy, not biased I-V, not production step-junction or process-order support'}
+[e6a] outputs: ['e6a_result.json', 'level_L3.json', 'level_L3.npz', 'level_L3.vtu', 'level_L4.json', 'level_L4.npz', 'level_L4.vtu', 'level_L5.json', 'level_L5.npz', 'level_L5.vtu', 'regen.json', 'wafer_volume.vtu']

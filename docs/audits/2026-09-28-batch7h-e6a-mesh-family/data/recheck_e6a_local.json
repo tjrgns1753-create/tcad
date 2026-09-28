@@ -1,0 +1,63 @@
+{
+ "L3": {
+  "n_nodes": 48033,
+  "n_triangles": 95400,
+  "devsim_xy_equal_scaled_construction_same_node_order": true,
+  "devsim_elements_equal_construction_in_order": false,
+  "devsim_elements_vertex_set_multiset_equal_construction": true,
+  "sum_NodeVolume_over_exact_rect_minus_1": 0.0,
+  "NodeVolume_all_positive": true,
+  "EdgeCouple_min": 0.0,
+  "EdgeCouple_negative": 0,
+  "EdgeCouple_zero": 29745,
+  "max_angle_deg_float64": 90.0,
+  "x0_nodes": 801,
+  "x0_spacing_min_max_um": [
+   0.006249904632568359,
+   0.0062503814697265625
+  ]
+ },
+ "L4": {
+  "n_nodes": 128067,
+  "n_triangles": 255400,
+  "devsim_xy_equal_scaled_construction_same_node_order": true,
+  "devsim_elements_equal_construction_in_order": false,
+  "devsim_elements_vertex_set_multiset_equal_construction": true,
+  "sum_NodeVolume_over_exact_rect_minus_1": 0.0,
+  "NodeVolume_all_positive": true,
+  "EdgeCouple_min": 0.0,
+  "EdgeCouple_negative": 0,
+  "EdgeCouple_zero": 61082,
+  "max_angle_deg_float64": 90.0,
+  "x0_nodes": 1601,
+  "x0_spacing_min_max_um": [
+   0.003124713897705078,
+   0.0031251907348632812
+  ],
+  "bit_equal_to_E4_npz": {
+   "x": true,
+   "y": true,
+   "elements": true,
+   "NodeVolume": true,
+   "EdgeCouple": true
+  }
+ },
+ "L5": {
+  "n_nodes": 441733,
+  "n_triangles": 882600,
+  "devsim_xy_equal_scaled_construction_same_node_order": true,
+  "devsim_elements_equal_construction_in_order": false,
+  "devsim_elements_vertex_set_multiset_equal_construction": true,
+  "sum_NodeVolume_over_exact_rect_minus_1": 0.0,
+  "NodeVolume_all_positive": true,
+  "EdgeCouple_min": 0.0,
+  "EdgeCouple_negative": 0,
+  "EdgeCouple_zero": 180401,
+  "max_angle_deg_float64": 90.0,
+  "x0_nodes": 3201,
+  "x0_spacing_min_max_um": [
+   0.0015621185302734375,
+   0.0015625953674316406
+  ]
+ }
+}

@@ -1,0 +1,1128 @@
+diff --git a/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/family_e6a.py b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/family_e6a.py
+new file mode 100644
+index 0000000..2d2594e
+--- /dev/null
++++ b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/family_e6a.py
+@@ -0,0 +1,322 @@
++"""Batch 7H-E6A level-L mesh family: construction and exact checks (pure numpy / Python ints; no ViennaPS, no DEVSIM).
++PLAN sections 2-4. The column/row structure is generated from L (PLAN section 2 table), not from 7H-E4's L = 4 literals;
++7H-E4's float32 midpoint, grid-line lookup and exact-integer helpers are reused read-only."""
++import os
++import sys
++from collections import Counter
++from fractions import Fraction
++
++import numpy as np
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++sys.path.insert(0, os.path.join(HERE, "..", "..", "2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate", "scripts"))
++import quadtree_e4 as q4  # noqa: E402  (E4, read-only: mid32, _line, exact_ints)
++
++H0 = 0.05
++NEAR_BANDS = [(0.0, 0.025), (0.025, 0.05), (0.05, 0.1)]
++OUTER_BANDS = [(0.1, 0.15), (0.15, 0.2)]
++
++
++def predicted_counts(L, ny, nx_cells):
++    """PLAN section 2: T(L), N(L) for a base grid of nx_cells x ny cells, fine region = 4 base columns."""
++    T = 8 * ny * 4 ** L + 2 * (nx_cells - 8) * ny + 2 * ny * (4 * 2 ** L - 3)
++    N = ((4 * 2 ** L + 1) * (ny * 2 ** L + 1) + 2 * (nx_cells // 2 - 3) * (ny + 1) + 2 * (ny + 1)
++         + 2 * (ny * (3 * 2 ** (L - 1) - 3) + L - 1))
++    return T, N
++
++
++def build_level(s0_points, sl_points, sl_tris, sl_tags, L):
++    """Returns (points float32, triangles, tags, report, info). Raises ValueError('<LABEL> ...') on a fail-closed
++    construction problem. info holds the per-side lines/rows/columns and the template long edges for the checks."""
++    if L < 3:
++        raise ValueError(f"LEVEL_OUT_OF_RANGE L={L}")
++    xs0 = np.unique(s0_points[:, 0])
++    P = sl_points
++    sides = {}
++    for s in (+1, -1):
++        X01, X015, X02 = q4._line(xs0, 0.1 * s), q4._line(xs0, 0.15 * s), q4._line(xs0, 0.2 * s)
++        m = [X015]
++        for _ in range(1, L):
++            m.append(q4.mid32(X01, m[-1]))
++        RL = np.sort(P[P[:, 0] == X01, 1])
++        R0 = np.sort(s0_points[s0_points[:, 0] == X01, 1])
++        if len(RL) != (len(R0) - 1) * 2 ** L + 1 or not np.array_equal(RL[::2 ** L], R0):
++            raise ValueError(f"ROW_NESTING_FAIL side {s}: len(R_L)={len(RL)}")
++        cols = [(X01, m[L - 1], L - 1, "T"), (m[L - 1], m[L - 2], L - 1, "R")]
++        cols += [(m[j], m[j - 1], j, "T") for j in range(L - 2, 0, -1)]
++        cols += [(m[0], X02, 0, "T")]
++        sides[s] = {"X01": X01, "X015": X015, "X02": X02, "m": m, "R": {k: RL[::2 ** (L - k)] for k in range(L + 1)},
++                    "cols": cols}
++
++    x = P[:, 0]
++    X01p, X01n, X02p, X02n = sides[1]["X01"], sides[-1]["X01"], sides[1]["X02"], sides[-1]["X02"]
++    tx = x[sl_tris]
++    fine = np.all((tx >= X01n) & (tx <= X01p), axis=1)
++    base = np.all((tx >= X02p) | (tx <= X02n), axis=1)
++    removed = ~(fine | base)
++    rtx = tx[removed]
++    if not np.all(((rtx >= X01p) & (rtx <= X02p)) | ((rtx <= X01n) & (rtx >= X02n)), axis=1).all():
++        raise ValueError("NONCONFORMING_MESH removed triangle outside the transition strip")
++
++    key = {(float(a), float(b)): i for i, (a, b) in enumerate(zip(P[:, 0], P[:, 1]))}
++    if len(key) != len(P):
++        raise ValueError("NONCONFORMING_MESH duplicate S_L node coordinate")
++    new_pts, new_tris, long_edges = [], [], []
++
++    def node(xv, yv):
++        k = (float(xv), float(yv))
++        if k not in key:
++            key[k] = len(P) + len(new_pts)
++            new_pts.append((np.float32(xv), np.float32(yv), np.float32(0.0)))
++        return key[k]
++
++    for s, d in sides.items():
++        for xn, xf, lev, kind in d["cols"]:
++            xa, xb = (xn, xf) if s > 0 else (xf, xn)
++            rows, finer = d["R"][lev], d["R"][lev + 1]
++            for j in range(len(rows) - 1):
++                y0, y1 = rows[j], rows[j + 1]
++                LL, LR, UR, UL = node(xa, y0), node(xb, y0), node(xb, y1), node(xa, y1)
++                if kind == "R":
++                    new_tris += [(LL, LR, UR), (LL, UR, UL)]
++                    continue
++                if s > 0:      # finer neighbour on the left: hanging node M on x = xa
++                    M = node(xa, finer[2 * j + 1])
++                    new_tris += [(LL, LR, M), (M, LR, UR), (M, UR, UL)]
++                    long_edges.append((LL, UL, M))
++                else:          # finer neighbour on the right: hanging node M on x = xb
++                    M = node(xb, finer[2 * j + 1])
++                    new_tris += [(LL, LR, M), (LL, M, UL), (UL, M, UR)]
++                    long_edges.append((LR, UR, M))
++    pts = np.vstack([P, np.array(new_pts, dtype=P.dtype).reshape(-1, P.shape[1])]) if new_pts else P.copy()
++    tris = np.vstack([sl_tris[fine], sl_tris[base], np.array(new_tris, dtype=sl_tris.dtype)])
++    tags = np.full(len(tris), sl_tags[0], dtype=sl_tags.dtype)
++    used = np.zeros(len(pts), bool)
++    used[tris.ravel()] = True
++    rep = {"L": L, "sl_triangles": int(len(sl_tris)), "kept_fine": int(fine.sum()), "kept_base": int(base.sum()),
++           "removed_strip": int(removed.sum()), "new_nodes": len(new_pts), "new_triangles": len(new_tris),
++           "n_nodes": int(len(pts)), "n_triangles": int(len(tris)), "unreferenced_nodes": int((~used).sum()),
++           "sl_tags_single_value": bool(np.all(sl_tags == sl_tags[0])),
++           "x_lines_um": {("+" if s > 0 else "-"): {"X01": float(d["X01"]), "X015": float(d["X015"]), "X02": float(d["X02"]),
++                                                    "m": [float(v) for v in d["m"]]} for s, d in sides.items()},
++           "columns": {("+" if s > 0 else "-"): [{"x": [float(a), float(b)], "level": lev, "kind": kd}
++                                                 for a, b, lev, kd in d["cols"]] for s, d in sides.items()}}
++    info = {"sides": sides, "fine": fine, "base": base, "long_edges": np.array(long_edges, dtype=np.int64).reshape(-1, 3)}
++    return pts, tris, tags, rep, info
++
++
++def construction_checks(s0_points, s0_tris, sl_points, sl_tris, pts, tris, info, L):
++    """PLAN 4A (except counts, checked by the caller against predicted_counts)."""
++    out = {}
++    sides = info["sides"]
++    out["x_lines_are_mid32_recursion"] = all(
++        d["m"][0] == d["X015"] and all(d["m"][k] == q4.mid32(d["X01"], d["m"][k - 1]) for k in range(1, L))
++        for d in sides.values())
++    out["x_lines_strictly_ordered"] = all(
++        all(abs(float(a)) < abs(float(b)) for a, b in zip([d["X01"]] + d["m"][::-1], d["m"][::-1] + [d["X02"]]))
++        for d in sides.values())
++    nf, nb = int(info["fine"].sum()), int(info["base"].sum())
++    out["sl_points_prefix_bit_identical"] = bool(np.array_equal(pts[:len(sl_points)], sl_points))
++    out["fine_rows_identical_to_S_L"] = bool(np.array_equal(tris[:nf], sl_tris[info["fine"]]))
++    out["base_rows_identical_to_S_L"] = bool(np.array_equal(tris[nf:nf + nb], sl_tris[info["base"]]))
++    X02p, X02n = sides[1]["X02"], sides[-1]["X02"]
++    t0x = s0_points[s0_tris][:, :, 0]
++    s0_base = s0_tris[np.all((t0x >= X02p) | (t0x <= X02n), axis=1)]
++    trip = lambda Pp, T: Counter(tuple(sorted(map(tuple, Pp[t][:, :2].astype(float).tolist()))) for t in T)  # noqa: E731
++    out["base_region_equal_S0_coordinate_triples"] = trip(pts, tris[nf:nf + nb]) == trip(s0_points, s0_base)
++    out["n_base_S0"] = int(len(s0_base))
++    # hanging-midpoint ownership: long edge absent, both halves owned twice
++    keys, counts = edge_key_counts(tris, len(pts))
++    le = info["long_edges"]
++
++    def cnt(a, b):
++        k = np.minimum(a, b) * len(pts) + np.maximum(a, b)
++        i = np.searchsorted(keys, k)
++        hit = (i < len(keys)) & (keys[np.minimum(i, len(keys) - 1)] == k)
++        return np.where(hit, counts[np.minimum(i, len(keys) - 1)], 0)
++    out["n_template_cells"] = int(len(le))
++    out["long_edges_present"] = int((cnt(le[:, 0], le[:, 1]) > 0).sum())
++    out["half_edges_not_owned_twice"] = int(((cnt(le[:, 0], le[:, 2]) != 2) | (cnt(le[:, 2], le[:, 1]) != 2)).sum())
++    out["hanging_midpoints_owned"] = out["long_edges_present"] == 0 and out["half_edges_not_owned_twice"] == 0
++    return out
++
++
++def edge_key_counts(tris, n):
++    a = tris[:, [0, 1, 2]].ravel()
++    b = tris[:, [1, 2, 0]].ravel()
++    k = np.minimum(a, b).astype(np.int64) * n + np.maximum(a, b)
++    return np.unique(k, return_counts=True)
++
++
++def exact_checks(P2, tris, s0_P2, s0_tris, tags, s0_tag):
++    """PLAN 4B (B1-B6) on exact integers of the float32 coordinates. P2/s0_P2: (n, 2) float32."""
++    I, K = q4.exact_ints(P2)
++    n_nonpos = n_obtuse = 0
++    area2 = 0
++    for a, b, c in tris.tolist():
++        A, B, C = I[a], I[b], I[c]
++        o = (B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0])
++        if o <= 0:
++            n_nonpos += 1
++        area2 += o
++        if ((B[0] - A[0]) * (C[0] - A[0]) + (B[1] - A[1]) * (C[1] - A[1]) < 0
++                or (C[0] - B[0]) * (A[0] - B[0]) + (C[1] - B[1]) * (A[1] - B[1]) < 0
++                or (A[0] - C[0]) * (B[0] - C[0]) + (A[1] - C[1]) * (B[1] - C[1]) < 0):
++            n_obtuse += 1
++    area = Fraction(area2, 2 * (1 << (2 * K)))
++    I0, K0 = q4.exact_ints(s0_P2)
++    area0 = Fraction(sum(abs((I0[b][0] - I0[a][0]) * (I0[c][1] - I0[a][1]) - (I0[b][1] - I0[a][1]) * (I0[c][0] - I0[a][0]))
++                         for a, b, c in s0_tris.tolist()), 2 * (1 << (2 * K0)))
++    xl, xr, yb, yt = s0_P2[:, 0].min(), s0_P2[:, 0].max(), s0_P2[:, 1].min(), s0_P2[:, 1].max()
++    rect = (Fraction(float(xr)) - Fraction(float(xl))) * (Fraction(float(yt)) - Fraction(float(yb)))
++    out = {"exact_area_um2": f"{area.numerator}/{area.denominator}", "exact_rect_area_um2": f"{rect.numerator}/{rect.denominator}",
++           "exact_area_S0_um2": f"{area0.numerator}/{area0.denominator}", "area_equals_rect": area == rect,
++           "area_equals_S0": area == area0, "n_nonpositive_orientation": n_nonpos, "n_obtuse_exact": n_obtuse}
++    s = np.sort(tris, axis=1)
++    out["n_duplicate_triangles"] = int(len(s) - len(np.unique(s, axis=0)))
++    out.update(tiling_conditions(P2, tris, (xl, xr, yb, yt)))
++
++    def bset(Q):
++        m = (Q[:, 0] == xl) | (Q[:, 0] == xr) | (Q[:, 1] == yb) | (Q[:, 1] == yt)
++        return set(map(tuple, Q[m].astype(float).tolist()))
++    b0, bc = bset(s0_P2), bset(P2)
++    cset = lambda Q, xv: set(map(tuple, Q[Q[:, 0] == xv].astype(float).tolist()))  # noqa: E731
++    out.update({"boundary_points_S0": len(b0), "boundary_points": len(bc), "boundary_points_lost": len(b0 - bc),
++                "boundary_points_added": len(bc - b0),
++                "bbox_equal": [float(P2[:, 0].min()), float(P2[:, 0].max()), float(P2[:, 1].min()), float(P2[:, 1].max())]
++                              == [float(xl), float(xr), float(yb), float(yt)],
++                "left_contact_set_equal": cset(P2, xl) == cset(s0_P2, xl), "right_contact_set_equal": cset(P2, xr) == cset(s0_P2, xr),
++                "contact_nodes_left_right": [len(cset(P2, xl)), len(cset(P2, xr))],
++                "tags_single_equal_S0": bool(np.all(tags == s0_tag))})
++    return out
++
++
++def tiling_conditions(P2, tris, box):
++    """PLAN B4 (T2)-(T3): edge ownership and orientation, boundary chain. (T1) is n_nonpositive_orientation == 0."""
++    xl, xr, yb, yt = box
++    n = len(P2)
++    a = tris[:, [0, 1, 2]].ravel().astype(np.int64)
++    b = tris[:, [1, 2, 0]].ravel().astype(np.int64)
++    key = np.minimum(a, b) * n + np.maximum(a, b)
++    fwd = (a < b).astype(np.int64)
++    order = np.argsort(key, kind="stable")
++    ks, fs = key[order], fwd[order]
++    uk, start, cnt = np.unique(ks, return_index=True, return_counts=True)
++    fsum = np.add.reduceat(fs, start)
++    out = {"n_edges": int(len(uk)), "n_edges_owner_gt2": int((cnt > 2).sum()),
++           "n_two_owner_edges_same_direction": int(((cnt == 2) & (fsum != 1)).sum())}
++    one = order[start[cnt == 1]]                         # directed edge rows owned once
++    u, v = a[one], b[one]
++    xu, yu, xv, yv = P2[u, 0], P2[u, 1], P2[v, 0], P2[v, 1]
++    sides = {"bottom": ((yu == yb) & (yv == yb), xu, xv, +1, 0, xl, xr),
++             "right": ((xu == xr) & (xv == xr), yu, yv, +1, 1, yb, yt),
++             "top": ((yu == yt) & (yv == yt), xu, xv, -1, 0, xr, xl),
++             "left": ((xu == xl) & (xv == xl), yu, yv, -1, 1, yt, yb)}
++    on_any = np.zeros(len(one), bool)
++    chains = {}
++    for name, (m, s_, e_, sgn, ax, c0, c1) in sides.items():
++        on_any |= m
++        st, en = s_[m].astype(np.float64), e_[m].astype(np.float64)
++        o = np.argsort(sgn * st, kind="stable")
++        st, en = st[o], en[o]
++        ok_dir = bool(np.all(sgn * (en - st) > 0))
++        ok_chain = bool(len(st) > 0 and st[0] == float(c0) and en[-1] == float(c1) and np.array_equal(en[:-1], st[1:]))
++        line = P2[:, 1 - ax] == (yb if name == "bottom" else yt if name == "top" else xl if name == "left" else xr)
++        verts = set(np.r_[st, en].tolist())
++        ok_nodes = verts == set(P2[line, ax].astype(np.float64).tolist())
++        chains[name] = {"n_edges": int(m.sum()), "ccw_direction": ok_dir, "corner_to_corner_gap_free": ok_chain,
++                        "all_side_nodes_are_chain_vertices": ok_nodes}
++    out["n_one_owner_edges"] = int(len(one))
++    out["n_one_owner_edges_off_boundary"] = int((~on_any).sum())
++    out["boundary_chains"] = chains
++    out["tiling_T2_ok"] = out["n_edges_owner_gt2"] == 0 and out["n_two_owner_edges_same_direction"] == 0
++    out["tiling_T3_ok"] = out["n_one_owner_edges_off_boundary"] == 0 and all(
++        c["ccw_direction"] and c["corner_to_corner_gap_free"] and c["all_side_nodes_are_chain_vertices"] for c in chains.values())
++    return out
++
++
++def delta_L(e0, L):
++    """PLAN 4C: e0 2^-L + L 2^-21 um."""
++    return e0 * 2.0 ** -L + L * 2.0 ** -21
++
++
++def s0_spacing_error(s0_P2):
++    ys = np.unique(s0_P2[:, 1]).astype(np.float64)
++    xs = np.unique(s0_P2[:, 0]).astype(np.float64)
++    return float(max(np.max(np.abs(np.diff(ys) - H0)), np.max(np.abs(np.diff(xs) - H0))))
++
++
++def edge_bands(P2, tris):
++    """Per band of edge-midpoint |x| (um, float32 coordinates): n, min / median / max, max horizontal / vertical."""
++    E = np.unique(np.sort(np.r_[tris[:, [0, 1]], tris[:, [1, 2]], tris[:, [2, 0]]], 1), axis=0)
++    Q = P2.astype(np.float64)
++    L_ = np.linalg.norm(Q[E[:, 0]] - Q[E[:, 1]], axis=1)
++    mid = np.abs((Q[E[:, 0], 0] + Q[E[:, 1], 0]) / 2)
++    hor = P2[E[:, 0], 1] == P2[E[:, 1], 1]
++    ver = P2[E[:, 0], 0] == P2[E[:, 1], 0]
++    out = {}
++    for lo, hi in NEAR_BANDS + OUTER_BANDS:
++        m = (mid >= lo) & (mid < hi)
++        out[f"{lo}-{hi}"] = {"n_edges": int(m.sum()), "min_edge_um": float(L_[m].min()), "median_edge_um": float(np.median(L_[m])),
++                             "max_edge_um": float(L_[m].max()),
++                             "max_horizontal_um": float(L_[m & hor].max()) if (m & hor).any() else None,
++                             "max_vertical_um": float(L_[m & ver].max()) if (m & ver).any() else None}
++    return out
++
++
++def resolution_checks(P2, tris, sl_P2, s0_P2, s0_tris, rep, L, e0):
++    """PLAN 4C1-4C5. Returns (report, x0 y-set, fine x-lines)."""
++    h = H0 * 2.0 ** -L
++    dl = delta_L(e0, L)
++    out = {"h_L_um": h, "e0_um": e0, "delta_L_um": dl}
++    y0 = np.sort(P2[P2[:, 0] == 0, 1])
++    y0_sl = np.sort(sl_P2[sl_P2[:, 0] == 0, 1])
++    ny = len(np.unique(s0_P2[:, 1])) - 1
++    dy = np.diff(y0.astype(np.float64))
++    out["C1_x0_nodes"] = int(len(y0))
++    out["C1_x0_count_ok"] = len(y0) == ny * 2 ** L + 1
++    out["C1_x0_equal_S_L"] = bool(np.array_equal(y0, y0_sl))
++    out["C2_x0_spacing_min_median_max"] = [float(dy.min()), float(np.median(dy)), float(dy.max())]
++    out["C2_x0_max_abs_dev"] = float(np.max(np.abs(dy - h)))
++    out["C2_ok"] = out["C2_x0_max_abs_dev"] <= dl
++    X01 = rep["x_lines_um"]["+"]["X01"]
++    xf = np.unique(P2[np.abs(P2[:, 0].astype(np.float64)) <= X01, 0])
++    dx = np.diff(xf.astype(np.float64))
++    out["C3_fine_x_lines"] = int(len(xf))
++    out["C3_fine_x_count_ok"] = len(xf) == 4 * 2 ** L + 1
++    out["C3_fine_x_max_abs_dev"] = float(np.max(np.abs(dx - h)))
++    out["C3_ok"] = out["C3_fine_x_count_ok"] and out["C3_fine_x_max_abs_dev"] <= dl
++    widths = [(c["level"], abs(c["x"][1] - c["x"][0])) for side in rep["columns"].values() for c in side]
++    out["C4_column_width_max_abs_dev"] = float(max(abs(w - H0 * 2.0 ** -k) for k, w in widths))
++    out["C4_ok"] = out["C4_column_width_max_abs_dev"] <= dl
++    bc, b0 = edge_bands(P2, tris), edge_bands(s0_P2, s0_tris)
++    out["bands"], out["bands_S0"] = bc, b0
++    le = lambda u, v: u is not None and u <= v  # noqa: E731
++    out["C5_near_ok"] = all(le(bc[k]["max_horizontal_um"], h + dl) and le(bc[k]["max_vertical_um"], h + dl)
++                            and le(bc[k]["max_edge_um"], np.sqrt(2.0) * (h + dl)) for k in (f"{a}-{b}" for a, b in NEAR_BANDS))
++    out["C5_outer_ok"] = all(bc[k]["max_edge_um"] <= b0[k]["max_edge_um"] for k in (f"{a}-{b}" for a, b in OUTER_BANDS))
++    out["ok"] = all(out[k] for k in ("C1_x0_count_ok", "C1_x0_equal_S_L", "C2_ok", "C3_ok", "C4_ok", "C5_near_ok", "C5_outer_ok"))
++    return out, y0, xf
++
++
++def l4_reproduction(P2, tris, tags, ref_P2, ref_tris, ref_tags):
++    """PLAN section 3: coordinate-level comparison with 7H-E4's candidate (never file bytes / serialization order)."""
++    ps = lambda Q: Counter(map(tuple, Q.astype(float).tolist()))  # noqa: E731
++    pc, pr = ps(P2), ps(ref_P2)
++    tri = lambda Q, T: Counter(tuple(sorted(map(tuple, Q[t].astype(float).tolist()))) for t in T)  # noqa: E731
++    xl, xr, yb, yt = ref_P2[:, 0].min(), ref_P2[:, 0].max(), ref_P2[:, 1].min(), ref_P2[:, 1].max()
++
++    def bnd(Q):
++        m = (Q[:, 0] == xl) | (Q[:, 0] == xr) | (Q[:, 1] == yb) | (Q[:, 1] == yt)
++        return set(map(tuple, Q[m].astype(float).tolist()))
++    cs = lambda Q, xv: set(map(tuple, Q[Q[:, 0] == xv].astype(float).tolist()))  # noqa: E731
++    out = {"n_nodes": [len(P2), len(ref_P2)], "n_triangles": [len(tris), len(ref_tris)],
++           "node_set_equal": set(pc) == set(pr), "no_duplicate_coordinates": max(pc.values()) == 1 and max(pr.values()) == 1,
++           "triangle_coordinate_multiset_equal": tri(P2, tris) == tri(ref_P2, ref_tris),
++           "tags_equal": bool(np.array_equal(np.unique(tags), np.unique(ref_tags)) and len(np.unique(tags)) == 1),
++           "outer_boundary_set_equal": bnd(P2) == bnd(ref_P2),
++           "contact_sets_equal": cs(P2, xl) == cs(ref_P2, xl) and cs(P2, xr) == cs(ref_P2, xr),
++           "arrays_equal_in_order_reported_only": bool(np.array_equal(P2, ref_P2) and np.array_equal(tris, ref_tris))}
++    out["ok"] = all(out[k] for k in ("node_set_equal", "no_duplicate_coordinates", "triangle_coordinate_multiset_equal",
++                                     "tags_equal", "outer_boundary_set_equal", "contact_sets_equal"))
++    return out
+diff --git a/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/recheck_e6a_local.py b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/recheck_e6a_local.py
+new file mode 100644
+index 0000000..d07b9ca
+--- /dev/null
++++ b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/recheck_e6a_local.py
+@@ -0,0 +1,56 @@
++"""Batch 7H-E6A local, read-only re-check of the downloaded raw arrays with code independent of the in-run checks
++(no ViennaPS, no DEVSIM). usage: recheck_e6a_local.py <out json>"""
++import json
++import os
++import sys
++from fractions import Fraction
++
++import numpy as np
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++D = os.path.join(HERE, "..", "data", "remote_run_36388479824", "outputs", "e6a_out")
++E4 = os.path.join(HERE, "..", "..", "2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate", "data", "remote_run_36143535737",
++                  "outputs", "e4_out", "candidate_e4.npz")
++
++
++def main():
++    out = {}
++    e4 = np.load(E4)
++    for L in (3, 4, 5):
++        z = np.load(os.path.join(D, f"level_L{L}.npz"))
++        P, T = z["points_um_f32"], z["triangles"]
++        x, y, nv, el, ec = z["x"], z["y"], z["NodeVolume"], z["elements"], z["EdgeCouple"]
++        rect = (Fraction(float(x.max())) - Fraction(float(x.min()))) * (Fraction(float(y.max())) - Fraction(float(y.min())))
++        Q = np.c_[x, y][el]
++        mx = 0.0
++        for k in range(3):
++            u, v = Q[:, (k + 1) % 3] - Q[:, k], Q[:, (k + 2) % 3] - Q[:, k]
++            c = np.einsum("ij,ij->i", u, v) / np.linalg.norm(u, axis=1) / np.linalg.norm(v, axis=1)
++            mx = max(mx, float(np.degrees(np.arccos(np.clip(c, -1, 1))).max()))
++        y0 = np.sort(P[P[:, 0] == 0, 1]).astype(np.float64)
++        a, b = np.sort(T, 1), np.sort(el, 1)
++        r = {"n_nodes": int(len(P)), "n_triangles": int(len(T)),
++             "devsim_xy_equal_scaled_construction_same_node_order": bool(
++                 np.array_equal(x, (P[:, 0] * 1e-4).astype(float)) and np.array_equal(y, (P[:, 1] * 1e-4).astype(float))),
++             "devsim_elements_equal_construction_in_order": bool(np.array_equal(el, T)),
++             "devsim_elements_vertex_set_multiset_equal_construction": bool(
++                 len(a) == len(b) and np.array_equal(np.unique(a, axis=0), np.unique(b, axis=0)) and len(np.unique(a, axis=0)) == len(a)),
++             "sum_NodeVolume_over_exact_rect_minus_1": float((Fraction(float(np.sum(nv))) - rect) / rect),
++             "NodeVolume_all_positive": bool((nv > 0).all()),
++             "EdgeCouple_min": float(ec.min()), "EdgeCouple_negative": int((ec < 0).sum()), "EdgeCouple_zero": int((ec == 0).sum()),
++             "max_angle_deg_float64": mx, "x0_nodes": int(len(y0)),
++             "x0_spacing_min_max_um": [float(np.diff(y0).min()), float(np.diff(y0).max())]}
++        if L == 4:
++            r["bit_equal_to_E4_npz"] = {k: bool(np.array_equal(z[k2], e4[k])) for k, k2 in
++                                        (("x", "x"), ("y", "y"), ("elements", "elements"), ("NodeVolume", "NodeVolume"),
++                                         ("EdgeCouple", "EdgeCouple"))}
++        out[f"L{L}"] = r
++        print(f"L{L}: {r}", flush=True)
++    with open(sys.argv[1], "w", newline="\n") as f:
++        json.dump(out, f, indent=1)
++        f.write("\n")
++    return 0
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/run_e6a.py b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/run_e6a.py
+new file mode 100644
+index 0000000..c196403
+--- /dev/null
++++ b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/run_e6a.py
+@@ -0,0 +1,229 @@
++"""Batch 7H-E6A driver (remote profile entry). Refuses to run outside a GitHub-hosted runner. PLAN sections 1, 5, 7:
++input identity, resource preflight, one subprocess per stage (regen, L3, L4, L5), cross-level nesting, family verdict.
++Outputs: <repo>/e6a_out (not committed)."""
++import argparse
++import hashlib
++import os
++import platform
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++OUT = os.path.join(ROOT, "e6a_out")
++AUD = os.path.join(ROOT, "docs", "audits")
++E4_OUT = os.path.join(AUD, "2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate", "data", "remote_run_36143535737", "outputs", "e4_out")
++sys.path.insert(0, HERE)
++sys.path.insert(0, os.path.join(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import common_e1 as ce  # noqa: E402
++import family_e6a as fam  # noqa: E402
++
++LEVELS = (3, 4, 5)
++GIB = 1 << 30
++MEM_LIMIT = 8 * GIB
++TIME_LIMIT_S = 7200.0
++LEVEL_TIMEOUT_S = 3600
++E4_STAGE_S, E4_T = 159.3, 255400                     # 7H-E4 measured stage time and triangle count (PLAN section 5)
++INPUTS = {  # path -> (kind, expected sha256); text files compared LF-normalized (PLAN section 1.3)
++    os.path.join(HERE, "..", "PLAN.md"): ("text", "5dcda927588941a2b88713434ab841e6346180e82ee33793336968d1981a87ba"),
++    os.path.join(E4_OUT, "candidate_e4.vtu"): ("binary", "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297"),
++    os.path.join(E4_OUT, "candidate_e4.npz"): ("binary", "740a643ed6c965b11ea179993eff2701d87b3c0a9a5990ace71fb2e5df482329"),
++    os.path.join(E4_OUT, "e4_result.json"): ("text", "3fdf069717fff85b28602bc55ae1294e836aa4d6baf5c223c0b5420de97d2299"),
++}
++
++
++def sha_input(path, kind):
++    b = open(path, "rb").read()
++    return hashlib.sha256(b.replace(b"\r\n", b"\n") if kind == "text" else b).hexdigest()
++
++
++def runner_info():
++    info = {"cpu_count": os.cpu_count(), "platform": platform.platform(), "python": platform.python_version()}
++    for k in ("RUNNER_OS", "RUNNER_ARCH", "RUNNER_ENVIRONMENT", "ImageOS", "ImageVersion"):
++        info[k] = os.environ.get(k)
++    try:
++        import ctypes
++
++        class MS(ctypes.Structure):
++            _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong), ("ullTotalPhys", ctypes.c_ulonglong),
++                        ("ullAvailPhys", ctypes.c_ulonglong), ("ullTotalPageFile", ctypes.c_ulonglong),
++                        ("ullAvailPageFile", ctypes.c_ulonglong), ("ullTotalVirtual", ctypes.c_ulonglong),
++                        ("ullAvailVirtual", ctypes.c_ulonglong), ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
++        ms = MS()
++        ms.dwLength = ctypes.sizeof(MS)
++        ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(ms))
++        info["total_physical_bytes"] = int(ms.ullTotalPhys)
++    except Exception as e:  # noqa: BLE001
++        info["total_physical_bytes"] = {"value": None, "status": "UNAVAILABLE: " + repr(e)[:100]}
++    return info
++
++
++def envelopes():
++    out = {}
++    for L in LEVELS:
++        T, N = fam.predicted_counts(L, 100, 200)
++        out[f"L{L}"] = {"T": T, "N": N, "memory_bytes": GIB + 4096 * T + 1024 * N, "time_s": 3 * E4_STAGE_S * T / E4_T}
++    return out
++
++
++def stage(args, timeout):
++    t = time.time()
++    try:
++        p = subprocess.run([sys.executable, os.path.join(HERE, "stage_e6a.py")] + args, cwd=ROOT, capture_output=True, text=True,
++                           encoding="utf-8", errors="replace", timeout=timeout)
++        print(p.stdout[-200000:], flush=True)
++        if p.stderr.strip():
++            print("[e6a][stderr]", p.stderr[-6000:], flush=True)
++        rc = p.returncode
++    except subprocess.TimeoutExpired:
++        rc = "timeout"
++    return rc, time.time() - t
++
++
++def peak(r):
++    m = r.get("memory", {})
++    return m.get("peak_private_bytes")
++
++
++def main():
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--validate-only", action="store_true")
++    a = ap.parse_args()
++    hosted = os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
++    env = envelopes()
++    print(f"[e6a] envelopes: {env}", flush=True)
++    if a.validate_only:
++        return 0
++    if not hosted:
++        print("[e6a] refusing to run: not a GitHub-hosted runner", flush=True)
++        return 2
++    os.makedirs(OUT, exist_ok=True)
++    T0 = time.time()
++    res = {"plan_sha256_LF_expected": INPUTS[os.path.join(HERE, "..", "PLAN.md")][1], "runner": runner_info(),
++           "envelopes": env, "inputs": {}, "stages": {}, "labels": {}}
++    ok_in = True
++    for p, (kind, want) in INPUTS.items():
++        got = sha_input(p, kind) if os.path.exists(p) else None
++        res["inputs"][os.path.relpath(p, ROOT).replace("\\", "/")] = {"kind": kind, "sha256": got, "expected": want, "equal": got == want}
++        ok_in &= got == want
++    if not ok_in:
++        res["stop"] = "INPUT_IDENTITY_FAIL"
++        return finish(res)
++    if any(v["memory_bytes"] > MEM_LIMIT for v in env.values()) or sum(v["time_s"] for v in env.values()) > TIME_LIMIT_S:
++        res["stop"] = "RESOURCE_PREFLIGHT_FAIL"
++        res["labels"] = {f"L{L}": "RESOURCE_PREFLIGHT_FAIL" for L in LEVELS}
++        return finish(res)
++
++    rc, w = stage(["regen", OUT], 1800)
++    res["stages"]["regen"] = {"rc": rc, "wall_s": w}
++    rg = ce.load_strict(os.path.join(OUT, "regen.json")) if os.path.exists(os.path.join(OUT, "regen.json")) else {}
++    if rc != 0 or not rg.get("input_identity_ok"):
++        res["stop"] = "INPUT_IDENTITY_FAIL"
++        return finish(res)
++
++    lv = {}
++    for L in LEVELS:
++        if L == 5:
++            gate = l5_gate(lv, time.time() - T0)
++            res["l5_measured_gate"] = gate
++            if not gate["run"]:
++                res["labels"]["L5"] = "RESOURCE_PREFLIGHT_FAIL"
++                continue
++        rc, w = stage(["level", OUT, str(L)], LEVEL_TIMEOUT_S)
++        res["stages"][f"L{L}"] = {"rc": rc, "wall_s": w}
++        f = os.path.join(OUT, f"level_L{L}.json")
++        lv[L] = ce.load_strict(f) if os.path.exists(f) else {"error": f"no level json (rc={rc})"}
++        lv[L]["_wall_s"] = w
++    res["cross_level"] = cross_level()
++    for L in LEVELS:
++        if L in lv:
++            res["labels"][f"L{L}"] = level_label(lv[L])
++    res["level_summary"] = {f"L{L}": {"pass": r.get("level_pass"), "failed_checks": r.get("failed_checks"), "stop": r.get("stop"),
++                                      "error": r.get("error"), "memory": r.get("memory"), "wall_s": r.get("_wall_s"),
++                                      "solve_calls": r.get("solve_calls")} for L, r in lv.items()}
++    res["total_wall_s"] = time.time() - T0
++    return finish(res, lv)
++
++
++def l5_gate(lv, elapsed):
++    """PLAN section 5, measured gate before L5."""
++    T3, T4, T5 = (fam.predicted_counts(L, 100, 200)[0] for L in LEVELS)
++    p3, p4 = (peak(lv.get(L, {})) for L in (3, 4))
++    t4 = lv.get(4, {}).get("_wall_s")
++    if not isinstance(p4, int) or t4 is None:
++        return {"run": False, "reason": "L4 peak memory or wall time unavailable", "p3": p3, "p4": p4, "t4": t4}
++    prop = p4 * T5 / T4
++    lin = p4 + (p4 - p3) * (T5 - T4) / (T4 - T3) if isinstance(p3, int) else prop
++    mem_pred = max(prop, lin)
++    t_pred = 1.5 * t4 * T5 / T4
++    run = mem_pred <= MEM_LIMIT and elapsed + t_pred <= TIME_LIMIT_S
++    return {"run": bool(run), "peak_L3": p3, "peak_L4": p4, "mem_pred_proportional": prop, "mem_pred_linear": lin,
++            "mem_pred": mem_pred, "mem_limit": MEM_LIMIT, "t_L4_s": t4, "t_pred_L5_s": t_pred, "elapsed_s": elapsed,
++            "time_limit_s": TIME_LIMIT_S}
++
++
++def cross_level():
++    """PLAN 4C6: dyadic nesting of the x = 0 y-set and the fine x-lines between consecutive levels."""
++    import numpy as np
++    z = {L: np.load(os.path.join(OUT, f"level_L{L}.npz")) for L in LEVELS if os.path.exists(os.path.join(OUT, f"level_L{L}.npz"))}
++    out = {}
++    for L in (4, 5):
++        if L in z and L - 1 in z:
++            out[f"L{L - 1}_in_L{L}"] = {"x0_y_nested": bool(np.array_equal(z[L]["x0_y_um_f32"][::2], z[L - 1]["x0_y_um_f32"])),
++                                         "fine_x_nested": bool(np.array_equal(z[L]["fine_x_um_f32"][::2], z[L - 1]["fine_x_um_f32"]))}
++        else:
++            out[f"L{L - 1}_in_L{L}"] = {"status": "NOT_EVALUATED_LEVEL_MISSING"}
++    return out
++
++
++def level_label(r):
++    """First-failure label per level (PLAN section 7); every failed check is still listed in level_summary."""
++    if r.get("level_pass"):
++        return "PASS"
++    if r.get("stop"):
++        return r["stop"]
++    if "error" in r:
++        return "GEOMETRY_PROOF_INCOMPLETE"
++    f = set(r.get("failed_checks", []))
++    order = [("input_identity", "INPUT_IDENTITY_FAIL"), ("solve_calls_0", "SOLVE_CALLED"),
++             ("L4_reproduction", "L4_REPRODUCTION_FAIL"), ("construction_counts", "CONSTRUCTION_COUNT_MISMATCH"),
++             ("B2_no_obtuse", "OBTUSE_TRIANGLE"), ("B4_tiling_T2", "NONCONFORMING_MESH"), ("B4_tiling_T3", "NONCONFORMING_MESH"),
++             ("B1_orientation_positive", "NONCONFORMING_MESH"), ("B3_no_duplicates", "NONCONFORMING_MESH"),
++             ("hanging_midpoints_owned", "NONCONFORMING_MESH"), ("B5_area_equals_rect", "AREA_OR_VOLUME_FAIL"),
++             ("B5_area_equals_S0", "AREA_OR_VOLUME_FAIL"), ("D3_ratio_within_tau", "AREA_OR_VOLUME_FAIL"),
++             ("D4_nodevolume_eq_F3_within_budget", "AREA_OR_VOLUME_FAIL"), ("B6_tags", "CONTACT_OR_TAG_FAIL"),
++             ("B6_contacts_equal_S0", "CONTACT_OR_TAG_FAIL"), ("D2_contacts", "CONTACT_OR_TAG_FAIL"), ("C_resolution", "RESOLUTION_FAIL")]
++    for k, lab in order:
++        if k in f:
++            return lab
++    return "FAILED_OTHER:" + ",".join(sorted(f))
++
++
++def finish(res, lv=None):
++    lv = lv or {}
++    files = sorted(os.listdir(OUT))
++    res["output_files"] = {f: ce.sha_file(os.path.join(OUT, f)) for f in files}
++    expected = ["regen.json", "wafer_volume.vtu"] + [f"level_L{L}.{e}" for L in LEVELS for e in ("json", "npz", "vtu")]
++    res["missing_expected_files"] = [f for f in expected if f not in files]
++    cl = res.get("cross_level", {})
++    nested = all(v.get("x0_y_nested") and v.get("fine_x_nested") for v in cl.values()) and len(cl) == 2
++    all_pass = (not res.get("stop") and all(res["labels"].get(f"L{L}") == "PASS" for L in LEVELS) and nested
++                and not res["missing_expected_files"] and sum(r.get("solve_calls", 0) for r in lv.values()) == 0)
++    res["verdict"] = {"verdict": "GEOMETRY_FAMILY_CANDIDATE_ONLY" if all_pass else "FAMILY_NOT_ACCEPTED", "labels": res["labels"],
++                      "stop": res.get("stop"), "cross_level_nested": nested, "missing_expected_files": res["missing_expected_files"],
++                      "note": "geometry and DEVSIM default integration weight only; not Poisson/current mesh convergence, not "
++                              "current accuracy, not biased I-V, not production step-junction or process-order support"}
++    ce.dump_strict(res, os.path.join(OUT, "e6a_result.json"))
++    for f in os.listdir(OUT):
++        if f.endswith(".json"):
++            ce.load_strict(os.path.join(OUT, f))
++    print(f"[e6a] verdict {res['verdict']}", flush=True)
++    print(f"[e6a] outputs: {sorted(os.listdir(OUT))}", flush=True)
++    # rc reports execution only (a stage crashed / timed out); the geometric verdict lives in e6a_result.json
++    return 0 if all(s["rc"] == 0 for s in res["stages"].values()) else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/stage_e6a.py b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/stage_e6a.py
+new file mode 100644
+index 0000000..ea0d1a5
+--- /dev/null
++++ b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/stage_e6a.py
+@@ -0,0 +1,286 @@
++"""Batch 7H-E6A remote worker, one mode per subprocess (PLAN sections 1-6). devsim.solve is trapped (0 calls required).
++usage: stage_e6a.py regen <out dir>         -> regen.json, wafer_volume.vtu (ViennaPS; no DEVSIM)
++       stage_e6a.py level <out dir> <L>     -> level_L<L>.json / .npz / .vtu (production refine + DEVSIM import only)"""
++import dataclasses
++import os
++import sys
++import time
++import traceback
++
++sys.dont_write_bytecode = True
++os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++AUD = os.path.join(ROOT, "docs", "audits")
++E4D = os.path.join(AUD, "2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate")
++sys.path.insert(0, HERE)
++sys.path.insert(0, ROOT)
++sys.path.insert(0, os.path.join(AUD, "2026-09-25-batch7h-e2-nodevolume-first-bad-stage", "scripts"))
++sys.path.insert(0, os.path.join(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++sys.path.insert(0, os.path.join(AUD, "2026-09-23-batch7h-b-nodevolume-mechanism", "scripts"))
++import common_e1 as ce  # noqa: E402  (E1, read-only: GUI defaults, strict JSON, sha)
++import stage_e2 as se2  # noqa: E402  (E2, read-only: regen(), raw_arrays(), read_device(), release(), write_vtu())
++import trace_refine_e2 as tr  # noqa: E402  (E2, read-only: exact_area, node_budget -- 7H-E4 section 4C definitions)
++import formulas as fm  # noqa: E402  (7H-B, read-only: node_areas F2/F3, edge_couple_predictions)
++import family_e6a as fam  # noqa: E402
++
++E4_OUT = os.path.join(E4D, "data", "remote_run_36143535737", "outputs", "e4_out")
++UM = 1e-4
++T0 = time.time()
++
++
++def log(msg):
++    print(f"[e6a {time.time() - T0:8.1f}s] {msg}", flush=True)
++
++
++def memory():
++    """Windows GetProcessMemoryInfo of this process (bytes); status string elsewhere."""
++    try:
++        import ctypes
++        from ctypes import wintypes
++
++        class PMC(ctypes.Structure):
++            _fields_ = [("cb", wintypes.DWORD), ("PageFaultCount", wintypes.DWORD), ("PeakWorkingSetSize", ctypes.c_size_t),
++                        ("WorkingSetSize", ctypes.c_size_t), ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
++                        ("QuotaPagedPoolUsage", ctypes.c_size_t), ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
++                        ("QuotaNonPagedPoolUsage", ctypes.c_size_t), ("PagefileUsage", ctypes.c_size_t),
++                        ("PeakPagefileUsage", ctypes.c_size_t)]
++        k32, psapi = ctypes.WinDLL("kernel32"), ctypes.WinDLL("psapi")
++        k32.GetCurrentProcess.restype = wintypes.HANDLE
++        psapi.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(PMC), wintypes.DWORD]
++        pmc = PMC()
++        pmc.cb = ctypes.sizeof(PMC)
++        if not psapi.GetProcessMemoryInfo(k32.GetCurrentProcess(), ctypes.byref(pmc), pmc.cb):
++            return {"status": "GetProcessMemoryInfo_FAILED"}
++        return {"peak_working_set_bytes": int(pmc.PeakWorkingSetSize), "peak_private_bytes": int(pmc.PeakPagefileUsage),
++                "working_set_bytes": int(pmc.WorkingSetSize)}
++    except Exception as e:  # noqa: BLE001
++        return {"status": "MEMORY_READ_UNAVAILABLE", "error": repr(e)[:200]}
++
++
++def doped_from(mesh_path):
++    """The tail of 7H-E2 regen() (same production calls, no ViennaPS): ProcessResult + step-junction doping."""
++    from tcad.mesh.viennaps_adapter import build_process_result
++    from tcad.physics.doping import apply_step_junction_doping
++    pr = build_process_result({"final_mesh": mesh_path, "snapshots": []})
++    d = ce.GUI["doping"]
++    return apply_step_junction_doping(pr, region=d["region"], junction_axis=d["junction_axis"],
++                                      junction_position_um=d["junction_position_um"], donor_conc_cm3=d["donor_conc_cm3"],
++                                      acceptor_conc_cm3=d["acceptor_conc_cm3"], chemical_state=d["chemical_state"])
++
++
++def regen(outd):
++    res = {"mode": "regen", "gui": ce.GUI}
++    try:
++        doped = se2.regen(outd, res)
++        P0, T0_, G0 = se2.raw_arrays(doped)
++        xs, ys = np.unique(P0[:, 0]), np.unique(P0[:, 1])
++        res["s0"] = {"n_nodes": int(len(P0)), "n_triangles": int(len(T0_)), "n_x_lines": int(len(xs)), "n_y_lines": int(len(ys)),
++                     "tags": sorted({int(t) for t in G0}), "points_dtype": str(P0.dtype),
++                     "e0_um": fam.s0_spacing_error(P0[:, :2])}
++        res["s0_shape_ok"] = (len(xs), len(ys), len(T0_), len(res["s0"]["tags"])) == (201, 101, 40000, 1)
++        res["input_identity_ok"] = bool(res["input_mesh"]["equal"]) and res["s0_shape_ok"]
++        res["wafer_path"] = os.path.basename(doped.volume_mesh_path)
++    except Exception as e:  # noqa: BLE001
++        res["error"] = repr(e)[:500]
++        res["traceback"] = traceback.format_exc()[-3000:]
++    res["memory"] = memory()
++    ce.dump_strict(res, os.path.join(outd, "regen.json"))
++    log(f"regen: identity_ok={res.get('input_identity_ok')} error={'error' in res}")
++    return 0 if "error" not in res else 1
++
++
++def nodevolume_checks(d):
++    """PLAN 4D3/4D4, the NodeVolume part of 7H-E2 analyze() with identical formulas (no overlap / Delaunay scans)."""
++    x, y, nv, el = d["x"], d["y"], d["nv"], d["el"]
++    tris = [[int(a), int(b), int(c)] for a, b, c in el]
++    Pc = np.column_stack([x, y])
++    n = len(x)
++    area_exact = tr.exact_area(Pc, tris)
++    area = float(area_exact)
++    f2 = fm.node_areas(Pc, tris, "F2")
++    f3 = fm.node_areas(Pc, tris, "F3")
++    b = tr.node_budget(Pc, tris, n)
++    tau = (n + len(tris)) * 2.0 ** -52 + float(b.max())
++    r = {"n_nodes": n, "n_triangles": len(tris), "exact_area_cm2": f"{area_exact.numerator}/{area_exact.denominator}",
++         "area_cm2": area, "sum_NodeVolume_cm2": float(nv.sum()), "ratio": float(nv.sum() / area), "tau": tau,
++         "ratio_within_tau": bool(abs(nv.sum() / area - 1.0) <= tau), "budget_max_b_i": float(b.max()),
++         "f3_max_rel_error": float(np.max(np.abs(nv - f3) / f3)), "f3_nodes_beyond_budget": int((np.abs(nv - f3) > b * f3).sum()),
++         "f3_all_nodes_within_budget": bool((np.abs(nv - f3) <= b * f3).all()),
++         "F3_minus_F2_max_rel_reported": float(np.max(np.abs(f3 - f2) / f2)),
++         "x_sha256": ce.sha(x.tobytes()), "y_sha256": ce.sha(y.tobytes()), "elements_sha256": ce.sha(el.tobytes()),
++         "NodeVolume_sha256": ce.sha(nv.tobytes())}
++    ed = d["edge"]
++    if "error" in ed:
++        r["edgecouple"] = {"status": "EDGECOUPLE_UNKNOWN", "error": ed["error"]}
++    else:
++        g1, g2, _ = fm.edge_couple_predictions(Pc, tris)
++        keys = [(min(a, b_), max(a, b_)) for a, b_ in zip(ed["n0"], ed["n1"])]
++        G1 = np.array([g1[k] for k in keys])
++        G2 = np.array([g2[k] for k in keys])
++        ec = ed["EdgeCouple"]
++        scale = float(np.abs(G2).max())
++        r["edgecouple"] = {"status": "READ", "n_edges": int(len(ec)), "negative": int((ec < 0).sum()), "zero": int((ec == 0).sum()),
++                           "positive": int((ec > 0).sum()), "n_G1_negative": int((G1 < 0).sum()),
++                           "max_abs_EC_minus_G2_over_maxG2": float(np.abs(ec - G2).max() / scale),
++                           "max_abs_EC_minus_G1_over_maxG2": float(np.abs(ec - G1).max() / scale)}
++    return r, f2, f3
++
++
++def level(outd, L):
++    import devsim as dv
++    from tcad.device.devsim.mesh_refine import refine_mesh_near
++    from tcad.device.devsim.mesh_import import import_process_result
++    res = {"mode": "level", "L": L, "solve_calls": 0, "checks": {}, "wall_s": {}}
++    chk, wall = res["checks"], res["wall_s"]
++    real_solve = dv.solve
++
++    def trap(*a, **k):
++        res["solve_calls"] += 1
++        raise RuntimeError("E6A forbids devsim.solve")
++    dv.solve = trap
++    try:
++        run_level(outd, L, res, chk, wall, dv, refine_mesh_near, import_process_result)
++    except Exception as e:  # noqa: BLE001
++        res["error"] = repr(e)[:500]
++        res["traceback"] = traceback.format_exc()[-3000:]
++    finally:
++        dv.solve = real_solve
++        res["devices_left"] = list(dv.get_device_list())
++        chk["devices_left_empty"] = len(res["devices_left"]) == 0
++        chk["solve_calls_0"] = res["solve_calls"] == 0
++        res["memory"] = memory()
++    res["failed_checks"] = [k for k, v in chk.items() if v is not True]
++    res["level_pass"] = not res["failed_checks"] and "error" not in res and "stop" not in res
++    ce.dump_strict(res, os.path.join(outd, f"level_L{L}.json"))
++    log(f"L{L}: pass={res['level_pass']} stop={res.get('stop')} failed={res['failed_checks']} error={'error' in res}")
++    return 0 if "error" not in res else 1
++
++
++def run_level(outd, L, res, chk, wall, dv, refine_mesh_near, import_process_result):
++    rg = ce.load_strict(os.path.join(outd, "regen.json"))
++    wafer = os.path.join(outd, rg["wafer_path"])
++    res["wafer_sha256"] = ce.sha_file(wafer)
++    chk["input_identity"] = bool(rg.get("input_identity_ok")) and res["wafer_sha256"] == rg["input_mesh"]["sha256"]
++    if not chk["input_identity"]:
++        res["stop"] = "INPUT_IDENTITY_FAIL"
++        return
++    doped = doped_from(wafer)
++    P0, T0_, G0 = se2.raw_arrays(doped)
++    ny, nxc = len(np.unique(P0[:, 1])) - 1, len(np.unique(P0[:, 0])) - 1
++    t = time.time()
++    PL, TL, GL = refine_mesh_near(P0, T0_, G0, lambda c: abs(c[0] - 0.0) < 0.1, levels=L)
++    wall["production_refine"] = time.time() - t
++    t = time.time()
++    try:
++        pts, tris, tags, rep, info = fam.build_level(P0, PL, TL, GL, L)
++    except ValueError as e:
++        res["stop"] = str(e).split()[0]
++        res["stop_detail"] = str(e)
++        return
++    wall["build"] = time.time() - t
++    res["build"] = rep
++    T_pred, N_pred = fam.predicted_counts(L, ny, nxc)
++    res["predicted"] = {"T": T_pred, "N": N_pred}
++    chk["construction_counts"] = (rep["n_triangles"], rep["n_nodes"]) == (T_pred, N_pred)
++    chk["no_unreferenced_nodes"] = rep["unreferenced_nodes"] == 0
++    log(f"L{L}: {rep['n_nodes']} nodes, {rep['n_triangles']} triangles (predicted {N_pred}, {T_pred})")
++
++    t = time.time()
++    cc = fam.construction_checks(P0, T0_, PL, TL, pts, tris, info, L)
++    res["construction"] = cc
++    for k in ("x_lines_are_mid32_recursion", "x_lines_strictly_ordered", "sl_points_prefix_bit_identical",
++              "fine_rows_identical_to_S_L", "base_rows_identical_to_S_L", "base_region_equal_S0_coordinate_triples",
++              "hanging_midpoints_owned"):
++        chk[k] = bool(cc[k])
++    ex = fam.exact_checks(pts[:, :2], tris, P0[:, :2], T0_, tags, G0[0])
++    res["exact"] = ex
++    wall["exact_checks"] = time.time() - t
++    chk.update({"B1_orientation_positive": ex["n_nonpositive_orientation"] == 0, "B2_no_obtuse": ex["n_obtuse_exact"] == 0,
++                "B3_no_duplicates": ex["n_duplicate_triangles"] == 0, "B4_tiling_T2": ex["tiling_T2_ok"],
++                "B4_tiling_T3": ex["tiling_T3_ok"], "B5_area_equals_rect": ex["area_equals_rect"],
++                "B5_area_equals_S0": ex["area_equals_S0"], "B6_boundary_points_lost_0": ex["boundary_points_lost"] == 0,
++                "B6_bbox_equal": ex["bbox_equal"], "B6_contacts_equal_S0": ex["left_contact_set_equal"] and ex["right_contact_set_equal"],
++                "B6_tags": ex["tags_single_equal_S0"]})
++    log(f"L{L}: exact checks {wall['exact_checks']:.1f}s obtuse {ex['n_obtuse_exact']} T2 {ex['tiling_T2_ok']} T3 {ex['tiling_T3_ok']}")
++
++    t = time.time()
++    e0 = fam.s0_spacing_error(P0[:, :2])
++    rc, y0, xf = fam.resolution_checks(pts[:, :2], tris, PL[:, :2], P0[:, :2], T0_, rep, L, e0)
++    res["resolution"] = rc
++    chk["C_resolution"] = bool(rc["ok"])
++    wall["resolution"] = time.time() - t
++
++    if L == 4:
++        import meshio
++        m = meshio.read(os.path.join(E4_OUT, "candidate_e4.vtu"))
++        blk = next(c for c in m.cells if c.type == "triangle")
++        rtags = m.cell_data[doped.material_field][m.cells.index(blk)]
++        res["l4_reproduction"] = fam.l4_reproduction(pts[:, :2], tris, tags, m.points[:, :2], blk.data, rtags)
++        chk["L4_reproduction"] = bool(res["l4_reproduction"]["ok"])
++
++    vtu = os.path.join(outd, f"level_L{L}.vtu")
++    chk["writer_roundtrip_exact"] = bool(se2.write_vtu(vtu, pts, tris, tags, doped.material_field))
++    res["vtu_sha256"] = ce.sha_file(vtu)
++    i = ce.GUI["import"]
++    t = time.time()
++    try:
++        imp = import_process_result(dataclasses.replace(doped, volume_mesh_path=vtu), mesh_name=f"e6a_L{L}_mesh",
++                                    device_name=f"e6a_L{L}_device", contact_regions=i["contact_regions"],
++                                    contact_axis=i["contact_axis"], length_scale_to_cm=i["length_scale_to_cm"])
++    except Exception as e:  # noqa: BLE001
++        res["stop"] = "DEVSIM_IMPORT_FAIL"
++        res["stop_detail"] = repr(e)[:300]
++        return
++    try:
++        d = se2.read_device(dv, imp)
++    finally:
++        se2.release(dv, imp)
++    wall["import_read"] = time.time() - t
++    exp = (pts[:, :2] * i["length_scale_to_cm"]).astype(float)
++    got = np.column_stack([d["x"], d["y"]])
++    srt = lambda Q: Q[np.lexsort((Q[:, 1], Q[:, 0]))]  # noqa: E731
++    e4 = ce.load_strict(os.path.join(E4_OUT, "e4_result.json"))
++    e4c = {c: v["coords_sha256"] for c, v in e4["analysis"]["contacts"].items()}
++    res["devsim"] = {"n_nodes": int(len(d["x"])), "n_elements": int(len(d["el"])), "regions": d["regions"],
++                     "contacts": d["contacts"], "e4_contacts_coords_sha256": e4c}
++    chk["D2_coordinates_equal_scaled_construction"] = bool(got.shape == exp.shape and np.array_equal(srt(got), srt(exp)))
++    chk["D2_elements_count"] = len(d["el"]) == rep["n_triangles"]
++    chk["D2_regions"] = d["regions"] == ["Si"]
++    chk["D2_contacts"] = ({c: v["n_nodes"] for c, v in d["contacts"].items()} == {"Si_xmin": 101, "Si_xmax": 101}
++                          and {c: v["coords_sha256"] for c, v in d["contacts"].items()} == e4c)
++    t = time.time()
++    nvr, f2, f3 = nodevolume_checks(d)
++    wall["nodevolume"] = time.time() - t
++    res["nodevolume"] = nvr
++    chk["D3_ratio_within_tau"] = nvr["ratio_within_tau"]
++    chk["D4_nodevolume_eq_F3_within_budget"] = nvr["f3_all_nodes_within_budget"]
++    chk["all_finite"] = bool(np.isfinite(nvr["ratio"]) and np.all(np.isfinite(d["nv"])))
++    log(f"L{L}: ratio {nvr['ratio']!r} tau {nvr['tau']:.3e} F3 within budget {nvr['f3_all_nodes_within_budget']} "
++        f"({wall['nodevolume']:.1f}s)")
++    if L == 4:
++        z = np.load(os.path.join(E4_OUT, "candidate_e4.npz"))
++        ka = np.lexsort((d["y"], d["x"]))
++        kb = np.lexsort((z["y"], z["x"]))
++        same_xy = np.array_equal(d["x"][ka], z["x"][kb]) and np.array_equal(d["y"][ka], z["y"][kb])
++        res["l4_reproduction"]["nodevolume_equal_E4_by_coordinate_reported_only"] = bool(
++            same_xy and np.array_equal(d["nv"][ka], z["NodeVolume"][kb]))
++    ed = d["edge"]
++    np.savez_compressed(os.path.join(outd, f"level_L{L}.npz"), points_um_f32=pts, triangles=tris, tags=tags, x0_y_um_f32=y0,
++                        fine_x_um_f32=xf, x=d["x"], y=d["y"], elements=d["el"], NodeVolume=d["nv"], F2=f2, F3=f3,
++                        edge_n0=ed.get("n0", np.array([])), edge_n1=ed.get("n1", np.array([])),
++                        EdgeCouple=ed.get("EdgeCouple", np.array([])), EdgeLength=ed.get("EdgeLength", np.array([])))
++
++
++def main():
++    mode, outd = sys.argv[1], os.path.abspath(sys.argv[2])
++    os.makedirs(outd, exist_ok=True)
++    if mode == "regen":
++        return regen(outd)
++    return level(outd, int(sys.argv[3]))
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/synthetic_e6a_test.py b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/synthetic_e6a_test.py
+new file mode 100644
+index 0000000..53e9dff
+--- /dev/null
++++ b/docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/synthetic_e6a_test.py
+@@ -0,0 +1,152 @@
++"""Batch 7H-E6A SYNTHETIC test (no ViennaPS, no DEVSIM): small rectangles with the real base-grid line structure
++(0.05 um, lines at +-0.1 / +-0.15 / +-0.2), both diagonal orientations, refined by the unmodified production
++refine_mesh_near (pure numpy/Python). Checks the level-L rule at L = 3, 4, 5, bit-equality with 7H-E4's own
++build_candidate at L = 4, cross-level nesting, and that every checker catches a deliberate defect.
++usage: synthetic_e6a_test.py <out json>"""
++import json
++import os
++import sys
++
++sys.dont_write_bytecode = True
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, HERE)
++sys.path.insert(0, ROOT)
++import family_e6a as fam  # noqa: E402
++q4 = fam.q4
++from tcad.device.devsim.mesh_refine import refine_mesh_near  # noqa: E402
++
++TAG = 10
++
++
++def synthetic_s0(nx_half=10, ny=3, diag="LLUR"):
++    xs = (np.arange(-nx_half, nx_half + 1) * 0.05).astype(np.float32)
++    ys = (np.arange(-ny, 1) * 0.05).astype(np.float32)
++    P = np.array([(x, y, 0.0) for y in ys for x in xs], dtype=np.float32)
++    idx = lambda i, j: j * len(xs) + i  # noqa: E731
++    T = []
++    for j in range(ny):
++        for i in range(2 * nx_half):
++            ll, lr, ur, ul = idx(i, j), idx(i + 1, j), idx(i + 1, j + 1), idx(i, j + 1)
++            T += [(ll, lr, ur), (ll, ur, ul)] if diag == "LLUR" else [(ll, lr, ul), (lr, ur, ul)]
++    return P, np.array(T, dtype=np.int64), np.full(len(T), TAG, dtype=np.int64), 2 * nx_half, ny
++
++
++def level_mesh(P0, T0, G0, L):
++    PL, TL, GL = refine_mesh_near(P0, T0, G0, lambda c: abs(c[0] - 0.0) < 0.1, levels=L)
++    pts, tris, tags, rep, info = fam.build_level(P0, PL, TL, GL, L)
++    return PL, TL, GL, pts, tris, tags, rep, info
++
++
++def verify(P0, T0, G0, nxc, ny, L, PL, TL, pts, tris, tags, rep, info):
++    r = {"counts": [rep["n_triangles"], rep["n_nodes"]], "predicted": list(fam.predicted_counts(L, ny, nxc))}
++    r["counts_ok"] = r["counts"] == r["predicted"]
++    cc = fam.construction_checks(P0, T0, PL, TL, pts, tris, info, L)
++    ex = fam.exact_checks(pts[:, :2], tris, P0[:, :2], T0, tags, G0[0])
++    rc, y0, xf = fam.resolution_checks(pts[:, :2], tris, PL[:, :2], P0[:, :2], T0, rep, L, fam.s0_spacing_error(P0[:, :2]))
++    r["construction_ok"] = all(cc[k] for k in ("x_lines_are_mid32_recursion", "x_lines_strictly_ordered",
++                                               "sl_points_prefix_bit_identical", "fine_rows_identical_to_S_L",
++                                               "base_rows_identical_to_S_L", "base_region_equal_S0_coordinate_triples",
++                                               "hanging_midpoints_owned"))
++    r["exact_ok"] = exact_ok(ex)
++    r["resolution_ok"] = bool(rc["ok"])
++    r["n_obtuse"], r["n_template_cells"] = ex["n_obtuse_exact"], cc["n_template_cells"]
++    r["delta_L_um"], r["x0_max_dev_um"] = rc["delta_L_um"], rc["C2_x0_max_abs_dev"]
++    r["unreferenced"] = rep["unreferenced_nodes"]
++    return r, y0, xf
++
++
++def exact_ok(ex):
++    return (ex["n_nonpositive_orientation"] == 0 and ex["n_obtuse_exact"] == 0 and ex["n_duplicate_triangles"] == 0
++            and ex["tiling_T2_ok"] and ex["tiling_T3_ok"] and ex["area_equals_rect"] and ex["area_equals_S0"]
++            and ex["boundary_points_lost"] == 0 and ex["bbox_equal"] and ex["left_contact_set_equal"]
++            and ex["right_contact_set_equal"] and ex["tags_single_equal_S0"])
++
++
++def mutations(P0, T0, G0, pts, tris, tags):
++    """Each defect must be caught by the check named in the PLAN."""
++    ch = lambda P, T: fam.exact_checks(P[:, :2], T, P0[:, :2], T0, np.full(len(T), TAG), G0[0])  # noqa: E731
++    out = {}
++    Pf = pts[:, :2].astype(np.float64)
++    fine_ix = np.where(np.all(np.abs(Pf[tris][:, :, 0]) < 0.05, axis=1))[0]
++    t = tris.copy()
++    t[fine_ix[0]] = t[fine_ix[0]][[0, 2, 1]]
++    e = ch(pts, t)
++    out["flip_orientation"] = e["n_nonpositive_orientation"] > 0 and not e["tiling_T2_ok"]
++    e = ch(pts, np.delete(tris, fine_ix[5], axis=0))
++    out["delete_interior_triangle"] = not e["tiling_T3_ok"] and not e["area_equals_rect"]
++    e = ch(pts, np.vstack([tris, tris[fine_ix[7]]]))
++    out["duplicate_triangle"] = e["n_duplicate_triangles"] > 0 and not e["tiling_T2_ok"]
++    # hanging node: split one fine triangle across its longest edge on one side only
++    a, b, c = tris[fine_ix[9]]
++    Q = Pf[[a, b, c]]
++    lens = [np.linalg.norm(Q[1] - Q[2]), np.linalg.norm(Q[2] - Q[0]), np.linalg.norm(Q[0] - Q[1])]
++    k = int(np.argmax(lens))
++    apex, u, v = [(a, b, c), (b, c, a), (c, a, b)][k]
++    Mxy = (pts[u] + pts[v]) / np.float32(2.0)
++    P2 = np.vstack([pts, Mxy[None, :]])
++    mid = len(pts)
++    t = np.vstack([np.delete(tris, fine_ix[9], axis=0), [[apex, u, mid], [apex, mid, v]]])
++    e = ch(P2, t)
++    out["hanging_node"] = e["n_one_owner_edges_off_boundary"] > 0 and not e["tiling_T3_ok"]
++    # obtuse by one float32 ulp: move an interior fine node right by one ulp (topology unchanged)
++    inner = np.where((np.abs(Pf[:, 0]) < 0.04) & (Pf[:, 0] != 0) & (Pf[:, 1] < -0.02) & (Pf[:, 1] > -0.13))[0][0]
++    P3 = pts.copy()
++    P3[inner, 0] = np.nextafter(P3[inner, 0], np.float32(1.0))
++    e = ch(P3, tris)
++    out["obtuse_one_ulp"] = e["n_obtuse_exact"] > 0 and e["tiling_T2_ok"] and e["tiling_T3_ok"]
++    # overlap: an extra triangle on three existing nodes spanning several cells
++    s = np.where((np.abs(Pf[:, 1] + 0.05) < 1e-6))[0]
++    s = s[np.argsort(Pf[s, 0])]
++    up = np.where((np.abs(Pf[:, 1] + 0.0) < 1e-6) & (np.abs(Pf[:, 0] - Pf[s[3], 0]) < 1e-6))[0][0]
++    e = ch(pts, np.vstack([tris, [[s[2], s[5], up]]]))
++    out["overlapping_triangle"] = not (e["tiling_T2_ok"] and e["tiling_T3_ok"]) and not e["area_equals_rect"]
++    # boundary gap: remove one triangle touching the bottom boundary
++    bi = np.where(np.any(Pf[tris][:, :, 1] == Pf[:, 1].min(), axis=1))[0][0]
++    e = ch(pts, np.delete(tris, bi, axis=0))
++    out["boundary_gap"] = not e["tiling_T3_ok"]
++    return out
++
++
++def main():
++    res, ok = {}, True
++    for diag in ("LLUR", "LRUL"):
++        P0, T0, G0, nxc, ny = synthetic_s0(diag=diag)
++        prev = None
++        for L in (3, 4, 5):
++            PL, TL, GL, pts, tris, tags, rep, info = level_mesh(P0, T0, G0, L)
++            r, y0, xf = verify(P0, T0, G0, nxc, ny, L, PL, TL, pts, tris, tags, rep, info)
++            if prev is not None:
++                r["x0_nested_in_previous"] = bool(np.array_equal(y0[::2], prev[0]))
++                r["fine_x_nested_in_previous"] = bool(np.array_equal(xf[::2], prev[1]))
++                ok &= r["x0_nested_in_previous"] and r["fine_x_nested_in_previous"]
++            prev = (y0, xf)
++            if L == 4:
++                ep, et, eg, _ = q4.build_candidate(P0, PL, TL, GL)
++                r["bit_identical_to_E4_build_candidate"] = bool(np.array_equal(ep, pts) and np.array_equal(et, tris)
++                                                                 and np.array_equal(eg, tags))
++                ok &= r["bit_identical_to_E4_build_candidate"]
++            if L == 3:
++                r["mutations_caught"] = mutations(P0, T0, G0, pts, tris, tags)
++                ok &= all(r["mutations_caught"].values())
++            ok &= r["counts_ok"] and r["construction_ok"] and r["exact_ok"] and r["resolution_ok"] and r["unreferenced"] == 0
++            res[f"{diag}_L{L}"] = r
++            print(f"{diag} L{L}: {r}", flush=True)
++    try:
++        fam.build_level(*synthetic_s0()[:1], *refine_mesh_near(*synthetic_s0()[:3], lambda c: abs(c[0]) < 0.1, levels=2), 2)
++        res["L2_rejected"] = False
++    except ValueError as e:
++        res["L2_rejected"] = str(e).startswith("LEVEL_OUT_OF_RANGE")
++    ok &= res["L2_rejected"]
++    res["ALL_OK"] = bool(ok)
++    with open(sys.argv[1], "w", newline="\n") as f:
++        json.dump(res, f, indent=1, default=str)
++        f.write("\n")
++    print("ALL_OK", res["ALL_OK"])
++    return 0 if ok else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/remote/profiles.py b/remote/profiles.py
+index 24da8ac..548b66d 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -227,2 +227,34 @@ PROFILES = {
+     },
++    "e6a_mesh_family": {
++        "description": "Batch 7H-E6A: non-obtuse conforming mesh family L3/L4/L5 (7H-E4 rule generalized); geometry + DEVSIM NodeVolume only. No solve.",
++        "entry": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/run_e6a.py",
++        "args": [],
++        "params": {},
++        "timeout_s": 9000,
++        "inputs": [
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/PLAN.md",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/PLAN.sha256",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/run_e6a.py",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/stage_e6a.py",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/family_e6a.py",
++            "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/scripts/quadtree_e4.py",
++            "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.vtu",
++            "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/candidate_e4.npz",
++            "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/data/remote_run_36143535737/outputs/e4_out/e4_result.json",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/stage_e2.py",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/trace_refine_e2.py",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/verdicts_e2.py",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
++            "docs/audits/2026-09-23-batch7h-b-nodevolume-mechanism/scripts/formulas.py",
++            "tcad/device/devsim/mesh_import.py",
++            "tcad/device/devsim/mesh_refine.py",
++            "tcad/mesh/viennaps_adapter.py",
++            "tcad/physics/doping.py",
++            "tcad/backends/viennaps/io.py",
++            "tcad/backends/viennaps/session.py",
++        ],
++        "outputs": [{"glob": "e6a_out/**/*.json", "max_mb": 50}, {"glob": "e6a_out/**/*.npz", "max_mb": 50},
++                    {"glob": "e6a_out/**/*.vtu", "max_mb": 50}],
++        "regenerate": "Rerun the profile. The wafer mesh is regenerated by ViennaPS and hash-gated (cfae97d4...); every level is rebuilt.",
++    },
+ }
+diff --git a/remote/request.json b/remote/request.json
+index 8339157..990da47 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -2,6 +2,6 @@
+  "schema": 1,
+- "request_id": "e5-equilibrium-pilot-002",
+- "profile": "e5_equilibrium_pilot",
++ "request_id": "e6a-mesh-family-001",
++ "profile": "e6a_mesh_family",
+  "params": {},
+- "note": "Batch 7H-E5 rerun (script bugfix, see BUGFIX_NOTE_1.md; PLAN unchanged, commit fd9881ec012465af1936326dd2a64079582d1468)."
++ "note": "Batch 7H-E6A. PLAN fixed in commit f9a9cfaa175d9162072ff6b51b8ae8e81b83642c (PLAN.md LF sha256 5dcda927...) before this code and request."
+ }
