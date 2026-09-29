@@ -1,0 +1,1586 @@
+diff --git a/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/judge_e6d.py b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/judge_e6d.py
+new file mode 100644
+index 0000000..599cc5a
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/judge_e6d.py
+@@ -0,0 +1,430 @@
++"""Batch 7H-E6D verdict logic (pure numpy / Python; no DEVSIM, no ViennaPS). PLAN sections 2, 3, 5, 6, 7.
++Reuses E6B judge_e6b (common set, four metrics, Gauss diagnostic, artifact tags) and E6C judge_e6c (initialization contract) read-only.
++Names: F01 = M(G0-P, G1-P), F12 = M(G1-P, G2-P); A0, A1, A2 = `observed_initialization_shift` M(Gk-P, Gk-Q)."""
++import json
++import os
++import sys
++
++import numpy as np
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++AUD = os.path.abspath(os.path.join(HERE, "..", ".."))
++sys.path.insert(0, os.path.join(AUD, "2026-09-29-batch7h-e6c-initialization-robustness", "scripts"))
++import judge_e6c as jc  # noqa: E402  (E6C, read-only)
++jb = jc.jb               # E6B, read-only
++
++METRICS = jb.METRICS
++X01_UM, X02_UM = jb.X01_UM, jb.X02_UM
++GS = (1, 2)
++TAGS = ("P", "Q")
++UM = 1e-4
++# PLAN 2 / 3: every pre-solve check and the failure state it maps to (a missing check is a failed check).
++CHECK_CLASS = {
++    "core_node_set_equal": "CORE_IDENTITY_FAIL", "core_triangle_multiset_equal": "CORE_IDENTITY_FAIL",
++    "construction_counts": "GEOMETRY_UNSUPPORTED", "tags_single_equal_G0": "GEOMETRY_UNSUPPORTED", "bbox_equal": "GEOMETRY_UNSUPPORTED",
++    "area_equals_G0": "GEOMETRY_UNSUPPORTED", "orientation_positive": "GEOMETRY_UNSUPPORTED", "no_duplicate_triangles": "GEOMETRY_UNSUPPORTED",
++    "no_duplicate_nodes": "GEOMETRY_UNSUPPORTED", "no_isolated_nodes": "GEOMETRY_UNSUPPORTED", "tiling_T2": "GEOMETRY_UNSUPPORTED",
++    "tiling_T3": "GEOMETRY_UNSUPPORTED", "writer_roundtrip_exact": "GEOMETRY_UNSUPPORTED",
++    "nodevolume_positive": "GEOMETRY_UNSUPPORTED", "nodevolume_sum_within_tau": "GEOMETRY_UNSUPPORTED",
++    "edgecouple_no_negative": "GEOMETRY_UNSUPPORTED",
++    "import_ok": "IMPORT_IDENTITY_FAIL", "xy_equal_scaled_construction": "IMPORT_IDENTITY_FAIL",
++    "vertex_set_multiset_equal": "IMPORT_IDENTITY_FAIL", "regions_Si": "IMPORT_IDENTITY_FAIL", "contacts_ok": "IMPORT_IDENTITY_FAIL",
++}
++STATE_ORDER = ("CORE_IDENTITY_FAIL", "GEOMETRY_UNSUPPORTED", "IMPORT_IDENTITY_FAIL")
++
++
++# ---------------------------------------------------------------- node keys, core identity, change record (PLAN 2)
++def keys(P):
++    """uint64 key of the float32 (x, y) bit patterns."""
++    return jb.CommonSet._keys(np.ascontiguousarray(np.asarray(P, dtype=np.float32)[:, :2]))
++
++
++def node_index(base, other):
++    """Index into `other` of every `base` node (bit-identical float32 x, y); ValueError if any is missing."""
++    kb, ko = keys(base), keys(other)
++    order = np.argsort(ko, kind="stable")
++    sk = ko[order]
++    pos = np.searchsorted(sk, kb)
++    hit = (pos < len(sk)) & (sk[np.minimum(pos, len(sk) - 1)] == kb)
++    if not bool(hit.all()):
++        raise ValueError(f"{int((~hit).sum())} base nodes missing")
++    return order[pos]
++
++
++def tri_rows(P, T):
++    """Per triangle, its three vertex keys sorted: a node-id and vertex-order independent representation."""
++    return np.sort(keys(P)[np.asarray(T, dtype=np.int64)], axis=1)
++
++
++def _multiset_diff(A, B):
++    """Rows of A not matched in B and rows of B not matched in A, as multisets. Returns (removed rows, added rows)."""
++    both = np.concatenate([A, B]).view([("a", "u8"), ("b", "u8"), ("c", "u8")]).reshape(-1)
++    u, inv = np.unique(both, return_inverse=True)
++    inv = inv.reshape(-1)
++    net = np.bincount(inv[:len(A)], minlength=len(u)) - np.bincount(inv[len(A):], minlength=len(u))
++    rem = np.repeat(u[net > 0], net[net > 0])
++    add = np.repeat(u[net < 0], -net[net < 0])
++    f = lambda r: r.view(np.uint64).reshape(-1, 3)  # noqa: E731
++    return f(rem), f(add)
++
++
++def _region_of_abs_x(ax):
++    return np.where(ax <= X01_UM, "core", np.where(ax >= X02_UM, "outer", "transition"))
++
++
++def core_identity(P0, T0, Pk, Tk):
++    """Core = |x| <= X01. Node set by bit pattern, and the multiset of vertex-coordinate triples of all-core triangles."""
++    def core(P, T):
++        ax = np.abs(np.asarray(P, dtype=np.float32)[:, 0].astype(np.float64))
++        cm = ax <= X01_UM
++        k = keys(P)
++        tm = cm[np.asarray(T, dtype=np.int64)].all(axis=1)
++        return np.sort(k[cm]), tri_rows(P, np.asarray(T)[tm])
++    n0, t0 = core(P0, T0)
++    nk, tk = core(Pk, Tk)
++    rem, add = _multiset_diff(t0, tk) if len(t0) or len(tk) else (np.zeros((0, 3), np.uint64), np.zeros((0, 3), np.uint64))
++    out = {"n_core_nodes": [int(len(n0)), int(len(nk))], "n_core_triangles": [int(len(t0)), int(len(tk))],
++           "core_node_set_equal": bool(len(n0) == len(nk) and np.array_equal(n0, nk)),
++           "core_triangle_multiset_equal": bool(len(rem) == 0 and len(add) == 0),
++           "core_triangles_removed": int(len(rem)), "core_triangles_added": int(len(add))}
++    out["ok"] = out["core_node_set_equal"] and out["core_triangle_multiset_equal"]
++    return out
++
++
++def change_record(P0, T0, Pk, Tk):
++    """PLAN 2: G0 -> Gk triangle multiset difference by region of the triangle centroid, and the x-range of changed transition ones."""
++    all_pts = np.concatenate([np.asarray(P0, np.float32)[:, :2], np.asarray(Pk, np.float32)[:, :2]])
++    kall = keys(all_pts)
++    ku, first = np.unique(kall, return_index=True)
++    xs = all_pts[first, 0].astype(np.float64)
++    rem, add = _multiset_diff(tri_rows(P0, T0), tri_rows(Pk, Tk))
++    out = {}
++    for name, rows in (("removed", rem), ("added", add)):
++        cx = xs[np.searchsorted(ku, rows)].mean(axis=1) if len(rows) else np.zeros(0)
++        reg = _region_of_abs_x(np.abs(cx))
++        out[name] = {r: int((reg == r).sum()) for r in ("core", "transition", "outer")}
++        tr = np.abs(cx[reg == "transition"])
++        out[name]["transition_abs_centroid_x_um_range"] = [float(tr.min()), float(tr.max())] if len(tr) else None
++    out["transition_changed"] = bool(out["removed"]["transition"] or out["added"]["transition"])
++    return out
++
++
++# ---------------------------------------------------------------- pre-solve gates (PLAN 3)
++def contact_check(x, y, ext, nodes, edges):
++    """Contact `nodes` must be every node on the line x == ext, include both corners, and consecutive nodes (by y) must be joined by a
++    contact edge; `edges` = contact element node pairs. The node count is recorded, never fixed."""
++    x, y = np.asarray(x), np.asarray(y)
++    want = set(np.where(x == ext)[0].tolist())
++    got = set(int(v) for v in nodes)
++    ys = sorted(got, key=lambda i: y[i])
++    es = {tuple(sorted((int(a), int(b)))) for a, b in edges}
++    gaps = [(a, b) for a, b in zip(ys[:-1], ys[1:]) if tuple(sorted((a, b))) not in es]
++    out = {"n_nodes": len(got), "n_edges": len(es), "node_set_equals_line": got == want and len(got) > 1,
++           "has_both_corners": bool(len(ys) > 1 and y[ys[0]] == y.min() and y[ys[-1]] == y.max()), "n_uncovered_gaps": len(gaps)}
++    out["ok"] = bool(out["node_set_equals_line"] and out["has_both_corners"] and not gaps)
++    return out
++
++
++def contacts_ok(x, y, contacts):
++    """contacts = {name: {"nodes": [...], "edges": [[a, b], ...]}}; Si_xmin at x.min(), Si_xmax at x.max()."""
++    out = {}
++    for c, ext in (("Si_xmin", np.min(x)), ("Si_xmax", np.max(x))):
++        d = contacts.get(c)
++        if d is None or not d["nodes"]:
++            out[c] = {"ok": False, "reason": "missing"}
++        else:
++            out[c] = contact_check(x, y, ext, d["nodes"], d["edges"])
++    out["ok"] = bool(sorted(contacts) == ["Si_xmax", "Si_xmin"] and out["Si_xmin"]["ok"] and out["Si_xmax"]["ok"])
++    return out
++
++
++def nodevolume_gate(nv, area, tau):
++    nv = np.asarray(nv, dtype=np.float64)
++    r = float(nv.sum() / area)
++    return {"min": float(nv.min()), "n_nonpositive": int((nv <= 0).sum()), "sum_cm2": float(nv.sum()), "area_cm2": float(area),
++            "ratio": r, "tau": float(tau), "abs_ratio_minus_1": abs(r - 1.0), "positive": bool((nv > 0).all()),
++            "sum_within_tau": bool(np.isfinite(r) and abs(r - 1.0) <= tau)}
++
++
++def edgecouple_record(ec, n0, n1, x_cm):
++    ec = np.asarray(ec, dtype=np.float64)
++    mid = 0.5 * np.abs(np.asarray(x_cm)[n0] + np.asarray(x_cm)[n1]) / UM
++    reg = _region_of_abs_x(mid)
++    z = ec == 0
++    return {"n_edges": int(len(ec)), "min": float(ec.min()), "n_negative": int((ec < 0).sum()), "n_zero": int(z.sum()),
++            "n_zero_by_region_of_edge_midpoint": {r: int((z & (reg == r)).sum()) for r in ("core", "transition", "outer")},
++            "no_negative": bool((ec >= 0).all() and np.isfinite(ec).all())}
++
++
++def mesh_state(checks):
++    """First failure class in STATE_ORDER among checks that ran and failed; then (fail-closed) among checks that never ran."""
++    for bad in ({k: v for k, v in CHECK_CLASS.items() if k in checks and checks[k] is not True},
++                {k: v for k, v in CHECK_CLASS.items() if k not in checks}):
++        for st in STATE_ORDER:
++            if st in bad.values():
++                return st, sorted(k for k, v in bad.items() if v == st)
++    return "OK", []
++
++
++def core_doping_equal(idx, don, acc, net, ref):
++    """Donors / Acceptors / NetDoping of Gk on the G0 core nodes (index `idx` into Gk, G0 order) equal the E6B L5 static arrays."""
++    m = ref["core_mask"]
++    return bool(all(np.array_equal(np.asarray(a)[idx][m], np.asarray(ref[k])[m]) for a, k in ((don, "Donors"), (acc, "Acceptors"), (net, "NetDoping"))))
++
++
++# ---------------------------------------------------------------- decision (PLAN 5)
++def inequalities(F01, F12, A0, A1, A2):
++    vals = (F01, F12, A0, A1, A2)
++    ok = all(jb.finite(v) for v in vals)
++    rows = (("F01 > A0+A1", F01, A0 + A1 if ok else None), ("F12 > A1+A2", F12, A1 + A2 if ok else None),
++            ("F01-F12 > A0+2*A1+A2", F01 - F12 if ok else None, A0 + 2 * A1 + A2 if ok else None))
++    out = {f"ineq{k}": {"expr": e, "lhs": l, "rhs": r, "holds": bool(ok and l > r)} for k, (e, l, r) in enumerate(rows, 1)}
++    out["all_finite"] = ok
++    return out
++
++
++def ineq01(F01, A0, A1):
++    ok = all(jb.finite(v) for v in (F01, A0, A1))
++    return {"ineq1": {"expr": "F01 > A0+A1", "lhs": F01, "rhs": A0 + A1 if ok else None, "holds": bool(ok and F01 > A0 + A1)},
++            "all_finite": ok}
++
++
++def metric_state(ineq, g2_valid):
++    if not ineq["all_finite"]:
++        return "NONFINITE_INPUT"
++    if not ineq["ineq1"]["holds"]:
++        return "NO_RESOLVABLE_NONCORE_CHANGE"
++    if not g2_valid:
++        return "NONCORE_CHANGE_RESOLVED_01"
++    if not ineq["ineq2"]["holds"]:
++        return "NONCORE_CHANGE_RESOLVED_01"                     # F12 not resolved: decrease test cannot hold
++    return "NONCORE_REFINEMENT_DECREASE_OBSERVED" if ineq["ineq3"]["holds"] else "NO_NONCORE_DECREASE"
++
++
++def g_state(mesh_st, runs):
++    """mesh_st: "OK" or a failure label; runs[tag] = {"status", "solve", "consistency_ok"}. Never promotes a failed run to a result."""
++    if mesh_st != "OK":
++        return mesh_st
++    sts = [(runs.get(t) or {"status": "MISSING"}).get("status") for t in TAGS]
++    if "INITIALIZATION_CONTRACT_FAIL" in sts:
++        return "INITIALIZATION_CONTRACT_FAIL"
++    for st in sts:
++        if st is not None:
++            return st
++    if not all(jb.primary_ok((runs.get(t) or {}).get("solve")) for t in TAGS):
++        return "POISSON_NOT_CONVERGED"
++    if not all((runs.get(t) or {}).get("consistency_ok") is True for t in TAGS):
++        return "CONSISTENCY_FAIL"
++    return "OK"
++
++
++def judge(gstate, psi, cs, flags):
++    """gstate = {0: "OK"|label, 1: ..., 2: ...}; psi[k][t] = Potential in G0 node order (or None); cs = common set on the G0 nodes.
++    flags = {"artifact_problems", "input_identity_ok"}."""
++    res = {"g_states": {f"G{k}": gstate.get(k) for k in (0, 1, 2)}, "regions": {}, "metrics": {}}
++    fail = None
++    if flags.get("artifact_problems"):
++        fail = "ARTIFACT_INCOMPLETE"
++    elif not flags.get("input_identity_ok", True):
++        fail = "INPUT_IDENTITY_FAIL"
++    elif not cs.masks["core"].any():
++        fail = "CONSISTENCY_FAIL"
++        res["core_empty"] = True
++    elif gstate.get(0) != "OK":
++        fail = gstate.get(0)
++    elif gstate.get(1) != "OK":
++        fail = gstate.get(1)
++    ok = {k: gstate.get(k) == "OK" and all(psi.get(k, {}).get(t) is not None and jc.finite_arr(psi[k][t]) for t in TAGS)
++          for k in (0, 1, 2)}
++    if fail is None and not (ok[0] and ok[1]):
++        fail = "CONSISTENCY_FAIL"
++    res["failure"] = fail
++    g2 = ok[2]
++    if fail is None:
++        F01 = jb.metrics_between(psi[0]["P"], psi[1]["P"], cs)
++        A = {k: jb.metrics_between(psi[k]["P"], psi[k]["Q"], cs) for k in (0, 1, 2) if ok[k]}
++        F12 = jb.metrics_between(psi[1]["P"], psi[2]["P"], cs) if g2 else None
++        res["regions"] = {"F01": F01, "F12": F12, "A": {f"A{k}": A.get(k) for k in (0, 1, 2)}}
++        for M in METRICS:
++            f01, a0, a1 = F01["core"][M], A[0]["core"][M], A[1]["core"][M]
++            if g2:
++                f12, a2 = F12["core"][M], A[2]["core"][M]
++                iq = inequalities(f01, f12, a0, a1, a2)
++            else:
++                f12 = a2 = None
++                iq = ineq01(f01, a0, a1)
++            res["metrics"][M] = {"F01": f01, "F12": f12, "A0": a0, "A1": a1, "A2": a2, "inequalities": iq, "state": metric_state(iq, g2)}
++    else:
++        for M in METRICS:
++            res["metrics"][M] = {"state": "NOT_CLASSIFIED", "reason": f"failure {fail}"}
++    st = [res["metrics"][M]["state"] for M in METRICS]
++    if fail:
++        res["overall"] = fail
++    elif all(s == "NONCORE_REFINEMENT_DECREASE_OBSERVED" for s in st):
++        res["overall"] = "NONCORE_REFINEMENT_DECREASE_OBSERVED"
++    elif all(res["metrics"][M]["inequalities"]["ineq1"]["holds"] for M in METRICS):
++        res["overall"] = "NONCORE_REFINEMENT_SENSITIVITY_ONLY"
++    elif all(s == "NO_RESOLVABLE_NONCORE_CHANGE" for s in st):
++        res["overall"] = "NO_RESOLVABLE_NONCORE_CHANGE"
++    else:
++        res["overall"] = "INCONCLUSIVE"
++    res["G2_state"] = gstate.get(2)
++    res["decrease_test_evaluated"] = bool(fail is None and g2)
++    return res
++
++
++# ---------------------------------------------------------------- artifacts and the full analysis
++def g0_common_set(e6a_l5):
++    P0 = e6a_l5["points_um_f32"][:, :2]
++    return jb.CommonSet({3: P0, 4: P0, 5: P0}, e6a_l5["NodeVolume"], e6a_l5["x"], e6a_l5["y"])
++
++
++def load_g_run(out_dir, k, tag, problems):
++    """Returns (record, init Potential, final arrays); integrity problems are appended, never swallowed (as E6C load_run)."""
++    name, cid = f"run_G{k}_{tag}", f"G{k}-{tag}"
++    jp = os.path.join(out_dir, f"{name}.json")
++    if not os.path.exists(jp):
++        problems.append(f"{name}.json missing")
++        return None, None, None
++    rec = json.load(open(jp, encoding="utf-8"))
++    ip, fp = os.path.join(out_dir, f"{name}_init.npz"), os.path.join(out_dir, f"{name}_final.npz")
++    init = fin = None
++    if rec.get("status") in ("OK", "INITIALIZATION_CONTRACT_FAIL"):
++        if not os.path.exists(ip):
++            problems.append(f"{name}_init.npz missing")
++        else:
++            a = jb.load_npz(ip)
++            t = a.get("snapshot_call_id")
++            if t is None or str(np.asarray(t).reshape(-1)[0]) != f"{cid}-init":
++                problems.append(f"{cid}: init npz tag mismatch")
++            elif jb.sha_arr(a["Potential"]) != rec.get("init_sha256"):
++                problems.append(f"{cid}: init npz sha256 mismatch")
++            else:
++                init = a["Potential"]
++    if rec.get("status") != "OK":
++        return rec, init, None
++    if rec.get("solve_count") != 1:
++        problems.append(f"{cid}: solve_count {rec.get('solve_count')} != 1")
++    if not os.path.exists(fp):
++        problems.append(f"{name}_final.npz missing")
++    else:
++        a = jb.load_npz(fp)
++        pr = jb.verify_state_artifact(rec.get("snapshot"), a, cid)
++        problems.extend(pr)
++        fin = None if pr else a
++    return rec, init, fin
++
++
++def _solver_rec(rec):
++    return jc._solver_rec(rec)
++
++
++def analyze_dir(out_dir, e6a_out, e6c_out, flags=None):
++    """Judge an E6D output directory (on the runner and again locally on the downloaded artifacts)."""
++    flags = dict(flags or {})
++    problems = list(flags.get("artifact_problems", []))
++    L5 = jb.load_npz(os.path.join(e6a_out, "level_L5.npz"))
++    P0 = L5["points_um_f32"][:, :2]
++    cs = g0_common_set(L5)
++    psi, gstate, runs_all, cons, gauss, readback, mesh = {}, {}, {}, {}, {}, {}, {}
++    # ---- G0: E6C L5-P / L5-Q (reused, not re-solved)
++    psi[0], g0runs = {}, {}
++    for t in TAGS:
++        rec = json.load(open(os.path.join(e6c_out, f"run_L5_{t}.json"), encoding="utf-8"))
++        fin = jb.load_npz(os.path.join(e6c_out, f"run_L5_{t}_final.npz"))
++        pr = jb.verify_state_artifact(rec.get("snapshot"), fin, f"L5-{t}")
++        problems.extend(pr)
++        g0runs[t] = {"status": None if rec.get("status") == "OK" else rec.get("status"), "solve": _solver_rec(rec),
++                     "consistency_ok": bool(not pr and all(np.isfinite(fin[a]).all() for a in jb.REQUIRED_STATE_ARRAYS))}
++        psi[0][t] = fin["Potential"] if not pr else None
++    gstate[0] = g_state("OK", g0runs)
++    runs_all["G0"] = g0runs
++    # ---- G1, G2
++    for k in GS:
++        psi[k] = {t: None for t in TAGS}
++        mp = os.path.join(out_dir, f"mesh_G{k}.json")
++        if not os.path.exists(mp):
++            problems.append(f"mesh_G{k}.json missing")
++            gstate[k] = "ARTIFACT_INCOMPLETE"
++            continue
++        mrec = json.load(open(mp, encoding="utf-8"))
++        if mrec.get("status") == "RESOURCE_PREFLIGHT_FAIL":
++            gstate[k], mesh[f"G{k}"] = "RESOURCE_PREFLIGHT_FAIL", {"status": "RESOURCE_PREFLIGHT_FAIL"}
++            continue
++        mst, why = mesh_state(mrec.get("checks") or {})
++        if mrec.get("status") not in ("OK", "GATE_FAIL"):
++            mst = mrec.get("status") or "ARTIFACT_INCOMPLETE"
++            problems.append(f"G{k} mesh stage status {mrec.get('status')}")
++        mesh[f"G{k}"] = {"state": mst, "failed_checks": why}
++        runs = {}
++        if mst == "OK":
++            st = jb.load_npz(os.path.join(out_dir, f"mesh_G{k}_static.npz"))
++            gp = jb.load_npz(os.path.join(out_dir, f"mesh_G{k}.npz"))["points_um_f32"]
++            idx = node_index(P0, gp)
++            loaded = {t: load_g_run(out_dir, k, t, problems) for t in TAGS}
++            recP, recQ = loaded["P"][0], loaded["Q"][0]
++            if recP and recQ and recP.get("process_id") == recQ.get("process_id"):
++                problems.append(f"G{k}: P and Q ran in the same process")
++            for t in TAGS:
++                rec, init, fin = loaded[t]
++                runs[t] = {"status": "MISSING" if rec is None else (None if rec.get("status") == "OK" else rec.get("status")),
++                           "solve": _solver_rec(rec), "consistency_ok": None}
++            if recP and recQ and recP.get("status") == "OK" and recQ.get("status") == "OK":
++                ip = jc.check_initialization(recQ, loaded["P"][1], loaded["Q"][1], st["x"])
++                if ip:
++                    runs["Q"]["status"], runs["Q"]["init_problems"] = "INITIALIZATION_CONTRACT_FAIL", ip
++            xs = st["x"]
++            cm = (xs == xs.min()) | (xs == xs.max())
++            for t in TAGS:
++                rec, init, fin = loaded[t]
++                if rec is None or fin is None:
++                    continue
++                c = {"finite_ok": all(bool(np.isfinite(fin[a]).all()) for a in jb.REQUIRED_STATE_ARRAYS),
++                     "identity_ok": bool((rec.get("identity") or {}).get("ok")), "core_doping_equal_G0": rec.get("core_doping_equal_G0")}
++                if c["finite_ok"]:
++                    psi[k][t] = fin["Potential"][idx]
++                    c["y_uniform_reported_only"] = cs.y_spread(psi[k][t])
++                runs[t]["consistency_ok"] = bool(c["finite_ok"] and c["identity_ok"] and c["core_doping_equal_G0"] is True)
++                cons[f"G{k}-{t}"] = c
++                eq = rec.get("edge_arrays_equal_mesh_stage") or {}
++                if c["finite_ok"] and all(eq.get(a) for a in ("n0", "n1", "EdgeCouple", "EdgeLength")):
++                    gauss[f"G{k}-{t}"] = {"state_used": f"{t} final", **jb.gauss_diagnostic(
++                        st["edge_n0"], st["edge_n1"], st["EdgeCouple"], fin["PotentialEdgeFlux"], st["NodeVolume"],
++                        fin["PotentialIntrinsicCharge"], cm, xs, st["y"])}
++                else:
++                    gauss[f"G{k}-{t}"] = {"states": ["DIAG_INVALID_NOT_COMPUTED"]}
++                readback[f"G{k}-{t}"] = {"xmin": float(np.mean(fin["Potential"][xs == xs.min()])),
++                                         "xmax": float(np.mean(fin["Potential"][xs == xs.max()]))}
++        gstate[k] = g_state(mst, runs)
++        runs_all[f"G{k}"] = runs
++        for t in TAGS:
++            if gstate[k] != "OK":
++                psi[k][t] = None                                           # never used when the level is not valid
++    flags["artifact_problems"] = problems
++    judged = judge(gstate, psi, cs, flags)
++    return {"judgement": judged, "mesh_states": mesh, "runs": runs_all, "consistency": cons, "gauss_diagnostic": gauss,
++            "contact_readback": readback, "descriptive_E6C_D45": descriptive_d45(psi, e6a_out, e6c_out, out_dir, gstate),
++            "artifact_problems": problems}
++
++
++def descriptive_d45(psi, e6a_out, e6c_out, out_dir, gstate):
++    """PLAN 5: F01 / F12 on E6C's own D45 definition (L3 common nodes, L3 weights, h_3 segments), with D45 recomputed; no threshold."""
++    try:
++        e6a = {L: jb.load_npz(os.path.join(e6a_out, f"level_L{L}.npz")) for L in (3, 4, 5)}
++        cs3 = jb.CommonSet({L: e6a[L]["points_um_f32"][:, :2] for L in (3, 4, 5)}, e6a[3]["NodeVolume"], e6a[3]["x"], e6a[3]["y"])
++        pP = {L: jb.load_npz(os.path.join(e6c_out, f"run_L{L}_P_final.npz"))["Potential"] for L in (4, 5)}
++        D45 = jb.metrics_between(pP[4][cs3.idx[4]], pP[5][cs3.idx[5]], cs3)["core"]
++        i30 = node_index(e6a[3]["points_um_f32"], e6a[5]["points_um_f32"])       # L3 nodes in G0 (= L5) order
++        out = {"D45_E6C_definition": D45}
++        if psi.get(0, {}).get("P") is not None and psi.get(1, {}).get("P") is not None and gstate.get(1) == "OK":
++            F01 = jb.metrics_between(psi[0]["P"][i30], psi[1]["P"][i30], cs3)["core"]
++            out["F01_E6C_definition"] = F01
++            out["F01_over_D45"] = {M: F01[M] / D45[M] for M in METRICS}
++            if psi.get(2, {}).get("P") is not None and gstate.get(2) == "OK":
++                F12 = jb.metrics_between(psi[1]["P"][i30], psi[2]["P"][i30], cs3)["core"]
++                out["F12_E6C_definition"] = F12
++                out["F12_over_D45"] = {M: F12[M] / D45[M] for M in METRICS}
++        out["note"] = "descriptive only; no threshold attached"
++        return out
++    except Exception as e:  # noqa: BLE001
++        return {"status": "NOT_COMPUTED", "error": repr(e)[:300]}
+diff --git a/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/recheck_e6d_local.py b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/recheck_e6d_local.py
+new file mode 100644
+index 0000000..8ced3a0
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/recheck_e6d_local.py
+@@ -0,0 +1,34 @@
++"""Local recomputation of the E6D judgement from the downloaded artifacts (pure; no DEVSIM).
++usage: recheck_e6d_local.py <downloaded e6d_out dir>"""
++import json
++import os
++import sys
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++sys.path.insert(0, HERE)
++import run_e6d as rd  # noqa: E402  (paths and INPUTS only; main() is not called)
++import judge_e6d as jd  # noqa: E402
++
++
++def main():
++    out = os.path.abspath(sys.argv[1])
++    res = json.load(open(os.path.join(out, "e6d_result.json"), encoding="utf-8"))
++    sha_ok = {f: rd.ce.sha_file(os.path.join(out, f)) == s for f, s in res["output_files"].items()
++              if f != "e6d_result.json" and os.path.exists(os.path.join(out, f))}
++    missing = [f for f in res["output_files"] if not os.path.exists(os.path.join(out, f))]
++    inputs_ok = {os.path.basename(p): rd.sha_input(p, k) == w for p, (k, w) in rd.INPUTS.items()}
++    flags = {"input_identity_ok": res.get("input_identity_ok"), "artifact_problems": []}
++    a = jd.analyze_dir(out, rd.E6A_OUT, rd.E6C_OUT, flags)
++    r_j, l_j = res["analysis"]["judgement"], a["judgement"]
++    same = {"overall": r_j.get("overall") == l_j.get("overall"), "G2_state": r_j.get("G2_state") == l_j.get("G2_state"),
++            "metrics": json.dumps(r_j.get("metrics"), sort_keys=True) == json.dumps(json.loads(json.dumps(l_j.get("metrics"))), sort_keys=True)}
++    rep = {"output_sha_ok": all(sha_ok.values()), "n_files_checked": len(sha_ok), "missing": missing, "inputs_ok": all(inputs_ok.values()),
++           "runner_overall": r_j.get("overall"), "local_overall": l_j.get("overall"), "local_G2_state": l_j.get("G2_state"),
++           "agree": same, "local_artifact_problems": a["artifact_problems"]}
++    print(json.dumps(rep, indent=1))
++    return 0 if rep["output_sha_ok"] and not missing and all(same.values()) else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/run_e6d.py b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/run_e6d.py
+new file mode 100644
+index 0000000..7aec56b
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/run_e6d.py
+@@ -0,0 +1,261 @@
++"""Batch 7H-E6D driver (remote profile entry). Refuses to run outside a GitHub-hosted runner. PLAN sections 1-7:
++input identity, resource preflight, mesh stages G1 and G2 (production refine_mesh_near, pre-solve gates, 0 solves), then at most four
++subprocesses G1-P, G1-Q, G2-P, G2-Q (one devsim.solve each) for meshes that passed, judgement by judge_e6d.analyze_dir.
++Outputs: <repo>/e6d_out (not committed)."""
++import argparse
++import hashlib
++import os
++import platform
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++AUD = os.path.join(ROOT, "docs", "audits")
++OUT = os.path.join(ROOT, "e6d_out")
++E6A_DIR = os.path.join(AUD, "2026-09-28-batch7h-e6a-mesh-family")
++E6A_OUT = os.path.join(E6A_DIR, "data", "remote_run_36388479824", "outputs", "e6a_out")
++E6B_DIR = os.path.join(AUD, "2026-09-28-batch7h-e6b-poisson-junction-refinement")
++E6B_OUT = os.path.join(E6B_DIR, "data", "remote_run_36527372624", "outputs", "e6b_out")
++E6C_DIR = os.path.join(AUD, "2026-09-29-batch7h-e6c-initialization-robustness")
++E6C_OUT = os.path.join(E6C_DIR, "data", "remote_run_36529279171", "outputs", "e6c_out")
++sys.path.insert(0, HERE)
++sys.path.insert(0, os.path.join(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import common_e1 as ce  # noqa: E402
++import judge_e6d as jd  # noqa: E402
++
++REVIEW_SHA = "023bcb90f8b8a0972d6df84f097ca6387f0ab82a"
++CODE_PATHS = ["tcad", "tests", "tcad_2d_stagewise.py", "examples"]
++GIB = 1 << 30
++MEM_LIMIT = 8 * GIB
++TIME_LIMIT_S = 7200.0
++STAGE_TIMEOUT_S = 3600
++MAX_SOLVES = 4
++T_G = {0: 882600, 1: 998000, 2: 1459200}
++N_G = {0: 441733, 1: 499725, 2: 730909}
++E6C_L5_PEAK = 2972852224                      # max E6C L5-P / L5-Q peak private bytes (PLAN 3)
++_S = lambda *p: os.path.join(*p)  # noqa: E731
++INPUTS = {   # text files compared LF-normalized (the runner checks out CRLF); binaries byte for byte
++    _S(HERE, "..", "PLAN.md"): ("text", "fb389c5df1f011f02dc7e42f23de46fd3cbe61b86e5d5dece9d6f094e2b52f9c"),
++    _S(E6C_DIR, "PLAN.md"): ("text", "3c91c361a6ae445b795890e919f1e1ea26011cc33091423335442b9bd581194e"),
++    _S(E6C_DIR, "scripts", "judge_e6c.py"): ("text", "96cc5fc9182be5947984490f791509679a25e5839cab44d4be59ca07f045aec9"),
++    _S(E6C_DIR, "scripts", "stage_e6c.py"): ("text", "194dbc6362fc8322c7134b21444b81b01e58d23b0aeee95446c3fde01244440b"),
++    _S(E6B_DIR, "scripts", "judge_e6b.py"): ("text", "9f37ad88310b6bac19ff13465a50db0127de9c322dd3cf7c41f3edac98e26bb2"),
++    _S(E6A_DIR, "scripts", "family_e6a.py"): ("text", "3f7c8f0ef5c3ff240a93e02f9846cbd9a09649c2f63e236efcc8ac76f2e9e06a"),
++    _S(AUD, "2026-09-25-batch7h-e2-nodevolume-first-bad-stage", "scripts", "stage_e2.py"):
++        ("text", "d9ff7926158750c5b76d0acd1dab6c39f9829ddb10809c11ea2b0b19cf7ab15d"),
++    _S(AUD, "2026-09-25-batch7h-e2-nodevolume-first-bad-stage", "scripts", "trace_refine_e2.py"):
++        ("text", "7c6ff65c7626b7a2694fde89752ac26ab1d005fc22c686a05aab2131f979fd9d"),
++    _S(AUD, "2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate", "scripts", "quadtree_e4.py"):
++        ("text", "485bd69c9db558e9640eadcc01f26e079043fa166fe3e9e33cad6f7dfb8b8534"),
++    _S(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts", "common_e1.py"):
++        ("text", "1c8bdec16a23e3e2e6d00fb496a6174e99d9a89b89f884c21abae22e16b2a0f9"),
++    _S(E6A_OUT, "level_L5.json"): ("text", "425e956b40f60650b4b02d69159d87d020de952e2bdbdb215ddaff75ed8e6915"),
++    _S(E6A_OUT, "level_L5.vtu"): ("binary", "907f688e71af3bc0ebd15ea20bfbcd9fec5e9ade1d867e50f0b24da6c48e8c70"),
++    _S(E6A_OUT, "level_L3.npz"): ("binary", "d61a1555b3daf5aa597dc02f4aa71e454c5adaeb3d08766964f93f269d4b24bf"),
++    _S(E6A_OUT, "level_L4.npz"): ("binary", "d274564968f2de0501fb932c474e127d0ae1d38878d66361b3e93add87ece9d4"),
++    _S(E6A_OUT, "level_L5.npz"): ("binary", "7d56a93b2dd96e938eab059dbf1e3db605b8371a772e7f8061bc20b293b795ee"),
++    _S(E6B_OUT, "level_L5_static.npz"): ("binary", "a0243706d029ab9fe7239a1a33bf45bc60aa3de201e5669d1912e8a91724b915"),
++    _S(E6C_OUT, "run_L5_P.json"): ("text", "caca0fa5a268fed8947b723dad513b725f8bad2779e9612c17f8a56b76e7db1c"),
++    _S(E6C_OUT, "run_L5_Q.json"): ("text", "2de4d1bc231a74e8346a901d16dc450b5f2fd9c066058029c4fa72cc2d4d8cdc"),
++    _S(E6C_OUT, "run_L5_P_final.npz"): ("binary", "be34ae4a98ceae8b6c9207437df0a66e402fd51ddcc0a38e6139e6b330803d28"),
++    _S(E6C_OUT, "run_L5_Q_final.npz"): ("binary", "35d408066a50dd184e0c3853a9df6d33cda0d7c1ec1fde7359741dae22af1c6d"),
++    _S(E6C_OUT, "run_L4_P_final.npz"): ("binary", "54b4987fb1f9637b64d8b2fa8278597b33bebbc3f564e58cdb8d36c542b97971"),
++}
++
++
++def sha_input(path, kind):
++    b = open(path, "rb").read()
++    return hashlib.sha256(b.replace(b"\r\n", b"\n") if kind == "text" else b).hexdigest()
++
++
++def code_identity():
++    try:
++        p = subprocess.run(["git", "diff", "--quiet", REVIEW_SHA, "--"] + CODE_PATHS, cwd=ROOT, capture_output=True, timeout=300)
++        return {"rc": p.returncode, "identical": p.returncode == 0}
++    except Exception as e:  # noqa: BLE001
++        return {"rc": None, "identical": False, "error": ce.USER_PATH.sub("<USERPROFILE>", repr(e))[:200]}
++
++
++def runner_info():
++    info = {"cpu_count": os.cpu_count(), "platform": platform.platform(), "python": platform.python_version()}
++    for k in ("RUNNER_OS", "RUNNER_ARCH", "RUNNER_ENVIRONMENT", "ImageOS", "ImageVersion"):
++        info[k] = os.environ.get(k)
++    return info
++
++
++def envelopes():
++    """PLAN 3: mesh stage 1 GiB + 4 KiB T + 1 KiB N; solve stage E6C L5 peak x T / T0 + 2 GiB."""
++    return {f"G{k}": {"mesh_bytes": GIB + 4096 * T_G[k] + 1024 * N_G[k], "solve_bytes": E6C_L5_PEAK * T_G[k] / T_G[0] + 2 * GIB}
++            for k in (1, 2)}
++
++
++def stage(args, timeout):
++    t = time.time()
++    try:
++        p = subprocess.run([sys.executable, os.path.join(HERE, "stage_e6d.py")] + args, cwd=ROOT, capture_output=True, text=True,
++                           encoding="utf-8", errors="replace", timeout=timeout)
++        print(p.stdout[-100000:], flush=True)
++        if p.stderr.strip():
++            print("[e6d][stderr]", p.stderr[-4000:], flush=True)
++        rc = p.returncode
++    except subprocess.TimeoutExpired:
++        rc = "timeout"
++    return rc, time.time() - t
++
++
++def peak(rec):
++    v = (rec or {}).get("memory", {}).get("peak_private_bytes")
++    return v if isinstance(v, int) else None
++
++
++def skip_record(path, why):
++    ce.dump_strict({"status": "RESOURCE_PREFLIGHT_FAIL", "reason": why}, path)
++
++
++def main():
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--validate-only", action="store_true")
++    a = ap.parse_args()
++    hosted = os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
++    env = envelopes()
++    print(f"[e6d] envelopes: {env}", flush=True)
++    if a.validate_only:
++        for p, (k, want) in INPUTS.items():
++            print(f"[e6d] input {os.path.basename(p)}: {sha_input(p, k) == want}", flush=True)
++        return 0
++    if not hosted:
++        print("[e6d] refusing to run: not a GitHub-hosted runner", flush=True)
++        return 2
++    os.makedirs(OUT, exist_ok=True)
++    T0 = time.time()
++    res = {"runner": runner_info(), "envelopes": env, "inputs": {}, "stages": {}, "gates": {}, "review_sha": REVIEW_SHA,
++           "registered_max_solves": MAX_SOLVES}
++    ok_in = True
++    for p, (kind, want) in INPUTS.items():
++        got = sha_input(p, kind) if os.path.exists(p) else None
++        res["inputs"][os.path.relpath(p, ROOT).replace("\\", "/")] = {"kind": kind, "sha256": got, "expected": want, "equal": got == want}
++        ok_in &= got == want
++    res["code_paths_identical_to_review_sha"] = code_identity()
++    ok_in &= res["code_paths_identical_to_review_sha"]["identical"]
++    res["input_identity_ok"] = bool(ok_in)
++    flags = {"input_identity_ok": bool(ok_in), "artifact_problems": []}
++    if not ok_in:
++        res["stop"] = "INPUT_IDENTITY_FAIL"
++        return finish(res, flags, {})
++    recs = {}
++    valid = {}
++    for k in (1, 2):
++        mp = os.path.join(OUT, f"mesh_G{k}.json")
++        why = None
++        if env[f"G{k}"]["mesh_bytes"] > MEM_LIMIT:
++            why = "mesh envelope above 8 GiB"
++        elif k == 2 and peak(recs.get("mesh_G1")) is not None:
++            pred = peak(recs["mesh_G1"]) * T_G[2] / T_G[1]
++            tpred = 1.5 * res["stages"]["mesh_G1"]["wall_s"] * T_G[2] / T_G[1]
++            res["gates"]["mesh_G2_measured"] = {"mem_pred": pred, "t_pred_s": tpred, "elapsed_s": time.time() - T0}
++            if pred > MEM_LIMIT or time.time() - T0 + tpred > TIME_LIMIT_S:
++                why = "measured G1 mesh-stage peak / wall extrapolated above the limit"
++        if why:
++            skip_record(mp, why)
++            recs[f"mesh_G{k}"] = {"status": "RESOURCE_PREFLIGHT_FAIL"}
++            valid[k] = False
++            continue
++        rc, w = stage(["mesh", OUT, str(k)], STAGE_TIMEOUT_S)
++        res["stages"][f"mesh_G{k}"] = {"rc": rc, "wall_s": w}
++        recs[f"mesh_G{k}"] = ce.load_strict(mp) if os.path.exists(mp) else {"status": f"NO_RESULT_JSON(rc={rc})"}
++        valid[k] = recs[f"mesh_G{k}"].get("status") == "OK" and recs[f"mesh_G{k}"].get("state") == "OK"
++    for k in (1, 2):
++        for t in ("P", "Q"):
++            name = f"G{k}-{t}"
++            jp = os.path.join(OUT, f"run_G{k}_{t}.json")
++            if not valid[k]:
++                continue                                                    # a failed mesh: no import-for-solve, no solve
++            why = None
++            if env[f"G{k}"]["solve_bytes"] > MEM_LIMIT:
++                why = "solve envelope above 8 GiB"
++            elif k == 2 and peak(recs.get("G1-P")) is not None:
++                pred = peak(recs["G1-P"]) * T_G[2] / T_G[1]
++                tpred = 1.5 * res["stages"]["G1-P"]["wall_s"] * T_G[2] / T_G[1]
++                res["gates"][f"{name}_measured"] = {"mem_pred": pred, "t_pred_s": tpred, "elapsed_s": time.time() - T0}
++                if pred > MEM_LIMIT or time.time() - T0 + tpred > TIME_LIMIT_S:
++                    why = "measured G1-P peak / wall extrapolated above the limit"
++            if why:
++                skip_record(jp, why)
++                recs[name] = {"status": "RESOURCE_PREFLIGHT_FAIL"}
++                continue
++            rc, w = stage(["run", OUT, str(k), t], STAGE_TIMEOUT_S)
++            res["stages"][name] = {"rc": rc, "wall_s": w}
++            recs[name] = ce.load_strict(jp) if os.path.exists(jp) else {"status": f"NO_RESULT_JSON(rc={rc})"}
++    return finish(res, flags, recs)
++
++
++def expected_files(recs):
++    exp = []
++    for k in (1, 2):
++        m = recs.get(f"mesh_G{k}")
++        if m is None:
++            continue
++        exp.append(f"mesh_G{k}.json")
++        if m.get("status") in ("OK", "GATE_FAIL") and "counts" in m:
++            exp.append(f"mesh_G{k}.npz")
++        if m.get("status") == "OK":
++            exp += [f"mesh_G{k}.vtu", f"mesh_G{k}_static.npz"]
++        for t in ("P", "Q"):
++            r = recs.get(f"G{k}-{t}")
++            if r is None:
++                continue
++            exp.append(f"run_G{k}_{t}.json")
++            if r.get("status") == "OK":
++                exp += [f"run_G{k}_{t}_init.npz", f"run_G{k}_{t}_final.npz"]
++            elif r.get("status") == "INITIALIZATION_CONTRACT_FAIL":
++                exp.append(f"run_G{k}_{t}_init.npz")
++    return exp
++
++
++def finish(res, flags, recs):
++    res["solve_counts"] = {k: r.get("solve_count") for k, r in recs.items() if k.startswith("G")}
++    res["mesh_stage_solve_calls"] = {k: r.get("solve_calls") for k, r in recs.items() if k.startswith("mesh")}
++    total = sum(v for v in res["solve_counts"].values() if isinstance(v, int))
++    res["total_solve_calls"], res["solve_budget_ok"] = total, total <= MAX_SOLVES
++    if not res["solve_budget_ok"]:
++        flags["artifact_problems"].append(f"total solve calls {total} > {MAX_SOLVES}")
++    for k, v in res["mesh_stage_solve_calls"].items():
++        if v not in (0, None):
++            flags["artifact_problems"].append(f"{k}: {v} solve calls in the mesh stage")
++    for k, r in recs.items():
++        if r.get("devices_left") not in ([], None):
++            flags["artifact_problems"].append(f"{k}: devices left registered {r.get('devices_left')}")
++        if r.get("status") == "WORKER_ERROR" or str(r.get("status", "")).startswith("NO_RESULT_JSON"):
++            flags["artifact_problems"].append(f"{k}: {r.get('status')}")
++    files = sorted(os.listdir(OUT)) if os.path.isdir(OUT) else []
++    res["missing_expected_files"] = [f for f in expected_files(recs) if f not in files] if recs else []
++    if res["missing_expected_files"]:
++        flags["artifact_problems"].append(f"missing files: {res['missing_expected_files']}")
++    if recs:
++        try:
++            res["analysis"] = jd.analyze_dir(OUT, E6A_OUT, E6C_OUT, flags)
++        except Exception as e:  # noqa: BLE001
++            res["analysis_error"] = ce.USER_PATH.sub("<USERPROFILE>", repr(e))[:400]
++            res["analysis"] = {"judgement": {"overall": "ARTIFACT_INCOMPLETE", "failure": "ARTIFACT_INCOMPLETE"}}
++    else:
++        res["analysis"] = {"judgement": {"overall": res.get("stop"), "failure": res.get("stop")}}
++    res["verdict"] = {"overall": res["analysis"]["judgement"].get("overall"), "G2_state": res["analysis"]["judgement"].get("G2_state"),
++                      "maximum_possible": "NONCORE_REFINEMENT_DECREASE_OBSERVED",
++                      "note": "core (|x| <= 0.1 um) potential / fixed-width field change under non-core refinement of the E6A L5 mesh, "
++                              "compared with the observed initialization shift only; not an outer-floor absence, not 2D continuum "
++                              "convergence, not physics validation; the transition column also changes, so no attribution to the far "
++                              "outer grid alone."}
++    res["output_files"] = {f: ce.sha_file(os.path.join(OUT, f)) for f in sorted(os.listdir(OUT))} if os.path.isdir(OUT) else {}
++    ce.dump_strict(res, os.path.join(OUT, "e6d_result.json"))
++    for f in os.listdir(OUT):
++        if f.endswith(".json"):
++            ce.load_strict(os.path.join(OUT, f))
++    print(f"[e6d] verdict {res['verdict']} solve_calls={total}", flush=True)
++    return 0 if all(s["rc"] == 0 for s in res["stages"].values()) else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/stage_e6d.py b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/stage_e6d.py
+new file mode 100644
+index 0000000..fcafe8d
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/stage_e6d.py
+@@ -0,0 +1,326 @@
++"""Batch 7H-E6D remote worker. PLAN sections 2-4. Runs only on a GitHub-hosted runner (the driver refuses elsewhere).
++usage: stage_e6d.py mesh <out dir> <k>          k in 1, 2: production refine_mesh_near(levels=k) on the E6A L5 mesh, pre-solve gates,
++                                                DEVSIM import (devsim.solve trapped: 0 calls), mesh_G<k>.json / .npz / _static.npz / .vtu
++       stage_e6d.py run <out dir> <k> <P|Q>     one Poisson solve (as E6C) on mesh_G<k>.vtu, in its own process"""
++import os
++import sys
++import time
++import traceback
++
++sys.dont_write_bytecode = True
++os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++AUD = os.path.join(ROOT, "docs", "audits")
++E6A_DIR = os.path.join(AUD, "2026-09-28-batch7h-e6a-mesh-family")
++E6A_OUT = os.path.join(E6A_DIR, "data", "remote_run_36388479824", "outputs", "e6a_out")
++E6B_OUT = os.path.join(AUD, "2026-09-28-batch7h-e6b-poisson-junction-refinement", "data", "remote_run_36527372624", "outputs", "e6b_out")
++sys.path.insert(0, HERE)
++sys.path.insert(0, ROOT)
++for d in (os.path.join(AUD, "2026-09-29-batch7h-e6c-initialization-robustness", "scripts"), os.path.join(E6A_DIR, "scripts"),
++          os.path.join(AUD, "2026-09-25-batch7h-e2-nodevolume-first-bad-stage", "scripts"),
++          os.path.join(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts")):
++    sys.path.insert(0, d)
++import common_e1 as ce  # noqa: E402  (E1, read-only: strict JSON, sha256, USER_PATH sanitizer)
++import stage_e6c as s6c  # noqa: E402  (E6C worker, read-only: memory, flags, write_j0, doping_record, snapshot, Solver, finish)
++import family_e6a as fam  # noqa: E402  (E6A, read-only: exact_checks / tiling conditions)
++import trace_refine_e2 as tr  # noqa: E402  (E2, read-only: exact_area, node_budget, max_angle)
++import stage_e2 as se2  # noqa: E402  (E2, read-only: write_vtu)
++import judge_e6d as jd  # noqa: E402
++jb, jc = jd.jb, jd.jc
++
++UM = 1e-4
++X02 = 0.20000000298023224                    # PLAN 2 literal; checked equal to E6A level_L5.json below
++PRED = {1: (998000, 499725), 2: (1459200, 730909)}
++SOLVE_ARGS = s6c.SOLVE_ARGS
++T0 = time.time()
++
++
++def log(msg):
++    print(f"[e6d {time.time() - T0:8.1f}s] {msg}", flush=True)
++
++
++def clean(text):
++    return ce.USER_PATH.sub("<USERPROFILE>", str(text))
++
++
++def load_g0():
++    import meshio
++    z = jb.load_npz(os.path.join(E6A_OUT, "level_L5.npz"))
++    m = meshio.read(os.path.join(E6A_OUT, "level_L5.vtu"))
++    blk = next(c for c in m.cells if c.type == "triangle")
++    tags = m.cell_data["Material"][m.cells.index(blk)]
++    same = bool(np.array_equal(m.points, z["points_um_f32"]) and m.points.dtype == np.float32
++                and np.array_equal(blk.data, z["triangles"]) and np.array_equal(tags, z["tags"]))
++    return z, same
++
++
++def x02_from_json():
++    j = ce.load_strict(os.path.join(E6A_OUT, "level_L5.json"))
++    xl = j["build"]["x_lines_um"]
++    return xl["+"]["X02"], xl["-"]["X02"]
++
++
++def contacts_of(dv, dev, names):
++    out = {}
++    for c in names:
++        el = dv.get_element_node_list(device=dev, region="Si", contact=c)
++        out[c] = {"nodes": sorted({int(v) for e in el for v in e}), "edges": [[int(e[0]), int(e[1])] for e in el]}
++    return out
++
++
++def import_mesh(dv, vtu, name):
++    from tcad.device.devsim.mesh_import import import_process_result
++    from tcad.mesh.viennaps_adapter import build_process_result
++    result = build_process_result({"final_mesh": vtu, "snapshots": []})
++    return import_process_result(result, mesh_name=f"{name}_mesh", device_name=f"{name}_device", contact_regions=["Si"], contact_axis="x",
++                                 length_scale_to_cm=UM)
++
++
++def read_device(dv, imp):
++    dev = imp.device
++    g = lambda n: np.array(dv.get_node_model_values(device=dev, region="Si", name=n), dtype=np.float64)  # noqa: E731
++    x, y, nv = g("x"), g("y"), g("NodeVolume")
++    el = np.array(dv.get_element_node_list(device=dev, region="Si"), dtype=np.int64)
++    dv.edge_from_node_model(device=dev, region="Si", node_model="node_index")
++    ge = lambda n: np.array(dv.get_edge_model_values(device=dev, region="Si", name=n), dtype=np.float64)  # noqa: E731
++    edge = {"n0": ge("node_index@n0").astype(np.int64), "n1": ge("node_index@n1").astype(np.int64), "EdgeCouple": ge("EdgeCouple"),
++            "EdgeLength": ge("EdgeLength")}
++    return x, y, nv, el, edge, contacts_of(dv, dev, imp.contacts), list(dv.get_region_list(device=dev))
++
++
++def import_checks(Pk, Tk, x, y, el, contacts, regions):
++    exp = (np.asarray(Pk)[:, :2] * UM).astype(float)
++    a, b = np.sort(np.asarray(Tk), axis=1), np.sort(el, axis=1)
++    ia, ib = np.lexsort((a[:, 2], a[:, 1], a[:, 0])), np.lexsort((b[:, 2], b[:, 1], b[:, 0]))
++    ct = jd.contacts_ok(x, y, contacts)
++    return {"xy_equal_scaled_construction": bool(len(x) == len(exp) and np.array_equal(x, exp[:, 0]) and np.array_equal(y, exp[:, 1])),
++            "vertex_set_multiset_equal": bool(len(a) == len(b) and np.array_equal(a[ia], b[ib])),
++            "regions_Si": regions == ["Si"], "contacts_ok": ct["ok"]}, ct
++
++
++# ---------------------------------------------------------------- mesh stage
++def mesh(outd, k):
++    import devsim as dv
++    from tcad.device.devsim.mesh_refine import refine_mesh_near
++    res = {"mode": "mesh", "k": k, "status": None, "solve_calls": 0, "checks": {}, "wall_s": {}}
++    chk, wall = res["checks"], res["wall_s"]
++    real = dv.solve
++
++    def trap(*a, **kw):
++        res["solve_calls"] += 1
++        raise RuntimeError("E6D mesh stage forbids devsim.solve")
++    dv.solve = trap
++    imp = None
++    try:
++        z, same = load_g0()
++        xp, xm = x02_from_json()
++        res["input"] = {"L5_vtu_equals_npz": same, "X02_json": [xp, xm], "X02_literal": X02}
++        if not (same and xp == X02 and xm == -X02):
++            res["status"] = "INPUT_IDENTITY_FAIL"
++            raise s6c.Stop
++        P0, T0_, G0 = z["points_um_f32"], z["triangles"], z["tags"]
++        pred = lambda c: abs(float(c[0])) >= X02  # noqa: E731  (PLAN 2 seed rule; evaluated by refine_mesh_near each pass)
++        res["seed_pass1_count"] = int(sum(pred(c) for c in P0[T0_].mean(axis=1)))
++        t = time.time()
++        Pk, Tk, Gk = refine_mesh_near(P0, T0_, G0, pred, levels=k)
++        wall["production_refine"] = time.time() - t
++        res["counts"] = {"n_nodes": int(len(Pk)), "n_triangles": int(len(Tk)), "predicted": {"T": PRED[k][0], "N": PRED[k][1]},
++                         "dtypes": [str(Pk.dtype), str(Tk.dtype), str(Gk.dtype)]}
++        chk["construction_counts"] = (len(Tk), len(Pk)) == PRED[k]
++        log(f"G{k}: {len(Pk)} nodes, {len(Tk)} triangles (predicted {PRED[k][1]}, {PRED[k][0]})")
++        ci = jd.core_identity(P0, T0_, Pk, Tk)
++        res["core_identity"] = ci
++        chk["core_node_set_equal"], chk["core_triangle_multiset_equal"] = ci["core_node_set_equal"], ci["core_triangle_multiset_equal"]
++        res["change_record"] = jd.change_record(P0, T0_, Pk, Tk)
++        np.savez_compressed(os.path.join(outd, f"mesh_G{k}.npz"), points_um_f32=Pk, triangles=Tk, tags=Gk)
++        if not ci["ok"]:
++            res["status"] = "GATE_FAIL"                                      # CORE_IDENTITY_FAIL: no import, no solve
++            raise s6c.Stop
++        t = time.time()
++        ex = fam.exact_checks(Pk[:, :2], Tk, P0[:, :2], T0_, Gk, G0[0])
++        wall["exact_checks"] = time.time() - t
++        res["exact"] = ex
++        ang = tr.max_angle_deg_per_triangle(Pk[:, :2].astype(np.float64), Tk)
++        cx = np.abs(Pk[Tk][:, :, 0].astype(np.float64).mean(axis=1))
++        reg = np.where(cx <= jd.X01_UM, "core", np.where(cx >= X02, "outer", "transition"))
++        res["obtuse_float_by_region_reported"] = {r: int(((ang > 90.0) & (reg == r)).sum()) for r in ("core", "transition", "outer")}
++        kk = jd.keys(Pk)
++        used = np.zeros(len(Pk), bool)
++        used[np.asarray(Tk).ravel()] = True
++        chk.update({"tags_single_equal_G0": ex["tags_single_equal_S0"], "bbox_equal": ex["bbox_equal"], "area_equals_G0": ex["area_equals_S0"],
++                    "orientation_positive": ex["n_nonpositive_orientation"] == 0, "no_duplicate_triangles": ex["n_duplicate_triangles"] == 0,
++                    "no_duplicate_nodes": bool(len(np.unique(kk)) == len(kk)), "no_isolated_nodes": bool(used.all()),
++                    "tiling_T2": ex["tiling_T2_ok"], "tiling_T3": ex["tiling_T3_ok"]})
++        log(f"G{k}: exact {wall['exact_checks']:.1f}s obtuse {ex['n_obtuse_exact']} T2 {ex['tiling_T2_ok']} T3 {ex['tiling_T3_ok']} "
++            f"area {ex['area_equals_S0']}")
++        vtu = os.path.join(outd, f"mesh_G{k}.vtu")
++        chk["writer_roundtrip_exact"] = bool(se2.write_vtu(vtu, Pk, Tk, Gk, "Material"))
++        res["vtu_sha256"] = ce.sha_file(vtu)
++        t = time.time()
++        try:
++            imp = import_mesh(dv, vtu, f"e6d_G{k}_meshstage")
++            chk["import_ok"] = True
++        except Exception as e:  # noqa: BLE001
++            chk["import_ok"] = False
++            res["import_error"] = clean(repr(e))[:300]
++            res["status"] = "GATE_FAIL"
++            raise s6c.Stop
++        x, y, nv, el, edge, contacts, regions = read_device(dv, imp)
++        wall["import_read"] = time.time() - t
++        ic, ct = import_checks(Pk, Tk, x, y, el, contacts, regions)
++        chk.update(ic)
++        res["contacts"] = ct
++        t = time.time()
++        Pc = np.column_stack([x, y])
++        tris = el.tolist()
++        area = tr.exact_area(Pc, tris)
++        tau = (len(x) + len(tris)) * 2.0 ** -52 + float(tr.node_budget(Pc, tris, len(x)).max())
++        nvg = jd.nodevolume_gate(nv, float(area), tau)
++        nvg["exact_area_cm2"] = f"{area.numerator}/{area.denominator}"
++        wall["nodevolume"] = time.time() - t
++        res["nodevolume"] = nvg
++        chk["nodevolume_positive"], chk["nodevolume_sum_within_tau"] = nvg["positive"], nvg["sum_within_tau"]
++        ecr = jd.edgecouple_record(edge["EdgeCouple"], edge["n0"], edge["n1"], x)
++        res["edgecouple"] = ecr
++        chk["edgecouple_no_negative"] = ecr["no_negative"]
++        log(f"G{k}: NodeVolume ratio {nvg['ratio']!r} tau {tau:.3e} within {nvg['sum_within_tau']}; EdgeCouple neg {ecr['n_negative']} "
++            f"zero {ecr['n_zero']}; contacts {ct['ok']}")
++        np.savez_compressed(os.path.join(outd, f"mesh_G{k}_static.npz"), x=x, y=y, elements=el, NodeVolume=nv, edge_n0=edge["n0"],
++                            edge_n1=edge["n1"], EdgeCouple=edge["EdgeCouple"], EdgeLength=edge["EdgeLength"])
++        st, why = jd.mesh_state(chk)
++        res["state"], res["failed_checks"] = st, why
++        res["status"] = "OK" if st == "OK" else "GATE_FAIL"
++    except s6c.Stop:
++        res["state"], res["failed_checks"] = jd.mesh_state(chk) if res["status"] == "GATE_FAIL" else (res["status"], [])
++    except Exception as e:  # noqa: BLE001
++        res["status"] = "WORKER_ERROR"
++        res["error"] = clean(repr(e))[:500]
++        res["traceback"] = clean(traceback.format_exc()[-3000:])
++    finally:
++        dv.solve = real
++        if imp is not None:
++            try:
++                dv.delete_device(device=imp.device)
++                dv.delete_mesh(mesh=imp.mesh)
++            except Exception as e:  # noqa: BLE001
++                res["cleanup_error"] = clean(repr(e))[:200]
++        res["devices_left"] = list(dv.get_device_list())
++        res["memory"] = s6c.memory()
++        res["wall_total_s"] = round(time.time() - T0, 1)
++    ce.dump_strict(res, os.path.join(outd, f"mesh_G{k}.json"))
++    log(f"mesh G{k}: status={res['status']} state={res.get('state')} failed={res.get('failed_checks')} solve_calls={res['solve_calls']}")
++    return 0 if res["status"] in ("OK", "GATE_FAIL") else 1
++
++
++# ---------------------------------------------------------------- run stage (E6C procedure on mesh_G<k>)
++def run(outd, k, tag):
++    import devsim as dv
++    from tcad.device.devsim.semiconductor_equation import setup_semiconductor_potential_equation
++    name, cid = f"run_G{k}_{tag}", f"G{k}-{tag}"
++    res = {"mode": "run", "k": k, "tag": tag, "status": None, "process_id": os.getpid(), "device_name": f"e6d_G{k}_{tag}_device",
++           "solve_count": 0, "solve": None}
++    sv = imp = None
++    try:
++        res["devices_at_start"] = list(dv.get_device_list())
++        if res["devices_at_start"]:
++            res["status"], res["stop_detail"] = "IMPORT_IDENTITY_FAIL", "device already registered at start"
++            raise s6c.Stop
++        g = jb.load_npz(os.path.join(outd, f"mesh_G{k}.npz"))
++        st = jb.load_npz(os.path.join(outd, f"mesh_G{k}_static.npz"))
++        vtu = os.path.join(outd, f"mesh_G{k}.vtu")
++        res["input_vtu_sha256"] = ce.sha_file(vtu)
++        imp = import_mesh(dv, vtu, f"e6d_G{k}_{tag}")
++        dev = imp.device
++        x, y, nv, el, edge, contacts, regions = read_device(dv, imp)
++        ic, ct = import_checks(g["points_um_f32"], g["triangles"], x, y, el, contacts, regions)
++        ic["NodeVolume_bit_equal_mesh_stage"] = bool(np.array_equal(nv, st["NodeVolume"]))
++        ic["ok"] = all(ic.values())
++        res["identity"], res["contacts"] = ic, ct
++        res["edge_arrays_equal_mesh_stage"] = {kk: bool(np.array_equal(edge[kk], st[k2])) for kk, k2 in
++                                               (("n0", "edge_n0"), ("n1", "edge_n1"), ("EdgeCouple", "EdgeCouple"), ("EdgeLength", "EdgeLength"))}
++        if not ic["ok"]:
++            res["status"] = "IMPORT_IDENTITY_FAIL"
++            raise s6c.Stop
++        donors, acceptors, nets = s6c.write_j0(dv, dev, x)
++        gv = lambda n: np.array(dv.get_node_model_values(device=dev, region="Si", name=n), dtype=np.float64)  # noqa: E731
++        rd, ra, rn = gv("Donors"), gv("Acceptors"), gv("NetDoping")
++        res["doping"] = s6c.doping_record(x, nv, rd, ra, rn, float((x.max() - x.min()) * (y.max() - y.min())))
++        L5 = jb.load_npz(os.path.join(E6A_OUT, "level_L5.npz"))
++        ref = dict(jb.load_npz(os.path.join(E6B_OUT, "level_L5_static.npz")))
++        ref["core_mask"] = np.abs(L5["points_um_f32"][:, 0].astype(np.float64)) <= jd.X01_UM
++        idx = jd.node_index(L5["points_um_f32"], g["points_um_f32"])
++        res["core_doping_equal_G0"] = jd.core_doping_equal(idx, rd, ra, rn, ref)
++        res["doping_readback_equal_written"] = bool(np.array_equal(rd, donors) and np.array_equal(ra, acceptors) and np.array_equal(rn, nets))
++        if not (res["doping"]["x0_ok"] and res["core_doping_equal_G0"] and res["doping_readback_equal_written"]):
++            res["status"], res["stop_detail"] = "IMPORT_IDENTITY_FAIL", "J0 doping check failed"
++            raise s6c.Stop
++        setup_semiconductor_potential_equation(dev, "Si", ["Si_xmin", "Si_xmax"], 300.0)
++        res["flags"] = s6c.flags(dv)
++        default_init = gv("Potential")
++        if tag == "Q":
++            vt = float(dv.get_parameter(device=dev, region="Si", name="V_t"))
++            ni = float(dv.get_parameter(device=dev, region="Si", name="n_i"))
++            n_right, n_left = float(nets[x == x.max()][0]), float(nets[x == x.min()][0])
++            vl, vr = jc.contact_potentials(vt, ni, s6c.N_CONC)
++            intended = jc.affine_init(x, vl, vr)
++            ini = {"V_t": vt, "n_i": ni, "NetDoping_at_x_max": n_right, "NetDoping_at_x_min": n_left, "V_left": vl, "V_right": vr,
++                   "intended_sha256": jb.sha_arr(intended), "default_init_sha256": jb.sha_arr(default_init),
++                   "max_abs_diff_vs_default_init": float(np.max(np.abs(intended - default_init)))}
++            res["initialization"] = ini
++            why = jc.init_precheck(vt, ni, vl, vr, intended, n_right, n_left, default_init)
++            if not why:
++                dv.set_node_values(device=dev, region="Si", name="Potential", values=[float(v) for v in intended])
++            back = gv("Potential")
++            ini["readback_sha256"] = jb.sha_arr(back)
++            ini.update(jc.init_contract(why, intended, back))
++            init_arr = back
++            if not ini["contract_ok"]:
++                res["status"], res["stop_detail"] = "INITIALIZATION_CONTRACT_FAIL", "initial Potential contract not satisfied before the solve"
++                np.savez_compressed(os.path.join(outd, f"{name}_init.npz"), Potential=init_arr, snapshot_call_id=np.array(f"{cid}-init"))
++                res["init_sha256"] = jb.sha_arr(init_arr)
++                raise s6c.Stop
++        else:
++            init_arr = default_init
++        np.savez_compressed(os.path.join(outd, f"{name}_init.npz"), Potential=init_arr, snapshot_call_id=np.array(f"{cid}-init"))
++        res["init_sha256"] = jb.sha_arr(init_arr)
++        res["init_stats"] = {"n": int(len(init_arr)), "min": float(np.min(init_arr)), "max": float(np.max(init_arr)),
++                             "all_finite": bool(np.isfinite(init_arr).all())}
++        sv = s6c.Solver(dv)
++        s = sv.call(cid, **SOLVE_ARGS)
++        arr, rec = s6c.snapshot(dv, dev, cid)
++        np.savez_compressed(os.path.join(outd, f"{name}_final.npz"), **arr)
++        res["snapshot"], res["solve"], res["solve_count"] = rec, s, sv.count
++        log(f"{cid} converged={s.get('converged')} iterations={s.get('n_iterations')} rel={s.get('final_device_relative_error')}")
++        res["status"] = "OK"
++    except s6c.Stop:
++        pass
++    except Exception as e:  # noqa: BLE001
++        res["status"] = res["status"] or "WORKER_ERROR"
++        res["error"] = clean(repr(e))[:500]
++        res["traceback"] = clean(traceback.format_exc()[-3000:])
++        if sv is not None:
++            res["solve"], res["solve_count"] = (sv.calls[0] if sv.calls else None), sv.count
++    finally:
++        try:
++            if imp is not None:
++                dv.delete_device(device=imp.device)
++                dv.delete_mesh(mesh=imp.mesh)
++        except Exception as e:  # noqa: BLE001
++            res["cleanup_error"] = clean(repr(e))[:200]
++    s6c.finish(outd, f"{name}.json", res, sv, dv)
++    return 0 if res["status"] in ("OK", "IMPORT_IDENTITY_FAIL", "INITIALIZATION_CONTRACT_FAIL") else 1
++
++
++def main():
++    mode, outd = sys.argv[1], os.path.abspath(sys.argv[2])
++    os.makedirs(outd, exist_ok=True)
++    if mode == "mesh":
++        return mesh(outd, int(sys.argv[3]))
++    return run(outd, int(sys.argv[3]), sys.argv[4])
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/synthetic_e6d_test.py b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/synthetic_e6d_test.py
+new file mode 100644
+index 0000000..fe6e4e1
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/synthetic_e6d_test.py
+@@ -0,0 +1,241 @@
++"""Batch 7H-E6D synthetic false-PASS tests (local; pure judge + production refine_mesh_near on a small synthetic mesh; no DEVSIM).
++Every expectation is fixed in EXPECT before any case runs. Writes synthetic_e6d_results.json next to this file's batch folder."""
++import os
++import sys
++
++sys.dont_write_bytecode = True
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++AUD = os.path.join(ROOT, "docs", "audits")
++sys.path.insert(0, HERE)
++sys.path.insert(0, ROOT)
++sys.path.insert(0, os.path.join(AUD, "2026-09-28-batch7h-e6a-mesh-family", "scripts"))
++sys.path.insert(0, os.path.join(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import judge_e6d as jd  # noqa: E402
++import family_e6a as fam  # noqa: E402
++import common_e1 as ce  # noqa: E402
++from tcad.device.devsim.mesh_refine import refine_mesh_near  # noqa: E402  (production, called only)
++
++jb = jd.jb
++F = np.float32
++X01, X015, X02 = float(F(0.1)), float(F(0.15)), float(F(0.2))
++H = 0.05
++
++EXPECT = {
++    "A_core_triangle_changed_same_nodes": {"core_node_set_equal": True, "core_triangle_multiset_equal": False,
++                                           "mesh_state": "CORE_IDENTITY_FAIL"},
++    "B_hidden_transition_change": {"flip_transition_changed": True, "flip_removed_transition": 2, "flip_added_transition": 2,
++                                   "G1_transition_changed": True, "G1_core_identity_ok": True},
++    "C_negative_edgecouple": {"no_negative": False, "mesh_state": "GEOMETRY_UNSUPPORTED"},
++    "D_missing_contact_edge": {"contacts_ok": False, "mesh_state": "IMPORT_IDENTITY_FAIL", "control_contacts_ok": True},
++    "E_nodevolume_total_error": {"sum_within_tau": False, "mesh_state": "GEOMETRY_UNSUPPORTED", "control_within_tau": True},
++    "F_Q_not_converged_PQ_equal_G1": {"G1_state": "POISSON_NOT_CONVERGED", "overall": "POISSON_NOT_CONVERGED", "any_metric_classified": False},
++    "F_Q_not_converged_PQ_equal_G2": {"G2_state": "POISSON_NOT_CONVERGED", "decrease_test_evaluated": False,
++                                      "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY", "metric_state": "NONCORE_CHANGE_RESOLVED_01"},
++    "G_empty_common_core": {"overall": "CONSISTENCY_FAIL"},
++    "H_only_third_inequality_fails": {"metric_state": "NO_NONCORE_DECREASE", "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY"},
++    "I_positive_control_all_hold": {"metric_state": "NONCORE_REFINEMENT_DECREASE_OBSERVED", "overall": "NONCORE_REFINEMENT_DECREASE_OBSERVED"},
++    "J_no_resolvable_change": {"overall": "NO_RESOLVABLE_NONCORE_CHANGE"},
++    "K_missing_checks_fail_closed": {"mesh_state": "IMPORT_IDENTITY_FAIL", "all_missing_state": "CORE_IDENTITY_FAIL"},
++    "L_green_of_green_obtuse": {"G0_obtuse": 0, "G1_obtuse": 0, "G2_obtuse": 16, "G2_obtuse_transition": 16, "G1_T2": True, "G1_T3": True,
++                                "G2_T2": True, "G2_T3": True, "G1_area_equal": True, "G2_area_equal": True, "G2_core_identity_ok": True},
++}
++
++
++# ---------------------------------------------------------------- synthetic mesh (E6A-like: core, transition, template column, base)
++def build():
++    pts, idx = [], {}
++
++    def p(x, y):
++        k = (float(F(x)), float(F(y)))
++        if k not in idx:
++            idx[k] = len(pts)
++            pts.append(k)
++        return idx[k]
++    tris = []
++    ny = 4
++    ys = [float(F(H * j)) for j in range(ny + 1)]
++    mid = lambda a, b: float((np.array([a], F) + np.array([b], F))[0] / F(2.0))  # noqa: E731  (production float32 midpoint, as E4 mid32)
++    yh = [v for j in range(ny) for v in (ys[j], mid(ys[j], ys[j + 1]))] + [ys[-1]]
++    xin = [-X015, -X01, -0.05, 0.0, 0.05, X01, X015]
++    for i in range(len(xin) - 1):                                       # inner grid, y spacing H/2
++        for j in range(2 * ny):
++            a, b, c, d = p(xin[i], yh[j]), p(xin[i + 1], yh[j]), p(xin[i + 1], yh[j + 1]), p(xin[i], yh[j + 1])
++            tris += [(a, b, c), (a, c, d)]
++    for j in range(ny):                                                 # template column, both sides
++        y0, y1, ym = ys[j], ys[j + 1], yh[2 * j + 1]
++        LL, LR, UR, UL, M = p(X015, y0), p(X02, y0), p(X02, y1), p(X015, y1), p(X015, ym)
++        tris += [(LL, LR, M), (M, LR, UR), (M, UR, UL)]
++        LL, LR, UR, UL, M = p(-X015, y0), p(-X02, y0), p(-X02, y1), p(-X015, y1), p(-X015, ym)
++        tris += [(M, LR, LL), (UR, LR, M), (UL, UR, M)]
++    xb = [X02, 0.25, 0.3]
++    for s in (+1, -1):                                                  # base region
++        for i in range(len(xb) - 1):
++            for j in range(ny):
++                xa, xc = s * xb[i], s * xb[i + 1]
++                a, b, c, d = p(xa, ys[j]), p(xc, ys[j]), p(xc, ys[j + 1]), p(xa, ys[j + 1])
++                tris += [(a, b, c), (a, c, d)] if s > 0 else [(a, d, c), (a, c, b)]
++    P = np.array([[x, y, 0.0] for x, y in pts], dtype=np.float32)
++    return P, np.array(tris, dtype=np.int64), np.full(len(tris), 10, dtype=np.int32)
++
++
++def small_cs():
++    P, T, _ = build()
++    xcm = P[:, 0].astype(np.float64) * 1e-4
++    return P, jb.CommonSet({3: P[:, :2], 4: P[:, :2], 5: P[:, :2]}, np.ones(len(P)), xcm, P[:, 1].astype(np.float64) * 1e-4)
++
++
++def ok_checks():
++    return {k: True for k in jd.CHECK_CLASS}
++
++
++def psi_family(cs, s01, s12, a):
++    """psi_k,P and psi_k,Q with every difference proportional to the same shape g (so all four metrics scale alike)."""
++    x = cs.xcm / 1e-4
++    base = 0.47 * np.tanh(x / 0.05)
++    g = np.exp(-(x / 0.08) ** 2) * (1 + x)
++    P0 = base
++    P1 = base + s01 * g
++    P2 = P1 + s12 * g
++    return {0: {"P": P0, "Q": P0 + a[0] * g}, 1: {"P": P1, "Q": P1 + a[1] * g}, 2: {"P": P2, "Q": P2 + a[2] * g}}
++
++
++def main():
++    got = {}
++    P0, T0, G0 = build()
++    # ---- A
++    T_bad = T0.copy()
++    ci = None
++    for n in range(0, len(T0), 2):                                      # first all-core cell (two triangles a,b,c / a,c,d): flip it
++        a, b, c = T0[n]
++        d = T0[n + 1][2]
++        if all(abs(P0[v, 0]) <= X01 for v in (a, b, c, d)):
++            T_bad[n], T_bad[n + 1] = (a, b, d), (b, c, d)
++            break
++    ci = jd.core_identity(P0, T0, P0, T_bad)
++    chk = ok_checks()
++    chk.update({"core_node_set_equal": ci["core_node_set_equal"], "core_triangle_multiset_equal": ci["core_triangle_multiset_equal"]})
++    got["A_core_triangle_changed_same_nodes"] = {"core_node_set_equal": ci["core_node_set_equal"],
++                                                 "core_triangle_multiset_equal": ci["core_triangle_multiset_equal"],
++                                                 "mesh_state": jd.mesh_state(chk)[0]}
++    # ---- B: flip one transition cell (inner column X01..X015) with unchanged counts; and the real G1 closure change
++    T_fl = T0.copy()
++    for n in range(0, len(T0), 2):
++        a, b, c = T0[n]
++        d = T0[n + 1][2]
++        cx = np.mean(P0[[a, b, c, d], 0])
++        if X01 < cx < X015:
++            T_fl[n], T_fl[n + 1] = (a, b, d), (b, c, d)
++            break
++    cr = jd.change_record(P0, T0, P0, T_fl)
++    G1 = refine_mesh_near(P0, T0, G0, lambda c: abs(float(c[0])) >= X02, levels=1)
++    G2 = refine_mesh_near(P0, T0, G0, lambda c: abs(float(c[0])) >= X02, levels=2)
++    cr1 = jd.change_record(P0, T0, G1[0], G1[1])
++    got["B_hidden_transition_change"] = {"flip_transition_changed": cr["transition_changed"], "flip_removed_transition": cr["removed"]["transition"],
++                                         "flip_added_transition": cr["added"]["transition"], "G1_transition_changed": cr1["transition_changed"],
++                                         "G1_core_identity_ok": jd.core_identity(P0, T0, G1[0], G1[1])["ok"]}
++    got["B_hidden_transition_change"]["_G1_change_record"] = cr1
++    # ---- C
++    ec = np.array([1.0, 0.5, -1e-30, 0.0])
++    er = jd.edgecouple_record(ec, np.array([0, 1, 2, 3]), np.array([1, 2, 3, 0]), np.array([0.0, 1e-5, 2e-5, 3e-5]))
++    chk = ok_checks()
++    chk["edgecouple_no_negative"] = er["no_negative"]
++    got["C_negative_edgecouple"] = {"no_negative": er["no_negative"], "mesh_state": jd.mesh_state(chk)[0], "_record": er}
++    # ---- D: contact line with 5 nodes; drop one contact edge
++    x = np.array([0.0] * 5 + [1.0] * 5)
++    y = np.array([0.0, 0.25, 0.5, 0.75, 1.0] * 2)
++    full = {"Si_xmin": {"nodes": [0, 1, 2, 3, 4], "edges": [[0, 1], [1, 2], [2, 3], [3, 4]]},
++            "Si_xmax": {"nodes": [5, 6, 7, 8, 9], "edges": [[5, 6], [6, 7], [7, 8], [8, 9]]}}
++    miss = {"Si_xmin": {"nodes": [0, 1, 2, 3, 4], "edges": [[0, 1], [2, 3], [3, 4]]}, "Si_xmax": full["Si_xmax"]}
++    chk = ok_checks()
++    chk["contacts_ok"] = jd.contacts_ok(x, y, miss)["ok"]
++    got["D_missing_contact_edge"] = {"contacts_ok": chk["contacts_ok"], "mesh_state": jd.mesh_state(chk)[0],
++                                     "control_contacts_ok": jd.contacts_ok(x, y, full)["ok"]}
++    # ---- E: NodeVolume sum off by more than tau, control within tau
++    nv = np.full(100, 0.01)
++    area = float(nv.sum())
++    tau = 200 * 2.0 ** -52 + 1e-13
++    bad = nv.copy()
++    bad[0] = bad[0] * (1 + 1e-9)
++    ctl = nv.copy()
++    ctl[0] = np.nextafter(ctl[0], 1.0)
++    assert ctl[0] != nv[0]
++    g_bad, g_ctl = jd.nodevolume_gate(bad, area, tau), jd.nodevolume_gate(ctl, area, tau)
++    chk = ok_checks()
++    chk["nodevolume_sum_within_tau"] = g_bad["sum_within_tau"]
++    got["E_nodevolume_total_error"] = {"sum_within_tau": g_bad["sum_within_tau"], "mesh_state": jd.mesh_state(chk)[0],
++                                       "control_within_tau": g_ctl["sum_within_tau"]}
++    # ---- F, G, H, I, J: judge on a small common set
++    Ps, cs = small_cs()
++    conv = {"ok": True, "converged": True, "final_rel": 1e-12}
++    noconv = {"ok": True, "converged": False, "final_rel": 1e-3}
++    good = {"P": {"status": None, "solve": conv, "consistency_ok": True}, "Q": {"status": None, "solve": conv, "consistency_ok": True}}
++    badQ = {"P": {"status": None, "solve": conv, "consistency_ok": True}, "Q": {"status": None, "solve": noconv, "consistency_ok": True}}
++    psiF = psi_family(cs, 1e-3, 2.5e-4, (0.0, 0.0, 0.0))               # P and Q arrays EQUAL at every level
++    st1 = {0: "OK", 1: jd.g_state("OK", badQ), 2: jd.g_state("OK", good)}
++    j = jd.judge(st1, psiF, cs, {})
++    got["F_Q_not_converged_PQ_equal_G1"] = {"G1_state": st1[1], "overall": j["overall"],
++                                            "any_metric_classified": any(j["metrics"][M]["state"] != "NOT_CLASSIFIED" for M in jd.METRICS)}
++    st2 = {0: "OK", 1: jd.g_state("OK", good), 2: jd.g_state("OK", badQ)}
++    psi2 = {k: dict(v) for k, v in psiF.items()}
++    j = jd.judge(st2, psi2, cs, {})
++    got["F_Q_not_converged_PQ_equal_G2"] = {"G2_state": st2[2], "decrease_test_evaluated": j["decrease_test_evaluated"],
++                                            "overall": j["overall"], "metric_state": j["metrics"]["psiLinf"]["state"]}
++    csE = small_cs()[1]
++    for m in csE.masks:
++        csE.masks[m] = np.zeros_like(csE.masks[m])
++    j = jd.judge({0: "OK", 1: "OK", 2: "OK"}, psi_family(csE, 1e-3, 2.5e-4, (1e-15,) * 3), csE, {})
++    got["G_empty_common_core"] = {"overall": j["overall"]}
++    allok = {0: "OK", 1: "OK", 2: "OK"}
++    j = jd.judge(allok, psi_family(cs, 1e-3, 1e-3 - 1e-5, (1e-5, 1e-5, 1e-5)), cs, {})
++    iq = j["metrics"]["psiLinf"]["inequalities"]
++    got["H_only_third_inequality_fails"] = {"metric_state": j["metrics"]["psiLinf"]["state"], "overall": j["overall"],
++                                            "_ineq_holds": [iq[f"ineq{i}"]["holds"] for i in (1, 2, 3)]}
++    assert got["H_only_third_inequality_fails"]["_ineq_holds"] == [True, True, False]
++    j = jd.judge(allok, psi_family(cs, 1e-3, 2.5e-4, (1e-15, 1e-15, 1e-15)), cs, {})
++    got["I_positive_control_all_hold"] = {"metric_state": j["metrics"]["ExRMS"]["state"], "overall": j["overall"]}
++    j = jd.judge(allok, psi_family(cs, 1e-15, 1e-15, (1e-12, 1e-12, 1e-12)), cs, {})
++    got["J_no_resolvable_change"] = {"overall": j["overall"]}
++    # ---- K
++    chk = ok_checks()
++    chk["contacts_ok"] = False
++    for k in ("nodevolume_positive", "nodevolume_sum_within_tau", "edgecouple_no_negative"):
++        del chk[k]
++    got["K_missing_checks_fail_closed"] = {"mesh_state": jd.mesh_state(chk)[0], "all_missing_state": jd.mesh_state({})[0]}
++    # ---- L: green-of-green obtuse prediction (exact, family_e6a.exact_checks) on the synthetic mesh
++    ex = {}
++    for name, (P, T, G) in (("G0", (P0, T0, G0)), ("G1", G1), ("G2", G2)):
++        ex[name] = fam.exact_checks(P[:, :2], T, P0[:, :2], T0, G, 10)
++    cx2 = np.abs(G2[0][G2[1]][:, :, 0].astype(np.float64).mean(axis=1))
++    P2 = G2[0][:, :2].astype(np.float64)
++    T2 = G2[1]
++    ob = np.zeros(len(T2), bool)
++    for kk in range(3):
++        a, b, c = T2[:, kk], T2[:, (kk + 1) % 3], T2[:, (kk + 2) % 3]
++        ob |= ((P2[b] - P2[a]) * (P2[c] - P2[a])).sum(1) < 0
++    got["L_green_of_green_obtuse"] = {"G0_obtuse": ex["G0"]["n_obtuse_exact"], "G1_obtuse": ex["G1"]["n_obtuse_exact"],
++                                      "G2_obtuse": ex["G2"]["n_obtuse_exact"],
++                                      "G2_obtuse_transition": int((ob & (cx2 > X01) & (cx2 < X02)).sum()),
++                                      "G1_T2": ex["G1"]["tiling_T2_ok"], "G1_T3": ex["G1"]["tiling_T3_ok"],
++                                      "G2_T2": ex["G2"]["tiling_T2_ok"], "G2_T3": ex["G2"]["tiling_T3_ok"],
++                                      "G1_area_equal": ex["G1"]["area_equals_S0"], "G2_area_equal": ex["G2"]["area_equals_S0"],
++                                      "G2_core_identity_ok": jd.core_identity(P0, T0, G2[0], G2[1])["ok"],
++                                      "_counts": {n: [int(len(P)), int(len(T))] for n, (P, T, _) in (("G0", (P0, T0, G0)), ("G1", G1), ("G2", G2))}}
++    # ---- compare
++    fails = []
++    for case, exp in EXPECT.items():
++        for k, v in exp.items():
++            if got[case].get(k) != v:
++                fails.append(f"{case}.{k}: expected {v!r} got {got[case].get(k)!r}")
++    out = {"expectations": EXPECT, "observed": got, "failures": fails, "pass": not fails}
++    ce.dump_strict(out, os.path.join(HERE, "..", "synthetic_e6d_results.json"))
++    for f in fails:
++        print("FAIL", f)
++    print("synthetic_e6d:", "PASS" if not fails else f"{len(fails)} FAIL", {c: "ok" for c in EXPECT} if not fails else "")
++    return 0 if not fails else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/synthetic_e6d_results.json b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/synthetic_e6d_results.json
+new file mode 100644
+index 0000000..f78bac7
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/synthetic_e6d_results.json
+@@ -0,0 +1,196 @@
++{
++ "expectations": {
++  "A_core_triangle_changed_same_nodes": {
++   "core_node_set_equal": true,
++   "core_triangle_multiset_equal": false,
++   "mesh_state": "CORE_IDENTITY_FAIL"
++  },
++  "B_hidden_transition_change": {
++   "flip_transition_changed": true,
++   "flip_removed_transition": 2,
++   "flip_added_transition": 2,
++   "G1_transition_changed": true,
++   "G1_core_identity_ok": true
++  },
++  "C_negative_edgecouple": {
++   "no_negative": false,
++   "mesh_state": "GEOMETRY_UNSUPPORTED"
++  },
++  "D_missing_contact_edge": {
++   "contacts_ok": false,
++   "mesh_state": "IMPORT_IDENTITY_FAIL",
++   "control_contacts_ok": true
++  },
++  "E_nodevolume_total_error": {
++   "sum_within_tau": false,
++   "mesh_state": "GEOMETRY_UNSUPPORTED",
++   "control_within_tau": true
++  },
++  "F_Q_not_converged_PQ_equal_G1": {
++   "G1_state": "POISSON_NOT_CONVERGED",
++   "overall": "POISSON_NOT_CONVERGED",
++   "any_metric_classified": false
++  },
++  "F_Q_not_converged_PQ_equal_G2": {
++   "G2_state": "POISSON_NOT_CONVERGED",
++   "decrease_test_evaluated": false,
++   "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY",
++   "metric_state": "NONCORE_CHANGE_RESOLVED_01"
++  },
++  "G_empty_common_core": {
++   "overall": "CONSISTENCY_FAIL"
++  },
++  "H_only_third_inequality_fails": {
++   "metric_state": "NO_NONCORE_DECREASE",
++   "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY"
++  },
++  "I_positive_control_all_hold": {
++   "metric_state": "NONCORE_REFINEMENT_DECREASE_OBSERVED",
++   "overall": "NONCORE_REFINEMENT_DECREASE_OBSERVED"
++  },
++  "J_no_resolvable_change": {
++   "overall": "NO_RESOLVABLE_NONCORE_CHANGE"
++  },
++  "K_missing_checks_fail_closed": {
++   "mesh_state": "IMPORT_IDENTITY_FAIL",
++   "all_missing_state": "CORE_IDENTITY_FAIL"
++  },
++  "L_green_of_green_obtuse": {
++   "G0_obtuse": 0,
++   "G1_obtuse": 0,
++   "G2_obtuse": 16,
++   "G2_obtuse_transition": 16,
++   "G1_T2": true,
++   "G1_T3": true,
++   "G2_T2": true,
++   "G2_T3": true,
++   "G1_area_equal": true,
++   "G2_area_equal": true,
++   "G2_core_identity_ok": true
++  }
++ },
++ "observed": {
++  "A_core_triangle_changed_same_nodes": {
++   "core_node_set_equal": true,
++   "core_triangle_multiset_equal": false,
++   "mesh_state": "CORE_IDENTITY_FAIL"
++  },
++  "B_hidden_transition_change": {
++   "flip_transition_changed": true,
++   "flip_removed_transition": 2,
++   "flip_added_transition": 2,
++   "G1_transition_changed": true,
++   "G1_core_identity_ok": true,
++   "_G1_change_record": {
++    "removed": {
++     "core": 0,
++     "transition": 8,
++     "outer": 32,
++     "transition_abs_centroid_x_um_range": [
++      0.18333333730697632,
++      0.18333333730697632
++     ]
++    },
++    "added": {
++     "core": 0,
++     "transition": 16,
++     "outer": 128,
++     "transition_abs_centroid_x_um_range": [
++      0.18333333730697632,
++      0.18333333730697632
++     ]
++    },
++    "transition_changed": true
++   }
++  },
++  "C_negative_edgecouple": {
++   "no_negative": false,
++   "mesh_state": "GEOMETRY_UNSUPPORTED",
++   "_record": {
++    "n_edges": 4,
++    "min": -1e-30,
++    "n_negative": 1,
++    "n_zero": 1,
++    "n_zero_by_region_of_edge_midpoint": {
++     "core": 0,
++     "transition": 1,
++     "outer": 0
++    },
++    "no_negative": false
++   }
++  },
++  "D_missing_contact_edge": {
++   "contacts_ok": false,
++   "mesh_state": "IMPORT_IDENTITY_FAIL",
++   "control_contacts_ok": true
++  },
++  "E_nodevolume_total_error": {
++   "sum_within_tau": false,
++   "mesh_state": "GEOMETRY_UNSUPPORTED",
++   "control_within_tau": true
++  },
++  "F_Q_not_converged_PQ_equal_G1": {
++   "G1_state": "POISSON_NOT_CONVERGED",
++   "overall": "POISSON_NOT_CONVERGED",
++   "any_metric_classified": false
++  },
++  "F_Q_not_converged_PQ_equal_G2": {
++   "G2_state": "POISSON_NOT_CONVERGED",
++   "decrease_test_evaluated": false,
++   "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY",
++   "metric_state": "NONCORE_CHANGE_RESOLVED_01"
++  },
++  "G_empty_common_core": {
++   "overall": "CONSISTENCY_FAIL"
++  },
++  "H_only_third_inequality_fails": {
++   "metric_state": "NO_NONCORE_DECREASE",
++   "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY",
++   "_ineq_holds": [
++    true,
++    true,
++    false
++   ]
++  },
++  "I_positive_control_all_hold": {
++   "metric_state": "NONCORE_REFINEMENT_DECREASE_OBSERVED",
++   "overall": "NONCORE_REFINEMENT_DECREASE_OBSERVED"
++  },
++  "J_no_resolvable_change": {
++   "overall": "NO_RESOLVABLE_NONCORE_CHANGE"
++  },
++  "K_missing_checks_fail_closed": {
++   "mesh_state": "IMPORT_IDENTITY_FAIL",
++   "all_missing_state": "CORE_IDENTITY_FAIL"
++  },
++  "L_green_of_green_obtuse": {
++   "G0_obtuse": 0,
++   "G1_obtuse": 0,
++   "G2_obtuse": 16,
++   "G2_obtuse_transition": 16,
++   "G1_T2": true,
++   "G1_T3": true,
++   "G2_T2": true,
++   "G2_T3": true,
++   "G1_area_equal": true,
++   "G2_area_equal": true,
++   "G2_core_identity_ok": true,
++   "_counts": {
++    "G0": [
++     93,
++     152
++    ],
++    "G1": [
++     153,
++     256
++    ],
++    "G2": [
++     369,
++     656
++    ]
++   }
++  }
++ },
++ "failures": [],
++ "pass": true
++}
+diff --git a/remote/profiles.py b/remote/profiles.py
+index ba202c5..7dcec1a 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -319,2 +319,43 @@ PROFILES = {
+     },
++    "e6d_noncore_refinement": {
++        "description": "Batch 7H-E6D: E6A L5 core held fixed, non-core refinement (production refine_mesh_near, seed |x| >= X02, 1 and 2 passes), pre-solve gates, then 0 V Poisson P/Q per valid mesh, one devsim.solve per process, at most 4 solves.",
++        "entry": "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/run_e6d.py",
++        "args": [],
++        "params": {},
++        "timeout_s": 9000,
++        "inputs": [
++            "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/PLAN.md",
++            "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/PLAN.sha256",
++            "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/run_e6d.py",
++            "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/stage_e6d.py",
++            "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/scripts/judge_e6d.py",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/PLAN.md",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/judge_e6c.py",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/stage_e6c.py",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/data/remote_run_36529279171/outputs/e6c_out/run_L5_P.json",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/data/remote_run_36529279171/outputs/e6c_out/run_L5_Q.json",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/data/remote_run_36529279171/outputs/e6c_out/run_L5_P_final.npz",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/data/remote_run_36529279171/outputs/e6c_out/run_L5_Q_final.npz",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/data/remote_run_36529279171/outputs/e6c_out/run_L4_P_final.npz",
++            "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/scripts/judge_e6b.py",
++            "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/data/remote_run_36527372624/outputs/e6b_out/level_L5_static.npz",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/scripts/family_e6a.py",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.json",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.vtu",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L3.npz",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L4.npz",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.npz",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/stage_e2.py",
++            "docs/audits/2026-09-25-batch7h-e2-nodevolume-first-bad-stage/scripts/trace_refine_e2.py",
++            "docs/audits/2026-09-25-batch7h-e4-nonobtuse-quadtree-candidate/scripts/quadtree_e4.py",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
++            "tcad/device/devsim/mesh_refine.py",
++            "tcad/device/devsim/mesh_import.py",
++            "tcad/device/devsim/semiconductor_equation.py",
++            "tcad/mesh/viennaps_adapter.py",
++        ],
++        "outputs": [{"glob": "e6d_out/**/*.json", "max_mb": 20}, {"glob": "e6d_out/**/*.npz", "max_mb": 60},
++                    {"glob": "e6d_out/**/*.vtu", "max_mb": 40}],
++        "regenerate": "Rerun the profile. The refined meshes are rebuilt from the hash-gated E6A L5 mesh; every solve is a fresh import in its own process.",
++    },
+ }
+diff --git a/remote/request.json b/remote/request.json
+index 36c16b7..34f7486 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -2,6 +2,6 @@
+  "schema": 1,
+- "request_id": "e6c-initialization-robustness-001",
+- "profile": "e6c_initialization_robustness",
++ "request_id": "e6d-noncore-refinement-001",
++ "profile": "e6d_noncore_refinement",
+  "params": {},
+- "note": "Batch 7H-E6C. PLAN fixed alone in commit 9851fdf7b9a719ff8818922036c77ad0af468815 (PLAN.md LF sha256 3c91c361...) before this code and request. At most 6 devsim.solve calls."
++ "note": "Batch 7H-E6D. PLAN fixed alone in commit 44c426b (PLAN.md LF sha256 fb389c5d...) before this code and request. At most 4 devsim.solve calls; mesh stages make none."
+ }

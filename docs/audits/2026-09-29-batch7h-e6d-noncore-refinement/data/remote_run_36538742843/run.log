@@ -1,0 +1,166 @@
+[e6d] envelopes: {'G1': {'mesh_bytes': 5673268224, 'solve_bytes': 5509036468.70247}, 'G2': {'mesh_bytes': 7799075840, 'solve_bytes': 7062491539.752549}}
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6d     11.6s] G1: 499725 nodes, 998000 triangles (predicted 499725, 998000)
+[e6d     21.8s] G1: exact 5.0s obtuse 0 T2 True T3 True area True
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 998000 Triangles.
+Physical group name Si has 1497724 Lines.
+Physical group name Si has 499725 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 200 Lines.
+Physical group name Si_xmax has 201 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 200 Lines.
+Physical group name Si_xmin has 201 Points.
+Device e6d_G1_meshstage_device has 499725 coordinates with max index 499724
+Region Si has 499725 nodes.
+Contact Si_xmax in region Si with 201 nodes
+Contact Si_xmin in region Si with 201 nodes
+[e6d     63.5s] G1: NodeVolume ratio 1.0 tau 3.326e-10 within True; EdgeCouple neg 0 zero 229332; contacts True
+[e6d     66.2s] mesh G1: status=OK state=OK failed=[] solve_calls=0
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6d     23.5s] G2: 730909 nodes, 1459200 triangles (predicted 730909, 1459200)
+[e6d     36.8s] G2: exact 6.6s obtuse 400 T2 True T3 True area True
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1459200 Triangles.
+Physical group name Si has 2190108 Lines.
+Physical group name Si has 730909 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 400 Lines.
+Physical group name Si_xmax has 401 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 400 Lines.
+Physical group name Si_xmin has 401 Points.
+Device e6d_G2_meshstage_device has 730909 coordinates with max index 730908
+Region Si has 730909 nodes.
+Contact Si_xmax in region Si with 401 nodes
+Contact Si_xmin in region Si with 401 nodes
+[e6d     96.5s] G2: NodeVolume ratio 1.0031249951791816 tau 4.864e-10 within False; EdgeCouple neg 0 zero 422767; contacts True
+[e6d    100.5s] mesh G2: status=GATE_FAIL state=GEOMETRY_UNSUPPORTED failed=['nodevolume_sum_within_tau'] solve_calls=0
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 998000 Triangles.
+Physical group name Si has 1497724 Lines.
+Physical group name Si has 499725 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 200 Lines.
+Physical group name Si_xmax has 201 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 200 Lines.
+Physical group name Si_xmin has 201 Points.
+Device e6d_G1_P_device has 499725 coordinates with max index 499724
+Region Si has 499725 nodes.
+Contact Si_xmax in region Si with 201 nodes
+Contact Si_xmin in region Si with 201 nodes
+Creating Node Solution Potential
+number of equations 499725
+Iteration: 0
+  Device: "e6d_G1_P_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e6d_G1_P_device"	RelError: 8.97113e-01	AbsError: 1.90999e-01
+    Region: "Si"	RelError: 8.97113e-01	AbsError: 1.90999e-01
+      Equation: "PotentialEquation"	RelError: 8.97113e-01	AbsError: 1.90999e-01
+Iteration: 2
+  Device: "e6d_G1_P_device"	RelError: 3.11888e-01	AbsError: 8.49555e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 8.49555e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 8.49555e-02
+Iteration: 3
+  Device: "e6d_G1_P_device"	RelError: 3.42345e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 3.42345e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 3.42345e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e6d_G1_P_device"	RelError: 3.59976e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 3.59976e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 3.59976e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e6d_G1_P_device"	RelError: 3.07600e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 3.07600e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 3.07600e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e6d_G1_P_device"	RelError: 2.07508e-01	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 2.07508e-01	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 2.07508e-01	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e6d_G1_P_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e6d_G1_P_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e6d_G1_P_device"	RelError: 3.43368e-07	AbsError: 5.27021e-17
+    Region: "Si"	RelError: 3.43368e-07	AbsError: 5.27021e-17
+      Equation: "PotentialEquation"	RelError: 3.43368e-07	AbsError: 5.27021e-17
+[e6d     46.7s] G1-P converged=True iterations=10 rel=3.433680132098044e-07
+[e6c     47.1s] run_G1_P.json: status=OK solve_count=1 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 998000 Triangles.
+Physical group name Si has 1497724 Lines.
+Physical group name Si has 499725 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 200 Lines.
+Physical group name Si_xmax has 201 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 200 Lines.
+Physical group name Si_xmin has 201 Points.
+Device e6d_G1_Q_device has 499725 coordinates with max index 499724
+Region Si has 499725 nodes.
+Contact Si_xmax in region Si with 201 nodes
+Contact Si_xmin in region Si with 201 nodes
+Creating Node Solution Potential
+number of equations 499725
+Iteration: 0
+  Device: "e6d_G1_Q_device"	RelError: 9.98807e-01	AbsError: 2.79793e-01
+    Region: "Si"	RelError: 9.98807e-01	AbsError: 2.79793e-01
+      Equation: "PotentialEquation"	RelError: 9.98807e-01	AbsError: 2.79793e-01
+Iteration: 1
+  Device: "e6d_G1_Q_device"	RelError: 6.01161e-01	AbsError: 1.83671e-01
+    Region: "Si"	RelError: 6.01161e-01	AbsError: 1.83671e-01
+      Equation: "PotentialEquation"	RelError: 6.01161e-01	AbsError: 1.83671e-01
+Iteration: 2
+  Device: "e6d_G1_Q_device"	RelError: 2.75109e-01	AbsError: 8.78420e-02
+    Region: "Si"	RelError: 2.75109e-01	AbsError: 8.78420e-02
+      Equation: "PotentialEquation"	RelError: 2.75109e-01	AbsError: 8.78420e-02
+Iteration: 3
+  Device: "e6d_G1_Q_device"	RelError: 3.48920e-01	AbsError: 3.94717e-02
+    Region: "Si"	RelError: 3.48920e-01	AbsError: 3.94717e-02
+      Equation: "PotentialEquation"	RelError: 3.48920e-01	AbsError: 3.94717e-02
+Iteration: 4
+  Device: "e6d_G1_Q_device"	RelError: 3.53510e-01	AbsError: 2.98512e-02
+    Region: "Si"	RelError: 3.53510e-01	AbsError: 2.98512e-02
+      Equation: "PotentialEquation"	RelError: 3.53510e-01	AbsError: 2.98512e-02
+Iteration: 5
+  Device: "e6d_G1_Q_device"	RelError: 4.43229e-01	AbsError: 2.56679e-02
+    Region: "Si"	RelError: 4.43229e-01	AbsError: 2.56679e-02
+      Equation: "PotentialEquation"	RelError: 4.43229e-01	AbsError: 2.56679e-02
+Iteration: 6
+  Device: "e6d_G1_Q_device"	RelError: 5.01948e-02	AbsError: 8.26594e-03
+    Region: "Si"	RelError: 5.01948e-02	AbsError: 8.26594e-03
+      Equation: "PotentialEquation"	RelError: 5.01948e-02	AbsError: 8.26594e-03
+Iteration: 7
+  Device: "e6d_G1_Q_device"	RelError: 4.93293e-07	AbsError: 2.54622e-08
+    Region: "Si"	RelError: 4.93293e-07	AbsError: 2.54622e-08
+      Equation: "PotentialEquation"	RelError: 4.93293e-07	AbsError: 2.54622e-08
+[e6d     42.2s] G1-Q converged=True iterations=8 rel=4.932928785807721e-07
+[e6c     42.6s] run_G1_Q.json: status=OK solve_count=1 devices_left=[]
+
+[e6d] verdict {'overall': 'NO_RESOLVABLE_NONCORE_CHANGE', 'G2_state': 'GEOMETRY_UNSUPPORTED', 'maximum_possible': 'NONCORE_REFINEMENT_DECREASE_OBSERVED', 'note': 'core (|x| <= 0.1 um) potential / fixed-width field change under non-core refinement of the E6A L5 mesh, compared with the observed initialization shift only; not an outer-floor absence, not 2D continuum convergence, not physics validation; the transition column also changes, so no attribution to the far outer grid alone.'} solve_calls=2

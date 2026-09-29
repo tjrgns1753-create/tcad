@@ -1,0 +1,205 @@
+{
+ "mode": "mesh",
+ "k": 1,
+ "status": "OK",
+ "solve_calls": 0,
+ "checks": {
+  "construction_counts": true,
+  "core_node_set_equal": true,
+  "core_triangle_multiset_equal": true,
+  "tags_single_equal_G0": true,
+  "bbox_equal": true,
+  "area_equals_G0": true,
+  "orientation_positive": true,
+  "no_duplicate_triangles": true,
+  "no_duplicate_nodes": true,
+  "no_isolated_nodes": true,
+  "tiling_T2": true,
+  "tiling_T3": true,
+  "writer_roundtrip_exact": true,
+  "import_ok": true,
+  "xy_equal_scaled_construction": true,
+  "vertex_set_multiset_equal": true,
+  "regions_Si": true,
+  "contacts_ok": true,
+  "nodevolume_positive": true,
+  "nodevolume_sum_within_tau": true,
+  "edgecouple_no_negative": true
+ },
+ "wall_s": {
+  "production_refine": 10.594449043273926,
+  "exact_checks": 4.999202013015747,
+  "import_read": 17.477868795394897,
+  "nodevolume": 21.70563840866089
+ },
+ "input": {
+  "L5_vtu_equals_npz": true,
+  "X02_json": [
+   0.20000000298023224,
+   -0.20000000298023224
+  ],
+  "X02_literal": 0.20000000298023224
+ },
+ "seed_pass1_count": 38400,
+ "counts": {
+  "n_nodes": 499725,
+  "n_triangles": 998000,
+  "predicted": {
+   "T": 998000,
+   "N": 499725
+  },
+  "dtypes": [
+   "float32",
+   "int64",
+   "int32"
+  ]
+ },
+ "core_identity": {
+  "n_core_nodes": [
+   412929,
+   412929
+  ],
+  "n_core_triangles": [
+   819200,
+   819200
+  ],
+  "core_node_set_equal": true,
+  "core_triangle_multiset_equal": true,
+  "core_triangles_removed": 0,
+  "core_triangles_added": 0,
+  "ok": true
+ },
+ "change_record": {
+  "removed": {
+   "core": 0,
+   "transition": 200,
+   "outer": 38400,
+   "transition_abs_centroid_x_um_range": [
+    0.18333333730697632,
+    0.18333333730697632
+   ]
+  },
+  "added": {
+   "core": 0,
+   "transition": 400,
+   "outer": 153600,
+   "transition_abs_centroid_x_um_range": [
+    0.18333333730697632,
+    0.18333333730697632
+   ]
+  },
+  "transition_changed": true
+ },
+ "exact": {
+  "exact_area_um2": "50/1",
+  "exact_rect_area_um2": "50/1",
+  "exact_area_S0_um2": "50/1",
+  "area_equals_rect": true,
+  "area_equals_S0": true,
+  "n_nonpositive_orientation": 0,
+  "n_obtuse_exact": 0,
+  "n_duplicate_triangles": 0,
+  "n_edges": 1497724,
+  "n_edges_owner_gt2": 0,
+  "n_two_owner_edges_same_direction": 0,
+  "n_one_owner_edges": 1448,
+  "n_one_owner_edges_off_boundary": 0,
+  "boundary_chains": {
+   "bottom": {
+    "n_edges": 524,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   },
+   "right": {
+    "n_edges": 200,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   },
+   "top": {
+    "n_edges": 524,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   },
+   "left": {
+    "n_edges": 200,
+    "ccw_direction": true,
+    "corner_to_corner_gap_free": true,
+    "all_side_nodes_are_chain_vertices": true
+   }
+  },
+  "tiling_T2_ok": true,
+  "tiling_T3_ok": true,
+  "boundary_points_S0": 864,
+  "boundary_points": 1448,
+  "boundary_points_lost": 0,
+  "boundary_points_added": 584,
+  "bbox_equal": true,
+  "left_contact_set_equal": false,
+  "right_contact_set_equal": false,
+  "contact_nodes_left_right": [
+   201,
+   201
+  ],
+  "tags_single_equal_S0": true
+ },
+ "obtuse_float_by_region_reported": {
+  "core": 0,
+  "transition": 0,
+  "outer": 0
+ },
+ "vtu_sha256": "48bcf8ea231c5c59a09a2c7089bd6e61af8688c57b73c723d6753305753f4f02",
+ "contacts": {
+  "Si_xmin": {
+   "n_nodes": 201,
+   "n_edges": 200,
+   "node_set_equals_line": true,
+   "has_both_corners": true,
+   "n_uncovered_gaps": 0,
+   "ok": true
+  },
+  "Si_xmax": {
+   "n_nodes": 201,
+   "n_edges": 200,
+   "node_set_equals_line": true,
+   "has_both_corners": true,
+   "n_uncovered_gaps": 0,
+   "ok": true
+  },
+  "ok": true
+ },
+ "nodevolume": {
+  "min": 1.2205387507319184e-14,
+  "n_nonpositive": 0,
+  "sum_cm2": 4.999999310821319e-07,
+  "area_cm2": 4.999999310821319e-07,
+  "ratio": 1.0,
+  "tau": 3.3259354522909507e-10,
+  "abs_ratio_minus_1": 0.0,
+  "positive": true,
+  "sum_within_tau": true,
+  "exact_area_cm2": "18446741531089/36893488147419103232"
+ },
+ "edgecouple": {
+  "n_edges": 1497724,
+  "min": 0.0,
+  "n_negative": 0,
+  "n_zero": 229332,
+  "n_zero_by_region_of_edge_midpoint": {
+   "core": 159522,
+   "transition": 2079,
+   "outer": 67731
+  },
+  "no_negative": true
+ },
+ "state": "OK",
+ "failed_checks": [],
+ "devices_left": [],
+ "memory": {
+  "peak_working_set_bytes": 1896820736,
+  "peak_private_bytes": 1929195520
+ },
+ "wall_total_s": 66.2
+}
