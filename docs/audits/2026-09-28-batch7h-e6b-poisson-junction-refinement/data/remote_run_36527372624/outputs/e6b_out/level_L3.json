@@ -1,0 +1,178 @@
+{
+ "mode": "level",
+ "L": 3,
+ "status": "OK",
+ "solve_calls": [
+  {
+   "call_id": "L3-P",
+   "k": {
+    "absolute_error": 1.0,
+    "relative_error": 1e-06,
+    "maximum_iterations": 100
+   },
+   "ok": true,
+   "error": null,
+   "wall_s": 2.115,
+   "converged": true,
+   "n_iterations": 10,
+   "final_device_relative_error": 3.9323820925690584e-07,
+   "final_device_absolute_error": 6.259693716627964e-17,
+   "final_equations": {
+    "PotentialEquation": {
+     "abs": 6.259693716627964e-17,
+     "rel": 3.9323820925690584e-07
+    }
+   },
+   "iteration_device_relative_errors": [
+    0.9999999996831418,
+    0.48562200045285875,
+    0.3118880153176831,
+    0.2227069864110424,
+    0.16662620066652084,
+    0.12619170216513506,
+    0.09354772090620489,
+    0.0644444035241062,
+    0.05187778391165696,
+    3.9323820925690584e-07
+   ]
+  },
+  {
+   "call_id": "L3-C",
+   "k": {
+    "absolute_error": 1e-12,
+    "relative_error": 1e-12,
+    "maximum_iterations": 10
+   },
+   "ok": true,
+   "error": null,
+   "wall_s": 1.856,
+   "converged": false,
+   "n_iterations": 10,
+   "final_device_relative_error": 4.4926250416882417e-07,
+   "final_device_absolute_error": 6.259693714250776e-17,
+   "final_equations": {
+    "PotentialEquation": {
+     "abs": 6.259693714250776e-17,
+     "rel": 4.4926250416882417e-07
+    }
+   },
+   "iteration_device_relative_errors": [
+    4.3588285122765686e-07,
+    4.258103461169085e-07,
+    3.7078360066329284e-07,
+    4.03544703204002e-07,
+    4.841830420008806e-07,
+    3.921093559571533e-07,
+    4.886184699879583e-07,
+    4.1601132216678884e-07,
+    4.880585688487773e-07,
+    4.4926250416882417e-07
+   ]
+  }
+ ],
+ "solve_count": 2,
+ "input_vtu_sha256": "5820d1d27443c0862df3b14634aa0fa8753f20895e2204a650256e98862a1734",
+ "identity": {
+  "n_nodes": [
+   48033,
+   48033
+  ],
+  "nodes_equal": true,
+  "xy_equal_scaled_construction": true,
+  "n_elements": [
+   95400,
+   95400
+  ],
+  "vertex_set_multiset_equal": true,
+  "NodeVolume_bit_equal_E6A": true,
+  "regions": [
+   "Si"
+  ],
+  "contacts": {
+   "Si_xmin": 101,
+   "Si_xmax": 101
+  },
+  "contacts_by_coordinate_ok": true,
+  "ok": true
+ },
+ "doping": {
+  "n_nodes": 48033,
+  "n_x0_nodes": 801,
+  "x0_Donors_unique": [
+   1e+18
+  ],
+  "x0_Acceptors_unique": [
+   1e+18
+  ],
+  "x0_NetDoping_unique": [
+   0.0
+  ],
+  "x0_ok": true,
+  "x0_sum_NodeVolume_cm2": 3.12499970568752e-10,
+  "x0_sum_Donors_x_NodeVolume": 312499970.56875205,
+  "x0_sum_Acceptors_x_NodeVolume": 312499970.56875205,
+  "x0_sum_NetDoping_x_NodeVolume": 0.0,
+  "total_Donors_x_NodeVolume": 250156215526.35034,
+  "total_Acceptors_x_NodeVolume": 250156215526.35028,
+  "continuum_N_x_area": 249999965541.06592,
+  "note": "raw numbers of the discrete doping representation; not called a sheet charge"
+ },
+ "flags": {
+  "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+  "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+  "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+ },
+ "edge_arrays_equal_E6A": {
+  "n0": true,
+  "n1": true,
+  "EdgeCouple": true,
+  "EdgeLength": true
+ },
+ "static_sha256": {
+  "x": "4e3cdd7dde516212f0a812108e685605d08875dde7961868e11e516c3389d86f",
+  "y": "8a5fa1ce54d62d1c9c4731e50470133bae2b9ff5d502d021d6c2fcabb0acb1ab",
+  "elements": "d267ebd442714afe01a210e934b43f7c96507c95ee07570f470557aacc24e736",
+  "NodeVolume": "a8f7772bcdfcf81f6c0b6f0b26ef132eb2b8de6e9a250104d5a5df836e7ac3b0",
+  "Donors": "fa9cbe3fb6958c26693e4a4e195c779320cd30c81acd34d7257cc9920db48527",
+  "Acceptors": "cb87c91a1586b2043c2a2a50e914e98c6d2fb0ced47ad7821164ac61f47f43f1",
+  "NetDoping": "b2520b5f3aeb7cb760a28f7da20aeeec730f1d3b59bda03880e52c56f0bd85f2",
+  "edge_n0": "05a2c6a2379c438d1bd48376c21613ec6103e0afc579fd6361d4c60de27d8ed0",
+  "edge_n1": "fd5c629a701eeaacaa60ff5febb74f6342cebfe62516ee70f34e06819eb84fa2",
+  "EdgeCouple": "8bfd54dad210363c2e9b207ef3b68ffeb1a1811d91bf955dae9362a4e81592f0",
+  "EdgeLength": "fe001bfbd735d7ec687fde7bdad92298e8f2bf3d05e9dbf902ba2d6ef14531f6"
+ },
+ "snapshots": {
+  "P": {
+   "call_id": "L3-P",
+   "array_sha256": {
+    "Potential": "52b3813d5541f7a671dbb675959f63009940c067c9c327f4d74179c29deb9e47",
+    "IntrinsicElectrons": "672c0e779f8f759262f1b8ded53fd865cab8efbe72a3b0de15fd660dce13bdfd",
+    "IntrinsicHoles": "218e041a342180d2f86eefe8c4bae505071d6475c335c29f2f9f4c73528448e2",
+    "IntrinsicCharge": "c36cc23eb4a8d5502548bd7e37ca49c7effd2e5e85703656538b62754f248037",
+    "PotentialIntrinsicCharge": "6b38b46d2311e7dd33aa4043a32fb335c1f3e9585a8c88fb5bfd1a7750c6da74",
+    "ElectricField": "fca93a76565f60eb846bcd2d1210eb6772bd158922f5259263b40939f4c68542",
+    "PotentialEdgeFlux": "918f8ecbb7881cae6417067672d743c34da7a0e2abbb1ce38568801b3c111832"
+   },
+   "all_finite": true
+  },
+  "C": {
+   "call_id": "L3-C",
+   "array_sha256": {
+    "Potential": "52b3813d5541f7a671dbb675959f63009940c067c9c327f4d74179c29deb9e47",
+    "IntrinsicElectrons": "672c0e779f8f759262f1b8ded53fd865cab8efbe72a3b0de15fd660dce13bdfd",
+    "IntrinsicHoles": "218e041a342180d2f86eefe8c4bae505071d6475c335c29f2f9f4c73528448e2",
+    "IntrinsicCharge": "c36cc23eb4a8d5502548bd7e37ca49c7effd2e5e85703656538b62754f248037",
+    "PotentialIntrinsicCharge": "6b38b46d2311e7dd33aa4043a32fb335c1f3e9585a8c88fb5bfd1a7750c6da74",
+    "ElectricField": "fca93a76565f60eb846bcd2d1210eb6772bd158922f5259263b40939f4c68542",
+    "PotentialEdgeFlux": "918f8ecbb7881cae6417067672d743c34da7a0e2abbb1ce38568801b3c111832"
+   },
+   "all_finite": true
+  }
+ },
+ "devices_left": [],
+ "memory": {
+  "peak_working_set_bytes": 361472000,
+  "peak_private_bytes": 377188352
+ },
+ "wall_s": 6.2
+}

@@ -1,0 +1,507 @@
+[e6b] envelopes: {'L3': {'memory_bytes': 2341179392, 'time_s': 95.43927224812012}, 'L4': {'memory_bytes': 2607210496, 'time_s': 254.463}, 'L5': {'memory_bytes': 3573121024, 'time_s': 877.7023306472393}}
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 95400 Triangles.
+Physical group name Si has 143432 Lines.
+Physical group name Si has 48033 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6b_L3_device has 48033 coordinates with max index 48032
+Region Si has 48033 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 48033
+Iteration: 0
+  Device: "e6b_L3_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e6b_L3_device"	RelError: 4.85622e-01	AbsError: 1.90981e-01
+    Region: "Si"	RelError: 4.85622e-01	AbsError: 1.90981e-01
+      Equation: "PotentialEquation"	RelError: 4.85622e-01	AbsError: 1.90981e-01
+Iteration: 2
+  Device: "e6b_L3_device"	RelError: 3.11888e-01	AbsError: 7.82771e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 7.82771e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 7.82771e-02
+Iteration: 3
+  Device: "e6b_L3_device"	RelError: 2.22707e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 2.22707e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 2.22707e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e6b_L3_device"	RelError: 1.66626e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 1.66626e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 1.66626e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e6b_L3_device"	RelError: 1.26192e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.26192e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.26192e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e6b_L3_device"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e6b_L3_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e6b_L3_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e6b_L3_device"	RelError: 3.93238e-07	AbsError: 6.25969e-17
+    Region: "Si"	RelError: 3.93238e-07	AbsError: 6.25969e-17
+      Equation: "PotentialEquation"	RelError: 3.93238e-07	AbsError: 6.25969e-17
+[e6b      4.2s] L3-P converged=True iterations=10 rel=3.9323820925690584e-07
+number of equations 48033
+Iteration: 0
+  Device: "e6b_L3_device"	RelError: 4.35883e-07	AbsError: 6.25881e-17
+    Region: "Si"	RelError: 4.35883e-07	AbsError: 6.25881e-17
+      Equation: "PotentialEquation"	RelError: 4.35883e-07	AbsError: 6.25881e-17
+Iteration: 1
+  Device: "e6b_L3_device"	RelError: 4.25810e-07	AbsError: 6.25969e-17
+    Region: "Si"	RelError: 4.25810e-07	AbsError: 6.25969e-17
+      Equation: "PotentialEquation"	RelError: 4.25810e-07	AbsError: 6.25969e-17
+Iteration: 2
+  Device: "e6b_L3_device"	RelError: 3.70784e-07	AbsError: 6.25881e-17
+    Region: "Si"	RelError: 3.70784e-07	AbsError: 6.25881e-17
+      Equation: "PotentialEquation"	RelError: 3.70784e-07	AbsError: 6.25881e-17
+Iteration: 3
+  Device: "e6b_L3_device"	RelError: 4.03545e-07	AbsError: 6.25969e-17
+    Region: "Si"	RelError: 4.03545e-07	AbsError: 6.25969e-17
+      Equation: "PotentialEquation"	RelError: 4.03545e-07	AbsError: 6.25969e-17
+Iteration: 4
+  Device: "e6b_L3_device"	RelError: 4.84183e-07	AbsError: 6.25881e-17
+    Region: "Si"	RelError: 4.84183e-07	AbsError: 6.25881e-17
+      Equation: "PotentialEquation"	RelError: 4.84183e-07	AbsError: 6.25881e-17
+Iteration: 5
+  Device: "e6b_L3_device"	RelError: 3.92109e-07	AbsError: 6.25969e-17
+    Region: "Si"	RelError: 3.92109e-07	AbsError: 6.25969e-17
+      Equation: "PotentialEquation"	RelError: 3.92109e-07	AbsError: 6.25969e-17
+Iteration: 6
+  Device: "e6b_L3_device"	RelError: 4.88618e-07	AbsError: 6.25881e-17
+    Region: "Si"	RelError: 4.88618e-07	AbsError: 6.25881e-17
+      Equation: "PotentialEquation"	RelError: 4.88618e-07	AbsError: 6.25881e-17
+Iteration: 7
+  Device: "e6b_L3_device"	RelError: 4.16011e-07	AbsError: 6.25969e-17
+    Region: "Si"	RelError: 4.16011e-07	AbsError: 6.25969e-17
+      Equation: "PotentialEquation"	RelError: 4.16011e-07	AbsError: 6.25969e-17
+Iteration: 8
+  Device: "e6b_L3_device"	RelError: 4.88059e-07	AbsError: 6.25881e-17
+    Region: "Si"	RelError: 4.88059e-07	AbsError: 6.25881e-17
+      Equation: "PotentialEquation"	RelError: 4.88059e-07	AbsError: 6.25881e-17
+Iteration: 9
+  Device: "e6b_L3_device"	RelError: 4.49263e-07	AbsError: 6.25969e-17
+    Region: "Si"	RelError: 4.49263e-07	AbsError: 6.25969e-17
+      Equation: "PotentialEquation"	RelError: 4.49263e-07	AbsError: 6.25969e-17
+[e6b      6.2s] L3-C converged=False iterations=10 rel=4.4926250416882417e-07
+[e6b      6.2s] level_L3.json: status=OK solve_count=2 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 255400 Triangles.
+Physical group name Si has 383466 Lines.
+Physical group name Si has 128067 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6b_L4_device has 128067 coordinates with max index 128066
+Region Si has 128067 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 128067
+Iteration: 0
+  Device: "e6b_L4_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e6b_L4_device"	RelError: 1.08651e+00	AbsError: 1.90981e-01
+    Region: "Si"	RelError: 1.08651e+00	AbsError: 1.90981e-01
+      Equation: "PotentialEquation"	RelError: 1.08651e+00	AbsError: 1.90981e-01
+Iteration: 2
+  Device: "e6b_L4_device"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+Iteration: 3
+  Device: "e6b_L4_device"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e6b_L4_device"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e6b_L4_device"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e6b_L4_device"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e6b_L4_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e6b_L4_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e6b_L4_device"	RelError: 2.41211e-07	AbsError: 5.31442e-17
+    Region: "Si"	RelError: 2.41211e-07	AbsError: 5.31442e-17
+      Equation: "PotentialEquation"	RelError: 2.41211e-07	AbsError: 5.31442e-17
+[e6b     11.5s] L4-P converged=True iterations=10 rel=2.4121050925036766e-07
+number of equations 128067
+Iteration: 0
+  Device: "e6b_L4_device"	RelError: 1.95552e-07	AbsError: 5.35656e-17
+    Region: "Si"	RelError: 1.95552e-07	AbsError: 5.35656e-17
+      Equation: "PotentialEquation"	RelError: 1.95552e-07	AbsError: 5.35656e-17
+Iteration: 1
+  Device: "e6b_L4_device"	RelError: 2.11562e-07	AbsError: 5.31441e-17
+    Region: "Si"	RelError: 2.11562e-07	AbsError: 5.31441e-17
+      Equation: "PotentialEquation"	RelError: 2.11562e-07	AbsError: 5.31441e-17
+Iteration: 2
+  Device: "e6b_L4_device"	RelError: 2.15039e-07	AbsError: 5.31545e-17
+    Region: "Si"	RelError: 2.15039e-07	AbsError: 5.31545e-17
+      Equation: "PotentialEquation"	RelError: 2.15039e-07	AbsError: 5.31545e-17
+Iteration: 3
+  Device: "e6b_L4_device"	RelError: 2.38720e-07	AbsError: 5.31441e-17
+    Region: "Si"	RelError: 2.38720e-07	AbsError: 5.31441e-17
+      Equation: "PotentialEquation"	RelError: 2.38720e-07	AbsError: 5.31441e-17
+Iteration: 4
+  Device: "e6b_L4_device"	RelError: 2.38855e-07	AbsError: 5.31545e-17
+    Region: "Si"	RelError: 2.38855e-07	AbsError: 5.31545e-17
+      Equation: "PotentialEquation"	RelError: 2.38855e-07	AbsError: 5.31545e-17
+Iteration: 5
+  Device: "e6b_L4_device"	RelError: 2.20359e-07	AbsError: 5.31441e-17
+    Region: "Si"	RelError: 2.20359e-07	AbsError: 5.31441e-17
+      Equation: "PotentialEquation"	RelError: 2.20359e-07	AbsError: 5.31441e-17
+Iteration: 6
+  Device: "e6b_L4_device"	RelError: 1.90940e-07	AbsError: 5.31545e-17
+    Region: "Si"	RelError: 1.90940e-07	AbsError: 5.31545e-17
+      Equation: "PotentialEquation"	RelError: 1.90940e-07	AbsError: 5.31545e-17
+Iteration: 7
+  Device: "e6b_L4_device"	RelError: 2.10564e-07	AbsError: 5.31441e-17
+    Region: "Si"	RelError: 2.10564e-07	AbsError: 5.31441e-17
+      Equation: "PotentialEquation"	RelError: 2.10564e-07	AbsError: 5.31441e-17
+Iteration: 8
+  Device: "e6b_L4_device"	RelError: 2.27241e-07	AbsError: 5.31545e-17
+    Region: "Si"	RelError: 2.27241e-07	AbsError: 5.31545e-17
+      Equation: "PotentialEquation"	RelError: 2.27241e-07	AbsError: 5.31545e-17
+Iteration: 9
+  Device: "e6b_L4_device"	RelError: 1.95322e-07	AbsError: 5.31441e-17
+    Region: "Si"	RelError: 1.95322e-07	AbsError: 5.31441e-17
+      Equation: "PotentialEquation"	RelError: 1.95322e-07	AbsError: 5.31441e-17
+[e6b     17.5s] L4-C converged=False iterations=10 rel=1.9532247886582458e-07
+[e6b     17.6s] level_L4.json: status=OK solve_count=2 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 882600 Triangles.
+Physical group name Si has 1324332 Lines.
+Physical group name Si has 441733 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6b_L5_device has 441733 coordinates with max index 441732
+Region Si has 441733 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 441733
+Iteration: 0
+  Device: "e6b_L5_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e6b_L5_device"	RelError: 1.09095e+00	AbsError: 1.90981e-01
+    Region: "Si"	RelError: 1.09095e+00	AbsError: 1.90981e-01
+      Equation: "PotentialEquation"	RelError: 1.09095e+00	AbsError: 1.90981e-01
+Iteration: 2
+  Device: "e6b_L5_device"	RelError: 3.11888e-01	AbsError: 7.82718e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 7.82718e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 7.82718e-02
+Iteration: 3
+  Device: "e6b_L5_device"	RelError: 3.42305e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 3.42305e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 3.42305e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e6b_L5_device"	RelError: 3.59989e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 3.59989e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 3.59989e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e6b_L5_device"	RelError: 3.07744e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 3.07744e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 3.07744e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e6b_L5_device"	RelError: 2.07884e-01	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 2.07884e-01	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 2.07884e-01	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e6b_L5_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e6b_L5_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e6b_L5_device"	RelError: 3.88930e-07	AbsError: 6.72536e-17
+    Region: "Si"	RelError: 3.88930e-07	AbsError: 6.72536e-17
+      Equation: "PotentialEquation"	RelError: 3.88930e-07	AbsError: 6.72536e-17
+[e6b     41.9s] L5-P converged=True iterations=10 rel=3.8892979893818e-07
+number of equations 441733
+Iteration: 0
+  Device: "e6b_L5_device"	RelError: 3.97569e-07	AbsError: 6.76668e-17
+    Region: "Si"	RelError: 3.97569e-07	AbsError: 6.76668e-17
+      Equation: "PotentialEquation"	RelError: 3.97569e-07	AbsError: 6.76668e-17
+Iteration: 1
+  Device: "e6b_L5_device"	RelError: 3.39797e-07	AbsError: 6.72536e-17
+    Region: "Si"	RelError: 3.39797e-07	AbsError: 6.72536e-17
+      Equation: "PotentialEquation"	RelError: 3.39797e-07	AbsError: 6.72536e-17
+Iteration: 2
+  Device: "e6b_L5_device"	RelError: 3.20590e-07	AbsError: 6.76668e-17
+    Region: "Si"	RelError: 3.20590e-07	AbsError: 6.76668e-17
+      Equation: "PotentialEquation"	RelError: 3.20590e-07	AbsError: 6.76668e-17
+Iteration: 3
+  Device: "e6b_L5_device"	RelError: 3.32006e-07	AbsError: 6.72536e-17
+    Region: "Si"	RelError: 3.32006e-07	AbsError: 6.72536e-17
+      Equation: "PotentialEquation"	RelError: 3.32006e-07	AbsError: 6.72536e-17
+Iteration: 4
+  Device: "e6b_L5_device"	RelError: 3.37423e-07	AbsError: 6.76668e-17
+    Region: "Si"	RelError: 3.37423e-07	AbsError: 6.76668e-17
+      Equation: "PotentialEquation"	RelError: 3.37423e-07	AbsError: 6.76668e-17
+Iteration: 5
+  Device: "e6b_L5_device"	RelError: 2.97095e-07	AbsError: 6.72536e-17
+    Region: "Si"	RelError: 2.97095e-07	AbsError: 6.72536e-17
+      Equation: "PotentialEquation"	RelError: 2.97095e-07	AbsError: 6.72536e-17
+Iteration: 6
+  Device: "e6b_L5_device"	RelError: 3.25830e-07	AbsError: 6.76668e-17
+    Region: "Si"	RelError: 3.25830e-07	AbsError: 6.76668e-17
+      Equation: "PotentialEquation"	RelError: 3.25830e-07	AbsError: 6.76668e-17
+Iteration: 7
+  Device: "e6b_L5_device"	RelError: 3.33525e-07	AbsError: 6.72536e-17
+    Region: "Si"	RelError: 3.33525e-07	AbsError: 6.72536e-17
+      Equation: "PotentialEquation"	RelError: 3.33525e-07	AbsError: 6.72536e-17
+Iteration: 8
+  Device: "e6b_L5_device"	RelError: 3.25618e-07	AbsError: 6.76668e-17
+    Region: "Si"	RelError: 3.25618e-07	AbsError: 6.76668e-17
+      Equation: "PotentialEquation"	RelError: 3.25618e-07	AbsError: 6.76668e-17
+Iteration: 9
+  Device: "e6b_L5_device"	RelError: 3.39481e-07	AbsError: 6.72536e-17
+    Region: "Si"	RelError: 3.39481e-07	AbsError: 6.72536e-17
+      Equation: "PotentialEquation"	RelError: 3.39481e-07	AbsError: 6.72536e-17
+[e6b     65.1s] L5-C converged=False iterations=10 rel=3.394814568271905e-07
+[e6b     65.4s] level_L5.json: status=OK solve_count=2 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+right
+ (region: Si)
+ (contact: left)
+ (contact: right)
+Creating Node Solution Potential
+number of equations 14849
+Iteration: 0
+  Device: "e6b_R6_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e6b_R6_device"	RelError: 1.81171e+01	AbsError: 1.91005e-01
+    Region: "Si"	RelError: 1.81171e+01	AbsError: 1.91005e-01
+      Equation: "PotentialEquation"	RelError: 1.81171e+01	AbsError: 1.91005e-01
+Iteration: 2
+  Device: "e6b_R6_device"	RelError: 4.40493e+00	AbsError: 8.48326e-02
+    Region: "Si"	RelError: 4.40493e+00	AbsError: 8.48326e-02
+      Equation: "PotentialEquation"	RelError: 4.40493e+00	AbsError: 8.48326e-02
+Iteration: 3
+  Device: "e6b_R6_device"	RelError: 5.05212e+00	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 5.05212e+00	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 5.05212e+00	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e6b_R6_device"	RelError: 2.01815e+00	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 2.01815e+00	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 2.01815e+00	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e6b_R6_device"	RelError: 1.02631e+00	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.02631e+00	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.02631e+00	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e6b_R6_device"	RelError: 2.77893e-01	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 2.77893e-01	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 2.77893e-01	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e6b_R6_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e6b_R6_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e6b_R6_device"	RelError: 9.53663e-07	AbsError: 4.54763e-07
+    Region: "Si"	RelError: 9.53663e-07	AbsError: 4.54763e-07
+      Equation: "PotentialEquation"	RelError: 9.53663e-07	AbsError: 4.54763e-07
+[e6b      0.6s] R6-P converged=True iterations=10 rel=9.536628278850826e-07
+number of equations 14849
+Iteration: 0
+  Device: "e6b_R6_device"	RelError: 9.01606e-09	AbsError: 1.46296e-12
+    Region: "Si"	RelError: 9.01606e-09	AbsError: 1.46296e-12
+      Equation: "PotentialEquation"	RelError: 9.01606e-09	AbsError: 1.46296e-12
+Iteration: 1
+  Device: "e6b_R6_device"	RelError: 1.45344e-08	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 1.45344e-08	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 1.45344e-08	AbsError: 5.22921e-17
+Iteration: 2
+  Device: "e6b_R6_device"	RelError: 1.20708e-08	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 1.20708e-08	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 1.20708e-08	AbsError: 5.22921e-17
+Iteration: 3
+  Device: "e6b_R6_device"	RelError: 7.33716e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 7.33716e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 7.33716e-09	AbsError: 5.22921e-17
+Iteration: 4
+  Device: "e6b_R6_device"	RelError: 4.04032e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 4.04032e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 4.04032e-09	AbsError: 5.22921e-17
+Iteration: 5
+  Device: "e6b_R6_device"	RelError: 8.10757e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 8.10757e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 8.10757e-09	AbsError: 5.22921e-17
+Iteration: 6
+  Device: "e6b_R6_device"	RelError: 1.21399e-08	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 1.21399e-08	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 1.21399e-08	AbsError: 5.22921e-17
+Iteration: 7
+  Device: "e6b_R6_device"	RelError: 1.26746e-08	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 1.26746e-08	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 1.26746e-08	AbsError: 5.22921e-17
+Iteration: 8
+  Device: "e6b_R6_device"	RelError: 7.78144e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 7.78144e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 7.78144e-09	AbsError: 5.22921e-17
+Iteration: 9
+  Device: "e6b_R6_device"	RelError: 1.15781e-08	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 1.15781e-08	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 1.15781e-08	AbsError: 5.22921e-17
+[e6b      0.8s] R6-C converged=False iterations=10 rel=1.1578134309109713e-08
+[e6b      0.8s] ref_R6.json: status=OK solve_count=2 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+right
+ (region: Si)
+ (contact: left)
+ (contact: right)
+Creating Node Solution Potential
+number of equations 29697
+Iteration: 0
+  Device: "e6b_R7_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e6b_R7_device"	RelError: 2.28984e+01	AbsError: 1.91005e-01
+    Region: "Si"	RelError: 2.28984e+01	AbsError: 1.91005e-01
+      Equation: "PotentialEquation"	RelError: 2.28984e+01	AbsError: 1.91005e-01
+Iteration: 2
+  Device: "e6b_R7_device"	RelError: 1.33171e+01	AbsError: 8.48351e-02
+    Region: "Si"	RelError: 1.33171e+01	AbsError: 8.48351e-02
+      Equation: "PotentialEquation"	RelError: 1.33171e+01	AbsError: 8.48351e-02
+Iteration: 3
+  Device: "e6b_R7_device"	RelError: 5.48417e+00	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 5.48417e+00	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 5.48417e+00	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e6b_R7_device"	RelError: 2.01814e+00	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 2.01814e+00	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 2.01814e+00	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e6b_R7_device"	RelError: 1.02632e+00	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.02632e+00	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.02632e+00	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e6b_R7_device"	RelError: 2.77894e-01	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 2.77894e-01	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 2.77894e-01	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e6b_R7_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e6b_R7_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e6b_R7_device"	RelError: 3.62861e-05	AbsError: 1.73034e-05
+    Region: "Si"	RelError: 3.62861e-05	AbsError: 1.73034e-05
+      Equation: "PotentialEquation"	RelError: 3.62861e-05	AbsError: 1.73034e-05
+Iteration: 10
+  Device: "e6b_R7_device"	RelError: 6.00056e-09	AbsError: 6.25671e-10
+    Region: "Si"	RelError: 6.00056e-09	AbsError: 6.25671e-10
+      Equation: "PotentialEquation"	RelError: 6.00056e-09	AbsError: 6.25671e-10
+[e6b      1.0s] R7-P converged=True iterations=11 rel=6.000563864508812e-09
+number of equations 29697
+Iteration: 0
+  Device: "e6b_R7_device"	RelError: 5.80489e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 5.80489e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 5.80489e-09	AbsError: 5.22921e-17
+Iteration: 1
+  Device: "e6b_R7_device"	RelError: 2.08926e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 2.08926e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 2.08926e-09	AbsError: 5.22921e-17
+Iteration: 2
+  Device: "e6b_R7_device"	RelError: 5.42129e-10	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 5.42129e-10	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 5.42129e-10	AbsError: 5.22921e-17
+Iteration: 3
+  Device: "e6b_R7_device"	RelError: 1.85782e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 1.85782e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 1.85782e-09	AbsError: 5.22921e-17
+Iteration: 4
+  Device: "e6b_R7_device"	RelError: 1.72271e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 1.72271e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 1.72271e-09	AbsError: 5.22921e-17
+Iteration: 5
+  Device: "e6b_R7_device"	RelError: 5.42124e-10	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 5.42124e-10	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 5.42124e-10	AbsError: 5.22921e-17
+Iteration: 6
+  Device: "e6b_R7_device"	RelError: 2.08925e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 2.08925e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 2.08925e-09	AbsError: 5.22921e-17
+Iteration: 7
+  Device: "e6b_R7_device"	RelError: 1.85782e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 1.85782e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 1.85782e-09	AbsError: 5.22921e-17
+Iteration: 8
+  Device: "e6b_R7_device"	RelError: 1.72271e-09	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 1.72271e-09	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 1.72271e-09	AbsError: 5.22921e-17
+Iteration: 9
+  Device: "e6b_R7_device"	RelError: 5.42124e-10	AbsError: 5.22921e-17
+    Region: "Si"	RelError: 5.42124e-10	AbsError: 5.22921e-17
+      Equation: "PotentialEquation"	RelError: 5.42124e-10	AbsError: 5.22921e-17
+[e6b      1.5s] R7-C converged=False iterations=10 rel=5.421235328428972e-10
+[e6b      1.6s] ref_R7.json: status=OK solve_count=2 devices_left=[]
+
+[e6b] verdict {'overall': 'SOLVER_CONTROL_INVALID', 'reference': 'REFERENCE_1D_UNUSABLE', 'maximum_possible': 'LOCAL_JUNCTION_REFINEMENT_TREND_ONLY', 'note': 'local junction-refinement trend of the 0 V Poisson potential / fixed-width field only; not 2D continuum convergence, not current accuracy, not DD, not biased I-V, not production step-junction support'} solve_calls=10

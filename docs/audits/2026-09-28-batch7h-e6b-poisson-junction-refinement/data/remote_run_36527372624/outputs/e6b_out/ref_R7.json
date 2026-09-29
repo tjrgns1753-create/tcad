@@ -1,0 +1,128 @@
+{
+ "mode": "ref",
+ "m": 7,
+ "status": "OK",
+ "solve_calls": [
+  {
+   "call_id": "R7-P",
+   "k": {
+    "absolute_error": 1.0,
+    "relative_error": 1e-06,
+    "maximum_iterations": 100
+   },
+   "ok": true,
+   "error": null,
+   "wall_s": 0.678,
+   "converged": true,
+   "n_iterations": 11,
+   "final_device_relative_error": 6.000563864508812e-09,
+   "final_device_absolute_error": 6.25670892634348e-10,
+   "final_equations": {
+    "PotentialEquation": {
+     "abs": 6.25670892634348e-10,
+     "rel": 6.000563864508812e-09
+    }
+   },
+   "iteration_device_relative_errors": [
+    0.9999999996831422,
+    22.89841277330857,
+    13.317147213619979,
+    5.484174708425721,
+    2.0181356742264542,
+    1.0263151904092533,
+    0.2778944139549891,
+    0.0644444035241062,
+    0.051877783911656955,
+    3.6286078514337465e-05,
+    6.000563864508812e-09
+   ]
+  },
+  {
+   "call_id": "R7-C",
+   "k": {
+    "absolute_error": 1e-12,
+    "relative_error": 1e-12,
+    "maximum_iterations": 10
+   },
+   "ok": true,
+   "error": null,
+   "wall_s": 0.507,
+   "converged": false,
+   "n_iterations": 10,
+   "final_device_relative_error": 5.421235328428972e-10,
+   "final_device_absolute_error": 5.2292130112501925e-17,
+   "final_equations": {
+    "PotentialEquation": {
+     "abs": 5.2292130112501925e-17,
+     "rel": 5.421235328428972e-10
+    }
+   },
+   "iteration_device_relative_errors": [
+    5.804893919945681e-09,
+    2.0892589045864224e-09,
+    5.421289209210404e-10,
+    1.857816525217654e-09,
+    1.7227069554612735e-09,
+    5.421235321128667e-10,
+    2.0892542069264466e-09,
+    1.8578165278409301e-09,
+    1.7227069559132526e-09,
+    5.421235328428972e-10
+   ]
+  }
+ ],
+ "solve_count": 2,
+ "plan": {
+  "n_x_2d": 233,
+  "n_nodes_planned": 29697,
+  "parts": 128
+ },
+ "identity": {
+  "n_nodes": 29697,
+  "positions_equal_planned_bitwise": true,
+  "all_2d_x_present_bitwise": true
+ },
+ "doping": {
+  "n_nodes": 29697,
+  "n_x0_nodes": 1,
+  "x0_Donors_unique": [
+   1e+18
+  ],
+  "x0_Acceptors_unique": [
+   1e+18
+  ],
+  "x0_NetDoping_unique": [
+   0.0
+  ],
+  "x0_ok": true,
+  "x0_sum_NodeVolume_cm2": 4.882812376649781e-09,
+  "x0_sum_Donors_x_NodeVolume": 4882812376.649781,
+  "x0_sum_Acceptors_x_NodeVolume": 4882812376.649781,
+  "x0_sum_NetDoping_x_NodeVolume": 0.0,
+  "total_Donors_x_NodeVolume": 500002406947253.0,
+  "total_Acceptors_x_NodeVolume": 500002406947253.0,
+  "continuum_N_x_area": null,
+  "note": "raw numbers of the discrete doping representation; not called a sheet charge"
+ },
+ "flags": {
+  "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+  "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+  "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+ },
+ "snapshots": {},
+ "array_sha256": {
+  "x": "c5316ba59b53e85522cfec45c0593b80b2f53e5f5e4eb2b6157f16ac27a9c122",
+  "Donors": "828c57c0faddf88327160c05969da9342889b75b85ee236ee8b08a3ada8e9ee5",
+  "Acceptors": "d9b2d975f6f7e2601354b4defa5a3e688e18ca980e26b84700fcf1f4d061e42f",
+  "NetDoping": "30a67752906a863915a3ce27241757410e3236cbef2e97b1466289b5797d0566",
+  "NodeVolume": "642eeca3e522e0682925dd14707a2ea7f3eb00fd7885000a5a8cc2fb3016b6d0",
+  "Potential_after_P": "165cc115e85e436ffb40a45d917bbe1761e66af0b2b77ef4541be54042222942",
+  "Potential_after_C": "165cc115e85e436ffb40a45d917bbe1761e66af0b2b77ef4541be54042222942"
+ },
+ "devices_left": [],
+ "memory": {
+  "peak_working_set_bytes": 121589760,
+  "peak_private_bytes": 122847232
+ },
+ "wall_s": 1.6
+}
