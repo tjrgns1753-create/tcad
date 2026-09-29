@@ -1,7 +1,8 @@
 # Batch 7H-E6B PLAN Rev.2 — revision record
 
 * Rev.1: `PLAN.md` sha256 `50555b7d9eec55515d6183a224fd1c88a783e3249667eeeaf89e1a89ba070cdf`, committed `e2cbfae6675bb7b27c7be4b7e6a7fcb6e7670c7a`. Kept as history in this repository's git log; not deleted, not treated as if it never existed.
-* Rev.2: `PLAN.md` sha256 — see `PLAN.sha256` in this directory (computed after this file, from the Rev.2 text).
+* Rev.2: `PLAN.md` sha256 `59abed68b30247720946a7486170e56ae97b52b1457c7da0ecd3bacc8b56357c`, committed `8cca4c518838cca967d56df7a6b2de2a9b3e8644` (literal value recorded in Rev.3 because `PLAN.sha256` now holds Rev.3's hash; Rev.2's text remains in git history).
+* Rev.3: see the section "Rev.3" at the end of this file and `PLAN.sha256`.
 * Neither PLAN has been executed. No `devsim.solve()` call has been made for this batch. This revision happened entirely before any execution, so it is a correction to the pre-registration itself, not a post-hoc change of criteria after seeing a result.
 
 ## Defect 1 — inconsistent pair indices (`d_23`/`d_34`, `s_L`, `t_L`)
@@ -44,3 +45,49 @@
   report) against the exact inequalities of PLAN section 3/9; all four matched the table in section 4.
 * No DEVSIM, no ViennaPS, no network calls beyond what Rev.1 already fetched (no new source reading was needed for the
   DEVSIM manual citation; Defect 4's addition reuses row 5/6 of section 1, already fetched and hashed in Rev.1).
+
+# Rev.3 — pre-execution corrections from the conditional approval of Rev.2
+
+Made before any E6B code, profile, request or DEVSIM execution. Rev.1 and Rev.2 hashes above are historical and kept.
+Only the four items below were changed; nothing else in `PLAN.md` was altered except its header (Rev number and the two
+historical hashes) and the one "Always attached" line of section 9 that named the renamed diagnostic states.
+
+## A — Gauss residual reported as an absolute value (section 7)
+**Before:** `max_i R_i / s_i` (signed), for the correct assembly and the three wrong variants.
+**After:** `rho_i(v) = |R_i(v)| / s_i`, `max_i rho_i(v)` for all four variants, evaluated on one and the same eligible
+set E and divided by the same (correct-assembly) `s_i`, so a large negative residual cannot be hidden by a signed maximum.
+
+## B — contact nodes excluded; explicit invalid/degenerate states (section 7)
+**Before:** eligible = every node with `s_i >= 1e-3 * max(s)`; one umbrella flag `ASSEMBLY_RESIDUAL_SELECTION_DEGENERATE`
+for empty selection or no x = 0 / non-contact boundary representative.
+**After:** E = non-contact nodes only (all nodes of `Si_xmin` and `Si_xmax` excluded, and `max(s)` taken over non-contact
+nodes only); contact-node `R_i`, `s_i`, `rho_i(v)` saved in a separate `contact_residual_diagnostic` block, never mixed into
+a bulk ratio. Separate states: `DIAG_INVALID_MAX_S_ZERO`, `DIAG_INVALID_NONFINITE`, `DIAG_INVALID_NO_ELIGIBLE_NODES`
+(ratios stored as `null` + status; no division by zero, no maximum of an empty array, never `0` or a pass) and
+`DIAG_DEGENERATE_NO_X0_REPRESENTATIVE`, `DIAG_DEGENERATE_NO_TOP_REPRESENTATIVE`, `DIAG_DEGENERATE_NO_BOTTOM_REPRESENTATIVE`
+(ratios stored with flags). The diagnostic stays `ASSEMBLY_RECONSTRUCTION_DIAGNOSTIC_ONLY`, not a physics gate.
+
+## C — withdrawal of "a 1D potential solves the same discretized equations" (section 8)
+**Before:** "so a y-independent (1D) potential solves the same discretized equations PROVIDED the top/bottom boundaries
+impose zero normal flux."
+**After:** the sentence is withdrawn. Only a continuum statement is kept (x-only doping, full-height y-independent
+contacts, zero normal field on top/bottom => the continuum problem reduces to 1D), still `CONDITIONAL`. The PLAN now says
+explicitly that the 1D and 2D finite-volume systems are different discretizations of different meshes whose rows,
+integration weights, truncation error and rounding are not asserted equal or related by a bound, and that R6/R7 are
+independently built reference discretizations compared by observation, neither the exact solution nor an error bound.
+
+## D — `OUTER_FLOOR_SUSPECTED` condition and reference-state precedence (section 8)
+**Before:** "`D34` and `D45` both exceed their own noise threshold (i.e. a genuine 2D-2D refinement trend)" while
+`G_L4`, `G_L5` "do NOT shrink ... by more than `S_R7`"; `REFERENCE_AGREEMENT_OBSERVED` and `REFERENCE_INCONCLUSIVE`
+overlapped ("comparable to or larger than" is not a formula).
+**After:** `T(M)` = the core metric M is `trend observed` in section 9 (all three section-3 inequalities, valid controls,
+converged primaries). Formulas: `V(M) = A67(M) + S_R7(M)`, `Delta_G(M) = G_L4(M) - G_L5(M)`, `W(M) = S4(M) + S5(M) +
+2 S_R7(M)`. Precedence, first match wins: (1) `REFERENCE_1D_UNUSABLE`; (2) `REFERENCE_INCONCLUSIVE` if not `T(M)`;
+(3) `REFERENCE_AGREEMENT_OBSERVED` if `G_L5 <= V`; (4) `OUTER_FLOOR_SUSPECTED` if `T(M)`, `G_L5 > V`, `Delta_G <= W`;
+(5) `REFERENCE_INCONCLUSIVE` otherwise. `OUTER_FLOOR_SUSPECTED` records only the observation and lists the candidates it
+cannot separate; it never names the fixed outer mesh as the cause. No new numeric tolerance was needed (every term is a
+sum of already-defined observed values), so no state was lowered on that account.
+
+## Still unverified (unchanged by Rev.3)
+The four items listed under Rev.2, plus: whether `W(M)` counting `S_R7` twice is the tightest defensible sum (it is the
+conservative construction, not a derived bound).

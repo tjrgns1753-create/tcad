@@ -1,8 +1,11 @@
-# Batch 7H-E6B PLAN Rev.2: 0 V Poisson junction-refinement trend on the E6A L3 / L4 / L5 family (audit-only)
+# Batch 7H-E6B PLAN Rev.3: 0 V Poisson junction-refinement trend on the E6A L3 / L4 / L5 family (audit-only)
 (fixed BEFORE any code for this batch is written and BEFORE any DEVSIM execution of this batch; never edited after
-results. Rev.2 corrects four defects found in Rev.1 before any execution — see `PLAN_REVISION.md` for the full
-before/after record and Rev.1's own hash `50555b7d9eec55515d6183a224fd1c88a783e3249667eeeaf89e1a89ba070cdf`, kept as
-history, not deleted.)
+results. Rev.2 corrected four defects found in Rev.1; Rev.3 applies the four pre-execution corrections of the
+conditional approval of Rev.2 (Gauss residual absolute value, contact exclusion and degenerate states, withdrawal of the
+"same discretized equations" sentence, `OUTER_FLOOR_SUSPECTED` condition). See `PLAN_REVISION.md` for the full
+before/after record. Historical hashes, kept, not deleted: Rev.1 `PLAN.md` sha256
+`50555b7d9eec55515d6183a224fd1c88a783e3249667eeeaf89e1a89ba070cdf` (commit `e2cbfae6`), Rev.2 `PLAN.md` sha256
+`59abed68b30247720946a7486170e56ae97b52b1457c7da0ecd3bacc8b56357c` (commit `8cca4c51`).)
 
 Execution location: every DEVSIM import and `devsim.solve` call runs only on a GitHub-hosted Windows runner
 (`claude/remote-runner`), under a profile and request that are written only after this PLAN is reviewed. Locally:
@@ -173,19 +176,37 @@ x = 0 + Poisson discretization + nonlinear termination).
   model, not the per-node sign) — it will be checked, not assumed, once real per-edge n0/n1 and `PotentialEdgeFlux`
   values exist; the "sign flipped" variant below is exactly its negation.
   `s_i = sum |PotentialEdgeFlux(i,j) * EdgeCouple(i,j)| + |NodeVolume_i * PotentialIntrinsicCharge_i|`.
-  Reported: `max_i R_i / s_i` restricted to nodes with `s_i >= 1e-3 * max(s)` (the correct assembly), and the same ratio
-  for three wrong variants (EdgeCouple omitted, EdgeCouple applied twice, the node-charge term sign flipped). Also
+  **Reported quantity (Rev.3; before: signed `max_i R_i / s_i`):** `rho_i(v) = |R_i(v)| / s_i` and `max_i rho_i(v)` over
+  the eligible set E defined below, for the correct assembly (`v = correct`) and for three deliberately wrong variants
+  (`v` = EdgeCouple omitted, EdgeCouple applied twice, the node-charge term sign flipped). The absolute value is used for
+  every variant, so a large negative residual can never be hidden by a signed maximum; every variant is evaluated on the
+  SAME eligible set E and divided by the SAME `s_i` (the correct assembly's), so the four numbers are comparable.
+  **Eligible set E (Rev.3; before: every node with `s_i >= 1e-3 * max(s)`):** E = the non-contact nodes (both contacts
+  excluded: every node of `Si_xmin` and `Si_xmax`, identified by coordinate x = -5 and x = +5) whose `s_i` is finite and
+  satisfies `s_i >= 1e-3 * max(s_nc)`, where `s_nc` = `s_i` over non-contact nodes ONLY, so a contact row can neither set
+  the threshold nor enter E. Reason: at a contact node DEVSIM's contact equation (section 1 row 8) replaces the bulk
+  Poisson row, so the bulk residual there is not a statement about the contact row and is never read as its failure or
+  success. The raw `R_i`, `s_i`, `rho_i(v)` of the contact nodes are saved in a SEPARATE `contact_residual_diagnostic`
+  block and never mixed into any bulk ratio. Also
   reported as a secondary, independent diagnostic: the SAME formula recomputed from separately-queried
   Donors/Acceptors/NetDoping and IntrinsicElectrons/IntrinsicHoles arrays (own `exp()`/subtraction, not DEVSIM's
   `kahan3`), compared against the real `PotentialIntrinsicCharge`/`PotentialEdgeFlux` values — this checks this batch's
   own external reconstruction against DEVSIM's live-evaluated, Kahan-summed models, a floating-point-consistency check,
   not a second physics check.
-  **Node-selection bookkeeping (false-green guard):** record `n_selected` (nodes with `s_i >= 1e-3*max(s)`),
-  `n_selected_on_x0` (of those, x = 0), `n_selected_on_boundary` (of those, y = 0 or y = -5, non-contact). If
-  `n_selected == 0` or `n_selected_on_x0 == 0` or `n_selected_on_boundary == 0`, the result additionally carries
-  `ASSEMBLY_RESIDUAL_SELECTION_DEGENERATE` next to whatever ratio was computed, so an empty or non-representative
-  selection can never silently read as a clean pass.
-  **Status: `ASSEMBLY_RECONSTRUCTION_DIAGNOSTIC_ONLY`, not a hard gate.** Rev.1's thresholds (`max r/s <= 1e-3` for the
+  **Node-selection bookkeeping and explicit diagnostic-invalid / degenerate states (Rev.3; before: a single umbrella
+  flag):** record `n_noncontact`, `n_eligible` = |E|, `n_eligible_on_x0` (x = 0), `n_eligible_top` (y = 0, non-contact),
+  `n_eligible_bottom` (y = -5, non-contact). Each condition below is its own state; none is ever turned into `0`, a
+  numeric ratio or a pass:
+  - `DIAG_INVALID_MAX_S_ZERO`: `max(s_nc) == 0` (division by zero is never performed);
+  - `DIAG_INVALID_NONFINITE`: any non-contact `s_i` or `R_i` (any variant) is NaN or infinite;
+  - `DIAG_INVALID_NO_ELIGIBLE_NODES`: `n_eligible == 0` (the maximum of an empty array is never taken);
+  - `DIAG_DEGENERATE_NO_X0_REPRESENTATIVE`: `n_eligible_on_x0 == 0`;
+  - `DIAG_DEGENERATE_NO_TOP_REPRESENTATIVE`: `n_eligible_top == 0`;
+  - `DIAG_DEGENERATE_NO_BOTTOM_REPRESENTATIVE`: `n_eligible_bottom == 0`.
+  In an INVALID state every `max_i rho_i(v)` is stored as `null` with that status; in a DEGENERATE state the ratios are
+  computed and stored but carry the flag(s) beside them. (`ASSEMBLY_RESIDUAL_SELECTION_DEGENERATE` of Rev.2 is retained
+  as the name of the set of the DEGENERATE flags.) This diagnostic remains NOT a physics gate (status below).
+  **Status: `ASSEMBLY_RECONSTRUCTION_DIAGNOSTIC_ONLY`, not a hard gate.** Rev.1's thresholds (`max |R_i|/s_i <= 1e-3` for the
   correct assembly, `>= 0.1` for each wrong variant) have no result-independent derivation found this session (no
   citation, no prior-batch number, no analytic bound was located for these specific figures) — they are reported as
   observations, kept in section 9 as a diagnostic field, and NEVER used to declare `CONSISTENCY_FAIL`, `CONSISTENCY_PASS`,
@@ -215,9 +236,15 @@ Level-to-level (2D-2D) differences cannot by themselves reveal a floor caused by
 solutions that share it), so an external 1D reference is used — but the reference only ever supplies OBSERVED
 quantities, never an error bound, and its own agreement with L5 is never read as "no floor."
 
-**Physical-equivalence argument — marked CONDITIONAL, not proven.** The doping depends on x only, and both contacts span
-the full height with a y-independent value, so a y-independent (1D) potential solves the same discretized equations
-PROVIDED the top/bottom (y = 0, y = -5) boundaries impose zero normal flux. What IS confirmed: no contact equation is
+**Physical-equivalence argument — marked CONDITIONAL, not proven. Rev.2's sentence "a y-independent (1D) potential
+solves the same discretized equations" is WITHDRAWN (Rev.3).** What may be expected is only a statement about the
+CONTINUUM problem: with x-only doping, contacts spanning the full height with y-independent values, and zero normal
+field on the top/bottom (y = 0, y = -5) boundaries, the continuum Poisson problem admits a y-independent solution and
+so reduces to a 1D problem in x. Nothing is claimed about the discrete systems: the 1D finite-volume system on R6/R7
+and the 2D finite-volume system on L3/L4/L5 are different discretizations of different meshes; their matrix rows,
+integration weights (`NodeVolume`, `EdgeCouple`), truncation errors and rounding are NOT asserted equal or related by a
+proven bound. R6/R7 are independently built reference discretizations compared by observation only; they are neither
+the exact solution nor a proven error bound. What IS confirmed: no contact equation is
 registered on those boundaries, and structurally no mesh edge crosses y = 0 or y = -5 (the domain simply ends there), so
 no edge-flux term to outside the domain exists in the assembled equation at those nodes. What is NOT confirmed from the
 DEVSIM manual or installed source read this session: an explicit statement that this construction is mathematically
@@ -249,20 +276,34 @@ attempted (there is no geometry to measure it on).
     reference, named `observed_reference_gap`, reported per region (core / transition / outer).
 * **States (per region; replace Rev.1's `FLOOR_NOT_DETECTED`/`FIXED_OUTER_FLOOR_SUSPECTED`/`FLOOR_INCONCLUSIVE`, which
   used `u_ref` as an unproven uncertainty bound):**
-  - `REFERENCE_1D_UNUSABLE`: the fail-closed condition above.
-  - `REFERENCE_AGREEMENT_OBSERVED`: `G_L5(M) <= A67(M) + S_R7(M)` for both M — the finest 2D level's gap to the finer 1D
-    reference is no larger than the reference's own observed refinement change plus its own observed solver shift. This
-    states only that the two independently-built discretizations AGREE within their own observed variability; it is
-    explicitly NOT a statement that a fixed-outer-mesh floor is absent (R6/R7's shared discretization error, and the
-    CONDITIONAL boundary equivalence above, are exactly what this cannot rule out).
-  - `OUTER_FLOOR_SUSPECTED`: `D34(M)` and `D45(M)` (section 3, 2D-2D) both exceed their own noise threshold (i.e. a
-    genuine 2D-2D refinement trend per section 9) WHILE `G_L4(M)` and `G_L5(M)` do NOT shrink from L4 to L5 by more than
-    `S_R7(M)` — i.e. the 2D levels keep changing relative to each other but stop approaching the 1D reference. Reported
-    as a candidate signal for EITHER the fixed outer 2D grid OR a genuine 2D/1D model or boundary-treatment difference
-    (the CONDITIONAL item above) — the cause is never narrowed to "fixed outer grid" alone.
-  - `REFERENCE_INCONCLUSIVE`: any other combination, including when `A67(M)` or `S_R6(M)`/`S_R7(M)` is itself comparable
-    to or larger than `G_L5(M)` (the reference's own uncertainty swamps the question), or when the 2D-2D trend itself is
-    `SOLVER_NOISE_INDISTINGUISHABLE` or `NO_REFINEMENT_TREND` (making the outer-grid question moot for this run).
+  Definitions, per M in {psiLinf, psiL2} (Rev.3: explicit formulas and one precedence order; no new numeric
+  tolerance — every quantity below is a sum of already-defined OBSERVED values, built like section 3's discriminant):
+  - `T(M)` is true iff the core metric M is `trend observed` in section 9, i.e. ALL THREE section-3 inequalities hold
+    (`D34(M) > S3(M)+S4(M)`, `D45(M) > S4(M)+S5(M)`, `D34(M)-D45(M) > S3(M)+2 S4(M)+S5(M)`) with valid controls for L3,
+    L4 and L5 and all three primary solves converged. (Rev.2's wording "D34 and D45 each exceed noise, i.e. a genuine
+    refinement trend" is REMOVED: exceeding the two noise inequalities is not a trend.)
+  - `V(M) = A67(M) + S_R7(M)` (the reference's own observed variability).
+  - `Delta_G(M) = G_L4(M) - G_L5(M)` (the observed L4->L5 change of the gap to R7), and `W(M) = S4(M) + S5(M) +
+    2 S_R7(M)` (each gap is a difference of two states, each carrying its own observed shift, and R7 enters both gaps).
+    `Delta_G(M) > W(M)` means the gap reduction is distinguishable from the observed solver shifts.
+  Precedence (first match wins; evaluated for the core region, other regions' G values are reported unclassified):
+  1. `REFERENCE_1D_UNUSABLE`: the fail-closed condition above.
+  2. `REFERENCE_INCONCLUSIVE`: `T(M)` is false (reason recorded: which section-3 inequality failed, or an invalid
+     control / non-converged primary) — the outer-grid question is not posed for this metric.
+  3. `REFERENCE_AGREEMENT_OBSERVED`: `G_L5(M) <= V(M)` — the finest 2D level's gap to the finer 1D reference is no larger
+     than the reference's own observed refinement change plus its own observed solver shift. This states only that the
+     two independently-built discretizations agree within that observed variability; it is NOT a statement that a
+     fixed-outer-mesh floor is absent.
+  4. `OUTER_FLOOR_SUSPECTED`: `T(M)` true, `G_L5(M) > V(M)`, and `Delta_G(M) <= W(M)`. What is recorded is only this
+     observation: the 2D-2D change is resolved as a trend, while the L4->L5 decrease of the gap to the 1D reference is
+     not distinguishable from the observed solver shifts and the gap exceeds the reference's own observed variability.
+     Candidate explanations that this observation does not separate: the fixed outer 2D grid, a 2D/1D difference of
+     discretization, mesh or boundary treatment (the CONDITIONAL item above), or a shared error of R6/R7. The cause is
+     never narrowed to "fixed outer grid".
+  5. `REFERENCE_INCONCLUSIVE`: otherwise (`T(M)` true, `G_L5(M) > V(M)`, `Delta_G(M) > W(M)`: the gap is still resolved
+     as decreasing; no floor signal and nothing further is claimed).
+  Overall reference state = the per-metric state if both M give the same state, `REFERENCE_1D_UNUSABLE` if the
+  reference is unusable, otherwise `REFERENCE_INCONCLUSIVE`.
 * Cost: 4 solves on <= 29697-node 1D devices, seconds each; included in the 10-call list and budgets of section 6.
 
 ## 9. Verdict table (per metric: core psiLinf, core psiL2, core ExLinf, core ExRMS; and overall)
@@ -284,7 +325,8 @@ attempted (there is no geometry to measure it on).
 Always attached, not part of the trend verdict: `L3_BELOW_DEBYE_SCALE` (`L_D / h_3` = 0.638, a priori: L3 does not
 resolve the Debye length, so `D34` may be dominated by L3 under-resolution); the reference states of section 8 (`
 REFERENCE_1D_UNUSABLE` / `REFERENCE_AGREEMENT_OBSERVED` / `OUTER_FLOOR_SUSPECTED` / `REFERENCE_INCONCLUSIVE`); the
-Gauss-law reconstruction diagnostic and its `ASSEMBLY_RESIDUAL_SELECTION_DEGENERATE` flag if triggered; the raw ratio
+Gauss-law reconstruction diagnostic (absolute-value ratios on the non-contact eligible set) with its `DIAG_INVALID_*` /
+`DIAG_DEGENERATE_*` states and the separate contact-node block if triggered; the raw ratio
 `D34(M) / D45(M)` as an observed number with no convergence order inferred from three levels. No tolerance, weight,
 region or criterion is added or changed after results are seen.
 
