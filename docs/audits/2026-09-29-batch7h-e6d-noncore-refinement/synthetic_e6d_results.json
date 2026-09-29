@@ -1,0 +1,196 @@
+{
+ "expectations": {
+  "A_core_triangle_changed_same_nodes": {
+   "core_node_set_equal": true,
+   "core_triangle_multiset_equal": false,
+   "mesh_state": "CORE_IDENTITY_FAIL"
+  },
+  "B_hidden_transition_change": {
+   "flip_transition_changed": true,
+   "flip_removed_transition": 2,
+   "flip_added_transition": 2,
+   "G1_transition_changed": true,
+   "G1_core_identity_ok": true
+  },
+  "C_negative_edgecouple": {
+   "no_negative": false,
+   "mesh_state": "GEOMETRY_UNSUPPORTED"
+  },
+  "D_missing_contact_edge": {
+   "contacts_ok": false,
+   "mesh_state": "IMPORT_IDENTITY_FAIL",
+   "control_contacts_ok": true
+  },
+  "E_nodevolume_total_error": {
+   "sum_within_tau": false,
+   "mesh_state": "GEOMETRY_UNSUPPORTED",
+   "control_within_tau": true
+  },
+  "F_Q_not_converged_PQ_equal_G1": {
+   "G1_state": "POISSON_NOT_CONVERGED",
+   "overall": "POISSON_NOT_CONVERGED",
+   "any_metric_classified": false
+  },
+  "F_Q_not_converged_PQ_equal_G2": {
+   "G2_state": "POISSON_NOT_CONVERGED",
+   "decrease_test_evaluated": false,
+   "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY",
+   "metric_state": "NONCORE_CHANGE_RESOLVED_01"
+  },
+  "G_empty_common_core": {
+   "overall": "CONSISTENCY_FAIL"
+  },
+  "H_only_third_inequality_fails": {
+   "metric_state": "NO_NONCORE_DECREASE",
+   "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY"
+  },
+  "I_positive_control_all_hold": {
+   "metric_state": "NONCORE_REFINEMENT_DECREASE_OBSERVED",
+   "overall": "NONCORE_REFINEMENT_DECREASE_OBSERVED"
+  },
+  "J_no_resolvable_change": {
+   "overall": "NO_RESOLVABLE_NONCORE_CHANGE"
+  },
+  "K_missing_checks_fail_closed": {
+   "mesh_state": "IMPORT_IDENTITY_FAIL",
+   "all_missing_state": "CORE_IDENTITY_FAIL"
+  },
+  "L_green_of_green_obtuse": {
+   "G0_obtuse": 0,
+   "G1_obtuse": 0,
+   "G2_obtuse": 16,
+   "G2_obtuse_transition": 16,
+   "G1_T2": true,
+   "G1_T3": true,
+   "G2_T2": true,
+   "G2_T3": true,
+   "G1_area_equal": true,
+   "G2_area_equal": true,
+   "G2_core_identity_ok": true
+  }
+ },
+ "observed": {
+  "A_core_triangle_changed_same_nodes": {
+   "core_node_set_equal": true,
+   "core_triangle_multiset_equal": false,
+   "mesh_state": "CORE_IDENTITY_FAIL"
+  },
+  "B_hidden_transition_change": {
+   "flip_transition_changed": true,
+   "flip_removed_transition": 2,
+   "flip_added_transition": 2,
+   "G1_transition_changed": true,
+   "G1_core_identity_ok": true,
+   "_G1_change_record": {
+    "removed": {
+     "core": 0,
+     "transition": 8,
+     "outer": 32,
+     "transition_abs_centroid_x_um_range": [
+      0.18333333730697632,
+      0.18333333730697632
+     ]
+    },
+    "added": {
+     "core": 0,
+     "transition": 16,
+     "outer": 128,
+     "transition_abs_centroid_x_um_range": [
+      0.18333333730697632,
+      0.18333333730697632
+     ]
+    },
+    "transition_changed": true
+   }
+  },
+  "C_negative_edgecouple": {
+   "no_negative": false,
+   "mesh_state": "GEOMETRY_UNSUPPORTED",
+   "_record": {
+    "n_edges": 4,
+    "min": -1e-30,
+    "n_negative": 1,
+    "n_zero": 1,
+    "n_zero_by_region_of_edge_midpoint": {
+     "core": 0,
+     "transition": 1,
+     "outer": 0
+    },
+    "no_negative": false
+   }
+  },
+  "D_missing_contact_edge": {
+   "contacts_ok": false,
+   "mesh_state": "IMPORT_IDENTITY_FAIL",
+   "control_contacts_ok": true
+  },
+  "E_nodevolume_total_error": {
+   "sum_within_tau": false,
+   "mesh_state": "GEOMETRY_UNSUPPORTED",
+   "control_within_tau": true
+  },
+  "F_Q_not_converged_PQ_equal_G1": {
+   "G1_state": "POISSON_NOT_CONVERGED",
+   "overall": "POISSON_NOT_CONVERGED",
+   "any_metric_classified": false
+  },
+  "F_Q_not_converged_PQ_equal_G2": {
+   "G2_state": "POISSON_NOT_CONVERGED",
+   "decrease_test_evaluated": false,
+   "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY",
+   "metric_state": "NONCORE_CHANGE_RESOLVED_01"
+  },
+  "G_empty_common_core": {
+   "overall": "CONSISTENCY_FAIL"
+  },
+  "H_only_third_inequality_fails": {
+   "metric_state": "NO_NONCORE_DECREASE",
+   "overall": "NONCORE_REFINEMENT_SENSITIVITY_ONLY",
+   "_ineq_holds": [
+    true,
+    true,
+    false
+   ]
+  },
+  "I_positive_control_all_hold": {
+   "metric_state": "NONCORE_REFINEMENT_DECREASE_OBSERVED",
+   "overall": "NONCORE_REFINEMENT_DECREASE_OBSERVED"
+  },
+  "J_no_resolvable_change": {
+   "overall": "NO_RESOLVABLE_NONCORE_CHANGE"
+  },
+  "K_missing_checks_fail_closed": {
+   "mesh_state": "IMPORT_IDENTITY_FAIL",
+   "all_missing_state": "CORE_IDENTITY_FAIL"
+  },
+  "L_green_of_green_obtuse": {
+   "G0_obtuse": 0,
+   "G1_obtuse": 0,
+   "G2_obtuse": 16,
+   "G2_obtuse_transition": 16,
+   "G1_T2": true,
+   "G1_T3": true,
+   "G2_T2": true,
+   "G2_T3": true,
+   "G1_area_equal": true,
+   "G2_area_equal": true,
+   "G2_core_identity_ok": true,
+   "_counts": {
+    "G0": [
+     93,
+     152
+    ],
+    "G1": [
+     153,
+     256
+    ],
+    "G2": [
+     369,
+     656
+    ]
+   }
+  }
+ },
+ "failures": [],
+ "pass": true
+}
