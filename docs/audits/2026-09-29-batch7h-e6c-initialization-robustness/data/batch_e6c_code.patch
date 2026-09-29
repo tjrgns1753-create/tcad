@@ -1,0 +1,1208 @@
+diff --git a/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/judge_e6c.py b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/judge_e6c.py
+new file mode 100644
+index 0000000..89c97c4
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/judge_e6c.py
+@@ -0,0 +1,298 @@
++"""Batch 7H-E6C verdict logic (pure numpy / Python; no DEVSIM, no ViennaPS). PLAN sections 2-7.
++Reuses E6B's judge_e6b (common node set, four metrics, Gauss diagnostic, artifact-tag verification) read-only. Names: D34, D45 on the P
++solutions; A3, A4, A5 = `observed_initialization_shift` between the P and Q solutions of one level."""
++import json
++import os
++import sys
++
++import numpy as np
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++sys.path.insert(0, os.path.join(HERE, "..", "..", "2026-09-28-batch7h-e6b-poisson-junction-refinement", "scripts"))
++import judge_e6b as jb  # noqa: E402  (E6B, read-only)
++
++LEVELS = jb.LEVELS
++METRICS = jb.METRICS
++TAGS = ("P", "Q")
++FAILURE_ORDER = ("ARTIFACT_INCOMPLETE", "INPUT_IDENTITY_FAIL", "IMPORT_IDENTITY_FAIL", "INITIALIZATION_CONTRACT_FAIL",
++                 "RESOURCE_PREFLIGHT_FAIL", "POISSON_NOT_CONVERGED", "CONSISTENCY_FAIL")
++N_CONC = 1.0e18
++
++
++def contact_potentials(vt, ni, n=N_CONC):
++    """PLAN 2: the contact boundary formula (simple_physics.py:31-32,211-213) at bias 0 for the doping on the two contact nodes."""
++    root = np.sqrt(n * n + 4.0 * ni * ni)
++    celec = 1e-10 + 0.5 * abs(+n + root)             # NetDoping = +N at the right contact (x_max)
++    chole = 1e-10 + 0.5 * abs(-(-n) + root)          # NetDoping = -N at the left contact (x_min): the formula's -NetDoping term is +N
++    return float(-vt * np.log(chole / ni)), float(+vt * np.log(celec / ni))      # V_left, V_right
++
++
++def affine_init(x, vl, vr):
++    """V_init(x) = V_left + (V_right - V_left) * (x - x_min) / (x_max - x_min), float64 on the device's own node x."""
++    x = np.asarray(x, dtype=np.float64)
++    xmin, xmax = np.min(x), np.max(x)
++    return vl + (vr - vl) * (x - xmin) / (xmax - xmin)
++
++
++def metric_state(disc):
++    if not disc["all_finite"]:
++        return "NONFINITE_INPUT"
++    if not (disc["ineq1"]["holds"] and disc["ineq2"]["holds"]):
++        return "INITIALIZATION_SHIFT_INDISTINGUISHABLE"
++    if not disc["ineq3"]["holds"]:
++        return "NO_REFINEMENT_TREND"
++    return "INITIALIZATION_ROBUST_DECREASE_OBSERVED"
++
++
++def finite_arr(a):
++    return a is not None and bool(np.isfinite(a).all())
++
++
++def judge(runs, psi, cs, flags):
++    """runs[L][tag] = {"status": "OK"|fail label|None, "solve": {"ok","converged",...}|None, "consistency_ok": bool|None};
++    psi[L][tag] = Potential on the common nodes (L3 order) or None; flags = {"artifact_problems": [...], "input_identity_ok",
++    "resource_ok"}. Returns the classification and every number that could be computed."""
++    res = {"gates": {}, "regions": {}, "metrics": {}}
++    fail = None
++    if flags.get("artifact_problems"):
++        fail = "ARTIFACT_INCOMPLETE"
++    elif not flags.get("input_identity_ok", True):
++        fail = "INPUT_IDENTITY_FAIL"
++    else:
++        sts = [(runs.get(L, {}).get(t) or {}).get("status") for L in LEVELS for t in TAGS]
++        for lab in ("IMPORT_IDENTITY_FAIL", "INITIALIZATION_CONTRACT_FAIL"):
++            if lab in sts:
++                fail = lab
++                break
++        if fail is None and not flags.get("resource_ok", True):
++            fail = "RESOURCE_PREFLIGHT_FAIL"
++    conv = {}
++    for L in LEVELS:
++        for t in TAGS:
++            conv[(L, t)] = jb.primary_ok((runs.get(L, {}).get(t) or {}).get("solve"))
++    res["gates"] = {f"L{L}-{t}": {"converged_ok": conv[(L, t)],
++                                  "consistency_ok": (runs.get(L, {}).get(t) or {}).get("consistency_ok")} for L in LEVELS for t in TAGS}
++    if fail is None and not all(conv.values()):
++        fail = "POISSON_NOT_CONVERGED"
++    if not cs.masks["core"].any():
++        res["core_empty"] = True
++        fail = fail or "CONSISTENCY_FAIL"
++    if fail is None and not all(res["gates"][k]["consistency_ok"] is True for k in res["gates"]):
++        fail = "CONSISTENCY_FAIL"
++    # numbers: only from finite arrays of runs that converged; nothing is ever turned into 0
++    okP = {L: psi.get(L, {}).get("P") is not None and finite_arr(psi[L]["P"]) and conv[(L, "P")] for L in LEVELS}
++    D34 = D45 = None
++    if all(okP.values()) and cs.masks["core"].any():
++        Ps = {L: psi[L]["P"] for L in LEVELS}
++        D34, D45 = jb.pair_diff(Ps, 3, 4, cs), jb.pair_diff(Ps, 4, 5, cs)
++        res["regions"].update({"D34": D34, "D45": D45})
++    A = {}
++    for L in LEVELS:
++        p, q = psi.get(L, {}).get("P"), psi.get(L, {}).get("Q")
++        if conv[(L, "P")] and conv[(L, "Q")] and finite_arr(p) and finite_arr(q) and cs.masks["core"].any():
++            A[L] = jb.metrics_between(p, q, cs)
++        else:
++            A[L] = None                                          # invalid A: never promoted to 0
++    res["regions"]["A"] = {f"A{L}": A[L] for L in LEVELS}
++    res["failure"] = fail
++    for M in METRICS:
++        if D34 is not None and all(A[L] is not None for L in LEVELS):
++            disc = jb.discriminant(D34["core"][M], D45["core"][M], A[3]["core"][M], A[4]["core"][M], A[5]["core"][M])
++            res["metrics"][M] = {"D34": D34["core"][M], "D45": D45["core"][M], "A3": A[3]["core"][M], "A4": A[4]["core"][M],
++                                 "A5": A[5]["core"][M], "inequalities": disc, "state": "NOT_CLASSIFIED" if fail else metric_state(disc)}
++        else:
++            res["metrics"][M] = {"state": "NOT_CLASSIFIED", "reason": "an A or D is unavailable (non-converged, non-finite or missing run)"}
++    if fail:
++        res["overall"] = fail
++    elif all(res["metrics"][M]["state"] == "INITIALIZATION_ROBUST_DECREASE_OBSERVED" for M in METRICS):
++        res["overall"] = "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY"
++    else:
++        res["overall"] = "INCONCLUSIVE"
++    return res
++
++
++# ---------------------------------------------------------------- pure checks used by the worker (testable without DEVSIM)
++UM = 1e-4
++
++
++def import_identity(x, y, vol, el, contacts, regions, ref):
++    """PLAN 3: node count and coordinates, the vertex-set MULTISET of the elements (not the count), NodeVolume, region, contacts by
++    coordinate. `contacts` = {name: sorted node list}; `ref` = the E6A level npz arrays."""
++    P32 = ref["points_um_f32"][:, :2]
++    exp_xy = (P32 * UM).astype(float)                              # the production scaling expression (mesh_import.py:989)
++    a, b = np.sort(ref["triangles"], axis=1), np.sort(el, axis=1)
++    ia, ib = np.lexsort((a[:, 2], a[:, 1], a[:, 0])), np.lexsort((b[:, 2], b[:, 1], b[:, 0]))
++    want = {"Si_xmin": set(np.where(x == x.min())[0].tolist()), "Si_xmax": set(np.where(x == x.max())[0].tolist())}
++    idn = {"n_nodes": [int(len(x)), int(len(P32))], "nodes_equal": bool(len(x) == len(P32)),
++           "xy_equal_scaled_construction": bool(len(x) == len(P32) and np.array_equal(x, exp_xy[:, 0]) and np.array_equal(y, exp_xy[:, 1])),
++           "n_elements": [int(len(el)), int(len(ref["triangles"]))],
++           "vertex_set_multiset_equal": bool(len(a) == len(b) and np.array_equal(a[ia], b[ib])),
++           "NodeVolume_bit_equal_E6A": bool(len(vol) == len(ref["NodeVolume"]) and np.array_equal(vol, ref["NodeVolume"])),
++           "regions": list(regions), "contacts": {c: len(n) for c, n in contacts.items()},
++           "contacts_by_coordinate_ok": bool(sorted(contacts) == ["Si_xmax", "Si_xmin"]
++                                              and all(set(contacts[c]) == want[c] and len(contacts[c]) == 101 for c in want))}
++    idn["ok"] = bool(idn["nodes_equal"] and idn["xy_equal_scaled_construction"] and idn["n_elements"][0] == idn["n_elements"][1]
++                     and idn["vertex_set_multiset_equal"] and idn["NodeVolume_bit_equal_E6A"] and idn["regions"] == ["Si"]
++                     and idn["contacts_by_coordinate_ok"])
++    return idn
++
++
++def doping_check(x, donors, acceptors, nets):
++    """PLAN 3: x = 0 nodes carry Donors = Acceptors = 1e18 and NetDoping = 0."""
++    m0 = x == 0.0
++    return bool(m0.any() and set(donors[m0]) == {N_CONC} and set(acceptors[m0]) == {N_CONC} and set(nets[m0]) == {0.0})
++
++
++def init_precheck(vt, ni, vl, vr, intended, n_right, n_left, default_init):
++    """PLAN 2 pre-conditions of the Q initial potential; returns a list of reasons (empty = ok)."""
++    why = []
++    if not np.isfinite([vt, ni, vl, vr]).all() or not np.isfinite(intended).all():
++        why.append("non-finite V_t, n_i, contact potential or intended array")
++    if n_right != N_CONC or n_left != -N_CONC:
++        why.append("contact-node NetDoping is not +1e18 at x_max and -1e18 at x_min")
++    if not (vl < vr):
++        why.append("V_left is not below V_right")
++    if len(default_init) != len(intended) or not bool((np.abs(intended - default_init) > 0).any()):
++        why.append("intended Q array does not differ from the default initial Potential at any node")
++    return why
++
++
++def init_contract(precheck_reasons, intended, readback):
++    """PLAN 2: the readback after set_node_values must be bit-equal to the intended array."""
++    equal = bool(len(readback) == len(intended) and np.array_equal(readback, intended))
++    return {"readback_bit_equal_intended": equal, "precheck_reasons": list(precheck_reasons),
++            "contract_ok": bool(equal and not precheck_reasons)}
++
++
++# ---------------------------------------------------------------- run records and artifacts
++def _solver_rec(rec):
++    c = (rec or {}).get("solve")
++    if c is None:
++        return None
++    return {"ok": bool(c.get("ok")), "converged": c.get("converged"), "final_rel": c.get("final_device_relative_error"),
++            "n_iterations": c.get("n_iterations"), "error": c.get("error")}
++
++
++def check_initialization(recQ, initP, initQ, xcm):
++    """Independent re-check of the initialization contract from the saved arrays (PLAN 2). Returns a list of problems."""
++    prob = []
++    ini = (recQ or {}).get("initialization") or {}
++    vl, vr = ini.get("V_left"), ini.get("V_right")
++    if not (jb.finite(vl) and jb.finite(vr)):
++        return ["Q: V_left / V_right missing or non-finite"]
++    want = affine_init(xcm, vl, vr)
++    if initQ is None or initP is None:
++        return ["init arrays missing"]
++    if len(initQ) != len(want) or not np.array_equal(initQ, want):
++        prob.append("Q initial Potential readback is not bit-equal to the intended affine array")
++    if len(initP) != len(initQ) or not bool((np.abs(initQ - initP) > 0).any()):
++        prob.append("Q initial Potential does not differ from P's initial Potential at any node")
++    return prob
++
++
++def load_run(out_dir, L, tag, problems):
++    """Returns (record, init array, final arrays) with integrity checks; problems are appended, never swallowed."""
++    jp = os.path.join(out_dir, f"run_L{L}_{tag}.json")
++    if not os.path.exists(jp):
++        problems.append(f"run_L{L}_{tag}.json missing")
++        return None, None, None
++    rec = json.load(open(jp, encoding="utf-8"))
++    if rec.get("status") != "OK":
++        return rec, None, None
++    init = fin = None
++    ip, fp = os.path.join(out_dir, f"run_L{L}_{tag}_init.npz"), os.path.join(out_dir, f"run_L{L}_{tag}_final.npz")
++    if not os.path.exists(ip):
++        problems.append(f"run_L{L}_{tag}_init.npz missing")
++    else:
++        a = jb.load_npz(ip)
++        t = a.get("snapshot_call_id")
++        if t is None or str(np.asarray(t).reshape(-1)[0]) != f"L{L}-{tag}-init":
++            problems.append(f"L{L}-{tag}: init npz tag mismatch")
++        elif jb.sha_arr(a["Potential"]) != rec.get("init_sha256"):
++            problems.append(f"L{L}-{tag}: init npz sha256 mismatch")
++        else:
++            init = a["Potential"]
++    if rec.get("solve_count") != 1:
++        problems.append(f"L{L}-{tag}: solve_count {rec.get('solve_count')} != 1")
++    if not os.path.exists(fp):
++        problems.append(f"run_L{L}_{tag}_final.npz missing")
++    else:
++        a = jb.load_npz(fp)
++        probs = jb.verify_state_artifact(rec.get("snapshot"), a, f"L{L}-{tag}")
++        problems.extend(probs)
++        fin = None if probs else a
++    return rec, init, fin
++
++
++def analyze_dir(out_dir, e6a_dir, e6b_dir=None, flags=None):
++    """Judge a completed E6C output directory (used on the runner and again locally on the downloaded artifacts)."""
++    flags = dict(flags or {})
++    problems = list(flags.get("artifact_problems", []))
++    e6a = {L: jb.load_npz(os.path.join(e6a_dir, f"level_L{L}.npz")) for L in LEVELS}
++    pts = {L: e6a[L]["points_um_f32"][:, :2] for L in LEVELS}
++    cs = jb.CommonSet(pts, e6a[3]["NodeVolume"], e6a[3]["x"], e6a[3]["y"])
++    runs, psi, gauss, inits, cons, readback, repro = {}, {}, {}, {}, {}, {}, {}
++    skipped = set(flags.get("skipped_levels", []))
++    for L in LEVELS:
++        runs[L], psi[L] = {}, {}
++        if L in skipped:
++            for t in TAGS:
++                runs[L][t], psi[L][t] = {"status": "RESOURCE_PREFLIGHT_FAIL", "solve": None}, None
++            continue
++        loaded = {t: load_run(out_dir, L, t, problems) for t in TAGS}
++        for t in TAGS:
++            rec, init, fin = loaded[t]
++            runs[L][t] = {"status": None if rec is None else (None if rec.get("status") == "OK" else rec.get("status")),
++                          "solve": _solver_rec(rec), "consistency_ok": None}
++            psi[L][t] = None
++            if rec is None:
++                runs[L][t]["status"] = "MISSING"
++        # cross-run integrity: separate processes, and (for a valid Q) the initialization contract
++        recP, recQ = loaded["P"][0], loaded["Q"][0]
++        if recP and recQ and recP.get("process_id") == recQ.get("process_id"):
++            problems.append(f"L{L}: P and Q ran in the same process")
++        if recP and recQ and recQ.get("status") == "OK" and recP.get("status") == "OK":
++            xcm = e6a[L]["x"]
++            ip = check_initialization(recQ, loaded["P"][1], loaded["Q"][1], xcm)
++            if ip:
++                runs[L]["Q"]["status"] = "INITIALIZATION_CONTRACT_FAIL"
++                runs[L]["Q"]["init_problems"] = ip
++        for t in TAGS:
++            rec, init, fin = loaded[t]
++            if rec is None or fin is None:
++                continue
++            psi[L][t] = fin["Potential"][cs.idx[L]]
++            inits[f"L{L}-{t}"] = {"init_sha256": rec.get("init_sha256"), "n": None if init is None else int(len(init)),
++                                  "min": None if init is None else float(np.min(init)), "max": None if init is None else float(np.max(init)),
++                                  "initialization": rec.get("initialization")}
++            c = {"finite_ok": all(bool(np.isfinite(fin[k]).all()) for k in jb.REQUIRED_STATE_ARRAYS)}
++            if c["finite_ok"]:
++                c["y_uniform"] = cs.y_spread(psi[L][t])
++                c["y_uniform_ok"] = all(v is not None and v <= jb.Y_UNIFORM_MAX_V for v in c["y_uniform"].values())
++            runs[L][t]["consistency_ok"] = bool(c["finite_ok"] and c.get("y_uniform_ok"))
++            cons[f"L{L}-{t}"] = c
++            xs = e6a[L]["x"]
++            cm = (xs == xs.min()) | (xs == xs.max())
++            eq = rec.get("edge_arrays_equal_E6A") or {}
++            if all(eq.get(k) for k in ("n0", "n1", "EdgeCouple", "EdgeLength")) and c["finite_ok"]:
++                gauss[f"L{L}-{t}"] = {"state_used": f"{t} final", **jb.gauss_diagnostic(
++                    e6a[L]["edge_n0"], e6a[L]["edge_n1"], e6a[L]["EdgeCouple"], fin["PotentialEdgeFlux"], e6a[L]["NodeVolume"],
++                    fin["PotentialIntrinsicCharge"], cm, xs, e6a[L]["y"])}
++            else:
++                gauss[f"L{L}-{t}"] = {"states": ["DIAG_INVALID_NOT_COMPUTED"], "reason": "edge arrays not equal to E6A or non-finite"}
++            readback[f"L{L}-{t}"] = {"xmin": float(np.mean(fin["Potential"][xs == xs.min()])), "xmax": float(np.mean(fin["Potential"][xs == xs.max()]))}
++            if t == "P" and e6b_dir:                                   # separate reproducibility diagnostic, never in the verdict
++                bp = os.path.join(e6b_dir, f"level_L{L}_state_P.npz")
++                if os.path.exists(bp):
++                    old = jb.load_npz(bp)["Potential"]
++                    repro[f"L{L}"] = {"potential_bit_equal_all_nodes": bool(np.array_equal(old, fin["Potential"])),
++                                      "max_abs_diff_all_nodes": float(np.max(np.abs(old - fin["Potential"]))) if len(old) == len(fin["Potential"]) else None,
++                                      "core_metrics": (jb.metrics_between(old[cs.idx[L]], psi[L]["P"], cs)["core"]
++                                                       if len(old) == len(fin["Potential"]) else None)}
++    flags["artifact_problems"] = problems
++    judged = judge(runs, psi, cs, flags)
++    # a contract failure discovered from the saved arrays is a state of its own (never a silent pass)
++    if any(runs[L][t].get("status") == "INITIALIZATION_CONTRACT_FAIL" for L in LEVELS for t in TAGS) and not problems:
++        judged = judge(runs, psi, cs, flags)
++    return {"judgement": judged, "gauss_diagnostic": gauss, "initialization": inits, "consistency": cons, "contact_readback": readback,
++            "e6b_P_reproducibility_diagnostic": repro, "artifact_problems": problems}
+diff --git a/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/recheck_e6c_local.py b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/recheck_e6c_local.py
+new file mode 100644
+index 0000000..524a552
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/recheck_e6c_local.py
+@@ -0,0 +1,58 @@
++"""Batch 7H-E6C local, read-only re-check of the downloaded remote artifacts with the same pure judge (no DEVSIM, no ViennaPS).
++Recomputes the judgement, compares it with the remote e6c_result.json, and extracts raw values (initial-condition proof, iteration histories,
++P/Q bitwise comparison, profiles). usage: recheck_e6c_local.py <out json>"""
++import json
++import os
++import sys
++
++import numpy as np
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++sys.path.insert(0, HERE)
++import judge_e6c as jc  # noqa: E402
++jb = jc.jb
++
++BASE = os.path.join(HERE, "..", "data", "remote_run_36529279171", "outputs", "e6c_out")
++E6A = os.path.join(HERE, "..", "..", "2026-09-28-batch7h-e6a-mesh-family", "data", "remote_run_36388479824", "outputs", "e6a_out")
++E6B = os.path.join(HERE, "..", "..", "2026-09-28-batch7h-e6b-poisson-junction-refinement", "data", "remote_run_36527372624", "outputs", "e6b_out")
++
++
++def main():
++    res = jc.analyze_dir(BASE, E6A, E6B, {"artifact_problems": [], "input_identity_ok": True, "resource_ok": True})
++    remote = json.load(open(os.path.join(BASE, "e6c_result.json"), encoding="utf-8"))["analysis"]
++    out = {"local_overall": res["judgement"]["overall"], "remote_overall": remote["judgement"]["overall"],
++           "judgement_json_equal": json.dumps(res["judgement"], sort_keys=True, default=str) == json.dumps(remote["judgement"], sort_keys=True, default=str),
++           "judgement": res["judgement"], "gauss_diagnostic": res["gauss_diagnostic"], "consistency": res["consistency"],
++           "contact_readback": res["contact_readback"], "e6b_P_reproducibility_diagnostic": res["e6b_P_reproducibility_diagnostic"]}
++    e = {L: jb.load_npz(os.path.join(E6A, f"level_L{L}.npz")) for L in jc.LEVELS}
++    cs = jb.CommonSet({L: e[L]["points_um_f32"][:, :2] for L in jc.LEVELS}, e[3]["NodeVolume"], e[3]["x"], e[3]["y"])
++    runs = {}
++    for L in jc.LEVELS:
++        recs = {t: json.load(open(os.path.join(BASE, f"run_L{L}_{t}.json"), encoding="utf-8")) for t in jc.TAGS}
++        init = {t: jb.load_npz(os.path.join(BASE, f"run_L{L}_{t}_init.npz"))["Potential"] for t in jc.TAGS}
++        fin = {t: jb.load_npz(os.path.join(BASE, f"run_L{L}_{t}_final.npz")) for t in jc.TAGS}
++        vl, vr = recs["Q"]["initialization"]["V_left"], recs["Q"]["initialization"]["V_right"]
++        runs[f"L{L}"] = {
++            "init": {t: {"sha256": recs[t]["init_sha256"], "min": float(init[t].min()), "max": float(init[t].max()), "n": int(len(init[t]))} for t in jc.TAGS},
++            "Q_init_equals_recomputed_affine_bitwise": bool(np.array_equal(init["Q"], jc.affine_init(e[L]["x"], vl, vr))),
++            "max_abs_init_diff_Q_minus_P": float(np.max(np.abs(init["Q"] - init["P"]))), "n_nodes_init_differs": int((init["Q"] != init["P"]).sum()),
++            "Q_initialization": recs["Q"]["initialization"], "process_id": {t: recs[t]["process_id"] for t in jc.TAGS},
++            "solve": {t: {k: recs[t]["solve"].get(k) for k in ("converged", "n_iterations", "final_device_relative_error", "final_device_absolute_error", "final_equations")} for t in jc.TAGS},
++            "rel_history": {t: recs[t]["solve"].get("iteration_device_relative_errors") for t in jc.TAGS},
++            "raw_info_keys": sorted(recs["P"]["solve"]["raw_info"].keys()) if isinstance(recs["P"]["solve"].get("raw_info"), dict) else None,
++            "final_P_equals_Q_bitwise": {k: bool(np.array_equal(fin["P"][k], fin["Q"][k])) for k in jb.REQUIRED_STATE_ARRAYS},
++            "max_abs_final_potential_diff_all_nodes": float(np.max(np.abs(fin["P"]["Potential"] - fin["Q"]["Potential"]))),
++            "identity": recs["P"]["identity"] if all(recs[t]["identity"]["ok"] for t in jc.TAGS) else {t: recs[t]["identity"] for t in jc.TAGS},
++            "identity_ok": {t: recs[t]["identity"]["ok"] for t in jc.TAGS}, "doping": {t: recs[t]["doping"] for t in jc.TAGS},
++            "flags": {t: recs[t]["flags"] for t in jc.TAGS}, "edge_equal_E6A": {t: recs[t]["edge_arrays_equal_E6A"] for t in jc.TAGS},
++            "peak_private_bytes": {t: recs[t]["memory"].get("peak_private_bytes") for t in jc.TAGS}}
++    out["runs"] = runs
++    with open(sys.argv[1], "w", newline="\n") as f:
++        json.dump(out, f, indent=1, default=str)
++        f.write("\n")
++    print("local", out["local_overall"], "remote", out["remote_overall"], "equal", out["judgement_json_equal"])
++    return 0
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/run_e6c.py b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/run_e6c.py
+new file mode 100644
+index 0000000..2a781c4
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/run_e6c.py
+@@ -0,0 +1,215 @@
++"""Batch 7H-E6C driver (remote profile entry). Refuses to run outside a GitHub-hosted runner. PLAN sections 1, 2, 6, 7:
++input identity, resource gate, six subprocesses (L3-P, L3-Q, L4-P, L4-Q, L5-P, L5-Q; one devsim.solve each), judgement by
++judge_e6c.analyze_dir. Outputs: <repo>/e6c_out (not committed)."""
++import argparse
++import hashlib
++import os
++import platform
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++AUD = os.path.join(ROOT, "docs", "audits")
++OUT = os.path.join(ROOT, "e6c_out")
++E6A_DIR = os.path.join(AUD, "2026-09-28-batch7h-e6a-mesh-family")
++E6A_OUT = os.path.join(E6A_DIR, "data", "remote_run_36388479824", "outputs", "e6a_out")
++E6B_DIR = os.path.join(AUD, "2026-09-28-batch7h-e6b-poisson-junction-refinement")
++E6B_OUT = os.path.join(E6B_DIR, "data", "remote_run_36527372624", "outputs", "e6b_out")
++sys.path.insert(0, HERE)
++sys.path.insert(0, os.path.join(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import common_e1 as ce  # noqa: E402
++import judge_e6c as jc  # noqa: E402
++
++REVIEW_SHA = "023bcb90f8b8a0972d6df84f097ca6387f0ab82a"
++CODE_PATHS = ["tcad", "tests", "tcad_2d_stagewise.py", "examples"]
++GIB = 1 << 30
++MEM_LIMIT = 8 * GIB
++TIME_LIMIT_S = 7200.0
++STAGE_TIMEOUT_S = 3600
++MAX_SOLVES = 6
++E6B_PEAK_BYTES = {3: 377188352, 4: 927952896, 5: 3114303488}      # E6B measured process peak private bytes (E6B REPORT section 2)
++NODES = {3: 48033, 4: 128067, 5: 441733}
++INPUTS = {   # text files are compared LF-normalized (the runner checks out CRLF); binaries byte for byte
++    os.path.join(HERE, "..", "PLAN.md"): ("text", "3c91c361a6ae445b795890e919f1e1ea26011cc33091423335442b9bd581194e"),
++    os.path.join(E6A_DIR, "PLAN.md"): ("text", "5dcda927588941a2b88713434ab841e6346180e82ee33793336968d1981a87ba"),
++    os.path.join(E6B_DIR, "PLAN.md"): ("text", "6a8d674e3548de32007f90f8a1368f9e2b31835f13d5b54eecc52da041c72e51"),
++    os.path.join(E6B_DIR, "scripts", "judge_e6b.py"): ("text", "9f37ad88310b6bac19ff13465a50db0127de9c322dd3cf7c41f3edac98e26bb2"),
++    os.path.join(E6A_OUT, "e6a_result.json"): ("text", "882ed0fbc87f5ede0fcdaacafb5eaffab0d6915aee3b897509e05b8ff30ed3bc"),
++    os.path.join(E6A_OUT, "level_L3.vtu"): ("binary", "5820d1d27443c0862df3b14634aa0fa8753f20895e2204a650256e98862a1734"),
++    os.path.join(E6A_OUT, "level_L4.vtu"): ("binary", "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297"),
++    os.path.join(E6A_OUT, "level_L5.vtu"): ("binary", "907f688e71af3bc0ebd15ea20bfbcd9fec5e9ade1d867e50f0b24da6c48e8c70"),
++    os.path.join(E6A_OUT, "level_L3.npz"): ("binary", "d61a1555b3daf5aa597dc02f4aa71e454c5adaeb3d08766964f93f269d4b24bf"),
++    os.path.join(E6A_OUT, "level_L4.npz"): ("binary", "d274564968f2de0501fb932c474e127d0ae1d38878d66361b3e93add87ece9d4"),
++    os.path.join(E6A_OUT, "level_L5.npz"): ("binary", "7d56a93b2dd96e938eab059dbf1e3db605b8371a772e7f8061bc20b293b795ee"),
++    os.path.join(E6B_OUT, "level_L3_state_P.npz"): ("binary", "3c6142d70d8af6893c14eec85f47b86761609acf5d751d0c4c616aadfef120d8"),
++    os.path.join(E6B_OUT, "level_L4_state_P.npz"): ("binary", "54b4987fb1f9637b64d8b2fa8278597b33bebbc3f564e58cdb8d36c542b97971"),
++    os.path.join(E6B_OUT, "level_L5_state_P.npz"): ("binary", "be34ae4a98ceae8b6c9207437df0a66e402fd51ddcc0a38e6139e6b330803d28"),
++}
++
++
++def sha_input(path, kind):
++    b = open(path, "rb").read()
++    return hashlib.sha256(b.replace(b"\r\n", b"\n") if kind == "text" else b).hexdigest()
++
++
++def code_identity():
++    """git diff --quiet REVIEW_SHA -- code paths: rc 0 identical, 1 differs, anything else = unverifiable (fail closed)."""
++    try:
++        p = subprocess.run(["git", "diff", "--quiet", REVIEW_SHA, "--"] + CODE_PATHS, cwd=ROOT, capture_output=True, timeout=300)
++        return {"rc": p.returncode, "identical": p.returncode == 0}
++    except Exception as e:  # noqa: BLE001
++        return {"rc": None, "identical": False, "error": ce.USER_PATH.sub("<USERPROFILE>", repr(e))[:200]}
++
++
++def runner_info():
++    info = {"cpu_count": os.cpu_count(), "platform": platform.platform(), "python": platform.python_version()}
++    for k in ("RUNNER_OS", "RUNNER_ARCH", "RUNNER_ENVIRONMENT", "ImageOS", "ImageVersion"):
++        info[k] = os.environ.get(k)
++    return info
++
++
++def envelopes():
++    return {f"L{L}": {"memory_bytes": E6B_PEAK_BYTES[L] + 2 * GIB, "time_s": 0.77 * 110 * NODES[L] / 128067} for L in NODES}
++
++
++def stage(args, timeout):
++    t = time.time()
++    try:
++        p = subprocess.run([sys.executable, os.path.join(HERE, "stage_e6c.py")] + args, cwd=ROOT, capture_output=True, text=True,
++                           encoding="utf-8", errors="replace", timeout=timeout)
++        print(p.stdout[-100000:], flush=True)
++        if p.stderr.strip():
++            print("[e6c][stderr]", p.stderr[-4000:], flush=True)
++        rc = p.returncode
++    except subprocess.TimeoutExpired:
++        rc = "timeout"
++    return rc, time.time() - t
++
++
++def l5_gate(peaks, walls, elapsed):
++    """Measured gate before L5 (as E6B): proportional and linear extrapolation of the L3/L4 P-run peaks; time 1.5 x t_L4 x N5/N4."""
++    p3, p4, t4 = peaks.get(3), peaks.get(4), walls.get(4)
++    if not isinstance(p4, int) or t4 is None:
++        return {"run": False, "reason": "L4 peak memory or wall time unavailable"}
++    prop = p4 * NODES[5] / NODES[4]
++    lin = p4 + (p4 - p3) * (NODES[5] - NODES[4]) / (NODES[4] - NODES[3]) if isinstance(p3, int) else prop
++    mem_pred, t_pred = max(prop, lin), 1.5 * t4 * NODES[5] / NODES[4]
++    return {"run": bool(mem_pred <= MEM_LIMIT and elapsed + t_pred <= TIME_LIMIT_S), "mem_pred": mem_pred, "mem_limit": MEM_LIMIT,
++            "t_pred_L5_s": t_pred, "elapsed_s": elapsed, "time_limit_s": TIME_LIMIT_S}
++
++
++def expected_files(recs):
++    exp = []
++    for L in (3, 4, 5):
++        for t in ("P", "Q"):
++            r = recs.get(f"L{L}-{t}")
++            if r and r.get("status") == "RESOURCE_PREFLIGHT_FAIL":
++                continue
++            exp.append(f"run_L{L}_{t}.json")
++            if r and r.get("status") == "OK":
++                exp += [f"run_L{L}_{t}_init.npz", f"run_L{L}_{t}_final.npz"]
++            elif r and r.get("status") == "INITIALIZATION_CONTRACT_FAIL":
++                exp.append(f"run_L{L}_{t}_init.npz")
++    return exp
++
++
++def main():
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--validate-only", action="store_true")
++    a = ap.parse_args()
++    hosted = os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
++    env = envelopes()
++    print(f"[e6c] envelopes: {env}", flush=True)
++    if a.validate_only:
++        for p, (k, want) in INPUTS.items():
++            print(f"[e6c] input {os.path.basename(p)}: {sha_input(p, k) == want}", flush=True)
++        return 0
++    if not hosted:
++        print("[e6c] refusing to run: not a GitHub-hosted runner", flush=True)
++        return 2
++    os.makedirs(OUT, exist_ok=True)
++    T0 = time.time()
++    res = {"runner": runner_info(), "envelopes": env, "inputs": {}, "stages": {}, "review_sha": REVIEW_SHA, "registered_max_solves": MAX_SOLVES}
++    ok_in = True
++    for p, (kind, want) in INPUTS.items():
++        got = sha_input(p, kind) if os.path.exists(p) else None
++        res["inputs"][os.path.relpath(p, ROOT).replace("\\", "/")] = {"kind": kind, "sha256": got, "expected": want, "equal": got == want}
++        ok_in &= got == want
++    res["code_paths_identical_to_review_sha"] = code_identity()
++    ok_in &= res["code_paths_identical_to_review_sha"]["identical"]
++    res["input_identity_ok"] = bool(ok_in)
++    flags = {"input_identity_ok": bool(ok_in), "resource_ok": True, "artifact_problems": []}
++    if not ok_in:
++        res["stop"] = "INPUT_IDENTITY_FAIL"                                 # 0 solves
++        return finish(res, flags, {})
++    if any(v["memory_bytes"] > MEM_LIMIT for v in env.values()) or sum(v["time_s"] for v in env.values()) > TIME_LIMIT_S:
++        flags["resource_ok"] = False
++        res["stop"] = "RESOURCE_PREFLIGHT_FAIL"
++        return finish(res, flags, {})
++    recs, peaks, walls = {}, {}, {}
++    for L in (3, 4, 5):
++        for t in ("P", "Q"):
++            name = f"L{L}-{t}"
++            if L == 5 and t == "P":
++                gate = l5_gate(peaks, walls, time.time() - T0)
++                res["l5_measured_gate"] = gate
++                if not gate["run"]:
++                    flags["resource_ok"], flags["skipped_levels"] = False, [5]
++                    recs["L5-P"] = recs["L5-Q"] = {"status": "RESOURCE_PREFLIGHT_FAIL"}
++            if recs.get(name, {}).get("status") == "RESOURCE_PREFLIGHT_FAIL":
++                continue
++            rc, w = stage(["run", OUT, str(L), t], STAGE_TIMEOUT_S)
++            res["stages"][name] = {"rc": rc, "wall_s": w}
++            jp = os.path.join(OUT, f"run_L{L}_{t}.json")
++            recs[name] = ce.load_strict(jp) if os.path.exists(jp) else {"status": f"NO_RESULT_JSON(rc={rc})"}
++            if t == "P":
++                walls[L] = w
++                m = recs[name].get("memory", {})
++                if isinstance(m.get("peak_private_bytes"), int):
++                    peaks[L] = m["peak_private_bytes"]
++    return finish(res, flags, recs)
++
++
++def finish(res, flags, recs):
++    res["solve_counts"] = {k: r.get("solve_count") for k, r in recs.items()}
++    total = sum(v for v in res["solve_counts"].values() if isinstance(v, int))
++    res["total_solve_calls"], res["solve_budget_ok"] = total, total <= MAX_SOLVES
++    if not res["solve_budget_ok"]:
++        flags["artifact_problems"].append(f"total solve calls {total} > {MAX_SOLVES}")
++    for k, r in recs.items():
++        if r.get("devices_left") not in ([], None):
++            flags["artifact_problems"].append(f"{k}: devices left registered {r.get('devices_left')}")
++        if r.get("status") == "WORKER_ERROR" or str(r.get("status", "")).startswith("NO_RESULT_JSON"):
++            flags["artifact_problems"].append(f"{k}: {r.get('status')}")
++    files = sorted(os.listdir(OUT)) if os.path.isdir(OUT) else []
++    res["missing_expected_files"] = [f for f in expected_files(recs) if f not in files] if recs else []
++    if res["missing_expected_files"]:
++        flags["artifact_problems"].append(f"missing files: {res['missing_expected_files']}")
++    if recs:
++        try:
++            res["analysis"] = jc.analyze_dir(OUT, E6A_OUT, E6B_OUT, flags)
++        except Exception as e:  # noqa: BLE001
++            res["analysis_error"] = ce.USER_PATH.sub("<USERPROFILE>", repr(e))[:400]
++            res["analysis"] = {"judgement": {"overall": "ARTIFACT_INCOMPLETE", "failure": "ARTIFACT_INCOMPLETE"}}
++    else:
++        res["analysis"] = {"judgement": {"overall": res.get("stop"), "failure": res.get("stop")}}
++    res["verdict"] = {"overall": res["analysis"]["judgement"].get("overall"),
++                      "maximum_possible": "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY",
++                      "note": "observed initialization sensitivity vs local junction-refinement change of the 0 V Poisson potential / fixed-width "
++                              "field only; not a solver-error bound, not 2D continuum convergence, not current accuracy, not DD, not biased I-V, "
++                              "not production step-junction support. Reaching the same solution from two initial states is not evidence that "
++                              "the solution is physically accurate."}
++    res["output_files"] = {f: ce.sha_file(os.path.join(OUT, f)) for f in sorted(os.listdir(OUT))} if os.path.isdir(OUT) else {}
++    ce.dump_strict(res, os.path.join(OUT, "e6c_result.json"))
++    for f in os.listdir(OUT):
++        if f.endswith(".json"):
++            ce.load_strict(os.path.join(OUT, f))
++    print(f"[e6c] verdict {res['verdict']} solve_calls={total}", flush=True)
++    return 0 if all(s["rc"] == 0 for s in res["stages"].values()) else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/stage_e6c.py b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/stage_e6c.py
+new file mode 100644
+index 0000000..3ee79e8
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/stage_e6c.py
+@@ -0,0 +1,282 @@
++"""Batch 7H-E6C remote worker, ONE run (one level, one initial condition) per process; exactly one devsim.solve call. PLAN sections 2, 3, 6.
++DEVSIM import and solve happen only here, only on a GitHub-hosted runner. Poisson-only, 300 K, both contact biases 0 V, no precision flag
++set, J0 doping written explicitly (never through apply_doping).
++usage: stage_e6c.py run <out dir> <L> <P|Q>      L in 3, 4, 5"""
++import os
++import sys
++import time
++import traceback
++
++sys.dont_write_bytecode = True
++os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++AUD = os.path.join(ROOT, "docs", "audits")
++E6A_OUT = os.path.join(AUD, "2026-09-28-batch7h-e6a-mesh-family", "data", "remote_run_36388479824", "outputs", "e6a_out")
++sys.path.insert(0, HERE)
++sys.path.insert(0, ROOT)
++sys.path.insert(0, os.path.join(AUD, "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import common_e1 as ce  # noqa: E402  (E1, read-only: strict JSON, sha256, USER_PATH sanitizer)
++import judge_e6c as jc  # noqa: E402
++jb = jc.jb
++
++UM = 1e-4
++N_CONC = 1.0e18
++SOLVE_ARGS = dict(absolute_error=1.0, relative_error=1e-6, maximum_iterations=100)     # PLAN 2 (identical for P and Q)
++T0 = time.time()
++
++
++class Stop(Exception):
++    """Fail-closed early exit; the status is already in `res`, cleanup and the result file still run."""
++
++
++def log(msg):
++    print(f"[e6c {time.time() - T0:8.1f}s] {msg}", flush=True)
++
++
++def clean(text):
++    return ce.USER_PATH.sub("<USERPROFILE>", str(text))
++
++
++def memory():
++    try:
++        import ctypes
++        from ctypes import wintypes
++
++        class PMC(ctypes.Structure):
++            _fields_ = [("cb", wintypes.DWORD), ("PageFaultCount", wintypes.DWORD), ("PeakWorkingSetSize", ctypes.c_size_t),
++                        ("WorkingSetSize", ctypes.c_size_t), ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
++                        ("QuotaPagedPoolUsage", ctypes.c_size_t), ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
++                        ("QuotaNonPagedPoolUsage", ctypes.c_size_t), ("PagefileUsage", ctypes.c_size_t),
++                        ("PeakPagefileUsage", ctypes.c_size_t)]
++        k32, psapi = ctypes.WinDLL("kernel32"), ctypes.WinDLL("psapi")
++        k32.GetCurrentProcess.restype = wintypes.HANDLE
++        psapi.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(PMC), wintypes.DWORD]
++        pmc = PMC()
++        pmc.cb = ctypes.sizeof(PMC)
++        if not psapi.GetProcessMemoryInfo(k32.GetCurrentProcess(), ctypes.byref(pmc), pmc.cb):
++            return {"status": "GetProcessMemoryInfo_FAILED"}
++        return {"peak_working_set_bytes": int(pmc.PeakWorkingSetSize), "peak_private_bytes": int(pmc.PeakPagefileUsage)}
++    except Exception as e:  # noqa: BLE001
++        return {"status": "MEMORY_READ_UNAVAILABLE", "error": clean(repr(e))[:200]}
++
++
++def flags(dv):
++    out = {}
++    for n in ("extended_model", "extended_equation", "extended_solver"):
++        try:
++            out[n] = dv.get_parameter(name=n)
++        except Exception as e:  # noqa: BLE001
++            out[n] = "UNSET: " + clean(e).strip()[:50]
++    return out
++
++
++def write_j0(dv, dev, x_cm):
++    """J0 = both species at full strength ON x = 0 (donor x >= 0, acceptor x <= 0), net 0 there (as E6B). An audit device; not evidence
++    about production apply_doping on a 2D step junction."""
++    donors = np.where(x_cm >= 0.0, N_CONC, 0.0)
++    acceptors = np.where(x_cm <= 0.0, N_CONC, 0.0)
++    nets = donors - acceptors
++    for name, vals in (("Donors", donors), ("Acceptors", acceptors), ("NetDoping", nets)):
++        dv.node_model(device=dev, region="Si", name=name, equation="0")
++        dv.set_node_values(device=dev, region="Si", name=name, values=[float(v) for v in vals])
++    return donors, acceptors, nets
++
++
++def doping_record(x_cm, nv, donors, acceptors, nets, area_cm2):
++    m0 = x_cm == 0.0
++    return {"n_nodes": int(len(x_cm)), "n_x0_nodes": int(m0.sum()),
++            "x0_Donors_unique": sorted({float(v) for v in donors[m0]}), "x0_Acceptors_unique": sorted({float(v) for v in acceptors[m0]}),
++            "x0_NetDoping_unique": sorted({float(v) for v in nets[m0]}),
++            "x0_ok": bool(m0.any() and set(donors[m0]) == {N_CONC} and set(acceptors[m0]) == {N_CONC} and set(nets[m0]) == {0.0}),
++            "x0_sum_NodeVolume_cm2": float(nv[m0].sum()), "x0_sum_Donors_x_NodeVolume": float((donors * nv)[m0].sum()),
++            "x0_sum_Acceptors_x_NodeVolume": float((acceptors * nv)[m0].sum()), "x0_sum_NetDoping_x_NodeVolume": float((nets * nv)[m0].sum()),
++            "total_Donors_x_NodeVolume": float((donors * nv).sum()), "total_Acceptors_x_NodeVolume": float((acceptors * nv).sum()),
++            "continuum_N_x_area": N_CONC * area_cm2 / 2,
++            "note": "raw numbers of the discrete doping representation; not called a sheet charge"}
++
++
++def snapshot(dv, dev, call_id):
++    """ONE query batch of every Potential-derived model, immediately after the (only) solve call and before anything else (PLAN 6)."""
++    nv = lambda n: np.array(dv.get_node_model_values(device=dev, region="Si", name=n), dtype=np.float64)  # noqa: E731
++    ev = lambda n: np.array(dv.get_edge_model_values(device=dev, region="Si", name=n), dtype=np.float64)  # noqa: E731
++    arr = {"Potential": nv("Potential"), "IntrinsicElectrons": nv("IntrinsicElectrons"), "IntrinsicHoles": nv("IntrinsicHoles"),
++           "IntrinsicCharge": nv("IntrinsicCharge"), "PotentialIntrinsicCharge": nv("PotentialIntrinsicCharge"),
++           "ElectricField": ev("ElectricField"), "PotentialEdgeFlux": ev("PotentialEdgeFlux")}
++    rec = {"call_id": call_id, "array_sha256": {k: jb.sha_arr(v) for k, v in arr.items()},
++           "all_finite": bool(all(np.isfinite(v).all() for v in arr.values()))}
++    arr["snapshot_call_id"] = np.array(call_id)
++    return arr, rec
++
++
++class Solver:
++    """Counts EVERY devsim.solve call and keeps the RAW info result of each (PLAN 6)."""
++
++    def __init__(self, dv):
++        self.dv, self.calls, self.count = dv, [], 0
++        self._orig = dv.solve
++
++        def counted(*a, **k):
++            self.count += 1
++            return self._orig(*a, **k)
++        dv.solve = counted
++
++    def restore(self):
++        self.dv.solve = self._orig
++
++    def call(self, call_id, **kw):
++        t = time.time()
++        rec = {"call_id": call_id, "k": kw}
++        try:
++            r = self.dv.solve(type="dc", info=True, **kw)
++            rec.update({"ok": True, "error": None})
++        except Exception as e:  # noqa: BLE001
++            r = None
++            rec.update({"ok": False, "error": clean(repr(e))[:300]})
++        rec["wall_s"] = round(time.time() - t, 3)
++        if r:
++            its = r["iterations"]
++            last = its[-1]["devices"][0] if its else None
++            rec.update({"converged": bool(r["converged"]), "n_iterations": len(its),
++                        "final_device_relative_error": last["relative_error"] if last else None,
++                        "final_device_absolute_error": last["absolute_error"] if last else None,
++                        "final_equations": {e["name"]: {"abs": e["absolute_error"], "rel": e["relative_error"]}
++                                            for reg in last["regions"] for e in reg["equations"]} if last else {},
++                        "iteration_device_relative_errors": [i["devices"][0]["relative_error"] for i in its],
++                        "raw_info": r})
++        else:
++            rec["converged"] = False
++        self.calls.append(rec)
++        return rec
++
++
++def finish(outd, name, res, sv, dv):
++    if sv is not None:
++        sv.restore()
++    try:
++        res["devices_left"] = list(dv.get_device_list())
++    except Exception as e:  # noqa: BLE001
++        res["devices_left"] = f"UNREADABLE: {clean(e)[:100]}"
++    res["memory"] = memory()
++    res["wall_s"] = round(time.time() - T0, 1)
++    ce.dump_strict(res, os.path.join(outd, name))
++    log(f"{name}: status={res.get('status')} solve_count={res.get('solve_count')} devices_left={res.get('devices_left')}")
++
++
++def run(outd, L, tag):
++    import devsim as dv
++    name = f"run_L{L}_{tag}"
++    res = {"mode": "run", "L": L, "tag": tag, "status": None, "process_id": os.getpid(), "device_name": f"e6c_L{L}_{tag}_device",
++           "solve_count": 0, "solve": None}
++    sv = None
++    dev = mesh = None
++    try:
++        res["devices_at_start"] = list(dv.get_device_list())
++        if res["devices_at_start"]:
++            res["status"], res["stop_detail"] = "IMPORT_IDENTITY_FAIL", "device already registered at start"
++            raise Stop
++        from tcad.device.devsim.mesh_import import import_process_result
++        from tcad.mesh.viennaps_adapter import build_process_result
++        from tcad.device.devsim.semiconductor_equation import setup_semiconductor_potential_equation
++        ref = jb.load_npz(os.path.join(E6A_OUT, f"level_L{L}.npz"))
++        vtu = os.path.join(E6A_OUT, f"level_L{L}.vtu")
++        res["input_vtu_sha256"] = ce.sha_file(vtu)
++        result = build_process_result({"final_mesh": vtu, "snapshots": []})
++        imp = import_process_result(result, mesh_name=f"e6c_L{L}_{tag}_mesh", device_name=res["device_name"],
++                                    contact_regions=["Si"], contact_axis="x", length_scale_to_cm=UM)
++        dev, mesh = imp.device, imp.mesh
++        nv = lambda n: np.array(dv.get_node_model_values(device=dev, region="Si", name=n), dtype=np.float64)  # noqa: E731
++        x, y, vol = nv("x"), nv("y"), nv("NodeVolume")
++        el = np.array(dv.get_element_node_list(device=dev, region="Si"), dtype=np.int64)
++        # ---- import identity (PLAN 3), before this run's solve
++        contacts = {}
++        for c in imp.contacts:
++            contacts[c] = sorted({int(v) for e in dv.get_element_node_list(device=dev, region="Si", contact=c) for v in e})
++        idn = jc.import_identity(x, y, vol, el, contacts, list(dv.get_region_list(device=dev)), ref)
++        res["identity"] = idn
++        if not idn["ok"]:
++            res["status"] = "IMPORT_IDENTITY_FAIL"
++            raise Stop
++        donors, acceptors, nets = write_j0(dv, dev, x)
++        res["doping"] = doping_record(x, vol, donors, acceptors, nets, float((x.max() - x.min()) * (y.max() - y.min())))
++        if not (res["doping"]["x0_ok"] and jc.doping_check(x, donors, acceptors, nets)):
++            res["status"], res["stop_detail"] = "IMPORT_IDENTITY_FAIL", "J0 doping check at x = 0 failed"
++            raise Stop
++        setup_semiconductor_potential_equation(dev, "Si", ["Si_xmin", "Si_xmax"], 300.0)
++        res["flags"] = flags(dv)
++        dv.edge_from_node_model(device=dev, region="Si", node_model="node_index")
++        ge = lambda n: np.array(dv.get_edge_model_values(device=dev, region="Si", name=n), dtype=np.float64)  # noqa: E731
++        n0, n1 = ge("node_index@n0").astype(np.int64), ge("node_index@n1").astype(np.int64)
++        res["edge_arrays_equal_E6A"] = {k: bool(np.array_equal(v, ref[k2])) for k, v, k2 in
++                                        (("n0", n0, "edge_n0"), ("n1", n1, "edge_n1"), ("EdgeCouple", ge("EdgeCouple"), "EdgeCouple"),
++                                         ("EdgeLength", ge("EdgeLength"), "EdgeLength"))}
++        # ---- initial potential: P keeps DEVSIM's default; Q is set (PLAN 2), and read back before the solve
++        default_init = nv("Potential")
++        if tag == "Q":
++            vt = float(dv.get_parameter(device=dev, region="Si", name="V_t"))
++            ni = float(dv.get_parameter(device=dev, region="Si", name="n_i"))
++            n_right, n_left = float(nets[x == x.max()][0]), float(nets[x == x.min()][0])
++            vl, vr = jc.contact_potentials(vt, ni, N_CONC)
++            intended = jc.affine_init(x, vl, vr)
++            ini = {"V_t": vt, "n_i": ni, "NetDoping_at_x_max": n_right, "NetDoping_at_x_min": n_left, "V_left": vl, "V_right": vr,
++                   "intended_sha256": jb.sha_arr(intended), "default_init_sha256": jb.sha_arr(default_init),
++                   "max_abs_diff_vs_default_init": float(np.max(np.abs(intended - default_init)))}
++            res["initialization"] = ini
++            why = jc.init_precheck(vt, ni, vl, vr, intended, n_right, n_left, default_init)
++            if not why:
++                dv.set_node_values(device=dev, region="Si", name="Potential", values=[float(v) for v in intended])
++            back = nv("Potential")
++            ini["readback_sha256"] = jb.sha_arr(back)
++            ini.update(jc.init_contract(why, intended, back))
++            init_arr = back
++            if not ini["contract_ok"]:
++                res["status"] = "INITIALIZATION_CONTRACT_FAIL"
++                res["stop_detail"] = "initial Potential contract not satisfied before the solve"
++                np.savez_compressed(os.path.join(outd, f"{name}_init.npz"), Potential=init_arr, snapshot_call_id=np.array(f"L{L}-Q-init"))
++                res["init_sha256"] = jb.sha_arr(init_arr)
++                raise Stop
++        else:
++            init_arr = default_init
++        np.savez_compressed(os.path.join(outd, f"{name}_init.npz"), Potential=init_arr, snapshot_call_id=np.array(f"L{L}-{tag}-init"))
++        res["init_sha256"] = jb.sha_arr(init_arr)
++        res["init_stats"] = {"n": int(len(init_arr)), "min": float(np.min(init_arr)), "max": float(np.max(init_arr)),
++                             "all_finite": bool(np.isfinite(init_arr).all())}
++        # ---- the only solve, then one snapshot batch
++        sv = Solver(dv)
++        s = sv.call(f"L{L}-{tag}", **SOLVE_ARGS)
++        arr, rec = snapshot(dv, dev, f"L{L}-{tag}")
++        np.savez_compressed(os.path.join(outd, f"{name}_final.npz"), **arr)
++        res["snapshot"] = rec
++        res["solve"], res["solve_count"] = s, sv.count
++        log(f"L{L}-{tag} converged={s.get('converged')} iterations={s.get('n_iterations')} rel={s.get('final_device_relative_error')}")
++        res["status"] = "OK"
++    except Stop:
++        pass
++    except Exception as e:  # noqa: BLE001
++        res["status"] = res["status"] or "WORKER_ERROR"
++        res["error"] = clean(repr(e))[:500]
++        res["traceback"] = clean(traceback.format_exc()[-3000:])
++        if sv is not None:
++            res["solve"], res["solve_count"] = (sv.calls[0] if sv.calls else None), sv.count
++    finally:
++        try:
++            if dev is not None:
++                dv.delete_device(device=dev)
++            if mesh is not None:
++                dv.delete_mesh(mesh=mesh)
++        except Exception as e:  # noqa: BLE001
++            res["cleanup_error"] = clean(repr(e))[:200]
++    finish(outd, f"{name}.json", res, sv, dv)
++    return 0 if res["status"] in ("OK", "IMPORT_IDENTITY_FAIL", "INITIALIZATION_CONTRACT_FAIL") else 1
++
++
++def main():
++    outd = os.path.abspath(sys.argv[2])
++    os.makedirs(outd, exist_ok=True)
++    return run(outd, int(sys.argv[3]), sys.argv[4])
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/synthetic_e6c_test.py b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/synthetic_e6c_test.py
+new file mode 100644
+index 0000000..849b4e5
+--- /dev/null
++++ b/docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/synthetic_e6c_test.py
+@@ -0,0 +1,272 @@
++"""Batch 7H-E6C SYNTHETIC judge test (no DEVSIM, no ViennaPS, no solve): eight false-PASS paths plus fake-artifact end-to-end runs built from
++the real E6A geometry. Expected states are written down here BEFORE the run and never relaxed to observed results.
++usage: synthetic_e6c_test.py <out json>"""
++import json
++import os
++import shutil
++import sys
++import tempfile
++
++sys.dont_write_bytecode = True
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, HERE)
++import judge_e6c as jc  # noqa: E402
++import run_e6c as rc  # noqa: E402
++jb = jc.jb
++
++E6A_OUT = os.path.join(ROOT, "docs", "audits", "2026-09-28-batch7h-e6a-mesh-family", "data", "remote_run_36388479824", "outputs", "e6a_out")
++ROWS = []
++FLAGS = {"artifact_problems": [], "input_identity_ok": True, "resource_ok": True}
++
++
++def row(case, inputs, expected, actual, ok):
++    ROWS.append({"case": case, "inputs": inputs, "expected": expected, "actual": actual, "ok": bool(ok)})
++    print(f"[{'OK ' if ok else 'BAD'}] {case}: expected {expected} | actual {actual}", flush=True)
++    return bool(ok)
++
++
++def small_common(core_empty=False):
++    xs = [-5.0, -0.5, 0.5, 5.0] if core_empty else [-5.0, -0.2, -0.1, -0.05, 0.0, 0.05, 0.1, 0.2, 5.0]
++    ys = [-5.0, -2.5, -1.0, 0.0]
++    p3 = np.array([(x, y) for y in ys for x in xs], dtype=np.float32)
++    p4 = np.vstack([p3, np.array([(0.025 if not core_empty else 1.0, y) for y in ys], dtype=np.float32)])
++    p5 = np.vstack([p4, np.array([(-0.025 if not core_empty else -1.0, y) for y in ys], dtype=np.float32)])
++    rng = np.random.default_rng(3)
++    pts = {3: p3, 4: p4[rng.permutation(len(p4))], 5: p5[rng.permutation(len(p5))]}
++    return jb.CommonSet(pts, np.ones(len(p3)), (p3[:, 0] * 1e-4).astype(float), (p3[:, 1] * 1e-4).astype(float))
++
++
++def runs_ok(**over):
++    S = {"ok": True, "converged": True, "final_rel": 3e-7, "error": None}
++    r = {L: {t: {"status": None, "solve": dict(S), "consistency_ok": True} for t in jc.TAGS} for L in jc.LEVELS}
++    for k, v in over.items():                       # keys like "L4Q"
++        r[int(k[1])][k[2]].update(v)
++    return r
++
++
++def psi_sets(cs, eps, shift):
++    """P_L = base + eps_L * bump; Q_L = P_L + shift_L * bump (x-only, so y-uniform)."""
++    base = 0.4769 * np.tanh(cs.xcm / 5e-6)
++    bump = np.cos(cs.xcm / 1e-5)
++    return {L: {"P": base + eps[L] * bump, "Q": base + (eps[L] + shift[L]) * bump} for L in jc.LEVELS}
++
++
++def main():
++    cs = small_common()
++    good = True
++    # ---- 1: all converge, clear decrease ---------------------------------------------------------------
++    psi = psi_sets(cs, {3: 3e-3, 4: 1e-3, 5: 8e-4}, {3: 1e-9, 4: 1e-9, 5: 1e-9})
++    j = jc.judge(runs_ok(), psi, cs, FLAGS)
++    good &= row("1 all P/Q converge, clear decrease", "eps 3e-3,1e-3,8e-4; A ~ 1e-9", "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY, four metrics robust",
++                (j["overall"], [j["metrics"][M]["state"] for M in jc.METRICS]),
++                j["overall"] == "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY"
++                and all(j["metrics"][M]["state"] == "INITIALIZATION_ROBUST_DECREASE_OBSERVED" for M in jc.METRICS))
++    # ---- 2: Q not converged while P/Q arrays are identical --------------------------------------------
++    psi2 = psi_sets(cs, {3: 3e-3, 4: 1e-3, 5: 8e-4}, {3: 0.0, 4: 0.0, 5: 0.0})           # Q arrays bit-equal to P
++    j = jc.judge(runs_ok(L4Q={"solve": {"ok": True, "converged": False, "final_rel": 3e-7, "error": None}}), psi2, cs, FLAGS)
++    good &= row("2 L4-Q not converged, Q arrays == P arrays", "L4-Q converged=False; A4 would be exactly 0", "POISSON_NOT_CONVERGED; A4 None (not promoted to 0); metrics NOT_CLASSIFIED",
++                (j["overall"], j["regions"]["A"]["A4"], j["metrics"]["psiLinf"]["state"]),
++                j["overall"] == "POISSON_NOT_CONVERGED" and j["regions"]["A"]["A4"] is None and j["metrics"]["psiLinf"]["state"] == "NOT_CLASSIFIED")
++    for tag, S in (("missing", None), ("exception", {"ok": False, "converged": False, "error": "boom"})):
++        j = jc.judge(runs_ok(L3P={"solve": S}), psi, cs, FLAGS)
++        good &= row(f"2b L3-P {tag}", "solve record " + tag, "POISSON_NOT_CONVERGED", j["overall"], j["overall"] == "POISSON_NOT_CONVERGED")
++    j = jc.judge(runs_ok(), psi2, cs, FLAGS)
++    good &= row("2c A = 0 with all solves converged", "Q == P bitwise, all converged, initialization contract fine",
++                "A reported as 0.0 (an observed difference), verdict decided by the inequalities, not treated as invalid",
++                (j["regions"]["A"]["A3"]["core"]["psiLinf"], j["overall"]),
++                j["regions"]["A"]["A3"]["core"]["psiLinf"] == 0.0 and j["overall"] == "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY")
++    # ---- 3: first two inequalities true, third false ---------------------------------------------------
++    psi3 = psi_sets(cs, {3: 0.0, 4: 5e-4, 5: 5e-4 + 5e-4 - 1e-7}, {3: 1e-6, 4: 1e-6, 5: 1e-6})
++    j = jc.judge(runs_ok(), psi3, cs, FLAGS)
++    d = j["metrics"]["psiLinf"]["inequalities"]
++    good &= row("3 ineq 1,2 true, ineq 3 false", f"ineq {d['ineq1']['holds']},{d['ineq2']['holds']},{d['ineq3']['holds']}; lhs3={d['ineq3']['lhs']:.3e} rhs3={d['ineq3']['rhs']:.3e}",
++                "NO_REFINEMENT_TREND, overall INCONCLUSIVE", (j["metrics"]["psiLinf"]["state"], j["overall"]),
++                d["ineq1"]["holds"] and d["ineq2"]["holds"] and not d["ineq3"]["holds"] and j["overall"] == "INCONCLUSIVE"
++                and j["metrics"]["psiLinf"]["state"] == "NO_REFINEMENT_TREND")
++    # ---- 4: level or P/Q indices reversed ---------------------------------------------------------------
++    raised = []
++    for pair in ((4, 3), (5, 4), (3, 5)):
++        try:
++            jb.pair_diff({L: psi[L]["P"] for L in jc.LEVELS}, pair[0], pair[1], cs)
++            raised.append(False)
++        except jb.PairIndexError:
++            raised.append(True)
++    good &= row("4a reversed level pair", "pair_diff (4,3),(5,4),(3,5)", "PairIndexError x3", raised, all(raised))
++    inc = psi_sets(cs, {3: 0.0, 4: 1e-6, 5: 1e-6 + 1e-3}, {3: 1e-9, 4: 1e-9, 5: 1e-9})
++    j = jc.judge(runs_ok(), inc, cs, FLAGS)
++    good &= row("4b increasing changes (the pairs read in the wrong direction) are not a trend", "D34 tiny, D45 large", "NO_REFINEMENT_TREND, overall INCONCLUSIVE",
++                (j["metrics"]["psiLinf"]["state"], j["overall"]), j["metrics"]["psiLinf"]["state"] == "NO_REFINEMENT_TREND" and j["overall"] == "INCONCLUSIVE")
++    # ---- 5: input / import identity ---------------------------------------------------------------------
++    j = jc.judge(runs_ok(), psi, cs, dict(FLAGS, input_identity_ok=False))
++    good &= row("5a input sha / review-sha mismatch", "input_identity_ok False", "INPUT_IDENTITY_FAIL", j["overall"], j["overall"] == "INPUT_IDENTITY_FAIL")
++    tmp = tempfile.mkdtemp(prefix="e6c_in_")
++    try:
++        fp = os.path.join(tmp, "PLAN.md")
++        open(fp, "wb").write(b"a\r\nb\r\n")
++        h_lf = rc.sha_input(fp, "text")
++        open(fp, "wb").write(b"a\r\nc\r\n")
++        good &= row("5b driver input hash", "text file edited after pinning (CRLF normalised)", "hash differs", h_lf != rc.sha_input(fp, "text"), h_lf != rc.sha_input(fp, "text"))
++    finally:
++        shutil.rmtree(tmp, ignore_errors=True)
++    e = {L: jb.load_npz(os.path.join(E6A_OUT, f"level_L{L}.npz")) for L in (3,)}
++    ref = e[3]
++    x, y, vol, el = ref["x"], ref["y"], ref["NodeVolume"].copy(), ref["elements"].copy()
++    xs = ref["x"]
++    ok_contacts = {"Si_xmin": np.where(xs == xs.min())[0].tolist(), "Si_xmax": np.where(xs == xs.max())[0].tolist()}
++    base = jc.import_identity(x, y, vol, el, ok_contacts, ["Si"], ref)
++    el_dup = el.copy()
++    el_dup[5] = el_dup[6]                                             # same element COUNT, different vertex-set multiset
++    vol_bad = vol.copy()
++    vol_bad[10] = np.nextafter(vol_bad[10], np.inf)               # a real one-ulp change
++    assert vol_bad[10] != vol[10]
++    bad_contacts = {"Si_xmin": ok_contacts["Si_xmin"][:-1], "Si_xmax": ok_contacts["Si_xmax"]}
++    don = np.where(x >= 0, 1e18, 0.0)
++    acc = np.where(x <= 0, 1e18, 0.0)
++    good &= row("5c identity checks catch each tampering", "clean / one element replaced by a copy (count unchanged) / one NodeVolume +1 ulp / one contact node missing / doping x=0 wrong",
++                "ok True / False / False / False / doping False",
++                (base["ok"], jc.import_identity(x, y, vol, el_dup, ok_contacts, ["Si"], ref)["ok"], jc.import_identity(x, y, vol_bad, el, ok_contacts, ["Si"], ref)["ok"],
++                 jc.import_identity(x, y, vol, el, bad_contacts, ["Si"], ref)["ok"], jc.doping_check(x, don, acc * 0 + 5e17, don - acc)),
++                base["ok"] and not jc.import_identity(x, y, vol, el_dup, ok_contacts, ["Si"], ref)["ok"] and not jc.import_identity(x, y, vol_bad, el, ok_contacts, ["Si"], ref)["ok"]
++                and not jc.import_identity(x, y, vol, el, bad_contacts, ["Si"], ref)["ok"] and not jc.doping_check(x, don, acc * 0 + 5e17, don - acc) and jc.doping_check(x, don, acc, don - acc))
++    j = jc.judge(runs_ok(L4Q={"status": "IMPORT_IDENTITY_FAIL", "solve": None}), psi, cs, FLAGS)
++    good &= row("5d a level failing import identity", "L4-Q status IMPORT_IDENTITY_FAIL", "IMPORT_IDENTITY_FAIL (no solve was made)", j["overall"], j["overall"] == "IMPORT_IDENTITY_FAIL")
++    # ---- 6: initialization readback mismatch --------------------------------------------------------------
++    vl, vr = jc.contact_potentials(0.025887193125, 1e10)
++    xx = np.linspace(-5e-4, 5e-4, 101)
++    want = jc.affine_init(xx, vl, vr)
++    default = np.zeros_like(want)
++    back_ok = want.copy()
++    back_ulp = want.copy()
++    back_ulp[40] = np.nextafter(back_ulp[40], np.inf)
++    pre = jc.init_precheck(0.025887193125, 1e10, vl, vr, want, 1e18, -1e18, default)
++    same = jc.init_precheck(0.025887193125, 1e10, vl, vr, want, 1e18, -1e18, want.copy())
++    c_ok, c_ulp, c_pre = jc.init_contract(pre, want, back_ok), jc.init_contract(pre, want, back_ulp), jc.init_contract(same, want, want.copy())
++    good &= row("6a initialization contract", "readback equal / one node 1 ulp off / Q identical to the default initial array",
++                "contract_ok True / False / False", (c_ok["contract_ok"], c_ulp["contract_ok"], c_pre["contract_ok"]),
++                c_ok["contract_ok"] and not c_ulp["contract_ok"] and not c_pre["contract_ok"] and not pre)
++    good &= row("6b affine endpoints", "V_left, V_right from the contact formula; x_min / x_max nodes", "first node = V_left, last node = V_right (to rounding of the interpolation)",
++                (float(want[0]), float(want[-1]), vl, vr), want[0] == vl and abs(want[-1] - vr) <= 4e-16 and vl < 0 < vr)
++    # ---- 7: non-finite potential, empty core ----------------------------------------------------------------
++    bad = {L: dict(v) for L, v in psi.items()}
++    bad[4]["Q"] = bad[4]["Q"].copy()
++    bad[4]["Q"][3] = np.nan
++    j = jc.judge(runs_ok(L4Q={"consistency_ok": False}), bad, cs, FLAGS)
++    good &= row("7a non-finite Q potential", "one NaN in L4-Q, consistency flag False", "CONSISTENCY_FAIL, A4 None, no numeric 0", (j["overall"], j["regions"]["A"]["A4"]),
++                j["overall"] == "CONSISTENCY_FAIL" and j["regions"]["A"]["A4"] is None)
++    j = jc.judge(runs_ok(), bad, cs, FLAGS)                        # even with the flag wrongly True, the NaN array must not become a number
++    good &= row("7b NaN array with an optimistic flag", "NaN in L4-Q, consistency flag True", "A4 None (never a number), overall not a trend", (j["regions"]["A"]["A4"], j["overall"]),
++                j["regions"]["A"]["A4"] is None and j["overall"] != "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY")
++    cse = small_common(core_empty=True)
++    pe = {L: {"P": np.zeros(cse.n) + 0.1 * L, "Q": np.zeros(cse.n) + 0.1 * L} for L in jc.LEVELS}
++    j = jc.judge(runs_ok(), pe, cse, FLAGS)
++    good &= row("7c empty core", "no node with |x| <= 0.1 um", "CONSISTENCY_FAIL, D34 absent (no number, no PASS)", (j["overall"], "D34" in j["regions"]),
++                j["overall"] == "CONSISTENCY_FAIL" and "D34" not in j["regions"] and j["metrics"]["psiLinf"]["state"] == "NOT_CLASSIFIED")
++    # ---- 8 and end-to-end on the real E6A geometry -------------------------------------------------------------
++    good &= end_to_end()
++    with open(sys.argv[1], "w", newline="\n") as f:
++        json.dump({"rows": ROWS, "ALL_OK": bool(good)}, f, indent=1, default=str)
++        f.write("\n")
++    print("ALL_OK", good)
++    return 0 if good else 1
++
++
++def fake_dir(tmp, e6a, pid_q=2, solve_count_q=1, q_shift=1e-9):
++    """Six fake runs on the real E6A geometry: P_L = phi + eps_L g (default zero initial potential), Q_L = P_L + shift g (affine initial)."""
++    phi = lambda xx: 0.4769 * np.tanh(xx / 5e-6)  # noqa: E731
++    g = lambda xx: np.cos(xx / 1e-5)  # noqa: E731
++    eps = {3: 3e-3, 4: 1e-3, 5: 8e-4}
++    vl, vr = jc.contact_potentials(0.025887193125, 1e10)
++    for L in jc.LEVELS:
++        x = e6a[L]["x"]
++        ne = len(e6a[L]["EdgeCouple"])
++        for tag in jc.TAGS:
++            pot = phi(x) + (eps[L] + (q_shift if tag == "Q" else 0.0)) * g(x)
++            arr = {"Potential": pot, "IntrinsicElectrons": np.exp(pot), "IntrinsicHoles": np.exp(-pot), "IntrinsicCharge": np.exp(-pot) - np.exp(pot),
++                   "PotentialIntrinsicCharge": pot * 1e-3, "ElectricField": np.ones(ne) * 1e3, "PotentialEdgeFlux": np.ones(ne) * 1e-9}
++            init = np.zeros(len(x)) if tag == "P" else jc.affine_init(x, vl, vr)
++            np.savez_compressed(os.path.join(tmp, f"run_L{L}_{tag}_init.npz"), Potential=init, snapshot_call_id=np.array(f"L{L}-{tag}-init"))
++            np.savez_compressed(os.path.join(tmp, f"run_L{L}_{tag}_final.npz"), snapshot_call_id=np.array(f"L{L}-{tag}"), **arr)
++            rec = {"status": "OK", "process_id": 1 if tag == "P" else pid_q, "solve_count": 1 if tag == "P" else solve_count_q,
++                   "init_sha256": jb.sha_arr(init),
++                   "snapshot": {"call_id": f"L{L}-{tag}", "array_sha256": {k: jb.sha_arr(v) for k, v in arr.items()}},
++                   "solve": {"call_id": f"L{L}-{tag}", "ok": True, "converged": True, "n_iterations": 10, "final_device_relative_error": 3e-7,
++                             "final_device_absolute_error": 1e-17},
++                   "edge_arrays_equal_E6A": {"n0": True, "n1": True, "EdgeCouple": True, "EdgeLength": True}}
++            if tag == "Q":
++                rec["initialization"] = {"V_left": vl, "V_right": vr, "contract_ok": True}
++            json.dump(rec, open(os.path.join(tmp, f"run_L{L}_{tag}.json"), "w"))
++
++
++def end_to_end():
++    ok = True
++    e6a = {L: jb.load_npz(os.path.join(E6A_OUT, f"level_L{L}.npz")) for L in jc.LEVELS}
++    tmp = tempfile.mkdtemp(prefix="e6c_fake_")
++    e6b = tempfile.mkdtemp(prefix="e6c_fake_b_")
++    try:
++        fake_dir(tmp, e6a)
++        for L in jc.LEVELS:                                          # fake E6B P files: identical to the new P (reproducibility diagnostic path)
++            shutil.copy(os.path.join(tmp, f"run_L{L}_P_final.npz"), os.path.join(e6b, f"level_L{L}_state_P.npz"))
++        res = jc.analyze_dir(tmp, E6A_OUT, e6b, dict(FLAGS))
++        ov = res["judgement"]["overall"]
++        rep = res["e6b_P_reproducibility_diagnostic"]
++        ok &= row("9a fake artifacts, clean", "six fake runs, Q shift 1e-9, real L3/L4/L5 geometry", "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY, no artifact problem, reproducibility diagnostic bit-equal",
++                  (ov, res["artifact_problems"], {k: v["potential_bit_equal_all_nodes"] for k, v in rep.items()}),
++                  ov == "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY" and not res["artifact_problems"] and all(v["potential_bit_equal_all_nodes"] for v in rep.values()))
++        # 8a: Q final replaced by the P final -> tag mismatch, judged before any number
++        shutil.copy(os.path.join(tmp, "run_L4_P_final.npz"), os.path.join(tmp, "run_L4_Q_final.npz"))
++        r2 = jc.analyze_dir(tmp, E6A_OUT, None, dict(FLAGS))
++        ok &= row("8a P/Q snapshots mixed", "run_L4_Q_final.npz := run_L4_P_final.npz", "ARTIFACT_INCOMPLETE, metrics NOT_CLASSIFIED",
++                  (r2["judgement"]["overall"], r2["artifact_problems"][:2]), r2["judgement"]["overall"] == "ARTIFACT_INCOMPLETE" and any("L4-Q" in p for p in r2["artifact_problems"]))
++    finally:
++        shutil.rmtree(tmp, ignore_errors=True)
++    tmp = tempfile.mkdtemp(prefix="e6c_fake_")
++    try:
++        fake_dir(tmp, e6a, pid_q=1)                                  # P and Q recorded in the same process (sequential runs on one device)
++        r3 = jc.analyze_dir(tmp, E6A_OUT, None, dict(FLAGS))
++        ok &= row("8b P and Q in the same process", "process_id equal for P and Q", "ARTIFACT_INCOMPLETE", (r3["judgement"]["overall"], r3["artifact_problems"][:1]),
++                  r3["judgement"]["overall"] == "ARTIFACT_INCOMPLETE" and any("same process" in p for p in r3["artifact_problems"]))
++    finally:
++        shutil.rmtree(tmp, ignore_errors=True)
++    tmp = tempfile.mkdtemp(prefix="e6c_fake_")
++    try:
++        fake_dir(tmp, e6a, solve_count_q=2)                          # a second solve in the same run
++        r4 = jc.analyze_dir(tmp, E6A_OUT, None, dict(FLAGS))
++        ok &= row("8c more than one solve in a run", "solve_count 2 for Q", "ARTIFACT_INCOMPLETE", (r4["judgement"]["overall"], r4["artifact_problems"][:1]),
++                  r4["judgement"]["overall"] == "ARTIFACT_INCOMPLETE" and any("solve_count" in p for p in r4["artifact_problems"]))
++    finally:
++        shutil.rmtree(tmp, ignore_errors=True)
++    tmp = tempfile.mkdtemp(prefix="e6c_fake_")
++    try:
++        fake_dir(tmp, e6a)
++        L = 5
++        bad = jb.load_npz(os.path.join(tmp, f"run_L{L}_Q_init.npz"))
++        bad["Potential"] = bad["Potential"] + 1e-6                   # saved initial Potential is not the affine array (sha recorded from the original -> also tampered)
++        np.savez_compressed(os.path.join(tmp, f"run_L{L}_Q_init.npz"), **bad)
++        r5 = jc.analyze_dir(tmp, E6A_OUT, None, dict(FLAGS))
++        ok &= row("6c saved Q initial Potential tampered", "run_L5_Q_init.npz altered after hashing", "ARTIFACT_INCOMPLETE (init sha256 mismatch) before any judgement",
++                  (r5["judgement"]["overall"], r5["artifact_problems"][:1]), r5["judgement"]["overall"] == "ARTIFACT_INCOMPLETE")
++    finally:
++        shutil.rmtree(tmp, ignore_errors=True)
++    tmp = tempfile.mkdtemp(prefix="e6c_fake_")
++    try:
++        fake_dir(tmp, e6a)
++        L = 5
++        rec = json.load(open(os.path.join(tmp, f"run_L{L}_Q.json")))
++        wrong = jc.affine_init(e6a[L]["x"], -0.3, 0.3)               # a consistent (sha-matching) init array that is NOT the pre-registered affine one
++        np.savez_compressed(os.path.join(tmp, f"run_L{L}_Q_init.npz"), Potential=wrong, snapshot_call_id=np.array(f"L{L}-Q-init"))
++        rec["init_sha256"] = jb.sha_arr(wrong)
++        json.dump(rec, open(os.path.join(tmp, f"run_L{L}_Q.json"), "w"))
++        r6 = jc.analyze_dir(tmp, E6A_OUT, None, dict(FLAGS))
++        ok &= row("6d saved Q initial array differs from the intended affine array (hash-consistent)", "recorded V_left/V_right vs saved initial array", "INITIALIZATION_CONTRACT_FAIL",
++                  (r6["judgement"]["overall"], r6["artifact_problems"][:1]), r6["judgement"]["overall"] == "INITIALIZATION_CONTRACT_FAIL")
++    finally:
++        shutil.rmtree(tmp, ignore_errors=True)
++        shutil.rmtree(e6b, ignore_errors=True)
++    return ok
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/remote/profiles.py b/remote/profiles.py
+index 3ea2ac7..ba202c5 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -286,2 +286,34 @@ PROFILES = {
+         "regenerate": "Rerun the profile. Every device is imported/built fresh in its own process; E6A inputs are hash-gated.",
++    },    "e6c_initialization_robustness": {
++        "description": "Batch 7H-E6C: 0 V Poisson-only, E6A L3/L4/L5, two independent initial potentials (P default, Q linear contact-to-contact), one devsim.solve per process, at most 6 solves.",
++        "entry": "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/run_e6c.py",
++        "args": [],
++        "params": {},
++        "timeout_s": 9000,
++        "inputs": [
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/PLAN.md",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/PLAN.sha256",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/run_e6c.py",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/stage_e6c.py",
++            "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/judge_e6c.py",
++            "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/PLAN.md",
++            "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/scripts/judge_e6b.py",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/PLAN.md",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/e6a_result.json",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L3.vtu",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L3.npz",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L4.vtu",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L4.npz",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.vtu",
++            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.npz",
++            "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/data/remote_run_36527372624/outputs/e6b_out/level_L3_state_P.npz",
++            "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/data/remote_run_36527372624/outputs/e6b_out/level_L4_state_P.npz",
++            "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/data/remote_run_36527372624/outputs/e6b_out/level_L5_state_P.npz",
++            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
++            "tcad/device/devsim/mesh_import.py",
++            "tcad/device/devsim/semiconductor_equation.py",
++            "tcad/mesh/viennaps_adapter.py",
++        ],
++        "outputs": [{"glob": "e6c_out/**/*.json", "max_mb": 50}, {"glob": "e6c_out/**/*.npz", "max_mb": 80}],
++        "regenerate": "Rerun the profile. Every run is imported fresh in its own process; E6A / E6B inputs are hash-gated.",
+     },
+diff --git a/remote/request.json b/remote/request.json
+index aca9140..36c16b7 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -2,6 +2,6 @@
+  "schema": 1,
+- "request_id": "e6b-poisson-junction-refinement-001",
+- "profile": "e6b_poisson_junction_refinement",
++ "request_id": "e6c-initialization-robustness-001",
++ "profile": "e6c_initialization_robustness",
+  "params": {},
+- "note": "Batch 7H-E6B. PLAN Rev.3 fixed alone in commit f929a14c7d1ef3fc32093ceb4fe0881dcae9b588 (PLAN.md LF sha256 6a8d674e...) before this code and request. At most 10 devsim.solve calls."
++ "note": "Batch 7H-E6C. PLAN fixed alone in commit 9851fdf7b9a719ff8818922036c77ad0af468815 (PLAN.md LF sha256 3c91c361...) before this code and request. At most 6 devsim.solve calls."
+ }

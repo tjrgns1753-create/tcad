@@ -1,0 +1,392 @@
+{
+ "mode": "run",
+ "L": 4,
+ "tag": "P",
+ "status": "OK",
+ "process_id": 684,
+ "device_name": "e6c_L4_P_device",
+ "solve_count": 1,
+ "solve": {
+  "call_id": "L4-P",
+  "k": {
+   "absolute_error": 1.0,
+   "relative_error": 1e-06,
+   "maximum_iterations": 100
+  },
+  "ok": true,
+  "error": null,
+  "wall_s": 4.671,
+  "converged": true,
+  "n_iterations": 10,
+  "final_device_relative_error": 2.4121050925036766e-07,
+  "final_device_absolute_error": 5.314415369779202e-17,
+  "final_equations": {
+   "PotentialEquation": {
+    "abs": 5.314415369779202e-17,
+    "rel": 2.4121050925036766e-07
+   }
+  },
+  "iteration_device_relative_errors": [
+   0.9999999996831418,
+   1.086507489808108,
+   0.3118880153176831,
+   0.2369311949112129,
+   0.22010197528847997,
+   0.15966074125451304,
+   0.09354772090620489,
+   0.0644444035241062,
+   0.05187778391165696,
+   2.4121050925036766e-07
+  ],
+  "raw_info": {
+   "converged": true,
+   "iterations": [
+    {
+     "devices": [
+      {
+       "absolute_error": 0.3155986551726481,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 0.3155986551726481,
+         "equations": [
+          {
+           "absolute_error": 0.3155986551726481,
+           "absolute_error_node": 20049,
+           "name": "PotentialEquation",
+           "relative_error": 0.9999999996831418,
+           "relative_error_node": 20049
+          }
+         ],
+         "name": "Si",
+         "relative_error": 0.9999999996831418
+        }
+       ],
+       "relative_error": 0.9999999996831418
+      }
+     ],
+     "iteration": 0
+    },
+    {
+     "devices": [
+      {
+       "absolute_error": 0.19098109320213044,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 0.19098109320213044,
+         "equations": [
+          {
+           "absolute_error": 0.19098109320213044,
+           "absolute_error_node": 18900,
+           "name": "PotentialEquation",
+           "relative_error": 1.086507489808108,
+           "relative_error_node": 18900
+          }
+         ],
+         "name": "Si",
+         "relative_error": 1.086507489808108
+        }
+       ],
+       "relative_error": 1.086507489808108
+      }
+     ],
+     "iteration": 1
+    },
+    {
+     "devices": [
+      {
+       "absolute_error": 0.07827292227620773,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 0.07827292227620773,
+         "equations": [
+          {
+           "absolute_error": 0.07827292227620773,
+           "absolute_error_node": 21621,
+           "name": "PotentialEquation",
+           "relative_error": 0.3118880153176831,
+           "relative_error_node": 21621
+          }
+         ],
+         "name": "Si",
+         "relative_error": 0.3118880153176831
+        }
+       ],
+       "relative_error": 0.3118880153176831
+      }
+     ],
+     "iteration": 2
+    },
+    {
+     "devices": [
+      {
+       "absolute_error": 0.062181236927648445,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 0.062181236927648445,
+         "equations": [
+          {
+           "absolute_error": 0.062181236927648445,
+           "absolute_error_node": 0,
+           "name": "PotentialEquation",
+           "relative_error": 0.2369311949112129,
+           "relative_error_node": 0
+          }
+         ],
+         "name": "Si",
+         "relative_error": 0.2369311949112129
+        }
+       ],
+       "relative_error": 0.2369311949112129
+      }
+     ],
+     "iteration": 3
+    },
+    {
+     "devices": [
+      {
+       "absolute_error": 0.05582502999328946,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 0.05582502999328946,
+         "equations": [
+          {
+           "absolute_error": 0.05582502999328946,
+           "absolute_error_node": 0,
+           "name": "PotentialEquation",
+           "relative_error": 0.22010197528847997,
+           "relative_error_node": 0
+          }
+         ],
+         "name": "Si",
+         "relative_error": 0.22010197528847997
+        }
+       ],
+       "relative_error": 0.22010197528847997
+      }
+     ],
+     "iteration": 4
+    },
+    {
+     "devices": [
+      {
+       "absolute_error": 0.04838383708631866,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 0.04838383708631866,
+         "equations": [
+          {
+           "absolute_error": 0.04838383708631866,
+           "absolute_error_node": 201,
+           "name": "PotentialEquation",
+           "relative_error": 0.15966074125451304,
+           "relative_error_node": 201
+          }
+         ],
+         "name": "Si",
+         "relative_error": 0.15966074125451304
+        }
+       ],
+       "relative_error": 0.15966074125451304
+      }
+     ],
+     "iteration": 5
+    },
+    {
+     "devices": [
+      {
+       "absolute_error": 0.03956924599665015,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 0.03956924599665015,
+         "equations": [
+          {
+           "absolute_error": 0.03956924599665015,
+           "absolute_error_node": 0,
+           "name": "PotentialEquation",
+           "relative_error": 0.09354772090620489,
+           "relative_error_node": 0
+          }
+         ],
+         "name": "Si",
+         "relative_error": 0.09354772090620489
+        }
+       ],
+       "relative_error": 0.09354772090620489
+      }
+     ],
+     "iteration": 6
+    },
+    {
+     "devices": [
+      {
+       "absolute_error": 0.029136687144707105,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 0.029136687144707105,
+         "equations": [
+          {
+           "absolute_error": 0.029136687144707105,
+           "absolute_error_node": 0,
+           "name": "PotentialEquation",
+           "relative_error": 0.0644444035241062,
+           "relative_error_node": 0
+          }
+         ],
+         "name": "Si",
+         "relative_error": 0.0644444035241062
+        }
+       ],
+       "relative_error": 0.0644444035241062
+      }
+     ],
+     "iteration": 7
+    },
+    {
+     "devices": [
+      {
+       "absolute_error": 0.024738425510990206,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 0.024738425510990206,
+         "equations": [
+          {
+           "absolute_error": 0.024738425510990206,
+           "absolute_error_node": 0,
+           "name": "PotentialEquation",
+           "relative_error": 0.05187778391165696,
+           "relative_error_node": 0
+          }
+         ],
+         "name": "Si",
+         "relative_error": 0.05187778391165696
+        }
+       ],
+       "relative_error": 0.05187778391165696
+      }
+     ],
+     "iteration": 8
+    },
+    {
+     "devices": [
+      {
+       "absolute_error": 5.314415369779202e-17,
+       "name": "e6c_L4_P_device",
+       "regions": [
+        {
+         "absolute_error": 5.314415369779202e-17,
+         "equations": [
+          {
+           "absolute_error": 5.314415369779202e-17,
+           "absolute_error_node": 127739,
+           "name": "PotentialEquation",
+           "relative_error": 2.4121050925036766e-07,
+           "relative_error_node": 127739
+          }
+         ],
+         "name": "Si",
+         "relative_error": 2.4121050925036766e-07
+        }
+       ],
+       "relative_error": 2.4121050925036766e-07
+      }
+     ],
+     "iteration": 9
+    }
+   ],
+   "number_of_equations": 128067
+  }
+ },
+ "devices_at_start": [],
+ "input_vtu_sha256": "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297",
+ "identity": {
+  "n_nodes": [
+   128067,
+   128067
+  ],
+  "nodes_equal": true,
+  "xy_equal_scaled_construction": true,
+  "n_elements": [
+   255400,
+   255400
+  ],
+  "vertex_set_multiset_equal": true,
+  "NodeVolume_bit_equal_E6A": true,
+  "regions": [
+   "Si"
+  ],
+  "contacts": {
+   "Si_xmin": 101,
+   "Si_xmax": 101
+  },
+  "contacts_by_coordinate_ok": true,
+  "ok": true
+ },
+ "doping": {
+  "n_nodes": 128067,
+  "n_x0_nodes": 1601,
+  "x0_Donors_unique": [
+   1e+18
+  ],
+  "x0_Acceptors_unique": [
+   1e+18
+  ],
+  "x0_NetDoping_unique": [
+   0.0
+  ],
+  "x0_ok": true,
+  "x0_sum_NodeVolume_cm2": 1.56249985284376e-10,
+  "x0_sum_Donors_x_NodeVolume": 156249985.28437603,
+  "x0_sum_Acceptors_x_NodeVolume": 156249985.28437603,
+  "x0_sum_NetDoping_x_NodeVolume": 0.0,
+  "total_Donors_x_NodeVolume": 250078090533.7081,
+  "total_Acceptors_x_NodeVolume": 250078090533.7081,
+  "continuum_N_x_area": 249999965541.06592,
+  "note": "raw numbers of the discrete doping representation; not called a sheet charge"
+ },
+ "flags": {
+  "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+  "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+  "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+ },
+ "edge_arrays_equal_E6A": {
+  "n0": true,
+  "n1": true,
+  "EdgeCouple": true,
+  "EdgeLength": true
+ },
+ "init_sha256": "6fb00cb1c546e7303d835c7c5997e1d1f2a60fc62799dd538fcd4ed387e48d74",
+ "init_stats": {
+  "n": 128067,
+  "min": 0.0,
+  "max": 0.0,
+  "all_finite": true
+ },
+ "snapshot": {
+  "call_id": "L4-P",
+  "array_sha256": {
+   "Potential": "398d5844139c16c2fd15b267d6138dbf0306db1eb3951968e027e94c1c42402b",
+   "IntrinsicElectrons": "9318abf38c6ce0b5e13d98c32ff8d82d759bc0c5bc0bfd863c3ae60e16640245",
+   "IntrinsicHoles": "3026ebcad412204168a172c33a2377cbe127d1d7aa6148851acdd5fd8c28569a",
+   "IntrinsicCharge": "07030f8f1c598716672582eeb42533e63ce26567bdefb4450a16ed3d42eccc5f",
+   "PotentialIntrinsicCharge": "074dbd8639f09f42e9ba24d6c157c76dece9dcf509cfdde6d77708377f22bef7",
+   "ElectricField": "eb9788aabe5d103b94bb333f3bce6b130766f9b534058431a0c40fb3b7bb1af0",
+   "PotentialEdgeFlux": "53a73cc837475d3be606f6a71e33a0118cc654582edcfd3cd6e28c52579dc3be"
+  },
+  "all_finite": true
+ },
+ "devices_left": [],
+ "memory": {
+  "peak_working_set_bytes": 821620736,
+  "peak_private_bytes": 882290688
+ },
+ "wall_s": 8.1
+}

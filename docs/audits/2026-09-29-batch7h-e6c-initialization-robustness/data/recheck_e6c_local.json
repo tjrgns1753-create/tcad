@@ -1,0 +1,1225 @@
+{
+ "local_overall": "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY",
+ "remote_overall": "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY",
+ "judgement_json_equal": true,
+ "judgement": {
+  "gates": {
+   "L3-P": {
+    "converged_ok": true,
+    "consistency_ok": true
+   },
+   "L3-Q": {
+    "converged_ok": true,
+    "consistency_ok": true
+   },
+   "L4-P": {
+    "converged_ok": true,
+    "consistency_ok": true
+   },
+   "L4-Q": {
+    "converged_ok": true,
+    "consistency_ok": true
+   },
+   "L5-P": {
+    "converged_ok": true,
+    "consistency_ok": true
+   },
+   "L5-Q": {
+    "converged_ok": true,
+    "consistency_ok": true
+   }
+  },
+  "regions": {
+   "D34": {
+    "core": {
+     "psiLinf": 0.0010295243046865576,
+     "psiL2": 0.0003701352306851328,
+     "ExLinf": 1698.4128865698294,
+     "ExRMS": 520.6133484587889
+    },
+    "transition": {
+     "psiLinf": 1.987776609979619e-11,
+     "psiL2": 8.29473687196653e-12
+    },
+    "outer": {
+     "psiLinf": 1.6653345369377348e-16,
+     "psiL2": 3.600029334744771e-17
+    }
+   },
+   "D45": {
+    "core": {
+     "psiLinf": 0.00025791697788185575,
+     "psiL2": 9.0383171939044e-05,
+     "ExLinf": 387.29503120037407,
+     "ExRMS": 123.76018639069537
+    },
+    "transition": {
+     "psiLinf": 1.839584040652653e-12,
+     "psiL2": 7.676656357147214e-13
+    },
+    "outer": {
+     "psiLinf": 1.1102230246251565e-16,
+     "psiL2": 3.58212172117943e-17
+    }
+   },
+   "A": {
+    "A3": {
+     "core": {
+      "psiLinf": 5.162537064506978e-15,
+      "psiL2": 1.7807022070033457e-15,
+      "ExLinf": 4.882167559117079e-09,
+      "ExRMS": 1.8554586097137071e-09
+     },
+     "transition": {
+      "psiLinf": 5.551115123125783e-17,
+      "psiL2": 3.6603593644880894e-17
+     },
+     "outer": {
+      "psiLinf": 5.551115123125783e-17,
+      "psiL2": 3.8853866005807675e-17
+     }
+    },
+    "A4": {
+     "core": {
+      "psiLinf": 1.3322676295501878e-15,
+      "psiL2": 4.704282228498835e-16,
+      "ExLinf": 1.1568772606551647e-09,
+      "ExRMS": 4.747678431815337e-10
+     },
+     "transition": {
+      "psiLinf": 5.551115123125783e-17,
+      "psiL2": 2.826645097289791e-17
+     },
+     "outer": {
+      "psiLinf": 5.551115123125783e-17,
+      "psiL2": 3.905510546156995e-17
+     }
+    },
+    "A5": {
+     "core": {
+      "psiLinf": 4.440892098500626e-16,
+      "psiL2": 1.5402919282752998e-16,
+      "ExLinf": 3.7834979593753815e-10,
+      "ExRMS": 1.7358946287915586e-10
+     },
+     "transition": {
+      "psiLinf": 5.551115123125783e-17,
+      "psiL2": 3.7163105482982294e-17
+     },
+     "outer": {
+      "psiLinf": 5.551115123125783e-17,
+      "psiL2": 3.922165600694922e-17
+     }
+    }
+   }
+  },
+  "metrics": {
+   "psiLinf": {
+    "D34": 0.0010295243046865576,
+    "D45": 0.00025791697788185575,
+    "A3": 5.162537064506978e-15,
+    "A4": 1.3322676295501878e-15,
+    "A5": 4.440892098500626e-16,
+    "inequalities": {
+     "ineq1": {
+      "expr": "D34 > S3+S4",
+      "lhs": 0.0010295243046865576,
+      "rhs": 6.494804694057166e-15,
+      "holds": true
+     },
+     "ineq2": {
+      "expr": "D45 > S4+S5",
+      "lhs": 0.00025791697788185575,
+      "rhs": 1.7763568394002505e-15,
+      "holds": true
+     },
+     "ineq3": {
+      "expr": "D34-D45 > S3+2*S4+S5",
+      "lhs": 0.0007716073268047019,
+      "rhs": 8.271161533457416e-15,
+      "holds": true
+     },
+     "all_finite": true
+    },
+    "state": "INITIALIZATION_ROBUST_DECREASE_OBSERVED"
+   },
+   "psiL2": {
+    "D34": 0.0003701352306851328,
+    "D45": 9.0383171939044e-05,
+    "A3": 1.7807022070033457e-15,
+    "A4": 4.704282228498835e-16,
+    "A5": 1.5402919282752998e-16,
+    "inequalities": {
+     "ineq1": {
+      "expr": "D34 > S3+S4",
+      "lhs": 0.0003701352306851328,
+      "rhs": 2.251130429853229e-15,
+      "holds": true
+     },
+     "ineq2": {
+      "expr": "D45 > S4+S5",
+      "lhs": 9.0383171939044e-05,
+      "rhs": 6.244574156774136e-16,
+      "holds": true
+     },
+     "ineq3": {
+      "expr": "D34-D45 > S3+2*S4+S5",
+      "lhs": 0.0002797520587460888,
+      "rhs": 2.8755878455306425e-15,
+      "holds": true
+     },
+     "all_finite": true
+    },
+    "state": "INITIALIZATION_ROBUST_DECREASE_OBSERVED"
+   },
+   "ExLinf": {
+    "D34": 1698.4128865698294,
+    "D45": 387.29503120037407,
+    "A3": 4.882167559117079e-09,
+    "A4": 1.1568772606551647e-09,
+    "A5": 3.7834979593753815e-10,
+    "inequalities": {
+     "ineq1": {
+      "expr": "D34 > S3+S4",
+      "lhs": 1698.4128865698294,
+      "rhs": 6.0390448197722435e-09,
+      "holds": true
+     },
+     "ineq2": {
+      "expr": "D45 > S4+S5",
+      "lhs": 387.29503120037407,
+      "rhs": 1.5352270565927029e-09,
+      "holds": true
+     },
+     "ineq3": {
+      "expr": "D34-D45 > S3+2*S4+S5",
+      "lhs": 1311.1178553694554,
+      "rhs": 7.574271876364946e-09,
+      "holds": true
+     },
+     "all_finite": true
+    },
+    "state": "INITIALIZATION_ROBUST_DECREASE_OBSERVED"
+   },
+   "ExRMS": {
+    "D34": 520.6133484587889,
+    "D45": 123.76018639069537,
+    "A3": 1.8554586097137071e-09,
+    "A4": 4.747678431815337e-10,
+    "A5": 1.7358946287915586e-10,
+    "inequalities": {
+     "ineq1": {
+      "expr": "D34 > S3+S4",
+      "lhs": 520.6133484587889,
+      "rhs": 2.3302264528952407e-09,
+      "holds": true
+     },
+     "ineq2": {
+      "expr": "D45 > S4+S5",
+      "lhs": 123.76018639069537,
+      "rhs": 6.483573060606896e-10,
+      "holds": true
+     },
+     "ineq3": {
+      "expr": "D34-D45 > S3+2*S4+S5",
+      "lhs": 396.8531620680935,
+      "rhs": 2.9785837589559302e-09,
+      "holds": true
+     },
+     "all_finite": true
+    },
+    "state": "INITIALIZATION_ROBUST_DECREASE_OBSERVED"
+   }
+  },
+  "failure": null,
+  "overall": "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY"
+ },
+ "gauss_diagnostic": {
+  "L3-P": {
+   "state_used": "P final",
+   "assumed_sign": "+1 at edge n0, -1 at edge n1 (hypothesis)",
+   "n_noncontact": 47831,
+   "states": [],
+   "ratios_max_abs": {
+    "correct": 8.049013441422123e-14,
+    "edgecouple_omitted": 2351581.1233013133,
+    "edgecouple_twice": 0.3812802047423999,
+    "charge_sign_flipped": 0.7625606477756954
+   },
+   "contact_residual_diagnostic": {
+    "correct": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 1.0,
+     "max_abs_R": 1.0405070682004342e-26
+    },
+    "edgecouple_omitted": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 4193.720297653144,
+     "max_abs_R": 3.724680096254709e-23
+    },
+    "edgecouple_twice": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9947315223111344,
+     "max_abs_R": 1.0296007516254364e-26
+    },
+    "charge_sign_flipped": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9894629919369805,
+     "max_abs_R": 1.0241475115397693e-26
+    }
+   },
+   "n_eligible": 12015,
+   "n_eligible_on_x0": 801,
+   "n_eligible_top": 15,
+   "n_eligible_bottom": 15
+  },
+  "L3-Q": {
+   "state_used": "Q final",
+   "assumed_sign": "+1 at edge n0, -1 at edge n1 (hypothesis)",
+   "n_noncontact": 47831,
+   "states": [],
+   "ratios_max_abs": {
+    "correct": 3.1696994308442256e-13,
+    "edgecouple_omitted": 2351581.1233015056,
+    "edgecouple_twice": 0.3812802047423004,
+    "charge_sign_flipped": 0.7625606477757527
+   },
+   "contact_residual_diagnostic": {
+    "correct": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 1.0,
+     "max_abs_R": 1.0405070682004342e-26
+    },
+    "edgecouple_omitted": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 7158.428663483229,
+     "max_abs_R": 3.72468458221843e-23
+    },
+    "edgecouple_twice": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9895182676712995,
+     "max_abs_R": 1.0296007516254364e-26
+    },
+    "charge_sign_flipped": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9790364305242586,
+     "max_abs_R": 1.0186943259862144e-26
+    }
+   },
+   "n_eligible": 12015,
+   "n_eligible_on_x0": 801,
+   "n_eligible_top": 15,
+   "n_eligible_bottom": 15
+  },
+  "L4-P": {
+   "state_used": "P final",
+   "assumed_sign": "+1 at edge n0, -1 at edge n1 (hypothesis)",
+   "n_noncontact": 127865,
+   "states": [],
+   "ratios_max_abs": {
+    "correct": 9.563675114675243e-14,
+    "edgecouple_omitted": 3970331.1752585177,
+    "edgecouple_twice": 0.26709674439940034,
+    "charge_sign_flipped": 0.5341936557122475
+   },
+   "contact_residual_diagnostic": {
+    "correct": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 1.0,
+     "max_abs_R": 1.0350538826468793e-26
+    },
+    "edgecouple_omitted": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 3598.5688026260177,
+     "max_abs_R": 1.8628570884612436e-23
+    },
+    "edgecouple_twice": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9947315223111344,
+     "max_abs_R": 1.0296007243593804e-26
+    },
+    "charge_sign_flipped": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9894629919369805,
+     "max_abs_R": 1.0241475115397693e-26
+    }
+   },
+   "n_eligible": 46425,
+   "n_eligible_on_x0": 1601,
+   "n_eligible_top": 27,
+   "n_eligible_bottom": 27
+  },
+  "L4-Q": {
+   "state_used": "Q final",
+   "assumed_sign": "+1 at edge n0, -1 at edge n1 (hypothesis)",
+   "n_noncontact": 127865,
+   "states": [],
+   "ratios_max_abs": {
+    "correct": 6.297826990319107e-13,
+    "edgecouple_omitted": 3970331.1752598854,
+    "edgecouple_twice": 0.26709674439940034,
+    "charge_sign_flipped": 0.5341936557122475
+   },
+   "contact_residual_diagnostic": {
+    "correct": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 1.0,
+     "max_abs_R": 1.0405070682004342e-26
+    },
+    "edgecouple_omitted": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 7158.428663483229,
+     "max_abs_R": 3.72468458221843e-23
+    },
+    "edgecouple_twice": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9895182676712995,
+     "max_abs_R": 1.0296007516254364e-26
+    },
+    "charge_sign_flipped": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9790364305242586,
+     "max_abs_R": 1.0186943259862144e-26
+    }
+   },
+   "n_eligible": 46425,
+   "n_eligible_on_x0": 1601,
+   "n_eligible_top": 27,
+   "n_eligible_bottom": 27
+  },
+  "L5-P": {
+   "state_used": "P final",
+   "assumed_sign": "+1 at edge n0, -1 at edge n1 (hypothesis)",
+   "n_noncontact": 441531,
+   "states": [],
+   "ratios_max_abs": {
+    "correct": 3.3634254339041414e-13,
+    "edgecouple_omitted": 6583636.900189634,
+    "edgecouple_twice": 0.1610190368046807,
+    "charge_sign_flipped": 0.32203812391682207
+   },
+   "contact_residual_diagnostic": {
+    "correct": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 1.0,
+     "max_abs_R": 1.0405070682004342e-26
+    },
+    "edgecouple_omitted": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 5676.048804122597,
+     "max_abs_R": 3.72468458221843e-23
+    },
+    "edgecouple_twice": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9947315223111344,
+     "max_abs_R": 1.0296007516254364e-26
+    },
+    "charge_sign_flipped": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9894629919369805,
+     "max_abs_R": 1.0241475115397693e-26
+    }
+   },
+   "n_eligible": 176047,
+   "n_eligible_on_x0": 3201,
+   "n_eligible_top": 51,
+   "n_eligible_bottom": 51
+  },
+  "L5-Q": {
+   "state_used": "Q final",
+   "assumed_sign": "+1 at edge n0, -1 at edge n1 (hypothesis)",
+   "n_noncontact": 441531,
+   "states": [],
+   "ratios_max_abs": {
+    "correct": 1.0964691934814882e-12,
+    "edgecouple_omitted": 6583636.900189634,
+    "edgecouple_twice": 0.1610190368046807,
+    "charge_sign_flipped": 0.32203812391706493
+   },
+   "contact_residual_diagnostic": {
+    "correct": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 1.0,
+     "max_abs_R": 1.0405070682004342e-26
+    },
+    "edgecouple_omitted": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 7158.428663483229,
+     "max_abs_R": 3.72468458221843e-23
+    },
+    "edgecouple_twice": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9895182676712995,
+     "max_abs_R": 1.0296007516254364e-26
+    },
+    "charge_sign_flipped": {
+     "n": 202,
+     "n_valid": 202,
+     "max_abs_ratio": 0.9790364305242586,
+     "max_abs_R": 1.0186943259862144e-26
+    }
+   },
+   "n_eligible": 176047,
+   "n_eligible_on_x0": 3201,
+   "n_eligible_top": 51,
+   "n_eligible_bottom": 51
+  }
+ },
+ "consistency": {
+  "L3-P": {
+   "finite_ok": true,
+   "y_uniform": {
+    "core": 7.841838289834868e-12,
+    "transition": 8.004708007547379e-14,
+    "outer": 5.551115123125783e-17
+   },
+   "y_uniform_ok": true
+  },
+  "L3-Q": {
+   "finite_ok": true,
+   "y_uniform": {
+    "core": 7.841838289834868e-12,
+    "transition": 8.004708007547379e-14,
+    "outer": 5.551115123125783e-17
+   },
+   "y_uniform_ok": true
+  },
+  "L4-P": {
+   "finite_ok": true,
+   "y_uniform": {
+    "core": 2.1094237467877974e-15,
+    "transition": 1.6986412276764895e-14,
+    "outer": 5.551115123125783e-17
+   },
+   "y_uniform_ok": true
+  },
+  "L4-Q": {
+   "finite_ok": true,
+   "y_uniform": {
+    "core": 2.1094237467877974e-15,
+    "transition": 1.6986412276764895e-14,
+    "outer": 5.551115123125783e-17
+   },
+   "y_uniform_ok": true
+  },
+  "L5-P": {
+   "finite_ok": true,
+   "y_uniform": {
+    "core": 7.216449660063518e-16,
+    "transition": 1.0935696792557792e-14,
+    "outer": 5.551115123125783e-17
+   },
+   "y_uniform_ok": true
+  },
+  "L5-Q": {
+   "finite_ok": true,
+   "y_uniform": {
+    "core": 7.216449660063518e-16,
+    "transition": 1.0935696792557792e-14,
+    "outer": 5.551115123125783e-17
+   },
+   "y_uniform_ok": true
+  }
+ },
+ "contact_readback": {
+  "L3-P": {
+   "xmin": -0.4768597199126636,
+   "xmax": 0.4768597199126636
+  },
+  "L3-Q": {
+   "xmin": -0.4768597199126636,
+   "xmax": 0.4768597199126636
+  },
+  "L4-P": {
+   "xmin": -0.4768597199126636,
+   "xmax": 0.4768597199126636
+  },
+  "L4-Q": {
+   "xmin": -0.4768597199126636,
+   "xmax": 0.4768597199126636
+  },
+  "L5-P": {
+   "xmin": -0.4768597199126636,
+   "xmax": 0.4768597199126636
+  },
+  "L5-Q": {
+   "xmin": -0.4768597199126636,
+   "xmax": 0.4768597199126636
+  }
+ },
+ "e6b_P_reproducibility_diagnostic": {
+  "L3": {
+   "potential_bit_equal_all_nodes": true,
+   "max_abs_diff_all_nodes": 0.0,
+   "core_metrics": {
+    "psiLinf": 0.0,
+    "psiL2": 0.0,
+    "ExLinf": 0.0,
+    "ExRMS": 0.0
+   }
+  },
+  "L4": {
+   "potential_bit_equal_all_nodes": true,
+   "max_abs_diff_all_nodes": 0.0,
+   "core_metrics": {
+    "psiLinf": 0.0,
+    "psiL2": 0.0,
+    "ExLinf": 0.0,
+    "ExRMS": 0.0
+   }
+  },
+  "L5": {
+   "potential_bit_equal_all_nodes": true,
+   "max_abs_diff_all_nodes": 0.0,
+   "core_metrics": {
+    "psiLinf": 0.0,
+    "psiL2": 0.0,
+    "ExLinf": 0.0,
+    "ExRMS": 0.0
+   }
+  }
+ },
+ "runs": {
+  "L3": {
+   "init": {
+    "P": {
+     "sha256": "55ddddf517a35bf4b0aa281fa371f4c4da88b8d4aff1fc4836a9d223784c5b66",
+     "min": 0.0,
+     "max": 0.0,
+     "n": 48033
+    },
+    "Q": {
+     "sha256": "d076d3390b7d0e5aec4fad70da3195478be2c0f4284c9577fd1c55d6b33dbb23",
+     "min": -0.4768597199126637,
+     "max": 0.4768597199126637,
+     "n": 48033
+    }
+   },
+   "Q_init_equals_recomputed_affine_bitwise": true,
+   "max_abs_init_diff_Q_minus_P": 0.4768597199126637,
+   "n_nodes_init_differs": 47232,
+   "Q_initialization": {
+    "V_t": 0.025887193125000003,
+    "n_i": 10000000000.0,
+    "NetDoping_at_x_max": 1e+18,
+    "NetDoping_at_x_min": -1e+18,
+    "V_left": -0.4768597199126637,
+    "V_right": 0.4768597199126637,
+    "intended_sha256": "d076d3390b7d0e5aec4fad70da3195478be2c0f4284c9577fd1c55d6b33dbb23",
+    "default_init_sha256": "55ddddf517a35bf4b0aa281fa371f4c4da88b8d4aff1fc4836a9d223784c5b66",
+    "max_abs_diff_vs_default_init": 0.4768597199126637,
+    "readback_sha256": "d076d3390b7d0e5aec4fad70da3195478be2c0f4284c9577fd1c55d6b33dbb23",
+    "readback_bit_equal_intended": true,
+    "precheck_reasons": [],
+    "contract_ok": true
+   },
+   "process_id": {
+    "P": 6312,
+    "Q": 6040
+   },
+   "solve": {
+    "P": {
+     "converged": true,
+     "n_iterations": 10,
+     "final_device_relative_error": 3.9323820925690584e-07,
+     "final_device_absolute_error": 6.259693716627964e-17,
+     "final_equations": {
+      "PotentialEquation": {
+       "abs": 6.259693716627964e-17,
+       "rel": 3.9323820925690584e-07
+      }
+     }
+    },
+    "Q": {
+     "converged": true,
+     "n_iterations": 8,
+     "final_device_relative_error": 5.569076759230807e-07,
+     "final_device_absolute_error": 8.867630652221744e-08,
+     "final_equations": {
+      "PotentialEquation": {
+       "abs": 8.867630652221744e-08,
+       "rel": 5.569076759230807e-07
+      }
+     }
+    }
+   },
+   "rel_history": {
+    "P": [
+     0.9999999996831418,
+     0.48562200045285875,
+     0.3118880153176831,
+     0.2227069864110424,
+     0.16662620066652084,
+     0.12619170216513506,
+     0.09354772090620489,
+     0.0644444035241062,
+     0.05187778391165696,
+     3.9323820925690584e-07
+    ],
+    "Q": [
+     0.9962988661708585,
+     0.42506063828673024,
+     0.19541348003074843,
+     0.14463938147118338,
+     0.12680444956358228,
+     0.0835766710847381,
+     0.0388360880724051,
+     5.569076759230807e-07
+    ]
+   },
+   "raw_info_keys": [
+    "converged",
+    "iterations",
+    "number_of_equations"
+   ],
+   "final_P_equals_Q_bitwise": {
+    "Potential": false,
+    "IntrinsicElectrons": false,
+    "IntrinsicHoles": false,
+    "IntrinsicCharge": false,
+    "PotentialIntrinsicCharge": false,
+    "ElectricField": false,
+    "PotentialEdgeFlux": false
+   },
+   "max_abs_final_potential_diff_all_nodes": 5.162537064506978e-15,
+   "identity": {
+    "n_nodes": [
+     48033,
+     48033
+    ],
+    "nodes_equal": true,
+    "xy_equal_scaled_construction": true,
+    "n_elements": [
+     95400,
+     95400
+    ],
+    "vertex_set_multiset_equal": true,
+    "NodeVolume_bit_equal_E6A": true,
+    "regions": [
+     "Si"
+    ],
+    "contacts": {
+     "Si_xmin": 101,
+     "Si_xmax": 101
+    },
+    "contacts_by_coordinate_ok": true,
+    "ok": true
+   },
+   "identity_ok": {
+    "P": true,
+    "Q": true
+   },
+   "doping": {
+    "P": {
+     "n_nodes": 48033,
+     "n_x0_nodes": 801,
+     "x0_Donors_unique": [
+      1e+18
+     ],
+     "x0_Acceptors_unique": [
+      1e+18
+     ],
+     "x0_NetDoping_unique": [
+      0.0
+     ],
+     "x0_ok": true,
+     "x0_sum_NodeVolume_cm2": 3.12499970568752e-10,
+     "x0_sum_Donors_x_NodeVolume": 312499970.56875205,
+     "x0_sum_Acceptors_x_NodeVolume": 312499970.56875205,
+     "x0_sum_NetDoping_x_NodeVolume": 0.0,
+     "total_Donors_x_NodeVolume": 250156215526.35034,
+     "total_Acceptors_x_NodeVolume": 250156215526.35028,
+     "continuum_N_x_area": 249999965541.06592,
+     "note": "raw numbers of the discrete doping representation; not called a sheet charge"
+    },
+    "Q": {
+     "n_nodes": 48033,
+     "n_x0_nodes": 801,
+     "x0_Donors_unique": [
+      1e+18
+     ],
+     "x0_Acceptors_unique": [
+      1e+18
+     ],
+     "x0_NetDoping_unique": [
+      0.0
+     ],
+     "x0_ok": true,
+     "x0_sum_NodeVolume_cm2": 3.12499970568752e-10,
+     "x0_sum_Donors_x_NodeVolume": 312499970.56875205,
+     "x0_sum_Acceptors_x_NodeVolume": 312499970.56875205,
+     "x0_sum_NetDoping_x_NodeVolume": 0.0,
+     "total_Donors_x_NodeVolume": 250156215526.35034,
+     "total_Acceptors_x_NodeVolume": 250156215526.35028,
+     "continuum_N_x_area": 249999965541.06592,
+     "note": "raw numbers of the discrete doping representation; not called a sheet charge"
+    }
+   },
+   "flags": {
+    "P": {
+     "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+     "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+     "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+    },
+    "Q": {
+     "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+     "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+     "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+    }
+   },
+   "edge_equal_E6A": {
+    "P": {
+     "n0": true,
+     "n1": true,
+     "EdgeCouple": true,
+     "EdgeLength": true
+    },
+    "Q": {
+     "n0": true,
+     "n1": true,
+     "EdgeCouple": true,
+     "EdgeLength": true
+    }
+   },
+   "peak_private_bytes": {
+    "P": 360046592,
+    "Q": 359526400
+   }
+  },
+  "L4": {
+   "init": {
+    "P": {
+     "sha256": "6fb00cb1c546e7303d835c7c5997e1d1f2a60fc62799dd538fcd4ed387e48d74",
+     "min": 0.0,
+     "max": 0.0,
+     "n": 128067
+    },
+    "Q": {
+     "sha256": "2e90f63b351b01b879798370d7994ed4451ee7a10346bde407ec05aa22214c2f",
+     "min": -0.4768597199126637,
+     "max": 0.4768597199126637,
+     "n": 128067
+    }
+   },
+   "Q_init_equals_recomputed_affine_bitwise": true,
+   "max_abs_init_diff_Q_minus_P": 0.4768597199126637,
+   "n_nodes_init_differs": 126466,
+   "Q_initialization": {
+    "V_t": 0.025887193125000003,
+    "n_i": 10000000000.0,
+    "NetDoping_at_x_max": 1e+18,
+    "NetDoping_at_x_min": -1e+18,
+    "V_left": -0.4768597199126637,
+    "V_right": 0.4768597199126637,
+    "intended_sha256": "2e90f63b351b01b879798370d7994ed4451ee7a10346bde407ec05aa22214c2f",
+    "default_init_sha256": "6fb00cb1c546e7303d835c7c5997e1d1f2a60fc62799dd538fcd4ed387e48d74",
+    "max_abs_diff_vs_default_init": 0.4768597199126637,
+    "readback_sha256": "2e90f63b351b01b879798370d7994ed4451ee7a10346bde407ec05aa22214c2f",
+    "readback_bit_equal_intended": true,
+    "precheck_reasons": [],
+    "contract_ok": true
+   },
+   "process_id": {
+    "P": 684,
+    "Q": 8384
+   },
+   "solve": {
+    "P": {
+     "converged": true,
+     "n_iterations": 10,
+     "final_device_relative_error": 2.4121050925036766e-07,
+     "final_device_absolute_error": 5.314415369779202e-17,
+     "final_equations": {
+      "PotentialEquation": {
+       "abs": 5.314415369779202e-17,
+       "rel": 2.4121050925036766e-07
+      }
+     }
+    },
+    "Q": {
+     "converged": true,
+     "n_iterations": 8,
+     "final_device_relative_error": 3.1307551498084703e-07,
+     "final_device_absolute_error": 4.528423319584554e-08,
+     "final_equations": {
+      "PotentialEquation": {
+       "abs": 4.528423319584554e-08,
+       "rel": 3.1307551498084703e-07
+      }
+     }
+    }
+   },
+   "rel_history": {
+    "P": [
+     0.9999999996831418,
+     1.086507489808108,
+     0.3118880153176831,
+     0.2369311949112129,
+     0.22010197528847997,
+     0.15966074125451304,
+     0.09354772090620489,
+     0.0644444035241062,
+     0.05187778391165696,
+     2.4121050925036766e-07
+    ],
+    "Q": [
+     0.9979141667004464,
+     0.4250626088860529,
+     0.195476427040556,
+     0.2323949335691121,
+     0.2108549692009653,
+     0.21314993579699698,
+     0.039632585079789374,
+     3.1307551498084703e-07
+    ]
+   },
+   "raw_info_keys": [
+    "converged",
+    "iterations",
+    "number_of_equations"
+   ],
+   "final_P_equals_Q_bitwise": {
+    "Potential": false,
+    "IntrinsicElectrons": false,
+    "IntrinsicHoles": false,
+    "IntrinsicCharge": false,
+    "PotentialIntrinsicCharge": false,
+    "ElectricField": false,
+    "PotentialEdgeFlux": false
+   },
+   "max_abs_final_potential_diff_all_nodes": 1.3877787807814457e-15,
+   "identity": {
+    "n_nodes": [
+     128067,
+     128067
+    ],
+    "nodes_equal": true,
+    "xy_equal_scaled_construction": true,
+    "n_elements": [
+     255400,
+     255400
+    ],
+    "vertex_set_multiset_equal": true,
+    "NodeVolume_bit_equal_E6A": true,
+    "regions": [
+     "Si"
+    ],
+    "contacts": {
+     "Si_xmin": 101,
+     "Si_xmax": 101
+    },
+    "contacts_by_coordinate_ok": true,
+    "ok": true
+   },
+   "identity_ok": {
+    "P": true,
+    "Q": true
+   },
+   "doping": {
+    "P": {
+     "n_nodes": 128067,
+     "n_x0_nodes": 1601,
+     "x0_Donors_unique": [
+      1e+18
+     ],
+     "x0_Acceptors_unique": [
+      1e+18
+     ],
+     "x0_NetDoping_unique": [
+      0.0
+     ],
+     "x0_ok": true,
+     "x0_sum_NodeVolume_cm2": 1.56249985284376e-10,
+     "x0_sum_Donors_x_NodeVolume": 156249985.28437603,
+     "x0_sum_Acceptors_x_NodeVolume": 156249985.28437603,
+     "x0_sum_NetDoping_x_NodeVolume": 0.0,
+     "total_Donors_x_NodeVolume": 250078090533.7081,
+     "total_Acceptors_x_NodeVolume": 250078090533.7081,
+     "continuum_N_x_area": 249999965541.06592,
+     "note": "raw numbers of the discrete doping representation; not called a sheet charge"
+    },
+    "Q": {
+     "n_nodes": 128067,
+     "n_x0_nodes": 1601,
+     "x0_Donors_unique": [
+      1e+18
+     ],
+     "x0_Acceptors_unique": [
+      1e+18
+     ],
+     "x0_NetDoping_unique": [
+      0.0
+     ],
+     "x0_ok": true,
+     "x0_sum_NodeVolume_cm2": 1.56249985284376e-10,
+     "x0_sum_Donors_x_NodeVolume": 156249985.28437603,
+     "x0_sum_Acceptors_x_NodeVolume": 156249985.28437603,
+     "x0_sum_NetDoping_x_NodeVolume": 0.0,
+     "total_Donors_x_NodeVolume": 250078090533.7081,
+     "total_Acceptors_x_NodeVolume": 250078090533.7081,
+     "continuum_N_x_area": 249999965541.06592,
+     "note": "raw numbers of the discrete doping representation; not called a sheet charge"
+    }
+   },
+   "flags": {
+    "P": {
+     "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+     "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+     "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+    },
+    "Q": {
+     "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+     "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+     "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+    }
+   },
+   "edge_equal_E6A": {
+    "P": {
+     "n0": true,
+     "n1": true,
+     "EdgeCouple": true,
+     "EdgeLength": true
+    },
+    "Q": {
+     "n0": true,
+     "n1": true,
+     "EdgeCouple": true,
+     "EdgeLength": true
+    }
+   },
+   "peak_private_bytes": {
+    "P": 882290688,
+    "Q": 884994048
+   }
+  },
+  "L5": {
+   "init": {
+    "P": {
+     "sha256": "11e88d81825bd045a662c4fd945ecf232feff118b9da78f7b8e01a12006fce06",
+     "min": 0.0,
+     "max": 0.0,
+     "n": 441733
+    },
+    "Q": {
+     "sha256": "c6378c184542cd09c7a3718074f722cb6d825f518047ac63aac61ed1e08ff199",
+     "min": -0.4768597199126637,
+     "max": 0.4768597199126637,
+     "n": 441733
+    }
+   },
+   "Q_init_equals_recomputed_affine_bitwise": true,
+   "max_abs_init_diff_Q_minus_P": 0.4768597199126637,
+   "n_nodes_init_differs": 438532,
+   "Q_initialization": {
+    "V_t": 0.025887193125000003,
+    "n_i": 10000000000.0,
+    "NetDoping_at_x_max": 1e+18,
+    "NetDoping_at_x_min": -1e+18,
+    "V_left": -0.4768597199126637,
+    "V_right": 0.4768597199126637,
+    "intended_sha256": "c6378c184542cd09c7a3718074f722cb6d825f518047ac63aac61ed1e08ff199",
+    "default_init_sha256": "11e88d81825bd045a662c4fd945ecf232feff118b9da78f7b8e01a12006fce06",
+    "max_abs_diff_vs_default_init": 0.4768597199126637,
+    "readback_sha256": "c6378c184542cd09c7a3718074f722cb6d825f518047ac63aac61ed1e08ff199",
+    "readback_bit_equal_intended": true,
+    "precheck_reasons": [],
+    "contract_ok": true
+   },
+   "process_id": {
+    "P": 8436,
+    "Q": 8408
+   },
+   "solve": {
+    "P": {
+     "converged": true,
+     "n_iterations": 10,
+     "final_device_relative_error": 3.8892979893818e-07,
+     "final_device_absolute_error": 6.725358084799448e-17,
+     "final_equations": {
+      "PotentialEquation": {
+       "abs": 6.725358084799448e-17,
+       "rel": 3.8892979893818e-07
+      }
+     }
+    },
+    "Q": {
+     "converged": true,
+     "n_iterations": 8,
+     "final_device_relative_error": 5.124910204580495e-07,
+     "final_device_absolute_error": 2.5388887532498307e-08,
+     "final_equations": {
+      "PotentialEquation": {
+       "abs": 2.5388887532498307e-08,
+       "rel": 5.124910204580495e-07
+      }
+     }
+    }
+   },
+   "rel_history": {
+    "P": [
+     0.9999999996831418,
+     1.0909527219669701,
+     0.3118880153176831,
+     0.3423045920272373,
+     0.3599892392756692,
+     0.3077439963229541,
+     0.20788394333916527,
+     0.0644444035241062,
+     0.05187778391165696,
+     3.8892979893818e-07
+    ],
+    "Q": [
+     0.9988069540518092,
+     0.4250631205777487,
+     0.2752072850863999,
+     0.348895811016703,
+     0.3535674122629231,
+     0.44391641205984234,
+     0.04984297566456795,
+     5.124910204580495e-07
+    ]
+   },
+   "raw_info_keys": [
+    "converged",
+    "iterations",
+    "number_of_equations"
+   ],
+   "final_P_equals_Q_bitwise": {
+    "Potential": false,
+    "IntrinsicElectrons": false,
+    "IntrinsicHoles": false,
+    "IntrinsicCharge": false,
+    "PotentialIntrinsicCharge": false,
+    "ElectricField": false,
+    "PotentialEdgeFlux": false
+   },
+   "max_abs_final_potential_diff_all_nodes": 4.440892098500626e-16,
+   "identity": {
+    "n_nodes": [
+     441733,
+     441733
+    ],
+    "nodes_equal": true,
+    "xy_equal_scaled_construction": true,
+    "n_elements": [
+     882600,
+     882600
+    ],
+    "vertex_set_multiset_equal": true,
+    "NodeVolume_bit_equal_E6A": true,
+    "regions": [
+     "Si"
+    ],
+    "contacts": {
+     "Si_xmin": 101,
+     "Si_xmax": 101
+    },
+    "contacts_by_coordinate_ok": true,
+    "ok": true
+   },
+   "identity_ok": {
+    "P": true,
+    "Q": true
+   },
+   "doping": {
+    "P": {
+     "n_nodes": 441733,
+     "n_x0_nodes": 3201,
+     "x0_Donors_unique": [
+      1e+18
+     ],
+     "x0_Acceptors_unique": [
+      1e+18
+     ],
+     "x0_NetDoping_unique": [
+      0.0
+     ],
+     "x0_ok": true,
+     "x0_sum_NodeVolume_cm2": 7.8124992642188e-11,
+     "x0_sum_Donors_x_NodeVolume": 78124992.64218801,
+     "x0_sum_Acceptors_x_NodeVolume": 78124992.64218801,
+     "x0_sum_NetDoping_x_NodeVolume": 0.0,
+     "total_Donors_x_NodeVolume": 250039028037.3871,
+     "total_Acceptors_x_NodeVolume": 250039028037.38705,
+     "continuum_N_x_area": 249999965541.06592,
+     "note": "raw numbers of the discrete doping representation; not called a sheet charge"
+    },
+    "Q": {
+     "n_nodes": 441733,
+     "n_x0_nodes": 3201,
+     "x0_Donors_unique": [
+      1e+18
+     ],
+     "x0_Acceptors_unique": [
+      1e+18
+     ],
+     "x0_NetDoping_unique": [
+      0.0
+     ],
+     "x0_ok": true,
+     "x0_sum_NodeVolume_cm2": 7.8124992642188e-11,
+     "x0_sum_Donors_x_NodeVolume": 78124992.64218801,
+     "x0_sum_Acceptors_x_NodeVolume": 78124992.64218801,
+     "x0_sum_NetDoping_x_NodeVolume": 0.0,
+     "total_Donors_x_NodeVolume": 250039028037.3871,
+     "total_Acceptors_x_NodeVolume": 250039028037.38705,
+     "continuum_N_x_area": 249999965541.06592,
+     "note": "raw numbers of the discrete doping representation; not called a sheet charge"
+    }
+   },
+   "flags": {
+    "P": {
+     "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+     "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+     "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+    },
+    "Q": {
+     "extended_model": "UNSET: Cannot find parameter \"extended_model\"",
+     "extended_equation": "UNSET: Cannot find parameter \"extended_equation\"",
+     "extended_solver": "UNSET: Cannot find parameter \"extended_solver\""
+    }
+   },
+   "edge_equal_E6A": {
+    "P": {
+     "n0": true,
+     "n1": true,
+     "EdgeCouple": true,
+     "EdgeLength": true
+    },
+    "Q": {
+     "n0": true,
+     "n1": true,
+     "EdgeCouple": true,
+     "EdgeLength": true
+    }
+   },
+   "peak_private_bytes": {
+    "P": 2963816448,
+    "Q": 2972852224
+   }
+  }
+ }
+}

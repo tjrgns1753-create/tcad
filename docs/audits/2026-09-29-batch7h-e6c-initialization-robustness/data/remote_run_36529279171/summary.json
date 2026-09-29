@@ -1,0 +1,288 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-29T06:05:51.278226+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6c-initialization-robustness-001",
+  "profile": "e6c_initialization_robustness",
+  "params": {},
+  "note": "Batch 7H-E6C. PLAN fixed alone in commit 9851fdf7b9a719ff8818922036c77ad0af468815 (PLAN.md LF sha256 3c91c361...) before this code and request. At most 6 devsim.solve calls."
+ },
+ "profile": "e6c_initialization_robustness",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/PLAN.md",
+   "sha256": "8bf5fa5b0052f42e1e4b1a3b9099ecbd2205c789fe5ed7fd0c38873884a45820",
+   "bytes": 15129
+  },
+  {
+   "path": "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/PLAN.sha256",
+   "sha256": "94a5c68bed0fc68087d0e70f71dd7c703dca69b98a80c5259327e1d6ae73cb23",
+   "bytes": 75
+  },
+  {
+   "path": "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/run_e6c.py",
+   "sha256": "5532152677aca7a665f3888bdd6f94637825b07d0ffc64e19761e952fc2518a6",
+   "bytes": 12122
+  },
+  {
+   "path": "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/stage_e6c.py",
+   "sha256": "ea5d31cfa8edd115e46b09099144303fb7f746aa41a76f904b2ce43909de7d08",
+   "bytes": 15156
+  },
+  {
+   "path": "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/judge_e6c.py",
+   "sha256": "65690abbe8acc9f6dcdb96cb94113a57eab681278582acd0eae12ebf34207ec1",
+   "bytes": 17188
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/PLAN.md",
+   "sha256": "339143b80b99151fd06bf0cd52b326941e5435a98d368fe54e599dcb21fa8350",
+   "bytes": 38882
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/scripts/judge_e6b.py",
+   "sha256": "1f064b8ac38304e7949ac4eeeae194860fa8f6095887d5c5f0f4369b2f2ac12e",
+   "bytes": 26279
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/PLAN.md",
+   "sha256": "1165041dba74409cc66a00a0359d934cb69cf038d3f08f21b72d05766f1ce372",
+   "bytes": 16323
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/e6a_result.json",
+   "sha256": "573cf4f4b6b67d9ea77a33ad76a16d86794f01d47ce2b4be9c29cc098bd6a4a6",
+   "bytes": 5351
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L3.vtu",
+   "sha256": "5820d1d27443c0862df3b14634aa0fa8753f20895e2204a650256e98862a1734",
+   "bytes": 864703
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L3.npz",
+   "sha256": "d61a1555b3daf5aa597dc02f4aa71e454c5adaeb3d08766964f93f269d4b24bf",
+   "bytes": 1335442
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L4.vtu",
+   "sha256": "85ebcbaed085b07c1dc96e407faf3252a6dbbb9d9a428660ab979d1d1c421297",
+   "bytes": 2413965
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L4.npz",
+   "sha256": "d274564968f2de0501fb932c474e127d0ae1d38878d66361b3e93add87ece9d4",
+   "bytes": 3839613
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.vtu",
+   "sha256": "907f688e71af3bc0ebd15ea20bfbcd9fec5e9ade1d867e50f0b24da6c48e8c70",
+   "bytes": 8562425
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.npz",
+   "sha256": "7d56a93b2dd96e938eab059dbf1e3db605b8371a772e7f8061bc20b293b795ee",
+   "bytes": 13765907
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/data/remote_run_36527372624/outputs/e6b_out/level_L3_state_P.npz",
+   "sha256": "3c6142d70d8af6893c14eec85f47b86761609acf5d751d0c4c616aadfef120d8",
+   "bytes": 282142
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/data/remote_run_36527372624/outputs/e6b_out/level_L4_state_P.npz",
+   "sha256": "54b4987fb1f9637b64d8b2fa8278597b33bebbc3f564e58cdb8d36c542b97971",
+   "bytes": 693017
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6b-poisson-junction-refinement/data/remote_run_36527372624/outputs/e6b_out/level_L5_state_P.npz",
+   "sha256": "be34ae4a98ceae8b6c9207437df0a66e402fd51ddcc0a38e6139e6b330803d28",
+   "bytes": 3368332
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
+   "sha256": "1de514d5462281a8c09b4029ce60a7f565f12e55c6c05b50c1406ae27fddde7a",
+   "bytes": 2905
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "c907e6e7a086bfc6767f1cb23468625896fac47986dbd01f145766c2793cd62d",
+   "bytes": 59336
+  },
+  {
+   "path": "tcad/device/devsim/semiconductor_equation.py",
+   "sha256": "3de029f1bb9be99490721da0ec1dd8d9f2b055f8e93be8d046d957bb05df3370",
+   "bytes": 7129
+  },
+  {
+   "path": "tcad/mesh/viennaps_adapter.py",
+   "sha256": "b1a7eb5ae219a794e8a807c169621331a03e08dcae5240fd3428421342f2b8eb",
+   "bytes": 3680
+  }
+ ],
+ "request_sha256": "e3b5aaf340c8cbf7ad83754971f30ee52328a851bdb7ac4d004d5e0da88b2f55",
+ "source": {
+  "github_sha": "a7a1333a9bbb05245a72761914ca63645aa2affb",
+  "git_head": "a7a1333a9bbb05245a72761914ca63645aa2affb",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36529279171",
+  "run_number": "13",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": true,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-29-batch7h-e6c-initialization-robustness/scripts/run_e6c.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-29T06:07:10.996010+00:00",
+ "duration_s": 79.718,
+ "outputs": [
+  {
+   "path": "e6c_out/e6c_result.json",
+   "bytes": 26210,
+   "sha256": "17698a6afb36bb83828b50741484ebbd65a359d692c7910dc16ad72c1c95a41f"
+  },
+  {
+   "path": "e6c_out/run_L3_P.json",
+   "bytes": 9906,
+   "sha256": "f474c64fa2f170a8f9e72e8cef842a4b852a42e72d31becc494d87107c466a50"
+  },
+  {
+   "path": "e6c_out/run_L3_Q.json",
+   "bytes": 9248,
+   "sha256": "a724941962b4b27dbf36ba3c90764d43bdbcd6b11b4d3c6f114b9afada554145"
+  },
+  {
+   "path": "e6c_out/run_L4_P.json",
+   "bytes": 9902,
+   "sha256": "28b251d333081af349defef29c96a7769dc803c9b97e6e1bb25034ea119a017f"
+  },
+  {
+   "path": "e6c_out/run_L4_Q.json",
+   "bytes": 9255,
+   "sha256": "05e796c37c9f7245307769b3c33e9030a07e77ca714d28806f32a9336777d90f"
+  },
+  {
+   "path": "e6c_out/run_L5_P.json",
+   "bytes": 9878,
+   "sha256": "caca0fa5a268fed8947b723dad513b725f8bad2779e9612c17f8a56b76e7db1c"
+  },
+  {
+   "path": "e6c_out/run_L5_Q.json",
+   "bytes": 9255,
+   "sha256": "2de4d1bc231a74e8346a901d16dc450b5f2fd9c066058029c4fa72cc2d4d8cdc"
+  },
+  {
+   "path": "e6c_out/run_L3_P_final.npz",
+   "bytes": 282142,
+   "sha256": "3c6142d70d8af6893c14eec85f47b86761609acf5d751d0c4c616aadfef120d8"
+  },
+  {
+   "path": "e6c_out/run_L3_P_init.npz",
+   "bytes": 838,
+   "sha256": "eb39b63ace1ef3922e78c14b669a6b46d6d392ead59d23be33300ee3a1605277"
+  },
+  {
+   "path": "e6c_out/run_L3_Q_final.npz",
+   "bytes": 293468,
+   "sha256": "ea8a16eef8903ef183f7c2dc2447b3c25a8c41d55909ec728dc0b6ce870f7d52"
+  },
+  {
+   "path": "e6c_out/run_L3_Q_init.npz",
+   "bytes": 4270,
+   "sha256": "4df6d9f0871925a74a1dcf65369ab9ecde82734bbc058f6ab1845ecbbef36e5c"
+  },
+  {
+   "path": "e6c_out/run_L4_P_final.npz",
+   "bytes": 693017,
+   "sha256": "54b4987fb1f9637b64d8b2fa8278597b33bebbc3f564e58cdb8d36c542b97971"
+  },
+  {
+   "path": "e6c_out/run_L4_P_init.npz",
+   "bytes": 1458,
+   "sha256": "8a04d6eb355df5c5a017462eb32dd9bd0d7abefb0ab23d13c31adecaa5c259a0"
+  },
+  {
+   "path": "e6c_out/run_L4_Q_final.npz",
+   "bytes": 728469,
+   "sha256": "08845b2e86f829f2a8cfab306cec864ef2a8b81c27e2c7c23443b601798a0097"
+  },
+  {
+   "path": "e6c_out/run_L4_Q_init.npz",
+   "bytes": 9710,
+   "sha256": "6747fc2a69ba7f0fb7e5dd5b1a3ba1a34b18015b7411b744f2e9af3f57691c17"
+  },
+  {
+   "path": "e6c_out/run_L5_P_final.npz",
+   "bytes": 3368332,
+   "sha256": "be34ae4a98ceae8b6c9207437df0a66e402fd51ddcc0a38e6139e6b330803d28"
+  },
+  {
+   "path": "e6c_out/run_L5_P_init.npz",
+   "bytes": 3890,
+   "sha256": "10315f74499e0b0f0c7822879728eed4d4cb1841167e78722a538acb12cdd75a"
+  },
+  {
+   "path": "e6c_out/run_L5_Q_final.npz",
+   "bytes": 3445968,
+   "sha256": "35d408066a50dd184e0c3853a9df6d33cda0d7c1ec1fde7359741dae22af1c6d"
+  },
+  {
+   "path": "e6c_out/run_L5_Q_init.npz",
+   "bytes": 37002,
+   "sha256": "b7b45087a5cf2e9496089df0454933ef26e22cebc5cad827e7d789d860d4776a"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile. Every run is imported fresh in its own process; E6A / E6B inputs are hash-gated.",
+ "log": {
+  "file": "run.log",
+  "sha256": "d3951ef6957bab6e1c1fc35c0adc568ddfffb65f9496109eb7fc51dfb3cd307b",
+  "bytes": 19024
+ },
+ "redactions": {}
+}

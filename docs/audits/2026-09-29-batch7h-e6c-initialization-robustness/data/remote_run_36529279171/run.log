@@ -1,0 +1,356 @@
+[e6c] envelopes: {'L3': {'memory_bytes': 2524672000, 'time_s': 31.767708308932043}, 'L4': {'memory_bytes': 3075436544, 'time_s': 84.7}, 'L5': {'memory_bytes': 5261787136, 'time_s': 292.1500862829613}}
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 95400 Triangles.
+Physical group name Si has 143432 Lines.
+Physical group name Si has 48033 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6c_L3_P_device has 48033 coordinates with max index 48032
+Region Si has 48033 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 48033
+Iteration: 0
+  Device: "e6c_L3_P_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e6c_L3_P_device"	RelError: 4.85622e-01	AbsError: 1.90981e-01
+    Region: "Si"	RelError: 4.85622e-01	AbsError: 1.90981e-01
+      Equation: "PotentialEquation"	RelError: 4.85622e-01	AbsError: 1.90981e-01
+Iteration: 2
+  Device: "e6c_L3_P_device"	RelError: 3.11888e-01	AbsError: 7.82771e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 7.82771e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 7.82771e-02
+Iteration: 3
+  Device: "e6c_L3_P_device"	RelError: 2.22707e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 2.22707e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 2.22707e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e6c_L3_P_device"	RelError: 1.66626e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 1.66626e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 1.66626e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e6c_L3_P_device"	RelError: 1.26192e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.26192e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.26192e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e6c_L3_P_device"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e6c_L3_P_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e6c_L3_P_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e6c_L3_P_device"	RelError: 3.93238e-07	AbsError: 6.25969e-17
+    Region: "Si"	RelError: 3.93238e-07	AbsError: 6.25969e-17
+      Equation: "PotentialEquation"	RelError: 3.93238e-07	AbsError: 6.25969e-17
+[e6c      3.2s] L3-P converged=True iterations=10 rel=3.9323820925690584e-07
+[e6c      3.2s] run_L3_P.json: status=OK solve_count=1 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 95400 Triangles.
+Physical group name Si has 143432 Lines.
+Physical group name Si has 48033 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6c_L3_Q_device has 48033 coordinates with max index 48032
+Region Si has 48033 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 48033
+Iteration: 0
+  Device: "e6c_L3_Q_device"	RelError: 9.96299e-01	AbsError: 2.79794e-01
+    Region: "Si"	RelError: 9.96299e-01	AbsError: 2.79794e-01
+      Equation: "PotentialEquation"	RelError: 9.96299e-01	AbsError: 2.79794e-01
+Iteration: 1
+  Device: "e6c_L3_Q_device"	RelError: 4.25061e-01	AbsError: 1.83548e-01
+    Region: "Si"	RelError: 4.25061e-01	AbsError: 1.83548e-01
+      Equation: "PotentialEquation"	RelError: 4.25061e-01	AbsError: 1.83548e-01
+Iteration: 2
+  Device: "e6c_L3_Q_device"	RelError: 1.95413e-01	AbsError: 8.76598e-02
+    Region: "Si"	RelError: 1.95413e-01	AbsError: 8.76598e-02
+      Equation: "PotentialEquation"	RelError: 1.95413e-01	AbsError: 8.76598e-02
+Iteration: 3
+  Device: "e6c_L3_Q_device"	RelError: 1.44639e-01	AbsError: 3.82395e-02
+    Region: "Si"	RelError: 1.44639e-01	AbsError: 3.82395e-02
+      Equation: "PotentialEquation"	RelError: 1.44639e-01	AbsError: 3.82395e-02
+Iteration: 4
+  Device: "e6c_L3_Q_device"	RelError: 1.26804e-01	AbsError: 2.97517e-02
+    Region: "Si"	RelError: 1.26804e-01	AbsError: 2.97517e-02
+      Equation: "PotentialEquation"	RelError: 1.26804e-01	AbsError: 2.97517e-02
+Iteration: 5
+  Device: "e6c_L3_Q_device"	RelError: 8.35767e-02	AbsError: 1.80968e-02
+    Region: "Si"	RelError: 8.35767e-02	AbsError: 1.80968e-02
+      Equation: "PotentialEquation"	RelError: 8.35767e-02	AbsError: 1.80968e-02
+Iteration: 6
+  Device: "e6c_L3_Q_device"	RelError: 3.88361e-02	AbsError: 8.09479e-03
+    Region: "Si"	RelError: 3.88361e-02	AbsError: 8.09479e-03
+      Equation: "PotentialEquation"	RelError: 3.88361e-02	AbsError: 8.09479e-03
+Iteration: 7
+  Device: "e6c_L3_Q_device"	RelError: 5.56908e-07	AbsError: 8.86763e-08
+    Region: "Si"	RelError: 5.56908e-07	AbsError: 8.86763e-08
+      Equation: "PotentialEquation"	RelError: 5.56908e-07	AbsError: 8.86763e-08
+[e6c      2.6s] L3-Q converged=True iterations=8 rel=5.569076759230807e-07
+[e6c      2.6s] run_L3_Q.json: status=OK solve_count=1 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 255400 Triangles.
+Physical group name Si has 383466 Lines.
+Physical group name Si has 128067 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6c_L4_P_device has 128067 coordinates with max index 128066
+Region Si has 128067 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 128067
+Iteration: 0
+  Device: "e6c_L4_P_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e6c_L4_P_device"	RelError: 1.08651e+00	AbsError: 1.90981e-01
+    Region: "Si"	RelError: 1.08651e+00	AbsError: 1.90981e-01
+      Equation: "PotentialEquation"	RelError: 1.08651e+00	AbsError: 1.90981e-01
+Iteration: 2
+  Device: "e6c_L4_P_device"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 7.82729e-02
+Iteration: 3
+  Device: "e6c_L4_P_device"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 2.36931e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e6c_L4_P_device"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 2.20102e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e6c_L4_P_device"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 1.59661e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e6c_L4_P_device"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 9.35477e-02	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e6c_L4_P_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e6c_L4_P_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e6c_L4_P_device"	RelError: 2.41211e-07	AbsError: 5.31442e-17
+    Region: "Si"	RelError: 2.41211e-07	AbsError: 5.31442e-17
+      Equation: "PotentialEquation"	RelError: 2.41211e-07	AbsError: 5.31442e-17
+[e6c      8.0s] L4-P converged=True iterations=10 rel=2.4121050925036766e-07
+[e6c      8.1s] run_L4_P.json: status=OK solve_count=1 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 255400 Triangles.
+Physical group name Si has 383466 Lines.
+Physical group name Si has 128067 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6c_L4_Q_device has 128067 coordinates with max index 128066
+Region Si has 128067 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 128067
+Iteration: 0
+  Device: "e6c_L4_Q_device"	RelError: 9.97914e-01	AbsError: 2.79794e-01
+    Region: "Si"	RelError: 9.97914e-01	AbsError: 2.79794e-01
+      Equation: "PotentialEquation"	RelError: 9.97914e-01	AbsError: 2.79794e-01
+Iteration: 1
+  Device: "e6c_L4_Q_device"	RelError: 4.25063e-01	AbsError: 1.83548e-01
+    Region: "Si"	RelError: 4.25063e-01	AbsError: 1.83548e-01
+      Equation: "PotentialEquation"	RelError: 4.25063e-01	AbsError: 1.83548e-01
+Iteration: 2
+  Device: "e6c_L4_Q_device"	RelError: 1.95476e-01	AbsError: 8.77844e-02
+    Region: "Si"	RelError: 1.95476e-01	AbsError: 8.77844e-02
+      Equation: "PotentialEquation"	RelError: 1.95476e-01	AbsError: 8.77844e-02
+Iteration: 3
+  Device: "e6c_L4_Q_device"	RelError: 2.32395e-01	AbsError: 3.83315e-02
+    Region: "Si"	RelError: 2.32395e-01	AbsError: 3.83315e-02
+      Equation: "PotentialEquation"	RelError: 2.32395e-01	AbsError: 3.83315e-02
+Iteration: 4
+  Device: "e6c_L4_Q_device"	RelError: 2.10855e-01	AbsError: 2.98042e-02
+    Region: "Si"	RelError: 2.10855e-01	AbsError: 2.98042e-02
+      Equation: "PotentialEquation"	RelError: 2.10855e-01	AbsError: 2.98042e-02
+Iteration: 5
+  Device: "e6c_L4_Q_device"	RelError: 2.13150e-01	AbsError: 2.38541e-02
+    Region: "Si"	RelError: 2.13150e-01	AbsError: 2.38541e-02
+      Equation: "PotentialEquation"	RelError: 2.13150e-01	AbsError: 2.38541e-02
+Iteration: 6
+  Device: "e6c_L4_Q_device"	RelError: 3.96326e-02	AbsError: 8.24021e-03
+    Region: "Si"	RelError: 3.96326e-02	AbsError: 8.24021e-03
+      Equation: "PotentialEquation"	RelError: 3.96326e-02	AbsError: 8.24021e-03
+Iteration: 7
+  Device: "e6c_L4_Q_device"	RelError: 3.13076e-07	AbsError: 4.52842e-08
+    Region: "Si"	RelError: 3.13076e-07	AbsError: 4.52842e-08
+      Equation: "PotentialEquation"	RelError: 3.13076e-07	AbsError: 4.52842e-08
+[e6c      8.0s] L4-Q converged=True iterations=8 rel=3.1307551498084703e-07
+[e6c      8.1s] run_L4_Q.json: status=OK solve_count=1 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 882600 Triangles.
+Physical group name Si has 1324332 Lines.
+Physical group name Si has 441733 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6c_L5_P_device has 441733 coordinates with max index 441732
+Region Si has 441733 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 441733
+Iteration: 0
+  Device: "e6c_L5_P_device"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.15599e-01
+Iteration: 1
+  Device: "e6c_L5_P_device"	RelError: 1.09095e+00	AbsError: 1.90981e-01
+    Region: "Si"	RelError: 1.09095e+00	AbsError: 1.90981e-01
+      Equation: "PotentialEquation"	RelError: 1.09095e+00	AbsError: 1.90981e-01
+Iteration: 2
+  Device: "e6c_L5_P_device"	RelError: 3.11888e-01	AbsError: 7.82718e-02
+    Region: "Si"	RelError: 3.11888e-01	AbsError: 7.82718e-02
+      Equation: "PotentialEquation"	RelError: 3.11888e-01	AbsError: 7.82718e-02
+Iteration: 3
+  Device: "e6c_L5_P_device"	RelError: 3.42305e-01	AbsError: 6.21812e-02
+    Region: "Si"	RelError: 3.42305e-01	AbsError: 6.21812e-02
+      Equation: "PotentialEquation"	RelError: 3.42305e-01	AbsError: 6.21812e-02
+Iteration: 4
+  Device: "e6c_L5_P_device"	RelError: 3.59989e-01	AbsError: 5.58250e-02
+    Region: "Si"	RelError: 3.59989e-01	AbsError: 5.58250e-02
+      Equation: "PotentialEquation"	RelError: 3.59989e-01	AbsError: 5.58250e-02
+Iteration: 5
+  Device: "e6c_L5_P_device"	RelError: 3.07744e-01	AbsError: 4.83838e-02
+    Region: "Si"	RelError: 3.07744e-01	AbsError: 4.83838e-02
+      Equation: "PotentialEquation"	RelError: 3.07744e-01	AbsError: 4.83838e-02
+Iteration: 6
+  Device: "e6c_L5_P_device"	RelError: 2.07884e-01	AbsError: 3.95692e-02
+    Region: "Si"	RelError: 2.07884e-01	AbsError: 3.95692e-02
+      Equation: "PotentialEquation"	RelError: 2.07884e-01	AbsError: 3.95692e-02
+Iteration: 7
+  Device: "e6c_L5_P_device"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+    Region: "Si"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+      Equation: "PotentialEquation"	RelError: 6.44444e-02	AbsError: 2.91367e-02
+Iteration: 8
+  Device: "e6c_L5_P_device"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+    Region: "Si"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+      Equation: "PotentialEquation"	RelError: 5.18778e-02	AbsError: 2.47384e-02
+Iteration: 9
+  Device: "e6c_L5_P_device"	RelError: 3.88930e-07	AbsError: 6.72536e-17
+    Region: "Si"	RelError: 3.88930e-07	AbsError: 6.72536e-17
+      Equation: "PotentialEquation"	RelError: 3.88930e-07	AbsError: 6.72536e-17
+[e6c     28.5s] L5-P converged=True iterations=10 rel=3.8892979893818e-07
+[e6c     28.7s] run_L5_P.json: status=OK solve_count=1 devices_left=[]
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 882600 Triangles.
+Physical group name Si has 1324332 Lines.
+Physical group name Si has 441733 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6c_L5_Q_device has 441733 coordinates with max index 441732
+Region Si has 441733 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+Creating Node Solution Potential
+number of equations 441733
+Iteration: 0
+  Device: "e6c_L5_Q_device"	RelError: 9.98807e-01	AbsError: 2.79794e-01
+    Region: "Si"	RelError: 9.98807e-01	AbsError: 2.79794e-01
+      Equation: "PotentialEquation"	RelError: 9.98807e-01	AbsError: 2.79794e-01
+Iteration: 1
+  Device: "e6c_L5_Q_device"	RelError: 4.25063e-01	AbsError: 1.83548e-01
+    Region: "Si"	RelError: 4.25063e-01	AbsError: 1.83548e-01
+      Equation: "PotentialEquation"	RelError: 4.25063e-01	AbsError: 1.83548e-01
+Iteration: 2
+  Device: "e6c_L5_Q_device"	RelError: 2.75207e-01	AbsError: 8.77825e-02
+    Region: "Si"	RelError: 2.75207e-01	AbsError: 8.77825e-02
+      Equation: "PotentialEquation"	RelError: 2.75207e-01	AbsError: 8.77825e-02
+Iteration: 3
+  Device: "e6c_L5_Q_device"	RelError: 3.48896e-01	AbsError: 3.94894e-02
+    Region: "Si"	RelError: 3.48896e-01	AbsError: 3.94894e-02
+      Equation: "PotentialEquation"	RelError: 3.48896e-01	AbsError: 3.94894e-02
+Iteration: 4
+  Device: "e6c_L5_Q_device"	RelError: 3.53567e-01	AbsError: 2.98475e-02
+    Region: "Si"	RelError: 3.53567e-01	AbsError: 2.98475e-02
+      Equation: "PotentialEquation"	RelError: 3.53567e-01	AbsError: 2.98475e-02
+Iteration: 5
+  Device: "e6c_L5_Q_device"	RelError: 4.43916e-01	AbsError: 2.57077e-02
+    Region: "Si"	RelError: 4.43916e-01	AbsError: 2.57077e-02
+      Equation: "PotentialEquation"	RelError: 4.43916e-01	AbsError: 2.57077e-02
+Iteration: 6
+  Device: "e6c_L5_Q_device"	RelError: 4.98430e-02	AbsError: 8.26114e-03
+    Region: "Si"	RelError: 4.98430e-02	AbsError: 8.26114e-03
+      Equation: "PotentialEquation"	RelError: 4.98430e-02	AbsError: 8.26114e-03
+Iteration: 7
+  Device: "e6c_L5_Q_device"	RelError: 5.12491e-07	AbsError: 2.53889e-08
+    Region: "Si"	RelError: 5.12491e-07	AbsError: 2.53889e-08
+      Equation: "PotentialEquation"	RelError: 5.12491e-07	AbsError: 2.53889e-08
+[e6c     25.9s] L5-Q converged=True iterations=8 rel=5.124910204580495e-07
+[e6c     26.2s] run_L5_Q.json: status=OK solve_count=1 devices_left=[]
+
+[e6c] verdict {'overall': 'INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY', 'maximum_possible': 'INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY', 'note': 'observed initialization sensitivity vs local junction-refinement change of the 0 V Poisson potential / fixed-width field only; not a solver-error bound, not 2D continuum convergence, not current accuracy, not DD, not biased I-V, not production step-junction support. Reaching the same solution from two initial states is not evidence that the solution is physically accurate.'} solve_calls=6
