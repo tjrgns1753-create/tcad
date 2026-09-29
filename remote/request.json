@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6c-initialization-robustness-001",
- "profile": "e6c_initialization_robustness",
+ "request_id": "e6d-noncore-refinement-001",
+ "profile": "e6d_noncore_refinement",
  "params": {},
- "note": "Batch 7H-E6C. PLAN fixed alone in commit 9851fdf7b9a719ff8818922036c77ad0af468815 (PLAN.md LF sha256 3c91c361...) before this code and request. At most 6 devsim.solve calls."
+ "note": "Batch 7H-E6D. PLAN fixed alone in commit 44c426b (PLAN.md LF sha256 fb389c5d...) before this code and request. At most 4 devsim.solve calls; mesh stages make none."
 }
