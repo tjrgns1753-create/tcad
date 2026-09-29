@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6b-poisson-junction-refinement-001",
- "profile": "e6b_poisson_junction_refinement",
+ "request_id": "e6c-initialization-robustness-001",
+ "profile": "e6c_initialization_robustness",
  "params": {},
- "note": "Batch 7H-E6B. PLAN Rev.3 fixed alone in commit f929a14c7d1ef3fc32093ceb4fe0881dcae9b588 (PLAN.md LF sha256 6a8d674e...) before this code and request. At most 10 devsim.solve calls."
+ "note": "Batch 7H-E6C. PLAN fixed alone in commit 9851fdf7b9a719ff8818922036c77ad0af468815 (PLAN.md LF sha256 3c91c361...) before this code and request. At most 6 devsim.solve calls."
 }
