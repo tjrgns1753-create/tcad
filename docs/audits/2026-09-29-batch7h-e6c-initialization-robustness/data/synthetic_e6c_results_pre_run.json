@@ -1,0 +1,247 @@
+{
+ "rows": [
+  {
+   "case": "1 all P/Q converge, clear decrease",
+   "inputs": "eps 3e-3,1e-3,8e-4; A ~ 1e-9",
+   "expected": "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY, four metrics robust",
+   "actual": [
+    "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY",
+    [
+     "INITIALIZATION_ROBUST_DECREASE_OBSERVED",
+     "INITIALIZATION_ROBUST_DECREASE_OBSERVED",
+     "INITIALIZATION_ROBUST_DECREASE_OBSERVED",
+     "INITIALIZATION_ROBUST_DECREASE_OBSERVED"
+    ]
+   ],
+   "ok": true
+  },
+  {
+   "case": "2 L4-Q not converged, Q arrays == P arrays",
+   "inputs": "L4-Q converged=False; A4 would be exactly 0",
+   "expected": "POISSON_NOT_CONVERGED; A4 None (not promoted to 0); metrics NOT_CLASSIFIED",
+   "actual": [
+    "POISSON_NOT_CONVERGED",
+    null,
+    "NOT_CLASSIFIED"
+   ],
+   "ok": true
+  },
+  {
+   "case": "2b L3-P missing",
+   "inputs": "solve record missing",
+   "expected": "POISSON_NOT_CONVERGED",
+   "actual": "POISSON_NOT_CONVERGED",
+   "ok": true
+  },
+  {
+   "case": "2b L3-P exception",
+   "inputs": "solve record exception",
+   "expected": "POISSON_NOT_CONVERGED",
+   "actual": "POISSON_NOT_CONVERGED",
+   "ok": true
+  },
+  {
+   "case": "2c A = 0 with all solves converged",
+   "inputs": "Q == P bitwise, all converged, initialization contract fine",
+   "expected": "A reported as 0.0 (an observed difference), verdict decided by the inequalities, not treated as invalid",
+   "actual": [
+    0.0,
+    "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY"
+   ],
+   "ok": true
+  },
+  {
+   "case": "3 ineq 1,2 true, ineq 3 false",
+   "inputs": "ineq True,True,False; lhs3=1.000e-07 rhs3=4.000e-06",
+   "expected": "NO_REFINEMENT_TREND, overall INCONCLUSIVE",
+   "actual": [
+    "NO_REFINEMENT_TREND",
+    "INCONCLUSIVE"
+   ],
+   "ok": true
+  },
+  {
+   "case": "4a reversed level pair",
+   "inputs": "pair_diff (4,3),(5,4),(3,5)",
+   "expected": "PairIndexError x3",
+   "actual": [
+    true,
+    true,
+    true
+   ],
+   "ok": true
+  },
+  {
+   "case": "4b increasing changes (the pairs read in the wrong direction) are not a trend",
+   "inputs": "D34 tiny, D45 large",
+   "expected": "NO_REFINEMENT_TREND, overall INCONCLUSIVE",
+   "actual": [
+    "NO_REFINEMENT_TREND",
+    "INCONCLUSIVE"
+   ],
+   "ok": true
+  },
+  {
+   "case": "5a input sha / review-sha mismatch",
+   "inputs": "input_identity_ok False",
+   "expected": "INPUT_IDENTITY_FAIL",
+   "actual": "INPUT_IDENTITY_FAIL",
+   "ok": true
+  },
+  {
+   "case": "5b driver input hash",
+   "inputs": "text file edited after pinning (CRLF normalised)",
+   "expected": "hash differs",
+   "actual": true,
+   "ok": true
+  },
+  {
+   "case": "5c identity checks catch each tampering",
+   "inputs": "clean / one element replaced by a copy (count unchanged) / one NodeVolume +1 ulp / one contact node missing / doping x=0 wrong",
+   "expected": "ok True / False / False / False / doping False",
+   "actual": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ],
+   "ok": true
+  },
+  {
+   "case": "5d a level failing import identity",
+   "inputs": "L4-Q status IMPORT_IDENTITY_FAIL",
+   "expected": "IMPORT_IDENTITY_FAIL (no solve was made)",
+   "actual": "IMPORT_IDENTITY_FAIL",
+   "ok": true
+  },
+  {
+   "case": "6a initialization contract",
+   "inputs": "readback equal / one node 1 ulp off / Q identical to the default initial array",
+   "expected": "contract_ok True / False / False",
+   "actual": [
+    true,
+    false,
+    false
+   ],
+   "ok": true
+  },
+  {
+   "case": "6b affine endpoints",
+   "inputs": "V_left, V_right from the contact formula; x_min / x_max nodes",
+   "expected": "first node = V_left, last node = V_right (to rounding of the interpolation)",
+   "actual": [
+    -0.47685971991266357,
+    0.47685971991266357,
+    -0.47685971991266357,
+    0.47685971991266357
+   ],
+   "ok": true
+  },
+  {
+   "case": "7a non-finite Q potential",
+   "inputs": "one NaN in L4-Q, consistency flag False",
+   "expected": "CONSISTENCY_FAIL, A4 None, no numeric 0",
+   "actual": [
+    "CONSISTENCY_FAIL",
+    null
+   ],
+   "ok": true
+  },
+  {
+   "case": "7b NaN array with an optimistic flag",
+   "inputs": "NaN in L4-Q, consistency flag True",
+   "expected": "A4 None (never a number), overall not a trend",
+   "actual": [
+    null,
+    "INCONCLUSIVE"
+   ],
+   "ok": true
+  },
+  {
+   "case": "7c empty core",
+   "inputs": "no node with |x| <= 0.1 um",
+   "expected": "CONSISTENCY_FAIL, D34 absent (no number, no PASS)",
+   "actual": [
+    "CONSISTENCY_FAIL",
+    false
+   ],
+   "ok": true
+  },
+  {
+   "case": "9a fake artifacts, clean",
+   "inputs": "six fake runs, Q shift 1e-9, real L3/L4/L5 geometry",
+   "expected": "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY, no artifact problem, reproducibility diagnostic bit-equal",
+   "actual": [
+    "INITIALIZATION_ROBUST_LOCAL_REFINEMENT_TREND_ONLY",
+    [],
+    {
+     "L3": true,
+     "L4": true,
+     "L5": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "8a P/Q snapshots mixed",
+   "inputs": "run_L4_Q_final.npz := run_L4_P_final.npz",
+   "expected": "ARTIFACT_INCOMPLETE, metrics NOT_CLASSIFIED",
+   "actual": [
+    "ARTIFACT_INCOMPLETE",
+    [
+     "L4-Q: npz snapshot_call_id 'L4-P'",
+     "L4-Q: sha256 mismatch for Potential"
+    ]
+   ],
+   "ok": true
+  },
+  {
+   "case": "8b P and Q in the same process",
+   "inputs": "process_id equal for P and Q",
+   "expected": "ARTIFACT_INCOMPLETE",
+   "actual": [
+    "ARTIFACT_INCOMPLETE",
+    [
+     "L3: P and Q ran in the same process"
+    ]
+   ],
+   "ok": true
+  },
+  {
+   "case": "8c more than one solve in a run",
+   "inputs": "solve_count 2 for Q",
+   "expected": "ARTIFACT_INCOMPLETE",
+   "actual": [
+    "ARTIFACT_INCOMPLETE",
+    [
+     "L3-Q: solve_count 2 != 1"
+    ]
+   ],
+   "ok": true
+  },
+  {
+   "case": "6c saved Q initial Potential tampered",
+   "inputs": "run_L5_Q_init.npz altered after hashing",
+   "expected": "ARTIFACT_INCOMPLETE (init sha256 mismatch) before any judgement",
+   "actual": [
+    "ARTIFACT_INCOMPLETE",
+    [
+     "L5-Q: init npz sha256 mismatch"
+    ]
+   ],
+   "ok": true
+  },
+  {
+   "case": "6d saved Q initial array differs from the intended affine array (hash-consistent)",
+   "inputs": "recorded V_left/V_right vs saved initial array",
+   "expected": "INITIALIZATION_CONTRACT_FAIL",
+   "actual": [
+    "INITIALIZATION_CONTRACT_FAIL",
+    []
+   ],
+   "ok": true
+  }
+ ],
+ "ALL_OK": true
+}
