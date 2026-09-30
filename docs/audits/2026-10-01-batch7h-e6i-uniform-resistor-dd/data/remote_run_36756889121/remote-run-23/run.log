@@ -1,0 +1,66 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6i] test_resistor_dd_judge_mock rc=0 wall=0.1s
+RESISTOR JUDGE TESTS PASSED (NaN / inf / None / str, sign, each criterion)
+
+[e6i] test_uniform_resistor_dd_current_real rc=0 wall=6.9s
+
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+    Region: "Si"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.20000e-15	AbsError: 2.20000e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.17384e-15	AbsError: 2.17384e-11
+      Equation: "PotentialEquation"	RelError: 1.55213e-16	AbsError: 5.55112e-17
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.78827e-03	AbsError: 7.52390e-02
+    Region: "Si"	RelError: 2.78827e-03	AbsError: 7.52390e-02
+      Equation: "ElectronContinuityEquation"	RelError: 7.42390e-18	AbsError: 7.42390e-02
+      Equation: "HoleContinuityEquation"	RelError: 1.02846e-16	AbsError: 1.02846e-12
+      Equation: "PotentialEquation"	RelError: 2.78827e-03	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 2.59423e-16	AbsError: 3.71758e-04
+    Region: "Si"	RelError: 2.59423e-16	AbsError: 3.71758e-04
+      Equation: "ElectronContinuityEquation"	RelError: 3.71758e-20	AbsError: 3.71758e-04
+      Equation: "HoleContinuityEquation"	RelError: 1.81854e-16	AbsError: 1.81854e-12
+      Equation: "PotentialEquation"	RelError: 7.75323e-17	AbsError: 2.77484e-17
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+theory: {"n0": 1.000000000001e+16, "p0": 9999.99999999, "sigma_S_per_cm": 0.6400000000009599, "G_A_per_V_per_cm_depth": 0.16000000000023998, "I_ref": 0.00016000000000023997}
+judge failed checks: []
+input failed: [] gui failed: []
+UNIFORM RESISTOR DD CURRENT PASSED
+

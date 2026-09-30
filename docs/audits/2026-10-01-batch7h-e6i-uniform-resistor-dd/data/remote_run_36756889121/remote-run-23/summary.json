@@ -1,0 +1,148 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T18:13:17.419382+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6i-uniform-resistor-dd-002",
+  "profile": "e6i_uniform_resistor_dd",
+  "params": {},
+  "note": "Batch 7H-E6I. Criteria fixed in 33c249a. Rerun after a judge false-FAIL (criterion 1 included string metadata) was fixed; run 1 (36756642576) kept. Uniform ACTIVE Si resistor, low-field DD current on E6H transition meshes, GUI connection. No full regression, no PN/DC sweep."
+ },
+ "profile": "e6i_uniform_resistor_dd",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/CRITERIA.md",
+   "sha256": "8e970b202656bc279a6124c09940b31987d174bfd389dcc36689beb57d06b58c",
+   "bytes": 9164
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/run_e6i.py",
+   "sha256": "229cbec92f5e731384583aca8cefb33802a88b911fb1f832a01a287d3cadbd79",
+   "bytes": 3407
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/resistor_judge.py",
+   "sha256": "8281dfc69e396ccf7c40dbf3ea9bc1aacb44a6a809c1e5749d226e20ef8273d3",
+   "bytes": 5283
+  },
+  {
+   "path": "tests/unit/test_resistor_dd_judge_mock.py",
+   "sha256": "eddb1839a39bd86dbc077c66ca80af5f48329f74cd6a2397c76d586854f9263e",
+   "bytes": 4546
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "b0ad497af54a4c151ae73944d9d9a5e1bfc03b9c1d9ad367d7872b6bc13797e3",
+   "bytes": 13807
+  },
+  {
+   "path": "tests/integration/test_mesh_gate_poisson_transition_real.py",
+   "sha256": "311642d0af6311f9ddfcbbd6871330e671c8557ae2e24a55c52b26ccfd5ff6f5",
+   "bytes": 11322
+  },
+  {
+   "path": "tcad/device/devsim/semiconductor_equation.py",
+   "sha256": "3de029f1bb9be99490721da0ec1dd8d9f2b055f8e93be8d046d957bb05df3370",
+   "bytes": 7129
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "3201d3313c85711620b4e0f599e57843721f0f812a927aca46cdead01f4c2762",
+   "bytes": 5441
+  }
+ ],
+ "request_sha256": "77e27bac6096ce28ed5f548c3077f52de4ade6ea99b6caa4d95c4974676e9a5b",
+ "source": {
+  "github_sha": "942d29aacef22518741380a25ea717d7126d153d",
+  "git_head": "942d29aacef22518741380a25ea717d7126d153d",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36756889121",
+  "run_number": "23",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/run_e6i.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T18:13:26.364991+00:00",
+ "duration_s": 8.946,
+ "outputs": [
+  {
+   "path": "e6i_out/e6i_result.json",
+   "bytes": 1735,
+   "sha256": "821b6919147852c0092879761fd1ac2c50b525d285e2de53e5b87ed7bb39026a"
+  },
+  {
+   "path": "e6i_out/resistor_dd.json",
+   "bytes": 79057,
+   "sha256": "d905ad91d8e35e66ee11d0da7ae0e540f928f74f99ad2dcabc83acfd7e09c2ab"
+  },
+  {
+   "path": "e6i_out/test_resistor_dd_judge_mock.log",
+   "bytes": 75,
+   "sha256": "a68a8220364af95e426c0d702ea98bb84204bc2e1c3ad9cb61d903788cf42758"
+  },
+  {
+   "path": "e6i_out/test_uniform_resistor_dd_current_real.log",
+   "bytes": 124573,
+   "sha256": "f426f3b287c0249e75a2415e25726ccb533cbf99bc47d9603a088eaaa1c0064b"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "5e6a5b88d75113347fc1a6aaf1f86ab762b6085e4023405ec2867ad0e2865a57",
+  "bytes": 3281
+ },
+ "redactions": {}
+}

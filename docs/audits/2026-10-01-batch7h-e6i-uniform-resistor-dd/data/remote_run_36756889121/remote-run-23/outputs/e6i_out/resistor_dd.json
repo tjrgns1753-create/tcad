@@ -1,0 +1,3530 @@
+{
+ "pass": true,
+ "theory": {
+  "n0": 1.000000000001e+16,
+  "p0": 9999.99999999,
+  "sigma_S_per_cm": 0.6400000000009599,
+  "G_A_per_V_per_cm_depth": 0.16000000000023998,
+  "I_ref": 0.00016000000000023997
+ },
+ "meshes": {
+  "uniform_8": {
+   "family": "uniform",
+   "n": 8,
+   "triangles": 32,
+   "biases": {
+    "0V": {
+     "voltage": 0.0,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.46,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0,
+     "I_min_total": 0.0,
+     "Ie_max": 0.0,
+     "Ih_max": 0.0,
+     "Ie_min": 0.0,
+     "Ih_min": 0.0,
+     "finite_arrays": true,
+     "nodes": 27,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 0.0,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+1mV": {
+     "voltage": 0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0001600000000002224,
+     "I_min_total": -0.0001600000000002224,
+     "Ie_max": 0.00016000000000014242,
+     "Ih_max": 7.99999999999112e-17,
+     "Ie_min": -0.00016000000000014242,
+     "Ih_min": -7.99999999999112e-17,
+     "finite_arrays": true,
+     "nodes": 27,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "-1mV": {
+     "voltage": -0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.11,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": -0.0001600000000002224,
+     "I_min_total": 0.0001600000000002224,
+     "Ie_max": -0.00016000000000014242,
+     "Ih_max": -7.99999999999112e-17,
+     "Ie_min": 0.00016000000000014242,
+     "Ih_min": 7.99999999999112e-17,
+     "finite_arrays": true,
+     "nodes": 27,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+2mV": {
+     "voltage": 0.002,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.00032000000000051584,
+     "I_min_total": -0.0003200000000004448,
+     "Ie_max": 0.00032000000000035586,
+     "Ih_max": 1.5999999999985792e-16,
+     "Ie_min": -0.00032000000000028485,
+     "Ih_min": -1.599999999998224e-16,
+     "finite_arrays": true,
+     "nodes": 27,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 0.0,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    }
+   }
+  },
+  "one_sided_8": {
+   "family": "one_sided",
+   "n": 8,
+   "triangles": 116,
+   "biases": {
+    "0V": {
+     "voltage": 0.0,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0,
+     "I_min_total": 0.0,
+     "Ie_max": 0.0,
+     "Ih_max": 0.0,
+     "Ie_min": 0.0,
+     "Ih_min": 0.0,
+     "finite_arrays": true,
+     "nodes": 73,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 0.0,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+1mV": {
+     "voltage": 0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0001600000000002224,
+     "I_min_total": -0.0001600000000002224,
+     "Ie_max": 0.00016000000000014242,
+     "Ih_max": 7.99999999999112e-17,
+     "Ie_min": -0.00016000000000014242,
+     "Ih_min": -7.99999999999112e-17,
+     "finite_arrays": true,
+     "nodes": 73,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "-1mV": {
+     "voltage": -0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": -0.0001600000000002224,
+     "I_min_total": 0.0001600000000002224,
+     "Ie_max": -0.00016000000000014242,
+     "Ih_max": -7.99999999999112e-17,
+     "Ie_min": 0.00016000000000014242,
+     "Ih_min": 7.99999999999112e-17,
+     "finite_arrays": true,
+     "nodes": 73,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+2mV": {
+     "voltage": 0.002,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0003200000000004448,
+     "I_min_total": -0.0003200000000004981,
+     "Ie_max": 0.00032000000000028485,
+     "Ih_max": 1.599999999998224e-16,
+     "Ie_min": -0.00032000000000033813,
+     "Ih_min": -1.5999999999984902e-16,
+     "finite_arrays": true,
+     "nodes": 73,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 2.7755575615628914e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    }
+   }
+  },
+  "one_sided_16": {
+   "family": "one_sided",
+   "n": 16,
+   "triangles": 296,
+   "biases": {
+    "0V": {
+     "voltage": 0.0,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.1,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0,
+     "I_min_total": 0.0,
+     "Ie_max": 0.0,
+     "Ih_max": 0.0,
+     "Ie_min": 0.0,
+     "Ih_min": 0.0,
+     "finite_arrays": true,
+     "nodes": 173,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 0.0,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+1mV": {
+     "voltage": 0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.1,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0001600000000002934,
+     "I_min_total": -0.0001600000000002934,
+     "Ie_max": 0.0001600000000002134,
+     "Ih_max": 7.99999999999467e-17,
+     "Ie_min": -0.0001600000000002134,
+     "Ih_min": -7.99999999999467e-17,
+     "finite_arrays": true,
+     "nodes": 173,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "-1mV": {
+     "voltage": -0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.1,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": -0.0001600000000002934,
+     "I_min_total": 0.0001600000000002934,
+     "Ie_max": -0.0001600000000002134,
+     "Ih_max": -7.99999999999467e-17,
+     "Ie_min": 0.0001600000000002134,
+     "Ih_min": 7.99999999999467e-17,
+     "finite_arrays": true,
+     "nodes": 173,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+2mV": {
+     "voltage": 0.002,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.1,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0003200000000004447,
+     "I_min_total": -0.0003200000000004447,
+     "Ie_max": 0.00032000000000028474,
+     "Ih_max": 1.5999999999982235e-16,
+     "Ie_min": -0.00032000000000028474,
+     "Ih_min": -1.5999999999982235e-16,
+     "finite_arrays": true,
+     "nodes": 173,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 2.7755575615628914e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    }
+   }
+  },
+  "one_sided_32": {
+   "family": "one_sided",
+   "n": 32,
+   "triangles": 848,
+   "biases": {
+    "0V": {
+     "voltage": 0.0,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.12,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0,
+     "I_min_total": 0.0,
+     "Ie_max": 0.0,
+     "Ih_max": 0.0,
+     "Ie_min": 0.0,
+     "Ih_min": 0.0,
+     "finite_arrays": true,
+     "nodes": 469,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 0.0,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+1mV": {
+     "voltage": 0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.13,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.00016000000000015126,
+     "I_min_total": -0.00016000000000015126,
+     "Ie_max": 0.00016000000000007127,
+     "Ih_max": 7.999999999987565e-17,
+     "Ie_min": -0.00016000000000007127,
+     "Ih_min": -7.999999999987565e-17,
+     "finite_arrays": true,
+     "nodes": 469,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "-1mV": {
+     "voltage": -0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.14,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": -0.00016000000000015126,
+     "I_min_total": 0.00016000000000015126,
+     "Ie_max": -0.00016000000000007127,
+     "Ih_max": -7.999999999987565e-17,
+     "Ie_min": 0.00016000000000007127,
+     "Ih_min": 7.999999999987565e-17,
+     "finite_arrays": true,
+     "nodes": 469,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+2mV": {
+     "voltage": 0.002,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.13,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.00032000000000058674,
+     "I_min_total": -0.00032000000000058674,
+     "Ie_max": 0.00032000000000042677,
+     "Ih_max": 1.5999999999989337e-16,
+     "Ie_min": -0.00032000000000042677,
+     "Ih_min": -1.5999999999989337e-16,
+     "finite_arrays": true,
+     "nodes": 469,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 2.7755575615628914e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    }
+   }
+  },
+  "two_sided_8": {
+   "family": "two_sided",
+   "n": 8,
+   "triangles": 88,
+   "biases": {
+    "0V": {
+     "voltage": 0.0,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0,
+     "I_min_total": 0.0,
+     "Ie_max": 0.0,
+     "Ih_max": 0.0,
+     "Ie_min": 0.0,
+     "Ih_min": 0.0,
+     "finite_arrays": true,
+     "nodes": 59,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 0.0,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+1mV": {
+     "voltage": 0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0001600000000002224,
+     "I_min_total": -0.00016000000000022244,
+     "Ie_max": 0.00016000000000014242,
+     "Ih_max": 7.99999999999112e-17,
+     "Ie_min": -0.00016000000000014245,
+     "Ih_min": -7.999999999991118e-17,
+     "finite_arrays": true,
+     "nodes": 59,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "-1mV": {
+     "voltage": -0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": -0.0001600000000002224,
+     "I_min_total": 0.00016000000000022244,
+     "Ie_max": -0.00016000000000014242,
+     "Ih_max": -7.99999999999112e-17,
+     "Ie_min": 0.00016000000000014245,
+     "Ih_min": 7.999999999991118e-17,
+     "finite_arrays": true,
+     "nodes": 59,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+2mV": {
+     "voltage": 0.002,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0003200000000004448,
+     "I_min_total": -0.0003200000000004449,
+     "Ie_max": 0.00032000000000028485,
+     "Ih_max": 1.599999999998224e-16,
+     "Ie_min": -0.0003200000000002849,
+     "Ih_min": -1.5999999999982237e-16,
+     "finite_arrays": true,
+     "nodes": 59,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 2.7755575615628914e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    }
+   }
+  },
+  "two_sided_16": {
+   "family": "two_sided",
+   "n": 16,
+   "triangles": 240,
+   "biases": {
+    "0V": {
+     "voltage": 0.0,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0,
+     "I_min_total": 0.0,
+     "Ie_max": 0.0,
+     "Ih_max": 0.0,
+     "Ie_min": 0.0,
+     "Ih_min": 0.0,
+     "finite_arrays": true,
+     "nodes": 145,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 0.0,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+1mV": {
+     "voltage": 0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.1,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0001600000000002934,
+     "I_min_total": -0.00016000000000029337,
+     "Ie_max": 0.0001600000000002134,
+     "Ih_max": 7.99999999999467e-17,
+     "Ie_min": -0.00016000000000021338,
+     "Ih_min": -7.999999999994667e-17,
+     "finite_arrays": true,
+     "nodes": 145,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "-1mV": {
+     "voltage": -0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.1,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": -0.0001600000000002934,
+     "I_min_total": 0.00016000000000029337,
+     "Ie_max": -0.0001600000000002134,
+     "Ih_max": -7.99999999999467e-17,
+     "Ie_min": 0.00016000000000021338,
+     "Ih_min": 7.999999999994667e-17,
+     "finite_arrays": true,
+     "nodes": 145,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+2mV": {
+     "voltage": 0.002,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.09,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0003200000000004447,
+     "I_min_total": -0.00032000000000044466,
+     "Ie_max": 0.00032000000000028474,
+     "Ih_max": 1.5999999999982235e-16,
+     "Ie_min": -0.0003200000000002847,
+     "Ih_min": -1.5999999999982235e-16,
+     "finite_arrays": true,
+     "nodes": 145,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 2.7755575615628914e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    }
+   }
+  },
+  "two_sided_32": {
+   "family": "two_sided",
+   "n": 32,
+   "triangles": 736,
+   "biases": {
+    "0V": {
+     "voltage": 0.0,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.12,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.0,
+     "I_min_total": 0.0,
+     "Ie_max": 0.0,
+     "Ih_max": 0.0,
+     "Ie_min": 0.0,
+     "Ih_min": 0.0,
+     "finite_arrays": true,
+     "nodes": 413,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 0.0,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+1mV": {
+     "voltage": 0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.13,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.00016000000000015126,
+     "I_min_total": -0.00016000000000015129,
+     "Ie_max": 0.00016000000000007127,
+     "Ih_max": 7.999999999987565e-17,
+     "Ie_min": -0.0001600000000000713,
+     "Ih_min": -7.999999999987561e-17,
+     "finite_arrays": true,
+     "nodes": 413,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "-1mV": {
+     "voltage": -0.001,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.12,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": -0.00016000000000015126,
+     "I_min_total": 0.00016000000000015129,
+     "Ie_max": -0.00016000000000007127,
+     "Ih_max": -7.999999999987565e-17,
+     "Ie_min": 0.0001600000000000713,
+     "Ih_min": 7.999999999987561e-17,
+     "finite_arrays": true,
+     "nodes": 413,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 5.551115123125783e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    },
+    "+2mV": {
+     "voltage": 0.002,
+     "contacts": [
+      "Si_xmin",
+      "Si_xmax"
+     ],
+     "solves": 3,
+     "wall_s": 0.12,
+     "params": {
+      "ElectronCharge": 1.6e-19,
+      "n_i": 10000000000.0,
+      "T": 300.0,
+      "V_t": 0.025887193125000003,
+      "mu_n": 400,
+      "mu_p": 200,
+      "taun": 1e-08,
+      "taup": 1e-08,
+      "Permittivity": 9.8235e-13
+     },
+     "I_max_total": 0.00032000000000058674,
+     "I_min_total": -0.0003200000000005869,
+     "Ie_max": 0.00032000000000042677,
+     "Ih_max": 1.5999999999989337e-16,
+     "Ie_min": -0.00032000000000042693,
+     "Ih_min": -1.5999999999989344e-16,
+     "finite_arrays": true,
+     "nodes": 413,
+     "n_uniformity": 0.0,
+     "p_min_over_p0": 1.0,
+     "p_max_over_p0": 1.0,
+     "psi_lin": 2.7755575615628914e-14,
+     "max_abs_USRH": 0.0,
+     "recombination_current_A_per_cm": 0.0,
+     "doping_writes": [
+      "Acceptors",
+      "Donors",
+      "NetDoping"
+     ],
+     "donors": [
+      1e+16
+     ],
+     "acceptors": [
+      0.0
+     ],
+     "netdoping": [
+      1e+16
+     ],
+     "theory": {
+      "n0": 1.000000000001e+16,
+      "p0": 9999.99999999,
+      "sigma_S_per_cm": 0.6400000000009599,
+      "G_A_per_V_per_cm_depth": 0.16000000000023998,
+      "I_ref": 0.00016000000000023997
+     }
+    }
+   }
+  }
+ },
+ "judge": {
+  "checks": [
+   {
+    "id": 1,
+    "name": "uniform_8: all values finite",
+    "value": 0.0,
+    "limit": 0.0,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +1mV I_total(Si_xmax) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +1mV I_electron(Si_xmax) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +1mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +1mV I_total(Si_xmin) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +1mV I_electron(Si_xmin) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +1mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "uniform_8 +1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "uniform_8 +1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 -1mV I_total(Si_xmax) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 -1mV I_electron(Si_xmax) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 -1mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 -1mV I_total(Si_xmin) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 -1mV I_electron(Si_xmin) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 -1mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "uniform_8 -1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "uniform_8 -1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +2mV I_total(Si_xmax) relative error",
+    "value": 1.1214716221630117e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +2mV I_electron(Si_xmax) relative error",
+    "value": 3.877716832524371e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +2mV hole share at Si_xmax",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +2mV I_total(Si_xmin) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +2mV I_electron(Si_xmin) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "uniform_8 +2mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "uniform_8 +2mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "uniform_8 +2mV potential linearity",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "uniform_8 0V |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "uniform_8 +1mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "uniform_8 -1mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "uniform_8 +2mV |I_max + I_min| / I_ref",
+    "value": 4.438452643605877e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "uniform_8 odd symmetry at Si_xmax",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "uniform_8 linearity at Si_xmax",
+    "value": 2.2192263218031821e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "uniform_8 equilibrium |I(0V)| / I_ref at Si_xmax",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "uniform_8 odd symmetry at Si_xmin",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "uniform_8 linearity at Si_xmin",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "uniform_8 equilibrium |I(0V)| / I_ref at Si_xmin",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 1,
+    "name": "one_sided_8: all values finite",
+    "value": 0.0,
+    "limit": 0.0,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +1mV I_total(Si_xmax) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +1mV I_electron(Si_xmax) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +1mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +1mV I_total(Si_xmin) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +1mV I_electron(Si_xmin) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +1mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_8 +1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_8 +1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 -1mV I_total(Si_xmax) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 -1mV I_electron(Si_xmax) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 -1mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 -1mV I_total(Si_xmin) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 -1mV I_electron(Si_xmin) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 -1mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_8 -1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_8 -1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +2mV I_total(Si_xmax) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +2mV I_electron(Si_xmax) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +2mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +2mV I_total(Si_xmin) relative error",
+    "value": 5.675120746595301e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +2mV I_electron(Si_xmin) relative error",
+    "value": 4.4316763800278527e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_8 +2mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_8 +2mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_8 +2mV potential linearity",
+    "value": 2.7755575615628914e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_8 0V |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_8 +1mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_8 -1mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_8 +2mV |I_max + I_min| / I_ref",
+    "value": 3.3305335485989137e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "one_sided_8 odd symmetry at Si_xmax",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "one_sided_8 linearity at Si_xmax",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "one_sided_8 equilibrium |I(0V)| / I_ref at Si_xmax",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "one_sided_8 odd symmetry at Si_xmin",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "one_sided_8 linearity at Si_xmin",
+    "value": 1.6652667742996396e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "one_sided_8 equilibrium |I(0V)| / I_ref at Si_xmin",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 1,
+    "name": "one_sided_16: all values finite",
+    "value": 0.0,
+    "limit": 0.0,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +1mV I_total(Si_xmax) relative error",
+    "value": 3.339003878071444e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +1mV I_electron(Si_xmax) relative error",
+    "value": 1.6601845766159386e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +1mV hole share at Si_xmax",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +1mV I_total(Si_xmin) relative error",
+    "value": 3.339003878071444e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +1mV I_electron(Si_xmin) relative error",
+    "value": 1.6601845766159386e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +1mV hole share at Si_xmin",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_16 +1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_16 +1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 -1mV I_total(Si_xmax) relative error",
+    "value": 3.339003878071444e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 -1mV I_electron(Si_xmax) relative error",
+    "value": 1.6601845766159386e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 -1mV hole share at Si_xmax",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 -1mV I_total(Si_xmin) relative error",
+    "value": 3.339003878071444e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 -1mV I_electron(Si_xmin) relative error",
+    "value": 1.6601845766159386e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 -1mV hole share at Si_xmin",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_16 -1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_16 -1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +2mV I_total(Si_xmax) relative error",
+    "value": 1.1011428314289389e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +2mV I_electron(Si_xmax) relative error",
+    "value": 6.100331286116322e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +2mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +2mV I_total(Si_xmin) relative error",
+    "value": 1.1011428314289389e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +2mV I_electron(Si_xmin) relative error",
+    "value": 6.100331286116322e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_16 +2mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_16 +2mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_16 +2mV potential linearity",
+    "value": 2.7755575615628914e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_16 0V |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_16 +1mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_16 -1mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_16 +2mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "one_sided_16 odd symmetry at Si_xmax",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "one_sided_16 linearity at Si_xmax",
+    "value": 4.4401467094989003e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "one_sided_16 equilibrium |I(0V)| / I_ref at Si_xmax",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "one_sided_16 odd symmetry at Si_xmin",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "one_sided_16 linearity at Si_xmin",
+    "value": 4.4401467094989003e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "one_sided_16 equilibrium |I(0V)| / I_ref at Si_xmin",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 1,
+    "name": "one_sided_32: all values finite",
+    "value": 0.0,
+    "limit": 0.0,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +1mV I_total(Si_xmax) relative error",
+    "value": 5.544677672718334e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +1mV I_electron(Si_xmax) relative error",
+    "value": 1.0543866127405716e-12,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +1mV hole share at Si_xmax",
+    "value": 4.999999999987501e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +1mV I_total(Si_xmin) relative error",
+    "value": 5.544677672718334e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +1mV I_electron(Si_xmin) relative error",
+    "value": 1.0543866127405716e-12,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +1mV hole share at Si_xmin",
+    "value": 4.999999999987501e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_32 +1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_32 +1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 -1mV I_total(Si_xmax) relative error",
+    "value": 5.544677672718334e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 -1mV I_electron(Si_xmax) relative error",
+    "value": 1.0543866127405716e-12,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 -1mV hole share at Si_xmax",
+    "value": 4.999999999987501e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 -1mV I_total(Si_xmin) relative error",
+    "value": 5.544677672718334e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 -1mV I_electron(Si_xmin) relative error",
+    "value": 1.0543866127405716e-12,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 -1mV hole share at Si_xmin",
+    "value": 4.999999999987501e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_32 -1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_32 -1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +2mV I_total(Si_xmax) relative error",
+    "value": 3.337309812176938e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +2mV I_electron(Si_xmax) relative error",
+    "value": 1.6618786425104447e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +2mV hole share at Si_xmax",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +2mV I_total(Si_xmin) relative error",
+    "value": 3.337309812176938e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +2mV I_electron(Si_xmin) relative error",
+    "value": 1.6618786425104447e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "one_sided_32 +2mV hole share at Si_xmin",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_32 +2mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "one_sided_32 +2mV potential linearity",
+    "value": 2.7755575615628914e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_32 0V |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_32 +1mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_32 -1mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "one_sided_32 +2mV |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "one_sided_32 odd symmetry at Si_xmax",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "one_sided_32 linearity at Si_xmax",
+    "value": 8.881987484900196e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "one_sided_32 equilibrium |I(0V)| / I_ref at Si_xmax",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "one_sided_32 odd symmetry at Si_xmin",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "one_sided_32 linearity at Si_xmin",
+    "value": 8.881987484900196e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "one_sided_32 equilibrium |I(0V)| / I_ref at Si_xmin",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 1,
+    "name": "two_sided_8: all values finite",
+    "value": 0.0,
+    "limit": 0.0,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +1mV I_total(Si_xmax) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +1mV I_electron(Si_xmax) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +1mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +1mV I_total(Si_xmin) relative error",
+    "value": 1.0960606337454208e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +1mV I_electron(Si_xmin) relative error",
+    "value": 6.095249088432803e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +1mV hole share at Si_xmin",
+    "value": 4.999999999987498e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_8 +1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_8 +1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 -1mV I_total(Si_xmax) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 -1mV I_electron(Si_xmax) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 -1mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 -1mV I_total(Si_xmin) relative error",
+    "value": 1.0960606337454208e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 -1mV I_electron(Si_xmin) relative error",
+    "value": 6.095249088432803e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 -1mV hole share at Si_xmin",
+    "value": 4.999999999987498e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_8 -1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_8 -1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +2mV I_total(Si_xmax) relative error",
+    "value": 1.0977546996399267e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +2mV I_electron(Si_xmax) relative error",
+    "value": 6.09694315432731e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +2mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +2mV I_total(Si_xmin) relative error",
+    "value": 1.0960606337454208e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +2mV I_electron(Si_xmin) relative error",
+    "value": 6.095249088432803e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_8 +2mV hole share at Si_xmin",
+    "value": 4.999999999987498e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_8 +2mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_8 +2mV potential linearity",
+    "value": 2.7755575615628914e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_8 0V |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_8 +1mV |I_max + I_min| / I_ref",
+    "value": 1.6940658945060598e-16,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_8 -1mV |I_max + I_min| / I_ref",
+    "value": 1.6940658945060598e-16,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_8 +2mV |I_max + I_min| / I_ref",
+    "value": 3.3881317890121196e-16,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "two_sided_8 odd symmetry at Si_xmax",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "two_sided_8 linearity at Si_xmax",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "two_sided_8 equilibrium |I(0V)| / I_ref at Si_xmax",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "two_sided_8 odd symmetry at Si_xmin",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "two_sided_8 linearity at Si_xmin",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "two_sided_8 equilibrium |I(0V)| / I_ref at Si_xmin",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 1,
+    "name": "two_sided_16: all values finite",
+    "value": 0.0,
+    "limit": 0.0,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +1mV I_total(Si_xmax) relative error",
+    "value": 3.339003878071444e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +1mV I_electron(Si_xmax) relative error",
+    "value": 1.6601845766159386e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +1mV hole share at Si_xmax",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +1mV I_total(Si_xmin) relative error",
+    "value": 3.337309812176938e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +1mV I_electron(Si_xmin) relative error",
+    "value": 1.6618786425104447e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +1mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_16 +1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_16 +1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 -1mV I_total(Si_xmax) relative error",
+    "value": 3.339003878071444e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 -1mV I_electron(Si_xmax) relative error",
+    "value": 1.6601845766159386e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 -1mV hole share at Si_xmax",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 -1mV I_total(Si_xmin) relative error",
+    "value": 3.337309812176938e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 -1mV I_electron(Si_xmin) relative error",
+    "value": 1.6618786425104447e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 -1mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_16 -1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_16 -1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +2mV I_total(Si_xmax) relative error",
+    "value": 1.1011428314289389e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +2mV I_electron(Si_xmax) relative error",
+    "value": 6.100331286116322e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +2mV hole share at Si_xmax",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +2mV I_total(Si_xmin) relative error",
+    "value": 1.102836897323445e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +2mV I_electron(Si_xmin) relative error",
+    "value": 6.102025352010827e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_16 +2mV hole share at Si_xmin",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_16 +2mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_16 +2mV potential linearity",
+    "value": 2.7755575615628914e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_16 0V |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_16 +1mV |I_max + I_min| / I_ref",
+    "value": 1.6940658945060598e-16,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_16 -1mV |I_max + I_min| / I_ref",
+    "value": 1.6940658945060598e-16,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_16 +2mV |I_max + I_min| / I_ref",
+    "value": 3.3881317890121196e-16,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "two_sided_16 odd symmetry at Si_xmax",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "two_sided_16 linearity at Si_xmax",
+    "value": 4.4401467094989003e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "two_sided_16 equilibrium |I(0V)| / I_ref at Si_xmax",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "two_sided_16 odd symmetry at Si_xmin",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "two_sided_16 linearity at Si_xmin",
+    "value": 4.440146709498901e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "two_sided_16 equilibrium |I(0V)| / I_ref at Si_xmin",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 1,
+    "name": "two_sided_32: all values finite",
+    "value": 0.0,
+    "limit": 0.0,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +1mV I_total(Si_xmax) relative error",
+    "value": 5.544677672718334e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +1mV I_electron(Si_xmax) relative error",
+    "value": 1.0543866127405716e-12,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +1mV hole share at Si_xmax",
+    "value": 4.999999999987501e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +1mV I_total(Si_xmin) relative error",
+    "value": 5.542983606823828e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +1mV I_electron(Si_xmin) relative error",
+    "value": 1.054217206151121e-12,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +1mV hole share at Si_xmin",
+    "value": 4.999999999987498e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_32 +1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_32 +1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 -1mV I_total(Si_xmax) relative error",
+    "value": 5.544677672718334e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 -1mV I_electron(Si_xmax) relative error",
+    "value": 1.0543866127405716e-12,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 -1mV hole share at Si_xmax",
+    "value": 4.999999999987501e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 -1mV I_total(Si_xmin) relative error",
+    "value": 5.542983606823828e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 -1mV I_electron(Si_xmin) relative error",
+    "value": 1.054217206151121e-12,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 -1mV hole share at Si_xmin",
+    "value": 4.999999999987498e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_32 -1mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_32 -1mV potential linearity",
+    "value": 5.551115123125783e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +2mV I_total(Si_xmax) relative error",
+    "value": 3.337309812176938e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +2mV I_electron(Si_xmax) relative error",
+    "value": 1.6618786425104447e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +2mV hole share at Si_xmax",
+    "value": 4.9999999999875e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +2mV I_total(Si_xmin) relative error",
+    "value": 3.3423920098604563e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +2mV I_electron(Si_xmin) relative error",
+    "value": 1.6567964448269265e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 2,
+    "name": "two_sided_32 +2mV hole share at Si_xmin",
+    "value": 4.999999999987499e-13,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_32 +2mV electron uniformity max|n/n0-1|",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 8,
+    "name": "two_sided_32 +2mV potential linearity",
+    "value": 2.7755575615628914e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_32 0V |I_max + I_min| / I_ref",
+    "value": 0.0,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_32 +1mV |I_max + I_min| / I_ref",
+    "value": 1.6940658945060598e-16,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_32 -1mV |I_max + I_min| / I_ref",
+    "value": 1.6940658945060598e-16,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 3,
+    "name": "two_sided_32 +2mV |I_max + I_min| / I_ref",
+    "value": 1.016439536703636e-15,
+    "limit": 1e-06,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "two_sided_32 odd symmetry at Si_xmax",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "two_sided_32 linearity at Si_xmax",
+    "value": 8.881987484900196e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "two_sided_32 equilibrium |I(0V)| / I_ref at Si_xmax",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 4,
+    "name": "two_sided_32 odd symmetry at Si_xmin",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 5,
+    "name": "two_sided_32 linearity at Si_xmin",
+    "value": 8.88537561668921e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 7,
+    "name": "two_sided_32 equilibrium |I(0V)| / I_ref at Si_xmin",
+    "value": 0.0,
+    "limit": 0.0001,
+    "pass": true
+   },
+   {
+    "id": 6,
+    "name": "one_sided: |G(32) - G(16)| / G(32)",
+    "value": 8.885253643944807e-13,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "id": 6,
+    "name": "two_sided: |G(32) - G(16)| / G(32)",
+    "value": 8.885253643944807e-13,
+    "limit": 0.01,
+    "pass": true
+   }
+  ],
+  "pass": true,
+  "failed": []
+ },
+ "input_checks": [
+  {
+   "name": "uniform_8 0V: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "uniform_8 +1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "uniform_8 -1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "uniform_8 +2mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_8 0V: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_8 +1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_8 -1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_8 +2mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_16 0V: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_16 +1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_16 -1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_16 +2mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_32 0V: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_32 +1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_32 -1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "one_sided_32 +2mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_8 0V: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_8 +1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_8 -1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_8 +2mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_16 0V: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_16 +1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_16 -1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_16 +2mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_32 0V: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_32 +1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_32 -1mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  },
+  {
+   "name": "two_sided_32 +2mV: production constants as pre-registered, canonical doping values written, 3 solves",
+   "pass": true
+  }
+ ],
+ "gui": {
+  "ACTIVE": {
+   "solves": 3,
+   "doping_writes": 6,
+   "measurement_block": true,
+   "source_pin": "Si_xmax",
+   "source_V": "+0.0010",
+   "source_I_A_printed": 0.00016,
+   "gnd_I_A_printed": -0.00016,
+   "dialogs": [],
+   "dialog_text": [],
+   "physics_status_resolution": null,
+   "physics_status_reason": null,
+   "leaked_devices": []
+  },
+  "CHEMICAL": {
+   "solves": 0,
+   "doping_writes": 0,
+   "measurement_block": false,
+   "source_pin": null,
+   "source_V": null,
+   "source_I_A_printed": null,
+   "gnd_I_A_printed": null,
+   "dialogs": [],
+   "dialog_text": [],
+   "physics_status_resolution": "UNSUPPORTED_BY_MODEL",
+   "physics_status_reason": null,
+   "leaked_devices": []
+  },
+  "UNKNOWN": {
+   "solves": 0,
+   "doping_writes": 0,
+   "measurement_block": false,
+   "source_pin": null,
+   "source_V": null,
+   "source_I_A_printed": null,
+   "gnd_I_A_printed": null,
+   "dialogs": [],
+   "dialog_text": [],
+   "physics_status_resolution": "UNSUPPORTED_BY_MODEL",
+   "physics_status_reason": null,
+   "leaked_devices": []
+  }
+ },
+ "gui_checks": [
+  {
+   "name": "GUI ACTIVE prints a measurement block",
+   "pass": true
+  },
+  {
+   "name": "GUI source current equals direct path (1e-6, printed digits)",
+   "pass": true
+  },
+  {
+   "name": "GUI ground current equals direct path (1e-6)",
+   "pass": true
+  },
+  {
+   "name": "GUI ACTIVE ran >= 1 solve and no dialog error",
+   "pass": true
+  },
+  {
+   "name": "GUI CHEMICAL: 0 solves, 0 doping writes, no measurement block, no info dialog, no leaked device, UNSUPPORTED_BY_MODEL",
+   "pass": true
+  },
+  {
+   "name": "GUI UNKNOWN: 0 solves, 0 doping writes, no measurement block, no info dialog, no leaked device, UNSUPPORTED_BY_MODEL",
+   "pass": true
+  }
+ ],
+ "leaked_devices": [],
+ "expected_params": {
+  "ElectronCharge": 1.6e-19,
+  "n_i": 10000000000.0,
+  "T": 300.0,
+  "mu_n": 400.0,
+  "mu_p": 200.0,
+  "taun": 1e-08,
+  "taup": 1e-08
+ }
+}
