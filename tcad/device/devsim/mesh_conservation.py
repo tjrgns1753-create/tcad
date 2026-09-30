@@ -26,6 +26,14 @@ GAMMA4 = 4 * U / (1 - 4 * U)
 # computation, times the first-order conditioning 1/sin theta"), not
 # derived from DEVSIM source.
 NODEVOLUME_ELEMENT_BUDGET = 128 * U
+BUDGET_BASIS = ("ASSUMED_BOUND: E_NV = 128 u sum_t A_t / sin(theta_min,t), inherited from 7H-E2 PLAN section 4, not derived from "
+                "DEVSIM source; E_A = gamma4 two-product rounding bound + u A; E_S = u S (correctly rounded fsum)")
+# Pre-registered engineering limit on the relative rounding budget B/A that
+# may still be called certified (Batch 7H-E6E-R1 PLAN section 1). Not a
+# proven DEVSIM error bound, not a physical material-loss threshold, and
+# not the area tolerance: a region under this limit is still compared with
+# its own B. A region above it is refused as uncertifiable.
+MAX_AREA_RELATIVE_UNCERTAINTY = 1e-8
 
 
 class MeshAreaConservationError(RuntimeError):
@@ -83,7 +91,11 @@ def check_mesh_input(points, triangles, tags, tag_to_name: Dict[int, str], extra
     s = np.sort(T, axis=1)
     if len(np.unique(s, axis=0)) != len(s):
         _refuse("MESH_DUPLICATE_TRIANGLE", f"{len(s) - len(np.unique(s, axis=0))} duplicated vertex triple(s)")
-    o, e, p1, p2, theta = triangle_terms(P, T)
+    with np.errstate(over="ignore", invalid="ignore"):
+        o, e, p1, p2, theta = triangle_terms(P, T)
+    if not (np.isfinite(o).all() and np.isfinite(e).all()):
+        _refuse("MESH_AREA_BUDGET_NONFINITE", f"{int((~(np.isfinite(o) & np.isfinite(e))).sum())} triangle(s) whose area or "
+                "rounding bound is not finite (overflow)")
     bad = np.abs(o) <= e
     if bad.any():
         i = int(np.argmax(bad))
@@ -96,33 +108,51 @@ def check_mesh_input(points, triangles, tags, tag_to_name: Dict[int, str], extra
         m = tags == tag
         at = np.abs(o[m]) / 2
         area = math.fsum(at.tolist())
-        out[name] = {"tag": int(tag), "triangles": int(m.sum()), "area": area,
-                     "E_A": 0.5 * GAMMA4 * math.fsum((np.abs(p1[m]) + np.abs(p2[m])).tolist()) + U * area,
-                     "E_NV": NODEVOLUME_ELEMENT_BUDGET * math.fsum((at / np.sin(theta[m])).tolist())}
+        with np.errstate(divide="ignore", over="ignore", invalid="ignore"):
+            cond = at / np.sin(theta[m])
+        e_a = 0.5 * GAMMA4 * math.fsum((np.abs(p1[m]) + np.abs(p2[m])).tolist()) + U * area
+        e_nv = NODEVOLUME_ELEMENT_BUDGET * math.fsum(cond.tolist()) if np.isfinite(cond).all() else math.inf
+        out[name] = {"tag": int(tag), "triangles": int(m.sum()), "area": area, "E_A": e_a, "E_NV": e_nv}
     return out
 
 
 def check_nodevolume(region_terms: Dict[str, dict], nodevolumes: Dict[str, np.ndarray], element_counts: Dict[str, int]) -> Dict[str, dict]:
-    """Per-region comparison of the NodeVolume sum with the triangle area. Returns the report; raises on the first failure."""
+    """Per-region certification (7H-E6E-R1 PLAN section 1), in order: element count; A finite > 0; NodeVolume valid; S and every
+    budget term finite; B/A <= MAX_AREA_RELATIVE_UNCERTAINTY (decided before, and independently of, S vs A); |S - A| <= B.
+    Returns the report; raises on the first failure. The importer calls this same function."""
     report = {}
     for name, rt in region_terms.items():
         nv = np.asarray(nodevolumes.get(name, []), dtype=np.float64)
-        r = {"triangles": rt["triangles"], "devsim_elements": element_counts.get(name), "nodes": int(len(nv)), "area": rt["area"]}
+        A = rt["area"]
+        r = {"triangles": rt["triangles"], "devsim_elements": element_counts.get(name), "nodes": int(len(nv)), "A": A,
+             "certification_limit": MAX_AREA_RELATIVE_UNCERTAINTY, "budget_basis": BUDGET_BASIS}
         report[name] = r
+
+        def refuse(code, message):
+            _refuse(code, f"region {name!r}: {message}", regions=report, first_failing_region=name)
         if element_counts.get(name) != rt["triangles"]:
-            _refuse("MESH_REGION_ELEMENT_MISMATCH", f"region {name!r}: DEVSIM holds {element_counts.get(name)} elements, "
-                    f"{rt['triangles']} triangles were passed", regions=report, first_failing_region=name)
+            refuse("MESH_REGION_ELEMENT_MISMATCH", f"DEVSIM holds {element_counts.get(name)} elements, {rt['triangles']} triangles were passed")
+        if not (math.isfinite(A) and A > 0):
+            refuse("MESH_AREA_INVALID", f"triangle area {A!r} is not finite and positive")
         if len(nv) == 0 or not np.isfinite(nv).all() or (nv <= 0).any():
-            _refuse("MESH_NODEVOLUME_INVALID", f"region {name!r}: {len(nv)} nodes, {int((~np.isfinite(nv)).sum())} non-finite, "
-                    f"{int((nv <= 0).sum())} non-positive NodeVolume", regions=report, first_failing_region=name)
-        S = math.fsum(nv.tolist())
+            refuse("MESH_NODEVOLUME_INVALID", f"{len(nv)} nodes, {int((~np.isfinite(nv)).sum())} non-finite, "
+                   f"{int((nv <= 0).sum())} non-positive NodeVolume")
+        with np.errstate(over="ignore"):
+            S = math.fsum(nv.tolist()) if np.isfinite(nv.sum()) else math.inf
+        E_A, E_NV = rt["E_A"], rt["E_NV"]
         E_S = U * S
-        B = rt["E_A"] + E_S + rt["E_NV"]
-        r.update({"sum_NodeVolume": S, "relative_difference": S / rt["area"] - 1.0, "tau": B / rt["area"],
-                  "E_A": rt["E_A"], "E_S": E_S, "E_NV": rt["E_NV"], "pass": bool(abs(S - rt["area"]) <= B)})
+        B = E_A + E_S + E_NV
+        rel_u = B / A
+        r.update({"S": S, "relative_difference": S / A - 1.0, "E_A": E_A, "E_S": E_S, "E_NV": E_NV, "B": B, "relative_uncertainty": rel_u})
+        if not all(math.isfinite(v) for v in (S, E_A, E_S, E_NV, B, rel_u)):
+            refuse("MESH_AREA_BUDGET_NONFINITE", f"S {S!r}, E_A {E_A!r}, E_S {E_S!r}, E_NV {E_NV!r}, B {B!r} -- not all finite")
+        if rel_u > MAX_AREA_RELATIVE_UNCERTAINTY:
+            refuse("MESH_AREA_UNCERTAINTY_TOO_LARGE", f"relative rounding budget B/A {rel_u!r} exceeds the certification limit "
+                   f"{MAX_AREA_RELATIVE_UNCERTAINTY!r}; area conservation cannot be certified (A {A!r}, S {S!r})")
+        r["pass"] = bool(abs(S - A) <= B)
         if not r["pass"]:
-            _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
-                    f"difference {r['relative_difference']!r}, tolerance {r['tau']!r}", regions=report, first_failing_region=name)
+            refuse("MESH_AREA_NOT_CONSERVED", f"triangle area {A!r}, NodeVolume sum {S!r}, relative difference "
+                   f"{r['relative_difference']!r}, tolerance B/A {rel_u!r}")
     return report
 
 

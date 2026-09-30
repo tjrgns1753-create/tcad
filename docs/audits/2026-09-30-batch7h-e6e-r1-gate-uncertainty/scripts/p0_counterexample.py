@@ -29,7 +29,8 @@ try:
         rep = exc.physics_status["regions"]["Si"]
         out["check_nodevolume"] = f"REFUSED {exc.physics_status['reason_code']}"
     B = rep["E_A"] + rep["E_S"] + rep["E_NV"]
-    out.update({"A": A, "S": rep["sum_NodeVolume"], "S_over_A_minus_1": rep["relative_difference"], "E_A": rep["E_A"],
+    out["reason_or_status_fields"] = {k: rep.get(k) for k in ("relative_uncertainty", "certification_limit", "budget_basis")}
+    out.update({"A": A, "S": rep.get("S", rep.get("sum_NodeVolume")), "S_over_A_minus_1": rep["relative_difference"], "E_A": rep["E_A"],
                 "E_S": rep["E_S"], "E_NV": rep["E_NV"], "B": B, "B_over_A": B / A})
 except mc.MeshAreaConservationError as exc:
     out["check_mesh_input"] = f"REFUSED {exc.physics_status['reason_code']}"

@@ -11,7 +11,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tcad.device.devsim.mesh_conservation import (  # noqa: E402
-    MeshAreaConservationError, check_mesh_input, check_nodevolume,
+    MAX_AREA_RELATIVE_UNCERTAINTY, MeshAreaConservationError, check_mesh_input, check_nodevolume,
 )
 
 
@@ -59,8 +59,9 @@ def main():
     p, t, g = grid()
     terms = check_mesh_input(p, t, g, {1: "Si"}, [])
     rep = check_nodevolume(terms, {"Si": dual_nodevolume(p, t, g, 1)}, {"Si": len(t)})
-    assert rep["Si"]["pass"] and abs(rep["Si"]["relative_difference"]) <= rep["Si"]["tau"], rep
-    print(f"single material exact: pass, rel {rep['Si']['relative_difference']!r} tau {rep['Si']['tau']!r}")
+    assert rep["Si"]["pass"] and abs(rep["Si"]["relative_difference"]) <= rep["Si"]["relative_uncertainty"], rep
+    assert rep["Si"]["relative_uncertainty"] <= MAX_AREA_RELATIVE_UNCERTAINTY and rep["Si"]["budget_basis"].startswith("ASSUMED_BOUND")
+    print(f"single material exact: pass, rel {rep['Si']['relative_difference']!r} B/A {rep['Si']['relative_uncertainty']!r}")
 
     # exact two materials, and the large-coordinate control
     p, t, g = grid(split=2)
@@ -87,15 +88,51 @@ def main():
     assert exc.physics_status["first_failing_region"] == "Si"
     print("cancelling region errors: refused per region")
 
-    # boundary just inside / outside the tolerance: a one-node region with a known budget (E_A = 0, E_NV = 1e-6; E_S = u S is
-    # ~1e-16, far below the 2^-10 margin), so B*(1 -/+ 2^-10) is representable next to the area 1.0
+    # area-tolerance boundary (7H-E6E-R1 PLAN case 9, second part): a one-node region with a known budget (E_A = 0, E_NV = 1e-9,
+    # under the 1e-8 certification limit; E_S = u S ~1e-16 is far below the 2^-10 margin), S = 1 + 1e-9 (1 -/+ 2^-10)
     p, t, g = grid()
     terms = check_mesh_input(p, t, g, {1: "Si"}, [])
     base = dual_nodevolume(p, t, g, 1)
-    kt = {"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 1e-6}}
-    assert check_nodevolume(kt, {"Si": np.array([1.0 + 1e-6 * (1 - 2 ** -10)])}, {"Si": 1})["Si"]["pass"]
-    refused(lambda: check_nodevolume(kt, {"Si": np.array([1.0 + 1e-6 * (1 + 2 ** -10)])}, {"Si": 1}), "MESH_AREA_NOT_CONSERVED")
+    kt = {"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 1e-9}}
+    assert check_nodevolume(kt, {"Si": np.array([1.0 + 1e-9 * (1 - 2 ** -10)])}, {"Si": 1})["Si"]["pass"]
+    refused(lambda: check_nodevolume(kt, {"Si": np.array([1.0 + 1e-9 * (1 + 2 ** -10)])}, {"Si": 1}), "MESH_AREA_NOT_CONSERVED")
     print("tolerance boundary: B(1 - 2^-10) pass, B(1 + 2^-10) refused")
+
+    # certification-limit boundary (case 9, first part): S = A = 1.0, E_NV = 1e-8 (1 -/+ 2^-10)
+    lim_in = {"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 1e-8 * (1 - 2 ** -10)}}
+    lim_out = {"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 1e-8 * (1 + 2 ** -10)}}
+    assert check_nodevolume(lim_in, {"Si": np.array([1.0])}, {"Si": 1})["Si"]["pass"]
+    refused(lambda: check_nodevolume(lim_out, {"Si": np.array([1.0])}, {"Si": 1}), "MESH_AREA_UNCERTAINTY_TOO_LARGE")
+    print("certification limit boundary: B/A 1e-8(1 - 2^-10) pass, 1e-8(1 + 2^-10) refused")
+
+    # P0 sliver (cases 1, 2): the counterexample that PASSED before 7H-E6E-R1 (p0_before.json) -- S = 2A and S = A both refused
+    ps = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 1e-14, 0.0]])
+    ts, gs = np.array([[0, 1, 2]]), np.array([1])
+    st = check_mesh_input(ps, ts, gs, {1: "Si"}, [])
+    A = st["Si"]["area"]
+    for label, s_total in (("S = 2A", 2 * A), ("S = A", A)):
+        exc = refused(lambda s_total=s_total: check_nodevolume(st, {"Si": np.full(3, s_total / 3)}, {"Si": 1}),
+                      "MESH_AREA_UNCERTAINTY_TOO_LARGE")
+        r = exc.physics_status["regions"]["Si"]
+        assert r["relative_uncertainty"] > MAX_AREA_RELATIVE_UNCERTAINTY and r["certification_limit"] == MAX_AREA_RELATIVE_UNCERTAINTY
+        assert r["budget_basis"].startswith("ASSUMED_BOUND") and "pass" not in r
+        print(f"P0 sliver {label}: refused, B/A {r['relative_uncertainty']!r}, S/A-1 {r['relative_difference']!r}")
+
+    # non-finite budget (case 3): E_NV = inf; S overflow; o_t overflow from 1e200 coordinates
+    refused(lambda: check_nodevolume({"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": float("inf")}}, {"Si": np.array([1.0])},
+                                     {"Si": 1}), "MESH_AREA_BUDGET_NONFINITE")
+    refused(lambda: check_nodevolume({"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 0.0}}, {"Si": np.array([1e308, 1e308])},
+                                     {"Si": 1}), "MESH_AREA_BUDGET_NONFINITE")
+    refused(lambda: check_mesh_input(p * 1e200, t, g, {1: "Si"}, []), "MESH_AREA_BUDGET_NONFINITE")
+    refused(lambda: check_nodevolume({"Si": {"triangles": 1, "area": 0.0, "E_A": 0.0, "E_NV": 0.0}}, {"Si": np.array([1.0])},
+                                     {"Si": 1}), "MESH_AREA_INVALID")
+    print("non-finite budget / S overflow / o_t overflow / zero area: refused")
+
+    # normal shape, real mismatch (case 7)
+    off = base.copy()
+    off[0] += 0.01
+    refused(lambda: check_nodevolume(terms, {"Si": off}, {"Si": len(t)}), "MESH_AREA_NOT_CONSERVED")
+    print("normal shape, S = A + 0.01: MESH_AREA_NOT_CONSERVED")
 
     # invalid NodeVolume / region / element count
     nonfin = base.copy()
