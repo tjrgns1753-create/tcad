@@ -44,6 +44,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 from tcad.device.devsim import backend
+from tcad.device.devsim.mesh_conservation import check_mesh_input, verify_device
 from tcad.device.devsim.mesh_refine import graded_refine_mesh_near, refine_mesh_near
 from tcad.mesh.interface import DopingProfile, ProcessResult
 
@@ -727,6 +728,14 @@ class ImportedDevice:
     regions: List[str] = field(default_factory=list)
     contacts: List[str] = field(default_factory=list)
     interfaces: List[str] = field(default_factory=list)
+    # Per-region area-conservation report (tcad.device.devsim.mesh_conservation);
+    # a device is only returned when every region passed it.
+    area_conservation: Dict[str, Any] = field(default_factory=dict)
+
+
+# meshio cell types with no area; any other block besides the imported
+# triangle block would be silently dropped by this importer.
+_ZERO_AREA_CELL_TYPES = ("vertex", "line", "line3")
 
 
 def import_process_result(
@@ -990,6 +999,14 @@ def import_process_result(
 
     tag_to_name = {region.tag: region.name for region in result.material_regions}
 
+    # Fail-closed area-conservation gate, part 1 (no DEVSIM call yet):
+    # these are exactly the coordinates / triangles / tags DEVSIM gets.
+    extra_area_cells = [
+        c.type for i, c in enumerate(mesh.cells)
+        if i != block_index and c.type not in _ZERO_AREA_CELL_TYPES
+    ]
+    region_area_terms = check_mesh_input(points, triangles, tags, tag_to_name, extra_area_cells)
+
     # Group boundary edges (touched by exactly one triangle) by that
     # triangle's material tag, so a contact never spans two regions.
     edge_owner_tags: Dict[tuple, List[int]] = defaultdict(list)
@@ -1220,10 +1237,16 @@ def import_process_result(
     module.finalize_mesh(mesh=mesh_name)
     module.create_device(mesh=mesh_name, device=device_name)
 
+    # Part 2: per-region NodeVolume sum vs. triangle area, before the
+    # device is handed to any doping write or solve. On refusal the
+    # device and mesh are deleted and MeshAreaConservationError raised.
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+
     return ImportedDevice(
         device=device_name,
         mesh=mesh_name,
         regions=list(tag_to_name.values()),
         contacts=[name for name, _ in contact_defs],
         interfaces=[name for name, _, _ in interface_defs],
+        area_conservation=area_report,
     )

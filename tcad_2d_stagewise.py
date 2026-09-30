@@ -5765,6 +5765,7 @@ class TCADApplication(tk.Tk):
         kind = doped_result.doping.kind
 
         from tcad.device.devsim.mesh_import import import_process_result
+        from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
         from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
         from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
         from tcad.characterization.robust_iv_sweep import (
@@ -5905,6 +5906,20 @@ class TCADApplication(tk.Tk):
             # measurement before any doping write or DevSim solve. Show
             # UNSUPPORTED_BY_MODEL with the concrete reason, record the
             # status, and report no current.
+            self.last_physics_status = exc.physics_status
+            self._notify_error(
+                "Measurement",
+                f"{exc}\n\nMeasurement blocked: no doping was written to "
+                f"DevSim, no solve was run, and no current is reported.",
+            )
+
+            return
+
+        except MeshAreaConservationError as exc:
+
+            # The importer refused a mesh whose DevSim NodeVolume does not
+            # conserve a region's area, before returning a device: record
+            # UNSUPPORTED_BY_MODEL and report no number.
             self.last_physics_status = exc.physics_status
             self._notify_error(
                 "Measurement",
@@ -6102,6 +6117,7 @@ class TCADApplication(tk.Tk):
             resolve_pins_to_point_contacts, PinPlacementError,
         )
         from tcad.device.devsim.mesh_import import import_process_result
+        from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
 
         process_result = build_process_result({"final_mesh": self.last_final_mesh, "snapshots": []})
         contactable = {r.name for r in process_result.material_regions if r.name not in ("SiO2", "Si3N4", "Mask")}
@@ -6129,6 +6145,14 @@ class TCADApplication(tk.Tk):
                 # skips a pair with no matching regions/shared edges).
                 interface_region_pairs=[("Si", "SiO2")],
             )
+        except MeshAreaConservationError as exc:
+            self.last_physics_status = exc.physics_status
+            self._notify_error(
+                "Electrode",
+                f"{exc}\n\nPins not resolved: no device was kept, no doping "
+                f"was written and nothing will be solved on this mesh.",
+            )
+            return None
         except Exception as exc:
             self._notify_error("Electrode", f"Pin resolution failed:\n\n{exc}")
             return None
