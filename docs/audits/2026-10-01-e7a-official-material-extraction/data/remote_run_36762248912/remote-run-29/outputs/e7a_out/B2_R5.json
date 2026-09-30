@@ -1,0 +1,67 @@
+{
+ "case": "B2",
+ "route": "R5",
+ "status": "OK",
+ "input": {
+  "grid": 0.1,
+  "pad": 0.1,
+  "x_extent": 2.0,
+  "y_extent": 2.0,
+  "forbidden_call_counts": {
+   "Oxidation": 0,
+   "Process": 0
+  },
+  "materials_by_index": [
+   "Si",
+   "SiO2"
+  ],
+  "wrap_flags": [
+   false,
+   true
+  ]
+ },
+ "per_material": {
+  "Si": {
+   "level_set_points": 63,
+   "surface_nodes": 21,
+   "surface_bbox": [
+    [
+     -1.0,
+     -1e-13,
+     0.0
+    ],
+    [
+     1.0,
+     -1e-13,
+     0.0
+    ]
+   ],
+   "project_single_export": {
+    "status": "OK",
+    "triangles": 400
+   },
+   "official_raw_single_export": {
+    "status": "OK",
+    "triangles": 80,
+    "area": 0.40000003576278687,
+    "y_range": [
+     -0.20000000298023224,
+     0.0
+    ]
+   }
+  },
+  "SiO2": {
+   "level_set_points": 42,
+   "surface_nodes": 0,
+   "surface_bbox": null,
+   "project_single_export": {
+    "status": "EXCEPTION",
+    "error": "ValueError('need at least one array to concatenate')"
+   },
+   "official_raw_single_export": {
+    "status": "EXCEPTION",
+    "error": "ValueError('need at least one array to concatenate')"
+   }
+  }
+ }
+}

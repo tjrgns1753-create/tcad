@@ -1,0 +1,63 @@
+{
+ "case": "B2",
+ "route": "R6",
+ "status": "OK",
+ "input": {
+  "grid": 0.1,
+  "pad": 0.1,
+  "x_extent": 2.0,
+  "y_extent": 2.0,
+  "forbidden_call_counts": {
+   "Oxidation": 0,
+   "Process": 0
+  },
+  "materials_by_index": [
+   "Si",
+   "SiO2"
+  ],
+  "wrap_flags": [
+   false,
+   true
+  ]
+ },
+ "scan": [
+  {
+   "grid": 0.1,
+   "pad": 0.05,
+   "pad_over_grid": 0.5,
+   "level_set_points": 0,
+   "surface_nodes": 0,
+   "surface_y": null
+  },
+  {
+   "grid": 0.1,
+   "pad": 0.1,
+   "pad_over_grid": 1.0,
+   "level_set_points": 42,
+   "surface_nodes": 0,
+   "surface_y": null
+  },
+  {
+   "grid": 0.1,
+   "pad": 0.15,
+   "pad_over_grid": 1.4999999999999998,
+   "level_set_points": 63,
+   "surface_nodes": 42,
+   "surface_y": [
+    1e-13,
+    0.15000000000000002
+   ]
+  },
+  {
+   "grid": 0.1,
+   "pad": 0.2,
+   "pad_over_grid": 2.0,
+   "level_set_points": 63,
+   "surface_nodes": 42,
+   "surface_y": [
+    1e-13,
+    0.1999999999999
+   ]
+  }
+ ]
+}

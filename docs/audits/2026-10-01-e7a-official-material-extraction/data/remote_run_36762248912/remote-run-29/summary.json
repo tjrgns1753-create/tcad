@@ -1,0 +1,134 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T18:58:07.133918+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e7a-official-extraction-s1b-003",
+  "profile": "e7a_official_material_extraction_s1b",
+  "params": {},
+  "note": "E7A supplement S1b (rerun after a probe syntax error in 001): B2 empty surface + thickness scan. S1_CRITERIA.md section committed before the run. Probe only."
+ },
+ "profile": "e7a_official_material_extraction_s1b",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/S1_CRITERIA.md",
+   "sha256": "00ba93bd0197dce0d3061604d0579d514839e763ffdccc20d8d90374ac7fd2bd",
+   "bytes": 2029
+  },
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+   "sha256": "3be56a151de8d25ac3d8b9a837a216a5d84f338ca290e13dc2bae4a9b3efcacc",
+   "bytes": 3964
+  },
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a.py",
+   "sha256": "7cae1d37e76c37b436f9d36e0a66075d18c7d5e3081f5452e2154cee0dd0853d",
+   "bytes": 16283
+  },
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a_s1.py",
+   "sha256": "c899e0d8a1a39b396e2564afada652d36a4fa756ed55ce4b93fd95774fc34f50",
+   "bytes": 5419
+  },
+  {
+   "path": "tcad/backends/viennaps/io.py",
+   "sha256": "22f3a7f6ab47fc4d7ab215958115a9cd9c170a728e49091a53c982af8b299d61",
+   "bytes": 44738
+  }
+ ],
+ "request_sha256": "b646ebd06bdccfa4ec96e3b9b98aeb194e7bd584f7e699b1e1ec8f5c763888f7",
+ "source": {
+  "github_sha": "160baff4ab2d71a6f708e8ced82de1e31dcdd337",
+  "git_head": "160baff4ab2d71a6f708e8ced82de1e31dcdd337",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36762248912",
+  "run_number": "29",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+  "--s1b"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T18:58:08.618693+00:00",
+ "duration_s": 1.485,
+ "outputs": [
+  {
+   "path": "e7a_out/B2_R5.json",
+   "bytes": 1105,
+   "sha256": "bd0ec92614f9cea5dba531d9ad4a05525bb503c59817b37e91f8f049c399271a"
+  },
+  {
+   "path": "e7a_out/B2_R6.json",
+   "bytes": 1000,
+   "sha256": "d5231867f4dd942261127a98482be51b2976ac4b98967b1c36e8035ed4f8efd5"
+  },
+  {
+   "path": "e7a_out/e7a_result.json",
+   "bytes": 1646,
+   "sha256": "a7de4a57c1e9dc7592817d603db10c333484f7cc42dbe54a227800690473bf04"
+  },
+  {
+   "path": "e7a_out/raw/B2_R5.log",
+   "bytes": 61,
+   "sha256": "7bbf4c511dd049845a7f795055014c2a40a6da82d6b3aaf518e7090f0d80a1ad"
+  },
+  {
+   "path": "e7a_out/raw/B2_R6.log",
+   "bytes": 511,
+   "sha256": "9ae262a77a105b4b687a94045a1f07fd9cb08ff46a29e4fd7b22023df2bf1f2e"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "db0dd479456bccb6ab2f05c50ea7014e650c03680aa9e9a06627f0581ede529d",
+  "bytes": 54
+ },
+ "redactions": {}
+}

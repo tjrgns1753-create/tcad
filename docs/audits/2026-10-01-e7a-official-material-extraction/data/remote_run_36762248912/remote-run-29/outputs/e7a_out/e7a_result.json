@@ -1,0 +1,38 @@
+{
+ "head": "160baff4ab2d71a6f708e8ced82de1e31dcdd337",
+ "python": "3.11.9",
+ "platform": "Windows-10-10.0.26100-SP0",
+ "versions": {
+  "viennaps": "4.6.2",
+  "viennals": "5.8.5",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5"
+ },
+ "files_lf_sha256": {
+  "docs/audits/2026-10-01-e7a-official-material-extraction/S1_CRITERIA.md": "f28ca713f021dedc7362e551ca465ec109ba542e01a4ad72e60f37757545931f",
+  "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a_s1.py": "b8fb959c9caf3e33b45a5964bfd7debbd2b65b1343528d1f7421aff91f158645",
+  "tcad/backends/viennaps/io.py": "80babca33fe78f1e9028f553c54262db5d1fdda11319d70e22ac7466f719a523",
+  "tcad/process/oxidation/locos.py": "832e014875e1fa529d1635aa03cc20de9feb41720c2712820de6a8c7fceb76ef",
+  "tests/integration/_explicit_oxide_fixture.py": "2d92502097e79563ec49e096aa3a5cdc262444c6588185331fe1f27e3f51388f",
+  "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a.py": "e4eccb440dcbd3cb6098d30613604fbcf1b8fb522804b2ade8916f39c2821488",
+  "docs/audits/2026-10-01-e7a-official-material-extraction/CRITERIA.md": "125f3d41209fbd673ab627d926a20e187a1043083f6c77f2e5555ea2bb61f99f"
+ },
+ "runs": [
+  {
+   "tag": "B2_R5",
+   "rc": 0,
+   "wall_s": 0.4
+  },
+  {
+   "tag": "B2_R6",
+   "rc": 0,
+   "wall_s": 0.3
+  }
+ ],
+ "files": {
+  "B2_R5.json": "bd0ec92614f9cea5dba531d9ad4a05525bb503c59817b37e91f8f049c399271a",
+  "B2_R6.json": "d5231867f4dd942261127a98482be51b2976ac4b98967b1c36e8035ed4f8efd5",
+  "raw/B2_R5.log": "7bbf4c511dd049845a7f795055014c2a40a6da82d6b3aaf518e7090f0d80a1ad",
+  "raw/B2_R6.log": "9ae262a77a105b4b687a94045a1f07fd9cb08ff46a29e4fd7b22023df2bf1f2e"
+ }
+}

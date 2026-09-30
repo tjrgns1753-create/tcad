@@ -28,6 +28,35 @@ def main():
         module = session.require_viennaps()
         domain, mats, flags, info = P.build(case, module)
         out["input"] = info
+        if rt == "R7":
+            # S1c: is the thin-slab emptiness tied to UNION or to thickness? independent (never unioned) planes vs the wrapped stack, same thicknesses
+            from tcad.backends.viennaps import session as sess
+            out["scan"] = []
+            for pad in (0.05, 0.10, 0.15, 0.20):
+                rec = {"grid": 0.10, "pad": pad, "pad_over_grid": pad / 0.10}
+                d_top = sess.create_domain(0.10, P.X_EXTENT, P.Y_EXTENT)
+                module.MakePlane(d_top, pad, module.Material.SiO2).apply()
+                d_bot = sess.create_domain(0.10, P.X_EXTENT, P.Y_EXTENT)
+                module.MakePlane(d_bot, 0.0, module.Material.Si).apply()
+                a = vls.Domain(d_top.getLevelSets()[0])
+                vls.BooleanOperation(a, d_bot.getLevelSets()[0], vls.BooleanOperationEnum.RELATIVE_COMPLEMENT).apply()
+                m1 = vls.Mesh()
+                if a.getNumberOfPoints():
+                    vls.ToSurfaceMesh(a, m1).apply()
+                rec["independent_planes"] = {"level_set_points": int(a.getNumberOfPoints()), "surface_nodes": int(len(m1.getNodes()))}
+                dw = sess.create_domain(0.10, P.X_EXTENT, P.Y_EXTENT)
+                module.MakePlane(dw, 0.0, module.Material.Si).apply()
+                module.MakePlane(dw, pad, module.Material.SiO2, True).apply()
+                ls = dw.getMaterialLevelSet(module.Material.SiO2)
+                m2 = vls.Mesh()
+                if ls is not None and ls.getNumberOfPoints():
+                    vls.ToSurfaceMesh(ls, m2).apply()
+                rec["wrapped_official_getMaterialLevelSet"] = {"level_set_points": None if ls is None else int(ls.getNumberOfPoints()), "surface_nodes": int(len(m2.getNodes()))}
+                out["scan"].append(rec)
+            out["status"] = "OK"
+            (out_dir / f"{case}_{rt}.json").write_text(json.dumps(out, indent=1, default=str), encoding="utf-8")
+            print(json.dumps(out["scan"]), flush=True)
+            return
         if rt == "R6":
             out["scan"] = []
             for pad in (0.05, 0.10, 0.15, 0.20):
