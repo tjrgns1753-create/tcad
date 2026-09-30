@@ -28,7 +28,9 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
+from tcad.characterization.interface import (
+    CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult, current_unit_metadata,
+)
 from tcad.device.devsim import backend
 from tcad.device.devsim.resistor_equation import set_bias
 from tcad.device.devsim.semiconductor_equation import (
@@ -117,5 +119,6 @@ def run_pn_junction_iv_sweep(
             "fixed_contacts": fixed_contacts,
             "physics": "drift_diffusion",
             "current_convention": CURRENT_CONVENTION_NOTE,
+            **current_unit_metadata(module.get_dimension(device=device)),
         },
     )

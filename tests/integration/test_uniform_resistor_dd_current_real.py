@@ -131,6 +131,7 @@ def one_bias(dv, doped, state, voltage, tag):
                "n_uniformity": float(np.max(np.abs(n / th["n0"] - 1.0))), "p_min_over_p0": float(np.min(p) / th["p0"]), "p_max_over_p0": float(np.max(p) / th["p0"]),
                "psi_lin": float(np.max(psi_lin) / max(abs(voltage), 1.0e-3)),
                "max_abs_USRH": float(np.max(np.abs(usrh))), "recombination_current_A_per_cm": float(params["ElectronCharge"] * np.sum(usrh * vol)),
+               "metadata": dict(result.metadata),
                "doping_writes": sorted(set(nm for _, nm in obs.writes)), "donors": obs.values.get("Donors"), "acceptors": obs.values.get("Acceptors"),
                "netdoping": obs.values.get("NetDoping"), "theory": th}
         return rec
@@ -166,7 +167,8 @@ def gui_part(dv, path, direct):
             finally:
                 obs.restore()
             log = app.log.get("1.0", "end-1c")[len(log0):]
-            m = re.search(r"Voltage source pin: (\S+) = ([-+0-9.]+) V -> I = ([-+0-9.eE]+) A\s+Multimeter \(GND\) pin: (\S+) = [-+0-9.]+ V -> I = ([-+0-9.eE]+) A", log)
+            # E6J: the GUI now prints the unit of the 2D per-unit-depth current ("A/cm"); the number is still parsed and compared
+            m = re.search(r"Voltage source pin: (\S+) = ([-+0-9.]+) V -> I = ([-+0-9.eE]+) A/cm\s+Multimeter \(GND\) pin: (\S+) = [-+0-9.]+ V -> I = ([-+0-9.eE]+) A/cm", log)
             status = app.last_physics_status if isinstance(app.last_physics_status, dict) else None
             out[label] = {"solves": obs.solves, "doping_writes": len(obs.writes), "measurement_block": "DEVSIM MEASUREMENT" in log,
                           "source_pin": m.group(1) if m else None, "source_V": m.group(2) if m else None,

@@ -509,6 +509,27 @@ PROFILES = {
         "outputs": [{"glob": "e6i_out/**/*", "max_mb": 20}],
         "regenerate": "Rerun the profile.",
     },
+    "e6j_current_unit_contract": {
+        "description": "Batch 7H-E6J: 2D DD current unit contract (A/cm, machine-readable metadata) -- mock test and one representative GUI measurement (E6I one_sided n=8, +1 mV) with CHEMICAL / UNKNOWN controls.",
+        "entry": "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/scripts/run_e6j.py",
+        "args": [],
+        "params": {},
+        "timeout_s": 1800,
+        "inputs": [
+            "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/CRITERIA.md",
+            "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/scripts/run_e6j.py",
+            "tests/unit/test_current_unit_contract_mock.py",
+            "tests/integration/test_gui_current_unit_contract_real.py",
+            "tests/integration/test_uniform_resistor_dd_current_real.py",
+            "tcad/characterization/interface.py",
+            "tcad/characterization/io.py",
+            "tcad/characterization/plotting.py",
+            "tcad/characterization/pn_junction_iv_sweep.py",
+            "tcad/characterization/robust_iv_sweep.py",
+        ],
+        "outputs": [{"glob": "e6j_out/**/*", "max_mb": 10}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.

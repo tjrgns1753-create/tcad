@@ -82,7 +82,9 @@ from __future__ import annotations
 import math
 from typing import Dict, List, Optional
 
-from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
+from tcad.characterization.interface import (
+    CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult, current_unit_metadata,
+)
 from tcad.device.devsim import backend
 from tcad.device.devsim.doping_mapping import canonical_node_doping
 from tcad.device.devsim.semiconductor_equation import (
@@ -299,5 +301,6 @@ def run_robust_pn_junction_iv_sweep(
             "physics": "drift_diffusion",
             "strategy": "doping_continuation + devsim_dd_tolerances + restoring_bias_ramp",
             "current_convention": CURRENT_CONVENTION_NOTE,
+            **current_unit_metadata(module.get_dimension(device=device)),
         },
     )

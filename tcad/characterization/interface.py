@@ -16,7 +16,7 @@ about devsim; everything downstream only sees these dataclasses.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 #: DevSim's own 2D-device convention (not this project's invention): a
 #: 2D device has no explicit extent in the third (out-of-plane)
@@ -45,6 +45,31 @@ CURRENT_CONVENTION_NOTE = (
     "actual current/charge, multiply by that device's real depth in "
     "cm (e.g. a real 1um-wide device: multiply by 1e-4)."
 )
+
+
+def current_unit_metadata(dimension: Optional[int]) -> Dict[str, Any]:
+    """Machine-readable unit of the terminal currents of a DevSim device of the given spatial `dimension`
+    (`devsim.get_dimension(device=...)`). Only the 2D case is established (Batch 7H-E6I measured I = sigma (H / L) DeltaV
+    with H, L in cm, i.e. the current per cm of out-of-plane depth): `A/cm`, normalisation `per_out_of_plane_depth`. Any other
+    dimension is NOT verified, so its unit is None -- never silently assumed to be A. No depth is supplied or assumed here."""
+    if dimension == 2:
+        return {"current_unit": "A/cm", "current_normalization": "per_out_of_plane_depth", "device_dimension": 2}
+    return {"current_unit": None, "current_normalization": None, "device_dimension": dimension}
+
+
+def format_current(value: float, metadata: Optional[Dict[str, Any]], spec: str = ".6e") -> str:
+    """`value` (unchanged) with the unit its result's metadata established, e.g. '1.600000e-04 A/cm'; a result with no
+    established unit is shown as '<value> (unit not established)', never as plain A."""
+    unit = (metadata or {}).get("current_unit")
+    return f"{value:{spec}} {unit}" if unit else f"{value:{spec}} (unit not established)"
+
+
+def current_unit_note(metadata: Optional[Dict[str, Any]]) -> str:
+    """One sentence for the user when the current is per unit out-of-plane depth (2D device); '' otherwise."""
+    if (metadata or {}).get("current_normalization") == "per_out_of_plane_depth":
+        return ("Current per unit out-of-plane depth (A/cm) -- not the total current of a device; "
+                "multiply by the real device depth in cm for a total current.")
+    return ""
 
 
 @dataclass

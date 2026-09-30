@@ -5767,6 +5767,7 @@ class TCADApplication(tk.Tk):
         from tcad.device.devsim.mesh_import import import_process_result
         from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
         from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
+        from tcad.characterization.interface import current_unit_note, format_current
         from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
         from tcad.characterization.robust_iv_sweep import (
             run_robust_pn_junction_iv_sweep,
@@ -5961,17 +5962,19 @@ class TCADApplication(tk.Tk):
             f"================================\n"
             f"Region={region!r} axis={axis!r} doping_kind={kind!r}\n"
             f"Voltage source pin: {source_contact} = {voltage:+.4f} V "
-            f"-> I = {source_i:.6e} A\n"
+            f"-> I = {format_current(source_i, result.metadata)}\n"
             f"Multimeter (GND) pin: {gnd_contact} = 0.0000 V "
-            f"-> I = {gnd_i:.6e} A\n"
+            f"-> I = {format_current(gnd_i, result.metadata)}\n"
+            f"{current_unit_note(result.metadata)}\n"
         )
 
         self._notify_info(
             "Measurement",
             f"Voltage source ({source_contact}): {voltage:+.4f} V, "
-            f"I = {source_i:.6e} A\n\n"
+            f"I = {format_current(source_i, result.metadata)}\n\n"
             f"Multimeter ({gnd_contact}): 0.0000 V, "
-            f"I = {gnd_i:.6e} A",
+            f"I = {format_current(gnd_i, result.metadata)}\n\n"
+            f"{current_unit_note(result.metadata)}",
         )
 
     # --------------------------------------------------------

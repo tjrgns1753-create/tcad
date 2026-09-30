@@ -27,7 +27,11 @@ def save_csv(result: CharacterizationResult, path: str) -> str:
 
     with open(path, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["sweep_voltage_V"] + [f"I_{c}_A" for c in contacts])
+        # A result that carries a machine-readable unit (2D DevSim: "A/cm") names it in the header; a result without one keeps
+        # the legacy header unchanged (its unit is not established by this module).
+        unit = result.metadata.get("current_unit")
+        suffix = unit.replace("/", "_per_") if unit else "A"
+        writer.writerow(["sweep_voltage_V"] + [f"I_{c}_{suffix}" for c in contacts])
         for point in result.points:
             sweep_v = point.voltages.get(result.sweep_contact, "")
             row = [sweep_v] + [point.currents.get(c, "") for c in contacts]
