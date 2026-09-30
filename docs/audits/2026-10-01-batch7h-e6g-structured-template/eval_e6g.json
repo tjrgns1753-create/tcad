@@ -1,0 +1,588 @@
+{
+ "mesh_refine_lf_sha256": "432d47bb010cc2a24c83f39b8f58b47347eedfd5c8b1cbf21e0bfc355e7cbf84",
+ "cases": {
+  "A_counterexample_2cells": {
+   "input_triangles": 4,
+   "input_points": 6,
+   "centers": [
+    0.5
+   ],
+   "rings": [
+    0.5
+   ],
+   "generation_s": 0.023,
+   "report": {
+    "identity": false,
+    "leaves": 3,
+    "max_depth": 1,
+    "leaves_by_depth": {
+     "0": 1,
+     "1": 2
+    },
+    "triangles": 11,
+    "points": 11,
+    "new_points": 5,
+    "min_template_margin": 0.5
+   },
+   "old_triangles": 11,
+   "resolution": {
+    "triangles_in_bands": 8,
+    "violations": 0,
+    "ok": true
+   },
+   "old_resolution_same_check": {
+    "triangles_in_bands": 8,
+    "violations": 0,
+    "ok": true
+   },
+   "resolution_s": 0.004,
+   "geometry": {
+    "triangles": 11,
+    "points": 11,
+    "obtuse": 0,
+    "degenerate": 0,
+    "orientation_pos_neg": [
+     11,
+     0
+    ],
+    "edges_over_2_owners": 0,
+    "two_owner_same_direction": 0,
+    "hanging_nodes": 0,
+    "duplicate_triangles": 0,
+    "duplicate_node_coordinates": 0,
+    "existing_nodes_preserved": true,
+    "area_by_tag_equal_input": true,
+    "child_tag_mismatch": 0,
+    "child_parent_not_found": 0
+   },
+   "geometry_s": 0.0,
+   "boundary": {
+    "original_segments": 6,
+    "new_segments": 9,
+    "new_segments_not_on_an_original": 0,
+    "original_segments_not_exactly_covered": 0,
+    "preserved": true
+   },
+   "boundary_s": 0.0
+  },
+  "B_uniform_local_window": {
+   "input_triangles": 200,
+   "input_points": 121,
+   "centers": [
+    5.0
+   ],
+   "rings": [
+    1.0,
+    0.5,
+    0.25
+   ],
+   "generation_s": 0.006,
+   "report": {
+    "identity": false,
+    "leaves": 16,
+    "max_depth": 3,
+    "leaves_by_depth": {
+     "0": 8,
+     "1": 2,
+     "2": 2,
+     "3": 4
+    },
+    "triangles": 1180,
+    "points": 617,
+    "new_points": 496,
+    "min_template_margin": 0.125
+   },
+   "old_triangles": 1180,
+   "resolution": {
+    "triangles_in_bands": 1000,
+    "violations": 0,
+    "ok": true
+   },
+   "old_resolution_same_check": {
+    "triangles_in_bands": 1000,
+    "violations": 0,
+    "ok": true
+   },
+   "resolution_s": 0.109,
+   "geometry": {
+    "triangles": 1180,
+    "points": 617,
+    "obtuse": 0,
+    "degenerate": 0,
+    "orientation_pos_neg": [
+     1180,
+     0
+    ],
+    "edges_over_2_owners": 0,
+    "two_owner_same_direction": 0,
+    "hanging_nodes": 0,
+    "duplicate_triangles": 0,
+    "duplicate_node_coordinates": 0,
+    "existing_nodes_preserved": true,
+    "area_by_tag_equal_input": true,
+    "child_tag_mismatch": 0,
+    "child_parent_not_found": 0
+   },
+   "geometry_s": 0.308,
+   "boundary": {
+    "original_segments": 40,
+    "new_segments": 52,
+    "new_segments_not_on_an_original": 0,
+    "original_segments_not_exactly_covered": 0,
+    "preserved": true
+   },
+   "boundary_s": 0.011
+  },
+  "B_order_control": {
+   "input_triangles": 200,
+   "input_points": 121,
+   "centers": [
+    5.0
+   ],
+   "rings": [
+    1.0,
+    0.5,
+    0.25
+   ],
+   "generation_s": 0.008,
+   "report": {
+    "identity": false,
+    "leaves": 16,
+    "max_depth": 3,
+    "leaves_by_depth": {
+     "0": 8,
+     "1": 2,
+     "2": 2,
+     "3": 4
+    },
+    "triangles": 1180,
+    "points": 617,
+    "new_points": 496,
+    "min_template_margin": 0.125
+   },
+   "old_triangles": 1180,
+   "resolution": {
+    "triangles_in_bands": 1000,
+    "violations": 0,
+    "ok": true
+   },
+   "old_resolution_same_check": {
+    "triangles_in_bands": 1000,
+    "violations": 0,
+    "ok": true
+   },
+   "resolution_s": 0.103,
+   "geometry": "NOT_VERIFIED (skipped for size)",
+   "boundary": {
+    "original_segments": 40,
+    "new_segments": 52,
+    "new_segments_not_on_an_original": 0,
+    "original_segments_not_exactly_covered": 0,
+    "preserved": true
+   },
+   "boundary_s": 0.009,
+   "same_canonical_output_as_B": true
+  },
+  "C_float32_anisotropic": {
+   "input_triangles": 150,
+   "input_points": 96,
+   "centers": [
+    1.399999976158142
+   ],
+   "rings": [
+    0.2,
+    0.1,
+    0.05
+   ],
+   "generation_s": 0.004,
+   "report": {
+    "identity": false,
+    "leaves": 24,
+    "max_depth": 3,
+    "leaves_by_depth": {
+     "0": 12,
+     "1": 3,
+     "2": 3,
+     "3": 6
+    },
+    "triangles": 850,
+    "points": 455,
+    "new_points": 359,
+    "min_template_margin": 0.02497497946023941
+   },
+   "old_triangles": 640,
+   "resolution": {
+    "triangles_in_bands": 670,
+    "violations": 0,
+    "ok": true
+   },
+   "old_resolution_same_check": {
+    "triangles_in_bands": 500,
+    "violations": 332,
+    "ok": false
+   },
+   "resolution_s": 0.059,
+   "geometry": {
+    "triangles": 850,
+    "points": 455,
+    "obtuse": 0,
+    "degenerate": 0,
+    "orientation_pos_neg": [
+     850,
+     0
+    ],
+    "edges_over_2_owners": 0,
+    "two_owner_same_direction": 0,
+    "hanging_nodes": 0,
+    "duplicate_triangles": 0,
+    "duplicate_node_coordinates": 0,
+    "existing_nodes_preserved": true,
+    "area_by_tag_equal_input": true,
+    "child_tag_mismatch": 0,
+    "child_parent_not_found": 0
+   },
+   "geometry_s": 0.177,
+   "boundary": {
+    "original_segments": 40,
+    "new_segments": 58,
+    "new_segments_not_on_an_original": 0,
+    "original_segments_not_exactly_covered": 0,
+    "preserved": true
+   },
+   "boundary_s": 0.012
+  },
+  "D_shifted_center": {
+   "input_triangles": 128,
+   "input_points": 85,
+   "centers": [
+    3.13
+   ],
+   "rings": [
+    0.5,
+    0.25
+   ],
+   "generation_s": 0.004,
+   "report": {
+    "identity": false,
+    "leaves": 22,
+    "max_depth": 2,
+    "leaves_by_depth": {
+     "0": 13,
+     "1": 3,
+     "2": 6
+    },
+    "triangles": 368,
+    "points": 211,
+    "new_points": 126,
+    "min_template_margin": 0.125
+   },
+   "old_triangles": 338,
+   "resolution": {
+    "triangles_in_bands": 224,
+    "violations": 0,
+    "ok": true
+   },
+   "old_resolution_same_check": {
+    "triangles_in_bands": 203,
+    "violations": 1,
+    "ok": false
+   },
+   "resolution_s": 0.022,
+   "geometry": {
+    "triangles": 368,
+    "points": 211,
+    "obtuse": 0,
+    "degenerate": 0,
+    "orientation_pos_neg": [
+     368,
+     0
+    ],
+    "edges_over_2_owners": 0,
+    "two_owner_same_direction": 0,
+    "hanging_nodes": 0,
+    "duplicate_triangles": 0,
+    "duplicate_node_coordinates": 0,
+    "existing_nodes_preserved": true,
+    "area_by_tag_equal_input": true,
+    "child_tag_mismatch": 0,
+    "child_parent_not_found": 0
+   },
+   "geometry_s": 0.074,
+   "boundary": {
+    "original_segments": 40,
+    "new_segments": 52,
+    "new_segments_not_on_an_original": 0,
+    "original_segments_not_exactly_covered": 0,
+    "preserved": true
+   },
+   "boundary_s": 0.007
+  },
+  "D_two_separate_windows": {
+   "input_triangles": 128,
+   "input_points": 85,
+   "centers": [
+    1.6,
+    6.3
+   ],
+   "rings": [
+    0.5,
+    0.25,
+    0.125
+   ],
+   "generation_s": 0.006,
+   "report": {
+    "identity": false,
+    "leaves": 34,
+    "max_depth": 3,
+    "leaves_by_depth": {
+     "0": 10,
+     "1": 6,
+     "2": 6,
+     "3": 12
+    },
+    "triangles": 1248,
+    "points": 663,
+    "new_points": 578,
+    "min_template_margin": 0.0625
+   },
+   "old_triangles": 1062,
+   "resolution": {
+    "triangles_in_bands": 1080,
+    "violations": 0,
+    "ok": true
+   },
+   "old_resolution_same_check": {
+    "triangles_in_bands": 916,
+    "violations": 3,
+    "ok": false
+   },
+   "resolution_s": 0.132,
+   "geometry": {
+    "triangles": 1248,
+    "points": 663,
+    "obtuse": 0,
+    "degenerate": 0,
+    "orientation_pos_neg": [
+     1248,
+     0
+    ],
+    "edges_over_2_owners": 0,
+    "two_owner_same_direction": 0,
+    "hanging_nodes": 0,
+    "duplicate_triangles": 0,
+    "duplicate_node_coordinates": 0,
+    "existing_nodes_preserved": true,
+    "area_by_tag_equal_input": true,
+    "child_tag_mismatch": 0,
+    "child_parent_not_found": 0
+   },
+   "geometry_s": 0.349,
+   "boundary": {
+    "original_segments": 40,
+    "new_segments": 76,
+    "new_segments_not_on_an_original": 0,
+    "original_segments_not_exactly_covered": 0,
+    "preserved": true
+   },
+   "boundary_s": 0.013
+  },
+  "E_B_raw_1e16": {
+   "request": {
+    "axis": "x",
+    "centers": [
+     -1.6,
+     -0.6,
+     0.6,
+     1.6
+    ],
+    "rings": [
+     0.20000001788139343,
+     0.10000000894069672
+    ]
+   },
+   "production_wall_s": 0.02,
+   "output_blocks": [
+    "triangle"
+   ],
+   "input_triangles": 200,
+   "output_triangles": 1630,
+   "output_points": 876,
+   "output_dtype": "float64",
+   "old_triangles": 1040,
+   "resolution": {
+    "triangles_in_bands": 1180,
+    "violations": 0,
+    "ok": true
+   },
+   "old_resolution_same_check": {
+    "triangles_in_bands": 880,
+    "violations": 640,
+    "ok": false
+   },
+   "resolution_s": 0.12,
+   "geometry": {
+    "triangles": 1630,
+    "points": 876,
+    "obtuse": 0,
+    "degenerate": 0,
+    "orientation_pos_neg": [
+     1630,
+     0
+    ],
+    "edges_over_2_owners": 0,
+    "two_owner_same_direction": 0,
+    "hanging_nodes": 0,
+    "duplicate_triangles": 0,
+    "duplicate_node_coordinates": 0,
+    "existing_nodes_preserved": true,
+    "area_by_tag_equal_input": true,
+    "child_tag_mismatch": 0,
+    "child_parent_not_found": 20
+   },
+   "geometry_s": 0.45,
+   "boundary": {
+    "original_segments": 50,
+    "new_segments": 120,
+    "new_segments_not_on_an_original": 0,
+    "original_segments_not_exactly_covered": 0,
+    "preserved": true
+   },
+   "boundary_s": 0.02
+  },
+  "F_gui_wafer_1e20": {
+   "request": {
+    "axis": "x",
+    "centers": [
+     -1.6,
+     -0.6,
+     0.6,
+     1.6
+    ],
+    "rings": [
+     0.05000019073486328,
+     0.02500009536743164,
+     0.01250004768371582,
+     0.00625002384185791
+    ]
+   },
+   "production_wall_s": 1.72,
+   "output_blocks": [
+    "triangle"
+   ],
+   "input_triangles": 40000,
+   "output_triangles": 196000,
+   "output_points": 98365,
+   "output_dtype": "float64",
+   "old_triangles": 124000,
+   "resolution": {
+    "triangles_in_bands": 150400,
+    "violations": 0,
+    "ok": true
+   },
+   "old_resolution_same_check": {
+    "triangles_in_bands": 84800,
+    "violations": 58768,
+    "ok": false
+   },
+   "resolution_s": 15.18,
+   "geometry": {
+    "obtuse": 0,
+    "degenerate": 0,
+    "single_orientation": true,
+    "area_equal_input": true,
+    "duplicate_triangles": 0,
+    "existing_nodes_preserved": true,
+    "hanging_nodes": "NOT_VERIFIED (skipped for size)"
+   },
+   "geometry_s": 13.65,
+   "boundary": {
+    "original_segments": 600,
+    "new_segments": 728,
+    "new_segments_not_on_an_original": 0,
+    "original_segments_not_exactly_covered": 0,
+    "preserved": true
+   },
+   "boundary_s": 1.37
+  },
+  "G_two_materials": {
+   "input_triangles": 30,
+   "input_points": 24,
+   "centers": [
+    2.5
+   ],
+   "rings": [
+    0.5
+   ],
+   "refused": "StructuredRemeshUnsupported",
+   "reason": "MULTI_MATERIAL",
+   "detail": "MULTI_MATERIAL: 2 material tags",
+   "generation_s": 0.014
+  },
+  "G_missing_triangle": {
+   "input_triangles": 29,
+   "input_points": 24,
+   "centers": [
+    2.5
+   ],
+   "rings": [
+    0.5
+   ],
+   "refused": "StructuredRemeshUnsupported",
+   "reason": "NOT_TWO_TRIANGLES_PER_CELL",
+   "detail": "NOT_TWO_TRIANGLES_PER_CELL: 29 triangles for 5 x 3 cells",
+   "generation_s": 0.0
+  },
+  "G_non_rectangular_notch": {
+   "input_triangles": 28,
+   "input_points": 23,
+   "centers": [
+    2.5
+   ],
+   "rings": [
+    0.5
+   ],
+   "refused": "StructuredRemeshUnsupported",
+   "reason": "NOT_TENSOR_PRODUCT_NODES",
+   "detail": "NOT_TENSOR_PRODUCT_NODES: 23 nodes vs 6 x 4 lines",
+   "generation_s": 0.0
+  },
+  "G_non_planar": {
+   "input_triangles": 30,
+   "input_points": 24,
+   "centers": [
+    2.5
+   ],
+   "rings": [
+    0.5
+   ],
+   "refused": "StructuredRemeshUnsupported",
+   "reason": "NOT_PLANAR",
+   "detail": "NOT_PLANAR",
+   "generation_s": 0.0
+  },
+  "G_transition_aspect_fails": {
+   "input_triangles": 40,
+   "input_points": 33,
+   "centers": [
+    0.5
+   ],
+   "rings": [
+    0.1
+   ],
+   "refused": "StructuredRemeshAborted",
+   "reason": "TRANSITION_ASPECT",
+   "detail": "TRANSITION_ASPECT: strip [0.30000000000000004, 0.4] depth 0: width 0.09999999999999998 < half sub-row height 0.5",
+   "generation_s": 0.003
+  },
+  "G_production_y_axis_keeps_graded": {
+   "output_triangles": 1040,
+   "output_obtuse": 120,
+   "note": "graded (old) path kept for an input outside the structured scope; the importer's area gate then decides"
+  },
+  "G_production_interface_keeps_graded": {
+   "output_triangles": 1800,
+   "output_obtuse": 232,
+   "note": "graded (old) path kept for an input outside the structured scope; the importer's area gate then decides"
+  }
+ }
+}

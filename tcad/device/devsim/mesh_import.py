@@ -45,7 +45,9 @@ import numpy as np
 
 from tcad.device.devsim import backend
 from tcad.device.devsim.mesh_conservation import check_mesh_input, verify_device
-from tcad.device.devsim.mesh_refine import graded_refine_mesh_near, refine_mesh_near
+from tcad.device.devsim.mesh_refine import (
+    StructuredRemeshUnsupported, graded_refine_mesh_near, refine_mesh_near, structured_lateral_refine,
+)
 from tcad.mesh.interface import DopingProfile, ProcessResult
 
 #: Target ratio of post-refinement local edge length to Debye length,
@@ -361,9 +363,25 @@ def refine_process_result_for_implant_windows(
     if not predicates:
         return None
 
-    refined_points, refined_triangles, refined_tags = graded_refine_mesh_near(
-        points, triangles, tags, predicates
-    )
+    # Batch 7H-E6G: a single-Si, axis-aligned structured grid refined in
+    # x bands (no interface rings) is rebuilt with non-obtuse transition
+    # templates instead of red-green passes, whose obtuse children DEVSIM
+    # over-integrates (the area gate refuses them). Any other input keeps
+    # the graded path below. A supported input that cannot be completed
+    # (aspect condition, triangle cap) raises StructuredRemeshAborted.
+    refined = None
+    request = implant_windows_lateral_request(result.doping, points, triangles)
+    if interface_position_um is None and request is not None and request["axis"] == "x" and request["centers"]:
+        names = {region.tag: region.name for region in result.material_regions}
+        other_cells = [c.type for i, c in enumerate(mesh.cells) if i != block_index and c.type not in _ZERO_AREA_CELL_TYPES]
+        if not other_cells and {names.get(int(t)) for t in np.unique(tags)} == {"Si"}:
+            try:
+                refined = structured_lateral_refine(points, triangles, tags, request["centers"], request["rings"])[:3]
+            except StructuredRemeshUnsupported:
+                refined = None
+    if refined is None:
+        refined = graded_refine_mesh_near(points, triangles, tags, predicates)
+    refined_points, refined_triangles, refined_tags = refined
 
     if refined_mesh_path is None:
         refined_mesh_path = f"{result.volume_mesh_path}.implant_refined.vtu"
@@ -483,6 +501,42 @@ def derive_implant_windows_refinement(
     axis_index = {"x": 0, "y": 1, "z": 2}
     predicates: List[Any] = []
 
+    request = implant_windows_lateral_request(doping, points, triangles, max_rings)
+    if request is None:
+        return predicates
+    rings, centers, lateral = request["rings"], request["centers"], axis_index[request["axis"]]
+
+    if centers:
+        for half_width in rings:
+            predicates.append(
+                lambda centroid, cs=tuple(centers), hw=half_width, i=lateral: any(
+                    abs(centroid[i] - c) < hw for c in cs
+                )
+            )
+
+    if interface_position_um is not None:
+        vertical = axis_index[interface_axis]
+        for half_width in rings:
+            predicates.append(
+                lambda centroid, p=interface_position_um, hw=half_width,
+                i=vertical: abs(centroid[i] - p) < hw
+            )
+    return predicates
+
+
+def implant_windows_lateral_request(
+    doping: DopingProfile,
+    points: np.ndarray,
+    triangles: np.ndarray,
+    max_rings: int = _IMPLANT_WINDOWS_MAX_RINGS,
+) -> Optional[Dict[str, Any]]:
+    """The explicit lateral refinement request of the first usable
+    `implant_windows` region: {"axis", "centers" (window edges that are
+    real junctions), "rings" (telescoping half-widths)}. This is exactly
+    what `derive_implant_windows_refinement()` turns into predicates
+    (it calls this), so the structured remesher and the predicate path
+    read the same request. None if no region is usable."""
+    axis_index = {"x": 0, "y": 1, "z": 2}
     for region in doping.regions:
         windows = region.implant_windows
         if not windows or region.junction_axis is None:
@@ -518,25 +572,8 @@ def derive_implant_windows_refinement(
                     continue
                 centers.append(edge_um)
         centers = sorted(set(round(c, 6) for c in centers))
-
-        if centers:
-            for half_width in rings:
-                predicates.append(
-                    lambda centroid, cs=tuple(centers), hw=half_width, i=lateral: any(
-                        abs(centroid[i] - c) < hw for c in cs
-                    )
-                )
-
-        if interface_position_um is not None:
-            vertical = axis_index[interface_axis]
-            for half_width in rings:
-                predicates.append(
-                    lambda centroid, p=interface_position_um, hw=half_width,
-                    i=vertical: abs(centroid[i] - p) < hw
-                )
-        return predicates
-
-    return predicates
+        return {"axis": region.junction_axis, "centers": centers, "rings": rings}
+    return None
 
 
 def derive_barrier_covered_windows(

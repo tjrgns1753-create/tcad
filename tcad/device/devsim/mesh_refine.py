@@ -220,3 +220,233 @@ def graded_refine_mesh_near(
     for predicate in predicates:
         points, triangles, tags = refine_mesh_near(points, triangles, tags, predicate, levels=1)
     return points, triangles, tags
+
+
+# ---------------------------------------------------------------------------
+# Structured-grid lateral refinement with non-obtuse transition templates
+# (Batch 7H-E6G). The red-green passes above create obtuse children on the
+# right-triangle grids ViennaPS writes, and DEVSIM's NodeVolume over-counts
+# obtuse triangles, so the area gate refuses those meshes. For the one case
+# below -- a single-material, axis-aligned structured grid refined in bands
+# along x -- the mesh is instead rebuilt from its own grid lines: each column
+# is split by a 1D binary tree into strips one sub-cell wide, a strip of
+# depth d has 2^d sub-rows per row, neighbouring strips differ by at most one
+# level, and a coarser strip next to a finer one uses a transition template
+# (midpoint of the shared edge; non-obtuse iff the sub-cell's width >= half
+# its height, checked exactly). Every original node keeps its index and
+# coordinates; new nodes are appended.
+# Criteria: docs/audits/2026-10-01-batch7h-e6g-structured-template/CRITERIA.md
+# ---------------------------------------------------------------------------
+
+STRUCTURED_TRIANGLE_CAP = 400000
+
+
+class StructuredRemeshUnsupported(ValueError):
+    """The input is outside the structured builder's supported scope (`reason` says which condition failed).
+    The caller keeps its existing refinement path."""
+
+    def __init__(self, reason: str, detail: str = ""):
+        super().__init__(f"{reason}: {detail}" if detail else reason)
+        self.reason = reason
+
+
+class StructuredRemeshAborted(RuntimeError):
+    """The input is supported but the construction cannot be completed without breaking a contract
+    (transition aspect condition, resource cap). Never replaced by another refinement."""
+
+    def __init__(self, reason: str, detail: str = ""):
+        super().__init__(f"{reason}: {detail}" if detail else reason)
+        self.reason = reason
+
+
+def structured_grid_of(points: np.ndarray, triangles: np.ndarray, tags: np.ndarray):
+    """Prove that (points, triangles, tags) is a single-material, axis-aligned structured grid: the node set is the full tensor
+    product of its distinct x and y values, and every grid cell is covered by exactly its two halves (two triangles on 3 of its 4
+    corners whose missing corners are opposite). Returns (xs, ys, cell_triangles, orientation) or raises StructuredRemeshUnsupported."""
+    P = np.asarray(points, dtype=np.float64)
+    T = np.asarray(triangles, dtype=np.int64)
+    G = np.asarray(tags).reshape(-1)
+    if P.ndim != 2 or P.shape[1] < 2 or len(T) == 0:
+        raise StructuredRemeshUnsupported("NOT_A_TRIANGLE_MESH")
+    if P.shape[1] > 2 and np.any(P[:, 2:] != 0):
+        raise StructuredRemeshUnsupported("NOT_PLANAR")
+    if len(np.unique(G)) != 1:
+        raise StructuredRemeshUnsupported("MULTI_MATERIAL", f"{len(np.unique(G))} material tags")
+    xs, ys = np.unique(P[:, 0]), np.unique(P[:, 1])
+    nx, ny = len(xs) - 1, len(ys) - 1
+    if nx < 1 or ny < 1 or len(np.unique(P[:, :2], axis=0)) != len(P) or len(P) != (nx + 1) * (ny + 1):
+        raise StructuredRemeshUnsupported("NOT_TENSOR_PRODUCT_NODES", f"{len(P)} nodes vs {len(xs)} x {len(ys)} lines")
+    if len(T) != 2 * nx * ny:
+        raise StructuredRemeshUnsupported("NOT_TWO_TRIANGLES_PER_CELL", f"{len(T)} triangles for {nx} x {ny} cells")
+    ix = np.searchsorted(xs, P[:, 0])
+    iy = np.searchsorted(ys, P[:, 1])
+    cells: Dict[Tuple[int, int], List[int]] = {}
+    for t_index, t in enumerate(T.tolist()):
+        I, J = ix[t], iy[t]
+        if I.max() - I.min() != 1 or J.max() - J.min() != 1:
+            raise StructuredRemeshUnsupported("TRIANGLE_NOT_HALF_OF_ONE_CELL", f"triangle {t_index}")
+        cells.setdefault((int(I.min()), int(J.min())), []).append(t_index)
+    corner = lambda i, j: (i, j)  # noqa: E731
+    for (i, j), members in cells.items():
+        if len(members) != 2:
+            raise StructuredRemeshUnsupported("CELL_NOT_COVERED_BY_TWO_HALVES", f"cell ({i}, {j}) has {len(members)} triangles")
+        four = {corner(i, j), corner(i + 1, j), corner(i + 1, j + 1), corner(i, j + 1)}
+        missing = []
+        for m in members:
+            have = {(int(ix[v]), int(iy[v])) for v in T[m]}
+            if len(have) != 3:
+                raise StructuredRemeshUnsupported("TRIANGLE_NOT_HALF_OF_ONE_CELL", f"triangle {m}")
+            missing.append((four - have).pop())
+        (a0, b0), (a1, b1) = missing
+        if a0 == a1 or b0 == b1:   # missing corners must be diagonally opposite, otherwise the halves overlap
+            raise StructuredRemeshUnsupported("CELL_HALVES_OVERLAP", f"cell ({i}, {j})")
+    if len(cells) != nx * ny:
+        raise StructuredRemeshUnsupported("CELL_NOT_COVERED_BY_TWO_HALVES", f"{len(cells)} of {nx * ny} cells covered")
+    a, b, c = P[T[:, 0], :2], P[T[:, 1], :2], P[T[:, 2], :2]
+    o = (b[:, 0] - a[:, 0]) * (c[:, 1] - a[:, 1]) - (b[:, 1] - a[:, 1]) * (c[:, 0] - a[:, 0])
+    if not (np.all(o > 0) or np.all(o < 0)):
+        raise StructuredRemeshUnsupported("MIXED_ORIENTATION")
+    return xs, ys, cells, (1 if o[0] > 0 else -1)
+
+
+def _strip_depths(xs: np.ndarray, centers: List[float], half_widths: List[float]):
+    """1D binary-tree strips: split an interval while a band {|x - c| < hw_k} it intersects requires depth >= k + 1, then 2:1
+    balance neighbours. Returns [(a, b, depth, column)] left to right."""
+    def required(a, b):
+        need = 0
+        for k, hw in enumerate(half_widths):
+            if any(a < c + hw and b > c - hw for c in centers):
+                need = max(need, k + 1)
+        return need
+    leaves = []
+    for i in range(len(xs) - 1):
+        stack = [(float(xs[i]), float(xs[i + 1]), 0)]
+        out = []
+        while stack:
+            a, b, d = stack.pop()
+            if d < required(a, b):
+                m = (a + b) / 2.0
+                stack += [(m, b, d + 1), (a, m, d + 1)]
+            else:
+                out.append((a, b, d, i))
+        leaves += sorted(out)
+    changed = True
+    while changed:
+        changed = False
+        for k in range(len(leaves) - 1):
+            (a0, b0, d0, i0), (a1, b1, d1, i1) = leaves[k], leaves[k + 1]
+            if abs(d0 - d1) > 1:
+                j = k if d0 < d1 else k + 1
+                a, b, d, i = leaves[j]
+                m = (a + b) / 2.0
+                leaves[j:j + 1] = [(a, m, d + 1, i), (m, b, d + 1, i)]
+                changed = True
+                break
+    return leaves
+
+
+def structured_lateral_refine(points, triangles, tags, centers: List[float], half_widths: List[float],
+                              cap: int = STRUCTURED_TRIANGLE_CAP):
+    """Rebuild a supported structured grid so that every point within half_widths[k] of any center (x axis) lies in cells refined
+    k + 1 times in both directions, with non-obtuse transition templates. Returns (points, triangles, tags, report). Raises
+    StructuredRemeshUnsupported (input outside scope) or StructuredRemeshAborted (aspect condition or cap)."""
+    from fractions import Fraction
+    P0 = np.asarray(points, dtype=np.float64)
+    T0 = np.asarray(triangles, dtype=np.int64)
+    G0 = np.asarray(tags).reshape(-1)
+    xs, ys, cells, orient = structured_grid_of(P0, T0, G0)
+    leaves = _strip_depths(xs, list(centers), list(half_widths))
+    if all(d == 0 for _, _, d, _ in leaves):
+        return points, triangles, tags, {"identity": True, "leaves": len(leaves)}
+    ny = len(ys) - 1
+    ysub_cache: Dict[Tuple[int, int], List[float]] = {}
+
+    def ysub(j: int, d: int) -> List[float]:
+        key = (j, d)
+        if key not in ysub_cache:
+            if d == 0:
+                ysub_cache[key] = [float(ys[j]), float(ys[j + 1])]
+            else:
+                prev = ysub(j, d - 1)
+                out = []
+                for u, v in zip(prev[:-1], prev[1:]):
+                    out += [u, (u + v) / 2.0]
+                ysub_cache[key] = out + [prev[-1]]
+        return ysub_cache[key]
+
+    depth_left = [leaves[k - 1][2] if k > 0 else None for k in range(len(leaves))]
+    depth_right = [leaves[k + 1][2] if k + 1 < len(leaves) else None for k in range(len(leaves))]
+    n_tri = 0
+    min_margin = None
+    for k, (a, b, d, i) in enumerate(leaves):
+        fl = depth_left[k] == d + 1
+        fr = depth_right[k] == d + 1
+        per = 4 if (fl and fr) else 3 if (fl or fr) else 2
+        n_tri += per * ny * (2 ** d)
+        if fl != fr:   # one-sided template: exact non-obtuse condition w >= h / 2 for every sub-cell of this strip
+            w = Fraction(b) - Fraction(a)
+            for j in range(ny):
+                yy = ysub(j, d)
+                for u, v in zip(yy[:-1], yy[1:]):
+                    h = Fraction(v) - Fraction(u)
+                    margin = w - h / 2
+                    min_margin = margin if min_margin is None else min(min_margin, margin)
+                    if margin < 0:
+                        raise StructuredRemeshAborted("TRANSITION_ASPECT", f"strip [{a!r}, {b!r}] depth {d}: width {float(w)!r} < "
+                                                      f"half sub-row height {float(h) / 2!r}")
+    if n_tri > cap:
+        raise StructuredRemeshAborted("RESOURCE_CAP", f"{n_tri} triangles would exceed the cap {cap}")
+    # nodes: every original node keeps its index; new nodes appended line by line, y ascending
+    index: Dict[Tuple[float, float], int] = {(float(x), float(y)): n for n, (x, y) in enumerate(P0[:, :2].tolist())}
+    new_pts: List[Tuple[float, float]] = []
+
+    def node(x: float, y: float) -> int:
+        key = (x, y)
+        if key not in index:
+            index[key] = len(P0) + len(new_pts)
+            new_pts.append(key)
+        return index[key]
+    lines = [leaves[0][0]] + [b for _, b, _, _ in leaves]
+    n_leaves = len(leaves)
+    line_depth = [max(leaves[k][2] if k < n_leaves else -1, leaves[k - 1][2] if k > 0 else -1) for k in range(n_leaves + 1)]
+    for x, d in zip(lines, line_depth):
+        for j in range(ny):
+            for y in ysub(j, d):
+                node(x, y)
+    tris: List[Tuple[int, int, int]] = []
+    for k, (a, b, d, i) in enumerate(leaves):
+        fl = depth_left[k] == d + 1
+        fr = depth_right[k] == d + 1
+        for j in range(ny):
+            if d == 0 and not (fl or fr):
+                tris += [tuple(int(v) for v in T0[m]) for m in sorted(cells[(i, j)])]   # untouched cell: original triangles
+                continue
+            yy = ysub(j, d)
+            yf = ysub(j, d + 1) if (fl or fr) else None
+            for s in range(len(yy) - 1):
+                y0, y1 = yy[s], yy[s + 1]
+                LL, LR, UR, UL = node(a, y0), node(b, y0), node(b, y1), node(a, y1)
+                if fl and fr:
+                    ML, MR = node(a, yf[2 * s + 1]), node(b, yf[2 * s + 1])
+                    cell = [(LL, LR, MR), (LL, MR, ML), (ML, MR, UR), (ML, UR, UL)]
+                elif fl:
+                    M = node(a, yf[2 * s + 1])
+                    cell = [(LL, LR, M), (M, LR, UR), (M, UR, UL)]
+                elif fr:
+                    M = node(b, yf[2 * s + 1])
+                    cell = [(LL, LR, M), (LL, M, UL), (UL, M, UR)]
+                else:
+                    cell = [(LL, LR, UR), (LL, UR, UL)]
+                tris += cell if orient > 0 else [(p, r, q) for p, q, r in cell]
+    if len(tris) != n_tri:
+        raise StructuredRemeshAborted("INTERNAL_COUNT_MISMATCH", f"{len(tris)} built vs {n_tri} planned")
+    out_pts = np.zeros((len(P0) + len(new_pts), P0.shape[1]), dtype=np.float64)
+    out_pts[:len(P0)] = P0
+    if new_pts:
+        out_pts[len(P0):, :2] = np.array(new_pts, dtype=np.float64)
+    depths = [d for _, _, d, _ in leaves]
+    report = {"identity": False, "leaves": len(leaves), "max_depth": max(depths),
+              "leaves_by_depth": {str(d): depths.count(d) for d in sorted(set(depths))},
+              "triangles": len(tris), "points": int(len(out_pts)), "new_points": len(new_pts),
+              "min_template_margin": None if min_margin is None else float(min_margin)}
+    return out_pts, np.array(tris, dtype=np.int64), np.full(len(tris), G0[0], dtype=G0.dtype), report
