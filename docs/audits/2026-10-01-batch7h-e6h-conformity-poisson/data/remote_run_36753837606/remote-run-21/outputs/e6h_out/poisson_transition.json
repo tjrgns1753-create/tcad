@@ -1,0 +1,523 @@
+{
+ "results": [
+  {
+   "family": "uniform",
+   "n": 8,
+   "h_um": 0.25,
+   "triangles": 32,
+   "nodes": 27,
+   "conformity": {
+    "nodes": 27,
+    "triangles": 32,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 58,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 20,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+   },
+   "presence": {
+    "apex_triangles": 0,
+    "ok": true
+   },
+   "poisson": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 1.1102230246251565e-16,
+    "max_rel_error": 1.1102230246251565e-16,
+    "max_error_node_um": [
+     0.5,
+     0.0
+    ],
+    "max_rel_diff_vs_numpy_voronoi": 1.4432899320127035e-15
+   },
+   "linear": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 2.7755575615628914e-17,
+    "max_rel_error": 2.7755575615628914e-17,
+    "max_error_node_um": [
+     0.5,
+     0.0
+    ]
+   }
+  },
+  {
+   "family": "one_sided",
+   "n": 8,
+   "h_um": 0.25,
+   "triangles": 116,
+   "nodes": 73,
+   "conformity": {
+    "nodes": 73,
+    "triangles": 116,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 188,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 28,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+   },
+   "presence": {
+    "apex_triangles": 12,
+    "expected_apex": 12,
+    "ok": true
+   },
+   "poisson": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 0.004949485441766988,
+    "max_rel_error": 0.004949485441766988,
+    "max_error_node_um": [
+     0.875,
+     0.0625
+    ],
+    "max_rel_diff_vs_numpy_voronoi": 2.9976021664879227e-15
+   },
+   "linear": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 5.551115123125783e-17,
+    "max_rel_error": 5.551115123125783e-17,
+    "max_error_node_um": [
+     0.75,
+     0.0
+    ]
+   }
+  },
+  {
+   "family": "one_sided",
+   "n": 16,
+   "h_um": 0.125,
+   "triangles": 296,
+   "nodes": 173,
+   "conformity": {
+    "nodes": 173,
+    "triangles": 296,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 468,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 48,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+   },
+   "presence": {
+    "apex_triangles": 24,
+    "expected_apex": 24,
+    "ok": true
+   },
+   "poisson": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 0.0012373713604417746,
+    "max_rel_error": 0.0012373713604417746,
+    "max_error_node_um": [
+     1.0625,
+     0.03125
+    ],
+    "max_rel_diff_vs_numpy_voronoi": 9.992007221626409e-15
+   },
+   "linear": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 5.551115123125783e-17,
+    "max_rel_error": 5.551115123125783e-17,
+    "max_error_node_um": [
+     0.96875,
+     0.0
+    ]
+   }
+  },
+  {
+   "family": "one_sided",
+   "n": 32,
+   "h_um": 0.0625,
+   "triangles": 848,
+   "nodes": 469,
+   "conformity": {
+    "nodes": 469,
+    "triangles": 848,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 1316,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 88,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+   },
+   "presence": {
+    "apex_triangles": 48,
+    "expected_apex": 48,
+    "ok": true
+   },
+   "poisson": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 0.0003093428401104159,
+    "max_rel_error": 0.0003093428401104159,
+    "max_error_node_um": [
+     1.03125,
+     0.015625
+    ],
+    "max_rel_diff_vs_numpy_voronoi": 1.0769163338864018e-14
+   },
+   "linear": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 1.1102230246251565e-16,
+    "max_rel_error": 1.1102230246251565e-16,
+    "max_error_node_um": [
+     1.3125,
+     0.0
+    ]
+   }
+  },
+  {
+   "family": "one_sided",
+   "n": 64,
+   "h_um": 0.03125,
+   "triangles": 2720,
+   "nodes": 1445,
+   "conformity": {
+    "nodes": 1445,
+    "triangles": 2720,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 4164,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 168,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+   },
+   "presence": {
+    "apex_triangles": 96,
+    "expected_apex": 96,
+    "ok": true
+   },
+   "poisson": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 7.733571002765949e-05,
+    "max_rel_error": 7.733571002765949e-05,
+    "max_error_node_um": [
+     1.015625,
+     0.0078125
+    ],
+    "max_rel_diff_vs_numpy_voronoi": 4.1300296516055823e-14
+   },
+   "linear": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 5.551115123125783e-17,
+    "max_rel_error": 5.551115123125783e-17,
+    "max_error_node_um": [
+     0.65625,
+     0.0
+    ]
+   }
+  },
+  {
+   "family": "two_sided",
+   "n": 8,
+   "h_um": 0.25,
+   "triangles": 88,
+   "nodes": 59,
+   "conformity": {
+    "nodes": 59,
+    "triangles": 88,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 146,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 28,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+   },
+   "presence": {
+    "apex_triangles": 4,
+    "expected_apex": 4,
+    "triangles_in_coarse_strip": 8,
+    "expected_in_coarse_strip": 8,
+    "midline_edge_present": true,
+    "ok": true
+   },
+   "poisson": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 0.004172763505901955,
+    "max_rel_error": 0.004172763505901955,
+    "max_error_node_um": [
+     0.25,
+     0.125
+    ],
+    "max_rel_diff_vs_numpy_voronoi": 5.551115123125783e-15
+   },
+   "linear": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 0.0,
+    "max_rel_error": 0.0,
+    "max_error_node_um": [
+     0.0,
+     0.0
+    ]
+   }
+  },
+  {
+   "family": "two_sided",
+   "n": 16,
+   "h_um": 0.125,
+   "triangles": 240,
+   "nodes": 145,
+   "conformity": {
+    "nodes": 145,
+    "triangles": 240,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 384,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 48,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+   },
+   "presence": {
+    "apex_triangles": 8,
+    "expected_apex": 8,
+    "triangles_in_coarse_strip": 16,
+    "expected_in_coarse_strip": 16,
+    "midline_edge_present": true,
+    "ok": true
+   },
+   "poisson": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 0.0010431908764755027,
+    "max_rel_error": 0.0010431908764755027,
+    "max_error_node_um": [
+     0.125,
+     0.4375
+    ],
+    "max_rel_diff_vs_numpy_voronoi": 2.3314683517128287e-15
+   },
+   "linear": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 1.1102230246251565e-16,
+    "max_rel_error": 1.1102230246251565e-16,
+    "max_error_node_um": [
+     1.625,
+     0.0
+    ]
+   }
+  },
+  {
+   "family": "two_sided",
+   "n": 32,
+   "h_um": 0.0625,
+   "triangles": 736,
+   "nodes": 413,
+   "conformity": {
+    "nodes": 413,
+    "triangles": 736,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 1148,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 88,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+   },
+   "presence": {
+    "apex_triangles": 16,
+    "expected_apex": 16,
+    "triangles_in_coarse_strip": 32,
+    "expected_in_coarse_strip": 32,
+    "midline_edge_present": true,
+    "ok": true
+   },
+   "poisson": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 0.00026079771911891036,
+    "max_rel_error": 0.00026079771911891036,
+    "max_error_node_um": [
+     0.375,
+     0.03125
+    ],
+    "max_rel_diff_vs_numpy_voronoi": 9.103828801926284e-15
+   },
+   "linear": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 1.1102230246251565e-16,
+    "max_rel_error": 1.1102230246251565e-16,
+    "max_error_node_um": [
+     1.3125,
+     0.0
+    ]
+   }
+  },
+  {
+   "family": "two_sided",
+   "n": 64,
+   "h_um": 0.03125,
+   "triangles": 2496,
+   "nodes": 1333,
+   "conformity": {
+    "nodes": 1333,
+    "triangles": 2496,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 3828,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 168,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+   },
+   "presence": {
+    "apex_triangles": 32,
+    "expected_apex": 32,
+    "triangles_in_coarse_strip": 64,
+    "expected_in_coarse_strip": 64,
+    "midline_edge_present": true,
+    "ok": true
+   },
+   "poisson": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 6.519942977972759e-05,
+    "max_rel_error": 6.519942977972759e-05,
+    "max_error_node_um": [
+     0.03125,
+     0.328125
+    ],
+    "max_rel_diff_vs_numpy_voronoi": 1.7763568394002505e-14
+   },
+   "linear": {
+    "solves": 1,
+    "area_pass": true,
+    "max_exact": 1.0,
+    "max_abs_error": 1.1102230246251565e-16,
+    "max_rel_error": 1.1102230246251565e-16,
+    "max_error_node_um": [
+     1.9375,
+     0.0
+    ]
+   }
+  }
+ ],
+ "observed_orders": {
+  "one_sided": [
+   1.9999999999999676,
+   2.0000000000001292,
+   1.9999999999989644
+  ],
+  "two_sided": [
+   1.999999999999981,
+   1.9999999999998082,
+   2.0
+  ]
+ },
+ "failures": [],
+ "pass": true,
+ "constants": {
+  "EPS": 1.0,
+  "RHO": 200000000.0,
+  "L_cm": 0.0002,
+  "MATCH_TOL": 1e-09,
+  "LINEAR_TOL": 1e-09,
+  "MIN_ORDER": 1.5
+ }
+}

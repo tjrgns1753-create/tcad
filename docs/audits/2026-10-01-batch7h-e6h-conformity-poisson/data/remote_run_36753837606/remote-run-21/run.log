@@ -1,0 +1,96 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6h] test_mesh_structured_remesh_mock rc=0 wall=27.2s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+A: old red-green 1 obtuse; template build 11 triangles, 0 obtuse, conforming, area exact
+B: 1180 triangles expected -> 1180 ; far field untouched; permuted input gives the same geometry
+C: float32 anisotropic grid: 850 triangles, exact checks and band resolution hold
+D: two windows: 1248 triangles, exact checks hold
+G: multi-material, missing triangle, non-planar, overlapping halves refused; aspect and cap abort
+C: invalid requests, depth / leaf budgets, midpoint exhaustion and the cap boundary (cap == count passes, cap - 1 aborts)
+ALL STRUCTURED REMESH MOCK CHECKS PASSED
+
+[e6h] test_mesh_refine_mock rc=0 wall=0.2s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+levels=1: 340 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.5000, far-field preserved=True
+levels=2: 860 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.2500, far-field preserved=True
+levels=3: 2860 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.1250, far-field preserved=True
+empty predicate -> no-op: OK
+graded (3 rings, half-widths 1.0/0.5/0.25): 1180 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.1250
+graded, empty ring list -> no-op: OK
+ALL MESH_REFINE MOCK CHECKS PASSED
+
+[e6h] test_mesh_conformity_check_mock rc=0 wall=20.6s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+CONFORMITY CHECKER FALSE-GREEN TESTS PASSED
+
+[e6h] test_mesh_implant_refine_fallback_mock rc=0 wall=0.5s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+FALLBACK MOCK CHECKS PASSED: supported -> structured (equal to a direct call); Unsupported -> graded + logged reason; Aborted -> propagated, nothing written
+
+[e6h] conformity_bf rc=0 wall=1.9s
+B {"nodes": 876, "triangles": 1630, "index_valid": true, "duplicate_coordinates": 0, "duplicate_triangles": 0, "unused_nodes": 0, "degenerate": 0, "one_orientation": true, "edges": 2505, "edges_with_more_than_two_owners": 0, "interior_edges_same_direction": 0, "boundary_edges": 120, "boundary_edges_off_rectangle": 0, "boundary_covers_rectangle_exactly": true, "area_equals_rectangle": true, "hanging_nodes": 0, "pass": true, "wall_s": 0.01, "file_sha256": "0c0e402eac1e50a9369e9c15d69d4d983a7917422d94d366939aa2defad70867", "apex_triangles": 90}
+F {"nodes": 98365, "triangles": 196000, "index_valid": true, "duplicate_coordinates": 0, "duplicate_triangles": 0, "unused_nodes": 0, "degenerate": 0, "one_orientation": true, "edges": 294364, "edges_with_more_than_two_owners": 0, "interior_edges_same_direction": 0, "boundary_edges": 728, "boundary_edges_off_rectangle": 0, "boundary_covers_rectangle_exactly": true, "area_equals_rectangle": true, "hanging_nodes": 0, "pass": true, "wall_s": 1.21, "file_sha256": "d3485b37cda241865cecd10d7aede15f874e5c9b2e22ff66f20208e2ee3c456c", "apex_triangles": 12000}
+
+[e6h] test_mesh_gate_poisson_transition_real rc=0 wall=1.8s
+7319e-15
+      Equation: "PotentialEquation"	RelError: 1.01487e-14	AbsError: 3.47319e-15
+two_sided 32 {"triangles": 736, "nodes": 413} poisson rel err 0.00026079771911891036 vs numpy 9.103828801926284e-15 linear rel err 1.1102230246251565e-16
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2496 Triangles.
+Physical group name Si has 3828 Lines.
+Physical group name Si has 1333 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 16 Lines.
+Physical group name Si_xmax has 17 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 16 Lines.
+Physical group name Si_xmin has 17 Points.
+Device two_sided_64_poisson_device has 1333 coordinates with max index 1332
+Region Si has 1333 nodes.
+Contact Si_xmax in region Si with 17 nodes
+Contact Si_xmin in region Si with 17 nodes
+number of equations 1333
+Iteration: 0
+  Device: "two_sided_64_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "two_sided_64_poisson_device"	RelError: 5.30193e-14	AbsError: 5.26664e-14
+    Region: "Si"	RelError: 5.30193e-14	AbsError: 5.26664e-14
+      Equation: "PotentialEquation"	RelError: 5.30193e-14	AbsError: 5.26664e-14
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2496 Triangles.
+Physical group name Si has 3828 Lines.
+Physical group name Si has 1333 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 16 Lines.
+Physical group name Si_xmax has 17 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 16 Lines.
+Physical group name Si_xmin has 17 Points.
+Device two_sided_64_linear_device has 1333 coordinates with max index 1332
+Region Si has 1333 nodes.
+Contact Si_xmax in region Si with 17 nodes
+Contact Si_xmin in region Si with 17 nodes
+number of equations 1333
+Iteration: 0
+  Device: "two_sided_64_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "two_sided_64_linear_device"	RelError: 7.92987e-14	AbsError: 3.19631e-14
+    Region: "Si"	RelError: 7.92987e-14	AbsError: 3.19631e-14
+      Equation: "PotentialEquation"	RelError: 7.92987e-14	AbsError: 3.19631e-14
+two_sided 64 {"triangles": 2496, "nodes": 1333} poisson rel err 6.519942977972759e-05 vs numpy 1.7763568394002505e-14 linear rel err 1.1102230246251565e-16
+observed orders: {'one_sided': [1.9999999999999676, 2.0000000000001292, 1.9999999999989644], 'two_sided': [1.999999999999981, 1.9999999999998082, 2.0]}
+MESH GATE POISSON TRANSITION CONTROL PASSED
+

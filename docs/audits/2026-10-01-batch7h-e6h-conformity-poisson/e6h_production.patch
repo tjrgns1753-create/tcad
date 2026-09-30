@@ -1,0 +1,170 @@
+diff --git a/tcad/device/devsim/mesh_import.py b/tcad/device/devsim/mesh_import.py
+index 8a64fbf..4f71b3a 100644
+--- a/tcad/device/devsim/mesh_import.py
++++ b/tcad/device/devsim/mesh_import.py
+@@ -36,6 +36,7 @@ Two things confirmed only by real execution (not documented anywhere):
+ 
+ from __future__ import annotations
+ 
++import logging
+ import math
+ from collections import defaultdict
+ from dataclasses import dataclass, field
+@@ -50,6 +51,8 @@ from tcad.device.devsim.mesh_refine import (
+ )
+ from tcad.mesh.interface import DopingProfile, ProcessResult
+ 
++logger = logging.getLogger(__name__)
++
+ #: Target ratio of post-refinement local edge length to Debye length,
+ #: used to derive how many graded rings auto_refine_from_doping needs
+ #: (see _derive_refine_from_doping). Chosen to match this project's own
+@@ -377,7 +380,9 @@ def refine_process_result_for_implant_windows(
+         if not other_cells and {names.get(int(t)) for t in np.unique(tags)} == {"Si"}:
+             try:
+                 refined = structured_lateral_refine(points, triangles, tags, request["centers"], request["rings"])[:3]
+-            except StructuredRemeshUnsupported:
++            except StructuredRemeshUnsupported as exc:
++                # outside the structured scope: keep the graded path; the importer's area gate still judges the result
++                logger.warning("structured implant-window remesh unsupported (%s); using graded refinement", exc.reason)
+                 refined = None
+     if refined is None:
+         refined = graded_refine_mesh_near(points, triangles, tags, predicates)
+diff --git a/tcad/device/devsim/mesh_refine.py b/tcad/device/devsim/mesh_refine.py
+index 4a05c40..4a0c921 100644
+--- a/tcad/device/devsim/mesh_refine.py
++++ b/tcad/device/devsim/mesh_refine.py
+@@ -51,6 +51,7 @@ the project's own doping levels (see the module docstring above).
+ 
+ from __future__ import annotations
+ 
++import math
+ from typing import Callable, Dict, List, Tuple
+ 
+ import numpy as np
+@@ -309,15 +310,47 @@ def structured_grid_of(points: np.ndarray, triangles: np.ndarray, tags: np.ndarr
+     return xs, ys, cells, (1 if o[0] > 0 else -1)
+ 
+ 
+-def _strip_depths(xs: np.ndarray, centers: List[float], half_widths: List[float]):
++def _validated_request(centers, half_widths):
++    """Finite, non-empty centres and strictly positive finite half widths, else StructuredRemeshAborted('INVALID_REQUEST').
++    (Batch 7H-E6H: NaN comparisons used to make an invalid request look like 'nothing to refine'.)"""
++    try:
++        c = [float(v) for v in centers]
++        h = [float(v) for v in half_widths]
++    except (TypeError, ValueError) as exc:
++        raise StructuredRemeshAborted("INVALID_REQUEST", f"non-numeric centre or half width: {exc}") from exc
++    if not c or not h:
++        raise StructuredRemeshAborted("INVALID_REQUEST", "empty centre or half-width list")
++    if not all(math.isfinite(v) for v in c + h):
++        raise StructuredRemeshAborted("INVALID_REQUEST", "non-finite centre or half width")
++    if any(v <= 0.0 for v in h):
++        raise StructuredRemeshAborted("INVALID_REQUEST", "half widths must be > 0")
++    return c, h
++
++
++def _strip_depths(xs: np.ndarray, centers: List[float], half_widths: List[float], cap: int = STRUCTURED_TRIANGLE_CAP):
+     """1D binary-tree strips: split an interval while a band {|x - c| < hw_k} it intersects requires depth >= k + 1, then 2:1
+-    balance neighbours. Returns [(a, b, depth, column)] left to right."""
++    balance neighbours. Returns [(a, b, depth, column)] left to right. Budget (Batch 7H-E6H): a strip at depth d needs at least
++    2^(d+1) triangles and every leaf at least 2, so the build aborts with RESOURCE_CAP as soon as either lower bound exceeds `cap`,
++    and with SUBDIVISION_EXHAUSTED when a midpoint is not strictly inside its interval (no new float64 coordinate can be made)."""
+     def required(a, b):
+         need = 0
+         for k, hw in enumerate(half_widths):
+             if any(a < c + hw and b > c - hw for c in centers):
+                 need = max(need, k + 1)
+         return need
++
++    def split(a, b, d):
++        if (1 << (d + 2)) > cap:
++            raise StructuredRemeshAborted("RESOURCE_CAP", f"a strip at depth {d + 1} alone needs more than {cap} triangles")
++        m = (a + b) / 2.0
++        if not a < m < b:
++            raise StructuredRemeshAborted("SUBDIVISION_EXHAUSTED", f"interval [{a!r}, {b!r}] cannot be split at depth {d + 1}")
++        return m
++
++    def budget(n_leaves):
++        if 2 * n_leaves > cap:
++            raise StructuredRemeshAborted("RESOURCE_CAP", f"{n_leaves} strips need more than {cap} triangles")
++
+     leaves = []
+     for i in range(len(xs) - 1):
+         stack = [(float(xs[i]), float(xs[i + 1]), 0)]
+@@ -325,10 +358,11 @@ def _strip_depths(xs: np.ndarray, centers: List[float], half_widths: List[float]
+         while stack:
+             a, b, d = stack.pop()
+             if d < required(a, b):
+-                m = (a + b) / 2.0
++                m = split(a, b, d)
+                 stack += [(m, b, d + 1), (a, m, d + 1)]
+             else:
+                 out.append((a, b, d, i))
++            budget(len(leaves) + len(out) + len(stack))
+         leaves += sorted(out)
+     changed = True
+     while changed:
+@@ -338,8 +372,9 @@ def _strip_depths(xs: np.ndarray, centers: List[float], half_widths: List[float]
+             if abs(d0 - d1) > 1:
+                 j = k if d0 < d1 else k + 1
+                 a, b, d, i = leaves[j]
+-                m = (a + b) / 2.0
++                m = split(a, b, d)
+                 leaves[j:j + 1] = [(a, m, d + 1, i), (m, b, d + 1, i)]
++                budget(len(leaves))
+                 changed = True
+                 break
+     return leaves
+@@ -354,9 +389,10 @@ def structured_lateral_refine(points, triangles, tags, centers: List[float], hal
+     P0 = np.asarray(points, dtype=np.float64)
+     T0 = np.asarray(triangles, dtype=np.int64)
+     G0 = np.asarray(tags).reshape(-1)
++    centers, half_widths = _validated_request(centers, half_widths)
+     xs, ys, cells, orient = structured_grid_of(P0, T0, G0)
+-    leaves = _strip_depths(xs, list(centers), list(half_widths))
+-    if all(d == 0 for _, _, d, _ in leaves):
++    leaves = _strip_depths(xs, centers, half_widths, cap)
++    if all(d == 0 for _, _, d, _ in leaves):   # a valid request whose bands need no refinement in this domain
+         return points, triangles, tags, {"identity": True, "leaves": len(leaves)}
+     ny = len(ys) - 1
+     ysub_cache: Dict[Tuple[int, int], List[float]] = {}
+@@ -370,19 +406,26 @@ def structured_lateral_refine(points, triangles, tags, centers: List[float], hal
+                 prev = ysub(j, d - 1)
+                 out = []
+                 for u, v in zip(prev[:-1], prev[1:]):
+-                    out += [u, (u + v) / 2.0]
++                    m = (u + v) / 2.0
++                    if not u < m < v:
++                        raise StructuredRemeshAborted("SUBDIVISION_EXHAUSTED", f"row interval [{u!r}, {v!r}] cannot be split")
++                    out += [u, m]
+                 ysub_cache[key] = out + [prev[-1]]
+         return ysub_cache[key]
+ 
+     depth_left = [leaves[k - 1][2] if k > 0 else None for k in range(len(leaves))]
+     depth_right = [leaves[k + 1][2] if k + 1 < len(leaves) else None for k in range(len(leaves))]
+     n_tri = 0
++    for k, (a, b, d, i) in enumerate(leaves):   # planned count first: the cap is checked before any sub-row list or aspect loop
++        fl = depth_left[k] == d + 1
++        fr = depth_right[k] == d + 1
++        n_tri += (4 if (fl and fr) else 3 if (fl or fr) else 2) * ny * (2 ** d)
++    if n_tri > cap:
++        raise StructuredRemeshAborted("RESOURCE_CAP", f"{n_tri} triangles would exceed the cap {cap}")
+     min_margin = None
+     for k, (a, b, d, i) in enumerate(leaves):
+         fl = depth_left[k] == d + 1
+         fr = depth_right[k] == d + 1
+-        per = 4 if (fl and fr) else 3 if (fl or fr) else 2
+-        n_tri += per * ny * (2 ** d)
+         if fl != fr:   # one-sided template: exact non-obtuse condition w >= h / 2 for every sub-cell of this strip
+             w = Fraction(b) - Fraction(a)
+             for j in range(ny):
+@@ -394,8 +437,6 @@ def structured_lateral_refine(points, triangles, tags, centers: List[float], hal
+                     if margin < 0:
+                         raise StructuredRemeshAborted("TRANSITION_ASPECT", f"strip [{a!r}, {b!r}] depth {d}: width {float(w)!r} < "
+                                                       f"half sub-row height {float(h) / 2!r}")
+-    if n_tri > cap:
+-        raise StructuredRemeshAborted("RESOURCE_CAP", f"{n_tri} triangles would exceed the cap {cap}")
+     # nodes: every original node keeps its index; new nodes appended line by line, y ascending
+     index: Dict[Tuple[float, float], int] = {(float(x), float(y)): n for n, (x, y) in enumerate(P0[:, :2].tolist())}
+     new_pts: List[Tuple[float, float]] = []

@@ -1,0 +1,183 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T17:47:34.695217+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6h-conformity-poisson-001",
+  "profile": "e6h_conformity_poisson",
+  "params": {},
+  "note": "Batch 7H-E6H. Criteria fixed in 6937e76 + erratum e7e2552 before any DEVSIM run. Unit tests, B/F conformity, Poisson/linear controls on builder transition meshes. No full regression, no PN/DC sweep."
+ },
+ "profile": "e6h_conformity_poisson",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/CRITERIA.md",
+   "sha256": "4afc52c23c9298939e6d5c0da45780d065bd0c2c9e2684da59be05d3fc1e6d0c",
+   "bytes": 7781
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/CRITERIA_ERRATUM_1.md",
+   "sha256": "ce6dca5e9040b40a268602bba7ab2b642ad0b98dbfed1e46f82a13a9c0ce5d01",
+   "bytes": 1163
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/run_e6h.py",
+   "sha256": "d25f75cc3d53dc687efd8fa00f41a19991acc435f09a75a96fe438c33f3ba41f",
+   "bytes": 3807
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_e6h.py",
+   "sha256": "87a41856f034a42b771d947d82434184d62f8e0e97d7e0b3e80f79c8a1190dd5",
+   "bytes": 5996
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_bf.py",
+   "sha256": "5027be6c277e6c2fb50f0ba1e7a5564d6beda7de95b184616976b0c03270c6f7",
+   "bytes": 1148
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/op_analysis.py",
+   "sha256": "8f87bee4d4ff5887b85679ddd65b74d0f519bda05eaebc342d84e8d51a9432e3",
+   "bytes": 4883
+  },
+  {
+   "path": "tcad/device/devsim/mesh_refine.py",
+   "sha256": "3b84190bbb4c0cfe9f13b668518820f8822e0fd04b2de0ec6c6194483f7c507d",
+   "bytes": 24346
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  },
+  {
+   "path": "tests/unit/test_mesh_structured_remesh_mock.py",
+   "sha256": "1e726d22193931b1402e1dd6aba904f24b1e3449d5cb357c85ff429a18d01c31",
+   "bytes": 9714
+  },
+  {
+   "path": "tests/unit/test_mesh_conformity_check_mock.py",
+   "sha256": "3ff5149f48793645489912545167f07656cd2d38f24fe510401faf71585e801e",
+   "bytes": 4168
+  },
+  {
+   "path": "tests/unit/test_mesh_implant_refine_fallback_mock.py",
+   "sha256": "d4e774c0d4d36c7a5f34fd9c077bf2679ec87ce273d2bd4bf38c8afd68ef471e",
+   "bytes": 4293
+  },
+  {
+   "path": "tests/integration/test_mesh_gate_poisson_transition_real.py",
+   "sha256": "311642d0af6311f9ddfcbbd6871330e671c8557ae2e24a55c52b26ccfd5ff6f5",
+   "bytes": 11322
+  }
+ ],
+ "request_sha256": "fabeb6e510f8f916402be26369c8432477d9818dc993faa61ae5e5772d398c02",
+ "source": {
+  "github_sha": "5e4ff64c2c90fd1f4bb777587ac6c38f09e8aaf1",
+  "git_head": "5e4ff64c2c90fd1f4bb777587ac6c38f09e8aaf1",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36753837606",
+  "run_number": "21",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/run_e6h.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T17:48:27.540828+00:00",
+ "duration_s": 52.846,
+ "outputs": [
+  {
+   "path": "e6h_out/conformity_bf.log",
+   "bytes": 1105,
+   "sha256": "5531867f8c98480dbba2b02d50c8be49f27a7cc1bc4d87ddb9bd43650c857da2"
+  },
+  {
+   "path": "e6h_out/e6g_result.json",
+   "bytes": 3161,
+   "sha256": "906362bef579aaba99b5f8d94f28c7c716c792b858136ec041300c1dac144dcb"
+  },
+  {
+   "path": "e6h_out/poisson_transition.json",
+   "bytes": 11729,
+   "sha256": "051625994c6977bd41d35406d41c9050888cb5cd0bf7ded6df87fc53129e337f"
+  },
+  {
+   "path": "e6h_out/test_mesh_conformity_check_mock.log",
+   "bytes": 140,
+   "sha256": "d3db5bcd32188a618a97bb185884789a06e510d5c3bc3f6d845857ae25e7661b"
+  },
+  {
+   "path": "e6h_out/test_mesh_gate_poisson_transition_real.log",
+   "bytes": 23048,
+   "sha256": "206d2e783310b7728f4eab9279695a36b68a722d2cd701a559fe9e799c626f3c"
+  },
+  {
+   "path": "e6h_out/test_mesh_implant_refine_fallback_mock.log",
+   "bytes": 253,
+   "sha256": "206db9be223f1c94bd01b40b055aceda19cf26f919a4c14b4e2a595a34754058"
+  },
+  {
+   "path": "e6h_out/test_mesh_refine_mock.log",
+   "bytes": 711,
+   "sha256": "fa75b59159fddd210a485eb7bed0a8916e50e11fb01da969eba8ab67bba5fab9"
+  },
+  {
+   "path": "e6h_out/test_mesh_structured_remesh_mock.log",
+   "bytes": 675,
+   "sha256": "4cf3034a1bce354ac8d56120cbb1a1be51c186b31dc41ae82883d6f17880d0e4"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "8279f1b9c62675e41f32a1b4bc9ac7c93b255d3a7e7e10478f74a6966aab9616",
+  "bytes": 6293
+ },
+ "redactions": {}
+}

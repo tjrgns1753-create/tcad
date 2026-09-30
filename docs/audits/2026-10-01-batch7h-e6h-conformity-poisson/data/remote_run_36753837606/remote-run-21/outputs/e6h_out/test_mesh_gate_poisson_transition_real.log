@@ -1,0 +1,463 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 32 Triangles.
+Physical group name Si has 58 Lines.
+Physical group name Si has 27 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device uniform_8_poisson_device has 27 coordinates with max index 26
+Region Si has 27 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+number of equations 27
+Iteration: 0
+  Device: "uniform_8_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "uniform_8_poisson_device"	RelError: 7.08146e-16	AbsError: 7.08146e-16
+    Region: "Si"	RelError: 7.08146e-16	AbsError: 7.08146e-16
+      Equation: "PotentialEquation"	RelError: 7.08146e-16	AbsError: 7.08146e-16
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 32 Triangles.
+Physical group name Si has 58 Lines.
+Physical group name Si has 27 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device uniform_8_linear_device has 27 coordinates with max index 26
+Region Si has 27 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+number of equations 27
+Iteration: 0
+  Device: "uniform_8_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "uniform_8_linear_device"	RelError: 6.14026e-16	AbsError: 2.67266e-16
+    Region: "Si"	RelError: 6.14026e-16	AbsError: 2.67266e-16
+      Equation: "PotentialEquation"	RelError: 6.14026e-16	AbsError: 2.67266e-16
+uniform 8 {"triangles": 32, "nodes": 27} poisson rel err 1.1102230246251565e-16 vs numpy 1.4432899320127035e-15 linear rel err 2.7755575615628914e-17
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device one_sided_8_poisson_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+number of equations 73
+Iteration: 0
+  Device: "one_sided_8_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00489e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00489e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00489e+00
+Iteration: 1
+  Device: "one_sided_8_poisson_device"	RelError: 1.07622e-14	AbsError: 1.07725e-14
+    Region: "Si"	RelError: 1.07622e-14	AbsError: 1.07725e-14
+      Equation: "PotentialEquation"	RelError: 1.07622e-14	AbsError: 1.07725e-14
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device one_sided_8_linear_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+number of equations 73
+Iteration: 0
+  Device: "one_sided_8_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "one_sided_8_linear_device"	RelError: 1.11381e-14	AbsError: 5.50921e-15
+    Region: "Si"	RelError: 1.11381e-14	AbsError: 5.50921e-15
+      Equation: "PotentialEquation"	RelError: 1.11381e-14	AbsError: 5.50921e-15
+one_sided 8 {"triangles": 116, "nodes": 73} poisson rel err 0.004949485441766988 vs numpy 2.9976021664879227e-15 linear rel err 5.551115123125783e-17
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 296 Triangles.
+Physical group name Si has 468 Lines.
+Physical group name Si has 173 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 4 Lines.
+Physical group name Si_xmax has 5 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 4 Lines.
+Physical group name Si_xmin has 5 Points.
+Device one_sided_16_poisson_device has 173 coordinates with max index 172
+Region Si has 173 nodes.
+Contact Si_xmax in region Si with 5 nodes
+Contact Si_xmin in region Si with 5 nodes
+number of equations 173
+Iteration: 0
+  Device: "one_sided_16_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00122e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00122e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00122e+00
+Iteration: 1
+  Device: "one_sided_16_poisson_device"	RelError: 9.07664e-15	AbsError: 9.07885e-15
+    Region: "Si"	RelError: 9.07664e-15	AbsError: 9.07885e-15
+      Equation: "PotentialEquation"	RelError: 9.07664e-15	AbsError: 9.07885e-15
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 296 Triangles.
+Physical group name Si has 468 Lines.
+Physical group name Si has 173 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 4 Lines.
+Physical group name Si_xmax has 5 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 4 Lines.
+Physical group name Si_xmin has 5 Points.
+Device one_sided_16_linear_device has 173 coordinates with max index 172
+Region Si has 173 nodes.
+Contact Si_xmax in region Si with 5 nodes
+Contact Si_xmin in region Si with 5 nodes
+number of equations 173
+Iteration: 0
+  Device: "one_sided_16_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "one_sided_16_linear_device"	RelError: 9.34358e-15	AbsError: 4.53118e-15
+    Region: "Si"	RelError: 9.34358e-15	AbsError: 4.53118e-15
+      Equation: "PotentialEquation"	RelError: 9.34358e-15	AbsError: 4.53118e-15
+one_sided 16 {"triangles": 296, "nodes": 173} poisson rel err 0.0012373713604417746 vs numpy 9.992007221626409e-15 linear rel err 5.551115123125783e-17
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 848 Triangles.
+Physical group name Si has 1316 Lines.
+Physical group name Si has 469 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 8 Lines.
+Physical group name Si_xmax has 9 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 8 Lines.
+Physical group name Si_xmin has 9 Points.
+Device one_sided_32_poisson_device has 469 coordinates with max index 468
+Region Si has 469 nodes.
+Contact Si_xmax in region Si with 9 nodes
+Contact Si_xmin in region Si with 9 nodes
+number of equations 469
+Iteration: 0
+  Device: "one_sided_32_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00031e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00031e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00031e+00
+Iteration: 1
+  Device: "one_sided_32_poisson_device"	RelError: 4.11321e-14	AbsError: 4.11347e-14
+    Region: "Si"	RelError: 4.11321e-14	AbsError: 4.11347e-14
+      Equation: "PotentialEquation"	RelError: 4.11321e-14	AbsError: 4.11347e-14
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 848 Triangles.
+Physical group name Si has 1316 Lines.
+Physical group name Si has 469 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 8 Lines.
+Physical group name Si_xmax has 9 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 8 Lines.
+Physical group name Si_xmin has 9 Points.
+Device one_sided_32_linear_device has 469 coordinates with max index 468
+Region Si has 469 nodes.
+Contact Si_xmax in region Si with 9 nodes
+Contact Si_xmin in region Si with 9 nodes
+number of equations 469
+Iteration: 0
+  Device: "one_sided_32_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "one_sided_32_linear_device"	RelError: 5.00678e-14	AbsError: 2.17854e-14
+    Region: "Si"	RelError: 5.00678e-14	AbsError: 2.17854e-14
+      Equation: "PotentialEquation"	RelError: 5.00678e-14	AbsError: 2.17854e-14
+one_sided 32 {"triangles": 848, "nodes": 469} poisson rel err 0.0003093428401104159 vs numpy 1.0769163338864018e-14 linear rel err 1.1102230246251565e-16
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2720 Triangles.
+Physical group name Si has 4164 Lines.
+Physical group name Si has 1445 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 16 Lines.
+Physical group name Si_xmax has 17 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 16 Lines.
+Physical group name Si_xmin has 17 Points.
+Device one_sided_64_poisson_device has 1445 coordinates with max index 1444
+Region Si has 1445 nodes.
+Contact Si_xmax in region Si with 17 nodes
+Contact Si_xmin in region Si with 17 nodes
+number of equations 1445
+Iteration: 0
+  Device: "one_sided_64_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00008e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00008e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00008e+00
+Iteration: 1
+  Device: "one_sided_64_poisson_device"	RelError: 7.99254e-14	AbsError: 7.99121e-14
+    Region: "Si"	RelError: 7.99254e-14	AbsError: 7.99121e-14
+      Equation: "PotentialEquation"	RelError: 7.99254e-14	AbsError: 7.99121e-14
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2720 Triangles.
+Physical group name Si has 4164 Lines.
+Physical group name Si has 1445 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 16 Lines.
+Physical group name Si_xmax has 17 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 16 Lines.
+Physical group name Si_xmin has 17 Points.
+Device one_sided_64_linear_device has 1445 coordinates with max index 1444
+Region Si has 1445 nodes.
+Contact Si_xmax in region Si with 17 nodes
+Contact Si_xmin in region Si with 17 nodes
+number of equations 1445
+Iteration: 0
+  Device: "one_sided_64_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "one_sided_64_linear_device"	RelError: 9.35587e-14	AbsError: 4.49459e-14
+    Region: "Si"	RelError: 9.35587e-14	AbsError: 4.49459e-14
+      Equation: "PotentialEquation"	RelError: 9.35587e-14	AbsError: 4.49459e-14
+one_sided 64 {"triangles": 2720, "nodes": 1445} poisson rel err 7.733571002765949e-05 vs numpy 4.1300296516055823e-14 linear rel err 5.551115123125783e-17
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 88 Triangles.
+Physical group name Si has 146 Lines.
+Physical group name Si has 59 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device two_sided_8_poisson_device has 59 coordinates with max index 58
+Region Si has 59 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+number of equations 59
+Iteration: 0
+  Device: "two_sided_8_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00391e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00391e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00391e+00
+Iteration: 1
+  Device: "two_sided_8_poisson_device"	RelError: 1.49913e-15	AbsError: 1.33839e-15
+    Region: "Si"	RelError: 1.49913e-15	AbsError: 1.33839e-15
+      Equation: "PotentialEquation"	RelError: 1.49913e-15	AbsError: 1.33839e-15
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 88 Triangles.
+Physical group name Si has 146 Lines.
+Physical group name Si has 59 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device two_sided_8_linear_device has 59 coordinates with max index 58
+Region Si has 59 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+number of equations 59
+Iteration: 0
+  Device: "two_sided_8_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "two_sided_8_linear_device"	RelError: 1.98348e-15	AbsError: 1.23968e-15
+    Region: "Si"	RelError: 1.98348e-15	AbsError: 1.23968e-15
+      Equation: "PotentialEquation"	RelError: 1.98348e-15	AbsError: 1.23968e-15
+two_sided 8 {"triangles": 88, "nodes": 59} poisson rel err 0.004172763505901955 vs numpy 5.551115123125783e-15 linear rel err 0.0
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 240 Triangles.
+Physical group name Si has 384 Lines.
+Physical group name Si has 145 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 4 Lines.
+Physical group name Si_xmax has 5 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 4 Lines.
+Physical group name Si_xmin has 5 Points.
+Device two_sided_16_poisson_device has 145 coordinates with max index 144
+Region Si has 145 nodes.
+Contact Si_xmax in region Si with 5 nodes
+Contact Si_xmin in region Si with 5 nodes
+number of equations 145
+Iteration: 0
+  Device: "two_sided_16_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "two_sided_16_poisson_device"	RelError: 7.84229e-15	AbsError: 6.31957e-15
+    Region: "Si"	RelError: 7.84229e-15	AbsError: 6.31957e-15
+      Equation: "PotentialEquation"	RelError: 7.84229e-15	AbsError: 6.31957e-15
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 240 Triangles.
+Physical group name Si has 384 Lines.
+Physical group name Si has 145 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 4 Lines.
+Physical group name Si_xmax has 5 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 4 Lines.
+Physical group name Si_xmin has 5 Points.
+Device two_sided_16_linear_device has 145 coordinates with max index 144
+Region Si has 145 nodes.
+Contact Si_xmax in region Si with 5 nodes
+Contact Si_xmin in region Si with 5 nodes
+number of equations 145
+Iteration: 0
+  Device: "two_sided_16_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "two_sided_16_linear_device"	RelError: 7.80852e-15	AbsError: 1.74851e-15
+    Region: "Si"	RelError: 7.80852e-15	AbsError: 1.74851e-15
+      Equation: "PotentialEquation"	RelError: 7.80852e-15	AbsError: 1.74851e-15
+two_sided 16 {"triangles": 240, "nodes": 145} poisson rel err 0.0010431908764755027 vs numpy 2.3314683517128287e-15 linear rel err 1.1102230246251565e-16
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 736 Triangles.
+Physical group name Si has 1148 Lines.
+Physical group name Si has 413 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 8 Lines.
+Physical group name Si_xmax has 9 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 8 Lines.
+Physical group name Si_xmin has 9 Points.
+Device two_sided_32_poisson_device has 413 coordinates with max index 412
+Region Si has 413 nodes.
+Contact Si_xmax in region Si with 9 nodes
+Contact Si_xmin in region Si with 9 nodes
+number of equations 413
+Iteration: 0
+  Device: "two_sided_32_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "two_sided_32_poisson_device"	RelError: 5.89605e-15	AbsError: 4.56120e-15
+    Region: "Si"	RelError: 5.89605e-15	AbsError: 4.56120e-15
+      Equation: "PotentialEquation"	RelError: 5.89605e-15	AbsError: 4.56120e-15
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 736 Triangles.
+Physical group name Si has 1148 Lines.
+Physical group name Si has 413 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 8 Lines.
+Physical group name Si_xmax has 9 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 8 Lines.
+Physical group name Si_xmin has 9 Points.
+Device two_sided_32_linear_device has 413 coordinates with max index 412
+Region Si has 413 nodes.
+Contact Si_xmax in region Si with 9 nodes
+Contact Si_xmin in region Si with 9 nodes
+number of equations 413
+Iteration: 0
+  Device: "two_sided_32_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "two_sided_32_linear_device"	RelError: 1.01487e-14	AbsError: 3.47319e-15
+    Region: "Si"	RelError: 1.01487e-14	AbsError: 3.47319e-15
+      Equation: "PotentialEquation"	RelError: 1.01487e-14	AbsError: 3.47319e-15
+two_sided 32 {"triangles": 736, "nodes": 413} poisson rel err 0.00026079771911891036 vs numpy 9.103828801926284e-15 linear rel err 1.1102230246251565e-16
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2496 Triangles.
+Physical group name Si has 3828 Lines.
+Physical group name Si has 1333 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 16 Lines.
+Physical group name Si_xmax has 17 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 16 Lines.
+Physical group name Si_xmin has 17 Points.
+Device two_sided_64_poisson_device has 1333 coordinates with max index 1332
+Region Si has 1333 nodes.
+Contact Si_xmax in region Si with 17 nodes
+Contact Si_xmin in region Si with 17 nodes
+number of equations 1333
+Iteration: 0
+  Device: "two_sided_64_poisson_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "two_sided_64_poisson_device"	RelError: 5.30193e-14	AbsError: 5.26664e-14
+    Region: "Si"	RelError: 5.30193e-14	AbsError: 5.26664e-14
+      Equation: "PotentialEquation"	RelError: 5.30193e-14	AbsError: 5.26664e-14
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2496 Triangles.
+Physical group name Si has 3828 Lines.
+Physical group name Si has 1333 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 16 Lines.
+Physical group name Si_xmax has 17 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 16 Lines.
+Physical group name Si_xmin has 17 Points.
+Device two_sided_64_linear_device has 1333 coordinates with max index 1332
+Region Si has 1333 nodes.
+Contact Si_xmax in region Si with 17 nodes
+Contact Si_xmin in region Si with 17 nodes
+number of equations 1333
+Iteration: 0
+  Device: "two_sided_64_linear_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "two_sided_64_linear_device"	RelError: 7.92987e-14	AbsError: 3.19631e-14
+    Region: "Si"	RelError: 7.92987e-14	AbsError: 3.19631e-14
+      Equation: "PotentialEquation"	RelError: 7.92987e-14	AbsError: 3.19631e-14
+two_sided 64 {"triangles": 2496, "nodes": 1333} poisson rel err 6.519942977972759e-05 vs numpy 1.7763568394002505e-14 linear rel err 1.1102230246251565e-16
+observed orders: {'one_sided': [1.9999999999999676, 2.0000000000001292, 1.9999999999989644], 'two_sided': [1.999999999999981, 1.9999999999998082, 2.0]}
+MESH GATE POISSON TRANSITION CONTROL PASSED

@@ -1,0 +1,79 @@
+{
+ "head": "5e4ff64c2c90fd1f4bb777587ac6c38f09e8aaf1",
+ "python": "3.11.9",
+ "platform": "Windows-10-10.0.26100-SP0",
+ "versions": {
+  "devsim": "2.11.0",
+  "viennaps": "4.6.2",
+  "viennals": "5.8.5",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5"
+ },
+ "files_lf_sha256": {
+  "tcad/device/devsim/mesh_refine.py": "8973c358aca2e0173918b33117006dc638f37f8c68d8dc922c573c257b50f5e0",
+  "tcad/device/devsim/mesh_import.py": "0fe7c71d6594db777d038907a52067ad13b99b868f094758f196d0bbbfe721a8",
+  "tcad/device/devsim/mesh_conservation.py": "76646174c666832b87d47b407f85db9cbef84f89ee8141b067abcad5d4d0bd46",
+  "tests/unit/test_mesh_structured_remesh_mock.py": "0a0ec278f50c166bedb01060bd02e9cf9c3fc5f98401a97b0aaf41d02deb68ea",
+  "tests/unit/test_mesh_conformity_check_mock.py": "fb3d43fcffc1fd8679439647ee766536ecfe99e8e1be9275e7f317fdac855072",
+  "tests/unit/test_mesh_implant_refine_fallback_mock.py": "03f034b9a7561bc2386d8dd5d4b1de5aa40808a466a844d67148b52147eb23b6",
+  "tests/integration/test_mesh_gate_poisson_transition_real.py": "16113c5b11f73c5fc24545ff706208fcab2f33e6522ee9113862896c09ad0558",
+  "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_e6h.py": "b423f2d6db11deff2507c8a13f19b8eda9ee6b8738c53565ebbbcd8ac53b5171",
+  "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/op_analysis.py": "da8d5cffc21b88f2441dd7ae59371aeacbafcc0a26f2ca491f785f9aea887491",
+  "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/CRITERIA.md": "bf551e3ac824b54baf3c08795a5a1b712719ed97fe3a131912ccec4e9798a730",
+  "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/CRITERIA_ERRATUM_1.md": "f8b35c5244970eb134946bb0d5ac998ea6b5edc0883a29b4e3531232437035b3"
+ },
+ "runs": [
+  {
+   "cmd": [
+    "tests/unit/test_mesh_structured_remesh_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 27.2
+  },
+  {
+   "cmd": [
+    "tests/unit/test_mesh_refine_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.2
+  },
+  {
+   "cmd": [
+    "tests/unit/test_mesh_conformity_check_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 20.6
+  },
+  {
+   "cmd": [
+    "tests/unit/test_mesh_implant_refine_fallback_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.5
+  },
+  {
+   "cmd": [
+    "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_bf.py"
+   ],
+   "rc": 0,
+   "wall_s": 1.9
+  },
+  {
+   "cmd": [
+    "tests/integration/test_mesh_gate_poisson_transition_real.py",
+    "<OUT>"
+   ],
+   "rc": 0,
+   "wall_s": 1.8
+  }
+ ],
+ "files": {
+  "conformity_bf.log": "5531867f8c98480dbba2b02d50c8be49f27a7cc1bc4d87ddb9bd43650c857da2",
+  "poisson_transition.json": "051625994c6977bd41d35406d41c9050888cb5cd0bf7ded6df87fc53129e337f",
+  "test_mesh_conformity_check_mock.log": "d3db5bcd32188a618a97bb185884789a06e510d5c3bc3f6d845857ae25e7661b",
+  "test_mesh_gate_poisson_transition_real.log": "206d2e783310b7728f4eab9279695a36b68a722d2cd701a559fe9e799c626f3c",
+  "test_mesh_implant_refine_fallback_mock.log": "206db9be223f1c94bd01b40b055aceda19cf26f919a4c14b4e2a595a34754058",
+  "test_mesh_refine_mock.log": "fa75b59159fddd210a485eb7bed0a8916e50e11fb01da969eba8ab67bba5fab9",
+  "test_mesh_structured_remesh_mock.log": "4cf3034a1bce354ac8d56120cbb1a1be51c186b31dc41ae82883d6f17880d0e4"
+ }
+}
