@@ -1,0 +1,118 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T14:37:19.327394+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6f-blue-size-check-001",
+  "profile": "e6f_blue_size_check",
+  "params": {},
+  "note": "Batch 7H-E6F interim review item 7: one pure-geometry size check of the blue audit candidate at GUI default scale. No DEVSIM, no solve, production unchanged."
+ },
+ "profile": "e6f_blue_size_check",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6f-quality-closure/scripts/big_blue_e6f.py",
+   "sha256": "f234f0ab030ed67d9a2af937f2b3586a52cb975c8d325dda77925a271f91eda4",
+   "bytes": 5355
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6f-quality-closure/scripts/refine_blue.py",
+   "sha256": "1ca2c055d6752ad45a057f01d97565e8c26a9c37f8fd2e3ea45114c5b0f4acd9",
+   "bytes": 9220
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6f-quality-closure/scripts/refine_old.py",
+   "sha256": "dd95968966a6217b06943d2d26440ca45021cae9a51993fd2fe836e24836fe2e",
+   "bytes": 9594
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/wafer_volume.vtu",
+   "sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a",
+   "bytes": 337128
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "e0635b22617ee0269b5841ad0d55c238850096422b6263592b4228bc28018f50",
+   "bytes": 60559
+  },
+  {
+   "path": "tcad/physics/doping.py",
+   "sha256": "5bca505bb74632e590b14eab74ea4a77eb0feebeb9996e235fa0e013b95829d1",
+   "bytes": 18912
+  }
+ ],
+ "request_sha256": "6162cf2e71d0a74292d16996ba46b175983f00acc672396ed1073e601b75c418",
+ "source": {
+  "github_sha": "b804f45efb08875b19ff084cd4a27acdf9e32bae",
+  "git_head": "b804f45efb08875b19ff084cd4a27acdf9e32bae",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36730397379",
+  "run_number": "19",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-01-batch7h-e6f-quality-closure/scripts/big_blue_e6f.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T14:38:07.478575+00:00",
+ "duration_s": 48.151,
+ "outputs": [
+  {
+   "path": "e6f_big_out/e6f_big_result.json",
+   "bytes": 2117,
+   "sha256": "5c0255443659702243376351ded051526c6d9e486747f0f2e507e880b0d38d5a"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "e0d2f79aca3efa82a05032abad41b2efc972713caca49fde85402c9e2372440a",
+  "bytes": 2889
+ },
+ "redactions": {}
+}

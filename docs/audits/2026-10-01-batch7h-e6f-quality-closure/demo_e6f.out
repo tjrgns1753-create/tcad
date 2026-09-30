@@ -1,0 +1,4 @@
+20x20 grid, cell height 1.0: {'red': 80, 'green': 40, 'blue': 40, 'untouched': 640, 'output_triangles': 1160}
+20x20 grid, cell height 1.0000009536743164: {'red': 782, 'green': 0, 'blue': 18, 'untouched': 0, 'output_triangles': 3182}
+B_raw distinct exact cell widths: 5 [0.19999992847442627, 0.20000004768371582]
+B_raw 1e16 pass 0: sweep prototype 743 queue blue 735
