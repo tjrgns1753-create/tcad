@@ -376,6 +376,40 @@ PROFILES = {
         "outputs": [{"glob": "e6e_repro_out/**/*.json", "max_mb": 5}],
         "regenerate": "Rerun the profile; inputs are sha-gated raw E6A/E6D meshes.",
     },
+    "e6e_targeted": {
+        "description": "Batch 7H-E6E targeted tests of the importer area-conservation gate (pure unit test + real DEVSIM / GUI / CLI test).",
+        "entry": "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
+        "args": ["targeted"],
+        "params": {},
+        "timeout_s": 5400,
+        "inputs": [
+            "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/PLAN.md",
+            "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
+            "tcad/device/devsim/mesh_conservation.py",
+            "tcad/device/devsim/mesh_import.py",
+            "tcad_2d_stagewise.py",
+            "tcad/cli/run_pipeline.py",
+            "tests/unit/test_mesh_area_conservation_mock.py",
+            "tests/integration/test_mesh_area_conservation_gate_real.py",
+        ],
+        "outputs": [{"glob": "e6e_targeted_out/**/*", "max_mb": 20}],
+        "regenerate": "Rerun the profile.",
+    },
+    "e6e_full_regression": {
+        "description": "Batch 7H-E6E: tests/run_regression.py exactly once after the targeted checks.",
+        "entry": "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
+        "args": ["regression"],
+        "params": {},
+        "timeout_s": 20000,
+        "inputs": [
+            "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
+            "tests/run_regression.py",
+            "tcad/device/devsim/mesh_conservation.py",
+            "tcad/device/devsim/mesh_import.py",
+        ],
+        "outputs": [{"glob": "e6e_regression_out/**/*", "max_mb": 40}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.

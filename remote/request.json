@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6e-importer-repro-001",
- "profile": "e6e_importer_repro",
+ "request_id": "e6e-targeted-001",
+ "profile": "e6e_targeted",
  "params": {},
- "note": "Batch 7H-E6E step 1 (pre-change reproduction). Unmodified production importer on E6D G0/G1/G2; 0 solves and 0 DEVSIM writes (trapped)."
+ "note": "Batch 7H-E6E targeted checks of the importer area-conservation gate. PLAN 537c4b4 (PLAN.md LF sha256 2e366a06...) fixed before the production edit."
 }
