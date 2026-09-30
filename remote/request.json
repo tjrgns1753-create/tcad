@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6j-current-unit-001",
- "profile": "e6j_current_unit_contract",
+ "request_id": "e7a-official-extraction-001",
+ "profile": "e7a_official_material_extraction",
  "params": {},
- "note": "Batch 7H-E6J. Criteria committed before the run. Unit contract mock + one representative GUI measurement (E6I one_sided n=8 +1 mV) + CHEMICAL/UNKNOWN controls. No E6I matrix, no full regression, no PN solve."
+ "note": "E7A probe. Criteria committed in cc53271 before the run. Investigation only: no production change, no full regression, no PN/DD solve."
 }

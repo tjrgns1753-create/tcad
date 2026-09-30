@@ -530,6 +530,23 @@ PROFILES = {
         "outputs": [{"glob": "e6j_out/**/*", "max_mb": 10}],
         "regenerate": "Rerun the profile.",
     },
+    "e7a_official_material_extraction": {
+        "description": "E7A: official ViennaPS 4.6.2 getMaterialLevelSet / saveVolumeMesh / getSurfaceMesh vs the project's save_locos_volume_mesh on explicit Si/SiO2, thin pad oxide and partial-mask LOCOS stacks (probe only, no production change).",
+        "entry": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+        "args": [],
+        "params": {},
+        "timeout_s": 3000,
+        "inputs": [
+            "docs/audits/2026-10-01-e7a-official-material-extraction/CRITERIA.md",
+            "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+            "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a.py",
+            "tcad/backends/viennaps/io.py",
+            "tcad/process/oxidation/locos.py",
+            "tests/integration/_explicit_oxide_fixture.py",
+        ],
+        "outputs": [{"glob": "e7a_out/**/*", "max_mb": 60}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.
