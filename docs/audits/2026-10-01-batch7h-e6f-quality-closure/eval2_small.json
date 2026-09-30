@@ -1,0 +1,1550 @@
+{
+ "modules": {
+  "old": "e6b356689941bd3333813a33380de2a9e9d5bb62f0c7c98d832270cdfa52613f",
+  "red": "6f94ca9ecbd955f6c95a3e3819d05ab70b8317cfae49562c51e573a302d77ed3",
+  "proto": "cb2db6af2dbaaf78778d344ccf640041e121102a575a03e8a058195588347eba",
+  "blue": "41c2e06229f33c2ccf895adcdb305df7cb310937237f813a4c4be907257378af"
+ },
+ "cases": {
+  "counterexample_2cells": {
+   "input_triangles": 4,
+   "input_points": 6,
+   "passes": 1,
+   "algorithms": {
+    "old": {
+     "sizes_per_pass": [
+      9
+     ],
+     "output_dtype": "float64",
+     "triangles": 9,
+     "points": 9,
+     "obtuse": 1,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      9,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 6,
+      "new_segments": 7,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.001,
+      "exact_geometry": 0.0117,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.7071067811865476,
+     "target_resolution_at_least_old": true
+    },
+    "red": {
+     "sizes_per_pass": [
+      12
+     ],
+     "output_dtype": "float64",
+     "triangles": 12,
+     "points": 11,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      12,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 6,
+      "new_segments": 8,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0,
+      "exact_geometry": 0.0105,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.7071067811865476,
+     "target_resolution_at_least_old": true
+    },
+    "proto": {
+     "sizes_per_pass": [
+      11
+     ],
+     "output_dtype": "float64",
+     "triangles": 11,
+     "points": 10,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      11,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 6,
+      "new_segments": 7,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0,
+      "exact_geometry": 0.0,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.7071067811865476,
+     "target_resolution_at_least_old": true
+    },
+    "blue": {
+     "sizes_per_pass": [
+      11
+     ],
+     "output_dtype": "float64",
+     "triangles": 11,
+     "points": 10,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      11,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 6,
+      "new_segments": 7,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.007,
+      "exact_geometry": 0.002,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "sign_tests": {
+      "cross_float": 9,
+      "dot_float": 18,
+      "dot_exact": 8
+     },
+     "target_max_edge": 0.7071067811865476,
+     "target_resolution_at_least_old": true
+    }
+   },
+   "blue_equals_proto": {
+    "same_arrays": true,
+    "same_geometric_partition": true
+   }
+  },
+  "grid10_window_x5_passes1": {
+   "input_triangles": 200,
+   "input_points": 121,
+   "passes": 1,
+   "algorithms": {
+    "old": {
+     "sizes_per_pass": [
+      340
+     ],
+     "output_dtype": "float64",
+     "triangles": 340,
+     "points": 193,
+     "obtuse": 20,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      340,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 44,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0042,
+      "exact_geometry": 0.0522,
+      "boundary": 0.0059,
+      "other": 0.0
+     },
+     "target_max_edge": 0.7071067811865476,
+     "target_resolution_at_least_old": true
+    },
+    "red": {
+     "sizes_per_pass": [
+      712
+     ],
+     "output_dtype": "float64",
+     "triangles": 712,
+     "points": 389,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      712,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 64,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0149,
+      "exact_geometry": 0.1335,
+      "boundary": 0.0081,
+      "other": 0.0
+     },
+     "target_max_edge": 0.7071067811865476,
+     "target_resolution_at_least_old": true
+    },
+    "proto": {
+     "sizes_per_pass": [
+      380
+     ],
+     "output_dtype": "float64",
+     "triangles": 380,
+     "points": 213,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      380,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 44,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0214,
+      "exact_geometry": 0.0593,
+      "boundary": 0.014,
+      "other": 0.0
+     },
+     "target_max_edge": 0.7071067811865476,
+     "target_resolution_at_least_old": true
+    },
+    "blue": {
+     "sizes_per_pass": [
+      380
+     ],
+     "output_dtype": "float64",
+     "triangles": 380,
+     "points": 213,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      380,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 44,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0016,
+      "exact_geometry": 0.0531,
+      "boundary": 0.0037,
+      "other": 0.0
+     },
+     "sign_tests": {
+      "cross_float": 140,
+      "dot_float": 280,
+      "dot_exact": 120
+     },
+     "target_max_edge": 0.7071067811865476,
+     "target_resolution_at_least_old": true
+    }
+   },
+   "blue_equals_proto": {
+    "same_arrays": true,
+    "same_geometric_partition": true
+   }
+  },
+  "grid10_window_x5_passes2": {
+   "input_triangles": 200,
+   "input_points": 121,
+   "passes": 2,
+   "algorithms": {
+    "old": {
+     "sizes_per_pass": [
+      340,
+      860
+     ],
+     "output_dtype": "float64",
+     "triangles": 860,
+     "points": 457,
+     "obtuse": 60,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      860,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 52,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0158,
+      "exact_geometry": 0.1437,
+      "boundary": 0.016,
+      "other": 0.0
+     },
+     "target_max_edge": 0.3535533905932738,
+     "target_resolution_at_least_old": true
+    },
+    "red": {
+     "sizes_per_pass": [
+      712,
+      2800
+     ],
+     "output_dtype": "float64",
+     "triangles": 2800,
+     "points": 1459,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      2800,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 116,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0495,
+      "exact_geometry": 0.6201,
+      "boundary": 0.0164,
+      "other": 0.0
+     },
+     "target_max_edge": 0.3535533905932738,
+     "target_resolution_at_least_old": true
+    },
+    "proto": {
+     "sizes_per_pass": [
+      380,
+      1020
+     ],
+     "output_dtype": "float64",
+     "triangles": 1020,
+     "points": 539,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      1020,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 56,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0791,
+      "exact_geometry": 0.1901,
+      "boundary": 0.0157,
+      "other": 0.0
+     },
+     "target_max_edge": 0.3535533905932738,
+     "target_resolution_at_least_old": true
+    },
+    "blue": {
+     "sizes_per_pass": [
+      380,
+      1020
+     ],
+     "output_dtype": "float64",
+     "triangles": 1020,
+     "points": 539,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      1020,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 56,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.016,
+      "exact_geometry": 0.1713,
+      "boundary": 0.0156,
+      "other": 0.0
+     },
+     "sign_tests": {
+      "cross_float": 473,
+      "dot_float": 977,
+      "dot_exact": 391
+     },
+     "target_max_edge": 0.3535533905932738,
+     "target_resolution_at_least_old": true
+    }
+   },
+   "blue_equals_proto": {
+    "same_arrays": true,
+    "same_geometric_partition": true
+   }
+  },
+  "grid10_window_x5_passes3": {
+   "input_triangles": 200,
+   "input_points": 121,
+   "passes": 3,
+   "algorithms": {
+    "old": {
+     "sizes_per_pass": [
+      340,
+      860,
+      2860
+     ],
+     "output_dtype": "float64",
+     "triangles": 2860,
+     "points": 1465,
+     "obtuse": 140,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      2860,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 68,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0148,
+      "exact_geometry": 0.6202,
+      "boundary": 0.0205,
+      "other": 0.0
+     },
+     "target_max_edge": 0.1767766952966369,
+     "target_resolution_at_least_old": true
+    },
+    "red": {
+     "sizes_per_pass": [
+      712,
+      2800,
+      11180
+     ],
+     "output_dtype": "float64",
+     "triangles": 11180,
+     "points": 5703,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      11180,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 224,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.2423,
+      "exact_geometry": 5.1138,
+      "boundary": 0.0775,
+      "other": 0.001
+     },
+     "target_max_edge": 0.1767766952966369,
+     "target_resolution_at_least_old": true
+    },
+    "proto": {
+     "sizes_per_pass": [
+      380,
+      1020,
+      3260
+     ],
+     "output_dtype": "float64",
+     "triangles": 3260,
+     "points": 1669,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      3260,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 76,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.2291,
+      "exact_geometry": 0.7326,
+      "boundary": 0.0157,
+      "other": 0.0
+     },
+     "target_max_edge": 0.1767766952966369,
+     "target_resolution_at_least_old": true
+    },
+    "blue": {
+     "sizes_per_pass": [
+      380,
+      1020,
+      3260
+     ],
+     "output_dtype": "float64",
+     "triangles": 3260,
+     "points": 1669,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      3260,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 76,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0535,
+      "exact_geometry": 0.826,
+      "boundary": 0.023,
+      "other": 0.0
+     },
+     "sign_tests": {
+      "cross_float": 1136,
+      "dot_float": 2364,
+      "dot_exact": 932
+     },
+     "target_max_edge": 0.1767766952966369,
+     "target_resolution_at_least_old": true
+    }
+   },
+   "blue_equals_proto": {
+    "same_arrays": true,
+    "same_geometric_partition": true
+   }
+  },
+  "two_material_window_on_interface_passes2": {
+   "input_triangles": 48,
+   "input_points": 35,
+   "passes": 2,
+   "algorithms": {
+    "old": {
+     "sizes_per_pass": [
+      104,
+      216
+     ],
+     "output_dtype": "float64",
+     "triangles": 216,
+     "points": 123,
+     "obtuse": 24,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      216,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 24,
+      "new_segments": 44,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0,
+      "exact_geometry": 0.0291,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.3535533905932738,
+     "target_resolution_at_least_old": true
+    },
+    "red": {
+     "sizes_per_pass": [
+      172,
+      608
+     ],
+     "output_dtype": "float64",
+     "triangles": 608,
+     "points": 331,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      608,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 24,
+      "new_segments": 68,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0161,
+      "exact_geometry": 0.1018,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.3535533905932738,
+     "target_resolution_at_least_old": true
+    },
+    "proto": {
+     "sizes_per_pass": [
+      120,
+      264
+     ],
+     "output_dtype": "float64",
+     "triangles": 264,
+     "points": 147,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      264,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 24,
+      "new_segments": 44,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0249,
+      "exact_geometry": 0.0478,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.3535533905932738,
+     "target_resolution_at_least_old": true
+    },
+    "blue": {
+     "sizes_per_pass": [
+      120,
+      264
+     ],
+     "output_dtype": "float64",
+     "triangles": 264,
+     "points": 147,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      264,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 24,
+      "new_segments": 44,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0,
+      "exact_geometry": 0.0523,
+      "boundary": 0.0035,
+      "other": 0.0
+     },
+     "sign_tests": {
+      "cross_float": 168,
+      "dot_float": 336,
+      "dot_exact": 144
+     },
+     "target_max_edge": 0.3535533905932738,
+     "target_resolution_at_least_old": true
+    }
+   },
+   "blue_equals_proto": {
+    "same_arrays": true,
+    "same_geometric_partition": true
+   }
+  },
+  "identity_all_false": {
+   "input_triangles": 48,
+   "input_points": 35,
+   "passes": 1,
+   "algorithms": {
+    "old": {
+     "sizes_per_pass": [
+      48
+     ],
+     "output_dtype": "float64",
+     "triangles": 48,
+     "points": 35,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      48,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 24,
+      "new_segments": 24,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.001,
+      "exact_geometry": 0.002,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.0,
+     "target_resolution_at_least_old": true
+    },
+    "red": {
+     "sizes_per_pass": [
+      48
+     ],
+     "output_dtype": "float64",
+     "triangles": 48,
+     "points": 35,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      48,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 24,
+      "new_segments": 24,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0,
+      "exact_geometry": 0.0157,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.0,
+     "target_resolution_at_least_old": true
+    },
+    "proto": {
+     "sizes_per_pass": [
+      48
+     ],
+     "output_dtype": "float64",
+     "triangles": 48,
+     "points": 35,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      48,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 24,
+      "new_segments": 24,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0,
+      "exact_geometry": 0.0,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.0,
+     "target_resolution_at_least_old": true
+    },
+    "blue": {
+     "sizes_per_pass": [
+      48
+     ],
+     "output_dtype": "float64",
+     "triangles": 48,
+     "points": 35,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      48,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 24,
+      "new_segments": 24,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0,
+      "exact_geometry": 0.0161,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "sign_tests": {},
+     "target_max_edge": 0.0,
+     "target_resolution_at_least_old": true
+    }
+   },
+   "blue_equals_proto": {
+    "same_arrays": true,
+    "same_geometric_partition": true
+   }
+  },
+  "grid10_graded_3_windows": {
+   "input_triangles": 200,
+   "input_points": 121,
+   "passes": 3,
+   "algorithms": {
+    "old": {
+     "sizes_per_pass": [
+      340,
+      620,
+      1180
+     ],
+     "output_dtype": "float64",
+     "triangles": 1180,
+     "points": 617,
+     "obtuse": 140,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      1180,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 52,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0088,
+      "exact_geometry": 0.2177,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.1767766952966369,
+     "target_resolution_at_least_old": true
+    },
+    "red": {
+     "sizes_per_pass": [
+      712,
+      2644,
+      10116
+     ],
+     "output_dtype": "float64",
+     "triangles": 10116,
+     "points": 5155,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      10116,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 192,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.3309,
+      "exact_geometry": 4.173,
+      "boundary": 0.0545,
+      "other": 0.0
+     },
+     "target_max_edge": 0.1767766952966369,
+     "target_resolution_at_least_old": true
+    },
+    "proto": {
+     "sizes_per_pass": [
+      380,
+      740,
+      1460
+     ],
+     "output_dtype": "float64",
+     "triangles": 1460,
+     "points": 757,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      1460,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 52,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.1564,
+      "exact_geometry": 0.269,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "target_max_edge": 0.1767766952966369,
+     "target_resolution_at_least_old": true
+    },
+    "blue": {
+     "sizes_per_pass": [
+      380,
+      740,
+      1460
+     ],
+     "output_dtype": "float64",
+     "triangles": 1460,
+     "points": 757,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      1460,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 40,
+      "new_segments": 52,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0529,
+      "exact_geometry": 0.2659,
+      "boundary": 0.0,
+      "other": 0.0
+     },
+     "sign_tests": {
+      "cross_float": 980,
+      "dot_float": 1960,
+      "dot_exact": 840
+     },
+     "target_max_edge": 0.1767766952966369,
+     "target_resolution_at_least_old": true
+    }
+   },
+   "blue_equals_proto": {
+    "same_arrays": true,
+    "same_geometric_partition": true
+   }
+  },
+  "equilateral_lattice_passes2": {
+   "input_triangles": 128,
+   "input_points": 81,
+   "passes": 2,
+   "algorithms": {
+    "old": {
+     "sizes_per_pass": [
+      240,
+      616
+     ],
+     "output_dtype": "float64",
+     "triangles": 616,
+     "points": 331,
+     "obtuse": 616,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      616,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 32,
+      "new_segments": 44,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0,
+      "exact_geometry": 0.1237,
+      "boundary": 0.0032,
+      "other": 0.0
+     },
+     "target_max_edge": 0.43301270189221963,
+     "target_resolution_at_least_old": true
+    },
+    "red": {
+     "sizes_per_pass": [
+      508,
+      2032
+     ],
+     "output_dtype": "float64",
+     "triangles": 2032,
+     "points": 1079,
+     "obtuse": 2028,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      2032,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": false,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 32,
+      "new_segments": 124,
+      "new_segments_not_on_an_original": 56,
+      "original_segments_not_exactly_covered": 16,
+      "preserved": false
+     },
+     "time_s": {
+      "generation": 0.013,
+      "exact_geometry": 0.4505,
+      "boundary": 0.0024,
+      "other": 0.0
+     },
+     "target_max_edge": 0.43301270189221963,
+     "target_resolution_at_least_old": true
+    },
+    "proto": {
+     "sizes_per_pass": [
+      508,
+      2032
+     ],
+     "output_dtype": "float64",
+     "triangles": 2032,
+     "points": 1079,
+     "obtuse": 2028,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      2032,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": false,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 32,
+      "new_segments": 124,
+      "new_segments_not_on_an_original": 56,
+      "original_segments_not_exactly_covered": 16,
+      "preserved": false
+     },
+     "time_s": {
+      "generation": 0.1135,
+      "exact_geometry": 0.4686,
+      "boundary": 0.0159,
+      "other": 0.0
+     },
+     "target_max_edge": 0.43301270189221963,
+     "target_resolution_at_least_old": true
+    },
+    "blue": {
+     "sizes_per_pass": [
+      508,
+      2032
+     ],
+     "output_dtype": "float64",
+     "triangles": 2032,
+     "points": 1079,
+     "obtuse": 2028,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      2032,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": false,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 32,
+      "new_segments": 124,
+      "new_segments_not_on_an_original": 56,
+      "original_segments_not_exactly_covered": 16,
+      "preserved": false
+     },
+     "time_s": {
+      "generation": 0.042,
+      "exact_geometry": 0.4571,
+      "boundary": 0.0156,
+      "other": 0.0
+     },
+     "sign_tests": {
+      "cross_float": 883,
+      "dot_float": 2000,
+      "dot_exact": 343
+     },
+     "target_max_edge": 0.43301270189221963,
+     "target_resolution_at_least_old": true
+    }
+   },
+   "blue_equals_proto": {
+    "same_arrays": true,
+    "same_geometric_partition": true
+   }
+  },
+  "B_raw_recipe_1e16": {
+   "input_triangles": 200,
+   "input_points": 126,
+   "passes": 2,
+   "algorithms": {
+    "old": {
+     "sizes_per_pass": [
+      480,
+      1040
+     ],
+     "output_dtype": "float32",
+     "triangles": 1040,
+     "points": 562,
+     "obtuse": 120,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      1040,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 50,
+      "new_segments": 82,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0,
+      "exact_geometry": 0.2079,
+      "boundary": 0.0146,
+      "other": 0.0
+     },
+     "target_max_edge": 0.07071073712425523,
+     "target_resolution_at_least_old": true
+    },
+    "red": {
+     "sizes_per_pass": [
+      800,
+      3200
+     ],
+     "output_dtype": "float64",
+     "triangles": 3200,
+     "points": 1701,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      3200,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 50,
+      "new_segments": 200,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0614,
+      "exact_geometry": 0.8614,
+      "boundary": 0.0329,
+      "other": 0.0
+     },
+     "target_max_edge": 0.0707106897090383,
+     "target_resolution_at_least_old": true
+    },
+    "proto": {
+     "sizes_per_pass": [
+      743,
+      2767
+     ],
+     "output_dtype": "float64",
+     "triangles": 2767,
+     "points": 1463,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      2767,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 50,
+      "new_segments": 157,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.4377,
+      "exact_geometry": 0.7186,
+      "boundary": 0.0259,
+      "other": 0.0
+     },
+     "target_max_edge": 0.0707106897090383,
+     "target_resolution_at_least_old": true
+    },
+    "blue": {
+     "sizes_per_pass": [
+      735,
+      2721
+     ],
+     "output_dtype": "float64",
+     "triangles": 2721,
+     "points": 1439,
+     "obtuse": 0,
+     "degenerate": 0,
+     "orientation_pos_neg": [
+      2721,
+      0
+     ],
+     "edges_over_2_owners": 0,
+     "two_owner_same_direction": 0,
+     "hanging_nodes": 0,
+     "duplicate_triangles": 0,
+     "duplicate_node_coordinates": 0,
+     "existing_nodes_preserved": true,
+     "area_by_tag_equal_input": true,
+     "child_tag_mismatch": 0,
+     "child_parent_not_found": 0,
+     "boundary": {
+      "original_segments": 50,
+      "new_segments": 155,
+      "new_segments_not_on_an_original": 0,
+      "original_segments_not_exactly_covered": 0,
+      "preserved": true
+     },
+     "time_s": {
+      "generation": 0.0577,
+      "exact_geometry": 0.6651,
+      "boundary": 0.0161,
+      "other": 0.0
+     },
+     "sign_tests": {
+      "cross_float": 1833,
+      "dot_float": 4188,
+      "dot_exact": 861
+     },
+     "target_max_edge": 0.0707106897090383,
+     "target_resolution_at_least_old": true
+    }
+   },
+   "blue_equals_proto": {
+    "same_arrays": false,
+    "same_geometric_partition": false
+   }
+  }
+ }
+}

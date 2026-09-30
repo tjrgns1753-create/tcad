@@ -1,0 +1,107 @@
+diff --git a/tcad/device/devsim/mesh_refine.py b/tcad/device/devsim/mesh_refine.py
+index 91fd6ee..b4f3082 100644
+--- a/tcad/device/devsim/mesh_refine.py
++++ b/tcad/device/devsim/mesh_refine.py
+@@ -39,6 +39,18 @@ window around the target position:
+     promoted to "red" instead (closure, iterated to a fixed point) --
+     the classic red-green rule; splitting on 2 edges without a full red
+     split produces degenerate slivers.
++  - A triangle that would need a green split on exactly one edge is
++    ALSO promoted to red when either green child would be obtuse or
++    degenerate (quality closure, Batch 7H-E6F). A green split of a right
++    triangle along a LEG, for example, gives a 116.57-degree child, and
++    DEVSIM's NodeVolume over-integrates obtuse triangles (7H-B / 7H-E6E-R1:
++    +30 % region area on the implant-windows path). The test is exact
++    (rational arithmetic on the float coordinates of the midpoint the
++    split will actually create); a right angle is allowed. A red split of
++    a non-obtuse parent is similar to it, so a non-obtuse input stays
++    non-obtuse; an input that is already obtuse is NOT repaired. The
++    quality closure can spread the refinement beyond the predicate's
++    window (to keep conformity without obtuse children).
+   - Triangles untouched by any of the above keep their original vertex
+     indices unchanged, so the coarse mesh far from the window is
+     bit-for-bit identical to the unrefined input.
+@@ -51,6 +63,7 @@ the project's own doping levels (see the module docstring above).
+ 
+ from __future__ import annotations
+ 
++from fractions import Fraction
+ from typing import Callable, Dict, List, Tuple
+ 
+ import numpy as np
+@@ -60,6 +73,20 @@ def _edge_key(a: int, b: int) -> Tuple[int, int]:
+     return (a, b) if a < b else (b, a)
+ 
+ 
++def _non_obtuse_exact(p0, p1, p2) -> bool:
++    """True iff the triangle (2D points given as float pairs) has nonzero
++    area and no obtuse angle, decided exactly with rational arithmetic
++    on the float values (a right angle counts as non-obtuse)."""
++    q = [(Fraction(float(p[0])), Fraction(float(p[1]))) for p in (p0, p1, p2)]
++    (ax, ay), (bx, by), (cx, cy) = q
++    if (bx - ax) * (cy - ay) - (by - ay) * (cx - ax) == 0:
++        return False
++    for (ox, oy), (ux, uy), (vx, vy) in ((q[0], q[1], q[2]), (q[1], q[2], q[0]), (q[2], q[0], q[1])):
++        if (ux - ox) * (vx - ox) + (uy - oy) * (vy - oy) < 0:
++            return False
++    return True
++
++
+ def _refine_once(
+     points: np.ndarray,
+     triangles: np.ndarray,
+@@ -68,8 +95,26 @@ def _refine_once(
+ ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+     """One closed red-green refinement pass. `marked` is a bool array,
+     one entry per triangle, giving the initial red-refinement seed
+-    (closure may promote additional triangles to red)."""
++    (closure may promote additional triangles to red).
++
++    Coordinates are carried in float64 (values of a float32 input are
++    unchanged): a float32 midpoint is rounded, which bends the right
++    angles of red children by ~1e-5 degree into obtuse ones (measured on
++    the implant-windows path, Batch 7H-E6F), while the float64 sum of two
++    float32 values is exact, so the float64 midpoint is the true midpoint."""
++    points = np.asarray(points, dtype=np.float64)
+     n_tri = len(triangles)
++    green_ok_cache: Dict[Tuple[int, int, int], bool] = {}
++
++    def green_children_ok(apex: int, ea: int, eb: int) -> bool:
++        # The midpoint exactly as midpoint() below will create it (same
++        # expression, same dtype), so what is tested is what is built.
++        key = (apex,) + _edge_key(ea, eb)
++        if key not in green_ok_cache:
++            m = np.array([(points[ea] + points[eb]) / 2.0], dtype=points.dtype)[0]
++            pa, pe0, pe1 = points[apex][:2], points[ea][:2], points[eb][:2]
++            green_ok_cache[key] = _non_obtuse_exact(pa, pe0, m[:2]) and _non_obtuse_exact(pa, m[:2], pe1)
++        return green_ok_cache[key]
+ 
+     edge_owners: Dict[Tuple[int, int], List[int]] = {}
+     for ti in range(n_tri):
+@@ -80,7 +125,8 @@ def _refine_once(
+     red = marked.copy()
+ 
+     # Closure: promote any unmarked triangle with >=2 edges bordering a
+-    # red triangle to red too, repeat until stable.
++    # red triangle to red too, and any with exactly one such edge whose
++    # green children would be obtuse or degenerate; repeat until stable.
+     changed = True
+     while changed:
+         changed = False
+@@ -88,12 +134,12 @@ def _refine_once(
+             if red[ti]:
+                 continue
+             v0, v1, v2 = (int(x) for x in triangles[ti])
+-            broken = 0
+-            for a, b in ((v0, v1), (v1, v2), (v2, v0)):
++            broken = []
++            for apex, a, b in ((v2, v0, v1), (v0, v1, v2), (v1, v2, v0)):
+                 owners = edge_owners[_edge_key(a, b)]
+                 if any(red[o] for o in owners if o != ti):
+-                    broken += 1
+-            if broken >= 2:
++                    broken.append((apex, a, b))
++            if len(broken) >= 2 or (len(broken) == 1 and not green_children_ok(*broken[0])):
+                 red[ti] = True
+                 changed = True
+ 
