@@ -197,8 +197,10 @@ allows one full regression.
 
 Test files were not edited to pass.
 
-**Unexpected finding.** The first failing regions above include unrefined ViennaPS meshes, for example phase5, a plain etch-and-import
-Laplace device.
+**Unexpected finding.** The first failing regions above include unrefined ViennaPS meshes, for example phase5, whose
+`import_process_result` call passes no refinement argument (`tests/integration/test_phase5_devsim_real.py:60-66`).
+`e6e_code.patch` is a verbatim `git diff -U1` (it must stay byte-exact to apply); its 5 blank context lines are a single space, which
+`git diff --check` reports as trailing whitespace.
 - In those meshes the `Mask` region's DEVSIM NodeVolume sum is 18-28x its triangle area.
 - The `Si` regions of the MOSFET / gate-stack meshes are +1 % to +30 %.
 - Whether these regions carry equations in each test was not examined.
