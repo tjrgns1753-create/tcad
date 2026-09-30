@@ -12,3 +12,6 @@ Routes (same inputs A, B1, B2, C, CN; same judgement items 1-6 and tolerance del
 ## S1b (written after the S1 run, before the S1b run)
 S1 result: `B2_R5` aborted because the surface mesh of the SiO2 material level set was empty (`nodes.min` on an empty array). S1b repeats B2 R5 with the empty case recorded instead of raising, and adds **R6**: a
 thickness scan at grid 0.10 with pad in {0.05, 0.10, 0.15, 0.20} um (0.5 / 1 / 1.5 / 2 grid), recording for `getMaterialLevelSet(SiO2)` the level-set point count and whether its surface mesh is empty. Characterisation only; no pass/fail, no threshold adopted.
+
+## S1c (after S1b, before the S1c run)
+S1b: `getMaterialLevelSet(SiO2)` on the wrapped stack at grid 0.10 gives 0 points for pad 0.5 grid, 42 points but an EMPTY surface for pad 1 grid, a valid slab from 1.5 grid. **R7** asks whether that is tied to the UNION or to thickness: the same thicknesses with two never-unioned planes (`RELATIVE_COMPLEMENT`), next to the official call. Characterisation only.
