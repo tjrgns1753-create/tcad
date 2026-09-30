@@ -1,0 +1,784 @@
+diff --git a/docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py b/docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py
+new file mode 100644
+index 0000000..8f9c5b2
+--- /dev/null
++++ b/docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py
+@@ -0,0 +1,67 @@
++"""Batch 7H-E6E remote test driver (GitHub-hosted runner only).
++usage: run_tests_e6e.py targeted | regression [--validate-only]
++targeted  : tests/unit/test_mesh_area_conservation_mock.py, tests/integration/test_mesh_area_conservation_gate_real.py
++regression: tests/run_regression.py, once
++Each command runs as a subprocess; its full output, exit code and wall time are saved. Also records HEAD, package versions, and
++the sha256 of the gate module, the importer, the GUI file and the test files as executed."""
++import hashlib
++import os
++import platform
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, os.path.join(ROOT, "docs", "audits", "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import common_e1 as ce  # noqa: E402
++
++SETS = {"targeted": [["tests/unit/test_mesh_area_conservation_mock.py"], ["tests/integration/test_mesh_area_conservation_gate_real.py"]],
++        "regression": [["tests/run_regression.py"]]}
++HASHED = ["tcad/device/devsim/mesh_conservation.py", "tcad/device/devsim/mesh_import.py", "tcad_2d_stagewise.py", "tcad/cli/run_pipeline.py",
++          "tests/unit/test_mesh_area_conservation_mock.py", "tests/integration/test_mesh_area_conservation_gate_real.py", "tests/run_regression.py"]
++
++
++def lf_sha(p):
++    return hashlib.sha256(open(os.path.join(ROOT, p), "rb").read().replace(b"\r\n", b"\n")).hexdigest()
++
++
++def main():
++    mode = sys.argv[1]
++    if "--validate-only" in sys.argv:
++        print({p: lf_sha(p) for p in HASHED})
++        return 0
++    if not (os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"):
++        print("[e6e-tests] refusing to run: not a GitHub-hosted runner", flush=True)
++        return 2
++    out = os.path.join(ROOT, f"e6e_{mode}_out")
++    os.makedirs(out, exist_ok=True)
++    vers = {}
++    for mod in ("devsim", "viennaps", "viennals", "numpy", "meshio"):
++        try:
++            m = __import__(mod)
++            vers[mod] = getattr(m, "__version__", None)
++        except Exception as e:  # noqa: BLE001
++            vers[mod] = f"IMPORT_FAILED {e!r}"[:200]
++    res = {"mode": mode, "head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip(),
++           "python": sys.version.split()[0], "platform": platform.platform(), "versions": vers,
++           "files_lf_sha256_before": {p: lf_sha(p) for p in HASHED}, "runs": []}
++    for cmd in SETS[mode]:
++        t = time.time()
++        p = subprocess.run([sys.executable] + cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
++                           env={**os.environ, "PYTHONIOENCODING": "utf-8"})
++        name = os.path.basename(cmd[0]).replace(".py", "")
++        with open(os.path.join(out, f"{name}.log"), "w", encoding="utf-8", newline="\n") as f:
++            f.write(ce.USER_PATH.sub("<USERPROFILE>", p.stdout + ("\n[stderr]\n" + p.stderr if p.stderr else "")))
++        res["runs"].append({"cmd": cmd, "rc": p.returncode, "wall_s": round(time.time() - t, 1)})
++        print(f"[e6e-tests] {cmd} rc={p.returncode} wall={time.time() - t:.1f}s", flush=True)
++        print(p.stdout[-6000:], flush=True)
++    res["files_lf_sha256_after"] = {p: lf_sha(p) for p in HASHED}
++    res["files"] = {f: ce.sha_file(os.path.join(out, f)) for f in sorted(os.listdir(out))}
++    ce.dump_strict(res, os.path.join(out, "e6e_tests_result.json"))
++    return 0 if all(r["rc"] == 0 for r in res["runs"]) else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/remote/profiles.py b/remote/profiles.py
+index 33c0b97..5990d62 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -378,2 +378,36 @@ PROFILES = {
+     },
++    "e6e_targeted": {
++        "description": "Batch 7H-E6E targeted tests of the importer area-conservation gate (pure unit test + real DEVSIM / GUI / CLI test).",
++        "entry": "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
++        "args": ["targeted"],
++        "params": {},
++        "timeout_s": 5400,
++        "inputs": [
++            "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/PLAN.md",
++            "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
++            "tcad/device/devsim/mesh_conservation.py",
++            "tcad/device/devsim/mesh_import.py",
++            "tcad_2d_stagewise.py",
++            "tcad/cli/run_pipeline.py",
++            "tests/unit/test_mesh_area_conservation_mock.py",
++            "tests/integration/test_mesh_area_conservation_gate_real.py",
++        ],
++        "outputs": [{"glob": "e6e_targeted_out/**/*", "max_mb": 20}],
++        "regenerate": "Rerun the profile.",
++    },
++    "e6e_full_regression": {
++        "description": "Batch 7H-E6E: tests/run_regression.py exactly once after the targeted checks.",
++        "entry": "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
++        "args": ["regression"],
++        "params": {},
++        "timeout_s": 20000,
++        "inputs": [
++            "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
++            "tests/run_regression.py",
++            "tcad/device/devsim/mesh_conservation.py",
++            "tcad/device/devsim/mesh_import.py",
++        ],
++        "outputs": [{"glob": "e6e_regression_out/**/*", "max_mb": 40}],
++        "regenerate": "Rerun the profile.",
++    },
+ }
+diff --git a/tcad/device/devsim/mesh_conservation.py b/tcad/device/devsim/mesh_conservation.py
+new file mode 100644
+index 0000000..b9e3dd8
+--- /dev/null
++++ b/tcad/device/devsim/mesh_conservation.py
+@@ -0,0 +1,153 @@
++"""Fail-closed area-conservation gate for DEVSIM imports (planar 2D Cartesian).
++
++DEVSIM integrates every node model with its own `NodeVolume`. On a mesh
++with obtuse triangles DEVSIM's rule over-integrates (7H-B / 7H-E2), so a
++device can carry integration weights whose per-region sum is not the
++region's area -- and the unmodified importer returned such a device
++(7H-E6E step 1: the E6D G2 mesh, +3.12e-3). This module checks, per
++material region and on exactly the float64 coordinates handed to DEVSIM,
++that the NodeVolume sum equals the triangle area within a rounding
++budget, and refuses otherwise. It never rescales or redefines
++NodeVolume. Contract: docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/PLAN.md.
++
++Pure numpy / math; the two DEVSIM-touching helpers take the module as an
++argument so everything else is testable without DEVSIM.
++"""
++import math
++from typing import Dict, List
++
++import numpy as np
++
++U = 2.0 ** -53
++GAMMA4 = 4 * U / (1 - 4 * U)
++# DEVSIM element-local node-volume budget, per triangle, relative to its
++# area, times 1/sin(theta_min): an ASSUMPTION inherited unchanged from
++# 7H-E2 PLAN section 4 ("128 u for a <= 64-operation element-local
++# computation, times the first-order conditioning 1/sin theta"), not
++# derived from DEVSIM source.
++NODEVOLUME_ELEMENT_BUDGET = 128 * U
++
++
++class MeshAreaConservationError(RuntimeError):
++    """The mesh cannot be certified to conserve area region by region.
++    `physics_status` carries resolution UNSUPPORTED_BY_MODEL, the
++    reason_code, the per-region numbers and the cleanup outcome."""
++
++    def __init__(self, message: str, physics_status: dict):
++        super().__init__(message)
++        self.physics_status = physics_status
++
++
++def _refuse(code: str, message: str, **extra) -> None:
++    status = {"resolution": "UNSUPPORTED_BY_MODEL", "reason_code": code, **extra}
++    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
++
++
++def triangle_terms(points: np.ndarray, triangles: np.ndarray):
++    """o_t (twice the signed area), its rounding bound e_t, and theta_min per triangle."""
++    P = np.asarray(points, dtype=np.float64)
++    T = np.asarray(triangles, dtype=np.int64)
++    a, b, c = P[T[:, 0], :2], P[T[:, 1], :2], P[T[:, 2], :2]
++    p1 = (b[:, 0] - a[:, 0]) * (c[:, 1] - a[:, 1])
++    p2 = (b[:, 1] - a[:, 1]) * (c[:, 0] - a[:, 0])
++    o = p1 - p2
++    e = GAMMA4 * (np.abs(p1) + np.abs(p2))
++    theta = np.full(len(T), np.pi)
++    for u_, v_, w_ in ((a, b, c), (b, c, a), (c, a, b)):
++        d1, d2 = v_ - u_, w_ - u_
++        ang = np.arctan2(np.abs(d1[:, 0] * d2[:, 1] - d1[:, 1] * d2[:, 0]), (d1 * d2).sum(axis=1))
++        theta = np.minimum(theta, ang)
++    return o, e, p1, p2, theta
++
++
++def check_mesh_input(points, triangles, tags, tag_to_name: Dict[int, str], extra_area_cells: List[str]) -> Dict[str, dict]:
++    """Checks that need no DEVSIM. Raises MeshAreaConservationError; returns per-region area terms."""
++    P = np.asarray(points, dtype=np.float64)
++    T = np.asarray(triangles, dtype=np.int64)
++    tags = np.asarray(tags).reshape(-1)
++    if not np.isfinite(P).all():
++        _refuse("MESH_NONFINITE_COORDINATES", f"{int((~np.isfinite(P)).any(axis=1).sum())} node(s) with a non-finite coordinate")
++    if P.ndim == 2 and P.shape[1] > 2 and np.any(P[:, 2:] != 0):
++        _refuse("MESH_NOT_PLANAR_2D", "nonzero z coordinate; the importer and this gate are planar 2D Cartesian only")
++    if extra_area_cells:
++        _refuse("MESH_UNSUPPORTED_CELLS", f"cell blocks {extra_area_cells} besides the imported triangle block would be dropped")
++    if len(tags) != len(T):
++        _refuse("MESH_TAG_UNMAPPED", f"{len(tags)} tags for {len(T)} triangles")
++    unmapped = sorted({int(t) for t in np.unique(tags)} - set(tag_to_name))
++    if unmapped:
++        _refuse("MESH_TAG_UNMAPPED", f"triangle tag(s) {unmapped} have no material region")
++    counts = {name: int((tags == tag).sum()) for tag, name in tag_to_name.items()}
++    empty = sorted(n for n, k in counts.items() if k == 0)
++    if empty:
++        _refuse("MESH_EMPTY_REGION", f"region(s) {empty} have no triangle", regions=counts)
++    s = np.sort(T, axis=1)
++    if len(np.unique(s, axis=0)) != len(s):
++        _refuse("MESH_DUPLICATE_TRIANGLE", f"{len(s) - len(np.unique(s, axis=0))} duplicated vertex triple(s)")
++    o, e, p1, p2, theta = triangle_terms(P, T)
++    bad = np.abs(o) <= e
++    if bad.any():
++        i = int(np.argmax(bad))
++        _refuse("MESH_DEGENERATE_TRIANGLE", f"{int(bad.sum())} triangle(s) with zero or unresolvable area (first: {i}, 2*area {o[i]!r})")
++    npos, nneg = int((o > 0).sum()), int((o < 0).sum())
++    if npos and nneg:
++        _refuse("MESH_ORIENTATION_MIXED", f"{npos} positively and {nneg} negatively oriented triangles (inverted / negative area)")
++    out = {}
++    for tag, name in tag_to_name.items():
++        m = tags == tag
++        at = np.abs(o[m]) / 2
++        area = math.fsum(at.tolist())
++        out[name] = {"tag": int(tag), "triangles": int(m.sum()), "area": area,
++                     "E_A": 0.5 * GAMMA4 * math.fsum((np.abs(p1[m]) + np.abs(p2[m])).tolist()) + U * area,
++                     "E_NV": NODEVOLUME_ELEMENT_BUDGET * math.fsum((at / np.sin(theta[m])).tolist())}
++    return out
++
++
++def check_nodevolume(region_terms: Dict[str, dict], nodevolumes: Dict[str, np.ndarray], element_counts: Dict[str, int]) -> Dict[str, dict]:
++    """Per-region comparison of the NodeVolume sum with the triangle area. Returns the report; raises on the first failure."""
++    report = {}
++    for name, rt in region_terms.items():
++        nv = np.asarray(nodevolumes.get(name, []), dtype=np.float64)
++        r = {"triangles": rt["triangles"], "devsim_elements": element_counts.get(name), "nodes": int(len(nv)), "area": rt["area"]}
++        report[name] = r
++        if element_counts.get(name) != rt["triangles"]:
++            _refuse("MESH_REGION_ELEMENT_MISMATCH", f"region {name!r}: DEVSIM holds {element_counts.get(name)} elements, "
++                    f"{rt['triangles']} triangles were passed", regions=report, first_failing_region=name)
++        if len(nv) == 0 or not np.isfinite(nv).all() or (nv <= 0).any():
++            _refuse("MESH_NODEVOLUME_INVALID", f"region {name!r}: {len(nv)} nodes, {int((~np.isfinite(nv)).sum())} non-finite, "
++                    f"{int((nv <= 0).sum())} non-positive NodeVolume", regions=report, first_failing_region=name)
++        S = math.fsum(nv.tolist())
++        E_S = U * S
++        B = rt["E_A"] + E_S + rt["E_NV"]
++        r.update({"sum_NodeVolume": S, "relative_difference": S / rt["area"] - 1.0, "tau": B / rt["area"],
++                  "E_A": rt["E_A"], "E_S": E_S, "E_NV": rt["E_NV"], "pass": bool(abs(S - rt["area"]) <= B)})
++        if not r["pass"]:
++            _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
++                    f"difference {r['relative_difference']!r}, tolerance {r['tau']!r}", regions=report, first_failing_region=name)
++    return report
++
++
++def verify_device(module, device: str, mesh: str, region_terms: Dict[str, dict]) -> Dict[str, dict]:
++    """Read each region's NodeVolume and element count from DEVSIM and apply check_nodevolume. On refusal, delete the device and
++    the mesh (public API), record the cleanup outcome in the same exception, and re-raise it."""
++    try:
++        nvs, counts = {}, {}
++        try:
++            for name in region_terms:
++                nvs[name] = np.array(module.get_node_model_values(device=device, region=name, name="NodeVolume"), dtype=np.float64)
++                counts[name] = len(module.get_element_node_list(device=device, region=name))
++        except Exception as read_error:  # noqa: BLE001 -- cannot verify => refuse, never pass
++            _refuse("MESH_NODEVOLUME_INVALID", f"NodeVolume / elements could not be read from DEVSIM: {read_error!r}")
++        return check_nodevolume(region_terms, nvs, counts)
++    except MeshAreaConservationError as exc:
++        cleanup = {}
++        for key, call, kw in (("delete_device", module.delete_device, {"device": device}),
++                              ("delete_mesh", module.delete_mesh, {"mesh": mesh})):
++            try:
++                call(**kw)
++                cleanup[key] = "ok"
++            except Exception as ce:  # noqa: BLE001 -- reported, never hidden
++                cleanup[key] = f"FAILED: {ce!r}"
++        exc.physics_status.update({"device": device, "mesh": mesh, "cleanup": cleanup})
++        if any(v != "ok" for v in cleanup.values()):
++            exc.args = (f"{exc.args[0]}\nCleanup after refusal failed: {cleanup}",)
++        raise
+diff --git a/tcad/device/devsim/mesh_import.py b/tcad/device/devsim/mesh_import.py
+index d83e5e8..bf73603 100644
+--- a/tcad/device/devsim/mesh_import.py
++++ b/tcad/device/devsim/mesh_import.py
+@@ -46,2 +46,3 @@ import numpy as np
+ from tcad.device.devsim import backend
++from tcad.device.devsim.mesh_conservation import check_mesh_input, verify_device
+ from tcad.device.devsim.mesh_refine import graded_refine_mesh_near, refine_mesh_near
+@@ -729,2 +730,10 @@ class ImportedDevice:
+     interfaces: List[str] = field(default_factory=list)
++    # Per-region area-conservation report (tcad.device.devsim.mesh_conservation);
++    # a device is only returned when every region passed it.
++    area_conservation: Dict[str, Any] = field(default_factory=dict)
++
++
++# meshio cell types with no area; any other block besides the imported
++# triangle block would be silently dropped by this importer.
++_ZERO_AREA_CELL_TYPES = ("vertex", "line", "line3")
+ 
+@@ -992,2 +1001,10 @@ def import_process_result(
+ 
++    # Fail-closed area-conservation gate, part 1 (no DEVSIM call yet):
++    # these are exactly the coordinates / triangles / tags DEVSIM gets.
++    extra_area_cells = [
++        c.type for i, c in enumerate(mesh.cells)
++        if i != block_index and c.type not in _ZERO_AREA_CELL_TYPES
++    ]
++    region_area_terms = check_mesh_input(points, triangles, tags, tag_to_name, extra_area_cells)
++
+     # Group boundary edges (touched by exactly one triangle) by that
+@@ -1222,2 +1239,7 @@ def import_process_result(
+ 
++    # Part 2: per-region NodeVolume sum vs. triangle area, before the
++    # device is handed to any doping write or solve. On refusal the
++    # device and mesh are deleted and MeshAreaConservationError raised.
++    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
++
+     return ImportedDevice(
+@@ -1228,2 +1250,3 @@ def import_process_result(
+         interfaces=[name for name, _, _ in interface_defs],
++        area_conservation=area_report,
+     )
+diff --git a/tcad_2d_stagewise.py b/tcad_2d_stagewise.py
+index 796e2d4..927082f 100644
+--- a/tcad_2d_stagewise.py
++++ b/tcad_2d_stagewise.py
+@@ -5767,2 +5767,3 @@ class TCADApplication(tk.Tk):
+         from tcad.device.devsim.mesh_import import import_process_result
++        from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
+         from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
+@@ -5916,2 +5917,16 @@ class TCADApplication(tk.Tk):
+ 
++        except MeshAreaConservationError as exc:
++
++            # The importer refused a mesh whose DevSim NodeVolume does not
++            # conserve a region's area, before returning a device: record
++            # UNSUPPORTED_BY_MODEL and report no number.
++            self.last_physics_status = exc.physics_status
++            self._notify_error(
++                "Measurement",
++                f"{exc}\n\nMeasurement blocked: no doping was written to "
++                f"DevSim, no solve was run, and no current is reported.",
++            )
++
++            return
++
+         except Exception as exc:
+@@ -6104,2 +6119,3 @@ class TCADApplication(tk.Tk):
+         from tcad.device.devsim.mesh_import import import_process_result
++        from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
+ 
+@@ -6131,2 +6147,10 @@ class TCADApplication(tk.Tk):
+             )
++        except MeshAreaConservationError as exc:
++            self.last_physics_status = exc.physics_status
++            self._notify_error(
++                "Electrode",
++                f"{exc}\n\nPins not resolved: no device was kept, no doping "
++                f"was written and nothing will be solved on this mesh.",
++            )
++            return None
+         except Exception as exc:
+diff --git a/tests/integration/test_mesh_area_conservation_gate_real.py b/tests/integration/test_mesh_area_conservation_gate_real.py
+new file mode 100644
+index 0000000..01504bb
+--- /dev/null
++++ b/tests/integration/test_mesh_area_conservation_gate_real.py
+@@ -0,0 +1,278 @@
++#!/usr/bin/env python3
++"""Real DEVSIM check of the fail-closed per-region area-conservation gate
++in import_process_result() (Batch 7H-E6E; contract and expectations:
++docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/PLAN.md section 4).
++
++* E6D G0 / G1 (raw, sha-gated): imported, every region passes.
++* E6D G2: refused (MESH_AREA_NOT_CONSERVED, region Si) before the importer
++  returns; 0 solves, 0 doping writes, device and mesh deleted, the same
++  mesh / device names reusable at once.
++* two-material and large-coordinate structured controls: imported.
++* GUI run_measurement() / resolve_electrode_pins() and CLI run_pipeline()
++  on G2: refusal recorded, no doping write, no solve, no number.
++Counting wrappers (pass-through) sit on devsim.solve and the node-model
++write calls for the whole run."""
++import hashlib
++import json
++import os
++import sys
++import tempfile
++from pathlib import Path
++
++import numpy as np
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT))
++os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
++
++AUD = ROOT / "docs" / "audits"
++MESHES = {
++    "G0": (AUD / "2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.vtu",
++           "907f688e71af3bc0ebd15ea20bfbcd9fec5e9ade1d867e50f0b24da6c48e8c70"),
++    "G1": (AUD / "2026-09-29-batch7h-e6d-noncore-refinement/data/remote_run_36538742843/outputs/e6d_out/mesh_G1.vtu",
++           "48bcf8ea231c5c59a09a2c7089bd6e61af8688c57b73c723d6753305753f4f02"),
++    "G2": (AUD / "2026-09-29-batch7h-e6d-noncore-refinement/data/remote_run_36538742843/outputs/e6d_out/mesh_G2.vtu",
++           "d9229e8378eb3348523875825dbaf5e9479c968d444c3888dc157a78586c7dae"),
++}
++WRITE_CALLS = ("solve", "node_model", "set_node_values", "set_node_value")
++CALLS = {k: 0 for k in WRITE_CALLS}
++RESULTS, FAILURES = {}, []
++
++
++def check(name, ok, detail):
++    RESULTS[name] = {"pass": bool(ok), "detail": detail}
++    print(f"[{'PASS' if ok else 'FAIL'}] {name}: {json.dumps(detail, default=str)[:1500]}", flush=True)
++    if not ok:
++        FAILURES.append(name)
++
++
++def install_counters(dv):
++    for k in WRITE_CALLS:
++        real = getattr(dv, k)
++
++        def wrapped(*a, _k=k, _real=real, **kw):
++            CALLS[_k] += 1
++            return _real(*a, **kw)
++        setattr(dv, k, wrapped)
++
++
++def snapshot_calls():
++    return dict(CALLS)
++
++
++def delta(before):
++    return {k: CALLS[k] - before[k] for k in WRITE_CALLS}
++
++
++def structured_vtu(path, tags_fn, x0=-1.0, y0=-1.0, nx=20, ny=10, h=0.1):
++    import meshio
++    pts = np.array([[x0 + i * h, y0 + j * h, 0.0] for j in range(ny + 1) for i in range(nx + 1)], dtype=np.float64)
++    tris, tags = [], []
++    for j in range(ny):
++        for i in range(nx):
++            a, b = j * (nx + 1) + i, j * (nx + 1) + i + 1
++            c, d = b + nx + 1, a + nx + 1
++            tris += [(a, b, c), (a, c, d)]
++            tags += [tags_fn(i, nx)] * 2
++    meshio.write(str(path), meshio.Mesh(pts, [("triangle", np.array(tris))], cell_data={"Material": [np.array(tags, dtype=np.int32)]}))
++
++
++def main():
++    from tcad.device.devsim import backend
++    from tcad.device.devsim.mesh_import import import_process_result
++    from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
++    from tcad.mesh.viennaps_adapter import build_process_result
++    from tcad.backends.viennaps import session
++
++    dv = backend.require_devsim()
++    install_counters(dv)
++    for n, (p, want) in MESHES.items():
++        got = hashlib.sha256(p.read_bytes()).hexdigest()
++        check(f"input_sha_{n}", got == want, {"sha256": got})
++    if FAILURES:
++        raise SystemExit(f"FAILED: {FAILURES}")
++
++    def imp(path, mesh="gate_mesh", device="gate_device", **kw):
++        pr = build_process_result({"final_mesh": str(path), "snapshots": []})
++        return import_process_result(pr, mesh_name=mesh, device_name=device, contact_regions=["Si"], contact_axis="x",
++                                     length_scale_to_cm=1e-4, **kw)
++
++    def release(d):
++        dv.delete_device(device=d.device)
++        dv.delete_mesh(mesh=d.mesh)
++
++    # ---- G0 / G1 controls
++    for n in ("G0", "G1"):
++        b = snapshot_calls()
++        try:
++            d = imp(MESHES[n][0])
++            rep = d.area_conservation
++            check(f"control_{n}_imported", all(r["pass"] for r in rep.values()) and delta(b) == {k: 0 for k in WRITE_CALLS},
++                  {"report": rep, "calls": delta(b)})
++            release(d)
++        except Exception as exc:  # noqa: BLE001
++            check(f"control_{n}_imported", False, {"exception": repr(exc)[:800]})
++
++    # ---- G2 refusal, cleanup, same-name retry
++    b = snapshot_calls()
++    try:
++        d = imp(MESHES["G2"][0])
++        check("G2_refused", False, {"returned_device": d.device, "report": d.area_conservation})
++        release(d)
++    except MeshAreaConservationError as exc:
++        st = exc.physics_status
++        si = st.get("regions", {}).get("Si", {})
++        check("G2_refused", st.get("reason_code") == "MESH_AREA_NOT_CONSERVED" and st.get("first_failing_region") == "Si"
++              and st.get("resolution") == "UNSUPPORTED_BY_MODEL" and st.get("cleanup") == {"delete_device": "ok", "delete_mesh": "ok"}
++              and delta(b) == {k: 0 for k in WRITE_CALLS} and list(dv.get_device_list()) == [],
++              {"message": str(exc)[:600], "status": st, "calls": delta(b), "devices_left": list(dv.get_device_list())})
++        try:
++            d = imp(MESHES["G1"][0])
++            check("same_name_retry_after_refusal", all(r["pass"] for r in d.area_conservation.values()), {"device": d.device})
++            release(d)
++        except Exception as e2:  # noqa: BLE001
++            check("same_name_retry_after_refusal", False, {"exception": repr(e2)[:800]})
++    except Exception as exc:  # noqa: BLE001
++        check("G2_refused", False, {"unexpected_exception": repr(exc)[:800]})
++
++    # ---- two-material and large-coordinate controls
++    vps = session.require_viennaps()
++    si_tag, ox_tag = int(vps.Material.Si), int(vps.Material.SiO2)
++    tmp = Path(tempfile.mkdtemp(prefix="e6e_gate_"))
++    two = tmp / "two_material.vtu"
++    structured_vtu(two, lambda i, nx: si_tag if i < nx // 2 else ox_tag)
++    big = tmp / "large_coordinates.vtu"
++    structured_vtu(big, lambda i, nx: si_tag, x0=1.0e4, y0=1.0e4)
++    for name, path, kw in (("control_two_material", two, {"interface_region_pairs": [("Si", "SiO2")]}), ("control_large_coordinates", big, {})):
++        try:
++            d = imp(path, **kw)
++            rep = d.area_conservation
++            want_regions = {"Si", "SiO2"} if name == "control_two_material" else {"Si"}
++            check(name, set(rep) == want_regions and all(r["pass"] for r in rep.values()), {"report": rep, "regions": d.regions})
++            release(d)
++        except Exception as exc:  # noqa: BLE001
++            check(name, False, {"exception": repr(exc)[:800]})
++
++    # ---- GUI paths
++    gui_paths(dv, MeshAreaConservationError)
++    # ---- CLI path
++    cli_path(MeshAreaConservationError)
++
++    check("no_devices_left_at_end", list(dv.get_device_list()) == [], {"devices": list(dv.get_device_list())})
++    print("SUMMARY", json.dumps({"results": {k: v["pass"] for k, v in RESULTS.items()}, "calls_total": CALLS}), flush=True)
++    if FAILURES:
++        raise SystemExit(f"FAILED: {FAILURES}")
++    print("ALL MESH AREA CONSERVATION GATE REAL CHECKS PASSED")
++
++
++def gui_paths(dv, MeshAreaConservationError):
++    try:
++        import tkinter  # noqa: F401
++        import tcad_2d_stagewise as gui
++        from tcad.mesh.viennaps_adapter import build_process_result
++        from tcad.physics.doping import apply_uniform_doping
++        import tcad.device.devsim.mesh_import as mi
++        app = gui.TCADApplication()
++    except Exception as exc:  # noqa: BLE001
++        check("gui_available", False, {"exception": repr(exc)[:500]})
++        return
++    app.withdraw()
++    infos, errors, logs, imported = [], [], [], []
++    app._notify_info = lambda title, msg: infos.append((title, msg))
++    app._notify_error = lambda title, msg: errors.append((title, msg))
++    real_log = app._log
++    app._log = lambda msg: (logs.append(msg), real_log(msg))
++    real_import = mi.import_process_result
++    stop_after_import = {"measure": False}
++
++    class StopAfterImport(RuntimeError):
++        pass
++
++    def counted_import(*a, **kw):
++        d = real_import(*a, **kw)
++        imported.append(d.device)
++        if stop_after_import["measure"]:
++            # G1 control: the importer accepted the mesh inside the GUI path; stop here (no doping write, no solve on 0.5M nodes)
++            dv.delete_device(device=d.device)
++            dv.delete_mesh(mesh=d.mesh)
++            raise StopAfterImport("control stop after a successful import")
++        return d
++    mi.import_process_result = counted_import
++    try:
++        for n in ("G2", "G1"):
++            path = str(MESHES[n][0])
++            infos.clear(), errors.clear(), logs.clear(), imported.clear()
++            app.last_final_mesh = path
++            app.last_doped_result = apply_uniform_doping(build_process_result({"final_mesh": path, "snapshots": []}),
++                                                         {"Si": 1.0e16}, chemical_state="ACTIVE")
++            app.last_physics_status = None
++            stop_after_import["measure"] = n == "G1"
++            b = snapshot_calls()
++            app.run_measurement()
++            stop_after_import["measure"] = False
++            st = app.last_physics_status or {}
++            number_shown = any("I =" in m for _, m in infos) or any("DEVSIM MEASUREMENT" in m for m in logs)
++            if n == "G2":
++                check("gui_measure_G2_refused", st.get("reason_code") == "MESH_AREA_NOT_CONSERVED" and not imported
++                      and delta(b) == {k: 0 for k in WRITE_CALLS} and not number_shown and list(dv.get_device_list()) == []
++                      and any("no current is reported" in m for _, m in errors),
++                      {"status_reason": st.get("reason_code"), "calls": delta(b), "number_shown": number_shown, "errors": errors[-1:]})
++            else:
++                check("gui_measure_G1_reaches_importer", imported == ["gui_measure_device"] and st.get("reason_code") != "MESH_AREA_NOT_CONSERVED"
++                      and any("control stop after a successful import" in m for _, m in errors) and list(dv.get_device_list()) == [],
++                      {"imported": imported, "status_reason": st.get("reason_code"), "calls": delta(b), "number_shown": number_shown,
++                       "errors": [m[:300] for _, m in errors]})
++        for n in ("G2", "G1"):
++            app._cleanup_electrode_device()
++            app.electrode_pins = []
++            app.last_final_mesh = str(MESHES[n][0])
++            app.add_electrode_pin("P1", "Source", 5.0, 0.0)
++            app.last_physics_status = None
++            imported.clear(), errors.clear()
++            b = snapshot_calls()
++            out = app.resolve_electrode_pins()
++            st = app.last_physics_status or {}
++            if n == "G2":
++                check("gui_pins_G2_refused", out is None and app.last_electrode_import is None and st.get("reason_code") == "MESH_AREA_NOT_CONSERVED"
++                      and delta(b) == {k: 0 for k in WRITE_CALLS} and list(dv.get_device_list()) == [],
++                      {"status_reason": st.get("reason_code"), "calls": delta(b), "errors": [m[:300] for _, m in errors]})
++                r = app.run_dc_operating_point(1.0, 1.0)
++                check("gui_dc_op_after_G2_refusal_solves_nothing", r is None and delta(b) == {k: 0 for k in WRITE_CALLS}, {"return": r})
++            else:
++                check("gui_pins_G1_reaches_importer", out is not None and imported == ["gui_electrode_device"],
++                      {"imported": imported, "errors": [m[:300] for _, m in errors]})
++                app._cleanup_electrode_device()
++    finally:
++        mi.import_process_result = real_import
++        try:
++            app.destroy()
++        except Exception:  # noqa: BLE001
++            pass
++
++
++def cli_path(MeshAreaConservationError):
++    import tcad.cli.run_pipeline as rp
++    doping_calls = []
++    real_proc, real_dop = rp._run_process_step, rp._apply_device_doping
++    rp._run_process_step = lambda cfg, workdir: {"final_mesh": str(MESHES["G2"][0]), "snapshots": []}
++    rp._apply_device_doping = lambda *a, **kw: doping_calls.append(1)
++    work = Path(tempfile.mkdtemp(prefix="e6e_cli_"))
++    cfg = {"process": {"category": "unused"}, "doping": {"kind": "uniform", "doping_by_region_cm3": {"Si": 1.0e16}, "chemical_state": "ACTIVE"},
++           "device": {"length_scale_to_cm": 1e-4, "contact_regions": ["Si"], "mesh_name": "cli_mesh", "device_name": "cli_device"},
++           "characterization": {"kind": "pn_junction_iv", "region": "Si"}, "outputs": {"csv": "iv.csv"}}
++    b = snapshot_calls()
++    try:
++        rp.run_pipeline(cfg, work)
++        check("cli_G2_refused", False, {"returned": True})
++    except MeshAreaConservationError as exc:
++        check("cli_G2_refused", exc.physics_status.get("reason_code") == "MESH_AREA_NOT_CONSERVED" and not doping_calls
++              and delta(b) == {k: 0 for k in WRITE_CALLS} and not any(work.iterdir()),
++              {"calls": delta(b), "doping_calls": len(doping_calls), "files": [p.name for p in work.iterdir()]})
++    except Exception as exc:  # noqa: BLE001
++        check("cli_G2_refused", False, {"unexpected_exception": repr(exc)[:800]})
++    finally:
++        rp._run_process_step, rp._apply_device_doping = real_proc, real_dop
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/tests/unit/test_mesh_area_conservation_mock.py b/tests/unit/test_mesh_area_conservation_mock.py
+new file mode 100644
+index 0000000..fcaba87
+--- /dev/null
++++ b/tests/unit/test_mesh_area_conservation_mock.py
+@@ -0,0 +1,139 @@
++#!/usr/bin/env python3
++"""Pure (no DEVSIM) checks of tcad.device.devsim.mesh_conservation -- the
++fail-closed per-region area-conservation gate of import_process_result().
++Fixtures and expectations: docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/PLAN.md section 4.
++NodeVolume is supplied as the exact per-node dual area of a structured
++right-triangle mesh, perturbed where a case needs it."""
++import sys
++from pathlib import Path
++
++import numpy as np
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
++from tcad.device.devsim.mesh_conservation import (  # noqa: E402
++    MeshAreaConservationError, check_mesh_input, check_nodevolume,
++)
++
++
++def grid(nx=4, ny=3, x0=0.0, h=0.5, split=None):
++    """nx x ny squares of side h split into 2 right triangles; tag 1 for cells with x < split (or all), 2 otherwise."""
++    pts = np.array([[x0 + i * h, j * h, 0.0] for j in range(ny + 1) for i in range(nx + 1)])
++    tris, tags = [], []
++    for j in range(ny):
++        for i in range(nx):
++            a, b = j * (nx + 1) + i, j * (nx + 1) + i + 1
++            c, d = b + nx + 1, a + nx + 1
++            tris += [(a, b, c), (a, c, d)]
++            t = 1 if split is None or i < split else 2
++            tags += [t, t]
++    return pts, np.array(tris), np.array(tags)
++
++
++def dual_nodevolume(pts, tris, tags, tag):
++    """Right-triangle circumcentric dual: each triangle gives 1/4 of its area to each acute vertex and 1/2 to the right-angle vertex
++    (circumcenter at the hypotenuse midpoint). Returns the region's per-node values (region-local nodes)."""
++    nv = {}
++    for (a, b, c), t in zip(tris, tags):
++        if t != tag:
++            continue
++        u, v = pts[b, :2] - pts[a, :2], pts[c, :2] - pts[a, :2]
++        A = abs(u[0] * v[1] - u[1] * v[0]) / 2
++        for v, o1, o2 in ((a, b, c), (b, c, a), (c, a, b)):
++            right = abs(np.dot(pts[o1, :2] - pts[v, :2], pts[o2, :2] - pts[v, :2])) == 0.0
++            nv[v] = nv.get(v, 0.0) + (A / 2 if right else A / 4)
++    return np.array(list(nv.values()))
++
++
++def refused(fn, code):
++    try:
++        fn()
++    except MeshAreaConservationError as exc:
++        assert exc.physics_status["resolution"] == "UNSUPPORTED_BY_MODEL", exc.physics_status
++        assert exc.physics_status["reason_code"] == code, (code, exc.physics_status["reason_code"])
++        return exc
++    raise AssertionError(f"expected refusal {code}")
++
++
++def main():
++    # exact single material
++    p, t, g = grid()
++    terms = check_mesh_input(p, t, g, {1: "Si"}, [])
++    rep = check_nodevolume(terms, {"Si": dual_nodevolume(p, t, g, 1)}, {"Si": len(t)})
++    assert rep["Si"]["pass"] and abs(rep["Si"]["relative_difference"]) <= rep["Si"]["tau"], rep
++    print(f"single material exact: pass, rel {rep['Si']['relative_difference']!r} tau {rep['Si']['tau']!r}")
++
++    # exact two materials, and the large-coordinate control
++    p, t, g = grid(split=2)
++    terms = check_mesh_input(p, t, g, {1: "Si", 2: "SiO2"}, [])
++    nvs = {"Si": dual_nodevolume(p, t, g, 1), "SiO2": dual_nodevolume(p, t, g, 2)}
++    rep = check_nodevolume(terms, nvs, {"Si": int((g == 1).sum()), "SiO2": int((g == 2).sum())})
++    assert rep["Si"]["pass"] and rep["SiO2"]["pass"], rep
++    pL, tL, gL = grid(x0=1.0e4)
++    pL[:, 1] += 1.0e4
++    termsL = check_mesh_input(pL, tL, gL, {1: "Si"}, [])
++    repL = check_nodevolume(termsL, {"Si": dual_nodevolume(pL, tL, gL, 1)}, {"Si": len(tL)})
++    assert repL["Si"]["pass"], repL
++    print("two materials exact, large-coordinate control: pass")
++
++    # opposite errors in two regions: the total is exact, each region fails
++    d = 0.01
++    bad = {"Si": nvs["Si"].copy(), "SiO2": nvs["SiO2"].copy()}
++    bad["Si"][0] += d
++    bad["SiO2"][0] -= d
++    tot = sum(v.sum() for v in bad.values()) - sum(v.sum() for v in nvs.values())
++    assert abs(tot) < 1e-15
++    exc = refused(lambda: check_nodevolume(terms, bad, {"Si": int((g == 1).sum()), "SiO2": int((g == 2).sum())}),
++                  "MESH_AREA_NOT_CONSERVED")
++    assert exc.physics_status["first_failing_region"] == "Si"
++    print("cancelling region errors: refused per region")
++
++    # boundary just inside / outside the tolerance: a one-node region with a known budget (E_A = 0, E_NV = 1e-6; E_S = u S is
++    # ~1e-16, far below the 2^-10 margin), so B*(1 -/+ 2^-10) is representable next to the area 1.0
++    p, t, g = grid()
++    terms = check_mesh_input(p, t, g, {1: "Si"}, [])
++    base = dual_nodevolume(p, t, g, 1)
++    kt = {"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 1e-6}}
++    assert check_nodevolume(kt, {"Si": np.array([1.0 + 1e-6 * (1 - 2 ** -10)])}, {"Si": 1})["Si"]["pass"]
++    refused(lambda: check_nodevolume(kt, {"Si": np.array([1.0 + 1e-6 * (1 + 2 ** -10)])}, {"Si": 1}), "MESH_AREA_NOT_CONSERVED")
++    print("tolerance boundary: B(1 - 2^-10) pass, B(1 + 2^-10) refused")
++
++    # invalid NodeVolume / region / element count
++    nonfin = base.copy()
++    nonfin[1] = np.nan
++    refused(lambda: check_nodevolume(terms, {"Si": nonfin}, {"Si": len(t)}), "MESH_NODEVOLUME_INVALID")
++    neg = base.copy()
++    neg[1] = -neg[1]
++    refused(lambda: check_nodevolume(terms, {"Si": neg}, {"Si": len(t)}), "MESH_NODEVOLUME_INVALID")
++    refused(lambda: check_nodevolume(terms, {}, {"Si": len(t)}), "MESH_NODEVOLUME_INVALID")          # missing region
++    refused(lambda: check_nodevolume(terms, {"Si": base}, {"Si": len(t) - 1}), "MESH_REGION_ELEMENT_MISMATCH")
++    print("non-finite / non-positive / missing NodeVolume, element mismatch: refused")
++
++    # input checks
++    pn = p.copy()
++    pn[3, 0] = np.inf
++    refused(lambda: check_mesh_input(pn, t, g, {1: "Si"}, []), "MESH_NONFINITE_COORDINATES")
++    pz = p.copy()
++    pz[3, 2] = 1e-9
++    refused(lambda: check_mesh_input(pz, t, g, {1: "Si"}, []), "MESH_NOT_PLANAR_2D")
++    refused(lambda: check_mesh_input(p, t, g, {1: "Si"}, ["quad"]), "MESH_UNSUPPORTED_CELLS")
++    refused(lambda: check_mesh_input(p, t, g, {2: "Si"}, []), "MESH_TAG_UNMAPPED")
++    refused(lambda: check_mesh_input(p, t, g[:-1], {1: "Si"}, []), "MESH_TAG_UNMAPPED")
++    refused(lambda: check_mesh_input(p, t, g, {1: "Si", 2: "SiO2"}, []), "MESH_EMPTY_REGION")
++    refused(lambda: check_mesh_input(p, np.vstack([t, t[:1]]), np.r_[g, g[:1]], {1: "Si"}, []), "MESH_DUPLICATE_TRIANGLE")
++    pd = p.copy()
++    td = t.copy()
++    td[0] = (0, 1, 2)                                   # three collinear nodes on y = 0
++    refused(lambda: check_mesh_input(pd, td, g, {1: "Si"}, []), "MESH_DEGENERATE_TRIANGLE")
++    tm = t.copy()
++    tm[0] = tm[0][[0, 2, 1]]                            # one inverted triangle
++    refused(lambda: check_mesh_input(p, tm, g, {1: "Si"}, []), "MESH_ORIENTATION_MIXED")
++    tcw = t[:, [0, 2, 1]]                               # consistently clockwise: accepted
++    check_mesh_input(p, tcw, g, {1: "Si"}, [])
++    print("input checks: non-finite, non-planar, extra cells, unmapped tag, empty region, duplicate, degenerate, mixed: refused; "
++          "consistent clockwise accepted")
++
++    print("ALL MESH AREA CONSERVATION MOCK CHECKS PASSED")
++
++
++if __name__ == "__main__":
++    main()

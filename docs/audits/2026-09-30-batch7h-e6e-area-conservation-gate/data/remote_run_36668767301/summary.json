@@ -1,0 +1,114 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-09-30T04:26:12.842651+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6e-full-regression-001",
+  "profile": "e6e_full_regression",
+  "params": {},
+  "note": "Batch 7H-E6E: tests/run_regression.py exactly once, after targeted run 36668414619 passed (16/16) on 3344938."
+ },
+ "profile": "e6e_full_regression",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
+   "sha256": "363603002cc6af81f76373b8cc80601d5234f374f65199be9ec7e04475a157c3",
+   "bytes": 3716
+  },
+  {
+   "path": "tests/run_regression.py",
+   "sha256": "5f7ff6267b3838f7a1a68986f2bdb178bf76f29948c9c827805afabb77301aa2",
+   "bytes": 10127
+  },
+  {
+   "path": "tcad/device/devsim/mesh_conservation.py",
+   "sha256": "13981969288b001b8757009c26e3fc6fc7a8841835c046e9a4620dd5681f29fd",
+   "bytes": 8728
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "e0635b22617ee0269b5841ad0d55c238850096422b6263592b4228bc28018f50",
+   "bytes": 60559
+  }
+ ],
+ "request_sha256": "bc8ac6095c32d2cccb02e8d8054dc99b6b4df88af484c5b632c51a8115112566",
+ "source": {
+  "github_sha": "e79f2a0a23b9387bf45d321ec430f0930de6661d",
+  "git_head": "e79f2a0a23b9387bf45d321ec430f0930de6661d",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36668767301",
+  "run_number": "17",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
+  "regression"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T04:33:43.035492+00:00",
+ "duration_s": 450.193,
+ "outputs": [
+  {
+   "path": "e6e_regression_out/e6e_tests_result.json",
+   "bytes": 2063,
+   "sha256": "3de30c286d383aa51aeb802a8e49684b6092fa7211ffea046243155943fa4ab1"
+  },
+  {
+   "path": "e6e_regression_out/run_regression.log",
+   "bytes": 64657,
+   "sha256": "784ec322fc0f94d105a195da44774a126f19dcbaef415047ab62226e8a511523"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "cff96bc2c60cc39e33fc1da8ec0ee36fac8b838c8871023c6e09e448082c3cf7",
+  "bytes": 6154
+ },
+ "redactions": {}
+}

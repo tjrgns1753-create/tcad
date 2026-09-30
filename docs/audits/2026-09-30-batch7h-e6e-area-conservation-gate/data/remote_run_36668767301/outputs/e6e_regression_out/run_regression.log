@@ -1,0 +1,847 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+ViennaPS available: True
+DevSim available:   True
+
+=== tests/unit (mock, always run) ===
+[PASS] test_advance_wafer_state_result_contract_mock.py (0.2s)
+[PASS] test_anneal_profile_mock.py (0.2s)
+[PASS] test_cad_negative_validation_mock.py (0.2s)
+[PASS] test_cli_doping_initial_state_branch_mock.py (0.4s)
+[PASS] test_dc_operating_point_mock.py (0.1s)
+[PASS] test_diffusion_model_mock.py (0.2s)
+[PASS] test_dopant_activation_compensation_mock.py (0.4s)
+[PASS] test_dopant_models_mock.py (0.2s)
+[PASS] test_dopant_profile_mock.py (0.2s)
+[PASS] test_dopant_rev2_contract_mock.py (1.8s)
+[PASS] test_doping_staleness_mock.py (0.7s)
+[PASS] test_doping_unsupported_hover_note_mock.py (0.5s)
+[PASS] test_etch_material_summary_mock.py (1.2s)
+[PASS] test_gaussian_implant_no_existing_param_mock.py (0.2s)
+[PASS] test_gui_doping_application_truthfulness_mock.py (0.7s)
+[PASS] test_gui_error_dialog_visibility_gate_mock.py (0.5s)
+[PASS] test_gui_gate_stack_state_mock.py (0.5s)
+[PASS] test_gui_litho_lifecycle_mock.py (0.5s)
+[PASS] test_gui_no_forced_order_mock.py (0.5s)
+[PASS] test_implant_windows_from_mask_mock.py (0.2s)
+[PASS] test_mask_spans_from_openings_mock.py (0.1s)
+[PASS] test_measurement_canonical_state_gate_mock.py (0.5s)
+[PASS] test_measurement_entry_point_gate_mock.py (0.6s)
+[PASS] test_mesh_area_conservation_mock.py (0.1s)
+[PASS] test_mesh_refine_mock.py (0.2s)
+[PASS] test_phase1_bosch_mock.py (0.2s)
+[PASS] test_physics_tables_mock.py (0.2s)
+[PASS] test_physics_values_mock.py (0.2s)
+[PASS] test_pin_model_mock.py (0.2s)
+[PASS] test_resolver_mock.py (0.2s)
+[PASS] test_step_junction_2d_gate_mock.py (0.2s)
+[PASS] test_step_junction_2d_gate_precedence_mock.py (0.3s)
+[PASS] test_thermal_anneal_mock.py (0.2s)
+[PASS] test_wafer_state_doping_mock.py (0.2s)
+[PASS] test_wafer_state_v2_anneal_fail_closed_mock.py (0.3s)
+[PASS] test_wafer_state_v2_apply_doping_barrier_mock.py (0.3s)
+[PASS] test_wafer_state_v2_barrier_physics_mock.py (0.2s)
+[PASS] test_wafer_state_v2_devsim_mapping_gate_mock.py (0.3s)
+[PASS] test_wafer_state_v2_etch_conservation_mock.py (0.2s)
+[PASS] test_wafer_state_v2_exact_inventory_mock.py (0.2s)
+[PASS] test_wafer_state_v2_explicit_doping_target_mock.py (0.2s)
+[PASS] test_wafer_state_v2_fail_closed_no_resurrection_mock.py (0.2s)
+[PASS] test_wafer_state_v2_gate_stack_fallback_fail_closed_mock.py (0.4s)
+[PASS] test_wafer_state_v2_instance_not_name_mock.py (0.2s)
+[PASS] test_wafer_state_v2_legacy_migration_fail_closed_mock.py (0.2s)
+[PASS] test_wafer_state_v2_multi_extent_provenance_mock.py (0.2s)
+[PASS] test_wafer_state_v2_no_last_step_category_mock.py (0.4s)
+[PASS] test_wafer_state_v2_no_numeric_without_exact_integral_mock.py (0.2s)
+[PASS] test_wafer_state_v2_oxidation_unsupported_mock.py (0.2s)
+[PASS] test_wafer_state_v2_redeposit_no_resurrection_mock.py (0.2s)
+[PASS] test_wafer_state_v2_remesh_preserved_mock.py (0.2s)
+[PASS] test_wafer_state_v2_transform_structural_validation_mock.py (0.2s)
+[PASS] test_wafer_state_v2_transform_targets_instance_mock.py (0.2s)
+[PASS] test_wafer_state_v2_unsupported_returns_none_mock.py (0.2s)
+[PASS] test_waferstate_sequential_advance_mock.py (0.5s)
+[PASS] test_zero_duration_identity_state_contract_mock.py (0.4s)
+
+=== tests/integration (real ViennaPS + real DevSim) ===
+[FAIL] test_auto_refine_from_doping_real.py (0.5s)
+    test_step_junction_auto_refine()
+  File "D:\a\tcad\tcad\tests\integration\test_auto_refine_from_doping_real.py", line 86, in test_step_junction_auto_refine
+    probe = import_process_result(
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.5871747427935587, NodeVolume sum 12.867752223326326, relative difference 7.107331774117082, tolerance 2.8844953431920125e-14
+[PASS] test_basic_potential_linear_precision_real.py (0.2s)
+[PASS] test_blanket_no_mask_real.py (3.9s)
+[PASS] test_bosch_cycle_safety_real.py (12.9s)
+[PASS] test_bosch_drie_resist_mask_real.py (4.9s)
+[PASS] test_cad_negative_validation_real.py (0.5s)
+[PASS] test_ce1_order_sensitive_geometry_real.py (0.5s)
+[FAIL] test_ce2_oxidation_conversion_unsupported_real.py (0.5s)
+Process time: 1.0000 / 1.0000 s
+[0m[before oxidation, real bare-Si wafer] X_CONVERTED=0.0: Si, X_PROTECTED=-3.5: Si
+[after real LOCOS oxidation + mask/pad-oxide strip] X_CONVERTED=0.0: Si, X_PROTECTED=-3.5: Si
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_ce2_oxidation_conversion_unsupported_real.py", line 306, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_ce2_oxidation_conversion_unsupported_real.py", line 266, in main
+    assert after_converted != "Si", (
+           ^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: X_CONVERTED must genuinely flip material (real field-oxide growth in the open LOCOS window) -- got 'Si'; if this fails, temperature_c/time_hours need real tuning
+[FAIL] test_ce3_implant_anneal_etch_implant_real.py (1.2s)
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_ce3_implant_anneal_etch_implant_real.py", line 303, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_ce3_implant_anneal_etch_implant_real.py", line 164, in main
+    assert app.run_doping(silent=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[PASS] test_deposition_mask_mode_real.py (0.4s)
+[FAIL] test_device_fabrication_to_dc_sweep_real.py (3.4s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_device_fabrication_to_dc_sweep_real.py", line 166, in main
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 4.800000190734864e-08, NodeVolume sum 5.2111569864754037e-08, relative difference 0.08565766237554939, tolerance 2.233842837666248e-14
+[FAIL] test_device_lifecycle_repeat_real.py (0.4s)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\cli\run_pipeline.py", line 228, in _import_device
+    return import_process_result(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.4892715397655807, NodeVolume sum 28.199985692509852, relative difference 17.93542241259017, tolerance 3.192730031861316e-14
+[PASS] test_directional_deposition_growth_real.py (2.4s)
+[FAIL] test_dopant_activation_devsim_gate_real.py (1.5s)
+Contact Si_xmax in region Si with 6 nodes
+Contact Si_xmin in region Si with 6 nodes
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_dopant_activation_devsim_gate_real.py", line 299, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_dopant_activation_devsim_gate_real.py", line 245, in main
+    check_step_junction_2d_blocked(m, canonical_right, canonical_left, 1e17, 1e17)
+  File "D:\a\tcad\tcad\tests\integration\test_dopant_activation_devsim_gate_real.py", line 162, in check_step_junction_2d_blocked
+    _blocked_common(m, "ACTIVE step junction (2D)")
+  File "D:\a\tcad\tcad\tests\integration\test_dopant_activation_devsim_gate_real.py", line 129, in _blocked_common
+    assert counts and counts.group(1) == counts.group(2) and int(counts.group(1)) > 0, f"{label}: blocked/total node counts: {m['log'][-800:]}"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ACTIVE step junction (2D): blocked/total node counts: ERROR — Measurement: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 3.999999797903004e-08, NodeVolume sum 4.721171653516063e-08, relative difference 0.18029297301243186, tolerance 2.479482301240488e-14
+
+Measurement blocked: no doping was written to DevSim, no solve was run, and no current is reported.
+[FAIL] test_dopant_profile_matches_devsim_real.py (0.4s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_dopant_profile_matches_devsim_real.py", line 395, in main
+    _run_branch_a()
+  File "D:\a\tcad\tcad\tests\integration\test_dopant_profile_matches_devsim_real.py", line 210, in _run_branch_a
+    totals["uniform"] = _check_branch_a("uniform", doped, _independent_uniform(donor, acceptor))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tests\integration\test_dopant_profile_matches_devsim_real.py", line 161, in _check_branch_a
+    apply_doping(imported.device, "Si", state, length_scale_to_cm=A_SCALE)
+  File "D:\a\tcad\tcad\tcad\device\devsim\doping_mapping.py", line 711, in apply_doping
+    donors, acceptors, nets = canonical_node_doping(device, region, state, length_scale_to_cm)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\doping_mapping.py", line 372, in canonical_node_doping
+    raise UnsupportedDopingState(
+tcad.device.devsim.doping_mapping.UnsupportedDopingState: UNSUPPORTED_BY_MODEL (COMPENSATED_TRANSPORT_MODEL_MISSING): device 'a_uniform_device' region 'Si' holds donor AND acceptor dopant over a finite area (231 of 231 mesh node(s) blocked (region-level: compensated region)). The canonical concentrations are kept, but the drift-diffusion model has no compensation-aware ionized-impurity scattering / mobility, so the device solve must not proceed.
+instance 'si#substrate': donor 'att:doping:1:2' and acceptor 'att:doping:2:2' coexist over the finite area (-2.0, 2.0, -2.0, 0.0)
+[FAIL] test_doping_barrier_windows_real.py (0.4s)
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_doping_barrier_windows_real.py", line 107, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_doping_barrier_windows_real.py", line 51, in main
+    etch_result = results[1]
+                  ~~~~~~~^^^
+IndexError: list index out of range
+[PASS] test_doping_donor_acceptor_all_kinds_real.py (0.2s)
+[FAIL] test_doping_mapping_per_node_real.py (0.5s)
+  File "D:\a\tcad\tcad\tests\integration\test_doping_mapping_per_node_real.py", line 110, in main
+    physics_status = apply_doping(
+                     ^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\doping_mapping.py", line 711, in apply_doping
+    donors, acceptors, nets = canonical_node_doping(device, region, state, length_scale_to_cm)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\doping_mapping.py", line 442, in canonical_node_doping
+    raise UnsupportedDopingState(
+tcad.device.devsim.doping_mapping.UnsupportedDopingState: UNSUPPORTED_BY_MODEL: the canonical WaferStateV2 cannot supply a fully-known doping for device 'ce_dev' region 'Si' (1326 of 1326 mesh node(s) blocked). The device solve must not proceed.
+First blocked node: x=-5 um, y=-4.800000191 um in DevSim region 'Si'.
+Canonical material instance(s) containing it: inst:legacy:3, inst:legacy:6, inst:legacy:9, inst:legacy:12, inst:legacy:15, inst:legacy:18, inst:legacy:21, inst:legacy:24, inst:legacy:27, inst:legacy:30 (+2490 more).
+Cell(s) containing it: cell:legacy:2 (instance inst:legacy:3, material Si, lifecycle LEGACY_UNRESOLVED, bounds_um None); cell:legacy:5 (instance inst:legacy:6, material Si, lifecycle LEGACY_UNRESOLVED, bounds_um None); cell:legacy:8 (instance inst:legacy:9, material Si, lifecycle LEGACY_UNRESOLVED, bounds_um None) (+2497 more).
+Blocked because: cell cell:legacy:2 (Si, lifecycle LEGACY_UNRESOLVED) has no exact bounds, so it may contain this node (as may 2499 more cell(s) without bounds) -- ownership cannot be decided.
+Canonical query at this node: physics_status UNSUPPORTED_BY_MODEL -- point lies in a LEGACY_UNRESOLVED cell (no exact y_min for its material support).
+Distinct reasons over all blocked nodes: cell cell:legacy:2 (Si, lifecycle LEGACY_UNRESOLVED) has no exact bounds, so it may contain this node (as may 2499 more cell(s) without bounds) -- ownership cannot be decided.
+[FAIL] test_doping_mapping_recovery_real.py (0.4s)
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+    Process time: 0.5000 / 0.5000 s
+[0m[1/5] state.exposed_material_at(1.0) = None (must NOT be 'Si' -- this is the shadowing leftover Mask)
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_doping_mapping_recovery_real.py", line 372, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_doping_mapping_recovery_real.py", line 126, in main
+    print(f"[2/5] state.net_doping_at({BULK_X_UM}, 0.0) BEFORE recovery: "
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: unsupported format string passed to NoneType.__format__
+[PASS] test_doping_overlay_surface_profile_real.py (0.6s)
+[PASS] test_etch_selectivity_real.py (7.1s)
+[PASS] test_float32_boundary_snap_real.py (2.5s)
+[PASS] test_gate_contact_placement_real.py (0.5s)
+[PASS] test_gate_patterning_remask_real.py (0.7s)
+[PASS] test_gate_stack_geometry_real.py (0.5s)
+[FAIL] test_gaussian_implant_doping_real.py (0.4s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_gaussian_implant_doping_real.py", line 68, in main
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.4892715397655807, NodeVolume sum 28.199985692509852, relative difference 17.93542241259017, tolerance 3.192730031861316e-14
+[PASS] test_geometric_trench_deposition_real.py (0.4s)
+[FAIL] test_gui_doping_color_overlay_real.py (1.2s)
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_gui_doping_color_overlay_real.py", line 393, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_gui_doping_color_overlay_real.py", line 178, in main
+    _implant(-4.0, 0.2, 0.0, 1.0e18, "", "B")
+  File "D:\a\tcad\tcad\tests\integration\test_gui_doping_color_overlay_real.py", line 159, in _implant
+    assert app.run_doping(silent=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[FAIL] test_gui_doping_donor_acceptor_real.py (1.8s)
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 25 Lines.
+Physical group name Si_xmin has 26 Points.
+Device gui_measure_device has 1326 coordinates with max index 1325
+Region Si has 1326 nodes.
+Contact Si_xmax in region Si with 26 nodes
+Contact Si_xmin in region Si with 26 nodes
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_gui_doping_donor_acceptor_real.py", line 469, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_gui_doping_donor_acceptor_real.py", line 148, in main
+    assert "Measurement: Voltage source" in meas_log_delta, (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: a real DevSim solve must still report its own result in the log panel, got: "NOTE: the doping profile was attached to an earlier mesh. Re-applying the same doping to the current geometry before measuring.\n\n\n================================\nDOPING APPLIED: UNIFORM\n================================\nACTIVE ANALYTIC PROFILE DECLARED (DECLARED ANALYTIC ACTIVE PROFILE: the user's own electrically-active device profile -- not a simulated implant, anneal or activation)\nregion='Si' donor=1.000e+16 acceptor=5.000e+15 -> net_doping_cm3=5.000e+15\nMaterials in mesh: ['Si']\nAccumulated dopant profile(s) on this wafer: 2\n(DopingProfile attached only -- no DevSim solve run.)\n\nNOTE: COMPENSATED_TRANSPORT_MODEL_MISSING -- donor and acceptor coexist over a finite area (instance 'si#substrate': donor 'att:doping:1:2' and acceptor 'att:doping:2:2' coexist over the finite area (-5.0, 5.0, -5.0, 0.0)). The canonical concentrations are kept; a DevSim measurement of this region is UNSUPPORTED_BY_MODEL (no compensation-aware transport model).\n\n\n(No mesh refinement needed -- uniform doping has no junction to resolve.)\n\nERROR — Measurement: UNSUPPORTED_BY_MODEL (COMPENSATED_TRANSPORT_MODEL_MISSING): device 'gui_measure_device' region 'Si' holds donor AND acceptor dopant over a finite area (1326 of 1326 mesh node(s) blocked (region-level: compensated region)). The canonical concentrations are kept, but the drift-diffusion model has no compensation-aware ionized-impurity scattering / mobility, so the device solve must not proceed.\ninstance 'si#substrate': donor 'att:doping:1:2' and acceptor 'att:doping:2:2' coexist over the finite area (-5.0, 5.0, -5.0, 0.0)\n\nMeasurement blocked: no doping was written to DevSim, no solve was run, and no current is reported.\n\n"
+[FAIL] test_gui_doping_survives_geometry_steps_real.py (1.1s)
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_gui_doping_survives_geometry_steps_real.py", line 118, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_gui_doping_survives_geometry_steps_real.py", line 51, in main
+    assert app.run_doping(silent=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[FAIL] test_gui_electrode_panel_real.py (1.5s)
+Region TiN has 162 nodes.
+Region W has 83 nodes.
+Contact Body in region Si with 5 nodes
+Contact Drain in region Si with 5 nodes
+Contact Gate in region TiN with 11 nodes
+Contact Source in region Si with 5 nodes
+Adding interface Si_SiO2_interface with 31, 31 nodes
+[1/3] 4 pins resolved to real contacts: ['Body', 'Drain', 'Gate', 'Source'] (Source/Drain confirmed on region 'Si')
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_gui_electrode_panel_real.py", line 134, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_gui_electrode_panel_real.py", line 103, in main
+    assert op_point is not None
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[PASS] test_gui_headless_no_modal_hang_real.py (7.7s)
+[FAIL] test_gui_implant_windows_overlay_note_real.py (1.2s)
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_gui_implant_windows_overlay_note_real.py", line 182, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_gui_implant_windows_overlay_note_real.py", line 118, in main
+    assert app.run_doping(silent=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[PASS] test_gui_litho_placeholder_visibility_real.py (2.3s)
+[FAIL] test_gui_measurement_captures_physics_status_real.py (1.5s)
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_gui_measurement_captures_physics_status_real.py", line 96, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_gui_measurement_captures_physics_status_real.py", line 72, in main
+    assert app.run_doping(silent=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[FAIL] test_gui_measurement_doping_kinds_real.py (0.4s)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tests\integration\test_gui_measurement_doping_kinds_real.py", line 164, in measure_one_kind
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.4892715056205644e-08, NodeVolume sum 2.819998748644842e-07, relative difference 17.93542405130337, tolerance 3.1927300305241974e-14
+[PASS] test_gui_process_state_chaining_real.py (1.8s)
+[FAIL] test_gui_thermal_anneal_real.py (1.2s)
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_gui_thermal_anneal_real.py", line 209, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_gui_thermal_anneal_real.py", line 78, in main
+    assert app.run_doping(silent=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[FAIL] test_implant_windows_doping_real.py (0.5s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_implant_windows_doping_real.py", line 77, in main
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 0.8928950985506937, NodeVolume sum 0.9028380275443091, relative difference 0.01113560709399608, tolerance 2.5469331938352775e-14
+[PASS] test_koh_crystallographic_wet_etch_real.py (0.4s)
+[PASS] test_litho_lifecycle_state_real.py (14.9s)
+[PASS] test_locos_birds_beak_real.py (0.5s)
+[PASS] test_locos_chaining_real.py (0.5s)
+[PASS] test_locos_contact_mode_fix_real.py (0.5s)
+[PASS] test_locos_devsim_import_real.py (2.4s)
+[PASS] test_mask_spans_real.py (0.6s)
+[FAIL] test_measurement_canonical_state_gate_real.py (2.5s)
+    Region: "Si"	RelError: 1.61240e-15	AbsError: 3.88521e-03
+      Equation: "ElectronContinuityEquation"	RelError: 3.88521e-19	AbsError: 3.88521e-03
+      Equation: "HoleContinuityEquation"	RelError: 1.59901e-15	AbsError: 1.59901e-11
+      Equation: "PotentialEquation"	RelError: 1.30045e-17	AbsError: 4.67050e-18
+METRICS {"B0_states": [["gaussian_v1", "CHEMICAL"], ["implant_windows_v1", "CHEMICAL"]], "B0": {"label": "B0 blocked: GUI Gaussian + Implant Windows are CHEMICAL", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": false, "last_physics_status": null, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null}, "B1_attachments": [["gaussian_v1", "P", "donor", "si#substrate", [-2.0, 2.0, -1.0, 0.0]], ["implant_windows_v1", null, "donor", "si#substrate", [-2.0, 2.0, -1.0, 0.0]]], "B1": {"label": "B1 supported: Gaussian then Implant Windows, robust path", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": true, "last_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "reason_code": "MESH_AREA_NOT_CONSERVED", "regions": {"Si": {"triangles": 1040, "devsim_elements": 1040, "nodes": 562, "area": 3.999999797903004e-08, "sum_NodeVolume": 5.1999997372740956e-08, "relative_difference": 0.30000000000004756, "tau": 2.640796322423417e-14, "E_A": 2.753352881179937e-23, "E_S": 5.773159436366466e-24, "E_NV": 1.0230117873515005e-21, "pass": false}}, "first_failing_region": "Si", "device": "gui_measure_device", "mesh": "gui_measure_mesh", "cleanup": {"delete_device": "ok", "delete_mesh": "ok"}}, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null}, "A_state_before_measure": {"net_doping": null, "resolution": "UNSUPPORTED_BY_MODEL", "active_attachments": 0, "cells": [["si#substrate", "Si", "UNRESOLVED", [-2.0, 2.0, -1.0, 0.0]]]}, "A": {"label": "A blocked: implant_windows robust path after anneal", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": true, "last_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "reason_code": "MESH_AREA_NOT_CONSERVED", "regions": {"Si": {"triangles": 1040, "devsim_elements": 1040, "nodes": 562, "area": 3.999999797903004e-08, "sum_NodeVolume": 5.1999997372740956e-08, "relative_difference": 0.30000000000004756, "tau": 2.640796322423417e-14, "E_A": 2.753352881179937e-23, "E_S": 5.773159436366466e-24, "E_NV": 1.0230117873515005e-21, "pass": false}}, "first_failing_region": "Si", "device": "gui_measure_device", "mesh": "gui_measure_mesh", "cleanup": {"delete_device": "ok", "delete_mesh": "ok"}}, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null, "canonical_net_after_measure": null}, "B2": {"label": "B2 supported: uniform apply_doping path", "solve_calls": 3, "doping_writes": 6, "doping_write_kinds": [["node_model", "Acceptors"], ["node_model", "Donors"], ["node_model", "NetDoping"], ["set_node_values", "Acceptors"], ["set_node_values", "Donors"], ["set_node_values", "NetDoping"]], "currents_in_log": [0.0016, -0.0016, 0.0016, -0.0016], "measurement_section_logged": true, "unsupported_in_log": false, "last_physics_status": null, "canonical_state_object_unchanged": true, "history_entries_added": 1, "canonical_vs_solved_netdoping": {"nodes": 126, "mismatched_nodes": 0, "max_abs_diff_cm3": 0.0}}, "leaked_devices": []}
+A_LOG_DELTA "\nDoping-derived mesh refinement (implant_windows) applied -- see <USERPROFILE>\\AppData\\Local\\Temp\\tcad2d_wafer_9rfaw32y\\wafer_volume.vtu.implant_refined.vtu\n\nERROR \u2014 Measurement: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 3.999999797903004e-08, NodeVolume sum 5.1999997372740956e-08, relative difference 0.30000000000004756, tolerance 2.640796322423417e-14\n\nMeasurement blocked: no doping was written to DevSim, no solve was run, and no current is reported.\n"
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_measurement_canonical_state_gate_real.py", line 399, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_measurement_canonical_state_gate_real.py", line 351, in main
+    _assert_supported("B1", b1)
+  File "D:\a\tcad\tcad\tests\integration\test_measurement_canonical_state_gate_real.py", line 217, in _assert_supported
+    assert b["solve_calls"] >= 1, f"{key}: no real solve ran"
+           ^^^^^^^^^^^^^^^^^^^^^
+AssertionError: B1: no real solve ran
+[PASS] test_mesh_area_conservation_gate_real.py (178.3s)
+[FAIL] test_mosfet_body_bias_real.py (2.2s)
+               ^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tests\integration\test_mosfet_body_contact_real.py", line 89, in _build_device
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 4.800000190734864e-08, NodeVolume sum 5.2111569864754037e-08, relative difference 0.08565766237554939, tolerance 2.233842837666248e-14
+[FAIL] test_mosfet_body_contact_real.py (2.2s)
+               ^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tests\integration\test_mosfet_body_contact_real.py", line 89, in _build_device
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 4.800000190734864e-08, NodeVolume sum 5.2111569864754037e-08, relative difference 0.08565766237554939, tolerance 2.233842837666248e-14
+[FAIL] test_mosfet_gate_stack_cv_real.py (0.7s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_mosfet_gate_stack_cv_real.py", line 231, in main
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 6.000000000000001e-08, NodeVolume sum 6.060742187747392e-08, relative difference 0.01012369795789847, tolerance 2.0955627855805145e-14
+[FAIL] test_mosfet_id_vds_real.py (2.1s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_mosfet_id_vds_real.py", line 87, in main
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 4.800000190734864e-08, NodeVolume sum 5.2111569864754037e-08, relative difference 0.08565766237554939, tolerance 2.233842837666248e-14
+[FAIL] test_mosfet_id_vgs_real.py (2.2s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_mosfet_id_vgs_real.py", line 183, in main
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 4.800000190734864e-08, NodeVolume sum 5.2111569864754037e-08, relative difference 0.08565766237554939, tolerance 2.233842837666248e-14
+[FAIL] test_mosfet_vth_extraction_real.py (2.2s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_mosfet_vth_extraction_real.py", line 234, in main
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 4.800000190734864e-08, NodeVolume sum 5.2111569864754037e-08, relative difference 0.08565766237554939, tolerance 2.233842837666248e-14
+[PASS] test_order_independence_real.py (2.2s)
+[PASS] test_oxidation_positive_time_unsupported_real.py (20.1s)
+[PASS] test_oxidation_pr_etch_reaches_si_real.py (6.7s)
+[PASS] test_oxidation_zero_duration_identity_real.py (4.0s)
+[FAIL] test_phase13_process_flow_real.py (0.7s)
+Process time: 0.4000 / 0.4000 s
+[0m[Flow 1] Si -> thermal oxidation -> wet etching of the oxide
+  structures:
+    step0: materials=['Si'] level_sets=1 bbox=[[-2.0, -6.0, 0.0], [2.0, 0.0, 0.0]] grid=0.05
+           mesh=oxidation_unsupported_volume.vtu
+    NEGATIVE CONTROL (wet_etching alone on fresh wafer): materials=['Mask', 'Si'] level_sets=2
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_phase13_process_flow_real.py", line 227, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_phase13_process_flow_real.py", line 216, in main
+    flow_si_oxidation_etching(tmp)
+  File "D:\a\tcad\tcad\tests\integration\test_phase13_process_flow_real.py", line 97, in flow_si_oxidation_etching
+    step2 = results[1].structure
+            ~~~~~~~^^^
+IndexError: list index out of range
+[FAIL] test_phase14_flow_devsim_real.py (0.7s)
+Device p14t1_device has 8181 coordinates with max index 8180
+Region Si has 8181 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[DevSim import] regions=['Si'] contacts=['Si_xmin', 'Si_xmax']
+[Geometry check] DevSim Si x-range=(-2.000000, 2.000000), 8181 nodes | Flow (ViennaPS) x bbox=(-2.000000, 2.000000)
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_phase14_flow_devsim_real.py", line 294, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_phase14_flow_devsim_real.py", line 285, in main
+    test_1_flow_oxidation_to_devsim_import()
+  File "D:\a\tcad\tcad\tests\integration\test_phase14_flow_devsim_real.py", line 91, in test_1_flow_oxidation_to_devsim_import
+    assert "SiO2" in final.structure["materials"], "flow step must have produced oxide"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: flow step must have produced oxide
+[PASS] test_phase2_etching_real.py (11.3s)
+[PASS] test_phase3_deposition_real.py (1.2s)
+[PASS] test_phase4_oxidation_real.py (0.4s)
+[FAIL] test_phase5_devsim_real.py (0.5s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_phase5_devsim_real.py", line 60, in main
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.4892715397655807, NodeVolume sum 28.199985692509852, relative difference 17.93542241259017, tolerance 3.192730031861316e-14
+[FAIL] test_phase6_characterization_real.py (0.4s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_phase6_characterization_real.py", line 50, in main
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.4892715397655807, NodeVolume sum 28.199985692509852, relative difference 17.93542241259017, tolerance 3.192730031861316e-14
+[FAIL] test_phase7_doping_real.py (0.4s)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tests\integration\test_phase7_doping_real.py", line 68, in run_one
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.4892715397655807, NodeVolume sum 28.199985692509852, relative difference 17.93542241259017, tolerance 3.192730031861316e-14
+[FAIL] test_phase8_pn_junction_real.py (0.4s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_phase8_pn_junction_real.py", line 89, in main
+    probe = import_process_result(process_result, mesh_name="phase8_probe_mesh", device_name="phase8_probe_device")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.5871747427935587, NodeVolume sum 12.867752223326326, relative difference 7.107331774117082, tolerance 2.8844953431920125e-14
+[FAIL] test_phase9_mos_cv_real.py (0.4s)
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[1/6] ViennaPS thermal oxidation OK -> <USERPROFILE>\AppData\Local\Temp\tmpvbopvyl_\oxidation_unsupported_volume.vtu
+[2/6] ProcessResult OK -> regions: ['Si']
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_phase9_mos_cv_real.py", line 157, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_phase9_mos_cv_real.py", line 60, in main
+    assert "SiO2" in region_names and "Si" in region_names
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[PASS] test_physics_references_real.py (3.6s)
+[FAIL] test_physics_rules_real.py (0.5s)
+[1] PR coating is a blanket coating
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_physics_rules_real.py", line 357, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_physics_rules_real.py", line 345, in main
+    test_rule_1_pr_coating_is_blanket()
+  File "D:\a\tcad\tcad\tests\integration\test_physics_rules_real.py", line 140, in test_rule_1_pr_coating_is_blanket
+    found = _materials(results[1].volume_mesh_path)
+                       ~~~~~~~^^^
+IndexError: list index out of range
+[PASS] test_pin_placement_validation_real.py (0.4s)
+[PASS] test_point_contact_import_real.py (1.5s)
+[PASS] test_pr_strip_real.py (0.4s)
+[FAIL] test_process_state_resume_real.py (1.3s)
+    RUN 3: etch through developed resist    ran 1 step(s), materials=['Mask', 'Si', 'Si3N4']
+    RUN 4: deposition W                     ran 1 step(s), materials=['Mask', 'Si', 'Si3N4', 'W']
+D:\a\tcad\tcad\tcad\process\deposition\isotropic.py:43: UserWarning: IsotropicDeposition: continuing from an inherited domain, so initial-geometry recipe keys ['grid_delta_um', 'x_extent_um', 'y_extent_um', 'pr_thickness_um'] are ignored (the wafer already exists). Physical process parameters are still applied.
+  geometry = self.prepare_domain(recipe)
+D:\a\tcad\tcad\tcad\process\etching\isotropic.py:61: UserWarning: IsotropicEtch: continuing from an inherited domain with remask_spans_um set, so initial-geometry recipe keys ['y_extent_um'] are still ignored (they describe how to build a FRESH wafer, not how to remask an existing one).
+  geometry = self.prepare_domain(recipe)
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_process_state_resume_real.py", line 296, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_process_state_resume_real.py", line 285, in main
+    test_state_accumulates_across_runs()
+  File "D:\a\tcad\tcad\tests\integration\test_process_state_resume_real.py", line 168, in test_state_accumulates_across_runs
+    assert set(after_ox) == {"Si", "SiO2"}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[PASS] test_resolver_wired_real.py (1.0s)
+[FAIL] test_robust_iv_sweep_real.py (1.1s)
+                      ^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tests\integration\test_robust_iv_sweep_real.py", line 96, in build_device
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.489271511376836e-08, NodeVolume sum 4.2026154513033076e-07, relative difference 27.219269751678638, tolerance 4.357118850961675e-14
+[PASS] test_status_propagation_real.py (1.0s)
+[PASS] test_step_junction_2d_gate_mutations_real.py (0.4s)
+[PASS] test_step_junction_2d_gate_real.py (0.6s)
+[PASS] test_thermal_anneal_acceptance_real.py (0.5s)
+[FAIL] test_voltage_probe_real.py (0.5s)
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_voltage_probe_real.py", line 61, in main
+    apply_doping(imported.device, "Si", state, length_scale_to_cm=LENGTH_SCALE_TO_CM)
+  File "D:\a\tcad\tcad\tcad\device\devsim\doping_mapping.py", line 711, in apply_doping
+    donors, acceptors, nets = canonical_node_doping(device, region, state, length_scale_to_cm)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\doping_mapping.py", line 442, in canonical_node_doping
+    raise UnsupportedDopingState(
+tcad.device.devsim.doping_mapping.UnsupportedDopingState: UNSUPPORTED_BY_MODEL: the canonical WaferStateV2 cannot supply a fully-known doping for device 'probe_device' region 'Si' (451 of 451 mesh node(s) blocked). The device solve must not proceed.
+First blocked node: x=-1.999999949 um, y=-0.8999999409 um in DevSim region 'Si'.
+Canonical material instance(s) containing it: inst:legacy:3, inst:legacy:6, inst:legacy:9, inst:legacy:12, inst:legacy:15, inst:legacy:18, inst:legacy:21, inst:legacy:24, inst:legacy:27, inst:legacy:30 (+790 more).
+Cell(s) containing it: cell:legacy:2 (instance inst:legacy:3, material Si, lifecycle LEGACY_UNRESOLVED, bounds_um None); cell:legacy:5 (instance inst:legacy:6, material Si, lifecycle LEGACY_UNRESOLVED, bounds_um None); cell:legacy:8 (instance inst:legacy:9, material Si, lifecycle LEGACY_UNRESOLVED, bounds_um None) (+797 more).
+Blocked because: cell cell:legacy:2 (Si, lifecycle LEGACY_UNRESOLVED) has no exact bounds, so it may contain this node (as may 799 more cell(s) without bounds) -- ownership cannot be decided.
+Canonical query at this node: physics_status UNSUPPORTED_BY_MODEL -- point lies in a LEGACY_UNRESOLVED cell (no exact y_min for its material support).
+Distinct reasons over all blocked nodes: cell cell:legacy:2 (Si, lifecycle LEGACY_UNRESOLVED) has no exact bounds, so it may contain this node (as may 799 more cell(s) without bounds) -- ownership cannot be decided.
+[FAIL] test_wafer_state_accumulation_devsim_real.py (0.4s)
+Process time: 4.9990 / 5.0000 s
+[0m    Process time: 5.0000 / 5.0000 s
+[0mafter B implant: 0 profile(s), species=[]
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_wafer_state_accumulation_devsim_real.py", line 117, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_wafer_state_accumulation_devsim_real.py", line 55, in main
+    assert len(state1.dopant_profiles) == 1
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+[FAIL] test_wafer_state_real.py (71.1s)
+D:\a\tcad\tcad\tcad\process\deposition\isotropic.py:43: UserWarning: IsotropicDeposition: continuing from an inherited domain, so initial-geometry recipe keys ['grid_delta_um', 'x_extent_um', 'y_extent_um', 'pr_thickness_um'] are ignored (the wafer already exists). Physical process parameters are still applied.
+  geometry = self.prepare_domain(recipe)
+D:\a\tcad\tcad\tcad\process\deposition\isotropic.py:43: UserWarning: IsotropicDeposition: continuing from an inherited domain with remask_spans_um set, so initial-geometry recipe keys ['y_extent_um'] are still ignored (they describe how to build a FRESH wafer, not how to remask an existing one).
+  geometry = self.prepare_domain(recipe)
+D:\a\tcad\tcad\tcad\process\etching\isotropic.py:61: UserWarning: IsotropicEtch: continuing from an inherited domain with remask_spans_um set, so initial-geometry recipe keys ['y_extent_um'] are still ignored (they describe how to build a FRESH wafer, not how to remask an existing one).
+  geometry = self.prepare_domain(recipe)
+Traceback (most recent call last):
+  File "D:\a\tcad\tcad\tests\integration\test_wafer_state_real.py", line 201, in <module>
+    main()
+  File "D:\a\tcad\tcad\tests\integration\test_wafer_state_real.py", line 195, in main
+    test_under_resolved_is_reported()
+  File "D:\a\tcad\tcad\tests\integration\test_wafer_state_real.py", line 184, in test_under_resolved_is_reported
+    assert thin, (
+           ^^^^
+AssertionError: the residual oxide in the window is a fraction of a grid cell, so at least one x must be reported under-resolved
+[FAIL] test_wafer_state_v2_initial_geometry_devsim_real.py (0.7s)
+    scenario_step_junction()
+  File "D:\a\tcad\tcad\tests\integration\test_wafer_state_v2_initial_geometry_devsim_real.py", line 243, in scenario_step_junction
+    imported = import_process_result(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_import.py", line 1243, in import_process_result
+    area_report = verify_device(module, device_name, mesh_name, region_area_terms)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 140, in verify_device
+    return check_nodevolume(region_terms, nvs, counts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 124, in check_nodevolume
+    _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+  File "D:\a\tcad\tcad\tcad\device\devsim\mesh_conservation.py", line 43, in _refuse
+    raise MeshAreaConservationError(f"UNSUPPORTED_BY_MODEL ({code}): {message}", status)
+tcad.device.devsim.mesh_conservation.MeshAreaConservationError: UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Si': triangle area 7.999999595806008e-08, NodeVolume sum 9.484452693680173e-08, relative difference 0.18555664660938076, tolerance 2.4941027462490327e-14
+[PASS] test_waferstate_sequential_flow_real.py (13.8s)
+[PASS] test_wet_etch_crystal_frame_real.py (0.8s)
+
+=== Summary ===
+  PASS    test_advance_wafer_state_result_contract_mock.py
+  PASS    test_anneal_profile_mock.py
+  PASS    test_cad_negative_validation_mock.py
+  PASS    test_cli_doping_initial_state_branch_mock.py
+  PASS    test_dc_operating_point_mock.py
+  PASS    test_diffusion_model_mock.py
+  PASS    test_dopant_activation_compensation_mock.py
+  PASS    test_dopant_models_mock.py
+  PASS    test_dopant_profile_mock.py
+  PASS    test_dopant_rev2_contract_mock.py
+  PASS    test_doping_staleness_mock.py
+  PASS    test_doping_unsupported_hover_note_mock.py
+  PASS    test_etch_material_summary_mock.py
+  PASS    test_gaussian_implant_no_existing_param_mock.py
+  PASS    test_gui_doping_application_truthfulness_mock.py
+  PASS    test_gui_error_dialog_visibility_gate_mock.py
+  PASS    test_gui_gate_stack_state_mock.py
+  PASS    test_gui_litho_lifecycle_mock.py
+  PASS    test_gui_no_forced_order_mock.py
+  PASS    test_implant_windows_from_mask_mock.py
+  PASS    test_mask_spans_from_openings_mock.py
+  PASS    test_measurement_canonical_state_gate_mock.py
+  PASS    test_measurement_entry_point_gate_mock.py
+  PASS    test_mesh_area_conservation_mock.py
+  PASS    test_mesh_refine_mock.py
+  PASS    test_phase1_bosch_mock.py
+  PASS    test_physics_tables_mock.py
+  PASS    test_physics_values_mock.py
+  PASS    test_pin_model_mock.py
+  PASS    test_resolver_mock.py
+  PASS    test_step_junction_2d_gate_mock.py
+  PASS    test_step_junction_2d_gate_precedence_mock.py
+  PASS    test_thermal_anneal_mock.py
+  PASS    test_wafer_state_doping_mock.py
+  PASS    test_wafer_state_v2_anneal_fail_closed_mock.py
+  PASS    test_wafer_state_v2_apply_doping_barrier_mock.py
+  PASS    test_wafer_state_v2_barrier_physics_mock.py
+  PASS    test_wafer_state_v2_devsim_mapping_gate_mock.py
+  PASS    test_wafer_state_v2_etch_conservation_mock.py
+  PASS    test_wafer_state_v2_exact_inventory_mock.py
+  PASS    test_wafer_state_v2_explicit_doping_target_mock.py
+  PASS    test_wafer_state_v2_fail_closed_no_resurrection_mock.py
+  PASS    test_wafer_state_v2_gate_stack_fallback_fail_closed_mock.py
+  PASS    test_wafer_state_v2_instance_not_name_mock.py
+  PASS    test_wafer_state_v2_legacy_migration_fail_closed_mock.py
+  PASS    test_wafer_state_v2_multi_extent_provenance_mock.py
+  PASS    test_wafer_state_v2_no_last_step_category_mock.py
+  PASS    test_wafer_state_v2_no_numeric_without_exact_integral_mock.py
+  PASS    test_wafer_state_v2_oxidation_unsupported_mock.py
+  PASS    test_wafer_state_v2_redeposit_no_resurrection_mock.py
+  PASS    test_wafer_state_v2_remesh_preserved_mock.py
+  PASS    test_wafer_state_v2_transform_structural_validation_mock.py
+  PASS    test_wafer_state_v2_transform_targets_instance_mock.py
+  PASS    test_wafer_state_v2_unsupported_returns_none_mock.py
+  PASS    test_waferstate_sequential_advance_mock.py
+  PASS    test_zero_duration_identity_state_contract_mock.py
+  FAIL    test_auto_refine_from_doping_real.py
+  PASS    test_basic_potential_linear_precision_real.py
+  PASS    test_blanket_no_mask_real.py
+  PASS    test_bosch_cycle_safety_real.py
+  PASS    test_bosch_drie_resist_mask_real.py
+  PASS    test_cad_negative_validation_real.py
+  PASS    test_ce1_order_sensitive_geometry_real.py
+  FAIL    test_ce2_oxidation_conversion_unsupported_real.py
+  FAIL    test_ce3_implant_anneal_etch_implant_real.py
+  PASS    test_deposition_mask_mode_real.py
+  FAIL    test_device_fabrication_to_dc_sweep_real.py
+  FAIL    test_device_lifecycle_repeat_real.py
+  PASS    test_directional_deposition_growth_real.py
+  FAIL    test_dopant_activation_devsim_gate_real.py
+  FAIL    test_dopant_profile_matches_devsim_real.py
+  FAIL    test_doping_barrier_windows_real.py
+  PASS    test_doping_donor_acceptor_all_kinds_real.py
+  FAIL    test_doping_mapping_per_node_real.py
+  FAIL    test_doping_mapping_recovery_real.py
+  PASS    test_doping_overlay_surface_profile_real.py
+  PASS    test_etch_selectivity_real.py
+  PASS    test_float32_boundary_snap_real.py
+  PASS    test_gate_contact_placement_real.py
+  PASS    test_gate_patterning_remask_real.py
+  PASS    test_gate_stack_geometry_real.py
+  FAIL    test_gaussian_implant_doping_real.py
+  PASS    test_geometric_trench_deposition_real.py
+  FAIL    test_gui_doping_color_overlay_real.py
+  FAIL    test_gui_doping_donor_acceptor_real.py
+  FAIL    test_gui_doping_survives_geometry_steps_real.py
+  FAIL    test_gui_electrode_panel_real.py
+  PASS    test_gui_headless_no_modal_hang_real.py
+  FAIL    test_gui_implant_windows_overlay_note_real.py
+  PASS    test_gui_litho_placeholder_visibility_real.py
+  FAIL    test_gui_measurement_captures_physics_status_real.py
+  FAIL    test_gui_measurement_doping_kinds_real.py
+  PASS    test_gui_process_state_chaining_real.py
+  FAIL    test_gui_thermal_anneal_real.py
+  FAIL    test_implant_windows_doping_real.py
+  PASS    test_koh_crystallographic_wet_etch_real.py
+  PASS    test_litho_lifecycle_state_real.py
+  PASS    test_locos_birds_beak_real.py
+  PASS    test_locos_chaining_real.py
+  PASS    test_locos_contact_mode_fix_real.py
+  PASS    test_locos_devsim_import_real.py
+  PASS    test_mask_spans_real.py
+  FAIL    test_measurement_canonical_state_gate_real.py
+  PASS    test_mesh_area_conservation_gate_real.py
+  FAIL    test_mosfet_body_bias_real.py
+  FAIL    test_mosfet_body_contact_real.py
+  FAIL    test_mosfet_gate_stack_cv_real.py
+  FAIL    test_mosfet_id_vds_real.py
+  FAIL    test_mosfet_id_vgs_real.py
+  FAIL    test_mosfet_vth_extraction_real.py
+  PASS    test_order_independence_real.py
+  PASS    test_oxidation_positive_time_unsupported_real.py
+  PASS    test_oxidation_pr_etch_reaches_si_real.py
+  PASS    test_oxidation_zero_duration_identity_real.py
+  FAIL    test_phase13_process_flow_real.py
+  FAIL    test_phase14_flow_devsim_real.py
+  PASS    test_phase2_etching_real.py
+  PASS    test_phase3_deposition_real.py
+  PASS    test_phase4_oxidation_real.py
+  FAIL    test_phase5_devsim_real.py
+  FAIL    test_phase6_characterization_real.py
+  FAIL    test_phase7_doping_real.py
+  FAIL    test_phase8_pn_junction_real.py
+  FAIL    test_phase9_mos_cv_real.py
+  PASS    test_physics_references_real.py
+  FAIL    test_physics_rules_real.py
+  PASS    test_pin_placement_validation_real.py
+  PASS    test_point_contact_import_real.py
+  PASS    test_pr_strip_real.py
+  FAIL    test_process_state_resume_real.py
+  PASS    test_resolver_wired_real.py
+  FAIL    test_robust_iv_sweep_real.py
+  PASS    test_status_propagation_real.py
+  PASS    test_step_junction_2d_gate_mutations_real.py
+  PASS    test_step_junction_2d_gate_real.py
+  PASS    test_thermal_anneal_acceptance_real.py
+  FAIL    test_voltage_probe_real.py
+  FAIL    test_wafer_state_accumulation_devsim_real.py
+  FAIL    test_wafer_state_real.py
+  FAIL    test_wafer_state_v2_initial_geometry_devsim_real.py
+  PASS    test_waferstate_sequential_flow_real.py
+  PASS    test_wet_etch_crystal_frame_real.py
+101 passed, 41 failed, 0 timed out, 0 skipped

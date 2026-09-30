@@ -1,0 +1,43 @@
+{
+ "mode": "regression",
+ "head": "e79f2a0a23b9387bf45d321ec430f0930de6661d",
+ "python": "3.11.9",
+ "platform": "Windows-10-10.0.26100-SP0",
+ "versions": {
+  "devsim": "2.11.0",
+  "viennaps": "4.6.2",
+  "viennals": "5.8.5",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5"
+ },
+ "files_lf_sha256_before": {
+  "tcad/device/devsim/mesh_conservation.py": "10a647e069784ec3c0c2b0f1721987771178dbd3e372c3835f8cdce9bb9b5a8c",
+  "tcad/device/devsim/mesh_import.py": "18da71240476ad10b86ab283023a513280e515735290b701b0e74ab752d2d5cd",
+  "tcad_2d_stagewise.py": "2f0a69be4e49c0c116140cfa944b56987aa339b288814d8119e0c3a2f2a9c217",
+  "tcad/cli/run_pipeline.py": "d7f21df4e5d5cc64423d6a8dc3a852bc0860307cd817c9034ecbd3bef281109b",
+  "tests/unit/test_mesh_area_conservation_mock.py": "ad5b06b54dc49d0071a77c7d40edc8b8d4cc4645cbe365a228c5bbe2f5d2db48",
+  "tests/integration/test_mesh_area_conservation_gate_real.py": "ed5ecf73bdcf71e6083f9a87c0311b0756001498e52ab54d682e1261909a3c96",
+  "tests/run_regression.py": "29985989c9e8fe7f8e769cdd34b757d9092fc0fa1db3242ab33df0b3d3776a14"
+ },
+ "runs": [
+  {
+   "cmd": [
+    "tests/run_regression.py"
+   ],
+   "rc": 1,
+   "wall_s": 449.1
+  }
+ ],
+ "files_lf_sha256_after": {
+  "tcad/device/devsim/mesh_conservation.py": "10a647e069784ec3c0c2b0f1721987771178dbd3e372c3835f8cdce9bb9b5a8c",
+  "tcad/device/devsim/mesh_import.py": "18da71240476ad10b86ab283023a513280e515735290b701b0e74ab752d2d5cd",
+  "tcad_2d_stagewise.py": "2f0a69be4e49c0c116140cfa944b56987aa339b288814d8119e0c3a2f2a9c217",
+  "tcad/cli/run_pipeline.py": "d7f21df4e5d5cc64423d6a8dc3a852bc0860307cd817c9034ecbd3bef281109b",
+  "tests/unit/test_mesh_area_conservation_mock.py": "ad5b06b54dc49d0071a77c7d40edc8b8d4cc4645cbe365a228c5bbe2f5d2db48",
+  "tests/integration/test_mesh_area_conservation_gate_real.py": "ed5ecf73bdcf71e6083f9a87c0311b0756001498e52ab54d682e1261909a3c96",
+  "tests/run_regression.py": "29985989c9e8fe7f8e769cdd34b757d9092fc0fa1db3242ab33df0b3d3776a14"
+ },
+ "files": {
+  "run_regression.log": "784ec322fc0f94d105a195da44774a126f19dcbaef415047ab62226e8a511523"
+ }
+}
