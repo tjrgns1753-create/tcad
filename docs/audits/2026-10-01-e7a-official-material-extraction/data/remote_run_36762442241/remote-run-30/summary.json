@@ -1,0 +1,120 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T18:59:56.300223+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e7a-official-extraction-s1c-001",
+  "profile": "e7a_official_material_extraction_s1c",
+  "params": {},
+  "note": "E7A supplement S1c (criteria section committed before the run). Probe only."
+ },
+ "profile": "e7a_official_material_extraction_s1c",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/S1_CRITERIA.md",
+   "sha256": "6782f9cd1ed08ce29abced92d8b1771463a89c63c2d5a37a824cc4a163489417",
+   "bytes": 2436
+  },
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+   "sha256": "e7bb0c58e3796b066f3250d4e270468e872228cd2450cdbf7f069a3265fb144d",
+   "bytes": 4013
+  },
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a.py",
+   "sha256": "7cae1d37e76c37b436f9d36e0a66075d18c7d5e3081f5452e2154cee0dd0853d",
+   "bytes": 16283
+  },
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a_s1.py",
+   "sha256": "88c8aef8b1f918c09a426cbb6ba400442b0d2e18a120417363c3ed233a3faa07",
+   "bytes": 7442
+  }
+ ],
+ "request_sha256": "7e6f3295a27dfa25951f4b10dbaaed06f23c560661ff0dda1d51023518f7f782",
+ "source": {
+  "github_sha": "dcbee5187fce9c2d8624a8f6e637ee847b70fed7",
+  "git_head": "dcbee5187fce9c2d8624a8f6e637ee847b70fed7",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36762442241",
+  "run_number": "30",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+  "--s1b",
+  "--s1c"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T18:59:57.800893+00:00",
+ "duration_s": 1.501,
+ "outputs": [
+  {
+   "path": "e7a_out/B2_R7.json",
+   "bytes": 1401,
+   "sha256": "a88625bf1475f155199e1927764ea7c9862305c08ee8e5567054eef4fcfa7a6f"
+  },
+  {
+   "path": "e7a_out/e7a_result.json",
+   "bytes": 1418,
+   "sha256": "b208970e2df8c8fab525076d89e61beb02fccd58159d21f6f9ef8e1f625b89aa"
+  },
+  {
+   "path": "e7a_out/raw/B2_R7.log",
+   "bytes": 832,
+   "sha256": "dc22ec207c75719a15c882aaa59d271034095ae844489f349d7427569bb3c823"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "5b8c3d41768328fe48aa59f66cc8f4aa56fd052be83ea829e5ba01d0b6341c57",
+  "bytes": 27
+ },
+ "redactions": {}
+}
