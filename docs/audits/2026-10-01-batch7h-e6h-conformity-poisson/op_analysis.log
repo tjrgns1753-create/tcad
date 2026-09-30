@@ -1,0 +1,13 @@
+uniform: nodes 27 tri 32 max|u-exact| 3.553e-15 (max exact 8.000e+00) max|residual of exact| 0.000e+00 rel-to-V 0.000e+00
+one-sided (3-tri) center 4 rings 1,.5: nodes 73 tri 116 max|u-exact| 3.960e-02 (max exact 8.000e+00) max|residual of exact| 3.125e-02 rel-to-V 7.692e-02
+two-sided (4-tri) centers 2,5 ring 1: nodes 59 tri 88 max|u-exact| 3.338e-02 (max exact 8.000e+00) max|residual of exact| 3.125e-02 rel-to-V 7.692e-02
+nonuniform x, unequal rows: nodes 70 tri 112 max|u-exact| 1.137e-02 (max exact 4.495e+00) max|residual of exact| 1.197e-02 rel-to-V 7.061e-02
+--- convergence: domain L = 8 x H = 2 (fixed), base cells h x h, h = L / n, rows n / 4
+one-sided family (center L/2 fixed, rings h, h/2) n=8: tri 116 max|u-exact| 3.9596e-02 rel 4.9495e-03
+one-sided family (center L/2 fixed, rings h, h/2) n=16: tri 296 max|u-exact| 9.8990e-03 rel 1.2374e-03  ratio 4.000
+one-sided family (center L/2 fixed, rings h, h/2) n=32: tri 848 max|u-exact| 2.4747e-03 rel 3.0934e-04  ratio 4.000
+one-sided family (center L/2 fixed, rings h, h/2) n=64: tri 2720 max|u-exact| 6.1869e-04 rel 7.7336e-05  ratio 4.000
+two-sided family (centers 2h, 5h, ring h) n=8: tri 88 max|u-exact| 3.3382e-02 rel 4.1728e-03
+two-sided family (centers 2h, 5h, ring h) n=16: tri 240 max|u-exact| 8.3455e-03 rel 1.0432e-03  ratio 4.000
+two-sided family (centers 2h, 5h, ring h) n=32: tri 736 max|u-exact| 2.0864e-03 rel 2.6080e-04  ratio 4.000
+two-sided family (centers 2h, 5h, ring h) n=64: tri 2496 max|u-exact| 5.2160e-04 rel 6.5199e-05  ratio 4.000
