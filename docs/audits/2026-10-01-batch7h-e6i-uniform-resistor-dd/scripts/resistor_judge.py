@@ -13,6 +13,10 @@ TOL_MESH = 1.0e-2
 TOL_EQUILIBRIUM = 1.0e-4
 TOL_N_UNIFORM = 1.0e-4
 TOL_PSI_LINEAR = 1.0e-2
+# Criterion 1 covers the numeric results only (currents, carrier / potential / recombination summaries); string metadata is not judged.
+# A missing key is treated as not finite.
+FINITE_KEYS = ("I_max_total", "I_min_total", "Ie_max", "Ie_min", "Ih_max", "Ih_min", "n_uniformity", "psi_lin", "p_min_over_p0", "p_max_over_p0",
+               "max_abs_USRH", "recombination_current_A_per_cm")
 
 
 def theory(n_donor, n_acceptor, n_i, q, mu_n, mu_p, height_cm, length_cm):
@@ -68,7 +72,7 @@ def judge(th: Dict[str, float], meshes: Dict[str, Dict[str, Any]]) -> Dict[str, 
 
     for key, m in meshes.items():
         b = m["biases"]
-        numeric = {label: {k: v for k, v in b[label].items() if k != "finite_arrays"} for label in BIASES}
+        numeric = {label: {k: b[label].get(k) for k in FINITE_KEYS} for label in BIASES}
         states_ok = all(bool(b[label].get("finite_arrays")) for label in BIASES)
         add(1, f"{key}: all values finite", 0.0 if (all_finite(numeric) and states_ok) else 1.0, 0.0)
         for label, v in BIASES.items():

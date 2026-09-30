@@ -1,0 +1,43 @@
+{
+ "head": "6401cadbb06e1f0eebde5b4a7b0a9e7b2770746b",
+ "python": "3.11.9",
+ "platform": "Windows-10-10.0.26100-SP0",
+ "versions": {
+  "devsim": "2.11.0",
+  "viennaps": "4.6.2",
+  "viennals": "5.8.5",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5"
+ },
+ "files_lf_sha256": {
+  "tcad/device/devsim/semiconductor_equation.py": "33bd7a0ca80513be17f5d7292cf7bf3280c3944eae305cba3541075721104ab8",
+  "tcad/device/devsim/doping_mapping.py": "2f06339174f12182bef9f560c23d91faa74c85063d08742572208272719494fa",
+  "tcad/characterization/pn_junction_iv_sweep.py": "0c5593caecce34007bb55fbd0a9787417fed92b95426ba02cb0808daab7e7f45",
+  "tests/unit/test_resistor_dd_judge_mock.py": "7f82060137aef178e652101c86f111954ea034d7d954826c77f4b18789363913",
+  "tests/integration/test_uniform_resistor_dd_current_real.py": "94bc2a14b2a44a46dd4cee855cc6c869d469d6c3709827ede3f89fb338b2727e",
+  "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/resistor_judge.py": "52ce77e088c9a319fb72621425cb02ba9c6405559df60c8ec34aaba3ee919467",
+  "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/CRITERIA.md": "ee0cbe0aa000aaaa42c149390bb5a3eb1fc16593624874e44d957746bbf1990c"
+ },
+ "runs": [
+  {
+   "cmd": [
+    "tests/unit/test_resistor_dd_judge_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.1
+  },
+  {
+   "cmd": [
+    "tests/integration/test_uniform_resistor_dd_current_real.py",
+    "<OUT>"
+   ],
+   "rc": 1,
+   "wall_s": 6.3
+  }
+ ],
+ "files": {
+  "resistor_dd.json": "192c5603edd162e48e800120aaf256340de6587644216f995e15fd411a8ed96c",
+  "test_resistor_dd_judge_mock.log": "a68a8220364af95e426c0d702ea98bb84204bc2e1c3ad9cb61d903788cf42758",
+  "test_uniform_resistor_dd_current_real.log": "55d25e37beb4a2e9139cf1436d68f25ca5f39f49269675267366fd93efea38af"
+ }
+}

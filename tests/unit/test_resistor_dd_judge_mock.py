@@ -16,7 +16,8 @@ def ideal_mesh(family, n, g_scale=1.0):
     for label, v in BIASES.items():
         ie = g * v
         b[label] = {"I_max_total": ie, "I_min_total": -ie, "Ie_max": ie, "Ie_min": -ie, "Ih_max": 1e-14 * ie, "Ih_min": -1e-14 * ie,
-                    "n_uniformity": 1e-9, "psi_lin": 1e-6, "finite_arrays": True}
+                    "n_uniformity": 1e-9, "psi_lin": 1e-6, "p_min_over_p0": 1.0, "p_max_over_p0": 1.0, "max_abs_USRH": 0.0,
+                    "recombination_current_A_per_cm": 0.0, "finite_arrays": True, "contacts": ["Si_xmin", "Si_xmax"], "donors": [1e16]}
     return {"family": family, "n": n, "biases": b}
 
 
@@ -44,6 +45,10 @@ def main():
         expect_fail(lambda m, bad=bad: m["two_sided_32"]["biases"]["+2mV"].__setitem__("n_uniformity", bad), f"n_uniformity = {bad!r}")
         expect_fail(lambda m, bad=bad: m["uniform_8"]["biases"]["-1mV"].__setitem__("psi_lin", bad), f"psi_lin = {bad!r}")
         expect_fail(lambda m, bad=bad: m["uniform_8"]["biases"]["+1mV"].__setitem__("Ie_min", bad), f"Ie_min = {bad!r}")
+        for key in ("p_min_over_p0", "p_max_over_p0", "max_abs_USRH", "recombination_current_A_per_cm", "Ih_max", "Ih_min"):
+            expect_fail(lambda m, bad=bad, key=key: m["two_sided_16"]["biases"]["0V"].__setitem__(key, bad), f"{key} = {bad!r}")
+    for key in ("p_max_over_p0", "max_abs_USRH", "recombination_current_A_per_cm"):
+        expect_fail(lambda m, key=key: m["uniform_8"]["biases"]["+1mV"].pop(key), f"missing {key}")
     expect_fail(lambda m: m["two_sided_32"]["biases"]["+1mV"].__setitem__("finite_arrays", False), "non-finite state array")
     expect_fail(lambda m: [m["uniform_8"]["biases"]["+1mV"].__setitem__(k, -m["uniform_8"]["biases"]["+1mV"][k])
                            for k in ("I_max_total", "I_min_total", "Ie_max", "Ie_min")], "wrong sign")
