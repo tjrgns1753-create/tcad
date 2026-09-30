@@ -1,0 +1,249 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T18:54:02.853968+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e7a-official-extraction-s1-001",
+  "profile": "e7a_official_material_extraction_s1",
+  "params": {},
+  "note": "E7A supplement S1 (post hoc routes R4/R5, S1_CRITERIA.md committed before the run). Probe only."
+ },
+ "profile": "e7a_official_material_extraction_s1",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/S1_CRITERIA.md",
+   "sha256": "4698c6e0481c272d62bc96a601ca37b66e20464119842ce7e111c9e320aa7d0a",
+   "bytes": 1498
+  },
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+   "sha256": "61fc0aad8a6b0488c1f4e96bf73e0bbc469cfbc35e39942f9b44ee00efd43fdd",
+   "bytes": 3869
+  },
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a.py",
+   "sha256": "7cae1d37e76c37b436f9d36e0a66075d18c7d5e3081f5452e2154cee0dd0853d",
+   "bytes": 16283
+  },
+  {
+   "path": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a_s1.py",
+   "sha256": "e088d96be4bc901b90ffc7517438fe1458f11ab2faba7fd016b3acaf14da5a71",
+   "bytes": 4078
+  },
+  {
+   "path": "tcad/backends/viennaps/io.py",
+   "sha256": "22f3a7f6ab47fc4d7ab215958115a9cd9c170a728e49091a53c982af8b299d61",
+   "bytes": 44738
+  },
+  {
+   "path": "tcad/process/oxidation/locos.py",
+   "sha256": "cda5f001c29845bbc30c6233dfb880143a363ba331f96658d3113719b9ae53bc",
+   "bytes": 28627
+  },
+  {
+   "path": "tests/integration/_explicit_oxide_fixture.py",
+   "sha256": "87b089175674eec685363e3de8de6725e6cb35955db5f37e92f22a3844a4b4c8",
+   "bytes": 18830
+  }
+ ],
+ "request_sha256": "affae2682b728f29a0a1ea58af7c5320b9a7aa25412e0fc638f1c5c557a2c8d5",
+ "source": {
+  "github_sha": "feb58113c5a198b540eb76ae9762e6d4cbe06541",
+  "git_head": "feb58113c5a198b540eb76ae9762e6d4cbe06541",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36761746538",
+  "run_number": "26",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+  "--s1"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T18:54:08.238630+00:00",
+ "duration_s": 5.385,
+ "outputs": [
+  {
+   "path": "e7a_out/A_R4.json",
+   "bytes": 2600,
+   "sha256": "e206d02d9920d07a7d2a746fd4b21fa2ba61247492695fdebd107a7ab3259c69"
+  },
+  {
+   "path": "e7a_out/A_R4.vtu",
+   "bytes": 19924,
+   "sha256": "488f73c8170a3f79f21be236b51b62a4a2a7d9de04c34fb8ceeb0789cc86e615"
+  },
+  {
+   "path": "e7a_out/A_R5.json",
+   "bytes": 1149,
+   "sha256": "abdae40819ac842ec77b5b99bbcfe827769a4f3555264bbafce620de19203c6b"
+  },
+  {
+   "path": "e7a_out/B1_R4.json",
+   "bytes": 2589,
+   "sha256": "5195c51fb530d1b634dd53555f1f97238b89ff51d4d39584911bf952ae71050e"
+  },
+  {
+   "path": "e7a_out/B1_R4.vtu",
+   "bytes": 17220,
+   "sha256": "7ba67dd1f70f8acef8afea475ea6baae917785e9ba32835c3886bd133dfbe9bd"
+  },
+  {
+   "path": "e7a_out/B1_R5.json",
+   "bytes": 1148,
+   "sha256": "a3f5b1e6331ee4652d97d29a6bdb8db5c22d66cd0faa2a8ab07fa8d578f0247c"
+  },
+  {
+   "path": "e7a_out/B2_R4.json",
+   "bytes": 2578,
+   "sha256": "ad93bc52dfdda89fe246f93f7a47b6a3ceae2180bc3febe89ecc9df47e82f98e"
+  },
+  {
+   "path": "e7a_out/B2_R4.vtu",
+   "bytes": 5748,
+   "sha256": "d907b1f0c202bd192207d26b7ab326e5c6ed878c1f7cb4b892bd00c3e237c7c9"
+  },
+  {
+   "path": "e7a_out/B2_R5.json",
+   "bytes": 1039,
+   "sha256": "d09a8fd41e62070a240a40f5309857dc1cc37d78bae6a56a30303a13ed16511f"
+  },
+  {
+   "path": "e7a_out/CN_R4.json",
+   "bytes": 5007,
+   "sha256": "3d3527492d6737f528bef12d97b1d9dd802dd81574ab83bd13098abbda7eb117"
+  },
+  {
+   "path": "e7a_out/CN_R4.vtu",
+   "bytes": 19592,
+   "sha256": "7b9fbaeabb6dffb34eb55ba3abb91aa7eab67e1672d5fafad730b837b53e1034"
+  },
+  {
+   "path": "e7a_out/CN_R5.json",
+   "bytes": 1617,
+   "sha256": "78427c975cc5ea8de8b9ef118d4e6ed662e9a2b63b05a28e858554a105c8d17f"
+  },
+  {
+   "path": "e7a_out/C_R4.json",
+   "bytes": 4155,
+   "sha256": "2e375fa60921a688fa21da7483e03ca012cc453e3be7709183f9907fd0f47be8"
+  },
+  {
+   "path": "e7a_out/C_R4.vtu",
+   "bytes": 4036,
+   "sha256": "0e5d1d397a1eaa6d4f6e6d4ccffc969ceb893038518fcf31ed14b54c3f48c272"
+  },
+  {
+   "path": "e7a_out/C_R5.json",
+   "bytes": 1617,
+   "sha256": "3ceae1015deca7738c29961ca7b8e216ee8398cc6b42a72c80f6df929d13d81f"
+  },
+  {
+   "path": "e7a_out/e7a_result.json",
+   "bytes": 3871,
+   "sha256": "50c72dde28e4504a738b08e27ebecd77f7e6756fad321c28fa92621360b54b92"
+  },
+  {
+   "path": "e7a_out/raw/A_R4.log",
+   "bytes": 60,
+   "sha256": "29ab1be6dcd74b224e3c1de0188eb7a7622d3a4ee18a5178dff0cd70bbcbb2c3"
+  },
+  {
+   "path": "e7a_out/raw/A_R5.log",
+   "bytes": 60,
+   "sha256": "ebe65c295d3f651f604bdae07bec296d9390eacf0691d55e19bcaa923fd349ed"
+  },
+  {
+   "path": "e7a_out/raw/B1_R4.log",
+   "bytes": 61,
+   "sha256": "501fc7bd1763c5b925f0ad6e41b2d6e3c6db1a713adb25361992a83020952428"
+  },
+  {
+   "path": "e7a_out/raw/B1_R5.log",
+   "bytes": 61,
+   "sha256": "0d2f9b77a92983d802acd1aabe3952d3893b9cb442d3a7213569bf5a3eadf61c"
+  },
+  {
+   "path": "e7a_out/raw/B2_R4.log",
+   "bytes": 61,
+   "sha256": "d63052a0b39d00e48d7b63fb8f546bd1fd9c2c8680a5df5f4b5da31802665bf6"
+  },
+  {
+   "path": "e7a_out/raw/B2_R5.log",
+   "bytes": 148,
+   "sha256": "0eb690fe1fe2ac081439fcc461e349224fe577e8c278c86e6adf208a55ee7bf7"
+  },
+  {
+   "path": "e7a_out/raw/CN_R4.log",
+   "bytes": 61,
+   "sha256": "a602455eed6e541b9756aff8b46cb55f4811ade74cbd5f428884c119f5ef1f37"
+  },
+  {
+   "path": "e7a_out/raw/CN_R5.log",
+   "bytes": 61,
+   "sha256": "7cf709a5690edffb89ea5662526d5f0e80c8b8ec2cfe10fee9f9108bdd202684"
+  },
+  {
+   "path": "e7a_out/raw/C_R4.log",
+   "bytes": 60,
+   "sha256": "f6ce249394d9d231b6bf4876820aa0865afacf6a35aa2dba1e43966c3bc570df"
+  },
+  {
+   "path": "e7a_out/raw/C_R5.log",
+   "bytes": 60,
+   "sha256": "1368ab8bf4158e888db484a2b8e2f723b1ac5061bfa64ff13187623b1c23b4a8"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "b1699b7f315c959c5039314424cae95c5dc7389cd021487d6ed75ee807a2a237",
+  "bytes": 266
+ },
+ "redactions": {}
+}

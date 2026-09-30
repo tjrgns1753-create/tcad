@@ -24,6 +24,9 @@ for case in ("A", "CN"):
     RUNS += [(case, "R1", e) for e in (0.0, 0.02)]
 if MODE == "s1":
     RUNS = [(case, r, None) for case in ("A", "B1", "B2", "C", "CN") for r in ("R4", "R5")]
+if "--s1b" in sys.argv:
+    MODE = "s1"
+    RUNS = [("B2", "R5", None), ("B2", "R6", None)]
 
 
 def lf_sha(p):

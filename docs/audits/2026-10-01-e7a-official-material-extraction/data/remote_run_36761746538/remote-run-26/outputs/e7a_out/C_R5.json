@@ -1,0 +1,111 @@
+{
+ "case": "C",
+ "route": "R5",
+ "status": "OK",
+ "input": {
+  "grid": 0.05,
+  "pad": 0.1,
+  "x_extent": 2.0,
+  "y_extent": 2.0,
+  "forbidden_call_counts": {
+   "Oxidation": 0,
+   "Process": 0
+  },
+  "materials_by_index": [
+   "Si",
+   "SiO2",
+   "Mask"
+  ],
+  "wrap_flags": [
+   false,
+   true,
+   false
+  ]
+ },
+ "per_material": {
+  "Mask": {
+   "level_set_points": 82,
+   "surface_bbox": [
+    [
+     -1.0,
+     0.10000000000005001,
+     0.0
+    ],
+    [
+     1.0,
+     0.39999999999995,
+     0.0
+    ]
+   ],
+   "project_single_export": {
+    "status": "OK",
+    "triangles": 236
+   },
+   "official_raw_single_export": {
+    "status": "OK",
+    "triangles": 236,
+    "area": 0.29500001668930054,
+    "y_range": [
+     0.10000000149011612,
+     0.4000000059604645
+    ]
+   }
+  },
+  "Si": {
+   "level_set_points": 123,
+   "surface_bbox": [
+    [
+     -1.0,
+     -5e-14,
+     0.0
+    ],
+    [
+     1.0,
+     -5e-14,
+     0.0
+    ]
+   ],
+   "project_single_export": {
+    "status": "OK",
+    "triangles": 1600
+   },
+   "official_raw_single_export": {
+    "status": "OK",
+    "triangles": 160,
+    "area": 0.20000001788139343,
+    "y_range": [
+     -0.10000000149011612,
+     0.0
+    ]
+   }
+  },
+  "SiO2": {
+   "level_set_points": 123,
+   "surface_bbox": [
+    [
+     -1.0,
+     5e-14,
+     0.0
+    ],
+    [
+     1.0,
+     0.09999999999995,
+     0.0
+    ]
+   ],
+   "project_single_export": {
+    "status": "OK",
+    "triangles": 160
+   },
+   "official_raw_single_export": {
+    "status": "OK",
+    "triangles": 160,
+    "area": 0.20000001788139343,
+    "y_range": [
+     0.0,
+     0.10000000149011612
+    ]
+   }
+  }
+ }
+}

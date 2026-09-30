@@ -565,6 +565,22 @@ PROFILES = {
         "outputs": [{"glob": "e7a_out/**/*", "max_mb": 60}],
         "regenerate": "Rerun the profile.",
     },
+    "e7a_official_material_extraction_s1b": {
+        "description": "E7A supplement S1b (post hoc): B2 getMaterialLevelSet(SiO2) empty-surface recording and a pad-thickness scan at grid 0.10. Probe only.",
+        "entry": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+        "args": ["--s1b"],
+        "params": {},
+        "timeout_s": 900,
+        "inputs": [
+            "docs/audits/2026-10-01-e7a-official-material-extraction/S1_CRITERIA.md",
+            "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+            "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a.py",
+            "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a_s1.py",
+            "tcad/backends/viennaps/io.py",
+        ],
+        "outputs": [{"glob": "e7a_out/**/*", "max_mb": 20}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.

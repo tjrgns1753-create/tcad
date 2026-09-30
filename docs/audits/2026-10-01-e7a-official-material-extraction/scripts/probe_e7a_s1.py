@@ -28,6 +28,27 @@ def main():
         module = session.require_viennaps()
         domain, mats, flags, info = P.build(case, module)
         out["input"] = info
+        if rt == "R6":
+            out["scan"] = []
+            for pad in (0.05, 0.10, 0.15, 0.20):
+                module_ = module
+                from tcad.backends.viennaps import session as sess
+                dom = sess.create_domain(0.10, P.X_EXTENT, P.Y_EXTENT)
+                module_.MakePlane(dom, 0.0, module_.Material.Si).apply()
+                module_.MakePlane(dom, pad, module_.Material.SiO2, True).apply()
+                ls = dom.getMaterialLevelSet(module_.Material.SiO2)
+                mesh = vls.Mesh()
+                if ls is not None and ls.getNumberOfPoints():
+                    vls.ToSurfaceMesh(ls, mesh).apply()
+                nodes = np.array(mesh.getNodes())
+                out["scan"].append({"grid": 0.10, "pad": pad, "pad_over_grid": pad / 0.10, "level_set_points": None if ls is None else int(ls.getNumberOfPoints()),
+                                    "surface_nodes": int(len(nodes)), "surface_y": [float(nodes[:, 1].min()), float(nodes[:, 1].max())] if len(nodes) else None})
+            out["status"] = "OK"
+            with open(out_dir / f"{case}_{rt}.json", "w", encoding="utf-8", newline="
+") as f:
+                json.dump(out, f, indent=1, default=str)
+            print(json.dumps(out["scan"]), flush=True)
+            return
         if rt == "R4":
             floored = vio._floored_copy_for_export(domain, P.DEPTH)
             base = str(Path(work) / f"{case}_R4")
@@ -49,7 +70,8 @@ def main():
                 mesh = vls.Mesh()
                 vls.ToSurfaceMesh(ls, mesh).apply()
                 nodes = np.array(mesh.getNodes())
-                rec["surface_bbox"] = [nodes.min(axis=0).tolist(), nodes.max(axis=0).tolist()]
+                rec["surface_nodes"] = int(len(nodes))
+                rec["surface_bbox"] = [nodes.min(axis=0).tolist(), nodes.max(axis=0).tolist()] if len(nodes) else None
                 try:
                     p_, t_ = vio._export_single_level_set(domain, ls, m, P.DEPTH, bounds_hint=(xmin, xmax, ymax))
                     rec["project_single_export"] = {"status": "OK", "triangles": int(len(t_))}
