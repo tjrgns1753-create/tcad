@@ -36,6 +36,7 @@ Two things confirmed only by real execution (not documented anywhere):
 
 from __future__ import annotations
 
+import logging
 import math
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -49,6 +50,8 @@ from tcad.device.devsim.mesh_refine import (
     StructuredRemeshUnsupported, graded_refine_mesh_near, refine_mesh_near, structured_lateral_refine,
 )
 from tcad.mesh.interface import DopingProfile, ProcessResult
+
+logger = logging.getLogger(__name__)
 
 #: Target ratio of post-refinement local edge length to Debye length,
 #: used to derive how many graded rings auto_refine_from_doping needs
@@ -377,7 +380,9 @@ def refine_process_result_for_implant_windows(
         if not other_cells and {names.get(int(t)) for t in np.unique(tags)} == {"Si"}:
             try:
                 refined = structured_lateral_refine(points, triangles, tags, request["centers"], request["rings"])[:3]
-            except StructuredRemeshUnsupported:
+            except StructuredRemeshUnsupported as exc:
+                # outside the structured scope: keep the graded path; the importer's area gate still judges the result
+                logger.warning("structured implant-window remesh unsupported (%s); using graded refinement", exc.reason)
                 refined = None
     if refined is None:
         refined = graded_refine_mesh_near(points, triangles, tags, predicates)

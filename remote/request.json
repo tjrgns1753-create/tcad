@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6g-structured-template-001",
- "profile": "e6g_structured_template",
+ "request_id": "e6h-conformity-poisson-001",
+ "profile": "e6h_conformity_poisson",
  "params": {},
- "note": "Batch 7H-E6G. Criteria fc371fd fixed before implementation. One run: unit tests, real B / F import + area gate, Laplace and manufactured Poisson controls. No full regression, no PN/DC sweep."
+ "note": "Batch 7H-E6H. Criteria fixed in 6937e76 + erratum e7e2552 before any DEVSIM run. Unit tests, B/F conformity, Poisson/linear controls on builder transition meshes. No full regression, no PN/DC sweep."
 }

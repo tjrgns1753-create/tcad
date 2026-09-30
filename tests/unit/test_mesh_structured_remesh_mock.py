@@ -142,6 +142,23 @@ def main():
     P, T, G = grid([float(i) for i in range(11)], [float(j) for j in range(11)])
     refused(lambda: structured_lateral_refine(P, T, G, [5.0], [1.0, 0.5, 0.25], cap=1000), StructuredRemeshAborted, "RESOURCE_CAP")
     print("G: multi-material, missing triangle, non-planar, overlapping halves refused; aspect and cap abort")
+    # C (E6H): invalid requests are aborted, never an ambiguous identity; budgets are checked before the allocation they bound
+    P, T, G = grid([float(i) for i in range(9)], [float(j) for j in range(5)])
+    nan, inf = float("nan"), float("inf")
+    for bad_c, bad_r in (([nan], [1.0]), ([inf], [1.0]), ([4.0], [nan]), ([4.0], [inf]), ([4.0], [0.0]), ([4.0], [-1.0]), ([], [1.0]),
+                         ([4.0], []), (["a"], [1.0])):
+        refused(lambda: structured_lateral_refine(P, T, G, bad_c, bad_r), StructuredRemeshAborted, "INVALID_REQUEST")
+    out = structured_lateral_refine(P, T, G, [100.0], [0.5])          # valid request, bands miss the domain: an explicit identity
+    assert out[3]["identity"] and out[0] is P
+    refused(lambda: structured_lateral_refine(P, T, G, [4.0], [1.0 / 2 ** k for k in range(200)]), StructuredRemeshAborted, "RESOURCE_CAP")
+    ulp = grid([1.0, float.fromhex("0x1.0000000000001p+0"), 2.0], [0.0, 1.0])
+    refused(lambda: structured_lateral_refine(*ulp, [1.0], [1.0, 1.0]), StructuredRemeshAborted, "SUBDIVISION_EXHAUSTED")
+    P, T, G = grid([float(i) for i in range(21)], [float(j) for j in range(11)])
+    n_exact = len(structured_lateral_refine(P, T, G, [10.0], [4.0, 2.0, 1.0])[1])
+    assert len(structured_lateral_refine(P, T, G, [10.0], [4.0, 2.0, 1.0], cap=n_exact)[1]) == n_exact
+    refused(lambda: structured_lateral_refine(P, T, G, [10.0], [4.0, 2.0, 1.0], cap=n_exact - 1), StructuredRemeshAborted, "RESOURCE_CAP")
+    refused(lambda: structured_lateral_refine(P, T, G, [10.0], [4.0, 2.0, 1.0], cap=64), StructuredRemeshAborted, "RESOURCE_CAP")
+    print("C: invalid requests, depth / leaf budgets, midpoint exhaustion and the cap boundary (cap == count passes, cap - 1 aborts)")
     print("ALL STRUCTURED REMESH MOCK CHECKS PASSED")
 
 

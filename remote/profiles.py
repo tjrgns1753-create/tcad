@@ -466,6 +466,29 @@ PROFILES = {
         "outputs": [{"glob": "e6g_out/**/*", "max_mb": 40}],
         "regenerate": "Rerun the profile.",
     },
+    "e6h_conformity_poisson": {
+        "description": "Batch 7H-E6H: unit tests, exact conformity of the committed E6G B/F outputs, Poisson and linear controls on structured_lateral_refine transition meshes (real DEVSIM, small meshes).",
+        "entry": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/run_e6h.py",
+        "args": [],
+        "params": {},
+        "timeout_s": 3600,
+        "inputs": [
+            "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/CRITERIA.md",
+            "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/CRITERIA_ERRATUM_1.md",
+            "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/run_e6h.py",
+            "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_e6h.py",
+            "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_bf.py",
+            "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/op_analysis.py",
+            "tcad/device/devsim/mesh_refine.py",
+            "tcad/device/devsim/mesh_import.py",
+            "tests/unit/test_mesh_structured_remesh_mock.py",
+            "tests/unit/test_mesh_conformity_check_mock.py",
+            "tests/unit/test_mesh_implant_refine_fallback_mock.py",
+            "tests/integration/test_mesh_gate_poisson_transition_real.py",
+        ],
+        "outputs": [{"glob": "e6h_out/**/*", "max_mb": 20}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.
