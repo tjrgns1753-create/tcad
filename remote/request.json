@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6e-full-regression-001",
- "profile": "e6e_full_regression",
+ "request_id": "e6e-r1-gate-uncertainty-001",
+ "profile": "e6e_r1_gate_uncertainty",
  "params": {},
- "note": "Batch 7H-E6E: tests/run_regression.py exactly once, after targeted run 36668414619 passed (16/16) on 3344938."
+ "note": "Batch 7H-E6E-R1. PLAN 853d400 (PLAN.md LF sha256 380267d5...) fixed before the production edit. One run; no full regression."
 }
