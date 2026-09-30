@@ -489,6 +489,26 @@ PROFILES = {
         "outputs": [{"glob": "e6h_out/**/*", "max_mb": 20}],
         "regenerate": "Rerun the profile.",
     },
+    "e6i_uniform_resistor_dd": {
+        "description": "Batch 7H-E6I: low-field drift-diffusion current of a uniformly doped ACTIVE Si resistor on E6H transition meshes through the production path, plus GUI connection and UNSUPPORTED controls.",
+        "entry": "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/run_e6i.py",
+        "args": [],
+        "params": {},
+        "timeout_s": 3600,
+        "inputs": [
+            "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/CRITERIA.md",
+            "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/run_e6i.py",
+            "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/resistor_judge.py",
+            "tests/unit/test_resistor_dd_judge_mock.py",
+            "tests/integration/test_uniform_resistor_dd_current_real.py",
+            "tests/integration/test_mesh_gate_poisson_transition_real.py",
+            "tcad/device/devsim/semiconductor_equation.py",
+            "tcad/device/devsim/doping_mapping.py",
+            "tcad/characterization/pn_junction_iv_sweep.py",
+        ],
+        "outputs": [{"glob": "e6i_out/**/*", "max_mb": 20}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.

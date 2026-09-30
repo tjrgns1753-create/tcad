@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6h-conformity-poisson-001",
- "profile": "e6h_conformity_poisson",
+ "request_id": "e6i-uniform-resistor-dd-001",
+ "profile": "e6i_uniform_resistor_dd",
  "params": {},
- "note": "Batch 7H-E6H. Criteria fixed in 6937e76 + erratum e7e2552 before any DEVSIM run. Unit tests, B/F conformity, Poisson/linear controls on builder transition meshes. No full regression, no PN/DC sweep."
+ "note": "Batch 7H-E6I. Criteria fixed in 33c249a before the run. Uniform ACTIVE Si resistor, low-field DD current on E6H transition meshes, GUI connection. No full regression, no PN/DC sweep."
 }
