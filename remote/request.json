@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6f-blue-size-check-001",
- "profile": "e6f_blue_size_check",
+ "request_id": "e6g-structured-template-001",
+ "profile": "e6g_structured_template",
  "params": {},
- "note": "Batch 7H-E6F interim review item 7: one pure-geometry size check of the blue audit candidate at GUI default scale. No DEVSIM, no solve, production unchanged."
+ "note": "Batch 7H-E6G. Criteria fc371fd fixed before implementation. One run: unit tests, real B / F import + area gate, Laplace and manufactured Poisson controls. No full regression, no PN/DC sweep."
 }

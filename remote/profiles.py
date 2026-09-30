@@ -446,6 +446,26 @@ PROFILES = {
         "outputs": [{"glob": "e6f_big_out/**/*.json", "max_mb": 5}],
         "regenerate": "Rerun the profile.",
     },
+    "e6g_structured_template": {
+        "description": "Batch 7H-E6G: structured-grid transition-template remeshing -- unit tests, real B (GUI refinement path) and GUI-default 1e20 wafer through the production caller + importer area gate, Laplace and manufactured Poisson controls.",
+        "entry": "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/run_e6g.py",
+        "args": [],
+        "params": {},
+        "timeout_s": 3600,
+        "inputs": [
+            "docs/audits/2026-10-01-batch7h-e6g-structured-template/CRITERIA.md",
+            "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/run_e6g.py",
+            "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/real_e6g.py",
+            "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/eval_e6g.py",
+            "tcad/device/devsim/mesh_refine.py",
+            "tcad/device/devsim/mesh_import.py",
+            "tests/unit/test_mesh_structured_remesh_mock.py",
+            "tests/integration/test_mesh_gate_manufactured_poisson_real.py",
+            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/wafer_volume.vtu",
+        ],
+        "outputs": [{"glob": "e6g_out/**/*", "max_mb": 40}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.
