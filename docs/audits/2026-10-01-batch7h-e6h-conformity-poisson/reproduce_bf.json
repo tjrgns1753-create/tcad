@@ -1,0 +1,12 @@
+{
+ "B": {
+  "triangles": 1630,
+  "points": 876,
+  "identical_to_E6G_committed_output": true
+ },
+ "F": {
+  "triangles": 196000,
+  "points": 98365,
+  "identical_to_E6G_committed_output": true
+ }
+}

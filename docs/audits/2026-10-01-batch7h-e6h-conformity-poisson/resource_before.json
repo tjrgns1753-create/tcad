@@ -1,0 +1,95 @@
+{
+ "nan_center": {
+  "outcome": "RETURNED",
+  "identity": true,
+  "triangles": null,
+  "points": null,
+  "wall_s": 0.07,
+  "peak_mb": 1.2
+ },
+ "inf_center": {
+  "outcome": "RETURNED",
+  "identity": true,
+  "triangles": null,
+  "points": null,
+  "wall_s": 0.06,
+  "peak_mb": 1.2
+ },
+ "nan_halfwidth": {
+  "outcome": "RETURNED",
+  "identity": true,
+  "triangles": null,
+  "points": null,
+  "wall_s": 0.09,
+  "peak_mb": 1.2
+ },
+ "zero_halfwidth": {
+  "outcome": "RETURNED",
+  "identity": true,
+  "triangles": null,
+  "points": null,
+  "wall_s": 0.07,
+  "peak_mb": 1.2
+ },
+ "negative_halfwidth": {
+  "outcome": "RETURNED",
+  "identity": true,
+  "triangles": null,
+  "points": null,
+  "wall_s": 0.06,
+  "peak_mb": 1.2
+ },
+ "empty_centers": {
+  "outcome": "RETURNED",
+  "identity": true,
+  "triangles": null,
+  "points": null,
+  "wall_s": 0.07,
+  "peak_mb": 1.2
+ },
+ "empty_rings": {
+  "outcome": "RETURNED",
+  "identity": true,
+  "triangles": null,
+  "points": null,
+  "wall_s": 0.08,
+  "peak_mb": 1.2
+ },
+ "inf_halfwidth": {
+  "outcome": "RETURNED",
+  "identity": false,
+  "triangles": 256,
+  "points": 153,
+  "wall_s": 0.09,
+  "peak_mb": 1.2
+ },
+ "rings_200": {
+  "outcome": "TIMEOUT_60s"
+ },
+ "rings_60": {
+  "outcome": "TIMEOUT_60s"
+ },
+ "midpoint_exhaustion": {
+  "outcome": "RETURNED",
+  "identity": false,
+  "triangles": 64,
+  "points": 30,
+  "wall_s": 0.08,
+  "peak_mb": 1.2
+ },
+ "far_over_cap_100x100_depth8": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "RESOURCE_CAP",
+  "detail": "RESOURCE_CAP: 19638000 triangles would exceed the cap 400000",
+  "wall_s": 4.29,
+  "peak_mb": 7.1
+ },
+ "just_under_cap_valid": {
+  "outcome": "RETURNED",
+  "identity": false,
+  "triangles": 377400,
+  "points": 189241,
+  "wall_s": 17.72,
+  "peak_mb": 90.6
+ }
+}

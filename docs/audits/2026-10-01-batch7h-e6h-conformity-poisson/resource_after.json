@@ -1,0 +1,94 @@
+{
+ "nan_center": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "INVALID_REQUEST",
+  "detail": "INVALID_REQUEST: non-finite centre or half width",
+  "wall_s": 0.0,
+  "peak_mb": 0.0
+ },
+ "inf_center": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "INVALID_REQUEST",
+  "detail": "INVALID_REQUEST: non-finite centre or half width",
+  "wall_s": 0.0,
+  "peak_mb": 0.0
+ },
+ "nan_halfwidth": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "INVALID_REQUEST",
+  "detail": "INVALID_REQUEST: non-finite centre or half width",
+  "wall_s": 0.0,
+  "peak_mb": 0.0
+ },
+ "zero_halfwidth": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "INVALID_REQUEST",
+  "detail": "INVALID_REQUEST: half widths must be > 0",
+  "wall_s": 0.0,
+  "peak_mb": 0.0
+ },
+ "negative_halfwidth": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "INVALID_REQUEST",
+  "detail": "INVALID_REQUEST: half widths must be > 0",
+  "wall_s": 0.0,
+  "peak_mb": 0.0
+ },
+ "empty_centers": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "INVALID_REQUEST",
+  "detail": "INVALID_REQUEST: empty centre or half-width list",
+  "wall_s": 0.0,
+  "peak_mb": 0.0
+ },
+ "empty_rings": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "INVALID_REQUEST",
+  "detail": "INVALID_REQUEST: empty centre or half-width list",
+  "wall_s": 0.0,
+  "peak_mb": 0.0
+ },
+ "inf_halfwidth": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "INVALID_REQUEST",
+  "detail": "INVALID_REQUEST: non-finite centre or half width",
+  "wall_s": 0.0,
+  "peak_mb": 0.0
+ },
+ "rings_200": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "RESOURCE_CAP",
+  "detail": "RESOURCE_CAP: a strip at depth 18 alone needs more than 400000 triangles",
+  "wall_s": 0.1,
+  "peak_mb": 1.2
+ },
+ "rings_60": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "RESOURCE_CAP",
+  "detail": "RESOURCE_CAP: a strip at depth 18 alone needs more than 400000 triangles",
+  "wall_s": 0.09,
+  "peak_mb": 1.2
+ },
+ "midpoint_exhaustion": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "SUBDIVISION_EXHAUSTED",
+  "detail": "SUBDIVISION_EXHAUSTED: interval [1.0, 1.0000000000000002] cannot be split at depth 1",
+  "wall_s": 0.07,
+  "peak_mb": 1.2
+ },
+ "far_over_cap_100x100_depth8": {
+  "outcome": "StructuredRemeshAborted",
+  "reason": "RESOURCE_CAP",
+  "detail": "RESOURCE_CAP: 19638000 triangles would exceed the cap 400000",
+  "wall_s": 2.76,
+  "peak_mb": 7.1
+ },
+ "just_under_cap_valid": {
+  "outcome": "RETURNED",
+  "identity": false,
+  "triangles": 377400,
+  "points": 189241,
+  "wall_s": 18.34,
+  "peak_mb": 90.6
+ }
+}
