@@ -1,0 +1,72 @@
+{
+ "case": "A",
+ "route": "R3",
+ "epsilon": null,
+ "status": "OK",
+ "versions": {
+  "viennaps": "4.6.2"
+ },
+ "input": {
+  "grid": 0.05,
+  "pad": 0.3,
+  "x_extent": 2.0,
+  "y_extent": 2.0,
+  "forbidden_call_counts": {
+   "Oxidation": 0,
+   "Process": 0
+  },
+  "materials_by_index": [
+   "Si",
+   "SiO2"
+  ],
+  "wrap_flags": [
+   false,
+   true
+  ]
+ },
+ "native_level_sets": [
+  {
+   "n_points": 123,
+   "surface_y": [
+    -5e-14,
+    -5e-14
+   ]
+  },
+  {
+   "n_points": 82,
+   "surface_y": [
+    0.29999999999995003,
+    0.29999999999995003
+   ]
+  }
+ ],
+ "surface_mesh": {
+  "n_nodes": 82,
+  "n_lines": 80,
+  "cell_data_attrs": [
+   "getScalarData",
+   "getScalarDataLabel",
+   "getScalarDataSize",
+   "getVectorData",
+   "getVectorDataLabel",
+   "getVectorDataSize",
+   "insertNextScalarData",
+   "insertNextVectorData"
+  ],
+  "cell_scalar_names": null,
+  "boundary_y_by_column": {
+   "0.0": [
+    -0.0,
+    0.3
+   ],
+   "0.8": [
+    -0.0,
+    0.3
+   ],
+   "-0.8": [
+    -0.0,
+    0.3
+   ]
+  }
+ }
+}

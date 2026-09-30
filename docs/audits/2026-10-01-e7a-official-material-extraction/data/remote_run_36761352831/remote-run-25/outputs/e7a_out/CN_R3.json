@@ -1,0 +1,101 @@
+{
+ "case": "CN",
+ "route": "R3",
+ "epsilon": null,
+ "status": "OK",
+ "versions": {
+  "viennaps": "4.6.2"
+ },
+ "input": {
+  "grid": 0.05,
+  "pad": 0.1,
+  "x_extent": 2.0,
+  "y_extent": 2.0,
+  "forbidden_call_counts": {
+   "Oxidation": 0,
+   "Process": 0
+  },
+  "materials_by_index": [
+   "Si",
+   "SiO2",
+   "Mask"
+  ],
+  "wrap_flags": [
+   false,
+   true,
+   true
+  ]
+ },
+ "native_level_sets": [
+  {
+   "n_points": 123,
+   "surface_y": [
+    -5e-14,
+    -5e-14
+   ]
+  },
+  {
+   "n_points": 82,
+   "surface_y": [
+    0.09999999999995,
+    0.09999999999995
+   ]
+  },
+  {
+   "n_points": 104,
+   "surface_y": [
+    0.09999999999995,
+    0.39999999999995
+   ]
+  }
+ ],
+ "surface_mesh": {
+  "n_nodes": 112,
+  "n_lines": 110,
+  "cell_data_attrs": [
+   "getScalarData",
+   "getScalarDataLabel",
+   "getScalarDataSize",
+   "getVectorData",
+   "getVectorDataLabel",
+   "getVectorDataSize",
+   "insertNextScalarData",
+   "insertNextVectorData"
+  ],
+  "cell_scalar_names": null,
+  "boundary_y_by_column": {
+   "0.0": [
+    -0.0,
+    0.1
+   ],
+   "0.8": [
+    -0.0,
+    0.1,
+    0.4
+   ],
+   "-0.8": [
+    -0.0,
+    0.1,
+    0.4
+   ],
+   "0.45": [
+    -0.0,
+    0.1
+   ],
+   "0.55": [
+    -0.0,
+    0.1,
+    0.4
+   ],
+   "-0.45": [
+    -0.0,
+    0.1
+   ],
+   "-0.55": [
+    -0.0,
+    0.1,
+    0.4
+   ]
+  }
+ }
+}

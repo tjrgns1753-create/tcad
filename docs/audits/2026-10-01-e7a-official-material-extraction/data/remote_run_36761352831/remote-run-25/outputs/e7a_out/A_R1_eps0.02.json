@@ -1,0 +1,184 @@
+{
+ "case": "A",
+ "route": "R1",
+ "epsilon": 0.02,
+ "status": "OK",
+ "versions": {
+  "viennaps": "4.6.2"
+ },
+ "input": {
+  "grid": 0.05,
+  "pad": 0.3,
+  "x_extent": 2.0,
+  "y_extent": 2.0,
+  "forbidden_call_counts": {
+   "Oxidation": 0,
+   "Process": 0
+  },
+  "materials_by_index": [
+   "Si",
+   "SiO2"
+  ],
+  "wrap_flags": [
+   false,
+   true
+  ]
+ },
+ "native_level_sets": [
+  {
+   "n_points": 123,
+   "surface_y": [
+    -5e-14,
+    -5e-14
+   ]
+  },
+  {
+   "n_points": 82,
+   "surface_y": [
+    0.29999999999995003,
+    0.29999999999995003
+   ]
+  }
+ ],
+ "measure": {
+  "n_points": 410,
+  "n_triangles": 720,
+  "delta_um": 0.001001,
+  "materials": {
+   "Si": {
+    "tag": 10,
+    "n_triangles": 240,
+    "area": 0.20200002193450928,
+    "y_range": [
+     -0.10000000149011612,
+     0.0010000001639127731
+    ],
+    "x_range": [
+     -1.0,
+     1.0
+    ]
+   },
+   "SiO2": {
+    "tag": 30,
+    "n_triangles": 480,
+    "area": 0.5980000495910645,
+    "y_range": [
+     0.0010000001639127731,
+     0.30000001192092896
+    ],
+    "x_range": [
+     -1.0,
+     1.0
+    ]
+   }
+  },
+  "columns": {
+   "0.0": {
+    "expected": {
+     "Si": [
+      -1.0,
+      0.0
+     ],
+     "SiO2": [
+      0.0,
+      0.3
+     ]
+    },
+    "measured": {
+     "Si": [
+      -0.10000000149011612,
+      0.0010000001639127731
+     ],
+     "SiO2": [
+      0.000999998301267624,
+      0.30000001192092896
+     ]
+    },
+    "position_ok": true,
+    "consistent": true
+   },
+   "0.8": {
+    "expected": {
+     "Si": [
+      -1.0,
+      0.0
+     ],
+     "SiO2": [
+      0.0,
+      0.3
+     ]
+    },
+    "measured": {
+     "Si": [
+      -0.10000000149011612,
+      0.0010000001639127731
+     ],
+     "SiO2": [
+      0.000999998301267624,
+      0.30000001192092896
+     ]
+    },
+    "position_ok": true,
+    "consistent": true
+   },
+   "-0.8": {
+    "expected": {
+     "Si": [
+      -1.0,
+      0.0
+     ],
+     "SiO2": [
+      0.0,
+      0.3
+     ]
+    },
+    "measured": {
+     "Si": [
+      -0.10000000149011612,
+      0.0010000001639127731
+     ],
+     "SiO2": [
+      0.000999998301267624,
+      0.30000001192092896
+     ]
+    },
+    "position_ok": true,
+    "consistent": true
+   }
+  },
+  "judgement": {
+   "1_materials_set_equals_expected": true,
+   "1_missing": [],
+   "1_unexpected": [],
+   "2_area_ok": true,
+   "2_area_detail": {
+    "Si": {
+     "analytic": 2.0,
+     "measured": 0.20200002193450928,
+     "abs_err": -1.7979999780654907,
+     "tol": 0.006005999999999999,
+     "judged": false,
+     "ok": false
+    },
+    "SiO2": {
+     "analytic": 0.6,
+     "measured": 0.5980000495910645,
+     "abs_err": -0.0019999504089355247,
+     "tol": 0.0046045999999999995,
+     "judged": true,
+     "ok": true
+    }
+   },
+   "3_positions_ok": true,
+   "4_columns_consistent": true,
+   "5_shared_edges_by_index": {
+    "Si|SiO2": 40
+   },
+   "5_shared_edges_by_coordinate": {
+    "Si|SiO2": 40
+   },
+   "5_duplicate_coordinate_points": 0
+  }
+ },
+ "mesh": "A_R1_eps0.02.vtu"
+}

@@ -14,12 +14,16 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
 OUT = os.path.join(ROOT, "e7a_out")
 REL = "docs/audits/2026-10-01-e7a-official-material-extraction"
 PROBE = f"{REL}/scripts/probe_e7a.py"
-HASHED = ["tcad/backends/viennaps/io.py", "tcad/process/oxidation/locos.py", "tests/integration/_explicit_oxide_fixture.py", PROBE, f"{REL}/CRITERIA.md"]
+PROBE_S1 = f"{REL}/scripts/probe_e7a_s1.py"
+MODE = "s1" if "--s1" in sys.argv else "main"
+HASHED = [f"{REL}/S1_CRITERIA.md", f"{REL}/scripts/probe_e7a_s1.py", "tcad/backends/viennaps/io.py", "tcad/process/oxidation/locos.py", "tests/integration/_explicit_oxide_fixture.py", PROBE, f"{REL}/CRITERIA.md"]
 RUNS = [("P0", "P0", None)]
 for case in ("A", "B1", "B2", "C", "CN"):
     RUNS += [(case, r, None) for r in ("R0", "R0d", "R1", "R2", "R3")]
 for case in ("A", "CN"):
     RUNS += [(case, "R1", e) for e in (0.0, 0.02)]
+if MODE == "s1":
+    RUNS = [(case, r, None) for case in ("A", "B1", "B2", "C", "CN") for r in ("R4", "R5")]
 
 
 def lf_sha(p):
@@ -44,7 +48,7 @@ def main():
            "platform": platform.platform(), "versions": vers, "files_lf_sha256": {p: lf_sha(p) for p in HASHED}, "runs": []}
     for case, rt, eps in RUNS:
         tag = f"{case}_{rt}" + (f"_eps{eps}" if eps is not None else "")
-        cmd = [sys.executable, PROBE, OUT, case, rt] + ([str(eps)] if eps is not None else [])
+        cmd = [sys.executable, PROBE_S1 if MODE == "s1" else PROBE, OUT, case, rt] + ([str(eps)] if eps is not None else [])
         t = time.time()
         try:
             p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300,

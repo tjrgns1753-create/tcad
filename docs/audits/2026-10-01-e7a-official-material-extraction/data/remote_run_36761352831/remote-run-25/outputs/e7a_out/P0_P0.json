@@ -1,0 +1,39 @@
+{
+ "case": "P0",
+ "route": "P0",
+ "epsilon": null,
+ "status": "OK",
+ "versions": {
+  "viennaps": "4.6.2"
+ },
+ "control": {
+  "independent_planes_y<0.5_minus_y<0.0": {
+   "points": 164,
+   "surface_y_range": [
+    5e-14,
+    0.49999999999995004
+   ]
+  },
+  "wrapped_top_minus_bottom_manual": {
+   "points": 164,
+   "surface_y_range": [
+    5e-14,
+    0.49999999999995004
+   ]
+  },
+  "wrapped_getMaterialLevelSet_SiO2": {
+   "points": 164,
+   "surface_y_range": [
+    5e-14,
+    0.49999999999995004
+   ]
+  },
+  "wrapped_getMaterialLevelSet_Si": {
+   "points": 123,
+   "surface_y_range": [
+    -5e-14,
+    -5e-14
+   ]
+  }
+ }
+}

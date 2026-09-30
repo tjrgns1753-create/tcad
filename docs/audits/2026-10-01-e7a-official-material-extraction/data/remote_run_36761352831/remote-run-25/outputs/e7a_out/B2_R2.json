@@ -1,0 +1,45 @@
+{
+ "case": "B2",
+ "route": "R2",
+ "epsilon": null,
+ "status": "EXCEPTION",
+ "versions": {
+  "viennaps": "4.6.2"
+ },
+ "input": {
+  "grid": 0.1,
+  "pad": 0.1,
+  "x_extent": 2.0,
+  "y_extent": 2.0,
+  "forbidden_call_counts": {
+   "Oxidation": 0,
+   "Process": 0
+  },
+  "materials_by_index": [
+   "Si",
+   "SiO2"
+  ],
+  "wrap_flags": [
+   false,
+   true
+  ]
+ },
+ "native_level_sets": [
+  {
+   "n_points": 63,
+   "surface_y": [
+    -1e-13,
+    -1e-13
+   ]
+  },
+  {
+   "n_points": 42,
+   "surface_y": [
+    0.0999999999999,
+    0.0999999999999
+   ]
+  }
+ ],
+ "error": "ValueError('need at least one array to concatenate')",
+ "traceback": "Traceback (most recent call last):\n  File \"D:\\a\\tcad\\tcad\\docs\\audits\\2026-10-01-e7a-official-material-extraction\\scripts\\probe_e7a.py\", line 331, in main\n    route(out, case, rt, eps, module, domain, mats, flags, work)\n  File \"D:\\a\\tcad\\tcad\\docs\\audits\\2026-10-01-e7a-official-material-extraction\\scripts\\probe_e7a.py\", line 239, in route\n    p_, t_ = vio._export_single_level_set(domain, ls, m, DEPTH, bounds_hint=(xmin, xmax, ymax))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\tcad\\backends\\viennaps\\io.py\", line 581, in _export_single_level_set\n    return _read_triangle_mesh(f\"{path_str}_volume.vtu\")\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\tcad\\backends\\viennaps\\io.py\", line 458, in _read_triangle_mesh\n    mesh = meshio.read(str(path))\n           ^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\.venv\\Lib\\site-packages\\meshio\\_helpers.py\", line 71, in read\n    return _read_file(Path(filename), file_format)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\.venv\\Lib\\site-packages\\meshio\\_helpers.py\", line 103, in _read_file\n    return reader_map[file_format](str(path))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\.venv\\Lib\\site-packages\\meshio\\vtu\\_vtu.py\", line 577, in read\n    reader = VtuReader(filename)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\.venv\\Lib\\site-packages\\meshio\\vtu\\_vtu.py\", line 415, in __init__\n    piece_cell_data_raw[c.attrib[\"Name\"]] = self.read_data(c)\n                                            ^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\.venv\\Lib\\site-packages\\meshio\\vtu\\_vtu.py\", line 558, in read_data\n    data = reader(self.appended_data[offset:], dtype)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\a\\tcad\\tcad\\.venv\\Lib\\site-packages\\meshio\\vtu\\_vtu.py\", line 515, in read_compressed_binary\n    block_data = np.concatenate(\n                 ^^^^^^^^^^^^^^^\nValueError: need at least one array to concatenate\n"
+}

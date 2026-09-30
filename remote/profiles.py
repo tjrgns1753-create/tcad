@@ -547,6 +547,24 @@ PROFILES = {
         "outputs": [{"glob": "e7a_out/**/*", "max_mb": 60}],
         "regenerate": "Rerun the profile.",
     },
+    "e7a_official_material_extraction_s1": {
+        "description": "E7A supplement S1 (post hoc, see S1_CRITERIA.md): official saveVolumeMesh on a floored copy (R4) and per-material getMaterialLevelSet meshing diagnostics (R5). Probe only.",
+        "entry": "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+        "args": ["--s1"],
+        "params": {},
+        "timeout_s": 1800,
+        "inputs": [
+            "docs/audits/2026-10-01-e7a-official-material-extraction/S1_CRITERIA.md",
+            "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/run_e7a.py",
+            "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a.py",
+            "docs/audits/2026-10-01-e7a-official-material-extraction/scripts/probe_e7a_s1.py",
+            "tcad/backends/viennaps/io.py",
+            "tcad/process/oxidation/locos.py",
+            "tests/integration/_explicit_oxide_fixture.py",
+        ],
+        "outputs": [{"glob": "e7a_out/**/*", "max_mb": 60}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.
