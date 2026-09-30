@@ -1,0 +1,145 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6g] test_mesh_structured_remesh_mock rc=0 wall=26.4s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+A: old red-green 1 obtuse; template build 11 triangles, 0 obtuse, conforming, area exact
+B: 1180 triangles expected -> 1180 ; far field untouched; permuted input gives the same geometry
+C: float32 anisotropic grid: 850 triangles, exact checks and band resolution hold
+D: two windows: 1248 triangles, exact checks hold
+G: multi-material, missing triangle, non-planar, overlapping halves refused; aspect and cap abort
+ALL STRUCTURED REMESH MOCK CHECKS PASSED
+
+[e6g] test_mesh_refine_mock rc=0 wall=0.2s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+levels=1: 340 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.5000, far-field preserved=True
+levels=2: 860 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.2500, far-field preserved=True
+levels=3: 2860 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.1250, far-field preserved=True
+empty predicate -> no-op: OK
+graded (3 rings, half-widths 1.0/0.5/0.25): 1180 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.1250
+graded, empty ring list -> no-op: OK
+ALL MESH_REFINE MOCK CHECKS PASSED
+
+[e6g] test_mesh_area_conservation_mock rc=0 wall=0.2s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+single material exact: pass, rel 0.0 B/A 2.0763317285927413e-14
+two materials exact, large-coordinate control: pass
+cancelling region errors: refused per region
+tolerance boundary: B(1 - 2^-10) pass, B(1 + 2^-10) refused
+certification limit boundary: B/A 1e-8(1 - 2^-10) pass, 1e-8(1 + 2^-10) refused
+P0 sliver S = 2A: refused, B/A 2.842170943040401, S/A-1 1.0
+P0 sliver S = A: refused, B/A 2.842170943040401, S/A-1 0.0
+non-finite budget / S overflow / o_t overflow / zero area: refused
+normal shape, S = A + 0.01: MESH_AREA_NOT_CONSERVED
+non-finite / non-positive / missing NodeVolume, element mismatch: refused
+input checks: non-finite, non-planar, extra cells, unmapped tag, empty region, duplicate, degenerate, mixed: refused; consistent clockwise accepted
+ALL MESH AREA CONSERVATION MOCK CHECKS PASSED
+
+[e6g] real_e6g_B rc=0 wall=2.6s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1630 Triangles.
+Physical group name Si has 2505 Lines.
+Physical group name Si has 876 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 10 Lines.
+Physical group name Si_xmax has 11 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 10 Lines.
+Physical group name Si_xmin has 11 Points.
+Device e6g_B_device has 876 coordinates with max index 875
+Region Si has 876 nodes.
+Contact Si_xmax in region Si with 11 nodes
+Contact Si_xmin in region Si with 11 nodes
+{"which": "B", "status": "OK", "error": null, "refined": {"triangles": 1630, "points": 876, "dtype": "float64", "cell_blocks": ["triangle"]}, "exact": {"obtuse": 0, "degenerate": 0, "single_orientation": true, "area_equal_input": true, "duplicate_triangles": 0, "existing_nodes_preserved": true, "hanging_nodes": "NOT_VERIFIED (skipped for size)"}, "resolution": {"triangles_in_bands": 1180, "violations": 0, "ok": true}, "import": {"regions": ["Si"], "contacts": ["Si_xmin", "Si_xmax"], "area_conservation": {"Si": {"triangles": 1630, "devsim_elements": 1630, "nodes": 876, "A": 4e-08, "certification_limit": 1e-08, "budget_basis": "ASSUMED_BOUND: E_NV = 128 u sum_t A_t / sin(theta_min,t), inherited from 7H-E2 PLAN section 4, not derived from DEVSIM source; E_A = gamma4 two-product rounding bound + u A; E_S = u S (correctly rounded fsum)", "S": 4e-08, "relative_difference": 0.0, "E_A": 2.2204460492503142e-23, "E_S": 4.440892098500626e-24, "E_NV": 9.06678258599379e-22, "B": 9.333236111903827e-22, "relative_uncertainty": 2.3333090279759567e-14, "pass": true}}}, "writes_during_import": {"solve": 0, "node_model": 0, "edge_model": 0, "set_node_values": 0, "set_node_value": 0, "equation": 0, "contact_equation": 0, "node_solution": 0}}
+
+[e6g] real_e6g_F rc=0 wall=22.7s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 196000 Triangles.
+Physical group name Si has 294364 Lines.
+Physical group name Si has 98365 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6g_F_device has 98365 coordinates with max index 98364
+Region Si has 98365 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+{"which": "F", "status": "OK", "error": null, "refined": {"triangles": 196000, "points": 98365, "dtype": "float64", "cell_blocks": ["triangle"]}, "exact": {"obtuse": 0, "degenerate": 0, "single_orientation": true, "area_equal_input": true, "duplicate_triangles": 0, "existing_nodes_preserved": true, "hanging_nodes": "NOT_VERIFIED (skipped for size)"}, "resolution": {"triangles_in_bands": 150400, "violations": 0, "ok": true}, "import": {"regions": ["Si"], "contacts": ["Si_xmin", "Si_xmax"], "area_conservation": {"Si": {"triangles": 196000, "devsim_elements": 196000, "nodes": 98365, "A": 5e-07, "certification_limit": 1e-08, "budget_basis": "ASSUMED_BOUND: E_NV = 128 u sum_t A_t / sin(theta_min,t), inherited from 7H-E2 PLAN section 4, not derived from DEVSIM source; E_A = gamma4 two-product rounding bound + u A; E_S = u S (correctly rounded fsum)", "S": 5e-07, "relative_difference": 0.0, "E_A": 2.775557561562892e-22, "E_S": 5.551115123125782e-23, "E_NV": 1.0223834359400046e-20, "B": 1.0556901266787593e-20, "relative_uncertainty": 2.1113802533575187e-14, "pass": true}}}, "writes_during_import": {"solve": 0, "node_model": 0, "edge_model": 0, "set_node_values": 0, "set_node_value": 0, "equation": 0, "contact_equation": 0, "node_solution": 0}}
+
+[e6g] test_mesh_gate_small_laplace_control_real rc=0 wall=0.5s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 12 Triangles.
+Physical group name Si has 23 Lines.
+Physical group name Si has 12 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gate_laplace_device has 12 coordinates with max index 11
+Region Si has 12 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+number of equations 12
+Iteration: 0
+  Device: "gate_laplace_device"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e+00
+Iteration: 1
+  Device: "gate_laplace_device"	RelError: 8.01083e-16	AbsError: 2.40325e-16
+    Region: "Si"	RelError: 8.01083e-16	AbsError: 2.40325e-16
+      Equation: "PotentialEquation"	RelError: 8.01083e-16	AbsError: 2.40325e-16
+area report: {'triangles': 12, 'devsim_elements': 12, 'nodes': 12, 'A': 2.0000000000000004e-08, 'certification_limit': 1e-08, 'budget_basis': 'ASSUMED_BOUND: E_NV = 128 u sum_t A_t / sin(theta_min,t), inherited from 7H-E2 PLAN section 4, not derived from DEVSIM source; E_A = gamma4 two-product rounding bound + u A; E_S = u S (correctly rounded fsum)', 'S': 2e-08, 'relative_difference': -1.1102230246251565e-16, 'E_A': 1.1102230246251572e-23, 'E_S': 2.220446049250313e-24, 'E_NV': 5.102336721269242e-22, 'B': 5.235563484224261e-22, 'relative_uncertainty': 2.61778174211213e-14, 'pass': True}
+solve calls 1, nodes 12, max |Potential - exact| = 0.000e+00 V (tolerance 1.0e-09 V)
+MESH GATE SMALL LAPLACE CONTROL PASSED
+
+[e6g] test_mesh_gate_manufactured_poisson_real rc=0 wall=0.5s
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 12 Triangles.
+Physical group name Si has 23 Lines.
+Physical group name Si has 12 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gate_poisson_device has 12 coordinates with max index 11
+Region Si has 12 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+number of equations 12
+Iteration: 0
+  Device: "gate_poisson_device"	RelError: 1.00000e+00	AbsError: 8.40000e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 8.40000e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 8.40000e-01
+Iteration: 1
+  Device: "gate_poisson_device"	RelError: 5.68698e-16	AbsError: 4.26524e-16
+    Region: "Si"	RelError: 5.68698e-16	AbsError: 4.26524e-16
+      Equation: "PotentialEquation"	RelError: 5.68698e-16	AbsError: 4.26524e-16
+area report: A 2.0000000000000004e-08 S 2e-08 B/A 2.61778174211213e-14
+solve calls 1, nodes 12, max|exact| 0.840000 V, max |psi - exact| = 0.000e+00 V, relative 0.000e+00 (tolerance 1.0e-09)
+MESH GATE MANUFACTURED POISSON CONTROL PASSED
+

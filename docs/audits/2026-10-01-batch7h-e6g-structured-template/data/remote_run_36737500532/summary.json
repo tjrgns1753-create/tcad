@@ -1,0 +1,188 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T15:33:11.230311+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6g-structured-template-001",
+  "profile": "e6g_structured_template",
+  "params": {},
+  "note": "Batch 7H-E6G. Criteria fc371fd fixed before implementation. One run: unit tests, real B / F import + area gate, Laplace and manufactured Poisson controls. No full regression, no PN/DC sweep."
+ },
+ "profile": "e6g_structured_template",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6g-structured-template/CRITERIA.md",
+   "sha256": "2a899fe049ea9e6dbf344858f7ded3d5e2d70ef7a58e0a874fdcc16b1ed5b2e5",
+   "bytes": 5363
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/run_e6g.py",
+   "sha256": "ca5e0260773323c268147570b434c8121e1e138f325f745d7234168c4c7c6ac9",
+   "bytes": 3782
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/real_e6g.py",
+   "sha256": "dc23147f9729dd945cf1eec4578faca2509b31ea8eb36751359bb98c7489ccf0",
+   "bytes": 7594
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/eval_e6g.py",
+   "sha256": "540600b9b6c8873cd44342c7996dee166c0be348331ccff4d872f050a34a0d82",
+   "bytes": 13773
+  },
+  {
+   "path": "tcad/device/devsim/mesh_refine.py",
+   "sha256": "6c39e00b19d447670d81e1fce00534fba795930e4795b0902ed1330c452cfed7",
+   "bytes": 21883
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "f6a462d88c824eb76c7d082034c750fd4943e369cf80cb1952f6da02a9a072cb",
+   "bytes": 62747
+  },
+  {
+   "path": "tests/unit/test_mesh_structured_remesh_mock.py",
+   "sha256": "965659e8d4621f7ac31a5bd67f182ea85144942bf163f85b68fc3cd8a9f7008e",
+   "bytes": 7954
+  },
+  {
+   "path": "tests/integration/test_mesh_gate_manufactured_poisson_real.py",
+   "sha256": "78568d2523c75bdedebfe9ea8e582b9170b09f4e06f7ec81dd5d08e6aba837b3",
+   "bytes": 5591
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/wafer_volume.vtu",
+   "sha256": "cfae97d4aca233b5e20ffed23741e37e0498ddb419c0babc045f57ce920b1c7a",
+   "bytes": 337128
+  }
+ ],
+ "request_sha256": "f2158fb2ceee5e8d33fe7a40c770097f3cb65a0ceae0df79867c4502279f870d",
+ "source": {
+  "github_sha": "10e86b630850e019d796e902ca388bed7b214049",
+  "git_head": "10e86b630850e019d796e902ca388bed7b214049",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36737500532",
+  "run_number": "20",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/run_e6g.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T15:34:05.356926+00:00",
+ "duration_s": 54.127,
+ "outputs": [
+  {
+   "path": "e6g_out/B_refined.vtu",
+   "bytes": 14888,
+   "sha256": "0c0e402eac1e50a9369e9c15d69d4d983a7917422d94d366939aa2defad70867"
+  },
+  {
+   "path": "e6g_out/F_refined.vtu",
+   "bytes": 1736008,
+   "sha256": "d3485b37cda241865cecd10d7aede15f874e5c9b2e22ff66f20208e2ee3c456c"
+  },
+  {
+   "path": "e6g_out/e6g_result.json",
+   "bytes": 3266,
+   "sha256": "f97b4e60e3d89b1a570433b25fb85d0e717dd8f5885e4b80e70189b43943060d"
+  },
+  {
+   "path": "e6g_out/real_B.json",
+   "bytes": 1990,
+   "sha256": "4802b36843390a4f99d653461b103f68242459bf2dc8179787de8268553c7023"
+  },
+  {
+   "path": "e6g_out/real_F.json",
+   "bytes": 2107,
+   "sha256": "3a3a093887177b30390a4ec623ab53a41cd8b405009415447dee6e408cc2e892"
+  },
+  {
+   "path": "e6g_out/real_e6g_B.log",
+   "bytes": 2022,
+   "sha256": "09edc63da9400dfcf6bbef12d83b9363abdab8ff104cd10224662c030dea4715"
+  },
+  {
+   "path": "e6g_out/real_e6g_F.log",
+   "bytes": 2054,
+   "sha256": "21b2c40f714f6a4cc043ea813ca4aeea6d9259bacfb076de8185ed8034bb59d7"
+  },
+  {
+   "path": "e6g_out/test_mesh_area_conservation_mock.log",
+   "bytes": 903,
+   "sha256": "0bfbda7b0c355c80e37ca67f4edb39bae0c00824d25adc71b7abc6c26a7a11c4"
+  },
+  {
+   "path": "e6g_out/test_mesh_gate_manufactured_poisson_real.log",
+   "bytes": 1493,
+   "sha256": "68c169850fa8bf64058a6f8f06ee78db65c34819e719b9e7f627837afae7f216"
+  },
+  {
+   "path": "e6g_out/test_mesh_gate_small_laplace_control_real.log",
+   "bytes": 1974,
+   "sha256": "ff3504fff2aa9602ce32096b96b69bddcdd460ec8a5f1850690f6b8666ce3b73"
+  },
+  {
+   "path": "e6g_out/test_mesh_refine_mock.log",
+   "bytes": 711,
+   "sha256": "fa75b59159fddd210a485eb7bed0a8916e50e11fb01da969eba8ab67bba5fab9"
+  },
+  {
+   "path": "e6g_out/test_mesh_structured_remesh_mock.log",
+   "bytes": 553,
+   "sha256": "6e3f6e11e1b1423408072d74c6f7bf6f0f811730f48826a79e0dd6524e0bb38d"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "6c9215953c96505cd2fcef665b78bc4216314fad1f2adb5bebea9be83fae0524",
+  "bytes": 10155
+ },
+ "redactions": {}
+}

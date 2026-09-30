@@ -1,0 +1,90 @@
+{
+ "head": "10e86b630850e019d796e902ca388bed7b214049",
+ "python": "3.11.9",
+ "platform": "Windows-10-10.0.26100-SP0",
+ "versions": {
+  "devsim": "2.11.0",
+  "viennaps": "4.6.2",
+  "viennals": "5.8.5",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5"
+ },
+ "files_lf_sha256": {
+  "tcad/device/devsim/mesh_refine.py": "432d47bb010cc2a24c83f39b8f58b47347eedfd5c8b1cbf21e0bfc355e7cbf84",
+  "tcad/device/devsim/mesh_import.py": "e1cc792c168221348ded35fa5054000d1ff4b13f984fa73666b94138b4248588",
+  "tcad/device/devsim/mesh_conservation.py": "76646174c666832b87d47b407f85db9cbef84f89ee8141b067abcad5d4d0bd46",
+  "tests/unit/test_mesh_structured_remesh_mock.py": "f9d5e81d4c485c93eb3757dcb7a1f6c9059f5e34b248e392ba85af2df1e1103a",
+  "tests/integration/test_mesh_gate_manufactured_poisson_real.py": "d797115dd8ad2a77120c14b8ea22c0c9f51cb4f85a0d412fa62a1f6af3d00e91",
+  "tests/integration/test_mesh_gate_small_laplace_control_real.py": "f896edb4be30584328c7be5a33c0e5a2d73abff316046276ba9580638d72ebe3",
+  "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/real_e6g.py": "3461e9c8b74ce7ce02d31fa0f89cf0944c7af1d141b529bc6c4117a9d409190a",
+  "docs/audits/2026-10-01-batch7h-e6g-structured-template/CRITERIA.md": "b1c40b4a3487ff015f1844e9d634766da405c7fc919495aaebe1facdabdb7ee7"
+ },
+ "runs": [
+  {
+   "cmd": [
+    "tests/unit/test_mesh_structured_remesh_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 26.4
+  },
+  {
+   "cmd": [
+    "tests/unit/test_mesh_refine_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.2
+  },
+  {
+   "cmd": [
+    "tests/unit/test_mesh_area_conservation_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.2
+  },
+  {
+   "cmd": [
+    "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/real_e6g.py",
+    "<OUT>",
+    "B"
+   ],
+   "rc": 0,
+   "wall_s": 2.6
+  },
+  {
+   "cmd": [
+    "docs/audits/2026-10-01-batch7h-e6g-structured-template/scripts/real_e6g.py",
+    "<OUT>",
+    "F"
+   ],
+   "rc": 0,
+   "wall_s": 22.7
+  },
+  {
+   "cmd": [
+    "tests/integration/test_mesh_gate_small_laplace_control_real.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.5
+  },
+  {
+   "cmd": [
+    "tests/integration/test_mesh_gate_manufactured_poisson_real.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.5
+  }
+ ],
+ "files": {
+  "B_refined.vtu": "0c0e402eac1e50a9369e9c15d69d4d983a7917422d94d366939aa2defad70867",
+  "F_refined.vtu": "d3485b37cda241865cecd10d7aede15f874e5c9b2e22ff66f20208e2ee3c456c",
+  "real_B.json": "4802b36843390a4f99d653461b103f68242459bf2dc8179787de8268553c7023",
+  "real_F.json": "3a3a093887177b30390a4ec623ab53a41cd8b405009415447dee6e408cc2e892",
+  "real_e6g_B.log": "09edc63da9400dfcf6bbef12d83b9363abdab8ff104cd10224662c030dea4715",
+  "real_e6g_F.log": "21b2c40f714f6a4cc043ea813ca4aeea6d9259bacfb076de8185ed8034bb59d7",
+  "test_mesh_area_conservation_mock.log": "0bfbda7b0c355c80e37ca67f4edb39bae0c00824d25adc71b7abc6c26a7a11c4",
+  "test_mesh_gate_manufactured_poisson_real.log": "68c169850fa8bf64058a6f8f06ee78db65c34819e719b9e7f627837afae7f216",
+  "test_mesh_gate_small_laplace_control_real.log": "ff3504fff2aa9602ce32096b96b69bddcdd460ec8a5f1850690f6b8666ce3b73",
+  "test_mesh_refine_mock.log": "fa75b59159fddd210a485eb7bed0a8916e50e11fb01da969eba8ab67bba5fab9",
+  "test_mesh_structured_remesh_mock.log": "6e3f6e11e1b1423408072d74c6f7bf6f0f811730f48826a79e0dd6524e0bb38d"
+ }
+}
