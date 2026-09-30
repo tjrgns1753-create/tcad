@@ -1,0 +1,17 @@
+{
+ "head": "decb8f9d4459c8381ab078da4719b8c21bbd79a0",
+ "production_code_identical_to_023bcb90_rc": 0,
+ "worker_rc": {
+  "G0": 0,
+  "G1": 0,
+  "G2": 0
+ },
+ "devsim_version": "2.11.0",
+ "numpy_version": "2.4.6",
+ "python": "3.11.9",
+ "files": {
+  "repro_G0.json": "2515b362e63137d2dec339366e88e2ef3fbc7daa0a18f900f4363301f987a870",
+  "repro_G1.json": "332dc97e44df051dc767975f35bfc50137be84e67ffa4fb1a9544a20ecae65e4",
+  "repro_G2.json": "f09306e313208d87627d8b53eba0a264aac5e9a7b365efeaecc468c1308557ab"
+ }
+}

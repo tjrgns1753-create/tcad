@@ -1,0 +1,42 @@
+{
+ "name": "G1",
+ "process_id": 6132,
+ "calls": {
+  "solve": 0,
+  "set_node_values": 0,
+  "set_node_value": 0,
+  "node_model": 0,
+  "edge_model": 0,
+  "node_solution": 0,
+  "equation": 0,
+  "contact_equation": 0
+ },
+ "status": "IMPORTED",
+ "input_sha256": "48bcf8ea231c5c59a09a2c7089bd6e61af8688c57b73c723d6753305753f4f02",
+ "input_sha_ok": true,
+ "import": {
+  "returned_device": true,
+  "device": "e6e_G1_device",
+  "regions": [
+   "Si"
+  ],
+  "contacts": [
+   "Si_xmin",
+   "Si_xmax"
+  ],
+  "wall_s": 9.685422897338867
+ },
+ "regions": {
+  "Si": {
+   "n_nodes": 499725,
+   "sum_NodeVolume_cm2": 4.999999310821319e-07,
+   "exact_triangle_area_um2": "50/1",
+   "triangle_area_cm2": 5.000000000000001e-07,
+   "relative_difference": -1.3783573649117642e-07,
+   "min_NodeVolume": 1.2205387507319184e-14,
+   "all_finite": true
+  }
+ },
+ "cleanup": "ok",
+ "devices_left": []
+}

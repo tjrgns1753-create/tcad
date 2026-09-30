@@ -1,0 +1,63 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 882600 Triangles.
+Physical group name Si has 1324332 Lines.
+Physical group name Si has 441733 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 100 Lines.
+Physical group name Si_xmax has 101 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 100 Lines.
+Physical group name Si_xmin has 101 Points.
+Device e6e_G0_device has 441733 coordinates with max index 441732
+Region Si has 441733 nodes.
+Contact Si_xmax in region Si with 101 nodes
+Contact Si_xmin in region Si with 101 nodes
+[e6e-repro] G0: status=IMPORTED import={'returned_device': True, 'device': 'e6e_G0_device', 'regions': ['Si'], 'contacts': ['Si_xmin', 'Si_xmax'], 'wall_s': 8.551694631576538} regions={'Si': {'n_nodes': 441733, 'sum_NodeVolume_cm2': 4.999999310821319e-07, 'exact_triangle_area_um2': '50/1', 'triangle_area_cm2': 5.000000000000001e-07, 'relative_difference': -1.3783573649117642e-07, 'min_NodeVolume': 1.2205387507319184e-14, 'all_finite': True}} calls={'solve': 0, 'set_node_values': 0, 'set_node_value': 0, 'node_model': 0, 'edge_model': 0, 'node_solution': 0, 'equation': 0, 'contact_equation': 0}
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 998000 Triangles.
+Physical group name Si has 1497724 Lines.
+Physical group name Si has 499725 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 200 Lines.
+Physical group name Si_xmax has 201 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 200 Lines.
+Physical group name Si_xmin has 201 Points.
+Device e6e_G1_device has 499725 coordinates with max index 499724
+Region Si has 499725 nodes.
+Contact Si_xmax in region Si with 201 nodes
+Contact Si_xmin in region Si with 201 nodes
+[e6e-repro] G1: status=IMPORTED import={'returned_device': True, 'device': 'e6e_G1_device', 'regions': ['Si'], 'contacts': ['Si_xmin', 'Si_xmax'], 'wall_s': 9.685422897338867} regions={'Si': {'n_nodes': 499725, 'sum_NodeVolume_cm2': 4.999999310821319e-07, 'exact_triangle_area_um2': '50/1', 'triangle_area_cm2': 5.000000000000001e-07, 'relative_difference': -1.3783573649117642e-07, 'min_NodeVolume': 1.2205387507319184e-14, 'all_finite': True}} calls={'solve': 0, 'set_node_values': 0, 'set_node_value': 0, 'node_model': 0, 'edge_model': 0, 'node_solution': 0, 'equation': 0, 'contact_equation': 0}
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1459200 Triangles.
+Physical group name Si has 2190108 Lines.
+Physical group name Si has 730909 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 400 Lines.
+Physical group name Si_xmax has 401 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 400 Lines.
+Physical group name Si_xmin has 401 Points.
+Device e6e_G2_device has 730909 coordinates with max index 730908
+Region Si has 730909 nodes.
+Contact Si_xmax in region Si with 401 nodes
+Contact Si_xmin in region Si with 401 nodes
+[e6e-repro] G2: status=IMPORTED import={'returned_device': True, 'device': 'e6e_G2_device', 'regions': ['Si'], 'contacts': ['Si_xmin', 'Si_xmax'], 'wall_s': 14.04576587677002} regions={'Si': {'n_nodes': 730909, 'sum_NodeVolume_cm2': 5.015624284563546e-07, 'exact_triangle_area_um2': '50/1', 'triangle_area_cm2': 5.000000000000001e-07, 'relative_difference': 0.0031248569127091397, 'min_NodeVolume': 1.2205387507319184e-14, 'all_finite': True}} calls={'solve': 0, 'set_node_values': 0, 'set_node_value': 0, 'node_model': 0, 'edge_model': 0, 'node_solution': 0, 'equation': 0, 'contact_equation': 0}
+
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6e-repro] summary {'head': 'decb8f9d4459c8381ab078da4719b8c21bbd79a0', 'production_code_identical_to_023bcb90_rc': 0, 'worker_rc': {'G0': 0, 'G1': 0, 'G2': 0}, 'devsim_version': '2.11.0', 'numpy_version': '2.4.6', 'python': '3.11.9', 'files': {'repro_G0.json': '2515b362e63137d2dec339366e88e2ef3fbc7daa0a18f900f4363301f987a870', 'repro_G1.json': '332dc97e44df051dc767975f35bfc50137be84e67ffa4fb1a9544a20ecae65e4', 'repro_G2.json': 'f09306e313208d87627d8b53eba0a264aac5e9a7b365efeaecc468c1308557ab'}}

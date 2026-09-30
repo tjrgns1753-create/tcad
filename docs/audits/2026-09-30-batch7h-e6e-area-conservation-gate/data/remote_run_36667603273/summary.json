@@ -1,0 +1,138 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T04:10:45.634106+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6e-importer-repro-001",
+  "profile": "e6e_importer_repro",
+  "params": {},
+  "note": "Batch 7H-E6E step 1 (pre-change reproduction). Unmodified production importer on E6D G0/G1/G2; 0 solves and 0 DEVSIM writes (trapped)."
+ },
+ "profile": "e6e_importer_repro",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/repro_e6e.py",
+   "sha256": "c5c74294276fcb1583f9614e28218fdbc891feb2a587c91554d6d7f5b3bf8c57",
+   "bytes": 8213
+  },
+  {
+   "path": "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.vtu",
+   "sha256": "907f688e71af3bc0ebd15ea20bfbcd9fec5e9ade1d867e50f0b24da6c48e8c70",
+   "bytes": 8562425
+  },
+  {
+   "path": "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/data/remote_run_36538742843/outputs/e6d_out/mesh_G1.vtu",
+   "sha256": "48bcf8ea231c5c59a09a2c7089bd6e61af8688c57b73c723d6753305753f4f02",
+   "bytes": 9626177
+  },
+  {
+   "path": "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/data/remote_run_36538742843/outputs/e6d_out/mesh_G2.vtu",
+   "sha256": "d9229e8378eb3348523875825dbaf5e9479c968d444c3888dc157a78586c7dae",
+   "bytes": 14047614
+  },
+  {
+   "path": "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
+   "sha256": "1de514d5462281a8c09b4029ce60a7f565f12e55c6c05b50c1406ae27fddde7a",
+   "bytes": 2905
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "c907e6e7a086bfc6767f1cb23468625896fac47986dbd01f145766c2793cd62d",
+   "bytes": 59336
+  },
+  {
+   "path": "tcad/mesh/viennaps_adapter.py",
+   "sha256": "b1a7eb5ae219a794e8a807c169621331a03e08dcae5240fd3428421342f2b8eb",
+   "bytes": 3680
+  }
+ ],
+ "request_sha256": "e9b0fa8d57e13adf7e386bc08cb6befcc48f936bc75acbf14fc8eb47122ff403",
+ "source": {
+  "github_sha": "decb8f9d4459c8381ab078da4719b8c21bbd79a0",
+  "git_head": "decb8f9d4459c8381ab078da4719b8c21bbd79a0",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36667603273",
+  "run_number": "15",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": true,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/repro_e6e.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T04:12:26.801083+00:00",
+ "duration_s": 101.169,
+ "outputs": [
+  {
+   "path": "e6e_repro_out/repro_G0.json",
+   "bytes": 871,
+   "sha256": "2515b362e63137d2dec339366e88e2ef3fbc7daa0a18f900f4363301f987a870"
+  },
+  {
+   "path": "e6e_repro_out/repro_G1.json",
+   "bytes": 871,
+   "sha256": "332dc97e44df051dc767975f35bfc50137be84e67ffa4fb1a9544a20ecae65e4"
+  },
+  {
+   "path": "e6e_repro_out/repro_G2.json",
+   "bytes": 869,
+   "sha256": "f09306e313208d87627d8b53eba0a264aac5e9a7b365efeaecc468c1308557ab"
+  },
+  {
+   "path": "e6e_repro_out/repro_summary.json",
+   "bytes": 509,
+   "sha256": "7ae51e00dd5ce2fbe0da556571148d8571b4140ff40cb01044b6f7b67cef22fa"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile; inputs are sha-gated raw E6A/E6D meshes.",
+ "log": {
+  "file": "run.log",
+  "sha256": "740fe3928de3db2fa15a0ef10edcdd848903e2d4dceb0644b8ede997e0d8d332",
+  "bytes": 4812
+ },
+ "redactions": {}
+}
