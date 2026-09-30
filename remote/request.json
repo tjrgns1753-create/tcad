@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6e-r1-gate-uncertainty-001",
- "profile": "e6e_r1_gate_uncertainty",
+ "request_id": "e6f-blue-size-check-001",
+ "profile": "e6f_blue_size_check",
  "params": {},
- "note": "Batch 7H-E6E-R1. PLAN 853d400 (PLAN.md LF sha256 380267d5...) fixed before the production edit. One run; no full regression."
+ "note": "Batch 7H-E6F interim review item 7: one pure-geometry size check of the blue audit candidate at GUI default scale. No DEVSIM, no solve, production unchanged."
 }
