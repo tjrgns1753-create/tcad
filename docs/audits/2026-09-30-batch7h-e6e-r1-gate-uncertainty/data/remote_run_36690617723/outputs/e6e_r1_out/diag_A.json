@@ -1,0 +1,528 @@
+{
+ "which": "A",
+ "process_id": 8044,
+ "reports": {
+  "A": {
+   "label": "A",
+   "file_sha256": "168aef8c95e8a898cc96afe3181454d2f5e1a4fece0426177f01da188e4b2238",
+   "import_kwargs": {
+    "contact_regions": [
+     "Si"
+    ],
+    "contact_axis": "x"
+   },
+   "file": {
+    "points_dtype": "float32",
+    "points_shape": [
+     622,
+     3
+    ],
+    "cell_blocks": [
+     [
+      "triangle",
+      1136
+     ]
+    ],
+    "tag_to_region": {
+     "0": "Mask",
+     "10": "Si"
+    },
+    "regions": {
+     "Mask": {
+      "triangles": 132,
+      "file_area": {
+       "exact": "1717013184394689137/1152921504606846976",
+       "float": 1.4892715397655807
+      },
+      "shape": {
+       "triangles": 132,
+       "min_angle_deg": {
+        "min": 0.02864783262476241,
+        "median": 26.559325198474816
+       },
+       "max_angle_deg": {
+        "max": 179.9140564176996,
+        "median": 90.0
+       },
+       "n_max_angle_gt": {
+        "90": 10,
+        "120": 4,
+        "150": 2,
+        "170": 2,
+        "179": 2
+       },
+       "duplicate_coordinates": 0,
+       "duplicate_triangles": 0
+      }
+     },
+     "Si": {
+      "triangles": 1004,
+      "file_area": {
+       "exact": "46067723037938404489/2305843009213693952",
+       "float": 19.978690159677335
+      },
+      "shape": {
+       "triangles": 1004,
+       "min_angle_deg": {
+        "min": 0.19644345778205688,
+        "median": 44.999991462261754
+       },
+       "max_angle_deg": {
+        "max": 135.29935862126607,
+        "median": 90.0
+       },
+       "n_max_angle_gt": {
+        "90": 3,
+        "120": 3,
+        "150": 0,
+        "170": 0,
+        "179": 0
+       },
+       "duplicate_coordinates": 0,
+       "duplicate_triangles": 0
+      }
+     }
+    },
+    "topology": {
+     "edge_owner_count_histogram": {
+      "1": 106,
+      "2": 1651
+     },
+     "interface_edge_length_by_region_pair": {
+      "Mask|Si": 3.2027323619388035
+     },
+     "boundary_edge_length_by_region": {
+      "Mask": 5.160219135780483,
+      "Si": 14.797459491280812
+     }
+    }
+   },
+   "production": {
+    "refused": true,
+    "message": "UNSUPPORTED_BY_MODEL (MESH_AREA_NOT_CONSERVED): region 'Mask': triangle area 1.4892715397655807, NodeVolume sum 28.199985692509852, relative difference 17.93542241259017, tolerance B/A 3.192730031861316e-14",
+    "physics_status": {
+     "resolution": "UNSUPPORTED_BY_MODEL",
+     "reason_code": "MESH_AREA_NOT_CONSERVED",
+     "regions": {
+      "Mask": {
+       "triangles": 132,
+       "devsim_elements": 132,
+       "nodes": 94,
+       "A": 1.4892715397655807,
+       "certification_limit": 1e-08,
+       "budget_basis": "ASSUMED_BOUND: E_NV = 128 u sum_t A_t / sin(theta_min,t), inherited from 7H-E2 PLAN section 4, not derived from DEVSIM source; E_A = gamma4 two-product rounding bound + u A; E_S = u S (correctly rounded fsum)",
+       "S": 28.199985692509852,
+       "relative_difference": 17.93542241259017,
+       "E_A": 8.297017827522106e-16,
+       "E_S": 3.1308273409924428e-15,
+       "E_NV": 4.358789058231448e-14,
+       "B": 4.7548419706059134e-14,
+       "relative_uncertainty": 3.192730031861316e-14,
+       "pass": false
+      }
+     },
+     "first_failing_region": "Mask",
+     "device": "r1_A_prod_device",
+     "mesh": "r1_A_prod_mesh",
+     "cleanup": {
+      "delete_device": "ok",
+      "delete_mesh": "ok"
+     }
+    }
+   },
+   "devices_after_production": [],
+   "transfer": {
+    "n_points": 622,
+    "coordinates_equal_file_times_scale_as_importer_computes": true,
+    "file_dtype_times_scale_dtype": "float32",
+    "physical_names": [
+     "Mask",
+     "Si",
+     "Si_xmin",
+     "Si_xmax"
+    ],
+    "n_triangle_elements": 1136,
+    "n_line_elements": 50,
+    "triangles_equal_file": true,
+    "triangle_physical_name_equals_file_region": true,
+    "regions": {
+     "Mask": {
+      "triangles": 132,
+      "transfer_area": {
+       "exact": "1717013184394689137/1152921504606846976",
+       "float": 1.4892715397655807
+      }
+     },
+     "Si": {
+      "triangles": 1004,
+      "transfer_area": {
+       "exact": "46067723037938404489/2305843009213693952",
+       "float": 19.978690159677335
+      }
+     }
+    }
+   },
+   "readback": {
+    "Mask": {
+     "nodes": 94,
+     "elements": 132,
+     "all_nodes_found_in_transfer": true,
+     "node_map_injective": true,
+     "element_multiset_equals_source": true,
+     "readback_area": {
+      "exact": "1717013184394689137/1152921504606846976",
+      "float": 1.4892715397655807
+     },
+     "NodeVolume": {
+      "min": 6.718249346101573e-08,
+      "max": 5.56550321626178,
+      "sum": 28.19998569250985
+     },
+     "S_over_readback_area_minus_1": 17.93542241259017,
+     "gate_terms": {
+      "area": 1.4892715397655807,
+      "E_A": 8.297017827522106e-16,
+      "E_NV": 4.358789058231448e-14
+     },
+     "F2_sum": 1.4892715397655802,
+     "F3_sum": 28.199985692509852,
+     "max_rel_NodeVolume_minus_F3": 1.9901375903507758e-16,
+     "max_rel_NodeVolume_minus_F2": 814.4820738750509,
+     "n_nodes_F2_negative": 4,
+     "excess_F3_minus_F2_total": 26.710714152744277,
+     "n_triangles_with_excess": 10,
+     "top_excess_triangles": [
+      {
+       "coords": [
+        [
+         -0.6000000238418579,
+         0.0
+        ],
+        [
+         -0.4000000059604645,
+         -0.0001999999803956598
+        ],
+        [
+         -0.5333333611488342,
+         0.0
+        ]
+       ],
+       "angles_deg": [
+        0.05729574967564067,
+        0.02864783262476241,
+        179.9140564176996
+       ],
+       "area": 6.666665615824401e-06,
+       "excess": 13.333352543314065
+      },
+      {
+       "coords": [
+        [
+         0.6000000238418579,
+         0.0
+        ],
+        [
+         0.4000000059604645,
+         -0.0001999999803956598
+        ],
+        [
+         0.5333333611488342,
+         0.0
+        ]
+       ],
+       "angles_deg": [
+        0.05729574967564067,
+        0.02864783262476241,
+        179.9140564176996
+       ],
+       "area": 6.666665615824401e-06,
+       "excess": 13.333352543314065
+      },
+      {
+       "coords": [
+        [
+         0.6000000238418579,
+         0.0
+        ],
+        [
+         0.598955512046814,
+         -0.0010445162188261747
+        ],
+        [
+         0.4000000059604645,
+         -0.000895968172699213
+        ]
+       ],
+       "angles_deg": [
+        44.74344709672594,
+        134.95709938280558,
+        0.29945352046847074
+       ],
+       "area": 0.00010398370655913605,
+       "excess": 0.01997047647205725
+      },
+      {
+       "coords": [
+        [
+         -0.6000000238418579,
+         0.0
+        ],
+        [
+         -0.4000000059604645,
+         -0.0001999999803956598
+        ],
+        [
+         -0.598955512046814,
+         -0.0010445162188261747
+        ]
+       ],
+       "angles_deg": [
+        44.94282558141688,
+        0.3005005070374458,
+        134.75667391154568
+       ],
+       "area": 0.00010434718005205429,
+       "excess": 0.019830867083888322
+      },
+      {
+       "coords": [
+        [
+         0.6000000238418579,
+         0.0
+        ],
+        [
+         0.5333333611488342,
+         0.0
+        ],
+        [
+         0.5,
+         0.20000000298023224
+        ]
+       ],
+       "angles_deg": [
+        63.434943700280435,
+        99.46232982276327,
+        17.1027264769563
+       ],
+       "area": 0.006666666368643437,
+       "excess": 0.004166670578221884
+      }
+     ],
+     "shape": {
+      "triangles": 132,
+      "min_angle_deg": {
+       "min": 0.02864783262476241,
+       "median": 26.559325198474816
+      },
+      "max_angle_deg": {
+       "max": 179.9140564176996,
+       "median": 90.0
+      },
+      "n_max_angle_gt": {
+       "90": 10,
+       "120": 4,
+       "150": 2,
+       "170": 2,
+       "179": 2
+      },
+      "duplicate_coordinates": 0,
+      "duplicate_triangles": 0
+     }
+    },
+    "Si": {
+     "nodes": 550,
+     "elements": 1004,
+     "all_nodes_found_in_transfer": true,
+     "node_map_injective": true,
+     "element_multiset_equals_source": true,
+     "readback_area": {
+      "exact": "46067723037938404489/2305843009213693952",
+      "float": 19.978690159677335
+     },
+     "NodeVolume": {
+      "min": 0.004561412472699197,
+      "max": 0.04979004667002956,
+      "sum": 20.034247472896915
+     },
+     "S_over_readback_area_minus_1": 0.0027808286116630665,
+     "gate_terms": {
+      "area": 19.978690159677335,
+      "E_A": 1.1110073716291081e-14,
+      "E_NV": 4.0309514254584383e-13
+     },
+     "F2_sum": 19.978690159677335,
+     "F3_sum": 20.034247472896915,
+     "max_rel_NodeVolume_minus_F3": 1.9015200733976727e-16,
+     "max_rel_NodeVolume_minus_F2": 1.9969023951944944,
+     "n_nodes_F2_negative": 0,
+     "excess_F3_minus_F2_total": 0.05555731321957749,
+     "n_triangles_with_excess": 3,
+     "top_excess_triangles": [
+      {
+       "coords": [
+        [
+         -0.6000000238418579,
+         -0.0021000001579523087
+        ],
+        [
+         -0.598955512046814,
+         -0.0010445162188261747
+        ],
+        [
+         -0.6000000238418579,
+         -0.20000000298023224
+        ]
+       ],
+       "angles_deg": [
+        135.29935862126607,
+        44.39984259876835,
+        0.3007987799655764
+       ],
+       "area": 0.00010335444359355073,
+       "excess": 0.020000096726400317
+      },
+      {
+       "coords": [
+        [
+         0.4000000059604645,
+         -0.000895968172699213
+        ],
+        [
+         0.3993033468723297,
+         -0.0002863864356186241
+        ],
+        [
+         0.20000000298023224,
+         -0.02500000037252903
+        ]
+       ],
+       "angles_deg": [
+        48.0583111552073,
+        131.74524538701067,
+        0.19644345778205688
+       ],
+       "area": 6.93543211627587e-05,
+       "excess": 0.018106941248471273
+      },
+      {
+       "coords": [
+        [
+         -0.4000000059604645,
+         -0.000895968172699213
+        ],
+        [
+         -0.3993033468723297,
+         -0.0002863864356186241
+        ],
+        [
+         -0.4000000059604645,
+         -0.20000000298023224
+        ]
+       ],
+       "angles_deg": [
+        131.1861596957916,
+        48.61397679814755,
+        0.1998635060608577
+       ],
+       "area": 6.93538176664843e-05,
+       "excess": 0.0174502752447059
+      },
+      {
+       "coords": [
+        [
+         1.2000000476837158,
+         -0.4000000059604645
+        ],
+        [
+         1.2000000476837158,
+         -0.20000000298023224
+        ],
+        [
+         1.399999976158142,
+         -0.20000000298023224
+        ]
+       ],
+       "angles_deg": [
+        44.9999893278276,
+        90.0,
+        45.00001067217241
+       ],
+       "area": 0.019999993145465744,
+       "excess": 0.0
+      },
+      {
+       "coords": [
+        [
+         1.2000000476837158,
+         -0.4000000059604645
+        ],
+        [
+         1.399999976158142,
+         -0.4000000059604645
+        ],
+        [
+         1.399999976158142,
+         -0.20000000298023224
+        ]
+       ],
+       "angles_deg": [
+        45.00001067217241,
+        90.0,
+        44.9999893278276
+       ],
+       "area": 0.019999993145465744,
+       "excess": 0.0
+      }
+     ],
+     "shape": {
+      "triangles": 1004,
+      "min_angle_deg": {
+       "min": 0.19644345778205688,
+       "median": 44.999991462261754
+      },
+      "max_angle_deg": {
+       "max": 135.29935862126607,
+       "median": 90.0
+      },
+      "n_max_angle_gt": {
+       "90": 3,
+       "120": 3,
+       "150": 0,
+       "170": 0,
+       "179": 0
+      },
+      "duplicate_coordinates": 0,
+      "duplicate_triangles": 0
+     }
+    }
+   },
+   "devsim_write_calls_during_diagnosis": {
+    "solve": 0,
+    "node_model": 0,
+    "edge_model": 0,
+    "set_node_values": 0,
+    "set_node_value": 0,
+    "equation": 0,
+    "contact_equation": 0,
+    "node_solution": 0
+   },
+   "devices_after_diagnosis": []
+  }
+ },
+ "recipe": {
+  "recipe": {
+   "grid_delta_um": 0.2,
+   "x_extent_um": 4.0,
+   "y_extent_um": 3.0,
+   "mask_left_um": 1.5,
+   "mask_right_um": 2.5,
+   "pr_thickness_um": 0.5,
+   "etch_time_s": 0.5,
+   "rate": -0.05,
+   "mask_material": "Mask"
+  }
+ },
+ "status": "OK",
+ "write_calls_total": {},
+ "devices_left": []
+}

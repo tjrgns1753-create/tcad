@@ -1,0 +1,669 @@
+diff --git a/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/diag_r1.py b/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/diag_r1.py
+new file mode 100644
+index 0000000..a03ed08
+--- /dev/null
++++ b/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/diag_r1.py
+@@ -0,0 +1,310 @@
++"""Batch 7H-E6E-R1 import-only diagnosis of two representative ViennaPS meshes (PLAN section 3). Remote only.
++usage: diag_r1.py <out dir> A|B
++A: tests/integration/test_phase5_devsim_real.py production path (isotropic etch with Mask, no refinement, length_scale_to_cm 1.0)
++B: tests/integration/test_measurement_canonical_state_gate_real.py case B1 (GUI wafer, implant_windows refinement, 1e-4); B raw too.
++For every mesh: the production refusal first; then, in THIS process only, verify_device is replaced by a recorder so every region can be
++read (diagnostic bypass). solve / doping / equation writes are trapped (a call raises and is counted). NodeVolume is only read."""
++import collections
++import json
++import os
++import shutil
++import sys
++import tempfile
++import traceback
++from fractions import Fraction
++
++sys.dont_write_bytecode = True
++os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
++import numpy as np  # noqa: E402
++
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, ROOT)
++sys.path.insert(0, os.path.join(ROOT, "docs", "audits", "2026-09-23-batch7h-b-nodevolume-mechanism", "scripts"))
++sys.path.insert(0, os.path.join(ROOT, "docs", "audits", "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import formulas as fm  # noqa: E402  (7H-B, read-only: F2 / F3 node areas)
++import common_e1 as ce  # noqa: E402
++
++WRITE_APIS = ("solve", "node_model", "edge_model", "set_node_values", "set_node_value", "equation", "contact_equation", "node_solution")
++CALLS = collections.Counter()
++
++
++def exact_area(P, T):
++    X = [Fraction(float(v)) for v in P[:, 0]]
++    Y = [Fraction(float(v)) for v in P[:, 1]]
++    return sum(abs((X[b] - X[a]) * (Y[c] - Y[a]) - (Y[b] - Y[a]) * (X[c] - X[a])) for a, b, c in np.asarray(T).tolist()) / 2
++
++
++def fr(x):
++    return {"exact": f"{x.numerator}/{x.denominator}", "float": float(x)}
++
++
++def angles_deg(P, T):
++    P = np.asarray(P, dtype=np.float64)[:, :2]
++    T = np.asarray(T, dtype=np.int64)
++    out = []
++    for k in range(3):
++        a, b, c = P[T[:, k]], P[T[:, (k + 1) % 3]], P[T[:, (k + 2) % 3]]
++        u, v = b - a, c - a
++        out.append(np.degrees(np.arctan2(np.abs(u[:, 0] * v[:, 1] - u[:, 1] * v[:, 0]), (u * v).sum(1))))
++    return np.stack(out, axis=1)
++
++
++def shape(P, T):
++    ang = angles_deg(P, T)
++    mx, mn = ang.max(1), ang.min(1)
++    k = np.round(np.asarray(P, dtype=np.float64)[:, :2], 15)
++    _, cnt = np.unique(k, axis=0, return_counts=True)
++    s = np.sort(np.asarray(T), axis=1)
++    return {"triangles": int(len(T)), "min_angle_deg": {"min": float(mn.min()), "median": float(np.median(mn))},
++            "max_angle_deg": {"max": float(mx.max()), "median": float(np.median(mx))},
++            "n_max_angle_gt": {str(t): int((mx > t).sum()) for t in (90, 120, 150, 170, 179)},
++            "duplicate_coordinates": int((cnt > 1).sum()), "duplicate_triangles": int(len(s) - len(np.unique(s, axis=0)))}
++
++
++def edges_owned(T):
++    e = collections.defaultdict(list)
++    for i, (a, b, c) in enumerate(np.asarray(T).tolist()):
++        for u, v in ((a, b), (b, c), (c, a)):
++            e[(min(u, v), max(u, v))].append(i)
++    return e
++
++
++def topology(P, T, tags, names):
++    e = edges_owned(T)
++    owners = collections.Counter(len(v) for v in e.values())
++    inter = collections.Counter()
++    one_len = collections.Counter()
++    for (u, v), ow in e.items():
++        rs = sorted({names[int(tags[i])] for i in ow})
++        L = float(np.hypot(*(np.asarray(P[u], dtype=np.float64)[:2] - np.asarray(P[v], dtype=np.float64)[:2])))
++        if len(ow) == 2 and len(rs) == 2:
++            inter["|".join(rs)] += L
++        if len(ow) == 1:
++            one_len[rs[0]] += L
++    return {"edge_owner_count_histogram": {str(k): v for k, v in sorted(owners.items())},
++            "interface_edge_length_by_region_pair": dict(inter), "boundary_edge_length_by_region": dict(one_len)}
++
++
++def mesh_file_report(path, names):
++    import meshio
++    m = meshio.read(path)
++    blk = next(c for c in m.cells if c.type == "triangle")
++    tags = np.asarray(m.cell_data["Material"][m.cells.index(blk)]).reshape(-1)
++    out = {"points_dtype": str(m.points.dtype), "points_shape": list(m.points.shape), "cell_blocks": [[c.type, int(len(c.data))] for c in m.cells],
++           "tag_to_region": {str(k): v for k, v in names.items()}, "regions": {}}
++    for tag, name in names.items():
++        tt = blk.data[tags == tag]
++        out["regions"][name] = {"triangles": int(len(tt)), "file_area": fr(exact_area(m.points, tt)), "shape": shape(m.points, tt)}
++    out["topology"] = topology(m.points, blk.data, tags, names)
++    return out, m.points, blk.data, tags
++
++
++def parse_elements(elements):
++    tris, lines, i = [], [], 0
++    el = [int(v) for v in elements]
++    while i < len(el):
++        if el[i] == 2:
++            tris.append(el[i + 1:i + 5])
++            i += 5
++        elif el[i] == 1:
++            lines.append(el[i + 1:i + 4])
++            i += 4
++        else:
++            raise ValueError(f"unknown element type {el[i]}")
++    return np.array(tris, dtype=np.int64), np.array(lines, dtype=np.int64)
++
++
++def diagnose(outd, label, path, import_kw, dv):
++    import tcad.device.devsim.mesh_import as mi
++    from tcad.mesh.viennaps_adapter import build_process_result
++    from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
++    pr = build_process_result({"final_mesh": path, "snapshots": []})
++    names = {r.tag: r.name for r in pr.material_regions}
++    rep = {"label": label, "file_sha256": ce.sha_file(path), "import_kwargs": import_kw}
++    rep["file"], Pf, Tf, Gf = mesh_file_report(path, names)
++    before = dict(CALLS)
++    # (a) the production importer, unmodified
++    try:
++        d = mi.import_process_result(pr, mesh_name=f"r1_{label}_prod_mesh", device_name=f"r1_{label}_prod_device", **import_kw)
++        rep["production"] = {"refused": False, "area_conservation": d.area_conservation}
++        dv.delete_device(device=d.device)
++        dv.delete_mesh(mesh=d.mesh)
++    except MeshAreaConservationError as exc:
++        rep["production"] = {"refused": True, "message": str(exc)[:600], "physics_status": exc.physics_status}
++    rep["devices_after_production"] = list(dv.get_device_list())
++    # (b) diagnostic bypass: capture create_gmsh_mesh input; read every region instead of refusing
++    captured, recorded = {}, {}
++    real_cgm, real_verify = dv.create_gmsh_mesh, mi.verify_device
++
++    def cap(**kw):
++        captured.update(kw)
++        return real_cgm(**kw)
++
++    def recorder(module, device, mesh, region_terms):
++        for name in region_terms:
++            g = lambda n: np.array(module.get_node_model_values(device=device, region=name, name=n), dtype=np.float64)  # noqa: E731
++            recorded[name] = {"x": g("x"), "y": g("y"), "NodeVolume": g("NodeVolume"),
++                              "el": np.array(module.get_element_node_list(device=device, region=name), dtype=np.int64),
++                              "terms": region_terms[name]}
++        return {"DIAGNOSTIC_BYPASS": "not certified"}
++    dv.create_gmsh_mesh, mi.verify_device = cap, recorder
++    try:
++        d = mi.import_process_result(pr, mesh_name=f"r1_{label}_diag_mesh", device_name=f"r1_{label}_diag_device", **import_kw)
++    finally:
++        dv.create_gmsh_mesh, mi.verify_device = real_cgm, real_verify
++    Pt = np.array(captured["coordinates"], dtype=np.float64).reshape(-1, 3)
++    Tt, Lt = parse_elements(captured["elements"])
++    pn = list(captured["physical_names"])
++    scale = import_kw.get("length_scale_to_cm", 1.0)
++    exp = (Pf * scale).astype(np.float64)
++    rep["transfer"] = {"n_points": int(len(Pt)), "coordinates_equal_file_times_scale_as_importer_computes": bool(np.array_equal(Pt, exp)),
++                       "file_dtype_times_scale_dtype": str((Pf * scale).dtype), "physical_names": pn,
++                       "n_triangle_elements": int(len(Tt)), "n_line_elements": int(len(Lt)),
++                       "triangles_equal_file": bool(np.array_equal(Tt[:, 1:], Tf)),
++                       "triangle_physical_name_equals_file_region": bool(all(pn[int(i)] == names[int(g)] for i, g in zip(Tt[:, 0], Gf))),
++                       "regions": {}}
++    for tag, name in names.items():
++        tt = Tf[Gf == tag]
++        rep["transfer"]["regions"][name] = {"triangles": int(len(tt)), "transfer_area": fr(exact_area(Pt, tt))}
++    # (c) readback per region, correspondence, F2 / F3
++    rep["readback"] = {}
++    key = {(float(x), float(y)): i for i, (x, y) in enumerate(Pt[:, :2])}
++    for name, r in recorded.items():
++        Pr = np.column_stack([r["x"], r["y"]])
++        el = r["el"]
++        glob = np.array([key.get((float(x), float(y)), -1) for x, y in Pr])
++        tag = next(t for t, n in names.items() if n == name)
++        src = np.sort(Tf[Gf == tag], axis=1)
++        mapped = np.sort(glob[el], axis=1) if (glob >= 0).all() else None
++        A_rb = exact_area(Pr, el)
++        nv = r["NodeVolume"]
++        f2 = fm.node_areas(Pr, el.tolist(), "F2")
++        f3 = fm.node_areas(Pr, el.tolist(), "F3")
++        per_tri_excess = []
++        for ti, t in enumerate(el.tolist()):
++            a2 = fm.per_triangle_node(Pr[t], "F2")
++            a3 = fm.per_triangle_node(Pr[t], "F3")
++            per_tri_excess.append(sum(a3) - sum(a2))
++        per_tri_excess = np.array(per_tri_excess)
++        ang = angles_deg(Pr, el)
++        top = np.argsort(-per_tri_excess)[:5]
++        S = float(nv.sum())
++        rep["readback"][name] = {
++            "nodes": int(len(Pr)), "elements": int(len(el)), "all_nodes_found_in_transfer": bool((glob >= 0).all()),
++            "node_map_injective": bool(len(set(glob.tolist())) == len(glob)),
++            "element_multiset_equals_source": bool(mapped is not None and len(mapped) == len(src) and np.array_equal(
++                mapped[np.lexsort(mapped.T[::-1])], src[np.lexsort(src.T[::-1])])),
++            "readback_area": fr(A_rb), "NodeVolume": {"min": float(nv.min()), "max": float(nv.max()), "sum": S},
++            "S_over_readback_area_minus_1": S / float(A_rb) - 1.0,
++            "gate_terms": {k: r["terms"][k] for k in ("area", "E_A", "E_NV")},
++            "F2_sum": float(f2.sum()), "F3_sum": float(f3.sum()),
++            "max_rel_NodeVolume_minus_F3": float(np.max(np.abs(nv - f3) / np.maximum(np.abs(f3), 1e-300))),
++            "max_rel_NodeVolume_minus_F2": float(np.max(np.abs(nv - f2) / np.maximum(np.abs(f2), 1e-300))),
++            "n_nodes_F2_negative": int((f2 < 0).sum()),
++            "excess_F3_minus_F2_total": float(per_tri_excess.sum()), "n_triangles_with_excess": int((per_tri_excess > 0).sum()),
++            "top_excess_triangles": [{"coords": Pr[el[i]].tolist(), "angles_deg": ang[i].tolist(), "area": float(fm.tri_area(Pr[el[i]])),
++                                      "excess": float(per_tri_excess[i])} for i in top],
++            "shape": shape(Pr, el)}
++    rep["devsim_write_calls_during_diagnosis"] = {k: CALLS[k] - before.get(k, 0) for k in WRITE_APIS}
++    dv.delete_device(device=d.device)
++    dv.delete_mesh(mesh=d.mesh)
++    rep["devices_after_diagnosis"] = list(dv.get_device_list())
++    return rep
++
++
++def build_A(tmp):
++    import tcad.process.etching  # noqa: F401
++    from tcad.process import registry
++    recipe = {"grid_delta_um": 0.2, "x_extent_um": 4.0, "y_extent_um": 3.0, "mask_left_um": 1.5, "mask_right_um": 2.5,
++              "pr_thickness_um": 0.5, "etch_time_s": 0.5, "rate": -0.05, "mask_material": "Mask"}
++    res = registry.get("etching", "isotropic")().run(recipe, tmp)
++    return [("A", res["final_mesh"], {"contact_regions": ["Si"], "contact_axis": "x"})], {"recipe": recipe}
++
++
++def build_B(tmp):
++    import tkinter  # noqa: F401
++    import tcad_2d_stagewise as gui
++    from tcad.mesh.viennaps_adapter import build_process_result
++    from tcad.physics.doping import apply_implant_windows_doping
++    from tcad.device.devsim.mesh_import import refine_process_result_for_implant_windows
++    app = gui.TCADApplication()
++    app.withdraw()
++    try:
++        app.wafer.width_um = 4.0
++        app.wafer.silicon_depth_um = 1.0
++        app.grid_var.set(0.2)
++        assert app._materialize_current_wafer(), "materializing the real ViennaPS wafer failed"
++        raw = os.path.join(tmp, "B_raw.vtu")
++        shutil.copy(app.last_final_mesh, raw)
++        spans = {"src": [float(app.dope_win_src_min_var.get()), float(app.dope_win_src_max_var.get())],
++                 "drn": [float(app.dope_win_drn_min_var.get()), float(app.dope_win_drn_max_var.get())]}
++        pr = build_process_result({"final_mesh": raw, "snapshots": []})
++        wr = apply_implant_windows_doping(
++            pr, region="Si", axis="x", donor_background_cm3=1e16, acceptor_background_cm3=0.0,
++            windows=[{"min_um": spans["src"][0], "max_um": spans["src"][1], "donor_conc_cm3": 1e16, "acceptor_conc_cm3": 0.0},
++                     {"min_um": spans["drn"][0], "max_um": spans["drn"][1], "donor_conc_cm3": 1e16, "acceptor_conc_cm3": 0.0}],
++            chemical_state="ACTIVE")
++        ref = refine_process_result_for_implant_windows(wr)
++        kw = {"contact_regions": ["Si"], "contact_axis": "x", "length_scale_to_cm": 1.0e-4}
++        return [("B_raw", raw, kw), ("B_refined", ref.volume_mesh_path, kw)], {"gui": {"width_um": 4.0, "silicon_depth_um": 1.0,
++                                                                                    "grid_delta_um": 0.2}, "window_spans_um": spans}
++    finally:
++        app.destroy()
++
++
++def refinement_compare(file_reports, raw_path, ref_path):
++    import meshio
++    out = {}
++    ms = {k: meshio.read(p) for k, p in (("raw", raw_path), ("refined", ref_path))}
++    rows = {}
++    for k, m in ms.items():
++        blk = next(c for c in m.cells if c.type == "triangle")
++        P = np.asarray(m.points, dtype=np.float64)[:, :2]
++        rows[k] = collections.Counter(tuple(sorted(map(tuple, np.round(P[t], 15).tolist()))) for t in blk.data.tolist())
++        out[f"{k}_points"] = int(len(m.points))
++    out["triangles_removed"] = int(sum((rows["raw"] - rows["refined"]).values()))
++    out["triangles_added"] = int(sum((rows["refined"] - rows["raw"]).values()))
++    out["regions"] = {n: {"raw": file_reports["raw"]["regions"][n]["file_area"], "refined": file_reports["refined"]["regions"][n]["file_area"],
++                          "triangles": [file_reports["raw"]["regions"][n]["triangles"], file_reports["refined"]["regions"][n]["triangles"]]}
++                      for n in file_reports["raw"]["regions"]}
++    out["boundary_and_interface_lengths"] = {"raw": file_reports["raw"]["topology"], "refined": file_reports["refined"]["topology"]}
++    return out
++
++
++def main():
++    outd, which = os.path.abspath(sys.argv[1]), sys.argv[2]
++    os.makedirs(outd, exist_ok=True)
++    import devsim as dv
++    for k in WRITE_APIS:
++        real = getattr(dv, k)
++
++        def trap(*a, _k=k, **kw):
++            CALLS[_k] += 1
++            raise RuntimeError(f"E6E-R1 diagnosis forbids devsim.{_k}")
++        setattr(dv, k, trap)
++    res = {"which": which, "process_id": os.getpid(), "reports": {}}
++    try:
++        tmp = tempfile.mkdtemp(prefix=f"r1_{which}_")
++        meshes, res["recipe"] = (build_A if which == "A" else build_B)(tmp)
++        for label, path, kw in meshes:
++            dst = os.path.join(outd, f"{label}.vtu")
++            shutil.copy(path, dst)
++            res["reports"][label] = diagnose(outd, label, dst, kw, dv)
++        if which == "B":
++            res["refinement"] = refinement_compare({"raw": res["reports"]["B_raw"]["file"], "refined": res["reports"]["B_refined"]["file"]},
++                                                   os.path.join(outd, "B_raw.vtu"), os.path.join(outd, "B_refined.vtu"))
++        res["status"] = "OK"
++    except Exception as e:  # noqa: BLE001
++        res["status"] = "ERROR"
++        res["error"] = ce.USER_PATH.sub("<USERPROFILE>", repr(e))[:600]
++        res["traceback"] = ce.USER_PATH.sub("<USERPROFILE>", traceback.format_exc()[-4000:])
++    res["write_calls_total"] = dict(CALLS)
++    res["devices_left"] = list(dv.get_device_list())
++    ce.dump_strict(res, os.path.join(outd, f"diag_{which}.json"))
++    print(json.dumps({"which": which, "status": res["status"], "error": res.get("error"), "calls": dict(CALLS)}), flush=True)
++    return 0 if res["status"] == "OK" else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/p0_counterexample.py b/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/p0_counterexample.py
+index 7d131d2..ec1274c 100644
+--- a/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/p0_counterexample.py
++++ b/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/p0_counterexample.py
+@@ -31,3 +31,4 @@ try:
+     B = rep["E_A"] + rep["E_S"] + rep["E_NV"]
+-    out.update({"A": A, "S": rep["sum_NodeVolume"], "S_over_A_minus_1": rep["relative_difference"], "E_A": rep["E_A"],
++    out["reason_or_status_fields"] = {k: rep.get(k) for k in ("relative_uncertainty", "certification_limit", "budget_basis")}
++    out.update({"A": A, "S": rep.get("S", rep.get("sum_NodeVolume")), "S_over_A_minus_1": rep["relative_difference"], "E_A": rep["E_A"],
+                 "E_S": rep["E_S"], "E_NV": rep["E_NV"], "B": B, "B_over_A": B / A})
+diff --git a/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/run_r1.py b/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/run_r1.py
+new file mode 100644
+index 0000000..da95ad8
+--- /dev/null
++++ b/docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/run_r1.py
+@@ -0,0 +1,65 @@
++"""Batch 7H-E6E-R1 remote driver (GitHub-hosted runner only; one run). Runs, each as its own subprocess:
++unit test, the E6E targeted real test, the small Laplace control, diagnosis A, diagnosis B. Saves every output, rc, wall time, HEAD,
++package versions and the LF sha256 of the files as executed."""
++import hashlib
++import os
++import platform
++import subprocess
++import sys
++import time
++
++sys.dont_write_bytecode = True
++HERE = os.path.dirname(os.path.abspath(__file__))
++ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
++sys.path.insert(0, os.path.join(ROOT, "docs", "audits", "2026-09-24-batch7h-e1-production-step-junction-equivalence", "scripts"))
++import common_e1 as ce  # noqa: E402
++
++OUT = os.path.join(ROOT, "e6e_r1_out")
++REL = "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty"
++CMDS = [["tests/unit/test_mesh_area_conservation_mock.py"], ["tests/integration/test_mesh_area_conservation_gate_real.py"],
++        ["tests/integration/test_mesh_gate_small_laplace_control_real.py"], [f"{REL}/scripts/diag_r1.py", OUT, "A"],
++        [f"{REL}/scripts/diag_r1.py", OUT, "B"]]
++HASHED = ["tcad/device/devsim/mesh_conservation.py", "tcad/device/devsim/mesh_import.py", "tcad_2d_stagewise.py", "tcad/cli/run_pipeline.py",
++          "tests/unit/test_mesh_area_conservation_mock.py", "tests/integration/test_mesh_area_conservation_gate_real.py",
++          "tests/integration/test_mesh_gate_small_laplace_control_real.py", f"{REL}/scripts/diag_r1.py", f"{REL}/PLAN.md"]
++
++
++def lf_sha(p):
++    return hashlib.sha256(open(os.path.join(ROOT, p), "rb").read().replace(b"\r\n", b"\n")).hexdigest()
++
++
++def main():
++    if "--validate-only" in sys.argv:
++        print({p: lf_sha(p) for p in HASHED})
++        return 0
++    if not (os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"):
++        print("[r1] refusing to run: not a GitHub-hosted runner", flush=True)
++        return 2
++    os.makedirs(OUT, exist_ok=True)
++    vers = {}
++    for mod in ("devsim", "viennaps", "viennals", "numpy", "meshio"):
++        try:
++            vers[mod] = getattr(__import__(mod), "__version__", None)
++        except Exception as e:  # noqa: BLE001
++            vers[mod] = f"IMPORT_FAILED {e!r}"[:200]
++    res = {"head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip(),
++           "python": sys.version.split()[0], "platform": platform.platform(), "versions": vers,
++           "files_lf_sha256_before": {p: lf_sha(p) for p in HASHED}, "runs": []}
++    for cmd in CMDS:
++        t = time.time()
++        p = subprocess.run([sys.executable] + cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
++                           env={**os.environ, "PYTHONIOENCODING": "utf-8"})
++        name = os.path.basename(cmd[0]).replace(".py", "") + ("_" + cmd[-1] if cmd[0].endswith("diag_r1.py") else "")
++        with open(os.path.join(OUT, f"{name}.log"), "w", encoding="utf-8", newline="\n") as f:
++            f.write(ce.USER_PATH.sub("<USERPROFILE>", p.stdout + ("\n[stderr]\n" + p.stderr if p.stderr else "")))
++        res["runs"].append({"cmd": [c if c != OUT else "<OUT>" for c in cmd], "rc": p.returncode, "wall_s": round(time.time() - t, 1)})
++        print(f"[r1] {name} rc={p.returncode} wall={time.time() - t:.1f}s", flush=True)
++        print(p.stdout[-4000:], flush=True)
++    res["files_lf_sha256_after"] = {p: lf_sha(p) for p in HASHED}
++    res["files"] = {f: ce.sha_file(os.path.join(OUT, f)) for f in sorted(os.listdir(OUT))}
++    ce.dump_strict(res, os.path.join(OUT, "r1_result.json"))
++    return 0 if all(r["rc"] == 0 for r in res["runs"]) else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/remote/profiles.py b/remote/profiles.py
+index 5990d62..494bc5c 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -412,2 +412,21 @@ PROFILES = {
+     },
++    "e6e_r1_gate_uncertainty": {
++        "description": "Batch 7H-E6E-R1: certification-uncertainty limit tests, E6E targeted test, small Laplace control, import-only diagnosis of two ViennaPS meshes (A: phase5 etch, B: implant-windows refinement).",
++        "entry": "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/run_r1.py",
++        "args": [],
++        "params": {},
++        "timeout_s": 5400,
++        "inputs": [
++            "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/PLAN.md",
++            "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/run_r1.py",
++            "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/diag_r1.py",
++            "tcad/device/devsim/mesh_conservation.py",
++            "tcad/device/devsim/mesh_import.py",
++            "tests/unit/test_mesh_area_conservation_mock.py",
++            "tests/integration/test_mesh_area_conservation_gate_real.py",
++            "tests/integration/test_mesh_gate_small_laplace_control_real.py",
++        ],
++        "outputs": [{"glob": "e6e_r1_out/**/*", "max_mb": 30}],
++        "regenerate": "Rerun the profile; meshes A and B are regenerated by their production calls.",
++    },
+ }
+diff --git a/tcad/device/devsim/mesh_conservation.py b/tcad/device/devsim/mesh_conservation.py
+index b9e3dd8..1931624 100644
+--- a/tcad/device/devsim/mesh_conservation.py
++++ b/tcad/device/devsim/mesh_conservation.py
+@@ -28,2 +28,10 @@ GAMMA4 = 4 * U / (1 - 4 * U)
+ NODEVOLUME_ELEMENT_BUDGET = 128 * U
++BUDGET_BASIS = ("ASSUMED_BOUND: E_NV = 128 u sum_t A_t / sin(theta_min,t), inherited from 7H-E2 PLAN section 4, not derived from "
++                "DEVSIM source; E_A = gamma4 two-product rounding bound + u A; E_S = u S (correctly rounded fsum)")
++# Pre-registered engineering limit on the relative rounding budget B/A that
++# may still be called certified (Batch 7H-E6E-R1 PLAN section 1). Not a
++# proven DEVSIM error bound, not a physical material-loss threshold, and
++# not the area tolerance: a region under this limit is still compared with
++# its own B. A region above it is refused as uncertifiable.
++MAX_AREA_RELATIVE_UNCERTAINTY = 1e-8
+ 
+@@ -85,3 +93,7 @@ def check_mesh_input(points, triangles, tags, tag_to_name: Dict[int, str], extra
+         _refuse("MESH_DUPLICATE_TRIANGLE", f"{len(s) - len(np.unique(s, axis=0))} duplicated vertex triple(s)")
+-    o, e, p1, p2, theta = triangle_terms(P, T)
++    with np.errstate(over="ignore", invalid="ignore"):
++        o, e, p1, p2, theta = triangle_terms(P, T)
++    if not (np.isfinite(o).all() and np.isfinite(e).all()):
++        _refuse("MESH_AREA_BUDGET_NONFINITE", f"{int((~(np.isfinite(o) & np.isfinite(e))).sum())} triangle(s) whose area or "
++                "rounding bound is not finite (overflow)")
+     bad = np.abs(o) <= e
+@@ -98,5 +110,7 @@ def check_mesh_input(points, triangles, tags, tag_to_name: Dict[int, str], extra
+         area = math.fsum(at.tolist())
+-        out[name] = {"tag": int(tag), "triangles": int(m.sum()), "area": area,
+-                     "E_A": 0.5 * GAMMA4 * math.fsum((np.abs(p1[m]) + np.abs(p2[m])).tolist()) + U * area,
+-                     "E_NV": NODEVOLUME_ELEMENT_BUDGET * math.fsum((at / np.sin(theta[m])).tolist())}
++        with np.errstate(divide="ignore", over="ignore", invalid="ignore"):
++            cond = at / np.sin(theta[m])
++        e_a = 0.5 * GAMMA4 * math.fsum((np.abs(p1[m]) + np.abs(p2[m])).tolist()) + U * area
++        e_nv = NODEVOLUME_ELEMENT_BUDGET * math.fsum(cond.tolist()) if np.isfinite(cond).all() else math.inf
++        out[name] = {"tag": int(tag), "triangles": int(m.sum()), "area": area, "E_A": e_a, "E_NV": e_nv}
+     return out
+@@ -105,3 +119,5 @@ def check_mesh_input(points, triangles, tags, tag_to_name: Dict[int, str], extra
+ def check_nodevolume(region_terms: Dict[str, dict], nodevolumes: Dict[str, np.ndarray], element_counts: Dict[str, int]) -> Dict[str, dict]:
+-    """Per-region comparison of the NodeVolume sum with the triangle area. Returns the report; raises on the first failure."""
++    """Per-region certification (7H-E6E-R1 PLAN section 1), in order: element count; A finite > 0; NodeVolume valid; S and every
++    budget term finite; B/A <= MAX_AREA_RELATIVE_UNCERTAINTY (decided before, and independently of, S vs A); |S - A| <= B.
++    Returns the report; raises on the first failure. The importer calls this same function."""
+     report = {}
+@@ -109,18 +125,32 @@ def check_nodevolume(region_terms: Dict[str, dict], nodevolumes: Dict[str, np.nd
+         nv = np.asarray(nodevolumes.get(name, []), dtype=np.float64)
+-        r = {"triangles": rt["triangles"], "devsim_elements": element_counts.get(name), "nodes": int(len(nv)), "area": rt["area"]}
++        A = rt["area"]
++        r = {"triangles": rt["triangles"], "devsim_elements": element_counts.get(name), "nodes": int(len(nv)), "A": A,
++             "certification_limit": MAX_AREA_RELATIVE_UNCERTAINTY, "budget_basis": BUDGET_BASIS}
+         report[name] = r
++
++        def refuse(code, message):
++            _refuse(code, f"region {name!r}: {message}", regions=report, first_failing_region=name)
+         if element_counts.get(name) != rt["triangles"]:
+-            _refuse("MESH_REGION_ELEMENT_MISMATCH", f"region {name!r}: DEVSIM holds {element_counts.get(name)} elements, "
+-                    f"{rt['triangles']} triangles were passed", regions=report, first_failing_region=name)
++            refuse("MESH_REGION_ELEMENT_MISMATCH", f"DEVSIM holds {element_counts.get(name)} elements, {rt['triangles']} triangles were passed")
++        if not (math.isfinite(A) and A > 0):
++            refuse("MESH_AREA_INVALID", f"triangle area {A!r} is not finite and positive")
+         if len(nv) == 0 or not np.isfinite(nv).all() or (nv <= 0).any():
+-            _refuse("MESH_NODEVOLUME_INVALID", f"region {name!r}: {len(nv)} nodes, {int((~np.isfinite(nv)).sum())} non-finite, "
+-                    f"{int((nv <= 0).sum())} non-positive NodeVolume", regions=report, first_failing_region=name)
+-        S = math.fsum(nv.tolist())
++            refuse("MESH_NODEVOLUME_INVALID", f"{len(nv)} nodes, {int((~np.isfinite(nv)).sum())} non-finite, "
++                   f"{int((nv <= 0).sum())} non-positive NodeVolume")
++        with np.errstate(over="ignore"):
++            S = math.fsum(nv.tolist()) if np.isfinite(nv.sum()) else math.inf
++        E_A, E_NV = rt["E_A"], rt["E_NV"]
+         E_S = U * S
+-        B = rt["E_A"] + E_S + rt["E_NV"]
+-        r.update({"sum_NodeVolume": S, "relative_difference": S / rt["area"] - 1.0, "tau": B / rt["area"],
+-                  "E_A": rt["E_A"], "E_S": E_S, "E_NV": rt["E_NV"], "pass": bool(abs(S - rt["area"]) <= B)})
++        B = E_A + E_S + E_NV
++        rel_u = B / A
++        r.update({"S": S, "relative_difference": S / A - 1.0, "E_A": E_A, "E_S": E_S, "E_NV": E_NV, "B": B, "relative_uncertainty": rel_u})
++        if not all(math.isfinite(v) for v in (S, E_A, E_S, E_NV, B, rel_u)):
++            refuse("MESH_AREA_BUDGET_NONFINITE", f"S {S!r}, E_A {E_A!r}, E_S {E_S!r}, E_NV {E_NV!r}, B {B!r} -- not all finite")
++        if rel_u > MAX_AREA_RELATIVE_UNCERTAINTY:
++            refuse("MESH_AREA_UNCERTAINTY_TOO_LARGE", f"relative rounding budget B/A {rel_u!r} exceeds the certification limit "
++                   f"{MAX_AREA_RELATIVE_UNCERTAINTY!r}; area conservation cannot be certified (A {A!r}, S {S!r})")
++        r["pass"] = bool(abs(S - A) <= B)
+         if not r["pass"]:
+-            _refuse("MESH_AREA_NOT_CONSERVED", f"region {name!r}: triangle area {rt['area']!r}, NodeVolume sum {S!r}, relative "
+-                    f"difference {r['relative_difference']!r}, tolerance {r['tau']!r}", regions=report, first_failing_region=name)
++            refuse("MESH_AREA_NOT_CONSERVED", f"triangle area {A!r}, NodeVolume sum {S!r}, relative difference "
++                   f"{r['relative_difference']!r}, tolerance B/A {rel_u!r}")
+     return report
+diff --git a/tests/integration/test_mesh_gate_small_laplace_control_real.py b/tests/integration/test_mesh_gate_small_laplace_control_real.py
+new file mode 100644
+index 0000000..7c62829
+--- /dev/null
++++ b/tests/integration/test_mesh_gate_small_laplace_control_real.py
+@@ -0,0 +1,83 @@
++#!/usr/bin/env python3
++"""Normal electrical control for the importer's area-conservation gate
++(Batch 7H-E6E-R1 PLAN section 4): a small, non-obtuse, non-uniform planar
++mesh goes through import_process_result() -- gate included -- and a real
++DevSim Laplace solve whose answer is known in closed form.
++
++Mesh: the 7H-C1 fixture geometry (single Si rectangle 2 um x 1 um, x lines
++0, 0.6, 1.5, 2.0 um, y lines 0, 0.4, 1.0 um, each cell split by its
++bottom-left-to-top-right diagonal: right triangles only), written as a .vtu
++with the ViennaPS Si tag. Contacts Si_xmin = 0 V, Si_xmax = 1 V; the exact
++solution of Laplace's equation is Potential = (x - x_min) / (x_max - x_min).
++Tolerance 1e-9 V is inherited unchanged from
++tests/integration/test_basic_potential_linear_precision_real.py (EXACT_V).
++Passing shows that a certified mesh still reaches a correct solve; it says
++nothing about mesh convergence or device physics beyond this Laplace case."""
++import sys
++import tempfile
++from pathlib import Path
++
++import numpy as np
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
++
++EXACT_V = 1.0e-9
++
++
++def main():
++    import meshio
++    from tcad.backends.viennaps import session
++    from tcad.device.devsim import backend
++    from tcad.device.devsim.mesh_import import import_process_result
++    from tcad.device.devsim.solve import run_basic_potential_solve
++    from tcad.mesh.viennaps_adapter import build_process_result
++
++    dv = backend.require_devsim()
++    si = int(session.require_viennaps().Material.Si)
++    xs, ys = [0.0, 0.6, 1.5, 2.0], [0.0, 0.4, 1.0]
++    pts = np.array([[x, y, 0.0] for y in ys for x in xs])
++    nx = len(xs)
++    tris = []
++    for j in range(len(ys) - 1):
++        for i in range(nx - 1):
++            a, b, c, d = j * nx + i, j * nx + i + 1, (j + 1) * nx + i + 1, (j + 1) * nx + i
++            tris += [(a, b, c), (a, c, d)]
++    tmp = Path(tempfile.mkdtemp(prefix="gate_laplace_"))
++    path = tmp / "laplace_control.vtu"
++    meshio.write(str(path), meshio.Mesh(pts, [("triangle", np.array(tris))], cell_data={"Material": [np.full(len(tris), si, dtype=np.int32)]}))
++
++    calls = {"solve": 0}
++    real_solve = dv.solve
++
++    def counted(*a, **kw):
++        calls["solve"] += 1
++        return real_solve(*a, **kw)
++    dv.solve = counted
++    imported = None
++    try:
++        pr = build_process_result({"final_mesh": str(path), "snapshots": []})
++        imported = import_process_result(pr, mesh_name="gate_laplace_mesh", device_name="gate_laplace_device",
++                                         contact_regions=["Si"], contact_axis="x", length_scale_to_cm=1.0e-4)
++        rep = imported.area_conservation["Si"]
++        assert rep["pass"] and rep["relative_uncertainty"] <= rep["certification_limit"], rep
++        assert sorted(imported.contacts) == ["Si_xmax", "Si_xmin"], imported.contacts
++        run_basic_potential_solve(device=imported.device, region="Si", contact_bias={"Si_xmin": 0.0, "Si_xmax": 1.0})
++        x = np.array(dv.get_node_model_values(device=imported.device, region="Si", name="x"))
++        v = np.array(dv.get_node_model_values(device=imported.device, region="Si", name="Potential"))
++        exact = (x - x.min()) / (x.max() - x.min())
++        err = float(np.max(np.abs(v - exact)))
++        print(f"area report: {rep}")
++        print(f"solve calls {calls['solve']}, nodes {len(v)}, max |Potential - exact| = {err:.3e} V (tolerance {EXACT_V:.1e} V)")
++        assert calls["solve"] >= 1, "no real solve ran"
++        assert err <= EXACT_V, f"Laplace error {err:.3e} V exceeds {EXACT_V:.1e} V"
++    finally:
++        dv.solve = real_solve
++        if imported is not None:
++            dv.delete_device(device=imported.device)
++            dv.delete_mesh(mesh=imported.mesh)
++    assert list(dv.get_device_list()) == []
++    print("MESH GATE SMALL LAPLACE CONTROL PASSED")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/tests/unit/test_mesh_area_conservation_mock.py b/tests/unit/test_mesh_area_conservation_mock.py
+index fcaba87..e387872 100644
+--- a/tests/unit/test_mesh_area_conservation_mock.py
++++ b/tests/unit/test_mesh_area_conservation_mock.py
+@@ -13,3 +13,3 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ from tcad.device.devsim.mesh_conservation import (  # noqa: E402
+-    MeshAreaConservationError, check_mesh_input, check_nodevolume,
++    MAX_AREA_RELATIVE_UNCERTAINTY, MeshAreaConservationError, check_mesh_input, check_nodevolume,
+ )
+@@ -61,4 +61,5 @@ def main():
+     rep = check_nodevolume(terms, {"Si": dual_nodevolume(p, t, g, 1)}, {"Si": len(t)})
+-    assert rep["Si"]["pass"] and abs(rep["Si"]["relative_difference"]) <= rep["Si"]["tau"], rep
+-    print(f"single material exact: pass, rel {rep['Si']['relative_difference']!r} tau {rep['Si']['tau']!r}")
++    assert rep["Si"]["pass"] and abs(rep["Si"]["relative_difference"]) <= rep["Si"]["relative_uncertainty"], rep
++    assert rep["Si"]["relative_uncertainty"] <= MAX_AREA_RELATIVE_UNCERTAINTY and rep["Si"]["budget_basis"].startswith("ASSUMED_BOUND")
++    print(f"single material exact: pass, rel {rep['Si']['relative_difference']!r} B/A {rep['Si']['relative_uncertainty']!r}")
+ 
+@@ -89,4 +90,4 @@ def main():
+ 
+-    # boundary just inside / outside the tolerance: a one-node region with a known budget (E_A = 0, E_NV = 1e-6; E_S = u S is
+-    # ~1e-16, far below the 2^-10 margin), so B*(1 -/+ 2^-10) is representable next to the area 1.0
++    # area-tolerance boundary (7H-E6E-R1 PLAN case 9, second part): a one-node region with a known budget (E_A = 0, E_NV = 1e-9,
++    # under the 1e-8 certification limit; E_S = u S ~1e-16 is far below the 2^-10 margin), S = 1 + 1e-9 (1 -/+ 2^-10)
+     p, t, g = grid()
+@@ -94,7 +95,43 @@ def main():
+     base = dual_nodevolume(p, t, g, 1)
+-    kt = {"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 1e-6}}
+-    assert check_nodevolume(kt, {"Si": np.array([1.0 + 1e-6 * (1 - 2 ** -10)])}, {"Si": 1})["Si"]["pass"]
+-    refused(lambda: check_nodevolume(kt, {"Si": np.array([1.0 + 1e-6 * (1 + 2 ** -10)])}, {"Si": 1}), "MESH_AREA_NOT_CONSERVED")
++    kt = {"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 1e-9}}
++    assert check_nodevolume(kt, {"Si": np.array([1.0 + 1e-9 * (1 - 2 ** -10)])}, {"Si": 1})["Si"]["pass"]
++    refused(lambda: check_nodevolume(kt, {"Si": np.array([1.0 + 1e-9 * (1 + 2 ** -10)])}, {"Si": 1}), "MESH_AREA_NOT_CONSERVED")
+     print("tolerance boundary: B(1 - 2^-10) pass, B(1 + 2^-10) refused")
+ 
++    # certification-limit boundary (case 9, first part): S = A = 1.0, E_NV = 1e-8 (1 -/+ 2^-10)
++    lim_in = {"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 1e-8 * (1 - 2 ** -10)}}
++    lim_out = {"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 1e-8 * (1 + 2 ** -10)}}
++    assert check_nodevolume(lim_in, {"Si": np.array([1.0])}, {"Si": 1})["Si"]["pass"]
++    refused(lambda: check_nodevolume(lim_out, {"Si": np.array([1.0])}, {"Si": 1}), "MESH_AREA_UNCERTAINTY_TOO_LARGE")
++    print("certification limit boundary: B/A 1e-8(1 - 2^-10) pass, 1e-8(1 + 2^-10) refused")
++
++    # P0 sliver (cases 1, 2): the counterexample that PASSED before 7H-E6E-R1 (p0_before.json) -- S = 2A and S = A both refused
++    ps = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 1e-14, 0.0]])
++    ts, gs = np.array([[0, 1, 2]]), np.array([1])
++    st = check_mesh_input(ps, ts, gs, {1: "Si"}, [])
++    A = st["Si"]["area"]
++    for label, s_total in (("S = 2A", 2 * A), ("S = A", A)):
++        exc = refused(lambda s_total=s_total: check_nodevolume(st, {"Si": np.full(3, s_total / 3)}, {"Si": 1}),
++                      "MESH_AREA_UNCERTAINTY_TOO_LARGE")
++        r = exc.physics_status["regions"]["Si"]
++        assert r["relative_uncertainty"] > MAX_AREA_RELATIVE_UNCERTAINTY and r["certification_limit"] == MAX_AREA_RELATIVE_UNCERTAINTY
++        assert r["budget_basis"].startswith("ASSUMED_BOUND") and "pass" not in r
++        print(f"P0 sliver {label}: refused, B/A {r['relative_uncertainty']!r}, S/A-1 {r['relative_difference']!r}")
++
++    # non-finite budget (case 3): E_NV = inf; S overflow; o_t overflow from 1e200 coordinates
++    refused(lambda: check_nodevolume({"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": float("inf")}}, {"Si": np.array([1.0])},
++                                     {"Si": 1}), "MESH_AREA_BUDGET_NONFINITE")
++    refused(lambda: check_nodevolume({"Si": {"triangles": 1, "area": 1.0, "E_A": 0.0, "E_NV": 0.0}}, {"Si": np.array([1e308, 1e308])},
++                                     {"Si": 1}), "MESH_AREA_BUDGET_NONFINITE")
++    refused(lambda: check_mesh_input(p * 1e200, t, g, {1: "Si"}, []), "MESH_AREA_BUDGET_NONFINITE")
++    refused(lambda: check_nodevolume({"Si": {"triangles": 1, "area": 0.0, "E_A": 0.0, "E_NV": 0.0}}, {"Si": np.array([1.0])},
++                                     {"Si": 1}), "MESH_AREA_INVALID")
++    print("non-finite budget / S overflow / o_t overflow / zero area: refused")
++
++    # normal shape, real mismatch (case 7)
++    off = base.copy()
++    off[0] += 0.01
++    refused(lambda: check_nodevolume(terms, {"Si": off}, {"Si": len(t)}), "MESH_AREA_NOT_CONSERVED")
++    print("normal shape, S = A + 0.01: MESH_AREA_NOT_CONSERVED")
++
+     # invalid NodeVolume / region / element count

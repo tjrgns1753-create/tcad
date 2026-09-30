@@ -1,0 +1,178 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T08:35:57.260550+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6e-r1-gate-uncertainty-001",
+  "profile": "e6e_r1_gate_uncertainty",
+  "params": {},
+  "note": "Batch 7H-E6E-R1. PLAN 853d400 (PLAN.md LF sha256 380267d5...) fixed before the production edit. One run; no full regression."
+ },
+ "profile": "e6e_r1_gate_uncertainty",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/PLAN.md",
+   "sha256": "de18c9e076ea22e3afe2e466fb425bee90a58aeb42f7bc5a47614fc536e6dc40",
+   "bytes": 9828
+  },
+  {
+   "path": "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/run_r1.py",
+   "sha256": "560f4d6d984553f75c0392afbc69aa80373b2239fc03f765098d4ee8ab3ee602",
+   "bytes": 3771
+  },
+  {
+   "path": "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/diag_r1.py",
+   "sha256": "4257bded29240068c1e8c0ff701357098ce645560e0cd4e582e748443bba1031",
+   "bytes": 16567
+  },
+  {
+   "path": "tcad/device/devsim/mesh_conservation.py",
+   "sha256": "e2f5321fdbf2b735dd9f2ef77717d29c2500f6b53a4cdbe4be041c4116ae588d",
+   "bytes": 10822
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "e0635b22617ee0269b5841ad0d55c238850096422b6263592b4228bc28018f50",
+   "bytes": 60559
+  },
+  {
+   "path": "tests/unit/test_mesh_area_conservation_mock.py",
+   "sha256": "d9187ecd44cc92300a9d6c06953590345dca76cfced30f1b22dffe0efeb1a754",
+   "bytes": 10094
+  },
+  {
+   "path": "tests/integration/test_mesh_area_conservation_gate_real.py",
+   "sha256": "876129bb03de8001e46b0792914d676fd1133a30e0c6a8db09ee6214fd14e194",
+   "bytes": 13771
+  },
+  {
+   "path": "tests/integration/test_mesh_gate_small_laplace_control_real.py",
+   "sha256": "d9f10d3929d7f210dcf1e2e8f9d842d6271eab266ef20a648eb26204f3aabcb0",
+   "bytes": 3924
+  }
+ ],
+ "request_sha256": "3228b99139cd206f3e392449874b1468e3f6bd507ca994db9acedb0a7e4da17b",
+ "source": {
+  "github_sha": "8915754689dd548c38780c4ec065156cfdd9de2c",
+  "git_head": "8915754689dd548c38780c4ec065156cfdd9de2c",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36690617723",
+  "run_number": "18",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/run_r1.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T08:39:18.317128+00:00",
+ "duration_s": 201.057,
+ "outputs": [
+  {
+   "path": "e6e_r1_out/A.vtu",
+   "bytes": 11496,
+   "sha256": "168aef8c95e8a898cc96afe3181454d2f5e1a4fece0426177f01da188e4b2238"
+  },
+  {
+   "path": "e6e_r1_out/B_raw.vtu",
+   "bytes": 3388,
+   "sha256": "426d271461bc3df44bd7260edf5812146a5fc74478ef9975e1cbf28954b73236"
+  },
+  {
+   "path": "e6e_r1_out/B_refined.vtu",
+   "bytes": 10796,
+   "sha256": "2d18dbbce8941e95e8b51a42b49ae764417f13e7473d2582f745a94e5e93fdb8"
+  },
+  {
+   "path": "e6e_r1_out/diag_A.json",
+   "bytes": 12118,
+   "sha256": "21fcfb23f30452b4cab0acf7e2c3965eefb10b93479c4f046b34cf57613eff39"
+  },
+  {
+   "path": "e6e_r1_out/diag_B.json",
+   "bytes": 15051,
+   "sha256": "20163a1aa14577f84e1f85db8d931e61809912eb85b2dd508ccd7f3500831ab6"
+  },
+  {
+   "path": "e6e_r1_out/diag_r1_A.log",
+   "bytes": 1957,
+   "sha256": "9a693c0317f2b2caa247d3a7372b09994405bb8c13007844855f6a3610c0e8cc"
+  },
+  {
+   "path": "e6e_r1_out/diag_r1_B.log",
+   "bytes": 2903,
+   "sha256": "81328619e66309a4a38d261a692dacabb06afd0bd1256cb6ecb7bfba65d71281"
+  },
+  {
+   "path": "e6e_r1_out/r1_result.json",
+   "bytes": 4114,
+   "sha256": "e4d538e9d99f6297b38900b1ef9cb21a21e086af76490cab7374a750c9fc7379"
+  },
+  {
+   "path": "e6e_r1_out/test_mesh_area_conservation_gate_real.log",
+   "bytes": 14886,
+   "sha256": "6004ff67956a004a3a20f03ec491bc188d60445b562f0e652d17adf456bfe33d"
+  },
+  {
+   "path": "e6e_r1_out/test_mesh_area_conservation_mock.log",
+   "bytes": 903,
+   "sha256": "0bfbda7b0c355c80e37ca67f4edb39bae0c00824d25adc71b7abc6c26a7a11c4"
+  },
+  {
+   "path": "e6e_r1_out/test_mesh_gate_small_laplace_control_real.log",
+   "bytes": 1974,
+   "sha256": "ff3504fff2aa9602ce32096b96b69bddcdd460ec8a5f1850690f6b8666ce3b73"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile; meshes A and B are regenerated by their production calls.",
+ "log": {
+  "file": "run.log",
+  "sha256": "d0a84f2fee8d39baf9b750a752fc5297d3b9d18af963c9721f5665a20fe608b1",
+  "bytes": 12073
+ },
+ "redactions": {}
+}

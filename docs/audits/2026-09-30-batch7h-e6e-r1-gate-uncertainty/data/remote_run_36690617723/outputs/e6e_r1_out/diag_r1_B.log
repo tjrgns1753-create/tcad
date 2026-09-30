@@ -1,0 +1,67 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 200 Triangles.
+Physical group name Si has 325 Lines.
+Physical group name Si has 126 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 5 Lines.
+Physical group name Si_xmax has 6 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 5 Lines.
+Physical group name Si_xmin has 6 Points.
+Device r1_B_raw_prod_device has 126 coordinates with max index 125
+Region Si has 126 nodes.
+Contact Si_xmax in region Si with 6 nodes
+Contact Si_xmin in region Si with 6 nodes
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 200 Triangles.
+Physical group name Si has 325 Lines.
+Physical group name Si has 126 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 5 Lines.
+Physical group name Si_xmax has 6 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 5 Lines.
+Physical group name Si_xmin has 6 Points.
+Device r1_B_raw_diag_device has 126 coordinates with max index 125
+Region Si has 126 nodes.
+Contact Si_xmax in region Si with 6 nodes
+Contact Si_xmin in region Si with 6 nodes
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1040 Triangles.
+Physical group name Si has 1601 Lines.
+Physical group name Si has 562 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 5 Lines.
+Physical group name Si_xmax has 6 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 5 Lines.
+Physical group name Si_xmin has 6 Points.
+Device r1_B_refined_prod_device has 562 coordinates with max index 561
+Region Si has 562 nodes.
+Contact Si_xmax in region Si with 6 nodes
+Contact Si_xmin in region Si with 6 nodes
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1040 Triangles.
+Physical group name Si has 1601 Lines.
+Physical group name Si has 562 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 5 Lines.
+Physical group name Si_xmax has 6 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 5 Lines.
+Physical group name Si_xmin has 6 Points.
+Device r1_B_refined_diag_device has 562 coordinates with max index 561
+Region Si has 562 nodes.
+Contact Si_xmax in region Si with 6 nodes
+Contact Si_xmin in region Si with 6 nodes
+{"which": "B", "status": "OK", "error": null, "calls": {}}

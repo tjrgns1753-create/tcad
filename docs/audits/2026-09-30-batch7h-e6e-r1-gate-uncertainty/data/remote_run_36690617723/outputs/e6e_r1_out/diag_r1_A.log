@@ -1,0 +1,46 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+    Process time: 0.5000 / 0.5000 s
+[0mPhysical group name Mask has 0 Tetrahedra.
+Physical group name Mask has 132 Triangles.
+Physical group name Mask has 224 Lines.
+Physical group name Mask has 94 Points.
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1004 Triangles.
+Physical group name Si has 1553 Lines.
+Physical group name Si has 550 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 25 Lines.
+Physical group name Si_xmax has 26 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 25 Lines.
+Physical group name Si_xmin has 26 Points.
+Device r1_A_prod_device has 622 coordinates with max index 621
+Region Mask has 94 nodes.
+Region Si has 550 nodes.
+Contact Si_xmax in region Si with 26 nodes
+Contact Si_xmin in region Si with 26 nodes
+Physical group name Mask has 0 Tetrahedra.
+Physical group name Mask has 132 Triangles.
+Physical group name Mask has 224 Lines.
+Physical group name Mask has 94 Points.
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1004 Triangles.
+Physical group name Si has 1553 Lines.
+Physical group name Si has 550 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 25 Lines.
+Physical group name Si_xmax has 26 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 25 Lines.
+Physical group name Si_xmin has 26 Points.
+Device r1_A_diag_device has 622 coordinates with max index 621
+Region Mask has 94 nodes.
+Region Si has 550 nodes.
+Contact Si_xmax in region Si with 26 nodes
+Contact Si_xmin in region Si with 26 nodes
+{"which": "A", "status": "OK", "error": null, "calls": {}}

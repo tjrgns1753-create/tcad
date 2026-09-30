@@ -1,0 +1,87 @@
+{
+ "head": "8915754689dd548c38780c4ec065156cfdd9de2c",
+ "python": "3.11.9",
+ "platform": "Windows-10-10.0.26100-SP0",
+ "versions": {
+  "devsim": "2.11.0",
+  "viennaps": "4.6.2",
+  "viennals": "5.8.5",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5"
+ },
+ "files_lf_sha256_before": {
+  "tcad/device/devsim/mesh_conservation.py": "76646174c666832b87d47b407f85db9cbef84f89ee8141b067abcad5d4d0bd46",
+  "tcad/device/devsim/mesh_import.py": "18da71240476ad10b86ab283023a513280e515735290b701b0e74ab752d2d5cd",
+  "tcad_2d_stagewise.py": "2f0a69be4e49c0c116140cfa944b56987aa339b288814d8119e0c3a2f2a9c217",
+  "tcad/cli/run_pipeline.py": "d7f21df4e5d5cc64423d6a8dc3a852bc0860307cd817c9034ecbd3bef281109b",
+  "tests/unit/test_mesh_area_conservation_mock.py": "281d721d16230c654f9effc167934c6c816ca04225efb5171d3f5e4ab4ea8091",
+  "tests/integration/test_mesh_area_conservation_gate_real.py": "ed5ecf73bdcf71e6083f9a87c0311b0756001498e52ab54d682e1261909a3c96",
+  "tests/integration/test_mesh_gate_small_laplace_control_real.py": "f896edb4be30584328c7be5a33c0e5a2d73abff316046276ba9580638d72ebe3",
+  "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/diag_r1.py": "ac4f3f518def217496d42eea79ca46cc1ed2039f39d1167609bf048f0e6ed02a",
+  "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/PLAN.md": "380267d53ca2c1fdc82560a3d345384b907f65f07ce1d2545787c1abc811c3d3"
+ },
+ "runs": [
+  {
+   "cmd": [
+    "tests/unit/test_mesh_area_conservation_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.2
+  },
+  {
+   "cmd": [
+    "tests/integration/test_mesh_area_conservation_gate_real.py"
+   ],
+   "rc": 0,
+   "wall_s": 197.1
+  },
+  {
+   "cmd": [
+    "tests/integration/test_mesh_gate_small_laplace_control_real.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.5
+  },
+  {
+   "cmd": [
+    "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/diag_r1.py",
+    "<OUT>",
+    "A"
+   ],
+   "rc": 0,
+   "wall_s": 0.8
+  },
+  {
+   "cmd": [
+    "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/diag_r1.py",
+    "<OUT>",
+    "B"
+   ],
+   "rc": 0,
+   "wall_s": 1.7
+  }
+ ],
+ "files_lf_sha256_after": {
+  "tcad/device/devsim/mesh_conservation.py": "76646174c666832b87d47b407f85db9cbef84f89ee8141b067abcad5d4d0bd46",
+  "tcad/device/devsim/mesh_import.py": "18da71240476ad10b86ab283023a513280e515735290b701b0e74ab752d2d5cd",
+  "tcad_2d_stagewise.py": "2f0a69be4e49c0c116140cfa944b56987aa339b288814d8119e0c3a2f2a9c217",
+  "tcad/cli/run_pipeline.py": "d7f21df4e5d5cc64423d6a8dc3a852bc0860307cd817c9034ecbd3bef281109b",
+  "tests/unit/test_mesh_area_conservation_mock.py": "281d721d16230c654f9effc167934c6c816ca04225efb5171d3f5e4ab4ea8091",
+  "tests/integration/test_mesh_area_conservation_gate_real.py": "ed5ecf73bdcf71e6083f9a87c0311b0756001498e52ab54d682e1261909a3c96",
+  "tests/integration/test_mesh_gate_small_laplace_control_real.py": "f896edb4be30584328c7be5a33c0e5a2d73abff316046276ba9580638d72ebe3",
+  "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/scripts/diag_r1.py": "ac4f3f518def217496d42eea79ca46cc1ed2039f39d1167609bf048f0e6ed02a",
+  "docs/audits/2026-09-30-batch7h-e6e-r1-gate-uncertainty/PLAN.md": "380267d53ca2c1fdc82560a3d345384b907f65f07ce1d2545787c1abc811c3d3"
+ },
+ "files": {
+  "A.vtu": "168aef8c95e8a898cc96afe3181454d2f5e1a4fece0426177f01da188e4b2238",
+  "B_raw.vtu": "426d271461bc3df44bd7260edf5812146a5fc74478ef9975e1cbf28954b73236",
+  "B_refined.vtu": "2d18dbbce8941e95e8b51a42b49ae764417f13e7473d2582f745a94e5e93fdb8",
+  "diag_A.json": "21fcfb23f30452b4cab0acf7e2c3965eefb10b93479c4f046b34cf57613eff39",
+  "diag_B.json": "20163a1aa14577f84e1f85db8d931e61809912eb85b2dd508ccd7f3500831ab6",
+  "diag_r1_A.log": "9a693c0317f2b2caa247d3a7372b09994405bb8c13007844855f6a3610c0e8cc",
+  "diag_r1_B.log": "81328619e66309a4a38d261a692dacabb06afd0bd1256cb6ecb7bfba65d71281",
+  "test_mesh_area_conservation_gate_real.log": "6004ff67956a004a3a20f03ec491bc188d60445b562f0e652d17adf456bfe33d",
+  "test_mesh_area_conservation_mock.log": "0bfbda7b0c355c80e37ca67f4edb39bae0c00824d25adc71b7abc6c26a7a11c4",
+  "test_mesh_gate_small_laplace_control_real.log": "ff3504fff2aa9602ce32096b96b69bddcdd460ec8a5f1850690f6b8666ce3b73"
+ }
+}
