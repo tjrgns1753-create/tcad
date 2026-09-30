@@ -1,0 +1,156 @@
+diff --git a/tcad/characterization/interface.py b/tcad/characterization/interface.py
+index 94557de..f1327ec 100644
+--- a/tcad/characterization/interface.py
++++ b/tcad/characterization/interface.py
+@@ -16,7 +16,7 @@ about devsim; everything downstream only sees these dataclasses.
+ from __future__ import annotations
+ 
+ from dataclasses import dataclass, field
+-from typing import Any, Dict, List
++from typing import Any, Dict, List, Optional
+ 
+ #: DevSim's own 2D-device convention (not this project's invention): a
+ #: 2D device has no explicit extent in the third (out-of-plane)
+@@ -47,6 +47,31 @@ CURRENT_CONVENTION_NOTE = (
+ )
+ 
+ 
++def current_unit_metadata(dimension: Optional[int]) -> Dict[str, Any]:
++    """Machine-readable unit of the terminal currents of a DevSim device of the given spatial `dimension`
++    (`devsim.get_dimension(device=...)`). Only the 2D case is established (Batch 7H-E6I measured I = sigma (H / L) DeltaV
++    with H, L in cm, i.e. the current per cm of out-of-plane depth): `A/cm`, normalisation `per_out_of_plane_depth`. Any other
++    dimension is NOT verified, so its unit is None -- never silently assumed to be A. No depth is supplied or assumed here."""
++    if dimension == 2:
++        return {"current_unit": "A/cm", "current_normalization": "per_out_of_plane_depth", "device_dimension": 2}
++    return {"current_unit": None, "current_normalization": None, "device_dimension": dimension}
++
++
++def format_current(value: float, metadata: Optional[Dict[str, Any]], spec: str = ".6e") -> str:
++    """`value` (unchanged) with the unit its result's metadata established, e.g. '1.600000e-04 A/cm'; a result with no
++    established unit is shown as '<value> (unit not established)', never as plain A."""
++    unit = (metadata or {}).get("current_unit")
++    return f"{value:{spec}} {unit}" if unit else f"{value:{spec}} (unit not established)"
++
++
++def current_unit_note(metadata: Optional[Dict[str, Any]]) -> str:
++    """One sentence for the user when the current is per unit out-of-plane depth (2D device); '' otherwise."""
++    if (metadata or {}).get("current_normalization") == "per_out_of_plane_depth":
++        return ("Current per unit out-of-plane depth (A/cm) -- not the total current of a device; "
++                "multiply by the real device depth in cm for a total current.")
++    return ""
++
++
+ @dataclass
+ class BiasPoint:
+     """One point in a sweep: the applied voltage on every contact, and
+diff --git a/tcad/characterization/io.py b/tcad/characterization/io.py
+index c945c71..e6290fe 100644
+--- a/tcad/characterization/io.py
++++ b/tcad/characterization/io.py
+@@ -27,7 +27,11 @@ def save_csv(result: CharacterizationResult, path: str) -> str:
+ 
+     with open(path, "w", newline="") as f:
+         writer = csv.writer(f)
+-        writer.writerow(["sweep_voltage_V"] + [f"I_{c}_A" for c in contacts])
++        # A result that carries a machine-readable unit (2D DevSim: "A/cm") names it in the header; a result without one keeps
++        # the legacy header unchanged (its unit is not established by this module).
++        unit = result.metadata.get("current_unit")
++        suffix = unit.replace("/", "_per_") if unit else "A"
++        writer.writerow(["sweep_voltage_V"] + [f"I_{c}_{suffix}" for c in contacts])
+         for point in result.points:
+             sweep_v = point.voltages.get(result.sweep_contact, "")
+             row = [sweep_v] + [point.currents.get(c, "") for c in contacts]
+diff --git a/tcad/characterization/plotting.py b/tcad/characterization/plotting.py
+index 46d7570..c7985c2 100644
+--- a/tcad/characterization/plotting.py
++++ b/tcad/characterization/plotting.py
+@@ -29,7 +29,8 @@ def save_iv_plot(result: CharacterizationResult, path: str) -> str:
+         ax.plot(sweep_voltages, currents, marker="o", label=f"I({contact})")
+ 
+     ax.set_xlabel(f"{result.sweep_contact} voltage (V)")
+-    ax.set_ylabel("Current (A)")
++    unit = result.metadata.get("current_unit")
++    ax.set_ylabel(f"Current ({unit})" if unit else "Current (A)")   # legacy label when the result carries no unit metadata
+     ax.set_title(f"{result.name} — {result.device}/{result.region}")
+     ax.legend()
+     ax.grid(True)
+diff --git a/tcad/characterization/pn_junction_iv_sweep.py b/tcad/characterization/pn_junction_iv_sweep.py
+index a22f9ee..5897675 100644
+--- a/tcad/characterization/pn_junction_iv_sweep.py
++++ b/tcad/characterization/pn_junction_iv_sweep.py
+@@ -28,7 +28,9 @@ from __future__ import annotations
+ 
+ from typing import Dict, List, Optional
+ 
+-from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
++from tcad.characterization.interface import (
++    CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult, current_unit_metadata,
++)
+ from tcad.device.devsim import backend
+ from tcad.device.devsim.resistor_equation import set_bias
+ from tcad.device.devsim.semiconductor_equation import (
+@@ -117,5 +119,6 @@ def run_pn_junction_iv_sweep(
+             "fixed_contacts": fixed_contacts,
+             "physics": "drift_diffusion",
+             "current_convention": CURRENT_CONVENTION_NOTE,
++            **current_unit_metadata(module.get_dimension(device=device)),
+         },
+     )
+diff --git a/tcad/characterization/robust_iv_sweep.py b/tcad/characterization/robust_iv_sweep.py
+index 7542cb4..a735205 100644
+--- a/tcad/characterization/robust_iv_sweep.py
++++ b/tcad/characterization/robust_iv_sweep.py
+@@ -82,7 +82,9 @@ from __future__ import annotations
+ import math
+ from typing import Dict, List, Optional
+ 
+-from tcad.characterization.interface import CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult
++from tcad.characterization.interface import (
++    CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult, current_unit_metadata,
++)
+ from tcad.device.devsim import backend
+ from tcad.device.devsim.doping_mapping import canonical_node_doping
+ from tcad.device.devsim.semiconductor_equation import (
+@@ -299,5 +301,6 @@ def run_robust_pn_junction_iv_sweep(
+             "physics": "drift_diffusion",
+             "strategy": "doping_continuation + devsim_dd_tolerances + restoring_bias_ramp",
+             "current_convention": CURRENT_CONVENTION_NOTE,
++            **current_unit_metadata(module.get_dimension(device=device)),
+         },
+     )
+diff --git a/tcad_2d_stagewise.py b/tcad_2d_stagewise.py
+index 927082f..ac5a036 100644
+--- a/tcad_2d_stagewise.py
++++ b/tcad_2d_stagewise.py
+@@ -5767,6 +5767,7 @@ class TCADApplication(tk.Tk):
+         from tcad.device.devsim.mesh_import import import_process_result
+         from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
+         from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
++        from tcad.characterization.interface import current_unit_note, format_current
+         from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
+         from tcad.characterization.robust_iv_sweep import (
+             run_robust_pn_junction_iv_sweep,
+@@ -5961,17 +5962,19 @@ class TCADApplication(tk.Tk):
+             f"================================\n"
+             f"Region={region!r} axis={axis!r} doping_kind={kind!r}\n"
+             f"Voltage source pin: {source_contact} = {voltage:+.4f} V "
+-            f"-> I = {source_i:.6e} A\n"
++            f"-> I = {format_current(source_i, result.metadata)}\n"
+             f"Multimeter (GND) pin: {gnd_contact} = 0.0000 V "
+-            f"-> I = {gnd_i:.6e} A\n"
++            f"-> I = {format_current(gnd_i, result.metadata)}\n"
++            f"{current_unit_note(result.metadata)}\n"
+         )
+ 
+         self._notify_info(
+             "Measurement",
+             f"Voltage source ({source_contact}): {voltage:+.4f} V, "
+-            f"I = {source_i:.6e} A\n\n"
++            f"I = {format_current(source_i, result.metadata)}\n\n"
+             f"Multimeter ({gnd_contact}): 0.0000 V, "
+-            f"I = {gnd_i:.6e} A",
++            f"I = {format_current(gnd_i, result.metadata)}\n\n"
++            f"{current_unit_note(result.metadata)}",
+         )
+ 
+     # --------------------------------------------------------

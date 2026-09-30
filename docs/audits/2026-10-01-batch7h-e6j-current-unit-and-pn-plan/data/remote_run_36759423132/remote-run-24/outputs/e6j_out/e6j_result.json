@@ -1,0 +1,46 @@
+{
+ "head": "83ea90f652e7c9478c4a9b70864f78236993eff4",
+ "python": "3.11.9",
+ "platform": "Windows-10-10.0.26100-SP0",
+ "versions": {
+  "devsim": "2.11.0",
+  "viennaps": "4.6.2",
+  "viennals": "5.8.5",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5"
+ },
+ "files_lf_sha256": {
+  "tcad/characterization/interface.py": "7ea849e08bbe5d3994f6ab8c43ee4fb61bbdff58d1e96465568420803f9e4f9c",
+  "tcad/characterization/io.py": "a14544400837441d77897ea5e8ff1577331bb7b4ad3980c99959e17e0449c49c",
+  "tcad/characterization/plotting.py": "836e652fbd3dc7cb66419c899920d2d857ae53a0dfc7acafd75f000669d96b0d",
+  "tcad/characterization/pn_junction_iv_sweep.py": "580bd7ce4b04a184b641ae86ccbc2f8d2552b1d6570becd60f983af5b82d9724",
+  "tcad/characterization/robust_iv_sweep.py": "e61358825cbff67f8d3f002b9c683a1aee971cd7404c02798f4077612615be57",
+  "tcad_2d_stagewise.py": "fb5ec776c8e436fad2e96c274ada11ac06e0d80fbd8a2691611f68bb37c67e95",
+  "tests/unit/test_current_unit_contract_mock.py": "d6abead270333515201f287658d9232dbd9a66656e21d5ce54f98b1b469be367",
+  "tests/integration/test_gui_current_unit_contract_real.py": "3efe0bb8f304427f2a1b6ed8ecf7db1897fc9b7c044917155785aeaaf35c1e8f",
+  "tests/integration/test_uniform_resistor_dd_current_real.py": "76a5c099c5892d328e9f1819c9c682babc19ef43dd603ac726fca10e1a37b419",
+  "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/CRITERIA.md": "0897d863ccede6283847cb4c9e88df54c965e9abae159d66da178115125dc99b"
+ },
+ "runs": [
+  {
+   "cmd": [
+    "tests/unit/test_current_unit_contract_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 15.3
+  },
+  {
+   "cmd": [
+    "tests/integration/test_gui_current_unit_contract_real.py",
+    "<OUT>"
+   ],
+   "rc": 0,
+   "wall_s": 5.0
+  }
+ ],
+ "files": {
+  "gui_unit_contract.json": "ee2d14ee506320c04caec6df79a225a3492d7bb6ea2918465eda0fab353191b5",
+  "test_current_unit_contract_mock.log": "6bc44b6a22694097f72116b49d1212cd324076930484fbda3c725cfbf4395ca6",
+  "test_gui_current_unit_contract_real.log": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+ }
+}

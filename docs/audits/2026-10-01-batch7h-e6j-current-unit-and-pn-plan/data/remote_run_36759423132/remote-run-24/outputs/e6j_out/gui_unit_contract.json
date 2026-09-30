@@ -1,0 +1,276 @@
+{
+ "pass": true,
+ "checks": [
+  {
+   "name": "direct path entered production DD (3 solves)",
+   "pass": true,
+   "detail": 3
+  },
+  {
+   "name": "raw I_max unchanged vs committed E6I value (1e-12 relative)",
+   "pass": true,
+   "detail": [
+    0.0001600000000002224,
+    0.0001600000000002224
+   ]
+  },
+  {
+   "name": "raw I_min unchanged vs committed E6I value (1e-12 relative)",
+   "pass": true,
+   "detail": [
+    -0.0001600000000002224,
+    -0.0001600000000002224
+   ]
+  },
+  {
+   "name": "raw I_max equals theory G V (1e-9 relative)",
+   "pass": true,
+   "detail": [
+    0.0001600000000002224,
+    0.00016000000000023997
+   ]
+  },
+  {
+   "name": "sweep metadata carries machine-readable unit",
+   "pass": true,
+   "detail": {
+    "current_unit": "A/cm",
+    "current_normalization": "per_out_of_plane_depth",
+    "device_dimension": 2
+   }
+  },
+  {
+   "name": "explicit-depth conversion CONTROL (test depth 1 um = 1e-4 cm): 1.6e-4 A/cm x 1e-4 cm = 1.6e-8 A",
+   "pass": true,
+   "detail": 1.6000000000022242e-08
+  },
+  {
+   "name": "GUI ACTIVE: block printed with source and ground lines",
+   "pass": true,
+   "detail": [
+    "Si_xmax",
+    "+0.0010",
+    "1.600000e-04",
+    "A/cm",
+    "Si_xmin",
+    "-1.600000e-04",
+    "A/cm"
+   ]
+  },
+  {
+   "name": "GUI ACTIVE: unit printed is A/cm on both lines",
+   "pass": true,
+   "detail": [
+    "Si_xmax",
+    "+0.0010",
+    "1.600000e-04",
+    "A/cm",
+    "Si_xmin",
+    "-1.600000e-04",
+    "A/cm"
+   ]
+  },
+  {
+   "name": "GUI ACTIVE: no legacy plain-A current line",
+   "pass": true,
+   "detail": null
+  },
+  {
+   "name": "GUI ACTIVE: per-unit-depth note shown",
+   "pass": true,
+   "detail": null
+  },
+  {
+   "name": "GUI ACTIVE: source pin / voltage",
+   "pass": true,
+   "detail": [
+    "Si_xmax",
+    "+0.0010",
+    "1.600000e-04",
+    "A/cm",
+    "Si_xmin",
+    "-1.600000e-04",
+    "A/cm"
+   ]
+  },
+  {
+   "name": "GUI ACTIVE: printed source current equals direct raw (1e-6, printed digits)",
+   "pass": true,
+   "detail": [
+    "Si_xmax",
+    "+0.0010",
+    "1.600000e-04",
+    "A/cm",
+    "Si_xmin",
+    "-1.600000e-04",
+    "A/cm"
+   ]
+  },
+  {
+   "name": "GUI ACTIVE: printed ground current equals direct raw (1e-6), sign kept",
+   "pass": true,
+   "detail": [
+    "Si_xmax",
+    "+0.0010",
+    "1.600000e-04",
+    "A/cm",
+    "Si_xmin",
+    "-1.600000e-04",
+    "A/cm"
+   ]
+  },
+  {
+   "name": "GUI CHEMICAL: 0 solves, 0 doping writes, no measurement block, no numeric current line, no leaked device",
+   "pass": true,
+   "detail": {
+    "solves": 0,
+    "doping_writes": 0,
+    "printed": null
+   }
+  },
+  {
+   "name": "GUI CHEMICAL: physics_status resolution UNSUPPORTED_BY_MODEL and a real entry names the activation state",
+   "pass": true,
+   "detail": {
+    "resolution": "UNSUPPORTED_BY_MODEL",
+    "reason_code": null,
+    "entry_parameters": [
+     "dopant_activation_state"
+    ],
+    "entry_notes": [
+     "attachment 'att:doping:1:2' covering this point has chemical_state 'CHEMICAL'; only ACTIVE dopant is electrically usable (no activation model is available)"
+    ],
+    "blocked_nodes": 73,
+    "total_nodes": 73,
+    "first_blocked_reason": "the canonical query is not fully known here: attachment 'att:doping:1:2' covering this point has chemical_state 'CHEMICAL'; only ACTIVE dopant is electrically usable (no activation model is available)",
+    "notes": [
+     "73 of 73 mesh node(s) blocked"
+    ]
+   }
+  },
+  {
+   "name": "GUI UNKNOWN: 0 solves, 0 doping writes, no measurement block, no numeric current line, no leaked device",
+   "pass": true,
+   "detail": {
+    "solves": 0,
+    "doping_writes": 0,
+    "printed": null
+   }
+  },
+  {
+   "name": "GUI UNKNOWN: physics_status resolution UNSUPPORTED_BY_MODEL and a real entry names the activation state",
+   "pass": true,
+   "detail": {
+    "resolution": "UNSUPPORTED_BY_MODEL",
+    "reason_code": null,
+    "entry_parameters": [
+     "dopant_activation_state"
+    ],
+    "entry_notes": [
+     "attachment 'att:doping:1:2' covering this point has chemical_state 'UNKNOWN'; only ACTIVE dopant is electrically usable (no activation model is available)"
+    ],
+    "blocked_nodes": 73,
+    "total_nodes": 73,
+    "first_blocked_reason": "the canonical query is not fully known here: attachment 'att:doping:1:2' covering this point has chemical_state 'UNKNOWN'; only ACTIVE dopant is electrically usable (no activation model is available)",
+    "notes": [
+     "73 of 73 mesh node(s) blocked"
+    ]
+   }
+  }
+ ],
+ "direct": {
+  "I_max_total": 0.0001600000000002224,
+  "I_min_total": -0.0001600000000002224,
+  "Ie_max": 0.00016000000000014242,
+  "Ih_max": 7.99999999999112e-17,
+  "solves": 3,
+  "metadata": {
+   "temperature_k": 300.0,
+   "fixed_contacts": {
+    "Si_xmin": 0.0
+   },
+   "physics": "drift_diffusion",
+   "current_convention": "DevSim 2D device convention: every current/charge/capacitance value in this result is PER UNIT DEPTH in the unmodeled 3rd dimension (DevSim implicitly assumes 1cm of device depth out-of-plane for a 2D device) -- NOT the total value of a real device with a specific physical width. To get a real device's actual current/charge, multiply by that device's real depth in cm (e.g. a real 1um-wide device: multiply by 1e-4).",
+   "current_unit": "A/cm",
+   "current_normalization": "per_out_of_plane_depth",
+   "device_dimension": 2
+  },
+  "theory": {
+   "n0": 1.000000000001e+16,
+   "p0": 9999.99999999,
+   "sigma_S_per_cm": 0.6400000000009599,
+   "G_A_per_V_per_cm_depth": 0.16000000000023998,
+   "I_ref": 0.00016000000000023997
+  }
+ },
+ "gui": {
+  "ACTIVE": {
+   "log": "\n(No mesh refinement needed -- uniform doping has no junction to resolve.)\n\n\n================================\nDEVSIM MEASUREMENT\n================================\nRegion='Si' axis='x' doping_kind='uniform'\nVoltage source pin: Si_xmax = +0.0010 V -> I = 1.600000e-04 A/cm\nMultimeter (GND) pin: Si_xmin = 0.0000 V -> I = -1.600000e-04 A/cm\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n\nMeasurement: Voltage source (Si_xmax): +0.0010 V, I = 1.600000e-04 A/cm\n\nMultimeter (Si_xmin): 0.0000 V, I = -1.600000e-04 A/cm\n\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n",
+   "solves": 3,
+   "doping_writes": 6,
+   "dialogs": [],
+   "printed": [
+    "Si_xmax",
+    "+0.0010",
+    "1.600000e-04",
+    "A/cm",
+    "Si_xmin",
+    "-1.600000e-04",
+    "A/cm"
+   ],
+   "legacy_A_line_present": false,
+   "leaked_devices": [],
+   "physics_status": null
+  },
+  "CHEMICAL": {
+   "log": "\n(No mesh refinement needed -- uniform doping has no junction to resolve.)\n\nERROR \u2014 Measurement: UNSUPPORTED_BY_MODEL: the canonical WaferStateV2 cannot supply a fully-known doping for device 'gui_measure_device' region 'Si' (73 of 73 mesh node(s) blocked). The device solve must not proceed.\nFirst blocked node: x=-1 um, y=-0.5 um in DevSim region 'Si'.\nCanonical material instance(s) containing it: si#substrate.\nCell(s) containing it: cell:init:2 (instance si#substrate, material Si, lifecycle ACTIVE, bounds_um (-1.0, 1.0, -0.5, 0.0)).\nBlocked because: the canonical query is not fully known here: attachment 'att:doping:1:2' covering this point has chemical_state 'CHEMICAL'; only ACTIVE dopant is electrically usable (no activation model is available).\nCanonical query at this node: physics_status UNSUPPORTED_BY_MODEL -- attachment 'att:doping:1:2' covering this point has chemical_state 'CHEMICAL'; only ACTIVE dopant is electrically usable (no activation model is available).\nDistinct reasons over all blocked nodes: the canonical query is not fully known here: attachment 'att:doping:1:2' covering this point has chemical_state 'CHEMICAL'; only ACTIVE dopant is electrically usable (no activation model is available).\n\nMeasurement blocked: no doping was written to DevSim, no solve was run, and no current is reported.\n",
+   "solves": 0,
+   "doping_writes": 0,
+   "dialogs": [],
+   "printed": null,
+   "legacy_A_line_present": false,
+   "leaked_devices": [],
+   "physics_status": {
+    "resolution": "UNSUPPORTED_BY_MODEL",
+    "reason_code": null,
+    "entry_parameters": [
+     "dopant_activation_state"
+    ],
+    "entry_notes": [
+     "attachment 'att:doping:1:2' covering this point has chemical_state 'CHEMICAL'; only ACTIVE dopant is electrically usable (no activation model is available)"
+    ],
+    "blocked_nodes": 73,
+    "total_nodes": 73,
+    "first_blocked_reason": "the canonical query is not fully known here: attachment 'att:doping:1:2' covering this point has chemical_state 'CHEMICAL'; only ACTIVE dopant is electrically usable (no activation model is available)",
+    "notes": [
+     "73 of 73 mesh node(s) blocked"
+    ]
+   }
+  },
+  "UNKNOWN": {
+   "log": "\n(No mesh refinement needed -- uniform doping has no junction to resolve.)\n\nERROR \u2014 Measurement: UNSUPPORTED_BY_MODEL: the canonical WaferStateV2 cannot supply a fully-known doping for device 'gui_measure_device' region 'Si' (73 of 73 mesh node(s) blocked). The device solve must not proceed.\nFirst blocked node: x=-1 um, y=-0.5 um in DevSim region 'Si'.\nCanonical material instance(s) containing it: si#substrate.\nCell(s) containing it: cell:init:2 (instance si#substrate, material Si, lifecycle ACTIVE, bounds_um (-1.0, 1.0, -0.5, 0.0)).\nBlocked because: the canonical query is not fully known here: attachment 'att:doping:1:2' covering this point has chemical_state 'UNKNOWN'; only ACTIVE dopant is electrically usable (no activation model is available).\nCanonical query at this node: physics_status UNSUPPORTED_BY_MODEL -- attachment 'att:doping:1:2' covering this point has chemical_state 'UNKNOWN'; only ACTIVE dopant is electrically usable (no activation model is available).\nDistinct reasons over all blocked nodes: the canonical query is not fully known here: attachment 'att:doping:1:2' covering this point has chemical_state 'UNKNOWN'; only ACTIVE dopant is electrically usable (no activation model is available).\n\nMeasurement blocked: no doping was written to DevSim, no solve was run, and no current is reported.\n",
+   "solves": 0,
+   "doping_writes": 0,
+   "dialogs": [],
+   "printed": null,
+   "legacy_A_line_present": false,
+   "leaked_devices": [],
+   "physics_status": {
+    "resolution": "UNSUPPORTED_BY_MODEL",
+    "reason_code": null,
+    "entry_parameters": [
+     "dopant_activation_state"
+    ],
+    "entry_notes": [
+     "attachment 'att:doping:1:2' covering this point has chemical_state 'UNKNOWN'; only ACTIVE dopant is electrically usable (no activation model is available)"
+    ],
+    "blocked_nodes": 73,
+    "total_nodes": 73,
+    "first_blocked_reason": "the canonical query is not fully known here: attachment 'att:doping:1:2' covering this point has chemical_state 'UNKNOWN'; only ACTIVE dopant is electrically usable (no activation model is available)",
+    "notes": [
+     "73 of 73 mesh node(s) blocked"
+    ]
+   }
+  }
+ }
+}

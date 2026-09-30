@@ -1,0 +1,153 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T18:34:27.966933+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6j-current-unit-001",
+  "profile": "e6j_current_unit_contract",
+  "params": {},
+  "note": "Batch 7H-E6J. Criteria committed before the run. Unit contract mock + one representative GUI measurement (E6I one_sided n=8 +1 mV) + CHEMICAL/UNKNOWN controls. No E6I matrix, no full regression, no PN solve."
+ },
+ "profile": "e6j_current_unit_contract",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/CRITERIA.md",
+   "sha256": "606ecb56f3ad31580016b8c3107957af3259aa9c349a336a7bdc659522b64137",
+   "bytes": 4975
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/scripts/run_e6j.py",
+   "sha256": "24e7b39fc69c27c3333d1b19550c98ae7706e6254e1c1913ec8ff420442e8135",
+   "bytes": 3507
+  },
+  {
+   "path": "tests/unit/test_current_unit_contract_mock.py",
+   "sha256": "37c3dcfd3d085e880adba32027d928bc557500f614a2237208164d914f13fb89",
+   "bytes": 3947
+  },
+  {
+   "path": "tests/integration/test_gui_current_unit_contract_real.py",
+   "sha256": "a58478f3a8604dcd948ad2de917c13e515fd2782be269ff9ea4c12b415b2ea42",
+   "bytes": 7802
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "69cb40afdcb41d893d794e8b2459c8c79001511925b9b48c7c178524c2efc0a3",
+   "bytes": 5742
+  },
+  {
+   "path": "tcad/characterization/io.py",
+   "sha256": "3f0ae8957d9de420e544a8f91c188eab5c4374a7f653d38a3ee95ed183d053ee",
+   "bytes": 2726
+  },
+  {
+   "path": "tcad/characterization/plotting.py",
+   "sha256": "3a52c59e511b30b587614fe7dd63668c5ff128ecb76e7871744b89961534ce05",
+   "bytes": 2297
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "452715f3a868afff8d59ef1f498abbf2bf4801138efe4026565a3432cb90ae34",
+   "bytes": 5550
+  },
+  {
+   "path": "tcad/characterization/robust_iv_sweep.py",
+   "sha256": "cea0a9fe4e1c4935526f1b28b2d5aab168af935e4d9c9457f25ad138cdccd732",
+   "bytes": 13374
+  }
+ ],
+ "request_sha256": "6ccfa96ea61d5ba17dd3a23624646fbbf522b849d35e2c8f5988dcca0d81cf12",
+ "source": {
+  "github_sha": "83ea90f652e7c9478c4a9b70864f78236993eff4",
+  "git_head": "83ea90f652e7c9478c4a9b70864f78236993eff4",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36759423132",
+  "run_number": "24",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/scripts/run_e6j.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T18:34:49.316223+00:00",
+ "duration_s": 21.349,
+ "outputs": [
+  {
+   "path": "e6j_out/e6j_result.json",
+   "bytes": 2027,
+   "sha256": "aa137a831d5cf1d9212e5e9e930751f10fd2a9a879f4dfacec677f20bac96658"
+  },
+  {
+   "path": "e6j_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "ee2d14ee506320c04caec6df79a225a3492d7bb6ea2918465eda0fab353191b5"
+  },
+  {
+   "path": "e6j_out/test_current_unit_contract_mock.log",
+   "bytes": 114,
+   "sha256": "6bc44b6a22694097f72116b49d1212cd324076930484fbda3c725cfbf4395ca6"
+  },
+  {
+   "path": "e6j_out/test_gui_current_unit_contract_real.log",
+   "bytes": 11034,
+   "sha256": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "a81f666e69dbdf82e5348f8c02c14f4cf0bbb77a2bbd11a85656077e00ffb2bb",
+  "bytes": 3250
+ },
+ "redactions": {}
+}

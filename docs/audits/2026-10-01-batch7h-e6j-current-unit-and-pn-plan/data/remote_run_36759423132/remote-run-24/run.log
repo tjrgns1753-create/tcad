@@ -1,0 +1,63 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6j] test_current_unit_contract_mock rc=0 wall=15.3s
+CURRENT UNIT CONTRACT MOCK CHECKS PASSED
+
+[e6j] test_gui_current_unit_contract_real rc=0 wall=5.0s
+n: 1
+  Device: "gui_measure_device"	RelError: 2.59423e-16	AbsError: 3.71758e-04
+    Region: "Si"	RelError: 2.59423e-16	AbsError: 3.71758e-04
+      Equation: "ElectronContinuityEquation"	RelError: 3.71758e-20	AbsError: 3.71758e-04
+      Equation: "HoleContinuityEquation"	RelError: 1.81854e-16	AbsError: 1.81854e-12
+      Equation: "PotentialEquation"	RelError: 7.75323e-17	AbsError: 2.77484e-17
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+PASS direct path entered production DD (3 solves)
+PASS raw I_max unchanged vs committed E6I value (1e-12 relative)
+PASS raw I_min unchanged vs committed E6I value (1e-12 relative)
+PASS raw I_max equals theory G V (1e-9 relative)
+PASS sweep metadata carries machine-readable unit
+PASS explicit-depth conversion CONTROL (test depth 1 um = 1e-4 cm): 1.6e-4 A/cm x 1e-4 cm = 1.6e-8 A
+PASS GUI ACTIVE: block printed with source and ground lines
+PASS GUI ACTIVE: unit printed is A/cm on both lines
+PASS GUI ACTIVE: no legacy plain-A current line
+PASS GUI ACTIVE: per-unit-depth note shown
+PASS GUI ACTIVE: source pin / voltage
+PASS GUI ACTIVE: printed source current equals direct raw (1e-6, printed digits)
+PASS GUI ACTIVE: printed ground current equals direct raw (1e-6), sign kept
+PASS GUI CHEMICAL: 0 solves, 0 doping writes, no measurement block, no numeric current line, no leaked device
+PASS GUI CHEMICAL: physics_status resolution UNSUPPORTED_BY_MODEL and a real entry names the activation state
+PASS GUI UNKNOWN: 0 solves, 0 doping writes, no measurement block, no numeric current line, no leaked device
+PASS GUI UNKNOWN: physics_status resolution UNSUPPORTED_BY_MODEL and a real entry names the activation state
+GUI CURRENT UNIT CONTRACT PASSED
+
