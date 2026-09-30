@@ -44,9 +44,7 @@ def main():
                 out["scan"].append({"grid": 0.10, "pad": pad, "pad_over_grid": pad / 0.10, "level_set_points": None if ls is None else int(ls.getNumberOfPoints()),
                                     "surface_nodes": int(len(nodes)), "surface_y": [float(nodes[:, 1].min()), float(nodes[:, 1].max())] if len(nodes) else None})
             out["status"] = "OK"
-            with open(out_dir / f"{case}_{rt}.json", "w", encoding="utf-8", newline="
-") as f:
-                json.dump(out, f, indent=1, default=str)
+            (out_dir / f"{case}_{rt}.json").write_text(json.dumps(out, indent=1, default=str), encoding="utf-8")
             print(json.dumps(out["scan"]), flush=True)
             return
         if rt == "R4":
