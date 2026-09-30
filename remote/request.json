@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6d-noncore-refinement-001",
- "profile": "e6d_noncore_refinement",
+ "request_id": "e6e-importer-repro-001",
+ "profile": "e6e_importer_repro",
  "params": {},
- "note": "Batch 7H-E6D. PLAN fixed alone in commit 44c426b (PLAN.md LF sha256 fb389c5d...) before this code and request. At most 4 devsim.solve calls; mesh stages make none."
+ "note": "Batch 7H-E6E step 1 (pre-change reproduction). Unmodified production importer on E6D G0/G1/G2; 0 solves and 0 DEVSIM writes (trapped)."
 }

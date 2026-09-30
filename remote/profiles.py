@@ -358,6 +358,24 @@ PROFILES = {
                     {"glob": "e6d_out/**/*.vtu", "max_mb": 40}],
         "regenerate": "Rerun the profile. The refined meshes are rebuilt from the hash-gated E6A L5 mesh; every solve is a fresh import in its own process.",
     },
+    "e6e_importer_repro": {
+        "description": "Batch 7H-E6E step 1: unmodified production import_process_result() on the E6D G0/G1/G2 meshes (sha-gated), solve and DEVSIM write APIs trapped; records device returned or not and sum(NodeVolume) vs exact triangle area.",
+        "entry": "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/repro_e6e.py",
+        "args": [],
+        "params": {},
+        "timeout_s": 3600,
+        "inputs": [
+            "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/repro_e6e.py",
+            "docs/audits/2026-09-28-batch7h-e6a-mesh-family/data/remote_run_36388479824/outputs/e6a_out/level_L5.vtu",
+            "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/data/remote_run_36538742843/outputs/e6d_out/mesh_G1.vtu",
+            "docs/audits/2026-09-29-batch7h-e6d-noncore-refinement/data/remote_run_36538742843/outputs/e6d_out/mesh_G2.vtu",
+            "docs/audits/2026-09-24-batch7h-e1-production-step-junction-equivalence/scripts/common_e1.py",
+            "tcad/device/devsim/mesh_import.py",
+            "tcad/mesh/viennaps_adapter.py",
+        ],
+        "outputs": [{"glob": "e6e_repro_out/**/*.json", "max_mb": 5}],
+        "regenerate": "Rerun the profile; inputs are sha-gated raw E6A/E6D meshes.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.
