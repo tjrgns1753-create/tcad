@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e7a-official-extraction-s1b-001",
+ "request_id": "e7a-official-extraction-s1b-002",
  "profile": "e7a_official_material_extraction_s1b",
  "params": {},
- "note": "E7A supplement S1b: B2 empty surface + thickness scan. S1_CRITERIA.md section committed before the run. Probe only."
+ "note": "E7A supplement S1b (rerun after a probe syntax error in 001): B2 empty surface + thickness scan. S1_CRITERIA.md section committed before the run. Probe only."
 }
