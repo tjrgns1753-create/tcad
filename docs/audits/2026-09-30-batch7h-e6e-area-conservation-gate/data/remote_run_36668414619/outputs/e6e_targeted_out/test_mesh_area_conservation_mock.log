@@ -1,0 +1,9 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+single material exact: pass, rel 0.0 tau 2.0763317285927413e-14
+two materials exact, large-coordinate control: pass
+cancelling region errors: refused per region
+tolerance boundary: B(1 - 2^-10) pass, B(1 + 2^-10) refused
+non-finite / non-positive / missing NodeVolume, element mismatch: refused
+input checks: non-finite, non-planar, extra cells, unmapped tag, empty region, duplicate, degenerate, mixed: refused; consistent clockwise accepted
+ALL MESH AREA CONSERVATION MOCK CHECKS PASSED

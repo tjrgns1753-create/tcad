@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6e-targeted-001",
- "profile": "e6e_targeted",
+ "request_id": "e6e-full-regression-001",
+ "profile": "e6e_full_regression",
  "params": {},
- "note": "Batch 7H-E6E targeted checks of the importer area-conservation gate. PLAN 537c4b4 (PLAN.md LF sha256 2e366a06...) fixed before the production edit."
+ "note": "Batch 7H-E6E: tests/run_regression.py exactly once, after targeted run 36668414619 passed (16/16) on 3344938."
 }

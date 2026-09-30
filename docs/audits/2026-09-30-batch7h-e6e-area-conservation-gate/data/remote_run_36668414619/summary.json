@@ -1,0 +1,139 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-09-30T04:21:32.414804+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6e-targeted-001",
+  "profile": "e6e_targeted",
+  "params": {},
+  "note": "Batch 7H-E6E targeted checks of the importer area-conservation gate. PLAN 537c4b4 (PLAN.md LF sha256 2e366a06...) fixed before the production edit."
+ },
+ "profile": "e6e_targeted",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/PLAN.md",
+   "sha256": "e6f35b48ad6b71ca15e0929e5c6248e346d63527514ed4fda7c3797719b818fe",
+   "bytes": 10419
+  },
+  {
+   "path": "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
+   "sha256": "363603002cc6af81f76373b8cc80601d5234f374f65199be9ec7e04475a157c3",
+   "bytes": 3716
+  },
+  {
+   "path": "tcad/device/devsim/mesh_conservation.py",
+   "sha256": "13981969288b001b8757009c26e3fc6fc7a8841835c046e9a4620dd5681f29fd",
+   "bytes": 8728
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "e0635b22617ee0269b5841ad0d55c238850096422b6263592b4228bc28018f50",
+   "bytes": 60559
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "3fa2fffeb7e95df27fb14ee97fc564e5b6a72c90ff92c563bf7fc6dab2d7e204",
+   "bytes": 399798
+  },
+  {
+   "path": "tcad/cli/run_pipeline.py",
+   "sha256": "9707348116e39b918fab319f111444f3d5220692411d6bfeac6c767e486def74",
+   "bytes": 21334
+  },
+  {
+   "path": "tests/unit/test_mesh_area_conservation_mock.py",
+   "sha256": "2f741a610d67d6303327cbd4401c5be7ddd6a8ff857f6b16828a0a9d6b184eac",
+   "bytes": 7162
+  },
+  {
+   "path": "tests/integration/test_mesh_area_conservation_gate_real.py",
+   "sha256": "876129bb03de8001e46b0792914d676fd1133a30e0c6a8db09ee6214fd14e194",
+   "bytes": 13771
+  }
+ ],
+ "request_sha256": "9ee98e3a76fa7b2a3fb04100cb0b20505436186665180d88c852fb053a8a7839",
+ "source": {
+  "github_sha": "33449384d9fc2b46040bfb7edbcebc2f746e480b",
+  "git_head": "33449384d9fc2b46040bfb7edbcebc2f746e480b",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36668414619",
+  "run_number": "16",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-09-30-batch7h-e6e-area-conservation-gate/scripts/run_tests_e6e.py",
+  "targeted"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-09-30T04:24:50.658110+00:00",
+ "duration_s": 198.243,
+ "outputs": [
+  {
+   "path": "e6e_targeted_out/e6e_tests_result.json",
+   "bytes": 2338,
+   "sha256": "2e34825dd5632e0d548cc6360fc3266850617cb72dabeed69d2ab80cee945158"
+  },
+  {
+   "path": "e6e_targeted_out/test_mesh_area_conservation_gate_real.log",
+   "bytes": 13151,
+   "sha256": "5dda3833433bbf641d46dbf02ba62ca93307398648ee9355543965ae784f37b6"
+  },
+  {
+   "path": "e6e_targeted_out/test_mesh_area_conservation_mock.log",
+   "bytes": 585,
+   "sha256": "92d6781d73b7fb0228c87e437f2d9df40e4d20f5d906728ba81cb194090e5877"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "b5bc6f8473cb78628bd7692bbd69c2f10ddd104bf8feeec02c898e5468512795",
+  "bytes": 6853
+ },
+ "redactions": {}
+}
