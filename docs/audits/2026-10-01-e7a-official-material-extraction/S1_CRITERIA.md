@@ -8,3 +8,7 @@ Routes (same inputs A, B1, B2, C, CN; same judgement items 1-6 and tolerance del
 - **R4** `vio._floored_copy_for_export(domain, 1.0)` then the official `saveVolumeMesh(path)` (default epsilon) -- what `save_volume_mesh` does when no LOCOS hint is registered (the hint is bypassed on purpose).
 - **R5** for each material: `ls = getMaterialLevelSet(m)`; record the point count and surface bbox; mesh it (a) with the project's `_export_single_level_set` (exception captured with its message) and (b) with the official raw
   `saveVolumeMesh` of a throwaway single-level-set domain, no floor (exception captured). Slab materials (SiO2, Mask) are compared to the analytic area with the same tolerance; Si is not judged (no floor in (b)).
+
+## S1b (written after the S1 run, before the S1b run)
+S1 result: `B2_R5` aborted because the surface mesh of the SiO2 material level set was empty (`nodes.min` on an empty array). S1b repeats B2 R5 with the empty case recorded instead of raising, and adds **R6**: a
+thickness scan at grid 0.10 with pad in {0.05, 0.10, 0.15, 0.20} um (0.5 / 1 / 1.5 / 2 grid), recording for `getMaterialLevelSet(SiO2)` the level-set point count and whether its surface mesh is empty. Characterisation only; no pass/fail, no threshold adopted.
