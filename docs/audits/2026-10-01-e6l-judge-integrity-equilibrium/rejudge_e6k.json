@@ -1,0 +1,204 @@
+{
+ "EVIDENCE_INTEGRITY": {
+  "verdict": "PASS",
+  "problems": []
+ },
+ "A_CURRENT_UNIT_CONTRACT": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "1D control metadata: current_unit None, dimension 1, no 2D note",
+    "pass": true
+   },
+   {
+    "name": "1D value is displayed as 'unit not established'",
+    "pass": true
+   },
+   {
+    "name": "E6J GUI evidence: 17 checks, 0 failed",
+    "pass": true
+   }
+  ]
+ },
+ "B_PRODUCTION_PATH_EXECUTED": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "control: production sweep once, solves == 2 + #V, dimension 1, planned doping written, no error",
+    "pass": true
+   },
+   {
+    "name": "L0_fwd: production sweep once, solves == 2 + #V, dimension 1, planned doping written, no error",
+    "pass": true
+   },
+   {
+    "name": "L0_rev: production sweep once, solves == 2 + #V, dimension 1, planned doping written, no error",
+    "pass": true
+   },
+   {
+    "name": "L1_fwd: production sweep once, solves == 2 + #V, dimension 1, planned doping written, no error",
+    "pass": true
+   },
+   {
+    "name": "L1_rev: production sweep once, solves == 2 + #V, dimension 1, planned doping written, no error",
+    "pass": true
+   },
+   {
+    "name": "L2_fwd: production sweep once, solves == 2 + #V, dimension 1, planned doping written, no error",
+    "pass": true
+   },
+   {
+    "name": "L2_rev: production sweep once, solves == 2 + #V, dimension 1, planned doping written, no error",
+    "pass": true
+   }
+  ]
+ },
+ "C_NUMERICAL_CONVERGENCE_AND_MESH_SENSITIVITY": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "control: converged, finite currents",
+    "pass": true
+   },
+   {
+    "name": "L0_fwd: converged, finite currents",
+    "pass": true
+   },
+   {
+    "name": "L0_rev: converged, finite currents",
+    "pass": true
+   },
+   {
+    "name": "L1_fwd: converged, finite currents",
+    "pass": true
+   },
+   {
+    "name": "L1_rev: converged, finite currents",
+    "pass": true
+   },
+   {
+    "name": "L2_fwd: converged, finite currents",
+    "pass": true
+   },
+   {
+    "name": "L2_rev: converged, finite currents",
+    "pass": true
+   },
+   {
+    "name": "J(0.6 V) L1 vs L2",
+    "value": 5.277494781768591e-05,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "J(-1.0 V) L1 vs L2",
+    "value": 4.795705405831797e-05,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "E_max(-1.0 V) L1 vs L2",
+    "value": 0.0046817322199744615,
+    "limit": 0.02,
+    "pass": true
+   }
+  ]
+ },
+ "D_ANALYTICAL_ELECTROSTATICS_COMPARISON": {
+  "verdict": "FAIL",
+  "checks": [
+   {
+    "name": "E_max(0.0 V) vs depletion approximation",
+    "value": 0.03815469853147241,
+    "limit": 0.03,
+    "pass": false
+   },
+   {
+    "name": "W_E(0.0 V) vs depletion width (NOT independent of E_max: W_E = 2 V_drop / E_max)",
+    "value": 0.039699130728334996,
+    "limit": 0.05,
+    "pass": true
+   },
+   {
+    "name": "E_max(-1.0 V) vs depletion approximation",
+    "value": 0.018690491759452647,
+    "limit": 0.03,
+    "pass": true
+   },
+   {
+    "name": "W_E(-1.0 V) vs depletion width (NOT independent of E_max: W_E = 2 V_drop / E_max)",
+    "value": 0.01906715739337788,
+    "limit": 0.05,
+    "pass": true
+   }
+  ]
+ },
+ "E_APPROXIMATE_SRH_DIFFUSION_REFERENCE_COMPARISON": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "J(0.5 V) sign equals the reference sign",
+    "pass": true
+   },
+   {
+    "name": "J(0.5 V) vs J_diff + J_SRH",
+    "value": 0.0506204188071126,
+    "limit": 0.1,
+    "pass": true
+   },
+   {
+    "name": "J(0.6 V) sign equals the reference sign",
+    "pass": true
+   },
+   {
+    "name": "J(0.6 V) vs J_diff + J_SRH",
+    "value": 0.01848445350288509,
+    "limit": 0.1,
+    "pass": true
+   },
+   {
+    "name": "J(-0.5 V) sign equals the reference sign",
+    "pass": true
+   },
+   {
+    "name": "J(-0.5 V) vs J_diff + J_SRH",
+    "value": 0.02661572120967343,
+    "limit": 0.1,
+    "pass": true
+   },
+   {
+    "name": "J(-1.0 V) sign equals the reference sign",
+    "pass": true
+   },
+   {
+    "name": "J(-1.0 V) vs J_diff + J_SRH",
+    "value": 0.022393412989261473,
+    "limit": 0.1,
+    "pass": true
+   }
+  ]
+ },
+ "F_MINORITY_CARRIER_PROFILE_COMPARISON": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "hole excess at s = 3.0 um",
+    "value": 0.005949192788987924,
+    "limit": 0.1,
+    "pass": true
+   },
+   {
+    "name": "hole excess at s = 5.0 um",
+    "value": 0.005886334283282874,
+    "limit": 0.1,
+    "pass": true
+   },
+   {
+    "name": "hole excess at s = 8.0 um",
+    "value": 0.005713503241901192,
+    "limit": 0.1,
+    "pass": true
+   }
+  ]
+ }
+}

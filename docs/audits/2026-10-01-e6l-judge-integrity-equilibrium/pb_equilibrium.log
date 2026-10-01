@@ -1,0 +1,17 @@
+E_dep(0) 116584.6063  E_PB(0) closed 112910.1264  first-integral 112910.1264  model diff 3674.4800 V/cm (3.254 %)
+psi_n - psi_p = 0.8345045098 V vs V_bi = 0.8345045098 V
+L0 nodes 345 edges 344 sorted True edge-map dev 1.3e-16 psi(0) -6.190e-04 V max edge left [-3.780723272e-07, 0.000e+00] 3.780723 nm
+   left: d 3.780723 nm  E_dev 109766.7737  E_PB_edge 109831.2052  1st-order 109831.2048 (resid -0.0004)  quad err 4.4e-11  model 3674.48  meas 3078.92  discr +64.43  dpsi dev 4.149978e-02 PB 4.152414e-02
+   right: d 4.000000 nm  E_dev 109766.7737  E_PB_edge 109652.6320  1st-order 109652.6316 (resid -0.0004)  quad err 2.9e-11  model 3674.48  meas 3257.49  discr -114.14  dpsi dev 4.390671e-02 PB 4.386105e-02
+   both junction edges: E_dev left 109766.773692 right 109766.773662; PB mean over both 109739.4023; dev - PB +27.3714
+   int|E|dx 0.834504509847 V, end-to-end drop 0.834504509847 V, W_E/W_dep 1.062112, E_dep/E_max 1.062112, contacts [-0.417252254923581, 0.417252254923581]
+L1 nodes 685 edges 684 sorted True edge-map dev 1.3e-16 psi(0) -3.853e-04 V max edge left [-1.863507301e-07, 0.000e+00] 1.863507 nm
+   left: d 1.863507 nm  E_dev 111343.1738  E_PB_edge 111392.5351  1st-order 111392.5351 (resid -0.0001)  quad err 4.4e-11  model 3674.48  meas 1517.59  discr +49.36  dpsi dev 2.074888e-02 PB 2.075808e-02
+   right: d 2.000000 nm  E_dev 111343.1738  E_PB_edge 111281.3791  1st-order 111281.3790 (resid -0.0001)  quad err 4.4e-11  model 3674.48  meas 1628.75  discr -61.79  dpsi dev 2.226863e-02 PB 2.225628e-02
+   both junction edges: E_dev left 111343.173829 right 111343.173819; PB mean over both 111334.9936; dev - PB +8.1802
+   int|E|dx 0.834504509847 V, end-to-end drop 0.834504509847 V, W_E/W_dep 1.047075, E_dep/E_max 1.047075, contacts [-0.417252254923581, 0.417252254923581]
+L2 nodes 1371 edges 1370 sorted True edge-map dev 1.3e-16 psi(0) -2.707e-04 V max edge left [-9.040947809e-08, 0.000e+00] 0.904095 nm
+   left: d 0.904095 nm  E_dev 112136.3558  E_PB_edge 112173.8554  1st-order 112173.8554 (resid -0.0000)  quad err 2.9e-11  model 3674.48  meas 736.27  discr +37.50  dpsi dev 1.013819e-02 PB 1.014158e-02
+   right: d 1.000000 nm  E_dev 112136.3558  E_PB_edge 112095.7527  1st-order 112095.7527 (resid -0.0000)  quad err 0.0e+00  model 3674.48  meas 814.37  discr -40.60  dpsi dev 1.121364e-02 PB 1.120958e-02
+   both junction edges: E_dev left 112136.355833 right 112136.355830; PB mean over both 112132.8371; dev - PB +3.5187
+   int|E|dx 0.834504509847 V, end-to-end drop 0.834504509847 V, W_E/W_dep 1.039668, E_dep/E_max 1.039668, contacts [-0.417252254923581, 0.417252254923581]

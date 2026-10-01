@@ -1,0 +1,257 @@
+{
+ "constants": {
+  "q": 1.6e-19,
+  "n_i": 10000000000.0,
+  "Vt": 0.025887193125000003,
+  "eps": 9.8235e-13,
+  "N": 1e+17,
+  "V_bi": 0.8345045098471614
+ },
+ "a": 16.11809565095833,
+ "psi_n_V": 0.417252254923581,
+ "psi_n_minus_psi_p_V": 0.834504509847162,
+ "V_bi_V": 0.8345045098471614,
+ "E_dep_0": 116584.6063412554,
+ "E_PB_0_closed_form": 112910.12637894512,
+ "E_PB_0_first_integral": 112910.12637894512,
+ "slope_qN_over_eps": 16287473914.59256,
+ "levels": {
+  "L0": {
+   "snapshot": "L0_rev__2__bias+0.000",
+   "n_nodes": 345,
+   "n_edges": 344,
+   "x_sorted": true,
+   "edge_correspondence_max_rel_dev": 1.3257122113466529e-16,
+   "junction_node_index": 172,
+   "psi_dev_at_junction_V": -0.0006190493046589733,
+   "max_edge_index": 171,
+   "max_edge_x_left_cm": -3.7807232719171317e-07,
+   "max_edge_x_right_cm": 0.0,
+   "max_edge_length_nm": 3.7807232719171315,
+   "left": {
+    "edge_index": 171,
+    "length_nm": 3.7807232719171315,
+    "E_devsim": 109766.77369204495,
+    "E_PB_edge_mean": 109831.2051756707,
+    "quadrature_n4_to_n64": {
+     "4": 109831.2051756825,
+     "8": 109831.2051756707,
+     "16": 109831.20517567072,
+     "32": 109831.20517567065,
+     "64": 109831.2051756707
+    },
+    "quadrature_err_estimate": 4.3655745685100555e-11,
+    "first_order_estimate": 109831.20479546295,
+    "first_order_residual_vs_PB_edge": -0.00038020774081815034,
+    "decomposition_V_per_cm": {
+     "1_model_dep_minus_PB_center": 3674.479962310288,
+     "2_measurement_PB_center_minus_PB_edge_mean": 3078.9212032744254,
+     "3_discretisation_PB_edge_mean_minus_devsim": 64.43148362573993
+    },
+    "edge_potential_drop_devsim_V": 0.04149977957807755,
+    "edge_potential_drop_PB_V": 0.04152413933903635
+   },
+   "right": {
+    "edge_index": 172,
+    "length_nm": 4.0,
+    "E_devsim": 109766.77366173711,
+    "E_PB_edge_mean": 109652.63202774318,
+    "quadrature_n4_to_n64": {
+     "4": 109652.63202776194,
+     "8": 109652.6320277432,
+     "16": 109652.63202774318,
+     "32": 109652.63202774321,
+     "64": 109652.63202774318
+    },
+    "quadrature_err_estimate": 2.9103830456733704e-11,
+    "first_order_estimate": 109652.63159602661,
+    "first_order_residual_vs_PB_edge": -0.00043171657307539135,
+    "decomposition_V_per_cm": {
+     "1_model_dep_minus_PB_center": 3674.479962310288,
+     "2_measurement_PB_center_minus_PB_edge_mean": 3257.494351201938,
+     "3_discretisation_PB_edge_mean_minus_devsim": -114.14163399393146
+    },
+    "edge_potential_drop_devsim_V": 0.04390670946469485,
+    "edge_potential_drop_PB_V": 0.04386105281109727
+   },
+   "combined_two_edge": {
+    "E_devsim_left": 109766.77369204495,
+    "E_devsim_right": 109766.77366173711,
+    "PB_mean_over_both_edges": 109739.4023230634,
+    "devsim_minus_PB_combined": 27.371368981548585,
+    "devsim_drop_both_edges_V": 0.0854064890427724,
+    "PB_drop_both_edges_V": 0.08538519215013363
+   },
+   "max_edge_side": "left",
+   "W_E_bookkeeping": {
+    "int_absE_dx_V": 0.834504509847162,
+    "end_to_end_potential_drop_V": 0.834504509847162,
+    "contact_potentials_V": [
+     -0.417252254923581,
+     0.417252254923581
+    ],
+    "W_E_cm": 1.5205047607364275e-05,
+    "W_E_over_W_dep": 1.0621119890827642,
+    "E_dep_over_E_max": 1.0621119890827633
+   }
+  },
+  "L1": {
+   "snapshot": "L1_rev__2__bias+0.000",
+   "n_nodes": 685,
+   "n_edges": 684,
+   "x_sorted": true,
+   "edge_correspondence_max_rel_dev": 1.3069427364054607e-16,
+   "junction_node_index": 342,
+   "psi_dev_at_junction_V": -0.0003852985378649532,
+   "max_edge_index": 341,
+   "max_edge_x_left_cm": -1.8635073010569057e-07,
+   "max_edge_x_right_cm": 0.0,
+   "max_edge_length_nm": 1.8635073010569057,
+   "left": {
+    "edge_index": 341,
+    "length_nm": 1.8635073010569057,
+    "E_devsim": 111343.17382863762,
+    "E_PB_edge_mean": 111392.53513552886,
+    "quadrature_n4_to_n64": {
+     "4": 111392.53513552893,
+     "8": 111392.53513552889,
+     "16": 111392.53513552887,
+     "32": 111392.5351355289,
+     "64": 111392.53513552886
+    },
+    "quadrature_err_estimate": 4.3655745685100555e-11,
+    "first_order_estimate": 111392.53505116426,
+    "first_order_residual_vs_PB_edge": -8.436459756921977e-05,
+    "decomposition_V_per_cm": {
+     "1_model_dep_minus_PB_center": 3674.479962310288,
+     "2_measurement_PB_center_minus_PB_edge_mean": 1517.59124341626,
+     "3_discretisation_PB_edge_mean_minus_devsim": 49.3613068912382
+    },
+    "edge_potential_drop_devsim_V": 0.02074888173525144,
+    "edge_potential_drop_PB_V": 0.02075808025082959
+   },
+   "right": {
+    "edge_index": 342,
+    "length_nm": 2.0,
+    "E_devsim": 111343.17381927144,
+    "E_PB_edge_mean": 111281.37908508585,
+    "quadrature_n4_to_n64": {
+     "4": 111281.3790850859,
+     "8": 111281.37908508585,
+     "16": 111281.37908508585,
+     "32": 111281.3790850858,
+     "64": 111281.37908508585
+    },
+    "quadrature_err_estimate": 4.3655745685100555e-11,
+    "first_order_estimate": 111281.37898748586,
+    "first_order_residual_vs_PB_edge": -9.759998647496104e-05,
+    "decomposition_V_per_cm": {
+     "1_model_dep_minus_PB_center": 3674.479962310288,
+     "2_measurement_PB_center_minus_PB_edge_mean": 1628.7472938592691,
+     "3_discretisation_PB_edge_mean_minus_devsim": -61.79473418559064
+    },
+    "edge_potential_drop_devsim_V": 0.022268634763854288,
+    "edge_potential_drop_PB_V": 0.022256275817017168
+   },
+   "combined_two_edge": {
+    "E_devsim_left": 111343.17382863762,
+    "E_devsim_right": 111343.17381927144,
+    "PB_mean_over_both_edges": 111334.99361080462,
+    "devsim_minus_PB_combined": 8.180217832996277,
+    "devsim_drop_both_edges_V": 0.04301751649910573,
+    "PB_drop_both_edges_V": 0.04301435606784676
+   },
+   "max_edge_side": "left",
+   "W_E_bookkeeping": {
+    "int_absE_dx_V": 0.8345045098471621,
+    "end_to_end_potential_drop_V": 0.834504509847162,
+    "contact_potentials_V": [
+     -0.417252254923581,
+     0.417252254923581
+    ],
+    "W_E_cm": 1.4989774067901167e-05,
+    "W_E_over_W_dep": 1.0470745743307506,
+    "E_dep_over_E_max": 1.0470745743307497
+   }
+  },
+  "L2": {
+   "snapshot": "L2_rev__2__bias+0.000",
+   "n_nodes": 1371,
+   "n_edges": 1370,
+   "x_sorted": true,
+   "edge_correspondence_max_rel_dev": 1.297698246057872e-16,
+   "junction_node_index": 685,
+   "psi_dev_at_junction_V": -0.00027071910377737823,
+   "max_edge_index": 684,
+   "max_edge_x_left_cm": -9.040947809138998e-08,
+   "max_edge_x_right_cm": 0.0,
+   "max_edge_length_nm": 0.9040947809138998,
+   "left": {
+    "edge_index": 684,
+    "length_nm": 0.9040947809138998,
+    "E_devsim": 112136.35583289442,
+    "E_PB_edge_mean": 112173.85539036409,
+    "quadrature_n4_to_n64": {
+     "4": 112173.85539036404,
+     "8": 112173.85539036406,
+     "16": 112173.85539036406,
+     "32": 112173.85539036406,
+     "64": 112173.85539036409
+    },
+    "quadrature_err_estimate": 2.9103830456733704e-11,
+    "first_order_estimate": 112173.85537092239,
+    "first_order_residual_vs_PB_edge": -1.9441693439148366e-05,
+    "decomposition_V_per_cm": {
+     "1_model_dep_minus_PB_center": 3674.479962310288,
+     "2_measurement_PB_center_minus_PB_edge_mean": 736.2709885810327,
+     "3_discretisation_PB_edge_mean_minus_devsim": 37.49955746966589
+    },
+    "edge_potential_drop_devsim_V": 0.01013818940592238,
+    "edge_potential_drop_PB_V": 0.01014157972134187
+   },
+   "right": {
+    "edge_index": 685,
+    "length_nm": 1.0,
+    "E_devsim": 112136.35582965115,
+    "E_PB_edge_mean": 112095.75270703305,
+    "quadrature_n4_to_n64": {
+     "4": 112095.75270703301,
+     "8": 112095.75270703301,
+     "16": 112095.75270703301,
+     "32": 112095.75270703305,
+     "64": 112095.75270703305
+    },
+    "quadrature_err_estimate": 0.0,
+    "first_order_estimate": 112095.75268321548,
+    "first_order_residual_vs_PB_edge": -2.3817570763640106e-05,
+    "decomposition_V_per_cm": {
+     "1_model_dep_minus_PB_center": 3674.479962310288,
+     "2_measurement_PB_center_minus_PB_edge_mean": 814.3736719120643,
+     "3_discretisation_PB_edge_mean_minus_devsim": -40.60312261809304
+    },
+    "edge_potential_drop_devsim_V": 0.011213635582965115,
+    "edge_potential_drop_PB_V": 0.011209575270703305
+   },
+   "combined_two_edge": {
+    "E_devsim_left": 112136.35583289442,
+    "E_devsim_right": 112136.35582965115,
+    "PB_mean_over_both_edges": 112132.83711537383,
+    "devsim_minus_PB_combined": 3.518717520593782,
+    "devsim_drop_both_edges_V": 0.021351824988887495,
+    "PB_drop_both_edges_V": 0.021351154992045172
+   },
+   "max_edge_side": "left",
+   "W_E_bookkeeping": {
+    "int_absE_dx_V": 0.834504509847162,
+    "end_to_end_potential_drop_V": 0.834504509847162,
+    "contact_potentials_V": [
+     -0.417252254923581,
+     0.417252254923581
+    ],
+    "W_E_cm": 1.4883745840479076e-05,
+    "W_E_over_W_dep": 1.0396682278046367,
+    "E_dep_over_E_max": 1.039668227804636
+   }
+  }
+ }
+}
