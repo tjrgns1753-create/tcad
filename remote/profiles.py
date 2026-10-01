@@ -618,6 +618,29 @@ PROFILES = {
         "outputs": [{"glob": "e6k_out/**/*", "max_mb": 30}],
         "regenerate": "Rerun the profile.",
     },
+    "e6m_pn_2d_1d_consistency": {
+        "description": "E6M: limited 2D-1D consistency of the E6K p-n problem (audit path; the production 2D step-junction gate is recorded as refusing); 3 meshes x forward/reverse, 42 solves planned; separate verdicts, no PN validation claim.",
+        "entry": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/run_e6m.py",
+        "args": [],
+        "params": {},
+        "timeout_s": 1800,
+        "inputs": [
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/PLAN.md",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/run_e6m.py",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py",
+            "tests/integration/test_pn_2d_1d_consistency_real.py",
+            "tests/unit/test_e6m_judge_mock.py",
+            "tests/unit/test_e6l_correction_mock.py",
+            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/pn_1d_diagnostic.json",
+            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz",
+            "tcad/characterization/pn_junction_iv_sweep.py",
+            "tcad/device/devsim/doping_mapping.py",
+            "tcad/device/devsim/mesh_import.py",
+        ],
+        "outputs": [{"glob": "e6m_out/**/*", "max_mb": 60}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.

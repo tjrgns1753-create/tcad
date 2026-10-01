@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6k-pn-1d-001",
- "profile": "e6k_pn_1d_diagnostic",
+ "request_id": "e6m-pn-2d-1d-001",
+ "profile": "e6m_pn_2d_1d_consistency",
  "params": {},
- "note": "E6K 1D PN diagnostic. PN_PLAN_v2 committed in df5d5d3 before the run. <= 45 solves, one profile, no 2D, no gate change, no full regression."
+ "note": "E6M 2D-1D PN consistency audit. PLAN committed alone in 7f4ebbe before any solve. 42 solves planned, one run. No production gate change, no full regression, no 1D re-run."
 }
