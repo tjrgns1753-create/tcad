@@ -1,0 +1,60 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6k] test_current_unit_contract_mock rc=0 wall=4.9s
+CURRENT UNIT CONTRACT MOCK CHECKS PASSED
+
+[e6k] test_pn_reference_mock rc=0 wall=0.3s
+PN REFERENCE SELF-CHECKS PASSED
+
+[e6k] test_pn_judge_mock rc=0 wall=0.1s
+PN JUDGE TESTS PASSED
+
+[e6k] test_pn_1d_diagnostic_real rc=0 wall=3.3s
+elError: 2.01604e+03	AbsError: 9.48042e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 4.83933e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 4.64109e+15
+      Equation: "PotentialEquation"	RelError: 1.80368e+01	AbsError: 5.47695e-02
+Iteration: 2
+  Device: "L2_rev"	RelError: 2.00145e+03	AbsError: 2.14323e+15
+    Region: "Si"	RelError: 2.00145e+03	AbsError: 2.14323e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.21111e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 9.32117e+14
+      Equation: "PotentialEquation"	RelError: 3.45460e+00	AbsError: 4.71388e-02
+Iteration: 3
+  Device: "L2_rev"	RelError: 1.99806e+03	AbsError: 1.51670e+14
+    Region: "Si"	RelError: 1.99806e+03	AbsError: 1.51670e+14
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.33900e+13
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.38280e+14
+      Equation: "PotentialEquation"	RelError: 5.68087e-02	AbsError: 3.80896e-02
+Iteration: 4
+  Device: "L2_rev"	RelError: 1.00002e+03	AbsError: 1.96100e+13
+    Region: "Si"	RelError: 1.00002e+03	AbsError: 1.96100e+13
+      Equation: "ElectronContinuityEquation"	RelError: 1.00000e+00	AbsError: 3.60150e+11
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.92499e+13
+      Equation: "PotentialEquation"	RelError: 2.06379e-02	AbsError: 2.74092e-02
+Iteration: 5
+  Device: "L2_rev"	RelError: 1.28747e+00	AbsError: 1.65026e+12
+    Region: "Si"	RelError: 1.28747e+00	AbsError: 1.65026e+12
+      Equation: "ElectronContinuityEquation"	RelError: 2.74398e-01	AbsError: 1.68894e+10
+      Equation: "HoleContinuityEquation"	RelError: 9.98029e-01	AbsError: 1.63337e+12
+      Equation: "PotentialEquation"	RelError: 1.50423e-02	AbsError: 2.13187e-02
+Iteration: 6
+  Device: "L2_rev"	RelError: 7.29381e-02	AbsError: 2.21192e+11
+    Region: "Si"	RelError: 7.29381e-02	AbsError: 2.21192e+11
+      Equation: "ElectronContinuityEquation"	RelError: 7.21032e-02	AbsError: 1.50832e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.22577e-04	AbsError: 2.06109e+11
+      Equation: "PotentialEquation"	RelError: 1.23361e-05	AbsError: 1.76348e-07
+Iteration: 7
+  Device: "L2_rev"	RelError: 5.49221e-07	AbsError: 1.26106e+05
+    Region: "Si"	RelError: 5.49221e-07	AbsError: 1.26106e+05
+      Equation: "ElectronContinuityEquation"	RelError: 5.47925e-07	AbsError: 2.39242e+03
+      Equation: "HoleContinuityEquation"	RelError: 1.29596e-09	AbsError: 1.23714e+05
+      Equation: "PotentialEquation"	RelError: 2.07487e-13	AbsError: 3.51412e-14
+A_CURRENT_UNIT_CONTRACT PASS []
+B_PRODUCTION_PATH_EXECUTED PASS []
+C_NUMERICAL_CONVERGENCE_AND_MESH_SENSITIVITY PASS []
+D_ANALYTICAL_ELECTROSTATICS_COMPARISON FAIL ['E_max(0.0 V) vs depletion approximation, relative']
+E_APPROXIMATE_SRH_DIFFUSION_REFERENCE_COMPARISON PASS []
+F_MINORITY_CARRIER_PROFILE_COMPARISON PASS []
+total solves: 45 leaked devices: []
+

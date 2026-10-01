@@ -1,0 +1,173 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-01T04:37:38.475293+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6k-pn-1d-001",
+  "profile": "e6k_pn_1d_diagnostic",
+  "params": {},
+  "note": "E6K 1D PN diagnostic. PN_PLAN_v2 committed in df5d5d3 before the run. <= 45 solves, one profile, no 2D, no gate change, no full regression."
+ },
+ "profile": "e6k_pn_1d_diagnostic",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/PN_PLAN_v2.md",
+   "sha256": "ae5d8a93ca7c3417bd22623b431cf0129f731c1755fee113819a1c58e505ce2a",
+   "bytes": 11433
+  },
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/scripts/run_e6k.py",
+   "sha256": "bc78925828019ce690b252a6291272062ad061436148a851d55ff352e40d5da0",
+   "bytes": 3655
+  },
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/scripts/pn_reference.py",
+   "sha256": "51b565bbf27bb395bec576c9b74f6cd87020a2168a4f9d68bdb13499564515f4",
+   "bytes": 6511
+  },
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/scripts/judge_e6k.py",
+   "sha256": "6a8f30cf6d53d62633d11b38b2166a5828dc4aee4296822ae30415e199e96223",
+   "bytes": 5183
+  },
+  {
+   "path": "tests/integration/test_pn_1d_diagnostic_real.py",
+   "sha256": "8994f23fde09214d07d64f2c42272ccb3627f69fc3cb9d20d84e1e06f0da5bf9",
+   "bytes": 16404
+  },
+  {
+   "path": "tests/unit/test_pn_reference_mock.py",
+   "sha256": "8c34f45c70afa5c6b7bfea70d6d0dd8b60ed0b2f612e27bfe5a2b0c90bbaf8c6",
+   "bytes": 4636
+  },
+  {
+   "path": "tests/unit/test_pn_judge_mock.py",
+   "sha256": "76346901cbfa3ae62a43e3e4a255f5ec057fceef37a40e99189ba4f9a0ce6ebd",
+   "bytes": 3597
+  },
+  {
+   "path": "tests/unit/test_current_unit_contract_mock.py",
+   "sha256": "245c631874fd42b4e4f4a21ce978bc421798248fb8c4249c75899b247d8f964b",
+   "bytes": 6002
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "f5748a63868e983f4062b41fe3e5463b4b902d5012ea6af3e2a97e6060a34a21",
+   "bytes": 6446
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/data/remote_run_36759423132/remote-run-24/outputs/e6j_out/gui_unit_contract.json",
+   "sha256": "641577513eb263c038b9da7aa19a7a652af0464e9fabdfa5dd8da58f0238c9b1",
+   "bytes": 11278
+  }
+ ],
+ "request_sha256": "c1f1031334157adb9249c7863c3c1323ed0875b3c35effd34d2d9b219aceb8c8",
+ "source": {
+  "github_sha": "1fcf745a97795451e50a6fc272e0ee9ce5f67f3e",
+  "git_head": "1fcf745a97795451e50a6fc272e0ee9ce5f67f3e",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36815925901",
+  "run_number": "31",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/scripts/run_e6k.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-01T04:37:47.914824+00:00",
+ "duration_s": 9.44,
+ "outputs": [
+  {
+   "path": "e6k_out/e6k_result.json",
+   "bytes": 2837,
+   "sha256": "c01b92d578aac111589664789d67dd486771c0efedf8405642594e8f88759160"
+  },
+  {
+   "path": "e6k_out/pn_1d_diagnostic.json",
+   "bytes": 27408,
+   "sha256": "97e7e4845796b2899555baab458c65a5e68fc84c1f31d0c7a1f8f80b2a015e57"
+  },
+  {
+   "path": "e6k_out/states.npz",
+   "bytes": 887153,
+   "sha256": "65c1a938a6521a14897ed2ec2dfc04178e254248e5a2778f9e0b7d1a56e1c8e2"
+  },
+  {
+   "path": "e6k_out/test_current_unit_contract_mock.log",
+   "bytes": 41,
+   "sha256": "72edfd436068f55f46aa42204e391a8209b31f1b8c27b95d8a3cdbd6576fb92d"
+  },
+  {
+   "path": "e6k_out/test_pn_1d_diagnostic_real.log",
+   "bytes": 112339,
+   "sha256": "3e19081c71a06039e12ae94fcbed806ca51f24bb87c49c5e5e596d033fe6f397"
+  },
+  {
+   "path": "e6k_out/test_pn_judge_mock.log",
+   "bytes": 22,
+   "sha256": "d7f5204703cb5c31f7ecc34387456893da7909952ebe22b58c35fcd39a5c7786"
+  },
+  {
+   "path": "e6k_out/test_pn_reference_mock.log",
+   "bytes": 32,
+   "sha256": "5d463c36ce7d0a3700e6f5e9c671b8266f1c5d9f079dec3f0cf88d7b0c82f98e"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "3cb64963d3da4491818a148035ca88510c3ee85f6948891fb8347bf4aec639bd",
+  "bytes": 3380
+ },
+ "redactions": {}
+}

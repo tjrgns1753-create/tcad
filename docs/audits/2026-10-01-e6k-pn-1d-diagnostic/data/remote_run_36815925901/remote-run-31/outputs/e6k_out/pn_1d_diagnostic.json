@@ -1,0 +1,1292 @@
+{
+ "plan": "PN_PLAN_v2.md",
+ "devices": {
+  "control": {
+   "name": "ctl",
+   "voltages": [
+    0.001
+   ],
+   "expected_solves": 3,
+   "production_calls": 1,
+   "solves": 3,
+   "error": null,
+   "converged": true,
+   "writes_ok": true,
+   "nodes": 101,
+   "dimension": 1,
+   "doping_writes": [
+    "Acceptors",
+    "Donors",
+    "NetDoping"
+   ],
+   "donors": [
+    1e+16
+   ],
+   "acceptors": [
+    0.0
+   ],
+   "netdoping": [
+    1e+16
+   ],
+   "metadata": {
+    "temperature_k": 300.0,
+    "fixed_contacts": {
+     "r": 0.0
+    },
+    "physics": "drift_diffusion",
+    "current_unit": null,
+    "current_normalization": null,
+    "device_dimension": 1
+   },
+   "has_current_convention_note": false,
+   "currents": [
+    {
+     "V": 0.001,
+     "I_l": 3.2000000000080098,
+     "I_r": -3.2000000000077278
+    }
+   ],
+   "params": {
+    "ElectronCharge": 1.6e-19,
+    "n_i": 10000000000.0,
+    "T": 300.0,
+    "V_t": 0.025887193125000003,
+    "mu_n": 400,
+    "mu_p": 200,
+    "taun": 1e-08,
+    "taup": 1e-08,
+    "Permittivity": 9.8235e-13
+   },
+   "wall_s": 0.44
+  },
+  "L0_fwd": {
+   "name": "L0_fwd",
+   "voltages": [
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6
+   ],
+   "expected_solves": 8,
+   "production_calls": 1,
+   "solves": 8,
+   "error": null,
+   "converged": true,
+   "writes_ok": true,
+   "nodes": 345,
+   "dimension": 1,
+   "doping_writes": [
+    "Acceptors",
+    "Donors",
+    "NetDoping"
+   ],
+   "donors": [
+    0.0,
+    1e+17
+   ],
+   "acceptors": [
+    0.0,
+    1e+17
+   ],
+   "netdoping": [
+    -1e+17,
+    0.0,
+    1e+17
+   ],
+   "metadata": {
+    "temperature_k": 300.0,
+    "fixed_contacts": {
+     "r": 0.0
+    },
+    "physics": "drift_diffusion",
+    "current_unit": null,
+    "current_normalization": null,
+    "device_dimension": 1
+   },
+   "has_current_convention_note": false,
+   "currents": [
+    {
+     "V": 0.1,
+     "I_l": 4.064486605785515e-07,
+     "I_r": -4.0645769023741856e-07
+    },
+    {
+     "V": 0.2,
+     "I_l": 3.377759238776127e-06,
+     "I_r": -3.377765534964092e-06
+    },
+    {
+     "V": 0.3,
+     "I_l": 2.704234143132063e-05,
+     "I_r": -2.7042353351582155e-05
+    },
+    {
+     "V": 0.4,
+     "I_l": 0.00025275762908439264,
+     "I_r": -0.0002527576259020794
+    },
+    {
+     "V": 0.5,
+     "I_l": 0.003899362087558243,
+     "I_r": -0.0038993620983680814
+    },
+    {
+     "V": 0.6,
+     "I_l": 0.11823963069551559,
+     "I_r": -0.1182396306967844
+    }
+   ],
+   "params": {
+    "ElectronCharge": 1.6e-19,
+    "n_i": 10000000000.0,
+    "T": 300.0,
+    "V_t": 0.025887193125000003,
+    "mu_n": 400,
+    "mu_p": 200,
+    "taun": 1e-08,
+    "taup": 1e-08,
+    "Permittivity": 9.8235e-13
+   },
+   "wall_s": 0.27
+  },
+  "L0_rev": {
+   "name": "L0_rev",
+   "voltages": [
+    -0.25,
+    -0.5,
+    -0.75,
+    -1.0
+   ],
+   "expected_solves": 6,
+   "production_calls": 1,
+   "solves": 6,
+   "error": null,
+   "converged": true,
+   "writes_ok": true,
+   "nodes": 345,
+   "dimension": 1,
+   "doping_writes": [
+    "Acceptors",
+    "Donors",
+    "NetDoping"
+   ],
+   "donors": [
+    0.0,
+    1e+17
+   ],
+   "acceptors": [
+    0.0,
+    1e+17
+   ],
+   "netdoping": [
+    -1e+17,
+    0.0,
+    1e+17
+   ],
+   "metadata": {
+    "temperature_k": 300.0,
+    "fixed_contacts": {
+     "r": 0.0
+    },
+    "physics": "drift_diffusion",
+    "current_unit": null,
+    "current_normalization": null,
+    "device_dimension": 1
+   },
+   "has_current_convention_note": false,
+   "currents": [
+    {
+     "V": -0.25,
+     "I_l": -1.9290526850612144e-07,
+     "I_r": 1.9290855034170027e-07
+    },
+    {
+     "V": -0.5,
+     "I_l": -3.387512705097162e-07,
+     "I_r": 3.3875502747614275e-07
+    },
+    {
+     "V": -0.75,
+     "I_l": -4.70933535697814e-07,
+     "I_r": 4.7094890909119896e-07
+    },
+    {
+     "V": -1.0,
+     "I_l": -5.927063498028494e-07,
+     "I_r": 5.927064316313968e-07
+    }
+   ],
+   "params": {
+    "ElectronCharge": 1.6e-19,
+    "n_i": 10000000000.0,
+    "T": 300.0,
+    "V_t": 0.025887193125000003,
+    "mu_n": 400,
+    "mu_p": 200,
+    "taun": 1e-08,
+    "taup": 1e-08,
+    "Permittivity": 9.8235e-13
+   },
+   "wall_s": 0.25
+  },
+  "L1_fwd": {
+   "name": "L1_fwd",
+   "voltages": [
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6
+   ],
+   "expected_solves": 8,
+   "production_calls": 1,
+   "solves": 8,
+   "error": null,
+   "converged": true,
+   "writes_ok": true,
+   "nodes": 685,
+   "dimension": 1,
+   "doping_writes": [
+    "Acceptors",
+    "Donors",
+    "NetDoping"
+   ],
+   "donors": [
+    0.0,
+    1e+17
+   ],
+   "acceptors": [
+    0.0,
+    1e+17
+   ],
+   "netdoping": [
+    -1e+17,
+    0.0,
+    1e+17
+   ],
+   "metadata": {
+    "temperature_k": 300.0,
+    "fixed_contacts": {
+     "r": 0.0
+    },
+    "physics": "drift_diffusion",
+    "current_unit": null,
+    "current_normalization": null,
+    "device_dimension": 1
+   },
+   "has_current_convention_note": false,
+   "currents": [
+    {
+     "V": 0.1,
+     "I_l": 4.0344661473308476e-07,
+     "I_r": -4.0344946779863846e-07
+    },
+    {
+     "V": 0.2,
+     "I_l": 3.355021736017133e-06,
+     "I_r": -3.3550135999045253e-06
+    },
+    {
+     "V": 0.3,
+     "I_l": 2.69178617558947e-05,
+     "I_r": -2.6917853006755843e-05
+    },
+    {
+     "V": 0.4,
+     "I_l": 0.0002521084604516613,
+     "I_r": -0.0002521084601179312
+    },
+    {
+     "V": 0.5,
+     "I_l": 0.0038958502800941126,
+     "I_r": -0.0038958502758806995
+    },
+    {
+     "V": 0.6,
+     "I_l": 0.11821213823026586,
+     "I_r": -0.118212138237176
+    }
+   ],
+   "params": {
+    "ElectronCharge": 1.6e-19,
+    "n_i": 10000000000.0,
+    "T": 300.0,
+    "V_t": 0.025887193125000003,
+    "mu_n": 400,
+    "mu_p": 200,
+    "taun": 1e-08,
+    "taup": 1e-08,
+    "Permittivity": 9.8235e-13
+   },
+   "wall_s": 0.38
+  },
+  "L1_rev": {
+   "name": "L1_rev",
+   "voltages": [
+    -0.25,
+    -0.5,
+    -0.75,
+    -1.0
+   ],
+   "expected_solves": 6,
+   "production_calls": 1,
+   "solves": 6,
+   "error": null,
+   "converged": true,
+   "writes_ok": true,
+   "nodes": 685,
+   "dimension": 1,
+   "doping_writes": [
+    "Acceptors",
+    "Donors",
+    "NetDoping"
+   ],
+   "donors": [
+    0.0,
+    1e+17
+   ],
+   "acceptors": [
+    0.0,
+    1e+17
+   ],
+   "netdoping": [
+    -1e+17,
+    0.0,
+    1e+17
+   ],
+   "metadata": {
+    "temperature_k": 300.0,
+    "fixed_contacts": {
+     "r": 0.0
+    },
+    "physics": "drift_diffusion",
+    "current_unit": null,
+    "current_normalization": null,
+    "device_dimension": 1
+   },
+   "has_current_convention_note": false,
+   "currents": [
+    {
+     "V": -0.25,
+     "I_l": -1.9281289789035423e-07,
+     "I_r": 1.928066761607257e-07
+    },
+    {
+     "V": -0.5,
+     "I_l": -3.386873216031746e-07,
+     "I_r": 3.3867315860227766e-07
+    },
+    {
+     "V": -0.75,
+     "I_l": -4.708624813637308e-07,
+     "I_r": 4.7088471467958e-07
+    },
+    {
+     "V": -1.0,
+     "I_l": -5.926779280327406e-07,
+     "I_r": 5.926946250661804e-07
+    }
+   ],
+   "params": {
+    "ElectronCharge": 1.6e-19,
+    "n_i": 10000000000.0,
+    "T": 300.0,
+    "V_t": 0.025887193125000003,
+    "mu_n": 400,
+    "mu_p": 200,
+    "taun": 1e-08,
+    "taup": 1e-08,
+    "Permittivity": 9.8235e-13
+   },
+   "wall_s": 0.34
+  },
+  "L2_fwd": {
+   "name": "L2_fwd",
+   "voltages": [
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6
+   ],
+   "expected_solves": 8,
+   "production_calls": 1,
+   "solves": 8,
+   "error": null,
+   "converged": true,
+   "writes_ok": true,
+   "nodes": 1371,
+   "dimension": 1,
+   "doping_writes": [
+    "Acceptors",
+    "Donors",
+    "NetDoping"
+   ],
+   "donors": [
+    0.0,
+    1e+17
+   ],
+   "acceptors": [
+    0.0,
+    1e+17
+   ],
+   "netdoping": [
+    -1e+17,
+    0.0,
+    1e+17
+   ],
+   "metadata": {
+    "temperature_k": 300.0,
+    "fixed_contacts": {
+     "r": 0.0
+    },
+    "physics": "drift_diffusion",
+    "current_unit": null,
+    "current_normalization": null,
+    "device_dimension": 1
+   },
+   "has_current_convention_note": false,
+   "currents": [
+    {
+     "V": 0.1,
+     "I_l": 4.030055473791604e-07,
+     "I_r": -4.030022267482225e-07
+    },
+    {
+     "V": 0.2,
+     "I_l": 3.3516176727607067e-06,
+     "I_r": -3.351618324298359e-06
+    },
+    {
+     "V": 0.3,
+     "I_l": 2.6896177241498487e-05,
+     "I_r": -2.6896166647009514e-05
+    },
+    {
+     "V": 0.4,
+     "I_l": 0.00025197837216230974,
+     "I_r": -0.00025197837813335225
+    },
+    {
+     "V": 0.5,
+     "I_l": 0.003895089517142489,
+     "I_r": -0.0038950895105623585
+    },
+    {
+     "V": 0.6,
+     "I_l": 0.11820589992006583,
+     "I_r": -0.1182058999211334
+    }
+   ],
+   "params": {
+    "ElectronCharge": 1.6e-19,
+    "n_i": 10000000000.0,
+    "T": 300.0,
+    "V_t": 0.025887193125000003,
+    "mu_n": 400,
+    "mu_p": 200,
+    "taun": 1e-08,
+    "taup": 1e-08,
+    "Permittivity": 9.8235e-13
+   },
+   "wall_s": 0.63
+  },
+  "L2_rev": {
+   "name": "L2_rev",
+   "voltages": [
+    -0.25,
+    -0.5,
+    -0.75,
+    -1.0
+   ],
+   "expected_solves": 6,
+   "production_calls": 1,
+   "solves": 6,
+   "error": null,
+   "converged": true,
+   "writes_ok": true,
+   "nodes": 1371,
+   "dimension": 1,
+   "doping_writes": [
+    "Acceptors",
+    "Donors",
+    "NetDoping"
+   ],
+   "donors": [
+    0.0,
+    1e+17
+   ],
+   "acceptors": [
+    0.0,
+    1e+17
+   ],
+   "netdoping": [
+    -1e+17,
+    0.0,
+    1e+17
+   ],
+   "metadata": {
+    "temperature_k": 300.0,
+    "fixed_contacts": {
+     "r": 0.0
+    },
+    "physics": "drift_diffusion",
+    "current_unit": null,
+    "current_normalization": null,
+    "device_dimension": 1
+   },
+   "has_current_convention_note": false,
+   "currents": [
+    {
+     "V": -0.25,
+     "I_l": -1.9278447616608137e-07,
+     "I_r": 1.9277490542942826e-07
+    },
+    {
+     "V": -0.5,
+     "I_l": -3.3867311073356617e-07,
+     "I_r": 3.3867111485062333e-07
+    },
+    {
+     "V": -0.75,
+     "I_l": -4.708340596393616e-07,
+     "I_r": 4.7086787829996937e-07
+    },
+    {
+     "V": -1.0,
+     "I_l": -5.92649506308329e-07,
+     "I_r": 5.926599992391048e-07
+    }
+   ],
+   "params": {
+    "ElectronCharge": 1.6e-19,
+    "n_i": 10000000000.0,
+    "T": 300.0,
+    "V_t": 0.025887193125000003,
+    "mu_n": 400,
+    "mu_p": 200,
+    "taun": 1e-08,
+    "taup": 1e-08,
+    "Permittivity": 9.8235e-13
+   },
+   "wall_s": 0.53
+  }
+ },
+ "notes": [],
+ "reference_parameters": {
+  "q": 1.6e-19,
+  "n_i": 10000000000.0,
+  "T": 300.0,
+  "Vt": 0.025887193125000003,
+  "mu_n": 400,
+  "mu_p": 200,
+  "taun": 1e-08,
+  "taup": 1e-08,
+  "eps": 9.8235e-13,
+  "N_A": 1e+17,
+  "N_D": 1e+17,
+  "W_p": 0.002,
+  "W_n": 0.002,
+  "D_n": 10.354877250000001,
+  "D_p": 5.177438625000001,
+  "L_n": 0.00032178995089965134,
+  "L_p": 0.00022753985639882964,
+  "V_bi": 0.8345045098471614
+ },
+ "reference_all": {
+  "0.3": {
+   "V": 0.3,
+   "J_diff": 9.481518621327754e-07,
+   "J_srh": 2.4432512023133828e-05,
+   "J_model": 2.5380663885266603e-05,
+   "W": 1.1457208486891114e-05,
+   "x_p": 5.728604243445557e-06,
+   "x_n": 5.728604243445557e-06,
+   "E_max": 93304.49218214376,
+   "J_srh_refined": 2.4432512023247168e-05,
+   "srh_fraction": 0.962642747785523
+  },
+  "0.5": {
+   "V": 0.5,
+   "J_diff": 0.0021486533473341774,
+   "J_srh": 0.0015587650955369615,
+   "J_model": 0.0037074184428711387,
+   "W": 9.063670686432167e-06,
+   "x_p": 4.5318353432160836e-06,
+   "x_n": 4.5318353432160836e-06,
+   "E_max": 73812.14993786058,
+   "J_srh_refined": 0.0015587650955386425,
+   "srh_fraction": 0.42044487816967485
+  },
+  "0.6": {
+   "V": 0.6,
+   "J_diff": 0.10228420364619643,
+   "J_srh": 0.0137763798153566,
+   "J_model": 0.11606058346155304,
+   "W": 7.588898227812109e-06,
+   "x_p": 3.794449113906055e-06,
+   "x_n": 3.794449113906055e-06,
+   "E_max": 61801.990962993725,
+   "J_srh_refined": 0.013776379815361405,
+   "srh_fraction": 0.11869990141760962
+  },
+  "-0.5": {
+   "V": -0.5,
+   "J_diff": -8.78932058211454e-12,
+   "J_srh": -3.298839872428857e-07,
+   "J_model": -3.298927765634678e-07,
+   "W": 1.8103525245434653e-05,
+   "x_p": 9.051762622717326e-06,
+   "x_n": 9.051762622717326e-06,
+   "E_max": 147430.3475985924,
+   "J_srh_refined": -3.2988398724288717e-07,
+   "srh_fraction": 0.9999733570383877
+  },
+  "-1.0": {
+   "V": -1.0,
+   "J_diff": -8.789321044893578e-12,
+   "J_srh": -5.796599553900028e-07,
+   "J_model": -5.796687447110477e-07,
+   "W": 2.1225724400172772e-05,
+   "x_p": 1.0612862200086386e-05,
+   "x_n": 1.0612862200086386e-05,
+   "E_max": 172856.71624307244,
+   "J_srh_refined": -5.796599553900032e-07,
+   "srh_fraction": 0.9999848373383504
+  },
+  "0.0": {
+   "V": 0.0,
+   "J_diff": 0.0,
+   "J_srh": 0.0,
+   "J_model": 0.0,
+   "W": 1.4315861004916531e-05,
+   "x_p": 7.157930502458266e-06,
+   "x_n": 7.157930502458266e-06,
+   "E_max": 116584.6063412554,
+   "J_srh_refined": 0.0,
+   "srh_fraction": NaN
+  }
+ },
+ "metrics": {
+  "unit": {
+   "established_by_control": true,
+   "control_ratio": 1.0000000000010032,
+   "metadata_unit_1d": null,
+   "metadata_dimension_1d": 1,
+   "formatted_1d": "3.200000e+00 (unit not established)",
+   "control_I_l": 3.2000000000080098,
+   "control_I_r": -3.2000000000077278,
+   "sigma_S_per_cm": 0.6400000000009599,
+   "theory_sigma_V_over_L": 3.2000000000047994,
+   "metadata_has_2D_note": false,
+   "e6j_checks": 17,
+   "e6j_failed_checks": 0
+  },
+  "devices": {
+   "control": {
+    "production_calls": 1,
+    "solves": 3,
+    "expected_solves": 3,
+    "dimension": 1,
+    "writes_ok": true,
+    "error": null,
+    "converged": true
+   },
+   "L0_fwd": {
+    "production_calls": 1,
+    "solves": 8,
+    "expected_solves": 8,
+    "dimension": 1,
+    "writes_ok": true,
+    "error": null,
+    "converged": true
+   },
+   "L0_rev": {
+    "production_calls": 1,
+    "solves": 6,
+    "expected_solves": 6,
+    "dimension": 1,
+    "writes_ok": true,
+    "error": null,
+    "converged": true
+   },
+   "L1_fwd": {
+    "production_calls": 1,
+    "solves": 8,
+    "expected_solves": 8,
+    "dimension": 1,
+    "writes_ok": true,
+    "error": null,
+    "converged": true
+   },
+   "L1_rev": {
+    "production_calls": 1,
+    "solves": 6,
+    "expected_solves": 6,
+    "dimension": 1,
+    "writes_ok": true,
+    "error": null,
+    "converged": true
+   },
+   "L2_fwd": {
+    "production_calls": 1,
+    "solves": 8,
+    "expected_solves": 8,
+    "dimension": 1,
+    "writes_ok": true,
+    "error": null,
+    "converged": true
+   },
+   "L2_rev": {
+    "production_calls": 1,
+    "solves": 6,
+    "expected_solves": 6,
+    "dimension": 1,
+    "writes_ok": true,
+    "error": null,
+    "converged": true
+   }
+  },
+  "J": {
+   "L0": {
+    "0.3": 2.704234143132063e-05,
+    "0.5": 0.003899362087558243,
+    "0.6": 0.11823963069551559,
+    "-0.5": -3.387512705097162e-07,
+    "-1.0": -5.927063498028494e-07
+   },
+   "L1": {
+    "0.3": 2.69178617558947e-05,
+    "0.5": 0.0038958502800941126,
+    "0.6": 0.11821213823026586,
+    "-0.5": -3.386873216031746e-07,
+    "-1.0": -5.926779280327406e-07
+   },
+   "L2": {
+    "0.3": 2.6896177241498487e-05,
+    "0.5": 0.003895089517142489,
+    "0.6": 0.11820589992006583,
+    "-0.5": -3.3867311073356617e-07,
+    "-1.0": -5.92649506308329e-07
+   }
+  },
+  "Emax": {
+   "L0": {
+    "0.0": 109766.77369204495,
+    "-1.0": 167251.58722345837
+   },
+   "L1": {
+    "0.0": 111343.17382863762,
+    "-1.0": 168831.79598761036
+   },
+   "L2": {
+    "0.0": 112136.35583289442,
+    "-1.0": 169625.93921256525
+   }
+  },
+  "WE": {
+   "L0": {
+    "0.0": 1.5211785192733927e-05,
+    "-1.0": 2.1943898594201442e-05
+   },
+   "L1": {
+    "0.0": 1.4991478467148503e-05,
+    "-1.0": 2.1733457321083584e-05
+   },
+   "L2": {
+    "0.0": 1.4884188242439386e-05,
+    "-1.0": 2.1630438628099328e-05
+   }
+  },
+  "ref": {
+   "0.5": {
+    "V": 0.5,
+    "J_diff": 0.0021486533473341774,
+    "J_srh": 0.0015587650955369615,
+    "J_model": 0.0037074184428711387,
+    "W": 9.063670686432167e-06,
+    "x_p": 4.5318353432160836e-06,
+    "x_n": 4.5318353432160836e-06,
+    "E_max": 73812.14993786058,
+    "J_srh_refined": 0.0015587650955386425,
+    "srh_fraction": 0.42044487816967485
+   },
+   "0.6": {
+    "V": 0.6,
+    "J_diff": 0.10228420364619643,
+    "J_srh": 0.0137763798153566,
+    "J_model": 0.11606058346155304,
+    "W": 7.588898227812109e-06,
+    "x_p": 3.794449113906055e-06,
+    "x_n": 3.794449113906055e-06,
+    "E_max": 61801.990962993725,
+    "J_srh_refined": 0.013776379815361405,
+    "srh_fraction": 0.11869990141760962
+   },
+   "-0.5": {
+    "V": -0.5,
+    "J_diff": -8.78932058211454e-12,
+    "J_srh": -3.298839872428857e-07,
+    "J_model": -3.298927765634678e-07,
+    "W": 1.8103525245434653e-05,
+    "x_p": 9.051762622717326e-06,
+    "x_n": 9.051762622717326e-06,
+    "E_max": 147430.3475985924,
+    "J_srh_refined": -3.2988398724288717e-07,
+    "srh_fraction": 0.9999733570383877
+   },
+   "-1.0": {
+    "V": -1.0,
+    "J_diff": -8.789321044893578e-12,
+    "J_srh": -5.796599553900028e-07,
+    "J_model": -5.796687447110477e-07,
+    "W": 2.1225724400172772e-05,
+    "x_p": 1.0612862200086386e-05,
+    "x_n": 1.0612862200086386e-05,
+    "E_max": 172856.71624307244,
+    "J_srh_refined": -5.796599553900032e-07,
+    "srh_fraction": 0.9999848373383504
+   }
+  },
+  "ref_E": {
+   "0.0": {
+    "E_max": 116584.6063412554,
+    "W": 1.4315861004916531e-05
+   },
+   "-1.0": {
+    "E_max": 172856.71624307244,
+    "W": 2.1225724400172772e-05
+   }
+  },
+  "minority": {
+   "s_um": [
+    3.0,
+    5.0,
+    8.0
+   ],
+   "dev": [
+    3095038620659.523,
+    1285175286313.2302,
+    343899236565.0868
+   ],
+   "ref": [
+    3113561800068.559,
+    1292785051281.5042,
+    345875396765.80206
+   ]
+  }
+ },
+ "verdicts": {
+  "A_CURRENT_UNIT_CONTRACT": {
+   "verdict": "PASS",
+   "checks": [
+    {
+     "name": "1D result metadata current_unit is None (production does not assume a unit)",
+     "value": null,
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "format_current of a 1D value says 'unit not established'",
+     "value": "3.200000e+00 (unit not established)",
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "E6J GUI evidence: failed checks of the preserved JSON",
+     "value": 0,
+     "limit": 0,
+     "pass": true
+    }
+   ]
+  },
+  "B_PRODUCTION_PATH_EXECUTED": {
+   "verdict": "PASS",
+   "checks": [
+    {
+     "name": "control: production sweep called once, expected solves, doping written, dimension 1, no exception",
+     "value": {
+      "production_calls": 1,
+      "solves": 3,
+      "expected_solves": 3,
+      "dimension": 1,
+      "error": null
+     },
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L0_fwd: production sweep called once, expected solves, doping written, dimension 1, no exception",
+     "value": {
+      "production_calls": 1,
+      "solves": 8,
+      "expected_solves": 8,
+      "dimension": 1,
+      "error": null
+     },
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L0_rev: production sweep called once, expected solves, doping written, dimension 1, no exception",
+     "value": {
+      "production_calls": 1,
+      "solves": 6,
+      "expected_solves": 6,
+      "dimension": 1,
+      "error": null
+     },
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L1_fwd: production sweep called once, expected solves, doping written, dimension 1, no exception",
+     "value": {
+      "production_calls": 1,
+      "solves": 8,
+      "expected_solves": 8,
+      "dimension": 1,
+      "error": null
+     },
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L1_rev: production sweep called once, expected solves, doping written, dimension 1, no exception",
+     "value": {
+      "production_calls": 1,
+      "solves": 6,
+      "expected_solves": 6,
+      "dimension": 1,
+      "error": null
+     },
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L2_fwd: production sweep called once, expected solves, doping written, dimension 1, no exception",
+     "value": {
+      "production_calls": 1,
+      "solves": 8,
+      "expected_solves": 8,
+      "dimension": 1,
+      "error": null
+     },
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L2_rev: production sweep called once, expected solves, doping written, dimension 1, no exception",
+     "value": {
+      "production_calls": 1,
+      "solves": 6,
+      "expected_solves": 6,
+      "dimension": 1,
+      "error": null
+     },
+     "limit": null,
+     "pass": true
+    }
+   ]
+  },
+  "C_NUMERICAL_CONVERGENCE_AND_MESH_SENSITIVITY": {
+   "verdict": "PASS",
+   "checks": [
+    {
+     "name": "control: converged, all solves returned, finite currents",
+     "value": true,
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L0_fwd: converged, all solves returned, finite currents",
+     "value": true,
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L0_rev: converged, all solves returned, finite currents",
+     "value": true,
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L1_fwd: converged, all solves returned, finite currents",
+     "value": true,
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L1_rev: converged, all solves returned, finite currents",
+     "value": true,
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L2_fwd: converged, all solves returned, finite currents",
+     "value": true,
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "L2_rev: converged, all solves returned, finite currents",
+     "value": true,
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "J(0.6 V) L1 vs L2 relative difference",
+     "value": 5.277494781768591e-05,
+     "limit": 0.01,
+     "pass": true
+    },
+    {
+     "name": "J(-1.0 V) L1 vs L2 relative difference",
+     "value": 4.795705405831797e-05,
+     "limit": 0.02,
+     "pass": true
+    },
+    {
+     "name": "E_max(-1.0 V) L1 vs L2 relative difference",
+     "value": 0.0046817322199744615,
+     "limit": 0.02,
+     "pass": true
+    }
+   ]
+  },
+  "D_ANALYTICAL_ELECTROSTATICS_COMPARISON": {
+   "verdict": "FAIL",
+   "checks": [
+    {
+     "name": "E_max(0.0 V) vs depletion approximation, relative",
+     "value": 0.03815469853147241,
+     "limit": 0.03,
+     "pass": false
+    },
+    {
+     "name": "W_E(0.0 V) = 2 int|E|dx / E_max vs depletion width, relative",
+     "value": 0.039699130728334996,
+     "limit": 0.05,
+     "pass": true
+    },
+    {
+     "name": "E_max(-1.0 V) vs depletion approximation, relative",
+     "value": 0.018690491759452647,
+     "limit": 0.03,
+     "pass": true
+    },
+    {
+     "name": "W_E(-1.0 V) = 2 int|E|dx / E_max vs depletion width, relative",
+     "value": 0.01906715739337788,
+     "limit": 0.05,
+     "pass": true
+    }
+   ]
+  },
+  "E_APPROXIMATE_SRH_DIFFUSION_REFERENCE_COMPARISON": {
+   "verdict": "PASS",
+   "checks": [
+    {
+     "name": "J(0.5 V) sign equals the reference sign",
+     "value": [
+      0.003895089517142489,
+      0.0037074184428711387
+     ],
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "J(0.5 V) vs J_diff + J_SRH, relative",
+     "value": 0.0506204188071126,
+     "limit": 0.1,
+     "pass": true
+    },
+    {
+     "name": "J(0.6 V) sign equals the reference sign",
+     "value": [
+      0.11820589992006583,
+      0.11606058346155304
+     ],
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "J(0.6 V) vs J_diff + J_SRH, relative",
+     "value": 0.01848445350288509,
+     "limit": 0.1,
+     "pass": true
+    },
+    {
+     "name": "J(-0.5 V) sign equals the reference sign",
+     "value": [
+      -3.3867311073356617e-07,
+      -3.298927765634678e-07
+     ],
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "J(-0.5 V) vs J_diff + J_SRH, relative",
+     "value": 0.02661572120967343,
+     "limit": 0.1,
+     "pass": true
+    },
+    {
+     "name": "J(-1.0 V) sign equals the reference sign",
+     "value": [
+      -5.92649506308329e-07,
+      -5.796687447110477e-07
+     ],
+     "limit": null,
+     "pass": true
+    },
+    {
+     "name": "J(-1.0 V) vs J_diff + J_SRH, relative",
+     "value": 0.022393412989261473,
+     "limit": 0.1,
+     "pass": true
+    }
+   ]
+  },
+  "F_MINORITY_CARRIER_PROFILE_COMPARISON": {
+   "verdict": "PASS",
+   "checks": [
+    {
+     "name": "hole excess at s = 3.0 um vs sinh solution, relative",
+     "value": 0.005949192788987924,
+     "limit": 0.1,
+     "pass": true
+    },
+    {
+     "name": "hole excess at s = 5.0 um vs sinh solution, relative",
+     "value": 0.005886334283282874,
+     "limit": 0.1,
+     "pass": true
+    },
+    {
+     "name": "hole excess at s = 8.0 um vs sinh solution, relative",
+     "value": 0.005713503241901192,
+     "limit": 0.1,
+     "pass": true
+    }
+   ]
+  }
+ },
+ "table": {
+  "L0": {
+   "0.3": {
+    "I_l_raw": 2.704234143132063e-05,
+    "J_model": 2.5380663885266603e-05,
+    "J_diff": 9.481518621327754e-07,
+    "J_srh": 2.4432512023133828e-05,
+    "rel_err": 0.0654702159709316
+   },
+   "0.5": {
+    "I_l_raw": 0.003899362087558243,
+    "J_model": 0.0037074184428711387,
+    "J_diff": 0.0021486533473341774,
+    "J_srh": 0.0015587650955369615,
+    "rel_err": 0.05177285694744977
+   },
+   "0.6": {
+    "I_l_raw": 0.11823963069551559,
+    "J_model": 0.11606058346155304,
+    "J_diff": 0.10228420364619643,
+    "J_srh": 0.0137763798153566,
+    "rel_err": 0.01877508426178464
+   },
+   "-0.5": {
+    "I_l_raw": -3.387512705097162e-07,
+    "J_model": -3.298927765634678e-07,
+    "J_diff": -8.78932058211454e-12,
+    "J_srh": -3.298839872428857e-07,
+    "rel_err": 0.026852645997673428
+   },
+   "-1.0": {
+    "I_l_raw": -5.927063498028494e-07,
+    "J_model": -5.796687447110477e-07,
+    "J_diff": -8.789321044893578e-12,
+    "J_srh": -5.796599553900028e-07,
+    "rel_err": 0.022491475020445805
+   }
+  },
+  "L1": {
+   "0.3": {
+    "I_l_raw": 2.69178617558947e-05,
+    "J_model": 2.5380663885266603e-05,
+    "J_diff": 9.481518621327754e-07,
+    "J_srh": 2.4432512023133828e-05,
+    "rel_err": 0.06056570772053117
+   },
+   "0.5": {
+    "I_l_raw": 0.0038958502800941126,
+    "J_model": 0.0037074184428711387,
+    "J_diff": 0.0021486533473341774,
+    "J_srh": 0.0015587650955369615,
+    "rel_err": 0.05082561899245623
+   },
+   "0.6": {
+    "I_l_raw": 0.11821213823026586,
+    "J_model": 0.11606058346155304,
+    "J_diff": 0.10228420364619643,
+    "J_srh": 0.0137763798153566,
+    "rel_err": 0.01853820396677183
+   },
+   "-0.5": {
+    "I_l_raw": -3.386873216031746e-07,
+    "J_model": -3.298927765634678e-07,
+    "J_diff": -8.78932058211454e-12,
+    "J_srh": -3.298839872428857e-07,
+    "rel_err": 0.026658798447545866
+   },
+   "-1.0": {
+    "I_l_raw": -5.926779280327406e-07,
+    "J_model": -5.796687447110477e-07,
+    "J_diff": -8.789321044893578e-12,
+    "J_srh": -5.796599553900028e-07,
+    "rel_err": 0.022442443965437067
+   }
+  },
+  "L2": {
+   "0.3": {
+    "I_l_raw": 2.6896177241498487e-05,
+    "J_model": 2.5380663885266603e-05,
+    "J_diff": 9.481518621327754e-07,
+    "J_srh": 2.4432512023133828e-05,
+    "rel_err": 0.05971133627878171
+   },
+   "0.5": {
+    "I_l_raw": 0.003895089517142489,
+    "J_model": 0.0037074184428711387,
+    "J_diff": 0.0021486533473341774,
+    "J_srh": 0.0015587650955369615,
+    "rel_err": 0.0506204188071126
+   },
+   "0.6": {
+    "I_l_raw": 0.11820589992006583,
+    "J_model": 0.11606058346155304,
+    "J_diff": 0.10228420364619643,
+    "J_srh": 0.0137763798153566,
+    "rel_err": 0.01848445350288509
+   },
+   "-0.5": {
+    "I_l_raw": -3.3867311073356617e-07,
+    "J_model": -3.298927765634678e-07,
+    "J_diff": -8.78932058211454e-12,
+    "J_srh": -3.298839872428857e-07,
+    "rel_err": 0.02661572120967343
+   },
+   "-1.0": {
+    "I_l_raw": -5.92649506308329e-07,
+    "J_model": -5.796687447110477e-07,
+    "J_diff": -8.789321044893578e-12,
+    "J_srh": -5.796599553900028e-07,
+    "rel_err": 0.022393412989261473
+   }
+  }
+ }
+}
