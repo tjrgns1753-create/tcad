@@ -9,7 +9,7 @@ dataclasses in tcad.characterization.interface.
 
 from __future__ import annotations
 
-from tcad.characterization.interface import CharacterizationResult
+from tcad.characterization.interface import CharacterizationResult, established_current_unit
 
 
 def save_iv_plot(result: CharacterizationResult, path: str) -> str:
@@ -29,8 +29,8 @@ def save_iv_plot(result: CharacterizationResult, path: str) -> str:
         ax.plot(sweep_voltages, currents, marker="o", label=f"I({contact})")
 
     ax.set_xlabel(f"{result.sweep_contact} voltage (V)")
-    unit = result.metadata.get("current_unit")
-    ax.set_ylabel(f"Current ({unit})" if unit else "Current (A)")   # legacy label when the result carries no unit metadata
+    unit = established_current_unit(result.metadata)
+    ax.set_ylabel(f"Current ({unit})" if unit else "Current (unit not established)")   # never assume A
     ax.set_title(f"{result.name} — {result.device}/{result.region}")
     ax.legend()
     ax.grid(True)

@@ -53,14 +53,22 @@ def current_unit_metadata(dimension: Optional[int]) -> Dict[str, Any]:
     with H, L in cm, i.e. the current per cm of out-of-plane depth): `A/cm`, normalisation `per_out_of_plane_depth`. Any other
     dimension is NOT verified, so its unit is None -- never silently assumed to be A. No depth is supplied or assumed here."""
     if dimension == 2:
-        return {"current_unit": "A/cm", "current_normalization": "per_out_of_plane_depth", "device_dimension": 2}
+        return {"current_unit": "A/cm", "current_normalization": "per_out_of_plane_depth", "device_dimension": 2,
+                "current_convention": CURRENT_CONVENTION_NOTE}   # the 2D-specific note is attached to 2D results only
     return {"current_unit": None, "current_normalization": None, "device_dimension": dimension}
+
+
+def established_current_unit(metadata: Optional[Dict[str, Any]]) -> Optional[str]:
+    """The unit string a result's metadata established, or None (no metadata, None, empty / blank): the single place every
+    consumer (GUI text, CSV header, plot axis) asks, so none of them can fall back to an assumed A."""
+    unit = (metadata or {}).get("current_unit")
+    return unit.strip() if isinstance(unit, str) and unit.strip() else None
 
 
 def format_current(value: float, metadata: Optional[Dict[str, Any]], spec: str = ".6e") -> str:
     """`value` (unchanged) with the unit its result's metadata established, e.g. '1.600000e-04 A/cm'; a result with no
     established unit is shown as '<value> (unit not established)', never as plain A."""
-    unit = (metadata or {}).get("current_unit")
+    unit = established_current_unit(metadata)
     return f"{value:{spec}} {unit}" if unit else f"{value:{spec}} (unit not established)"
 
 
@@ -77,9 +85,11 @@ class BiasPoint:
     """One point in a sweep: the applied voltage on every contact, and
     the terminal current extracted at every contact, at that bias.
 
-    currents : PER UNIT DEPTH (DevSim's own 2D-device convention, not
-        the total current of a real device with a specific physical
-        width) — see this module's CURRENT_CONVENTION_NOTE.
+    currents : terminal currents in the unit the owning result's
+        metadata["current_unit"] names (None = not established; never
+        assume A). For a 2D DevSim device the unit is A/cm, per unit
+        out-of-plane depth, not the total current of a real device with
+        a specific physical width -- see CURRENT_CONVENTION_NOTE.
     converged : whether this point's own solve succeeded. Always True
         today (every BiasPoint producer in this package raises on a
         non-converging solve rather than recording a failed point --

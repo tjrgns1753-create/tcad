@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 from typing import List
 
-from tcad.characterization.interface import CharacterizationResult
+from tcad.characterization.interface import CharacterizationResult, established_current_unit
 
 
 def save_csv(result: CharacterizationResult, path: str) -> str:
@@ -27,10 +27,10 @@ def save_csv(result: CharacterizationResult, path: str) -> str:
 
     with open(path, "w", newline="") as f:
         writer = csv.writer(f)
-        # A result that carries a machine-readable unit (2D DevSim: "A/cm") names it in the header; a result without one keeps
-        # the legacy header unchanged (its unit is not established by this module).
-        unit = result.metadata.get("current_unit")
-        suffix = unit.replace("/", "_per_") if unit else "A"
+        # A result that carries an established unit (2D DevSim: "A/cm") names it in the header; a result without one is labelled
+        # unit_unknown -- never assumed to be A.
+        unit = established_current_unit(result.metadata)
+        suffix = unit.replace("/", "_per_") if unit else "unit_unknown"
         writer.writerow(["sweep_voltage_V"] + [f"I_{c}_{suffix}" for c in contacts])
         for point in result.points:
             sweep_v = point.voltages.get(result.sweep_contact, "")

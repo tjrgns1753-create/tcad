@@ -28,9 +28,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from tcad.characterization.interface import (
-    CURRENT_CONVENTION_NOTE, BiasPoint, CharacterizationResult, current_unit_metadata,
-)
+from tcad.characterization.interface import BiasPoint, CharacterizationResult, current_unit_metadata
 from tcad.device.devsim import backend
 from tcad.device.devsim.resistor_equation import set_bias
 from tcad.device.devsim.semiconductor_equation import (
@@ -66,12 +64,14 @@ def run_pn_junction_iv_sweep(
     tcad.device.devsim.doping_mapping.apply_doping — before calling
     this.
 
-    Every current returned (in each BiasPoint.currents, below) is PER
-    UNIT DEPTH — DevSim's own 2D-device convention, not the total
-    current of a real device with a specific physical width. See
-    tcad.characterization.interface.CURRENT_CONVENTION_NOTE (also set
-    on this result's own metadata["current_convention"]) for what that
-    means and how to convert it to a real device's actual current.
+    The unit of every current returned (in each BiasPoint.currents,
+    below) is given by this result's own metadata["current_unit"] /
+    ["current_normalization"] (tcad.characterization.interface.
+    current_unit_metadata, decided from the device's real dimension).
+    For a 2D device it is A/cm, per unit out-of-plane depth, NOT the
+    total current of a real device (metadata["current_convention"]
+    says how to convert); for any other dimension the unit is not
+    established (current_unit None) and must not be assumed.
 
     One call per device: this function always (re-)registers the
     equilibrium and drift-diffusion equations from scratch, assuming
@@ -118,7 +118,6 @@ def run_pn_junction_iv_sweep(
             "temperature_k": temperature_k,
             "fixed_contacts": fixed_contacts,
             "physics": "drift_diffusion",
-            "current_convention": CURRENT_CONVENTION_NOTE,
             **current_unit_metadata(module.get_dimension(device=device)),
         },
     )
