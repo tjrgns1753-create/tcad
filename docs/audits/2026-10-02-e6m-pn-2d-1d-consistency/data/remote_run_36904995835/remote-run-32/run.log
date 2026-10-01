@@ -1,0 +1,61 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[e6m] test_e6l_correction_mock rc=0 wall=0.2s
+E6L CORRECTION_1 NUMERIC CHECKS PASSED
+
+[e6m] test_e6m_judge_mock rc=0 wall=6.1s
+E6M JUDGE / METRICS SYNTHETIC CHECKS PASSED
+
+[e6m] test_pn_2d_1d_consistency_real rc=0 wall=10.4s
+quation"	RelError: 9.99000e+02	AbsError: 4.83933e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 4.64109e+15
+      Equation: "PotentialEquation"	RelError: 1.80368e+01	AbsError: 5.47695e-02
+Iteration: 2
+  Device: "e6m_L2_rev"	RelError: 2.00145e+03	AbsError: 2.14323e+15
+    Region: "Si"	RelError: 2.00145e+03	AbsError: 2.14323e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.21111e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 9.32117e+14
+      Equation: "PotentialEquation"	RelError: 3.45460e+00	AbsError: 4.71388e-02
+Iteration: 3
+  Device: "e6m_L2_rev"	RelError: 1.99806e+03	AbsError: 1.51670e+14
+    Region: "Si"	RelError: 1.99806e+03	AbsError: 1.51670e+14
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.33900e+13
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.38280e+14
+      Equation: "PotentialEquation"	RelError: 5.68087e-02	AbsError: 3.80896e-02
+Iteration: 4
+  Device: "e6m_L2_rev"	RelError: 1.00002e+03	AbsError: 1.96100e+13
+    Region: "Si"	RelError: 1.00002e+03	AbsError: 1.96100e+13
+      Equation: "ElectronContinuityEquation"	RelError: 1.00000e+00	AbsError: 3.60150e+11
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.92499e+13
+      Equation: "PotentialEquation"	RelError: 2.06379e-02	AbsError: 2.74092e-02
+Iteration: 5
+  Device: "e6m_L2_rev"	RelError: 1.28747e+00	AbsError: 1.65026e+12
+    Region: "Si"	RelError: 1.28747e+00	AbsError: 1.65026e+12
+      Equation: "ElectronContinuityEquation"	RelError: 2.74398e-01	AbsError: 1.68892e+10
+      Equation: "HoleContinuityEquation"	RelError: 9.98029e-01	AbsError: 1.63337e+12
+      Equation: "PotentialEquation"	RelError: 1.50423e-02	AbsError: 2.13187e-02
+Iteration: 6
+  Device: "e6m_L2_rev"	RelError: 7.29381e-02	AbsError: 2.21192e+11
+    Region: "Si"	RelError: 7.29381e-02	AbsError: 2.21192e+11
+      Equation: "ElectronContinuityEquation"	RelError: 7.21032e-02	AbsError: 1.50832e+10
+      Equation: "HoleContinuityEquation"	RelError: 8.22577e-04	AbsError: 2.06109e+11
+      Equation: "PotentialEquation"	RelError: 1.23361e-05	AbsError: 1.76348e-07
+Iteration: 7
+  Device: "e6m_L2_rev"	RelError: 5.49221e-07	AbsError: 1.26100e+05
+    Region: "Si"	RelError: 5.49221e-07	AbsError: 1.26100e+05
+      Equation: "ElectronContinuityEquation"	RelError: 5.47925e-07	AbsError: 2.39725e+03
+      Equation: "HoleContinuityEquation"	RelError: 1.29596e-09	AbsError: 1.23703e+05
+      Equation: "PotentialEquation"	RelError: 2.02035e-13	AbsError: 3.53023e-14
+L2 rev solves 6 error None wall 2.16
+EVIDENCE_INTEGRITY PASS [] []
+G1_GEOMETRY_AND_IMPORT PASS [] []
+G2_PRODUCTION_GATE_HELD_AND_AUDIT_DOPING PASS [] []
+G3_UNIT PASS [] []
+G4_CONVERGENCE_AND_CONSERVATION PASS [] []
+G5_Y_INVARIANCE PASS [] []
+G6_CURRENT_2D_VS_1D PASS [] []
+G7_PROFILE_2D_VS_1D PASS [] []
+G8_JUNCTION_FIELD_2D_VS_1D PASS [] []
+G9_MESH_SENSITIVITY_2D PASS [] []
+total solves: 42 leaked devices: []
+

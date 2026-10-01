@@ -1,0 +1,1523 @@
+{
+ "judge_version": "e6m-judge-1",
+ "EVIDENCE_INTEGRITY": {
+  "verdict": "PASS",
+  "problems": []
+ },
+ "G1_GEOMETRY_AND_IMPORT": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "L0: triangle area sum vs 40 um x H",
+    "value": 0.0,
+    "limit": 1e-12,
+    "pass": true
+   },
+   {
+    "name": "L0: importer area / NodeVolume gate passed",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0: no obtuse / degenerate triangle",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0: exact conformity check passed",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0: regions == [Si]",
+    "value": [
+     "Si"
+    ],
+    "pass": true
+   },
+   {
+    "name": "L0: node grid complete with 3 y lines",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0: geometry was checked before solving",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0: x lines equal the 1D node count",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0: max |x_2D - x_1D| / L",
+    "value": 5.421010862427522e-17,
+    "limit": 1e-12,
+    "pass": true
+   },
+   {
+    "name": "L0: Si_xmin covers the full height (3 nodes, x = -2e-03 cm, y in [-H, 0])",
+    "value": {
+     "n_nodes": 3,
+     "x_cm": [
+      -0.002,
+      -0.002
+     ],
+     "y_cm": [
+      -1e-05,
+      0.0
+     ]
+    },
+    "pass": true
+   },
+   {
+    "name": "L0: Si_xmax covers the full height (3 nodes, x = +2e-03 cm, y in [-H, 0])",
+    "value": {
+     "n_nodes": 3,
+     "x_cm": [
+      0.002,
+      0.002
+     ],
+     "y_cm": [
+      -1e-05,
+      0.0
+     ]
+    },
+    "pass": true
+   },
+   {
+    "name": "L1: triangle area sum vs 40 um x H",
+    "value": 0.0,
+    "limit": 1e-12,
+    "pass": true
+   },
+   {
+    "name": "L1: importer area / NodeVolume gate passed",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1: no obtuse / degenerate triangle",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1: exact conformity check passed",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1: regions == [Si]",
+    "value": [
+     "Si"
+    ],
+    "pass": true
+   },
+   {
+    "name": "L1: node grid complete with 3 y lines",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1: geometry was checked before solving",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1: x lines equal the 1D node count",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1: max |x_2D - x_1D| / L",
+    "value": 1.0842021724855044e-16,
+    "limit": 1e-12,
+    "pass": true
+   },
+   {
+    "name": "L1: Si_xmin covers the full height (3 nodes, x = -2e-03 cm, y in [-H, 0])",
+    "value": {
+     "n_nodes": 3,
+     "x_cm": [
+      -0.002,
+      -0.002
+     ],
+     "y_cm": [
+      -1e-05,
+      0.0
+     ]
+    },
+    "pass": true
+   },
+   {
+    "name": "L1: Si_xmax covers the full height (3 nodes, x = +2e-03 cm, y in [-H, 0])",
+    "value": {
+     "n_nodes": 3,
+     "x_cm": [
+      0.002,
+      0.002
+     ],
+     "y_cm": [
+      -1e-05,
+      0.0
+     ]
+    },
+    "pass": true
+   },
+   {
+    "name": "L2: triangle area sum vs 40 um x H",
+    "value": 0.0,
+    "limit": 1e-12,
+    "pass": true
+   },
+   {
+    "name": "L2: importer area / NodeVolume gate passed",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2: no obtuse / degenerate triangle",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2: exact conformity check passed",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2: regions == [Si]",
+    "value": [
+     "Si"
+    ],
+    "pass": true
+   },
+   {
+    "name": "L2: node grid complete with 3 y lines",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2: geometry was checked before solving",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2: x lines equal the 1D node count",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2: max |x_2D - x_1D| / L",
+    "value": 5.421010862427522e-17,
+    "limit": 1e-12,
+    "pass": true
+   },
+   {
+    "name": "L2: Si_xmin covers the full height (3 nodes, x = -2e-03 cm, y in [-H, 0])",
+    "value": {
+     "n_nodes": 3,
+     "x_cm": [
+      -0.002,
+      -0.002
+     ],
+     "y_cm": [
+      -1e-05,
+      0.0
+     ]
+    },
+    "pass": true
+   },
+   {
+    "name": "L2: Si_xmax covers the full height (3 nodes, x = +2e-03 cm, y in [-H, 0])",
+    "value": {
+     "n_nodes": 3,
+     "x_cm": [
+      0.002,
+      0.002
+     ],
+     "y_cm": [
+      -1e-05,
+      0.0
+     ]
+    },
+    "pass": true
+   }
+  ]
+ },
+ "G2_PRODUCTION_GATE_HELD_AND_AUDIT_DOPING": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "L0: production apply_doping refused (UNSUPPORTED_BY_MODEL / STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED), 0 writes, 0 solves",
+    "value": {
+     "raised": true,
+     "resolution": "UNSUPPORTED_BY_MODEL",
+     "reason_code": "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED",
+     "doping_writes": 0,
+     "solves": 0,
+     "message": "UNSUPPORTED_BY_MODEL (STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED): device 'e6m_L0_fwd' region 'Si' carries an ACTIVE step_junction_v1 dopant attachment on a 2D DevSim device (1035 of 1035 mesh node(s) blocked). The canonical donor/acceptor/net concentrations are PRESERVED and remain directly queryable from the WaferStateV2 (state.net_doping_at() is unaffected by this gate) -- what is refused is "
+    },
+    "pass": true
+   },
+   {
+    "name": "L0: audit doping follows the step convention on every node and never contradicts the canonical query",
+    "value": {
+     "canonical_checked": 1035,
+     "canonical_unresolved": 0,
+     "canonical_mismatch": 0
+    },
+    "pass": true
+   },
+   {
+    "name": "L1: production apply_doping refused (UNSUPPORTED_BY_MODEL / STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED), 0 writes, 0 solves",
+    "value": {
+     "raised": true,
+     "resolution": "UNSUPPORTED_BY_MODEL",
+     "reason_code": "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED",
+     "doping_writes": 0,
+     "solves": 0,
+     "message": "UNSUPPORTED_BY_MODEL (STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED): device 'e6m_L1_fwd' region 'Si' carries an ACTIVE step_junction_v1 dopant attachment on a 2D DevSim device (2055 of 2055 mesh node(s) blocked). The canonical donor/acceptor/net concentrations are PRESERVED and remain directly queryable from the WaferStateV2 (state.net_doping_at() is unaffected by this gate) -- what is refused is "
+    },
+    "pass": true
+   },
+   {
+    "name": "L1: audit doping follows the step convention on every node and never contradicts the canonical query",
+    "value": {
+     "canonical_checked": 2055,
+     "canonical_unresolved": 0,
+     "canonical_mismatch": 0
+    },
+    "pass": true
+   },
+   {
+    "name": "L2: production apply_doping refused (UNSUPPORTED_BY_MODEL / STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED), 0 writes, 0 solves",
+    "value": {
+     "raised": true,
+     "resolution": "UNSUPPORTED_BY_MODEL",
+     "reason_code": "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED",
+     "doping_writes": 0,
+     "solves": 0,
+     "message": "UNSUPPORTED_BY_MODEL (STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED): device 'e6m_L2_fwd' region 'Si' carries an ACTIVE step_junction_v1 dopant attachment on a 2D DevSim device (4113 of 4113 mesh node(s) blocked). The canonical donor/acceptor/net concentrations are PRESERVED and remain directly queryable from the WaferStateV2 (state.net_doping_at() is unaffected by this gate) -- what is refused is "
+    },
+    "pass": true
+   },
+   {
+    "name": "L2: audit doping follows the step convention on every node and never contradicts the canonical query",
+    "value": {
+     "canonical_checked": 4113,
+     "canonical_unresolved": 0,
+     "canonical_mismatch": 0
+    },
+    "pass": true
+   }
+  ]
+ },
+ "G3_UNIT": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "L0_fwd: 2D result unit A/cm, per_out_of_plane_depth, dimension 2",
+    "value": {
+     "current_unit": "A/cm",
+     "current_normalization": "per_out_of_plane_depth",
+     "device_dimension": 2
+    },
+    "pass": true
+   },
+   {
+    "name": "L0_rev: 2D result unit A/cm, per_out_of_plane_depth, dimension 2",
+    "value": {
+     "current_unit": "A/cm",
+     "current_normalization": "per_out_of_plane_depth",
+     "device_dimension": 2
+    },
+    "pass": true
+   },
+   {
+    "name": "L1_fwd: 2D result unit A/cm, per_out_of_plane_depth, dimension 2",
+    "value": {
+     "current_unit": "A/cm",
+     "current_normalization": "per_out_of_plane_depth",
+     "device_dimension": 2
+    },
+    "pass": true
+   },
+   {
+    "name": "L1_rev: 2D result unit A/cm, per_out_of_plane_depth, dimension 2",
+    "value": {
+     "current_unit": "A/cm",
+     "current_normalization": "per_out_of_plane_depth",
+     "device_dimension": 2
+    },
+    "pass": true
+   },
+   {
+    "name": "L2_fwd: 2D result unit A/cm, per_out_of_plane_depth, dimension 2",
+    "value": {
+     "current_unit": "A/cm",
+     "current_normalization": "per_out_of_plane_depth",
+     "device_dimension": 2
+    },
+    "pass": true
+   },
+   {
+    "name": "L2_rev: 2D result unit A/cm, per_out_of_plane_depth, dimension 2",
+    "value": {
+     "current_unit": "A/cm",
+     "current_normalization": "per_out_of_plane_depth",
+     "device_dimension": 2
+    },
+    "pass": true
+   },
+   {
+    "name": "H: 0.1 um = 1e-5 cm",
+    "value": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "1D basis: E6K resistor control recomputed from raw currents (ratio within 1e-6); production 1D metadata declares NO unit",
+    "value": 1.0000000000010032,
+    "pass": true
+   }
+  ]
+ },
+ "G4_CONVERGENCE_AND_CONSERVATION": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "L0_fwd: converged, no error, solves == 2 + #V",
+    "value": [
+     8,
+     8,
+     null
+    ],
+    "pass": true
+   },
+   {
+    "name": "L0_fwd: physical parameters equal the E6K reference",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.100 V: |I_min + I_max| / |I_min|",
+    "value": 2.2215988740593373e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.200 V: |I_min + I_max| / |I_min|",
+    "value": 1.8640132464513236e-06,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.300 V: |I_min + I_max| / |I_min|",
+    "value": 4.4079990458261377e-07,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.400 V: |I_min + I_max| / |I_min|",
+    "value": 1.2590374653366526e-08,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.500 V: |I_min + I_max| / |I_min|",
+    "value": 2.476449842547812e-09,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.600 V: |I_min + I_max| / |I_min|",
+    "value": 1.0730860675698142e-11,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0_rev: converged, no error, solves == 2 + #V",
+    "value": [
+     6,
+     6,
+     null
+    ],
+    "pass": true
+   },
+   {
+    "name": "L0_rev: physical parameters equal the E6K reference",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.250 V: |I_min + I_max| / |I_min|",
+    "value": 1.7012679872649514e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.500 V: |I_min + I_max| / |I_min|",
+    "value": 1.109063420177218e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.750 V: |I_min + I_max| / |I_min|",
+    "value": 3.264450759948196e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V: |I_min + I_max| / |I_min|",
+    "value": 1.380591710552015e-07,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1_fwd: converged, no error, solves == 2 + #V",
+    "value": [
+     8,
+     8,
+     null
+    ],
+    "pass": true
+   },
+   {
+    "name": "L1_fwd: physical parameters equal the E6K reference",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.100 V: |I_min + I_max| / |I_min|",
+    "value": 7.07173004422045e-06,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.200 V: |I_min + I_max| / |I_min|",
+    "value": 2.425055128400997e-06,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.300 V: |I_min + I_max| / |I_min|",
+    "value": 3.250309928419753e-07,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.400 V: |I_min + I_max| / |I_min|",
+    "value": 1.3237734907344823e-09,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.500 V: |I_min + I_max| / |I_min|",
+    "value": 1.0815306163316988e-09,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.600 V: |I_min + I_max| / |I_min|",
+    "value": 5.84378390243717e-11,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1_rev: converged, no error, solves == 2 + #V",
+    "value": [
+     6,
+     6,
+     null
+    ],
+    "pass": true
+   },
+   {
+    "name": "L1_rev: physical parameters equal the E6K reference",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.250 V: |I_min + I_max| / |I_min|",
+    "value": 3.226822323623087e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.500 V: |I_min + I_max| / |I_min|",
+    "value": 4.181733415904516e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.750 V: |I_min + I_max| / |I_min|",
+    "value": 4.721827862879191e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V: |I_min + I_max| / |I_min|",
+    "value": 2.817218701723945e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2_fwd: converged, no error, solves == 2 + #V",
+    "value": [
+     8,
+     8,
+     null
+    ],
+    "pass": true
+   },
+   {
+    "name": "L2_fwd: physical parameters equal the E6K reference",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.100 V: |I_min + I_max| / |I_min|",
+    "value": 8.239665581483369e-06,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.200 V: |I_min + I_max| / |I_min|",
+    "value": 1.9439498062392685e-07,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.300 V: |I_min + I_max| / |I_min|",
+    "value": 3.9390315139980436e-07,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.400 V: |I_min + I_max| / |I_min|",
+    "value": 2.369664685978644e-08,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.500 V: |I_min + I_max| / |I_min|",
+    "value": 2.0092781884464455e-09,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.600 V: |I_min + I_max| / |I_min|",
+    "value": 9.03134256237523e-12,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2_rev: converged, no error, solves == 2 + #V",
+    "value": [
+     6,
+     6,
+     null
+    ],
+    "pass": true
+   },
+   {
+    "name": "L2_rev: physical parameters equal the E6K reference",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.250 V: |I_min + I_max| / |I_min|",
+    "value": 4.964474756168538e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.500 V: |I_min + I_max| / |I_min|",
+    "value": 5.893243011182246e-06,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.750 V: |I_min + I_max| / |I_min|",
+    "value": 7.18271329684699e-05,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V: |I_min + I_max| / |I_min|",
+    "value": 1.7705120250839787e-05,
+    "limit": 0.001,
+    "pass": true
+   }
+  ]
+ },
+ "G5_Y_INVARIANCE": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "L0 +0.000 V: potential spread over y [V]",
+    "value": 5.551115123125783e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.000 V: electron spread over y",
+    "value": 2.930189247576134e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.000 V: hole spread over y",
+    "value": 1.9638326969498682e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.500 V: potential spread over y [V]",
+    "value": 5.551115123125783e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.500 V: electron spread over y",
+    "value": 1.174594279332578e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.500 V: hole spread over y",
+    "value": 4.591967987111619e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.600 V: potential spread over y [V]",
+    "value": 0.0,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.600 V: electron spread over y",
+    "value": 1.1996752019023616e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.600 V: hole spread over y",
+    "value": 6.464145768795474e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.500 V: potential spread over y [V]",
+    "value": 2.7755575615628914e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.500 V: electron spread over y",
+    "value": 1.9093866368867642e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.500 V: hole spread over y",
+    "value": 2.0005270832732887e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V: potential spread over y [V]",
+    "value": 1.3877787807814457e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V: electron spread over y",
+    "value": 3.715861489245312e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V: hole spread over y",
+    "value": 2.2097723276713035e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V: potential spread over y [V]",
+    "value": 5.551115123125783e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V: electron spread over y",
+    "value": 2.0129451965823987e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V: hole spread over y",
+    "value": 1.0011182859222783e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.500 V: potential spread over y [V]",
+    "value": 1.3877787807814457e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.500 V: electron spread over y",
+    "value": 7.887856876871416e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.500 V: hole spread over y",
+    "value": 6.01710450983272e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.600 V: potential spread over y [V]",
+    "value": 5.551115123125783e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.600 V: electron spread over y",
+    "value": 4.377541332734392e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.600 V: hole spread over y",
+    "value": 5.058784359674189e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.500 V: potential spread over y [V]",
+    "value": 5.551115123125783e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.500 V: electron spread over y",
+    "value": 1.7446173649406225e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.500 V: hole spread over y",
+    "value": 1.6496842343188551e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V: potential spread over y [V]",
+    "value": 2.220446049250313e-16,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V: electron spread over y",
+    "value": 2.4523795936487143e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V: hole spread over y",
+    "value": 2.0226575646674206e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V: potential spread over y [V]",
+    "value": 5.551115123125783e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V: electron spread over y",
+    "value": 2.2193861726221364e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V: hole spread over y",
+    "value": 2.1612113078470223e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.500 V: potential spread over y [V]",
+    "value": 5.551115123125783e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.500 V: electron spread over y",
+    "value": 6.822187510301204e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.500 V: hole spread over y",
+    "value": 7.023583400969591e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.600 V: potential spread over y [V]",
+    "value": 5.551115123125783e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.600 V: electron spread over y",
+    "value": 3.847401262323502e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.600 V: hole spread over y",
+    "value": 7.905596891019741e-16,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.500 V: potential spread over y [V]",
+    "value": 2.7755575615628914e-17,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.500 V: electron spread over y",
+    "value": 1.3103147740327918e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.500 V: hole spread over y",
+    "value": 1.4226691389353226e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V: potential spread over y [V]",
+    "value": 2.220446049250313e-16,
+    "limit": 1e-05,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V: electron spread over y",
+    "value": 2.879791728706917e-15,
+    "limit": 0.001,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V: hole spread over y",
+    "value": 1.7995937154894553e-15,
+    "limit": 0.001,
+    "pass": true
+   }
+  ]
+ },
+ "G6_CURRENT_2D_VS_1D": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "L0 +0.500 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.500 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 2.957570127042633e-10,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.600 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.600 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 1.1737001990095688e-16,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.500 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.500 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 1.5627855542426767e-16,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 0.0,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.500 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.500 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 1.7588349750296e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.600 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.600 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 1.7492200160837103e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.500 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.500 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 1.766281111931479e-14,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 1.7507238101993197e-14,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.500 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.500 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 3.199381193735343e-10,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.600 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.600 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 0.0,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.500 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.500 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 1.563146217564384e-16,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V: sign equals 1D",
+    "value": null,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V: |I_2D/H - I_1D| / |I_1D|",
+    "value": 1.786538540567068e-16,
+    "limit": 0.02,
+    "pass": true
+   }
+  ]
+ },
+ "G7_PROFILE_2D_VS_1D": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "L0 +0.000 V: max |psi_2D - psi_1D| / V_t",
+    "value": 2.144348016535216e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.000 V: electrons vs 1D",
+    "value": 3.4795997314966644e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.000 V: holes vs 1D",
+    "value": 2.7493657757298205e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.500 V: max |psi_2D - psi_1D| / V_t",
+    "value": 2.144348016535216e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.500 V: electrons vs 1D",
+    "value": 3.64190752536276e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.500 V: holes vs 1D",
+    "value": 3.455707026850657e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.600 V: max |psi_2D - psi_1D| / V_t",
+    "value": 2.144348016535216e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.600 V: electrons vs 1D",
+    "value": 2.5522480964706623e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.600 V: holes vs 1D",
+    "value": 3.2006906054446926e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.500 V: max |psi_2D - psi_1D| / V_t",
+    "value": 4.288696033070432e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.500 V: electrons vs 1D",
+    "value": 4.203004081443326e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 -0.500 V: holes vs 1D",
+    "value": 2.7477264388157624e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V: max |psi_2D - psi_1D| / V_t",
+    "value": 8.577392066140863e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V: electrons vs 1D",
+    "value": 6.7366591982521274e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V: holes vs 1D",
+    "value": 8.169249029854937e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V: max |psi_2D - psi_1D| / V_t",
+    "value": 2.144348016535216e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V: electrons vs 1D",
+    "value": 4.240987668419176e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V: holes vs 1D",
+    "value": 3.896735895755157e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.500 V: max |psi_2D - psi_1D| / V_t",
+    "value": 2.144348016535216e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.500 V: electrons vs 1D",
+    "value": 1.626150903260416e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.500 V: holes vs 1D",
+    "value": 4.006345778894587e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.600 V: max |psi_2D - psi_1D| / V_t",
+    "value": 2.144348016535216e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.600 V: electrons vs 1D",
+    "value": 1.608977623345358e-14,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.600 V: holes vs 1D",
+    "value": 1.854887598547206e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.500 V: max |psi_2D - psi_1D| / V_t",
+    "value": 4.288696033070432e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.500 V: electrons vs 1D",
+    "value": 1.986950138321345e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 -0.500 V: holes vs 1D",
+    "value": 3.1398667519272192e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V: max |psi_2D - psi_1D| / V_t",
+    "value": 8.577392066140863e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V: electrons vs 1D",
+    "value": 2.8855969921564782e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V: holes vs 1D",
+    "value": 3.4681405309404416e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V: max |psi_2D - psi_1D| / V_t",
+    "value": 2.144348016535216e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V: electrons vs 1D",
+    "value": 2.2062455857517082e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V: holes vs 1D",
+    "value": 1.9261821105773074e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.500 V: max |psi_2D - psi_1D| / V_t",
+    "value": 2.144348016535216e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.500 V: electrons vs 1D",
+    "value": 6.699166648983055e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.500 V: holes vs 1D",
+    "value": 4.976576366751172e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.600 V: max |psi_2D - psi_1D| / V_t",
+    "value": 4.288696033070432e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.600 V: electrons vs 1D",
+    "value": 4.6320787303959825e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.600 V: holes vs 1D",
+    "value": 5.5241045261560464e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.500 V: max |psi_2D - psi_1D| / V_t",
+    "value": 4.288696033070432e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.500 V: electrons vs 1D",
+    "value": 2.4156338238496123e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 -0.500 V: holes vs 1D",
+    "value": 2.1393136935892305e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V: max |psi_2D - psi_1D| / V_t",
+    "value": 8.577392066140863e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V: electrons vs 1D",
+    "value": 4.833502952733273e-15,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V: holes vs 1D",
+    "value": 4.411032980294322e-15,
+    "limit": 0.01,
+    "pass": true
+   }
+  ]
+ },
+ "G8_JUNCTION_FIELD_2D_VS_1D": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "L0 +0.000 V left: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.000 V left: E_x 2D vs 1D same edge",
+    "value": 1.3257122113466529e-16,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.000 V right: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L0 +0.000 V right: E_x 2D vs 1D same edge",
+    "value": 2.651424423425394e-16,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V left: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V left: E_x 2D vs 1D same edge",
+    "value": 1.7401228257313459e-15,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V right: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L0 -1.000 V right: E_x 2D vs 1D same edge",
+    "value": 1.5661105431582317e-15,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V left: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V left: E_x 2D vs 1D same edge",
+    "value": 2.6138854728109214e-16,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V right: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L1 +0.000 V right: E_x 2D vs 1D same edge",
+    "value": 2.613885473030801e-16,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V left: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V left: E_x 2D vs 1D same edge",
+    "value": 0.0,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V right: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L1 -1.000 V right: E_x 2D vs 1D same edge",
+    "value": 1.7238358619883194e-15,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V left: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V left: E_x 2D vs 1D same edge",
+    "value": 1.297698246057872e-16,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V right: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L2 +0.000 V right: E_x 2D vs 1D same edge",
+    "value": 1.297698246095405e-16,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V left: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V left: E_x 2D vs 1D same edge",
+    "value": 1.7157653240912934e-16,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V right: 3 horizontal junction edges found",
+    "value": 3,
+    "pass": true
+   },
+   {
+    "name": "L2 -1.000 V right: E_x 2D vs 1D same edge",
+    "value": 3.431530648182595e-15,
+    "limit": 0.02,
+    "pass": true
+   }
+  ]
+ },
+ "G9_MESH_SENSITIVITY_2D": {
+  "verdict": "PASS",
+  "checks": [
+   {
+    "name": "J(0.6 V) L1 vs L2",
+    "value": 5.277494783517904e-05,
+    "limit": 0.01,
+    "pass": true
+   },
+   {
+    "name": "J(-1.0 V) L1 vs L2",
+    "value": 4.7957054075647384e-05,
+    "limit": 0.02,
+    "pass": true
+   },
+   {
+    "name": "junction-edge E_x(-1.0 V) L1 vs L2",
+    "value": 0.004681732219974291,
+    "limit": 0.02,
+    "pass": true
+   }
+  ]
+ },
+ "diagnostics_not_judged": {
+  "E_dep_center_0V": 116584.6063412554,
+  "E_PB_center_0V": 112910.12637894512,
+  "levels": {
+   "L0": {
+    "E_PB_edge_mean_left_0V": 109831.20517567068,
+    "abs_E_x_2d_left_0V_mean": 109766.77369204495,
+    "abs_E_x_1d_left_0V": 109766.77369204495
+   },
+   "L1": {
+    "E_PB_edge_mean_left_0V": 111392.53513552884,
+    "abs_E_x_2d_left_0V_mean": 111343.17382863762,
+    "abs_E_x_1d_left_0V": 111343.17382863762
+   },
+   "L2": {
+    "E_PB_edge_mean_left_0V": 112173.85539036409,
+    "abs_E_x_2d_left_0V_mean": 112136.3558328944,
+    "abs_E_x_1d_left_0V": 112136.35583289442
+   }
+  }
+ }
+}

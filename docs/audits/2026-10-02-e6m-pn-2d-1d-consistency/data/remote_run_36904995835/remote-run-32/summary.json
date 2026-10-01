@@ -1,0 +1,173 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-01T18:12:23.975198+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6m-pn-2d-1d-001",
+  "profile": "e6m_pn_2d_1d_consistency",
+  "params": {},
+  "note": "E6M 2D-1D PN consistency audit. PLAN committed alone in 7f4ebbe before any solve. 42 solves planned, one run. No production gate change, no full regression, no 1D re-run."
+ },
+ "profile": "e6m_pn_2d_1d_consistency",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/PLAN.md",
+   "sha256": "b291bef83a3be9582b08b0b07795f1e97eba9361e1c04a184558a6d96dd6df2d",
+   "bytes": 10607
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/run_e6m.py",
+   "sha256": "b1afabf05c7f835d2d1959f4f30efe2c6733e547b1088bc6eef9e096a80bd5d1",
+   "bytes": 3543
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
+   "sha256": "8817d5680f47d83eb6cacb4d3046cd6d3a4e3d88ff166df75e62c72ddef04513",
+   "bytes": 10373
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py",
+   "sha256": "d8a44e8e7f46f3cc088ec85459b76459d03b8e325996488ba98c5cbb8c0d7901",
+   "bytes": 15043
+  },
+  {
+   "path": "tests/integration/test_pn_2d_1d_consistency_real.py",
+   "sha256": "9ee7f99a0c42a53e256be9a6a0dbfbfe908db2bd99545942aa92de4ed82016b3",
+   "bytes": 14883
+  },
+  {
+   "path": "tests/unit/test_e6m_judge_mock.py",
+   "sha256": "958107818ff7677ab360f347d73f8b2853c9a175955492c624ad0111f5a8b75d",
+   "bytes": 11397
+  },
+  {
+   "path": "tests/unit/test_e6l_correction_mock.py",
+   "sha256": "655aface8ddb940501bfddc2289745724d0d02f6dcde9ae7fda2a17249ca12d0",
+   "bytes": 2723
+  },
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/pn_1d_diagnostic.json",
+   "sha256": "c023cc4d16ae64e1b082ddf86d0cbe2bf492fd723beeb0e0fbd8ac00826e9f87",
+   "bytes": 28699
+  },
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz",
+   "sha256": "65c1a938a6521a14897ed2ec2dfc04178e254248e5a2778f9e0b7d1a56e1c8e2",
+   "bytes": 887153
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  }
+ ],
+ "request_sha256": "63fceaef321b9241980dd093e10bf95e74f6a172624db57ec36f8db8c46e6857",
+ "source": {
+  "github_sha": "70af9ad3589dee155976ffceb89b82e5d14c7186",
+  "git_head": "70af9ad3589dee155976ffceb89b82e5d14c7186",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36904995835",
+  "run_number": "32",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/run_e6m.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-01T18:12:41.430996+00:00",
+ "duration_s": 17.454,
+ "outputs": [
+  {
+   "path": "e6m_out/arrays.npz",
+   "bytes": 1183613,
+   "sha256": "6ec993c6f5201da46f901e11a7cc62a2edb921c5f05d946371be53c6338c174b"
+  },
+  {
+   "path": "e6m_out/e6m_result.json",
+   "bytes": 2429,
+   "sha256": "ee668130781964ac1720317663d25c1e8e06da9a1e4824246a3b7465561ce0f6"
+  },
+  {
+   "path": "e6m_out/pn_2d_consistency.json",
+   "bytes": 77554,
+   "sha256": "1a0e3fc7f9876119a34e8994b9e179d9584a5c1deca9819dc198e493e267391d"
+  },
+  {
+   "path": "e6m_out/test_e6l_correction_mock.log",
+   "bytes": 39,
+   "sha256": "845a38112a246d9da63416d00eb594a50e65df8213ea7c8409e35a4bc296d874"
+  },
+  {
+   "path": "e6m_out/test_e6m_judge_mock.log",
+   "bytes": 44,
+   "sha256": "646361979b2373264d2dd74eca8310e56d350991e1eafeb6915a47f4521479f0"
+  },
+  {
+   "path": "e6m_out/test_pn_2d_1d_consistency_real.log",
+   "bytes": 114029,
+   "sha256": "b7b5a31cea0f4c43091d1f6049b31e0640c8b8694e75713e00043b005aa00e69"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun the profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "5a25be377673a1a0310f483c4b53841c455c46ba29fedfe79ae809795507f460",
+  "bytes": 3322
+ },
+ "redactions": {}
+}

@@ -1,0 +1,56 @@
+{
+ "head": "70af9ad3589dee155976ffceb89b82e5d14c7186",
+ "python": "3.11.9",
+ "platform": "Windows-10-10.0.26100-SP0",
+ "versions": {
+  "devsim": "2.11.0",
+  "viennaps": "4.6.2",
+  "viennals": "5.8.5",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5"
+ },
+ "files_lf_sha256": {
+  "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/PLAN.md": "5aeb9dc28bf79f82404d728f9507c6a8208c531cc9bff32829cbf46e58e5410f",
+  "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py": "8106d40c3cad446910b01e3cbb9476e29ac047c53466562477d424aab2b355f7",
+  "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py": "cbc71de841d7f341a0c63af2ebccce40d10e052d8de600807f772a7ae7f98b83",
+  "tests/integration/test_pn_2d_1d_consistency_real.py": "7c68c969f66faa02e28c6675f55602d05abf14e43d319de14ddf12765f61ae55",
+  "tests/unit/test_e6m_judge_mock.py": "ce419d2c5f034e782126cfbc17c69fa27c6cc5cb9d38984fe8dc37514cdf7fe6",
+  "tcad/characterization/pn_junction_iv_sweep.py": "f9f1828caf8faf1fc75ed6a9a0921db2e92e021f96445fbb40e47b0b951c6ff9",
+  "tcad/device/devsim/semiconductor_equation.py": "33bd7a0ca80513be17f5d7292cf7bf3280c3944eae305cba3541075721104ab8",
+  "tcad/device/devsim/doping_mapping.py": "2f06339174f12182bef9f560c23d91faa74c85063d08742572208272719494fa",
+  "tcad/device/devsim/mesh_import.py": "0fe7c71d6594db777d038907a52067ad13b99b868f094758f196d0bbbfe721a8",
+  "tcad/device/devsim/mesh_conservation.py": "76646174c666832b87d47b407f85db9cbef84f89ee8141b067abcad5d4d0bd46",
+  "tcad/physics/wafer_state_v2.py": "d1beb942386cab0c35cb628f80818880e47bc731803ec1c22c9b4ce13c086922"
+ },
+ "runs": [
+  {
+   "cmd": [
+    "tests/unit/test_e6l_correction_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 0.2
+  },
+  {
+   "cmd": [
+    "tests/unit/test_e6m_judge_mock.py"
+   ],
+   "rc": 0,
+   "wall_s": 6.1
+  },
+  {
+   "cmd": [
+    "tests/integration/test_pn_2d_1d_consistency_real.py",
+    "<OUT>"
+   ],
+   "rc": 0,
+   "wall_s": 10.4
+  }
+ ],
+ "files": {
+  "arrays.npz": "6ec993c6f5201da46f901e11a7cc62a2edb921c5f05d946371be53c6338c174b",
+  "pn_2d_consistency.json": "1a0e3fc7f9876119a34e8994b9e179d9584a5c1deca9819dc198e493e267391d",
+  "test_e6l_correction_mock.log": "845a38112a246d9da63416d00eb594a50e65df8213ea7c8409e35a4bc296d874",
+  "test_e6m_judge_mock.log": "646361979b2373264d2dd74eca8310e56d350991e1eafeb6915a47f4521479f0",
+  "test_pn_2d_1d_consistency_real.log": "b7b5a31cea0f4c43091d1f6049b31e0640c8b8694e75713e00043b005aa00e69"
+ }
+}
