@@ -596,6 +596,28 @@ PROFILES = {
         "outputs": [{"glob": "e7a_out/**/*", "max_mb": 10}],
         "regenerate": "Rerun the profile.",
     },
+    "e6k_pn_1d_diagnostic": {
+        "description": "E6K: first production-path 1D symmetric p-n diode diagnostic (1D resistor unit control + 3 meshes forward/reverse, <= 45 solves) with analytic reference comparison; six separate verdicts, no PN validation claim.",
+        "entry": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/scripts/run_e6k.py",
+        "args": [],
+        "params": {},
+        "timeout_s": 1800,
+        "inputs": [
+            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/PN_PLAN_v2.md",
+            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/scripts/run_e6k.py",
+            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/scripts/pn_reference.py",
+            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/scripts/judge_e6k.py",
+            "tests/integration/test_pn_1d_diagnostic_real.py",
+            "tests/unit/test_pn_reference_mock.py",
+            "tests/unit/test_pn_judge_mock.py",
+            "tests/unit/test_current_unit_contract_mock.py",
+            "tcad/characterization/interface.py",
+            "tcad/characterization/pn_junction_iv_sweep.py",
+            "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/data/remote_run_36759423132/remote-run-24/outputs/e6j_out/gui_unit_contract.json",
+        ],
+        "outputs": [{"glob": "e6k_out/**/*", "max_mb": 30}],
+        "regenerate": "Rerun the profile.",
+    },
 }
 
 # Global limits (bytes / counts). Anything over budget is omitted and reported, never silently dropped.
