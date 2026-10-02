@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6m-pn-2d-1d-001",
- "profile": "e6m_pn_2d_1d_consistency",
+ "request_id": "e6na-import-reduction-001",
+ "profile": "e6na_import_reduction",
  "params": {},
- "note": "E6M 2D-1D PN consistency audit. PLAN committed alone in 7f4ebbe before any solve. 42 solves planned, one run. No production gate change, no full regression, no 1D re-run."
+ "note": "E6N-A import-only diagnostics. PLAN fixed in f9ddff7. Solve calls forbidden; N0 inconclusive/failure stops later levels. No gate or production change."
 }

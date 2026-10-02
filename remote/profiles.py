@@ -11,6 +11,28 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6na_import_reduction": {
+        "description": "E6N-A fixed-plan official import and discrete reduction diagnostics; no solve calls permitted.",
+        "entry": "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
+        "args": [], "params": {}, "timeout_s": 1800,
+        "inputs": [
+            "docs/audits/2026-10-02-e6na-import-reduction/PLAN.md",
+            "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_contract.py",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_result.json",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/GEOMETRY_DESIGN_RULE.md",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py",
+            "tests/integration/test_pn_2d_1d_consistency_real.py",
+            "tcad/device/devsim/mesh_refine.py",
+            "tcad/device/devsim/mesh_import.py",
+            "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_e6h.py",
+            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz"
+        ],
+        "outputs": [{"glob": "e6na_out/**/*", "max_mb": 120}],
+        "regenerate": "Only rerun after explicit approval; no solve permitted.",
+    },
     "phase5_smoke": {
         "description": "Small real check: ViennaPS etch -> ProcessResult -> DevSim Laplace solve.",
         "entry": "tests/integration/test_phase5_devsim_real.py",
