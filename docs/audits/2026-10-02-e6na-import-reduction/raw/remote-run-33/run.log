@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "<WORKSPACE>\docs\audits\2026-10-02-e6na-import-reduction\run_e6na.py", line 197, in <module>
+    sys.exit(preflight(execute))
+             ^^^^^^^^^^^^^^^^^^
+  File "<WORKSPACE>\docs\audits\2026-10-02-e6na-import-reduction\run_e6na.py", line 40, in preflight
+    return callback()
+           ^^^^^^^^^^
+  File "<WORKSPACE>\docs\audits\2026-10-02-e6na-import-reduction\run_e6na.py", line 62, in execute
+    raise ValueError('INPUT_PREFLIGHT_BLOCKED: '+relative)
+ValueError: INPUT_PREFLIGHT_BLOCKED: tcad/device/devsim/mesh_refine.py

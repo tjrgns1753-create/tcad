@@ -29,6 +29,21 @@ def main():
         with patch.object(Path,'read_bytes',return_value=value):
             assert R.preflight(callback)=='OK'
         callback.assert_called_once()
+    R.require_inputs()
+    paths=list(R.INPUT_SHAS)
+    fixture={str(R.ROOT/p):(R.ROOT/p).read_bytes() for p in paths}
+    for kind in ('LF','CRLF'):
+        def read(path):
+            value=fixture[str(path)]
+            if path.suffix!='.npz':
+                value=value.replace(b'\r\n',b'\n')
+                if kind=='CRLF':
+                    value=value.replace(b'\n',b'\r\n')
+            return value
+        with patch.object(Path,'read_bytes',read):
+            R.require_inputs()
+    with patch.object(Path,'read_bytes',return_value=b'changed'):
+        reject(R.require_inputs)
     xy=np.array([[-.002,-1e-5],[.002,-1e-5],[-.002,0],[.002,0]])
     tri=np.array([[0,1,2],[1,3,2]],dtype=np.int64)
     edges=np.array(sorted({tuple(sorted((int(t[i]),int(t[(i+1)%3])))) for t in tri for i in range(3)}),dtype=np.int64)

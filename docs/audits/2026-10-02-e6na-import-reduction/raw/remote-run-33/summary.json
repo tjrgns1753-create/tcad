@@ -1,0 +1,149 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-10-02T04:51:12.279662+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6na-import-reduction-001",
+  "profile": "e6na_import_reduction",
+  "params": {},
+  "note": "E6N-A import-only diagnostics. PLAN fixed in f9ddff7. Solve calls forbidden; N0 inconclusive/failure stops later levels. No gate or production change."
+ },
+ "profile": "e6na_import_reduction",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/PLAN.md",
+   "sha256": "b5fc37ae34827f15af7195e3944ae6a1f916e1f169628f7c321485c68eddfee8",
+   "bytes": 7740
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
+   "sha256": "c8c68c73efe66f5afb49efcd264efb8bc55b5e6dea5897b7ef50d1bab8c330bd",
+   "bytes": 11510
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
+   "sha256": "a96127ae3a5daf3fd019abdc38d6d87d786799f69fb6ab94d839ef842cba92d3",
+   "bytes": 8589
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_contract.py",
+   "sha256": "68e7932ff47fd5cfabdb8d73fc12240a3c5c81c16f79759570ed09ce900420cf",
+   "bytes": 2247
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_result.json",
+   "sha256": "77a57e6efcbe377d33c89c5d90499e6b057b2676064b826bea759b0bd49e9bc8",
+   "bytes": 6505
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/GEOMETRY_DESIGN_RULE.md",
+   "sha256": "ac5e9c15e7f850f8dea12b709c1aecc9981c7f547d62d46783242fa2f2781f35",
+   "bytes": 1432
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
+   "sha256": "cfedbe77df4dc08a6cdc1da81a4bf0e14ac04336be45651fc68304e22c72595c",
+   "bytes": 17433
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py",
+   "sha256": "038f28a655a092a341b42499ab658c27d7815a0ac431e88b7c70cee2287f5e2c",
+   "bytes": 19011
+  },
+  {
+   "path": "tests/integration/test_pn_2d_1d_consistency_real.py",
+   "sha256": "7581bc4813a14237f71925bc26ba865c79c73efe84ea2d6dc9341e92d747beeb",
+   "bytes": 15646
+  },
+  {
+   "path": "tcad/device/devsim/mesh_refine.py",
+   "sha256": "3b84190bbb4c0cfe9f13b668518820f8822e0fd04b2de0ec6c6194483f7c507d",
+   "bytes": 24346
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_e6h.py",
+   "sha256": "87a41856f034a42b771d947d82434184d62f8e0e97d7e0b3e80f79c8a1190dd5",
+   "bytes": 5996
+  },
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz",
+   "sha256": "65c1a938a6521a14897ed2ec2dfc04178e254248e5a2778f9e0b7d1a56e1c8e2",
+   "bytes": 887153
+  }
+ ],
+ "request_sha256": "7b3905a59592b617618c351bfdf75c212bdd4924fc331ceddb6b11d315ead91c",
+ "source": {
+  "github_sha": "1dac0a4edd2be83ba99f981483a2cfd4cc804a04",
+  "git_head": "1dac0a4edd2be83ba99f981483a2cfd4cc804a04",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "36966289573",
+  "run_number": "33",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "version": "2.11.0",
+  "extended_precision": true,
+  "direct_solver": [
+   "mkl_pardiso"
+  ],
+  "math_libraries": [
+   "mkl_rt.3.dll"
+  ]
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-10-02T04:51:13.107089+00:00",
+ "duration_s": 0.827,
+ "outputs": [],
+ "omitted_outputs": [],
+ "regenerate": "Only rerun after explicit approval; no solve permitted.",
+ "log": {
+  "file": "run.log",
+  "sha256": "fc7b639da4b7f4d1df7806fa7df32d28c85c9727fa151d26bdb0084f427f23f3",
+  "bytes": 575
+ },
+ "redactions": {
+  "<WORKSPACE>": 3
+ }
+}

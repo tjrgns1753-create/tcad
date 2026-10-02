@@ -25,8 +25,8 @@ INPUT_SHAS = {
     'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_preflight.py':'47ce559e56e32d9d7214cc0ca30a0a360ba485e7661817e3b992725409448a9b',
     'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_result.json':'5b7225e949c6f41bbd72bd73e8d4ea54f88b937221f52618b03cdec21c038f6f',
     'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/GEOMETRY_DESIGN_RULE.md':'e51caf5218ba725b99a918c16501e725c62ae87fa389ad28f6ef29c06ebce1c0',
-    'tcad/device/devsim/mesh_refine.py':'3b84190bbb4c0cfe9f13b668518820f8822e0fd04b2de0ec6c6194483f7c507d',
-    'tcad/device/devsim/mesh_import.py':'cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d',
+    'tcad/device/devsim/mesh_refine.py':'8973c358aca2e0173918b33117006dc638f37f8c68d8dc922c573c257b50f5e0',
+    'tcad/device/devsim/mesh_import.py':'0fe7c71d6594db777d038907a52067ad13b99b868f094758f196d0bbbfe721a8',
     'docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz':'65c1a938a6521a14897ed2ec2dfc04178e254248e5a2778f9e0b7d1a56e1c8e2'}
 
 
@@ -51,15 +51,20 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def execute():
-    if os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
-        raise RuntimeError('REMOTE_ONLY')
+def require_inputs():
+    """문자 파일 예상 해시는 LF 정규화, npz 예상 해시는 원시 바이트 기준."""
     for relative,expected in INPUT_SHAS.items():
         data=(ROOT/relative).read_bytes()
         if not relative.endswith('.npz'):
             data=data.replace(b'\r\n',b'\n')
         if hashlib.sha256(data).hexdigest()!=expected:
             raise ValueError('INPUT_PREFLIGHT_BLOCKED: '+relative)
+
+
+def execute():
+    if os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
+        raise RuntimeError('REMOTE_ONLY')
+    require_inputs()
     if subprocess.run(['git','diff','--quiet','ffa7e4a8872cd914e42066b1b1742312883c8dda','HEAD','--','tcad','tests','tcad_2d_stagewise.py'],cwd=ROOT).returncode != 0:
         raise ValueError('PRODUCTION_OR_TEST_SOURCE_CHANGED')
     from tcad.device.devsim import backend

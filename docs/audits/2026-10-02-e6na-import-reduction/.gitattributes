@@ -1,0 +1,2 @@
+# 원격 원본 artifact는 checkout 줄바꿈 변환 및 text diff를 적용하지 않는다.
+raw/** -text -diff
