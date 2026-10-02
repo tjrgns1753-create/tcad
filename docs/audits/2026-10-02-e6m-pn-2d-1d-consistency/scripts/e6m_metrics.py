@@ -25,6 +25,128 @@ SNAP_ARRAYS = ("Potential", "Electrons", "Holes", "ElectricField")
 E6L_SCRIPTS = Path(__file__).resolve().parents[2] / "2026-10-01-e6l-judge-integrity-equilibrium" / "scripts"
 
 
+def require_canonical(record, node_count):
+    """Reject unknown/partial canonical evidence before any write or sweep."""
+    keys = ("canonical_checked", "canonical_unresolved", "canonical_mismatch")
+    if (type(node_count) is not int or node_count <= 0 or not isinstance(record, dict)
+            or any(type(record.get(k)) is not int or record[k] < 0 for k in keys)
+            or record["canonical_checked"] != node_count
+            or record["canonical_unresolved"] != 0 or record["canonical_mismatch"] != 0):
+        raise ValueError("CANONICAL_AUDIT_BLOCKED: incomplete, unresolved or mismatched canonical doping")
+
+
+def canonical_checks(state, x_cm, y_cm, length_scale):
+    """Pure node queries, including net doping; no backend import or writes."""
+    if (len(x_cm) != len(y_cm) or not math.isfinite(length_scale) or length_scale <= 0
+            or not np.all(np.isfinite(x_cm)) or not np.all(np.isfinite(y_cm))):
+        raise ValueError("CANONICAL_AUDIT_BLOCKED: invalid coordinates or length scale")
+    rec = dict(canonical_checked=0, canonical_unresolved=0, canonical_mismatch=0)
+    for x, y in zip(x_cm, y_cm):
+        q = state.net_doping_at(float(x) / length_scale, float(y) / length_scale)
+        rec["canonical_checked"] += 1
+        vals = (q.donor_concentration, q.acceptor_concentration, q.net_doping)
+        if q.physics_status is not None or any(type(v) not in (int, float) or not math.isfinite(v) for v in vals):
+            rec["canonical_unresolved"] += 1
+        elif vals != (N_DOP * (x >= 0), N_DOP * (x <= 0), N_DOP * ((x >= 0) * 1 - (x <= 0) * 1)):
+            rec["canonical_mismatch"] += 1
+    return rec
+
+
+def guarded_audit(record, node_count, write_doping, sweep):
+    """The actual runner and engine-free traps share this execution boundary."""
+    require_canonical(record, node_count)
+    write_doping()
+    return sweep()
+
+
+def array_contract(npz, level, direction, area_tol=1e-12):
+    """Check each device independently, using coordinate/topology correspondence.
+
+    These are evidence consistency checks, not a new finite-volume solver.
+    Node/triangle ordering is allowed to differ. Original summaries stay intact.
+    """
+    prefix = f"{level}_{direction}"
+    problems = []
+
+    def need(ok, message):
+        if not ok:
+            problems.append(f"{prefix}: {message}")
+        return bool(ok)
+
+    def array(key, shape=None, integer=False):
+        a = np.asarray(npz[key])
+        valid = a.dtype.kind in ("iu" if integer else "iuf") and np.all(np.isfinite(a))
+        if not need(valid and (shape is None or a.shape == shape), f"{key}: invalid dtype, shape or nonfinite value"):
+            return None
+        return a
+
+    points = array(f"{level}__points_um")
+    triangles = array(f"{level}__triangles", integer=True)
+    if points is None or triangles is None:
+        return problems
+    if not need(points.ndim == 2 and points.shape[1] == 3 and len(points) > 0 and np.all(points[:, 2] == 0), "invalid planar points"):
+        return problems
+    n = len(points)
+    if not need(triangles.ndim == 2 and triangles.shape[1] == 3 and len(triangles) > 0
+                and np.all((triangles >= 0) & (triangles < n)), "invalid triangle indices"):
+        return problems
+    geo = {k: array(akey(level, direction, k), (n,)) for k in ("x", "y", "NodeVolume", "Donors", "Acceptors", "NetDoping")}
+    if any(a is None for a in geo.values()):
+        return problems
+    xy = np.column_stack((geo["x"], geo["y"]))
+    expected = points[:, :2] * 1e-4
+    order, reforder = np.lexsort((xy[:, 1], xy[:, 0])), np.lexsort((expected[:, 1], expected[:, 0]))
+    if not need(len(np.unique(xy, axis=0)) == n and np.all(np.abs(xy[order] - expected[reforder]) <= [L_CM * 1e-12, H_CM * 1e-12]), "node coordinates do not match source mesh"):
+        return problems
+    # Map imported node ids to the source ids; canonicalize each triangle and its row order.
+    mapping = np.empty(n, dtype=np.int64)
+    mapping[order] = reforder
+    elements = array(akey(level, direction, "element_nodes"), triangles.shape, integer=True)
+    if elements is None or not need(np.all((elements >= 0) & (elements < n)), "invalid imported element indices"):
+        return problems
+    canonical = lambda t: sorted(map(tuple, np.sort(t, axis=1).tolist()))
+    need(canonical(mapping[elements]) == canonical(triangles), "imported topology does not match source triangles")
+    g = geometry_checks(points, triangles)
+    nv = geo["NodeVolume"]
+    need(np.all(nv >= 0) and float(np.sum(nv)) > 0
+         and abs(float(np.sum(nv)) - g["area_cm2"]) <= area_tol * g["area_cm2"], "NodeVolume sum/sign does not match triangle area")
+    x = geo["x"]
+    donor, acceptor = N_DOP * (x >= 0), N_DOP * (x <= 0)
+    need(np.array_equal(geo["Donors"], donor) and np.array_equal(geo["Acceptors"], acceptor)
+         and np.array_equal(geo["NetDoping"], donor - acceptor)
+         and np.array_equal(geo["NetDoping"], geo["Donors"] - geo["Acceptors"]), "doping violates planned step convention or donor-minus-acceptor identity")
+    length = array(akey(level, direction, "EdgeLength"))
+    if length is None or not need(length.ndim == 1 and len(length) > 0 and np.all(length > 0), "invalid edge lengths"):
+        return problems
+    ne = len(length)
+    edges = {k: array(akey(level, direction, k), (ne,)) for k in ("edge_x0", "edge_y0", "edge_x1", "edge_y1")}
+    if any(a is None for a in edges.values()):
+        return problems
+    nodes = {tuple(p): i for i, p in enumerate(xy)}
+    try:
+        i0 = np.array([nodes[p] for p in zip(edges["edge_x0"], edges["edge_y0"])])
+        i1 = np.array([nodes[p] for p in zip(edges["edge_x1"], edges["edge_y1"])])
+    except KeyError:
+        need(False, "edge endpoint is not an imported node")
+        return problems
+    mesh_edges = set()
+    for a, b in ((0, 1), (1, 2), (2, 0)):
+        mesh_edges.update(map(tuple, np.sort(elements[:, [a, b]], axis=1).tolist()))
+    edge_ids = [tuple(sorted(p)) for p in zip(i0.tolist(), i1.tolist())]
+    need(len(set(edge_ids)) == ne and set(edge_ids) == mesh_edges, "edge topology incomplete, duplicated or inconsistent")
+    actual_length = np.linalg.norm(xy[i1] - xy[i0], axis=1)
+    need(np.all(np.abs(length - actual_length) <= actual_length * 1e-12), "EdgeLength contradicts endpoint coordinates")
+    for v in SNAP_BIASES[direction]:
+        snap = {k: array(akey(level, direction, k, v), (ne,) if k == "ElectricField" else (n,)) for k in SNAP_ARRAYS}
+        if any(a is None for a in snap.values()):
+            continue
+        need(np.all(snap["Electrons"] > 0) and np.all(snap["Holes"] > 0), f"{v}: nonpositive carrier density")
+        field = (snap["Potential"][i0] - snap["Potential"][i1]) / length
+        scale = max(float(np.max(np.abs(field))), 1e-300)
+        need(float(np.max(np.abs(field - snap["ElectricField"]))) <= scale * 1e-9, f"{v}: ElectricField contradicts Potential/EdgeLength")
+    return problems
+
+
 def vkey(v):
     return f"{v:+.3f}"
 

@@ -2,6 +2,7 @@
 required meshes / devices / biases / arrays must exist, numbers must be finite int/float (no bool, numeric string, None, NaN, inf), the stored summary must equal the summary
 recomputed from the raw JSON and the stored arrays, and the units must be established before any current comparison. Separate verdicts only; never a combined PASS."""
 import math
+import hashlib
 import sys
 from pathlib import Path
 
@@ -11,7 +12,8 @@ sys.path.insert(0, str(HERE.parents[1] / "2026-10-01-e6l-judge-integrity-equilib
 import e6m_metrics as M  # noqa: E402
 import judge_e6l as E6L  # noqa: E402  (strict validation of the preserved 1D evidence; read-only)
 
-VERSION = "e6m-judge-1"
+VERSION = "e6m-judge-2"
+PINNED_PLAN_SHA256 = "5aeb9dc28bf79f82404d728f9507c6a8208c531cc9bff32829cbf46e58e5410f"
 GATE_REASON = "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED"
 LIM = {"area_rel": 1e-12, "x_lines_rel": 1e-12, "kcl_rel": 1e-3, "psi_y_spread_V": 1e-5, "carrier_y_spread_rel": 1e-3, "J_fwd_rel": 0.01, "J_rev_rel": 0.02,
        "psi_vs_1d_in_Vt": 0.01, "carrier_vs_1d_rel": 0.01, "E_junction_rel": 0.02, "mesh_J_0.6": 0.01, "mesh_J_-1.0": 0.02, "mesh_E": 0.02}
@@ -58,7 +60,7 @@ def deep_equal(a, b, path, problems):
         problems.append(f"stored summary {a!r} != recomputed {b!r} at {'/'.join(map(str, path))}")
 
 
-def validate(raw, npz, e6k_json, e6k_npz, e6j=None):
+def validate(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None):
     problems = []
 
     def need(cond, msg):
@@ -66,7 +68,13 @@ def validate(raw, npz, e6k_json, e6k_npz, e6j=None):
             problems.append(msg)
         return bool(cond)
     need(is_num(raw.get("H_um")) and raw["H_um"] == M.H_UM, "H_um missing or not the planned 0.1")
-    need(isinstance(raw.get("plan_sha256"), str) and len(raw["plan_sha256"]) == 64, "plan_sha256 missing")
+    if expected_plan_sha256 is None:
+        expected_plan_sha256 = PINNED_PLAN_SHA256
+        local_sha = hashlib.sha256((HERE.parent / "PLAN.md").read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+        need(local_sha == PINNED_PLAN_SHA256, "local PLAN differs from the pre-solve pinned PLAN")
+    need(isinstance(expected_plan_sha256, str) and len(expected_plan_sha256) == 64
+         and all(c in "0123456789abcdef" for c in expected_plan_sha256), "invalid expected PLAN hash")
+    need(raw.get("plan_sha256") == expected_plan_sha256, "plan_sha256 differs from independently expected PLAN")
     lev = raw.get("levels")
     if not need(isinstance(lev, dict) and set(lev) == set(M.LEVELS), "levels must be exactly L0, L1, L2") or not need(npz is not None, "arrays (npz) missing"):
         return problems, None, None
@@ -94,6 +102,8 @@ def validate(raw, npz, e6k_json, e6k_npz, e6j=None):
             continue
         for d in M.DIRECTIONS:
             dev, plan_v = devs[d], M.VOLTAGES[d]
+            if not need(isinstance(dev, dict), f"{lv}_{d}: device record malformed"):
+                continue
             need(isinstance(dev.get("voltages"), list) and len(dev["voltages"]) == len(plan_v) and all(is_num(a) and a == b for a, b in zip(dev["voltages"], plan_v)), f"{lv}_{d}: voltages differ from the plan")
             cur = dev.get("currents")
             need(isinstance(cur, list) and len(cur) == len(plan_v) and all(isinstance(c, dict) and is_num(c.get("V")) and c["V"] == v and is_num(c.get("I_min")) and is_num(c.get("I_max"))
@@ -108,6 +118,14 @@ def validate(raw, npz, e6k_json, e6k_npz, e6j=None):
                     need(M.akey(lv, d, a, v) in npz.files, f"array {M.akey(lv, d, a, v)} missing")
         for a in ("points_um", "triangles"):
             need(f"{lv}__{a}" in npz.files, f"array {lv}__{a} missing")
+    if problems:
+        return problems, None, None
+    for lv in M.LEVELS:
+        for d in M.DIRECTIONS:
+            try:
+                problems.extend(M.array_contract(npz, lv, d, LIM["area_rel"]))
+            except (ValueError, TypeError, IndexError, KeyError) as exc:
+                problems.append(f"{lv}_{d}: malformed array evidence: {exc!r}")
     if problems:
         return problems, None, None
     # the preserved 1D evidence must itself be intact, and its unit control must hold (recomputed, not trusted)
@@ -134,8 +152,8 @@ def _b(name, cond, value=None):
     return {"name": name, "value": value, "pass": bool(cond)}
 
 
-def judge(raw, npz, e6k_json, e6k_npz, e6j=None):
-    problems, S, c1 = validate(raw, npz, e6k_json, e6k_npz, e6j)
+def judge(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None):
+    problems, S, c1 = validate(raw, npz, e6k_json, e6k_npz, e6j, expected_plan_sha256=expected_plan_sha256)
     res = {"judge_version": VERSION, "EVIDENCE_INTEGRITY": {"verdict": "PASS" if not problems else "EVIDENCE_INTEGRITY_FAIL", "problems": problems}}
     if problems:
         for k in CATEGORIES:
@@ -146,6 +164,7 @@ def judge(raw, npz, e6k_json, e6k_npz, e6j=None):
         return {"verdict": "PASS" if checks and all(x["pass"] for x in checks) else "FAIL", "checks": checks}
     rp = e6k_json["reference_parameters"]
     g1, g2, g3, g4, g5, g6, g7, g8 = [], [], [], [], [], [], [], []
+    canonical_evidence, canonical_missing = {}, False
     for lv in M.LEVELS:
         L, s = raw["levels"][lv], S["levels"][lv]
         gi, g = L["geometry_import"], s["geometry"]
@@ -161,9 +180,24 @@ def judge(raw, npz, e6k_json, e6k_npz, e6j=None):
         gt, ad = L["gate"], L["audit_doping"]
         g2 += [_b(f"{lv}: production apply_doping refused (UNSUPPORTED_BY_MODEL / {GATE_REASON}), 0 writes, 0 solves",
                   gt["raised"] is True and gt["resolution"] == "UNSUPPORTED_BY_MODEL" and gt["reason_code"] == GATE_REASON and gt["doping_writes"] == 0 and gt["solves"] == 0, gt),
-               _b(f"{lv}: audit doping follows the step convention on every node and never contradicts the canonical query", s["doping_step_convention_ok"] and ad["canonical_mismatch"] == 0 and ad["canonical_checked"] > 0, ad)]
+               _b(f"{lv}: stored audit doping follows the step convention", s["doping_step_convention_ok"])]
         for d in M.DIRECTIONS:
             dev = L["devices"][d]
+            # Legacy E6M recorded only the forward canonical query. Never fabricate a reverse record.
+            record = dev.get("canonical_audit", ad if d == "fwd" else None)
+            key = f"{lv}_{d}"
+            if record is None:
+                canonical_missing = True
+                canonical_evidence[key] = "NOT_RECORDED"
+            else:
+                try:
+                    M.require_canonical(record, int(len(npz[M.akey(lv, d, "x")])))
+                except ValueError:
+                    canonical_evidence[key] = "FAIL"
+                    g2.append(_b(f"{key}: complete, resolved canonical audit", False, record))
+                else:
+                    canonical_evidence[key] = "RECORDED_VALID"
+                    g2.append(_b(f"{key}: complete, resolved canonical audit", True, record))
             md = dev["metadata"]
             g3.append(_b(f"{lv}_{d}: 2D result unit A/cm, per_out_of_plane_depth, dimension 2", md.get("current_unit") == "A/cm" and md.get("current_normalization") == "per_out_of_plane_depth"
                          and type(md.get("device_dimension")) is int and md["device_dimension"] == 2, {k: md.get(k) for k in ("current_unit", "current_normalization", "device_dimension")}))
@@ -196,6 +230,10 @@ def judge(raw, npz, e6k_json, e6k_npz, e6j=None):
           _c("junction-edge E_x(-1.0 V) L1 vs L2", ms["E_junction_left_-1.0_L1_vs_L2"], LIM["mesh_E"])]
     for k, checks in zip(CATEGORIES, (g1, g2, g3, g4, g5, g6, g7, g8, g9)):
         res[k] = cat(checks)
+    if canonical_missing and res[CATEGORIES[1]]["verdict"] == "PASS":
+        res[CATEGORIES[1]]["verdict"] = "NOT_EVALUATED"
+        res[CATEGORIES[1]]["reason"] = "reverse pre-solve canonical audit NOT_RECORDED; stored arrays were checked independently"
+    res["canonical_evidence"] = canonical_evidence
     geom_ok, gate_ok, unit_ok = (res[CATEGORIES[i]]["verdict"] == "PASS" for i in range(3))
     for k in CATEGORIES[3:]:
         if not geom_ok:

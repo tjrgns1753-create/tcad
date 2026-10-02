@@ -58,7 +58,8 @@ def synth():
             one = E6K_JSON["devices"][f"{lv}_{d}"]
             devices[d] = {"voltages": list(M.VOLTAGES[d]), "currents": [{"V": c1["V"], "I_min": c1["I_l"] * M.H_CM, "I_max": c1["I_r"] * M.H_CM} for c1 in one["currents"]],
                           "solves": 2 + len(M.VOLTAGES[d]), "expected_solves": 2 + len(M.VOLTAGES[d]), "error": None, "converged": True,
-                          "metadata": {"current_unit": "A/cm", "current_normalization": "per_out_of_plane_depth", "device_dimension": 2}, "params": dict(one["params"])}
+                          "metadata": {"current_unit": "A/cm", "current_normalization": "per_out_of_plane_depth", "device_dimension": 2}, "params": dict(one["params"]),
+                          "canonical_audit": {"canonical_checked": len(x), "canonical_unresolved": 0, "canonical_mismatch": 0}}
         raw["levels"][lv] = {
             "geometry_import": {"regions": ["Si"], "conformity_pass": True, "pre_solve_geometry_ok": True, "area_gate": {"pass": True, "A": 4e-8, "S": 4e-8},
                                 "contacts": {"Si_xmin": {"n_nodes": 3, "x_cm": [-0.002, -0.002], "y_cm": [-M.H_CM, 0.0]}, "Si_xmax": {"n_nodes": 3, "x_cm": [0.002, 0.002], "y_cm": [-M.H_CM, 0.0]}}},
@@ -72,7 +73,7 @@ RAW, ARR = synth()
 
 
 def verdicts(raw, arr, e6k_json=E6K_JSON):
-    return {k: v["verdict"] for k, v in J.judge(raw, arr, e6k_json, E6K_NPZ, E6J).items() if isinstance(v, dict) and "verdict" in v}
+    return {k: v["verdict"] for k, v in J.judge(raw, arr, e6k_json, E6K_NPZ, E6J, expected_plan_sha256="0" * 64).items() if isinstance(v, dict) and "verdict" in v}
 
 
 def case(mutate, recompute, expect, label):
@@ -84,6 +85,82 @@ def case(mutate, recompute, expect, label):
     for k, want in expect.items():
         assert v[k] == want, (label, k, v[k], want, v)
     return v
+
+
+def update_field(arr, level, direction, bias):
+    x, y = arr[M.akey(level, direction, "x")], arr[M.akey(level, direction, "y")]
+    index = {p: i for i, p in enumerate(zip(x, y))}
+    i0 = [index[p] for p in zip(arr[M.akey(level, direction, "edge_x0")], arr[M.akey(level, direction, "edge_y0")])]
+    i1 = [index[p] for p in zip(arr[M.akey(level, direction, "edge_x1")], arr[M.akey(level, direction, "edge_y1")])]
+    v = arr[M.akey(level, direction, "Potential", bias)]
+    arr[M.akey(level, direction, "ElectricField", bias)] = (v[i0] - v[i1]) / arr[M.akey(level, direction, "EdgeLength")]
+
+
+def hardened_cases():
+    FAIL = "EVIDENCE_INTEGRITY_FAIL"
+    gate = J.CATEGORIES[1]
+    for value in ("f" * 64, "xyz", None):
+        case(lambda r, a, value=value: r.__setitem__("plan_sha256", value), False, {"EVIDENCE_INTEGRITY": FAIL}, "PLAN mismatch")
+    case(lambda r, a: r.pop("plan_sha256"), False, {"EVIDENCE_INTEGRITY": FAIL}, "PLAN missing")
+    for d in M.DIRECTIONS:
+        for field, value in (("canonical_unresolved", 1), ("canonical_checked", 0), ("canonical_checked", 1), ("canonical_mismatch", 1)):
+            case(lambda r, a, d=d, field=field, value=value: r["levels"]["L2"]["devices"][d]["canonical_audit"].__setitem__(field, value),
+                 True, {gate: "FAIL", J.CATEGORIES[5]: "BLOCKED_GATE_OR_AUDIT_DOPING"}, f"{d}: canonical {field}")
+        for recompute in (False, True):
+            for name, mutation in (
+                ("NodeVolume zero", lambda a: a.__setitem__(M.akey("L2", d, "NodeVolume"), np.zeros_like(a[M.akey("L2", d, "NodeVolume")]))),
+                ("NodeVolume short", lambda a: a.__setitem__(M.akey("L2", d, "NodeVolume"), a[M.akey("L2", d, "NodeVolume")][:-1])),
+                ("NodeVolume NaN", lambda a: a[M.akey("L2", d, "NodeVolume")].__setitem__(0, np.nan)),
+                ("NodeVolume negative", lambda a: a[M.akey("L2", d, "NodeVolume")].__setitem__(0, -1.0)),
+                ("all doping zero", lambda a: [a.__setitem__(M.akey("L2", d, k), np.zeros_like(a[M.akey("L2", d, k)])) for k in ("Donors", "Acceptors", "NetDoping")]),
+                ("one donor edited", lambda a: a[M.akey("L2", d, "Donors")].__setitem__(0, 1.0)),
+                ("net identity broken", lambda a: a[M.akey("L2", d, "NetDoping")].__setitem__(0, 0.0)),
+                ("coordinate edited", lambda a: a[M.akey("L2", d, "y")].__setitem__(0, 1.0)),
+                ("edge length edited", lambda a: a[M.akey("L2", d, "EdgeLength")].__setitem__(0, 1.0)),
+                ("field edited", lambda a: a[M.akey("L2", d, "ElectricField", 0.0)].__setitem__(0, 1.0)),
+                ("element index out of range", lambda a: a[M.akey("L2", d, "element_nodes")].__setitem__((0, 0), 999999)),
+                ("element index float", lambda a: a.__setitem__(M.akey("L2", d, "element_nodes"), a[M.akey("L2", d, "element_nodes")].astype(float))),
+            ):
+                # Some malformed shapes make compute fail before a summary can be refreshed.
+                # Keep its old summary in that case; the raw-array contract must still reject it.
+                def mutate(r, a, mutation=mutation):
+                    mutation(a)
+                    if recompute:
+                        try:
+                            r["summary"] = M.compute(r, a, E6K_JSON, E6K_NPZ)
+                        except (ValueError, IndexError):
+                            pass
+                case(mutate, False, {"EVIDENCE_INTEGRITY": FAIL}, f"{d}: {name}, refreshed={recompute}")
+    # Missing historical reverse records are not silently promoted to PASS.
+    case(lambda r, a: [r["levels"][lv]["devices"]["rev"].pop("canonical_audit") for lv in M.LEVELS], False,
+         {"EVIDENCE_INTEGRITY": "PASS", gate: "NOT_EVALUATED"}, "reverse canonical audit not recorded")
+    # Both functions below are the actual guarded runner callbacks, not a separate test-only gate.
+    good = dict(canonical_checked=3, canonical_unresolved=0, canonical_mismatch=0)
+    for patch in ({"canonical_unresolved": 1}, {"canonical_checked": 0}, {"canonical_checked": 2}, {"canonical_mismatch": 1}):
+        calls = {"writes": 0, "sweeps": 0, "solves": 0}
+        def writer():
+            calls["writes"] += 1
+        def sweep():
+            calls["sweeps"] += 1
+            calls["solves"] += 1
+        try:
+            M.guarded_audit({**good, **patch}, 3, writer, sweep)
+        except ValueError as exc:
+            assert "CANONICAL_AUDIT_BLOCKED" in str(exc)
+        else:
+            raise AssertionError("invalid canonical evidence ran callbacks")
+        assert calls == {"writes": 0, "sweeps": 0, "solves": 0}, calls
+    calls = []
+    assert M.guarded_audit(good, 3, lambda: calls.append("write"), lambda: calls.append("sweep")) is None
+    assert calls == ["write", "sweep"]
+    # Canonical net None/NaN/False must block even if donor and acceptor look valid.
+    from types import SimpleNamespace
+    for bad in (None, float("nan"), False):
+        state = SimpleNamespace(net_doping_at=lambda x, y, bad=bad: SimpleNamespace(
+            donor_concentration=M.N_DOP, acceptor_concentration=0.0, net_doping=bad, physics_status=None))
+        rec = M.canonical_checks(state, np.array([1.0]), np.array([0.0]), 1.0)
+        assert rec["canonical_unresolved"] == 1
+    print("E6M hardened cases: both directions, PLAN, arrays, unknown-state callback traps PASS")
 
 
 def main():
@@ -131,18 +208,19 @@ def main():
     def obtuse(r, a):
         p = a["L0__points_um"]
         p[1, 1] += 0.2                      # lift one bottom node above the top: obtuse / area change
-    case(obtuse, True, {G["G1"]: "FAIL"}, "distorted triangle")
+    case(obtuse, True, {"EVIDENCE_INTEGRITY": FAIL}, "distorted triangle inconsistent with imported coordinates")
     case(lambda r, a: r["levels"]["L2"]["gate"].__setitem__("raised", False), True, {G["G2"]: "FAIL", G["G6"]: "BLOCKED_GATE_OR_AUDIT_DOPING"}, "gate did not refuse")
     case(lambda r, a: r["levels"]["L2"]["gate"].__setitem__("reason_code", "COMPENSATED_TRANSPORT_MODEL_MISSING"), True, {G["G2"]: "FAIL"}, "other gate reason")
     case(lambda r, a: r["levels"]["L2"]["gate"].__setitem__("doping_writes", 3), True, {G["G2"]: "FAIL"}, "gate wrote doping")
-    case(lambda r, a: r["levels"]["L2"]["audit_doping"].__setitem__("canonical_mismatch", 1), True, {G["G2"]: "FAIL"}, "audit doping contradicts canonical")
-    case(lambda r, a: a.__setitem__(M.akey("L1", "fwd", "Donors"), a[M.akey("L1", "fwd", "Donors")] * 0 + M.N_DOP), True, {G["G2"]: "FAIL"}, "step convention broken")
+    case(lambda r, a: r["levels"]["L2"]["devices"]["fwd"]["canonical_audit"].__setitem__("canonical_mismatch", 1), True, {G["G2"]: "FAIL"}, "audit doping contradicts canonical")
+    case(lambda r, a: a.__setitem__(M.akey("L1", "fwd", "Donors"), a[M.akey("L1", "fwd", "Donors")] * 0 + M.N_DOP), True, {"EVIDENCE_INTEGRITY": FAIL}, "step convention broken")
     # physics-shaped deviations
     def y_var(r, a):
         k = M.akey("L1", "fwd", "Potential", 0.6)
         v = a[k].copy()
         v[: len(v) // 3] += 5e-5           # the bottom y line differs by 50 uV
         a[k] = v
+        update_field(a, "L1", "fwd", 0.6)  # a physically shaped deviation must keep the field definition consistent
     case(y_var, True, {G["G5"]: "FAIL", "EVIDENCE_INTEGRITY": "PASS"}, "y variation")
 
     def shift_all(r, a):
@@ -153,14 +231,15 @@ def main():
     def field_flip(r, a):
         k = M.akey("L0", "rev", "ElectricField", 0.0)
         a[k] = a[k] * 1.05
-    case(field_flip, True, {G["G8"]: "FAIL"}, "junction field 5 % off")
+    case(field_flip, True, {"EVIDENCE_INTEGRITY": FAIL}, "junction field contradicts Potential")
 
     def kcl(r, a):
         r["levels"]["L0"]["devices"]["rev"]["currents"][3]["I_max"] *= 0.99
     case(kcl, True, {G["G4"]: "FAIL"}, "terminal currents do not balance")
     case(lambda r, a: r["levels"]["L1"]["devices"]["fwd"].__setitem__("solves", 7), True, {G["G4"]: "FAIL"}, "missing solve")
     case(lambda r, a: r["levels"]["L1"]["devices"]["fwd"]["params"].__setitem__("taun", 1e-5), True, {G["G4"]: "FAIL"}, "physical parameter differs from E6K")
-    assert "PN_PHYSICS_VALIDATED" not in json.dumps(J.judge(RAW, ARR, E6K_JSON, E6K_NPZ, E6J), default=str)
+    hardened_cases()
+    assert "PN_PHYSICS_VALIDATED" not in json.dumps(J.judge(RAW, ARR, E6K_JSON, E6K_NPZ, E6J, expected_plan_sha256="0" * 64), default=str)
     print("E6M JUDGE / METRICS SYNTHETIC CHECKS PASSED")
 
 

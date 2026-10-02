@@ -157,29 +157,29 @@ def run_level(dv, lv, x_cm, arr):
                 finally:
                     gobs.restore()
                     rec["gate"].update({"doping_writes": len(gobs.writes), "solves": gobs.solves})
-                # canonical direct query (not gated) vs the audit step convention
-                chk = unres = mis = 0
-                for xc, yc in zip(x.tolist(), y.tolist()):
-                    q = state.net_doping_at(xc / LENGTH_SCALE, yc / LENGTH_SCALE)
-                    chk += 1
-                    if q.physics_status is not None or q.donor_concentration is None or q.acceptor_concentration is None:
-                        unres += 1
-                    elif q.donor_concentration != M.N_DOP * (xc >= 0) or q.acceptor_concentration != M.N_DOP * (xc <= 0):
-                        mis += 1
-                rec["audit_doping"] = {"canonical_checked": chk, "canonical_unresolved": unres, "canonical_mismatch": mis}
+            # Each fresh device must have its own complete canonical query BEFORE any audit writes.
+            dev["canonical_audit"] = M.canonical_checks(state, x, y, LENGTH_SCALE)
+            if d == "fwd":
+                rec["audit_doping"] = dict(dev["canonical_audit"])
             if not (rec["geometry_import"]["pre_solve_geometry_ok"] and rec["gate"]["raised"] and rec["gate"]["reason_code"] == J.GATE_REASON
                     and rec["gate"]["doping_writes"] == 0 and rec["gate"]["solves"] == 0 and rec["audit_doping"]["canonical_mismatch"] == 0):
                 raise RuntimeError("STOP: geometry / gate / canonical-doping precondition not met; no solve for this mesh")
-            # AUDIT doping write (public API, same node models and order as apply_doping)
-            donors, acceptors = M.N_DOP * (x >= 0), M.N_DOP * (x <= 0)
-            for nm, vals in (("Donors", donors), ("Acceptors", acceptors), ("NetDoping", donors - acceptors)):
-                dv.node_model(device=name, region="Si", name=nm, equation="0")
-                dv.set_node_values(device=name, region="Si", name=nm, values=[float(t) for t in vals])
             dv.edge_from_node_model(device=name, region="Si", node_model="x")
             dv.edge_from_node_model(device=name, region="Si", node_model="y")
             obs = Obs(dv, name)
             obs.install()
-            result = run_pn_junction_iv_sweep(device=name, region="Si", all_contacts=imported.contacts, sweep_contact=C_MIN, sweep_voltages=list(M.VOLTAGES[d]), fixed_contacts={C_MAX: 0.0})
+
+            def write_audit_doping():
+                # Public API, same node models and order as apply_doping; guarded above the first write.
+                donors, acceptors = M.N_DOP * (x >= 0), M.N_DOP * (x <= 0)
+                for nm, vals in (("Donors", donors), ("Acceptors", acceptors), ("NetDoping", donors - acceptors)):
+                    dv.node_model(device=name, region="Si", name=nm, equation="0")
+                    dv.set_node_values(device=name, region="Si", name=nm, values=[float(t) for t in vals])
+
+            result = M.guarded_audit(
+                dev["canonical_audit"], int(len(x)), write_audit_doping,
+                lambda: run_pn_junction_iv_sweep(device=name, region="Si", all_contacts=imported.contacts, sweep_contact=C_MIN,
+                                                sweep_voltages=list(M.VOLTAGES[d]), fixed_contacts={C_MAX: 0.0}))
             dev["metadata"] = {k: v for k, v in result.metadata.items() if k != "current_convention"}
             dev["currents"] = [{"V": v, "I_min": float(p.currents[C_MIN]), "I_max": float(p.currents[C_MAX])} for v, p in zip(M.VOLTAGES[d], result.points)]
             dev["params"] = {n: dv.get_parameter(device=name, region="Si", name=n) for n in J.PARAMS + ("V_t",)}

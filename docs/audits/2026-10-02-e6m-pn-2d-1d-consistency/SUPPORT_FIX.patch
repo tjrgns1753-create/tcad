@@ -1,0 +1,336 @@
+diff --git a/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py b/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py
+index 8b9c3e6..a8ce4eb 100644
+--- a/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py
++++ b/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py
+@@ -27,0 +28,122 @@ E6L_SCRIPTS = Path(__file__).resolve().parents[2] / "2026-10-01-e6l-judge-integr
++def require_canonical(record, node_count):
++    """Reject unknown/partial canonical evidence before any write or sweep."""
++    keys = ("canonical_checked", "canonical_unresolved", "canonical_mismatch")
++    if (type(node_count) is not int or node_count <= 0 or not isinstance(record, dict)
++            or any(type(record.get(k)) is not int or record[k] < 0 for k in keys)
++            or record["canonical_checked"] != node_count
++            or record["canonical_unresolved"] != 0 or record["canonical_mismatch"] != 0):
++        raise ValueError("CANONICAL_AUDIT_BLOCKED: incomplete, unresolved or mismatched canonical doping")
++
++
++def canonical_checks(state, x_cm, y_cm, length_scale):
++    """Pure node queries, including net doping; no backend import or writes."""
++    if (len(x_cm) != len(y_cm) or not math.isfinite(length_scale) or length_scale <= 0
++            or not np.all(np.isfinite(x_cm)) or not np.all(np.isfinite(y_cm))):
++        raise ValueError("CANONICAL_AUDIT_BLOCKED: invalid coordinates or length scale")
++    rec = dict(canonical_checked=0, canonical_unresolved=0, canonical_mismatch=0)
++    for x, y in zip(x_cm, y_cm):
++        q = state.net_doping_at(float(x) / length_scale, float(y) / length_scale)
++        rec["canonical_checked"] += 1
++        vals = (q.donor_concentration, q.acceptor_concentration, q.net_doping)
++        if q.physics_status is not None or any(type(v) not in (int, float) or not math.isfinite(v) for v in vals):
++            rec["canonical_unresolved"] += 1
++        elif vals != (N_DOP * (x >= 0), N_DOP * (x <= 0), N_DOP * ((x >= 0) * 1 - (x <= 0) * 1)):
++            rec["canonical_mismatch"] += 1
++    return rec
++
++
++def guarded_audit(record, node_count, write_doping, sweep):
++    """The actual runner and engine-free traps share this execution boundary."""
++    require_canonical(record, node_count)
++    write_doping()
++    return sweep()
++
++
++def array_contract(npz, level, direction, area_tol=1e-12):
++    """Check each device independently, using coordinate/topology correspondence.
++
++    These are evidence consistency checks, not a new finite-volume solver.
++    Node/triangle ordering is allowed to differ. Original summaries stay intact.
++    """
++    prefix = f"{level}_{direction}"
++    problems = []
++
++    def need(ok, message):
++        if not ok:
++            problems.append(f"{prefix}: {message}")
++        return bool(ok)
++
++    def array(key, shape=None, integer=False):
++        a = np.asarray(npz[key])
++        valid = a.dtype.kind in ("iu" if integer else "iuf") and np.all(np.isfinite(a))
++        if not need(valid and (shape is None or a.shape == shape), f"{key}: invalid dtype, shape or nonfinite value"):
++            return None
++        return a
++
++    points = array(f"{level}__points_um")
++    triangles = array(f"{level}__triangles", integer=True)
++    if points is None or triangles is None:
++        return problems
++    if not need(points.ndim == 2 and points.shape[1] == 3 and len(points) > 0 and np.all(points[:, 2] == 0), "invalid planar points"):
++        return problems
++    n = len(points)
++    if not need(triangles.ndim == 2 and triangles.shape[1] == 3 and len(triangles) > 0
++                and np.all((triangles >= 0) & (triangles < n)), "invalid triangle indices"):
++        return problems
++    geo = {k: array(akey(level, direction, k), (n,)) for k in ("x", "y", "NodeVolume", "Donors", "Acceptors", "NetDoping")}
++    if any(a is None for a in geo.values()):
++        return problems
++    xy = np.column_stack((geo["x"], geo["y"]))
++    expected = points[:, :2] * 1e-4
++    order, reforder = np.lexsort((xy[:, 1], xy[:, 0])), np.lexsort((expected[:, 1], expected[:, 0]))
++    if not need(len(np.unique(xy, axis=0)) == n and np.all(np.abs(xy[order] - expected[reforder]) <= [L_CM * 1e-12, H_CM * 1e-12]), "node coordinates do not match source mesh"):
++        return problems
++    # Map imported node ids to the source ids; canonicalize each triangle and its row order.
++    mapping = np.empty(n, dtype=np.int64)
++    mapping[order] = reforder
++    elements = array(akey(level, direction, "element_nodes"), triangles.shape, integer=True)
++    if elements is None or not need(np.all((elements >= 0) & (elements < n)), "invalid imported element indices"):
++        return problems
++    canonical = lambda t: sorted(map(tuple, np.sort(t, axis=1).tolist()))
++    need(canonical(mapping[elements]) == canonical(triangles), "imported topology does not match source triangles")
++    g = geometry_checks(points, triangles)
++    nv = geo["NodeVolume"]
++    need(np.all(nv >= 0) and float(np.sum(nv)) > 0
++         and abs(float(np.sum(nv)) - g["area_cm2"]) <= area_tol * g["area_cm2"], "NodeVolume sum/sign does not match triangle area")
++    x = geo["x"]
++    donor, acceptor = N_DOP * (x >= 0), N_DOP * (x <= 0)
++    need(np.array_equal(geo["Donors"], donor) and np.array_equal(geo["Acceptors"], acceptor)
++         and np.array_equal(geo["NetDoping"], donor - acceptor)
++         and np.array_equal(geo["NetDoping"], geo["Donors"] - geo["Acceptors"]), "doping violates planned step convention or donor-minus-acceptor identity")
++    length = array(akey(level, direction, "EdgeLength"))
++    if length is None or not need(length.ndim == 1 and len(length) > 0 and np.all(length > 0), "invalid edge lengths"):
++        return problems
++    ne = len(length)
++    edges = {k: array(akey(level, direction, k), (ne,)) for k in ("edge_x0", "edge_y0", "edge_x1", "edge_y1")}
++    if any(a is None for a in edges.values()):
++        return problems
++    nodes = {tuple(p): i for i, p in enumerate(xy)}
++    try:
++        i0 = np.array([nodes[p] for p in zip(edges["edge_x0"], edges["edge_y0"])])
++        i1 = np.array([nodes[p] for p in zip(edges["edge_x1"], edges["edge_y1"])])
++    except KeyError:
++        need(False, "edge endpoint is not an imported node")
++        return problems
++    mesh_edges = set()
++    for a, b in ((0, 1), (1, 2), (2, 0)):
++        mesh_edges.update(map(tuple, np.sort(elements[:, [a, b]], axis=1).tolist()))
++    edge_ids = [tuple(sorted(p)) for p in zip(i0.tolist(), i1.tolist())]
++    need(len(set(edge_ids)) == ne and set(edge_ids) == mesh_edges, "edge topology incomplete, duplicated or inconsistent")
++    actual_length = np.linalg.norm(xy[i1] - xy[i0], axis=1)
++    need(np.all(np.abs(length - actual_length) <= actual_length * 1e-12), "EdgeLength contradicts endpoint coordinates")
++    for v in SNAP_BIASES[direction]:
++        snap = {k: array(akey(level, direction, k, v), (ne,) if k == "ElectricField" else (n,)) for k in SNAP_ARRAYS}
++        if any(a is None for a in snap.values()):
++            continue
++        need(np.all(snap["Electrons"] > 0) and np.all(snap["Holes"] > 0), f"{v}: nonpositive carrier density")
++        field = (snap["Potential"][i0] - snap["Potential"][i1]) / length
++        scale = max(float(np.max(np.abs(field))), 1e-300)
++        need(float(np.max(np.abs(field - snap["ElectricField"]))) <= scale * 1e-9, f"{v}: ElectricField contradicts Potential/EdgeLength")
++    return problems
++
++
+diff --git a/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py b/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py
+index 2718917..b60a8ba 100644
+--- a/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py
++++ b/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py
+@@ -4,0 +5 @@ import math
++import hashlib
+@@ -14 +15,2 @@ import judge_e6l as E6L  # noqa: E402  (strict validation of the preserved 1D ev
+-VERSION = "e6m-judge-1"
++VERSION = "e6m-judge-2"
++PINNED_PLAN_SHA256 = "5aeb9dc28bf79f82404d728f9507c6a8208c531cc9bff32829cbf46e58e5410f"
+@@ -61 +63 @@ def deep_equal(a, b, path, problems):
+-def validate(raw, npz, e6k_json, e6k_npz, e6j=None):
++def validate(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None):
+@@ -69 +71,7 @@ def validate(raw, npz, e6k_json, e6k_npz, e6j=None):
+-    need(isinstance(raw.get("plan_sha256"), str) and len(raw["plan_sha256"]) == 64, "plan_sha256 missing")
++    if expected_plan_sha256 is None:
++        expected_plan_sha256 = PINNED_PLAN_SHA256
++        local_sha = hashlib.sha256((HERE.parent / "PLAN.md").read_bytes().replace(b"\r\n", b"\n")).hexdigest()
++        need(local_sha == PINNED_PLAN_SHA256, "local PLAN differs from the pre-solve pinned PLAN")
++    need(isinstance(expected_plan_sha256, str) and len(expected_plan_sha256) == 64
++         and all(c in "0123456789abcdef" for c in expected_plan_sha256), "invalid expected PLAN hash")
++    need(raw.get("plan_sha256") == expected_plan_sha256, "plan_sha256 differs from independently expected PLAN")
+@@ -96,0 +105,2 @@ def validate(raw, npz, e6k_json, e6k_npz, e6j=None):
++            if not need(isinstance(dev, dict), f"{lv}_{d}: device record malformed"):
++                continue
+@@ -112,0 +123,8 @@ def validate(raw, npz, e6k_json, e6k_npz, e6j=None):
++    for lv in M.LEVELS:
++        for d in M.DIRECTIONS:
++            try:
++                problems.extend(M.array_contract(npz, lv, d, LIM["area_rel"]))
++            except (ValueError, TypeError, IndexError, KeyError) as exc:
++                problems.append(f"{lv}_{d}: malformed array evidence: {exc!r}")
++    if problems:
++        return problems, None, None
+@@ -137,2 +155,2 @@ def _b(name, cond, value=None):
+-def judge(raw, npz, e6k_json, e6k_npz, e6j=None):
+-    problems, S, c1 = validate(raw, npz, e6k_json, e6k_npz, e6j)
++def judge(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None):
++    problems, S, c1 = validate(raw, npz, e6k_json, e6k_npz, e6j, expected_plan_sha256=expected_plan_sha256)
+@@ -148,0 +167 @@ def judge(raw, npz, e6k_json, e6k_npz, e6j=None):
++    canonical_evidence, canonical_missing = {}, False
+@@ -164 +183 @@ def judge(raw, npz, e6k_json, e6k_npz, e6j=None):
+-               _b(f"{lv}: audit doping follows the step convention on every node and never contradicts the canonical query", s["doping_step_convention_ok"] and ad["canonical_mismatch"] == 0 and ad["canonical_checked"] > 0, ad)]
++               _b(f"{lv}: stored audit doping follows the step convention", s["doping_step_convention_ok"])]
+@@ -166,0 +186,15 @@ def judge(raw, npz, e6k_json, e6k_npz, e6j=None):
++            # Legacy E6M recorded only the forward canonical query. Never fabricate a reverse record.
++            record = dev.get("canonical_audit", ad if d == "fwd" else None)
++            key = f"{lv}_{d}"
++            if record is None:
++                canonical_missing = True
++                canonical_evidence[key] = "NOT_RECORDED"
++            else:
++                try:
++                    M.require_canonical(record, int(len(npz[M.akey(lv, d, "x")])))
++                except ValueError:
++                    canonical_evidence[key] = "FAIL"
++                    g2.append(_b(f"{key}: complete, resolved canonical audit", False, record))
++                else:
++                    canonical_evidence[key] = "RECORDED_VALID"
++                    g2.append(_b(f"{key}: complete, resolved canonical audit", True, record))
+@@ -198,0 +233,4 @@ def judge(raw, npz, e6k_json, e6k_npz, e6j=None):
++    if canonical_missing and res[CATEGORIES[1]]["verdict"] == "PASS":
++        res[CATEGORIES[1]]["verdict"] = "NOT_EVALUATED"
++        res[CATEGORIES[1]]["reason"] = "reverse pre-solve canonical audit NOT_RECORDED; stored arrays were checked independently"
++    res["canonical_evidence"] = canonical_evidence
+diff --git a/tests/integration/test_pn_2d_1d_consistency_real.py b/tests/integration/test_pn_2d_1d_consistency_real.py
+index a2ea65d..cbedc04 100644
+--- a/tests/integration/test_pn_2d_1d_consistency_real.py
++++ b/tests/integration/test_pn_2d_1d_consistency_real.py
+@@ -160,10 +160,4 @@ def run_level(dv, lv, x_cm, arr):
+-                # canonical direct query (not gated) vs the audit step convention
+-                chk = unres = mis = 0
+-                for xc, yc in zip(x.tolist(), y.tolist()):
+-                    q = state.net_doping_at(xc / LENGTH_SCALE, yc / LENGTH_SCALE)
+-                    chk += 1
+-                    if q.physics_status is not None or q.donor_concentration is None or q.acceptor_concentration is None:
+-                        unres += 1
+-                    elif q.donor_concentration != M.N_DOP * (xc >= 0) or q.acceptor_concentration != M.N_DOP * (xc <= 0):
+-                        mis += 1
+-                rec["audit_doping"] = {"canonical_checked": chk, "canonical_unresolved": unres, "canonical_mismatch": mis}
++            # Each fresh device must have its own complete canonical query BEFORE any audit writes.
++            dev["canonical_audit"] = M.canonical_checks(state, x, y, LENGTH_SCALE)
++            if d == "fwd":
++                rec["audit_doping"] = dict(dev["canonical_audit"])
+@@ -173,5 +166,0 @@ def run_level(dv, lv, x_cm, arr):
+-            # AUDIT doping write (public API, same node models and order as apply_doping)
+-            donors, acceptors = M.N_DOP * (x >= 0), M.N_DOP * (x <= 0)
+-            for nm, vals in (("Donors", donors), ("Acceptors", acceptors), ("NetDoping", donors - acceptors)):
+-                dv.node_model(device=name, region="Si", name=nm, equation="0")
+-                dv.set_node_values(device=name, region="Si", name=nm, values=[float(t) for t in vals])
+@@ -182 +171,12 @@ def run_level(dv, lv, x_cm, arr):
+-            result = run_pn_junction_iv_sweep(device=name, region="Si", all_contacts=imported.contacts, sweep_contact=C_MIN, sweep_voltages=list(M.VOLTAGES[d]), fixed_contacts={C_MAX: 0.0})
++
++            def write_audit_doping():
++                # Public API, same node models and order as apply_doping; guarded above the first write.
++                donors, acceptors = M.N_DOP * (x >= 0), M.N_DOP * (x <= 0)
++                for nm, vals in (("Donors", donors), ("Acceptors", acceptors), ("NetDoping", donors - acceptors)):
++                    dv.node_model(device=name, region="Si", name=nm, equation="0")
++                    dv.set_node_values(device=name, region="Si", name=nm, values=[float(t) for t in vals])
++
++            result = M.guarded_audit(
++                dev["canonical_audit"], int(len(x)), write_audit_doping,
++                lambda: run_pn_junction_iv_sweep(device=name, region="Si", all_contacts=imported.contacts, sweep_contact=C_MIN,
++                                                sweep_voltages=list(M.VOLTAGES[d]), fixed_contacts={C_MAX: 0.0}))
+diff --git a/tests/unit/test_e6m_judge_mock.py b/tests/unit/test_e6m_judge_mock.py
+index dc15b44..7a3d7c8 100644
+--- a/tests/unit/test_e6m_judge_mock.py
++++ b/tests/unit/test_e6m_judge_mock.py
+@@ -61 +61,2 @@ def synth():
+-                          "metadata": {"current_unit": "A/cm", "current_normalization": "per_out_of_plane_depth", "device_dimension": 2}, "params": dict(one["params"])}
++                          "metadata": {"current_unit": "A/cm", "current_normalization": "per_out_of_plane_depth", "device_dimension": 2}, "params": dict(one["params"]),
++                          "canonical_audit": {"canonical_checked": len(x), "canonical_unresolved": 0, "canonical_mismatch": 0}}
+@@ -75 +76 @@ def verdicts(raw, arr, e6k_json=E6K_JSON):
+-    return {k: v["verdict"] for k, v in J.judge(raw, arr, e6k_json, E6K_NPZ, E6J).items() if isinstance(v, dict) and "verdict" in v}
++    return {k: v["verdict"] for k, v in J.judge(raw, arr, e6k_json, E6K_NPZ, E6J, expected_plan_sha256="0" * 64).items() if isinstance(v, dict) and "verdict" in v}
+@@ -88,0 +90,76 @@ def case(mutate, recompute, expect, label):
++def update_field(arr, level, direction, bias):
++    x, y = arr[M.akey(level, direction, "x")], arr[M.akey(level, direction, "y")]
++    index = {p: i for i, p in enumerate(zip(x, y))}
++    i0 = [index[p] for p in zip(arr[M.akey(level, direction, "edge_x0")], arr[M.akey(level, direction, "edge_y0")])]
++    i1 = [index[p] for p in zip(arr[M.akey(level, direction, "edge_x1")], arr[M.akey(level, direction, "edge_y1")])]
++    v = arr[M.akey(level, direction, "Potential", bias)]
++    arr[M.akey(level, direction, "ElectricField", bias)] = (v[i0] - v[i1]) / arr[M.akey(level, direction, "EdgeLength")]
++
++
++def hardened_cases():
++    FAIL = "EVIDENCE_INTEGRITY_FAIL"
++    gate = J.CATEGORIES[1]
++    for value in ("f" * 64, "xyz", None):
++        case(lambda r, a, value=value: r.__setitem__("plan_sha256", value), False, {"EVIDENCE_INTEGRITY": FAIL}, "PLAN mismatch")
++    case(lambda r, a: r.pop("plan_sha256"), False, {"EVIDENCE_INTEGRITY": FAIL}, "PLAN missing")
++    for d in M.DIRECTIONS:
++        for field, value in (("canonical_unresolved", 1), ("canonical_checked", 0), ("canonical_checked", 1), ("canonical_mismatch", 1)):
++            case(lambda r, a, d=d, field=field, value=value: r["levels"]["L2"]["devices"][d]["canonical_audit"].__setitem__(field, value),
++                 True, {gate: "FAIL", J.CATEGORIES[5]: "BLOCKED_GATE_OR_AUDIT_DOPING"}, f"{d}: canonical {field}")
++        for recompute in (False, True):
++            for name, mutation in (
++                ("NodeVolume zero", lambda a: a.__setitem__(M.akey("L2", d, "NodeVolume"), np.zeros_like(a[M.akey("L2", d, "NodeVolume")]))),
++                ("NodeVolume short", lambda a: a.__setitem__(M.akey("L2", d, "NodeVolume"), a[M.akey("L2", d, "NodeVolume")][:-1])),
++                ("NodeVolume NaN", lambda a: a[M.akey("L2", d, "NodeVolume")].__setitem__(0, np.nan)),
++                ("NodeVolume negative", lambda a: a[M.akey("L2", d, "NodeVolume")].__setitem__(0, -1.0)),
++                ("all doping zero", lambda a: [a.__setitem__(M.akey("L2", d, k), np.zeros_like(a[M.akey("L2", d, k)])) for k in ("Donors", "Acceptors", "NetDoping")]),
++                ("one donor edited", lambda a: a[M.akey("L2", d, "Donors")].__setitem__(0, 1.0)),
++                ("net identity broken", lambda a: a[M.akey("L2", d, "NetDoping")].__setitem__(0, 0.0)),
++                ("coordinate edited", lambda a: a[M.akey("L2", d, "y")].__setitem__(0, 1.0)),
++                ("edge length edited", lambda a: a[M.akey("L2", d, "EdgeLength")].__setitem__(0, 1.0)),
++                ("field edited", lambda a: a[M.akey("L2", d, "ElectricField", 0.0)].__setitem__(0, 1.0)),
++                ("element index out of range", lambda a: a[M.akey("L2", d, "element_nodes")].__setitem__((0, 0), 999999)),
++                ("element index float", lambda a: a.__setitem__(M.akey("L2", d, "element_nodes"), a[M.akey("L2", d, "element_nodes")].astype(float))),
++            ):
++                # Some malformed shapes make compute fail before a summary can be refreshed.
++                # Keep its old summary in that case; the raw-array contract must still reject it.
++                def mutate(r, a, mutation=mutation):
++                    mutation(a)
++                    if recompute:
++                        try:
++                            r["summary"] = M.compute(r, a, E6K_JSON, E6K_NPZ)
++                        except (ValueError, IndexError):
++                            pass
++                case(mutate, False, {"EVIDENCE_INTEGRITY": FAIL}, f"{d}: {name}, refreshed={recompute}")
++    # Missing historical reverse records are not silently promoted to PASS.
++    case(lambda r, a: [r["levels"][lv]["devices"]["rev"].pop("canonical_audit") for lv in M.LEVELS], False,
++         {"EVIDENCE_INTEGRITY": "PASS", gate: "NOT_EVALUATED"}, "reverse canonical audit not recorded")
++    # Both functions below are the actual guarded runner callbacks, not a separate test-only gate.
++    good = dict(canonical_checked=3, canonical_unresolved=0, canonical_mismatch=0)
++    for patch in ({"canonical_unresolved": 1}, {"canonical_checked": 0}, {"canonical_checked": 2}, {"canonical_mismatch": 1}):
++        calls = {"writes": 0, "sweeps": 0, "solves": 0}
++        def writer():
++            calls["writes"] += 1
++        def sweep():
++            calls["sweeps"] += 1
++            calls["solves"] += 1
++        try:
++            M.guarded_audit({**good, **patch}, 3, writer, sweep)
++        except ValueError as exc:
++            assert "CANONICAL_AUDIT_BLOCKED" in str(exc)
++        else:
++            raise AssertionError("invalid canonical evidence ran callbacks")
++        assert calls == {"writes": 0, "sweeps": 0, "solves": 0}, calls
++    calls = []
++    assert M.guarded_audit(good, 3, lambda: calls.append("write"), lambda: calls.append("sweep")) is None
++    assert calls == ["write", "sweep"]
++    # Canonical net None/NaN/False must block even if donor and acceptor look valid.
++    from types import SimpleNamespace
++    for bad in (None, float("nan"), False):
++        state = SimpleNamespace(net_doping_at=lambda x, y, bad=bad: SimpleNamespace(
++            donor_concentration=M.N_DOP, acceptor_concentration=0.0, net_doping=bad, physics_status=None))
++        rec = M.canonical_checks(state, np.array([1.0]), np.array([0.0]), 1.0)
++        assert rec["canonical_unresolved"] == 1
++    print("E6M hardened cases: both directions, PLAN, arrays, unknown-state callback traps PASS")
++
++
+@@ -134 +211 @@ def main():
+-    case(obtuse, True, {G["G1"]: "FAIL"}, "distorted triangle")
++    case(obtuse, True, {"EVIDENCE_INTEGRITY": FAIL}, "distorted triangle inconsistent with imported coordinates")
+@@ -138,2 +215,2 @@ def main():
+-    case(lambda r, a: r["levels"]["L2"]["audit_doping"].__setitem__("canonical_mismatch", 1), True, {G["G2"]: "FAIL"}, "audit doping contradicts canonical")
+-    case(lambda r, a: a.__setitem__(M.akey("L1", "fwd", "Donors"), a[M.akey("L1", "fwd", "Donors")] * 0 + M.N_DOP), True, {G["G2"]: "FAIL"}, "step convention broken")
++    case(lambda r, a: r["levels"]["L2"]["devices"]["fwd"]["canonical_audit"].__setitem__("canonical_mismatch", 1), True, {G["G2"]: "FAIL"}, "audit doping contradicts canonical")
++    case(lambda r, a: a.__setitem__(M.akey("L1", "fwd", "Donors"), a[M.akey("L1", "fwd", "Donors")] * 0 + M.N_DOP), True, {"EVIDENCE_INTEGRITY": FAIL}, "step convention broken")
+@@ -145,0 +223 @@ def main():
++        update_field(a, "L1", "fwd", 0.6)  # a physically shaped deviation must keep the field definition consistent
+@@ -156 +234 @@ def main():
+-    case(field_flip, True, {G["G8"]: "FAIL"}, "junction field 5 % off")
++    case(field_flip, True, {"EVIDENCE_INTEGRITY": FAIL}, "junction field contradicts Potential")
+@@ -163 +241,2 @@ def main():
+-    assert "PN_PHYSICS_VALIDATED" not in json.dumps(J.judge(RAW, ARR, E6K_JSON, E6K_NPZ, E6J), default=str)
++    hardened_cases()
++    assert "PN_PHYSICS_VALIDATED" not in json.dumps(J.judge(RAW, ARR, E6K_JSON, E6K_NPZ, E6J, expected_plan_sha256="0" * 64), default=str)
