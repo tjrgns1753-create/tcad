@@ -102,6 +102,15 @@ def hardened_cases():
     for value in ("f" * 64, "xyz", None):
         case(lambda r, a, value=value: r.__setitem__("plan_sha256", value), False, {"EVIDENCE_INTEGRITY": FAIL}, "PLAN mismatch")
     case(lambda r, a: r.pop("plan_sha256"), False, {"EVIDENCE_INTEGRITY": FAIL}, "PLAN missing")
+    for field, value in (("canonical_unresolved", 1), ("canonical_mismatch", 1), ("canonical_checked", 0)):
+        case(lambda r, a, field=field, value=value: r["levels"]["L2"]["audit_doping"].__setitem__(field, value),
+             False, {gate: "FAIL", J.CATEGORIES[5]: "BLOCKED_GATE_OR_AUDIT_DOPING"}, "contradictory legacy canonical audit")
+    for field, value in (("solve_attempts", 9), ("solve_failures", 1), ("snapshot_failures", 1)):
+        def mutate_counts(r, a, field=field, value=value):
+            dev = r["levels"]["L2"]["devices"]["fwd"]
+            dev.update(solve_attempts=dev["solves"], solve_failures=0, snapshot_failures=0)
+            dev[field] = value
+        case(mutate_counts, False, {J.CATEGORIES[3]: "FAIL"}, "attempt/success evidence inconsistent")
     for d in M.DIRECTIONS:
         for field, value in (("canonical_unresolved", 1), ("canonical_checked", 0), ("canonical_checked", 1), ("canonical_mismatch", 1)):
             case(lambda r, a, d=d, field=field, value=value: r["levels"]["L2"]["devices"][d]["canonical_audit"].__setitem__(field, value),

@@ -3,7 +3,6 @@
 docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/PLAN.md. AUDIT path: the production gate (apply_doping) is called and must REFUSE the 2D step junction;
 doping is then written directly with the public DEVSIM API and the unmodified production sweep is run. Nothing here enables a production PN measurement.
 usage: test_pn_2d_1d_consistency_real.py [out_dir]   (writes pn_2d_consistency.json and arrays.npz; six devices, 42 solves planned)"""
-import hashlib
 import json
 import math
 import os
@@ -42,6 +41,7 @@ class Obs:
 
     def __init__(self, dv, device):
         self.dv, self.device, self.solves, self.writes, self.snaps, self._orig = dv, device, 0, [], [], {}
+        self.solve_attempts, self.solve_failures, self.snapshot_failures, self.call_log = 0, 0, 0, []
 
     def install(self):
         for n in ("solve", "node_model", "set_node_values"):
@@ -49,9 +49,24 @@ class Obs:
         o = dict(self._orig)
 
         def solve(*a, **k):
-            r = o["solve"](*a, **k)
+            self.solve_attempts += 1
+            call = {"attempt": self.solve_attempts, "status": "started"}
+            self.call_log.append(call)
+            try:
+                r = o["solve"](*a, **k)
+            except Exception:
+                self.solve_failures += 1
+                call["status"] = "solve_failed"
+                raise
             self.solves += 1
-            self.snaps.append(self.snapshot())
+            call["status"] = "solve_succeeded"
+            try:
+                self.snaps.append(self.snapshot())
+            except Exception:
+                self.snapshot_failures += 1
+                call["snapshot_status"] = "failed"
+                raise
+            call["snapshot_status"] = "recorded"
             return r
 
         def node_model(*a, **k):
@@ -156,13 +171,15 @@ def run_level(dv, lv, x_cm, arr):
                     rec["gate"].update({"raised": True, "resolution": str(ps.get("resolution")), "reason_code": str(ps.get("reason_code")), "message": str(exc)[:400]})
                 finally:
                     gobs.restore()
-                    rec["gate"].update({"doping_writes": len(gobs.writes), "solves": gobs.solves})
+                    rec["gate"].update({"doping_writes": len(gobs.writes), "solves": gobs.solves,
+                                        "solve_attempts": gobs.solve_attempts})
             # Each fresh device must have its own complete canonical query BEFORE any audit writes.
             dev["canonical_audit"] = M.canonical_checks(state, x, y, LENGTH_SCALE)
             if d == "fwd":
                 rec["audit_doping"] = dict(dev["canonical_audit"])
             if not (rec["geometry_import"]["pre_solve_geometry_ok"] and rec["gate"]["raised"] and rec["gate"]["reason_code"] == J.GATE_REASON
-                    and rec["gate"]["doping_writes"] == 0 and rec["gate"]["solves"] == 0 and rec["audit_doping"]["canonical_mismatch"] == 0):
+                    and rec["gate"]["doping_writes"] == 0 and rec["gate"]["solves"] == 0
+                    and rec["gate"].get("solve_attempts", 0) == 0 and rec["audit_doping"]["canonical_mismatch"] == 0):
                 raise RuntimeError("STOP: geometry / gate / canonical-doping precondition not met; no solve for this mesh")
             dv.edge_from_node_model(device=name, region="Si", node_model="x")
             dv.edge_from_node_model(device=name, region="Si", node_model="y")
@@ -201,6 +218,8 @@ def run_level(dv, lv, x_cm, arr):
         finally:
             if obs is not None:
                 dev["solves"] = obs.solves
+                dev.update(solve_attempts=obs.solve_attempts, solve_failures=obs.solve_failures,
+                           snapshot_failures=obs.snapshot_failures, solve_call_log=obs.call_log)
                 dev["solve_log"] = [{"index": s["index"], "bias_min": s["bias_min"], "bias_max": s["bias_max"], "has_DD": s["has_DD"]} for s in obs.snaps]
                 obs.restore()
             if imported is not None:
@@ -215,11 +234,11 @@ def run_level(dv, lv, x_cm, arr):
 
 
 def run(out_dir):
+    plan_sha = J.require_plan(AUDIT / "PLAN.md")
     from tcad.device.devsim import backend
     dv = backend.require_devsim()
     e6k_json, e6k_npz, e6j = json.load(open(E6K / "pn_1d_diagnostic.json")), np.load(E6K / "states.npz"), json.load(open(E6J_JSON))
-    plan = (AUDIT / "PLAN.md").read_bytes().replace(b"\r\n", b"\n")
-    raw = {"plan_sha256": hashlib.sha256(plan).hexdigest(), "H_um": M.H_UM, "judge_version": J.VERSION, "levels": {}}
+    raw = {"plan_sha256": plan_sha, "H_um": M.H_UM, "judge_version": J.VERSION, "levels": {}}
     arr = Arr()
     for lv in M.LEVELS:
         x_cm = M.e6k_snapshot(e6k_npz, lv, "rev", 0.0)["x"]

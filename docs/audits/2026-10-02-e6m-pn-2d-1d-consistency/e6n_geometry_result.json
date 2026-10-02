@@ -1,0 +1,216 @@
+{
+  "design_rule_sha256": "e51caf5218ba725b99a918c16501e725c62ae87fa389ad28f6ef29c06ebce1c0",
+  "request": {
+    "centers_um": [
+      0.0
+    ],
+    "half_widths_um": [
+      0.1
+    ]
+  },
+  "levels": {
+    "L0": {
+      "original_candidate": {
+        "reason": "TRANSITION_ASPECT",
+        "detail": "TRANSITION_ASPECT: strip [-0.10699254211194845, -0.10160075100232752] depth 0: width 0.00539179110962093 < half sub-row height 0.025"
+      },
+      "base_rows": 16,
+      "base_row_height_um": 0.00625,
+      "exact_aspect_base_height_bound_um": 0.01078358221924186,
+      "planned_triangles": 15264,
+      "transition_strips": [
+        {
+          "x_min_um": -0.10699254211194845,
+          "x_max_um": -0.10160075100232752,
+          "depth": 0
+        },
+        {
+          "x_min_um": 0.10189254650507695,
+          "x_max_um": 0.1072883348133657,
+          "depth": 0
+        }
+      ],
+      "nodes": 8037,
+      "triangles": 15264,
+      "exact_obtuse_angles": 0,
+      "conformity": {
+        "nodes": 8037,
+        "triangles": 15264,
+        "index_valid": true,
+        "duplicate_coordinates": 0,
+        "duplicate_triangles": 0,
+        "unused_nodes": 0,
+        "degenerate": 0,
+        "one_orientation": true,
+        "edges": 23300,
+        "edges_with_more_than_two_owners": 0,
+        "interior_edges_same_direction": 0,
+        "boundary_edges": 808,
+        "boundary_edges_off_rectangle": 0,
+        "boundary_covers_rectangle_exactly": true,
+        "area_equals_rectangle": true,
+        "hanging_nodes": 0,
+        "pass": true
+      },
+      "numeric_geometry": {
+        "area_cm2": 4e-08,
+        "area_expected_cm2": 4e-08,
+        "area_rel_err": 0.0,
+        "obtuse_triangles": 0,
+        "degenerate_triangles": 0,
+        "n_triangles": 15264,
+        "n_points": 8037
+      },
+      "builder_report": {
+        "identity": false,
+        "leaves": 388,
+        "max_depth": 1,
+        "leaves_by_depth": {
+          "0": 300,
+          "1": 88
+        },
+        "triangles": 15264,
+        "points": 8037,
+        "new_points": 2172,
+        "min_template_margin": 0.0022667911096209276
+      },
+      "candidate_status": "GEOMETRY_PREFLIGHT_PASS_ONLY"
+    },
+    "L1": {
+      "original_candidate": {
+        "reason": "TRANSITION_ASPECT",
+        "detail": "TRANSITION_ASPECT: strip [-0.10458771984903717, -0.10189921166213088] depth 0: width 0.0026885081869062882 < half sub-row height 0.025"
+      },
+      "base_rows": 32,
+      "base_row_height_um": 0.003125,
+      "exact_aspect_base_height_bound_um": 0.0053770163738125765,
+      "planned_triangles": 60736,
+      "transition_strips": [
+        {
+          "x_min_um": -0.10458771984903717,
+          "x_max_um": -0.10189921166213088,
+          "depth": 0
+        },
+        {
+          "x_min_um": 0.1020815446300033,
+          "x_max_um": 0.10477128479642224,
+          "depth": 0
+        }
+      ],
+      "nodes": 31173,
+      "triangles": 60736,
+      "exact_obtuse_angles": 0,
+      "conformity": {
+        "nodes": 31173,
+        "triangles": 60736,
+        "index_valid": true,
+        "duplicate_coordinates": 0,
+        "duplicate_triangles": 0,
+        "unused_nodes": 0,
+        "degenerate": 0,
+        "one_orientation": true,
+        "edges": 91908,
+        "edges_with_more_than_two_owners": 0,
+        "interior_edges_same_direction": 0,
+        "boundary_edges": 1608,
+        "boundary_edges_off_rectangle": 0,
+        "boundary_covers_rectangle_exactly": true,
+        "area_equals_rectangle": true,
+        "hanging_nodes": 0,
+        "pass": true
+      },
+      "numeric_geometry": {
+        "area_cm2": 4e-08,
+        "area_expected_cm2": 4e-08,
+        "area_rel_err": 0.0,
+        "obtuse_triangles": 0,
+        "degenerate_triangles": 0,
+        "n_triangles": 60736,
+        "n_points": 31173
+      },
+      "builder_report": {
+        "identity": false,
+        "leaves": 772,
+        "max_depth": 1,
+        "leaves_by_depth": {
+          "0": 596,
+          "1": 176
+        },
+        "triangles": 60736,
+        "points": 31173,
+        "new_points": 8568,
+        "min_template_margin": 0.0011260081869062868
+      },
+      "candidate_status": "GEOMETRY_PREFLIGHT_PASS_ONLY"
+    },
+    "L2": {
+      "original_candidate": {
+        "reason": "TRANSITION_ASPECT",
+        "detail": "TRANSITION_ASPECT: strip [-0.10204631492465951, -0.1007083673831055] depth 0: width 0.001337947541554016 < half sub-row height 0.025"
+      },
+      "base_rows": 64,
+      "base_row_height_um": 0.0015625,
+      "exact_aspect_base_height_bound_um": 0.002675895083108032,
+      "planned_triangles": 242304,
+      "transition_strips": [
+        {
+          "x_min_um": -0.10204631492465951,
+          "x_max_um": -0.1007083673831055,
+          "depth": 0
+        },
+        {
+          "x_min_um": 0.10083629541752816,
+          "x_max_um": 0.10217467224778833,
+          "depth": 0
+        }
+      ],
+      "nodes": 122761,
+      "triangles": 242304,
+      "exact_obtuse_angles": 0,
+      "conformity": {
+        "nodes": 122761,
+        "triangles": 242304,
+        "index_valid": true,
+        "duplicate_coordinates": 0,
+        "duplicate_triangles": 0,
+        "unused_nodes": 0,
+        "degenerate": 0,
+        "one_orientation": true,
+        "edges": 365064,
+        "edges_with_more_than_two_owners": 0,
+        "interior_edges_same_direction": 0,
+        "boundary_edges": 3216,
+        "boundary_edges_off_rectangle": 0,
+        "boundary_covers_rectangle_exactly": true,
+        "area_equals_rectangle": true,
+        "hanging_nodes": 0,
+        "pass": true
+      },
+      "numeric_geometry": {
+        "area_cm2": 4e-08,
+        "area_expected_cm2": 4e-08,
+        "area_rel_err": 0.0,
+        "obtuse_triangles": 0,
+        "degenerate_triangles": 0,
+        "n_triangles": 242304,
+        "n_points": 122761
+      },
+      "builder_report": {
+        "identity": false,
+        "leaves": 1544,
+        "max_depth": 1,
+        "leaves_by_depth": {
+          "0": 1196,
+          "1": 348
+        },
+        "triangles": 242304,
+        "points": 122761,
+        "new_points": 33646,
+        "min_template_margin": 0.0005566975415540118
+      },
+      "candidate_status": "GEOMETRY_PREFLIGHT_PASS_ONLY"
+    }
+  },
+  "engine_imports": 0,
+  "real_solves": 0
+}

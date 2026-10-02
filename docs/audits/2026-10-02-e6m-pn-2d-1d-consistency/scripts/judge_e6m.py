@@ -12,7 +12,7 @@ sys.path.insert(0, str(HERE.parents[1] / "2026-10-01-e6l-judge-integrity-equilib
 import e6m_metrics as M  # noqa: E402
 import judge_e6l as E6L  # noqa: E402  (strict validation of the preserved 1D evidence; read-only)
 
-VERSION = "e6m-judge-2"
+VERSION = "e6m-judge-3"
 PINNED_PLAN_SHA256 = "5aeb9dc28bf79f82404d728f9507c6a8208c531cc9bff32829cbf46e58e5410f"
 GATE_REASON = "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED"
 LIM = {"area_rel": 1e-12, "x_lines_rel": 1e-12, "kcl_rel": 1e-3, "psi_y_spread_V": 1e-5, "carrier_y_spread_rel": 1e-3, "J_fwd_rel": 0.01, "J_rev_rel": 0.02,
@@ -60,6 +60,18 @@ def deep_equal(a, b, path, problems):
         problems.append(f"stored summary {a!r} != recomputed {b!r} at {'/'.join(map(str, path))}")
 
 
+def require_plan(plan_path=None):
+    """Verify the independently pinned PLAN before backend preparation."""
+    path = HERE.parent / "PLAN.md" if plan_path is None else Path(plan_path)
+    try:
+        digest = hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    except OSError as exc:
+        raise ValueError("PLAN_PREFLIGHT_BLOCKED: PLAN missing or unreadable") from exc
+    if digest != PINNED_PLAN_SHA256:
+        raise ValueError("PLAN_PREFLIGHT_BLOCKED: PLAN differs from the pre-solve pinned SHA")
+    return digest
+
+
 def validate(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None):
     problems = []
 
@@ -70,8 +82,10 @@ def validate(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None
     need(is_num(raw.get("H_um")) and raw["H_um"] == M.H_UM, "H_um missing or not the planned 0.1")
     if expected_plan_sha256 is None:
         expected_plan_sha256 = PINNED_PLAN_SHA256
-        local_sha = hashlib.sha256((HERE.parent / "PLAN.md").read_bytes().replace(b"\r\n", b"\n")).hexdigest()
-        need(local_sha == PINNED_PLAN_SHA256, "local PLAN differs from the pre-solve pinned PLAN")
+        try:
+            require_plan()
+        except ValueError as exc:
+            need(False, str(exc))
     need(isinstance(expected_plan_sha256, str) and len(expected_plan_sha256) == 64
          and all(c in "0123456789abcdef" for c in expected_plan_sha256), "invalid expected PLAN hash")
     need(raw.get("plan_sha256") == expected_plan_sha256, "plan_sha256 differs from independently expected PLAN")
@@ -178,8 +192,20 @@ def judge(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None):
             g1.append(_b(f"{lv}: {name} covers the full height (3 nodes, x = {xc:+.0e} cm, y in [-H, 0])",
                          c["n_nodes"] == 3 and all(abs(t - xc) <= 1e-12 * M.L_CM for t in c["x_cm"]) and abs(c["y_cm"][0] + M.H_CM) <= 1e-12 * M.H_CM and abs(c["y_cm"][1]) <= 1e-12 * M.H_CM, c))
         gt, ad = L["gate"], L["audit_doping"]
+        counts = ("canonical_checked", "canonical_unresolved", "canonical_mismatch")
+        try:
+            M.require_canonical(ad, int(len(npz[M.akey(lv, "fwd", "x")])))
+        except ValueError:
+            g2.append(_b(f"{lv}: legacy forward canonical audit complete and resolved", False, ad))
+        forward = L["devices"]["fwd"]
+        if "canonical_audit" in forward:
+            newer = forward["canonical_audit"]
+            g2.append(_b(f"{lv}: legacy and device forward canonical counts agree",
+                         isinstance(newer, dict) and all(newer.get(k) == ad[k] for k in counts), newer))
         g2 += [_b(f"{lv}: production apply_doping refused (UNSUPPORTED_BY_MODEL / {GATE_REASON}), 0 writes, 0 solves",
-                  gt["raised"] is True and gt["resolution"] == "UNSUPPORTED_BY_MODEL" and gt["reason_code"] == GATE_REASON and gt["doping_writes"] == 0 and gt["solves"] == 0, gt),
+                  gt["raised"] is True and gt["resolution"] == "UNSUPPORTED_BY_MODEL" and gt["reason_code"] == GATE_REASON
+                  and gt["doping_writes"] == 0 and gt["solves"] == 0
+                  and ("solve_attempts" not in gt or is_count(gt["solve_attempts"]) and gt["solve_attempts"] == 0), gt),
                _b(f"{lv}: stored audit doping follows the step convention", s["doping_step_convention_ok"])]
         for d in M.DIRECTIONS:
             dev = L["devices"][d]
@@ -203,7 +229,13 @@ def judge(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None):
                          and type(md.get("device_dimension")) is int and md["device_dimension"] == 2, {k: md.get(k) for k in ("current_unit", "current_normalization", "device_dimension")}))
             g4 += [_b(f"{lv}_{d}: converged, no error, solves == 2 + #V", dev["converged"] is True and dev["error"] is None and dev["solves"] == dev["expected_solves"] == 2 + len(M.VOLTAGES[d]),
                       [dev["solves"], dev["expected_solves"], dev["error"]]),
-                   _b(f"{lv}_{d}: physical parameters equal the E6K reference", all(same(dev["params"][k], rp[REF_OF[k]]) for k in PARAMS))]
+                  _b(f"{lv}_{d}: physical parameters equal the E6K reference", all(same(dev["params"][k], rp[REF_OF[k]]) for k in PARAMS))]
+            attempt_keys = ("solve_attempts", "solve_failures", "snapshot_failures")
+            if any(k in dev for k in attempt_keys):
+                g4.append(_b(f"{lv}_{d}: all attempted solves succeeded and snapshots were recorded",
+                             all(is_count(dev.get(k)) for k in attempt_keys)
+                             and dev["solve_attempts"] == dev["solves"]
+                             and dev["solve_failures"] == dev["snapshot_failures"] == 0))
             for v in M.VOLTAGES[d]:
                 g4.append(_c(f"{lv} {M.vkey(v)} V: |I_min + I_max| / |I_min|", s["currents"][M.vkey(v)]["kcl_rel"], LIM["kcl_rel"]))
         for d, v in M.PROFILE_CASES:
