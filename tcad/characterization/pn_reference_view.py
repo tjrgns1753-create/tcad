@@ -41,6 +41,10 @@ def figure_for_result(result):
     carriers.set(xlabel='x (µm)',ylabel='캐리어 농도 (cm⁻³)',xlim=(-.5,.5),title='평형 캐리어 분포')
     for ax in (psi,carriers,field):
         ax.legend()
+    # Plain scientific notation avoids platform-dependent mathtext exponent glyphs.
+    from matplotlib.ticker import FuncFormatter
+    for ax in (iv, carriers):
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda value, position: f'{value:.0e}'))
     from matplotlib import font_manager
     from matplotlib.text import Text
     available={f.name for f in font_manager.fontManager.ttflist}

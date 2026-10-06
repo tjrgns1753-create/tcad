@@ -39,6 +39,9 @@ def main():
         missing = [str(w.message) for w in caught if 'Glyph' in str(w.message) and 'missing' in str(w.message)]
         assert not missing, missing
         assert len(canvas.figure.axes) == 4
+        for axis in (canvas.figure.axes[0], canvas.figure.axes[2]):
+            labels = [label.get_text() for label in axis.get_yticklabels()]
+            assert labels and all('e' in label and '$' not in label for label in labels), labels
         report = {'pass': True, 'source_sha256': digest, 'missing_glyph_warnings': missing,
                   'engine_imports': 0, 'solves': 0, 'axes': 4}
         (out / 'render.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
