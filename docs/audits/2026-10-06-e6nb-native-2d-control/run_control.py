@@ -20,6 +20,7 @@ from test_review_followup import fixture,check_geometry
 from run_e6na import require_inputs,without_solve,cleanup,require_flux_source
 
 PLAN_SHA='e126a3adc89b9c9b10a68908f5c4e28ade12a521eb75d50697cb9c87d32dc1a3'
+SNAPSHOT_SHA='f82b7d41882bc170e8752b446cf884f175d9436da4a52a827d3a2668bd4daeeb'
 LABELS=('M0','M1','M2','M3')
 
 
@@ -31,14 +32,19 @@ def preflight(callback,path=None):
         raise ValueError('PLAN_MISSING') from exc
     if digest!=PLAN_SHA:
         raise ValueError('PLAN_MISMATCH')
+    snapshot=HERE/'SNAPSHOT_CORRECTION.md'
+    if hashlib.sha256(snapshot.read_bytes().replace(b'\r\n',b'\n')).hexdigest()!=SNAPSHOT_SHA:
+        raise ValueError('SNAPSHOT_CONTRACT_MISMATCH')
     return callback()
 
 
-def judge(records):
+def judge(records,require_native_snapshot=False):
     if len(records)!=4:
         raise ValueError('MISSING_MESH_RECORD')
     rates=[]
     for i,r in enumerate(records):
+        if require_native_snapshot and (r['source_verified'] is not True or r['flux_verified'] is not True):
+            raise ValueError('NATIVE_SNAPSHOT_EVIDENCE_FAIL')
         if any(type(r[k]) is not int for k in ('triangles','solve_attempts','solve_successes','solve_failures','snapshot_failures')):
             raise ValueError('INVALID_COUNTER')
         if r['label']!=LABELS[i] or r['triangles']!=26*4**i:
@@ -199,6 +205,15 @@ def solve_mesh(dv,points,triangles,label,out):
             potential=np.array(dv.get_node_model_values(**kw,name='Potential'))
             if not np.all(np.isfinite(potential)):
                 raise ValueError('INVALID_POTENTIAL')
+            native_source=np.array(dv.get_node_model_values(**kw,name='Source'))
+            native_flux=np.array(dv.get_edge_model_values(**kw,name='Flux'))
+            if not np.array_equal(native_source,source):
+                raise ValueError('NATIVE_SOURCE_MISMATCH')
+            expected_flux=(potential[a['edges'][:,0]]-potential[a['edges'][:,1]])/a['EdgeLength']
+            if (native_flux.shape!=expected_flux.shape or not np.all(np.isfinite(native_flux))
+                    or np.max(abs(native_flux-expected_flux))>256*np.finfo(float).eps*np.max(abs(expected_flux))):
+                raise ValueError('NATIVE_FLUX_MISMATCH')
+            rec.update(source_verified=True,flux_verified=True)
             error=potential-exact
             weights=a['EdgeCouple']/a['EdgeLength'];e=a['edges'];nv=a['NodeVolume']
             flux=weights*(potential[e[:,0]]-potential[e[:,1]])
@@ -214,7 +229,8 @@ def solve_mesh(dv,points,triangles,label,out):
                        residual_relative=float(np.max(np.abs(residual[free]))/np.max(rowmag[free])),
                        contact_error=float(np.max(np.abs(potential[contact]))),
                        y_spread=float(np.ptp(potential[x==center])),geometry=geo)
-            a.update(Potential=potential,analytic=exact,Source=source,discrete_residual=residual)
+            a.update(Potential=potential,analytic=exact,Source=native_source,PrescribedSource=source,
+                     NativeFlux=native_flux,discrete_residual=residual)
             np.savez_compressed(out/(label+'.npz'),**a)
         except Exception:
             rec['snapshot_failures']+=1
@@ -233,7 +249,8 @@ def child():
     from tcad.device.devsim import backend
     dv=backend.require_devsim()
     out=ROOT/'e6nb_out';out.mkdir(exist_ok=True)
-    report=dict(plan_sha=PLAN_SHA,source_sha=os.environ.get('GITHUB_SHA'),controls={},meshes=[],
+    report=dict(plan_sha=PLAN_SHA,snapshot_contract_sha=SNAPSHOT_SHA,snapshot_schema=2,
+                source_sha=os.environ.get('GITHUB_SHA'),controls={},meshes=[],
                 solve_attempts=0,pn_approved=False,execution_status='FAIL')
     try:
         if dv.get_device_list() or dv.get_mesh_list():
@@ -253,7 +270,7 @@ def child():
                 raise ValueError('MMS_EXECUTION_FAIL')
             if i<3:
                 points,tri,tags=_refine_once(points,tri,tags,np.ones(len(tri),dtype=bool))
-        report['judgment']=judge(report['meshes'])
+        report['judgment']=judge(report['meshes'],require_native_snapshot=True)
         report['execution_status']='COMPLETED'
     except Exception as exc:
         report.update(error_type=type(exc).__name__,error=str(exc))
@@ -291,7 +308,8 @@ def main():
             ok=ok and child_report['plan_sha']==PLAN_SHA and child_report['source_sha']==os.environ.get('GITHUB_SHA')
             ok=ok and child_report['execution_status']=='COMPLETED' and child_report['cleanup_ok'] is True
             ok=ok and child_report['solve_attempts']==4 and child_report['solve_successes']==4 and child_report['b0']=='PASS'
-            ok=ok and judge(child_report['meshes'])==child_report['judgment']
+            ok=ok and child_report['snapshot_schema']==2 and child_report['snapshot_contract_sha']==SNAPSHOT_SHA
+            ok=ok and judge(child_report['meshes'],require_native_snapshot=True)==child_report['judgment']
         if sum(p.stat().st_size for p in out.rglob('*') if p.is_file())>50*1024**2:
             ok=False
         (out/'supervisor.json').write_text(json.dumps(dict(status='PASS' if ok else 'FAIL',monitor=rec),indent=2)+'\n',encoding='utf-8')

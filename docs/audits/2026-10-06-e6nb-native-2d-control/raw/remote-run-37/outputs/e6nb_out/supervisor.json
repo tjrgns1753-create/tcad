@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "monitor": {
+    "status": "COMPLETED",
+    "started_unix": 1791265630.5282981,
+    "cleanup_ok": true,
+    "peak_sampled_tree_working_set": 97124352,
+    "peak_sampled_tree_commit": 68878336,
+    "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+    "interval_s": 0.5,
+    "candidate_budget_s": 120,
+    "pid": 4920,
+    "exit_code": 0,
+    "ended_unix": 1791265632.035653,
+    "duration_s": 1.5159999999999627
+  }
+}

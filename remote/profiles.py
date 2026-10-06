@@ -19,6 +19,7 @@ PROFILES = {
             "docs/audits/2026-10-06-e6nb-native-2d-control/PLAN.md",
             "docs/audits/2026-10-06-e6nb-native-2d-control/run_control.py",
             "docs/audits/2026-10-06-e6nb-native-2d-control/test_contract.py",
+            "docs/audits/2026-10-06-e6nb-native-2d-control/SNAPSHOT_CORRECTION.md",
             "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
             "docs/audits/2026-10-02-e6na-import-reduction/flux_source_contract.py",
             "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",

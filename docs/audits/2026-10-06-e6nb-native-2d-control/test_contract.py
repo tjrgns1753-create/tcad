@@ -33,6 +33,12 @@ def main():
                   geometry=dict(weight_relative=1e-16,volume_relative=1e-16,area={'pass':True}))
              for i in range(4)]
     assert R.judge(records)['verdict']=='MMS_2D_NUMERICAL_PASS'
+    blocked(lambda:R.judge(records,require_native_snapshot=True),'missing_native_snapshot')
+    complete=[dict(r,source_verified=True,flux_verified=True) for r in records]
+    assert R.judge(complete,require_native_snapshot=True)['verdict']=='MMS_2D_NUMERICAL_PASS'
+    for key in ('source_verified','flux_verified'):
+        bad=deepcopy(complete);bad[0][key]=False
+        blocked(lambda:R.judge(bad,require_native_snapshot=True),key)
     print('MATCHED_CONTROL_PASS')
     blocked(lambda:R.judge(records[:-1]),'missing_mesh')
     for key,value in (('linf',float('nan')),('solve_attempts',True),('solve_successes',0),
