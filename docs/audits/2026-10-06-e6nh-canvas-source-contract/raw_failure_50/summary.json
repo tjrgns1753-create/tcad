@@ -1,0 +1,152 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-10-06T11:52:48.579905+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nh-canvas-contract-003",
+  "profile": "e6nh_canvas_contract",
+  "params": {},
+  "note": "Fixed 1D PN GUI, actual solve, physical checks, unchanged wafer and existing gates."
+ },
+ "profile": "e6nh_canvas_contract",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "5c6cedb51f545ed266f3c17bfa2ccf7c9961fa0db6fe867cd802793307fe8878",
+   "bytes": 404209
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nh-canvas-source-contract/PLAN.md",
+   "sha256": "b99a134509183661d8c91bc61b271e0cb31e567050dac741e1b9e696cf5b00b8",
+   "bytes": 1670
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nh-canvas-source-contract/check_canvas.py",
+   "sha256": "31f14ee1260990f4ef980e4b9376f8591008a38e536f699ef0f426d739974578",
+   "bytes": 5795
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nh-canvas-source-contract/run_checks.py",
+   "sha256": "8a9883a09e51ae4babd8d358f4e6e7b13421c88f3275bc431b322b4ceb1c5fb3",
+   "bytes": 1826
+  },
+  {
+   "path": "tests/unit/test_gui_canvas_source_contract_mock.py",
+   "sha256": "ca9833cbeee8fe2238493e301588a5fa5e6c98411aeb2c47c20616479a2dd8ac",
+   "bytes": 2000
+  }
+ ],
+ "request_sha256": "edbc3bb7565bc4ec497e337f2ca6795862533b2952ecca84b230f965738f8284",
+ "source": {
+  "github_sha": "f569692b12cde59669a26af3d56972542524a00f",
+  "git_head": "f569692b12cde59669a26af3d56972542524a00f",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37459241120",
+  "run_number": "50",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6nh-canvas-source-contract/run_checks.py"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T11:52:58.829480+00:00",
+ "duration_s": 10.25,
+ "outputs": [
+  {
+   "path": "e6nh_out/bbox.json",
+   "bytes": 295,
+   "sha256": "b3109bc5c90118667cc71f70dd0a42819f0a1e371ad9a83b00b9df3d7d0a8641"
+  },
+  {
+   "path": "e6nh_out/before.log",
+   "bytes": 235,
+   "sha256": "9e4bac0f2ccd7de9a430e85565025b856f7691d8539263b3f83776506c02c025"
+  },
+  {
+   "path": "e6nh_out/canonical_gate.log",
+   "bytes": 2109,
+   "sha256": "b4602e723208b6e206d5b8e2092aae7d01da34452defc6a6c01d611a3a395f6a"
+  },
+  {
+   "path": "e6nh_out/canvas.log",
+   "bytes": 801,
+   "sha256": "351c479fb674c0ec04afce612c73a3794019eb5f8de6ab1a35caec7f0c53bf66"
+  },
+  {
+   "path": "e6nh_out/existing_gui.log",
+   "bytes": 11034,
+   "sha256": "91eaa77f19c8410ea9ffefabd883fd6b1ff10b3f430ca80b99201d330bd93e25"
+  },
+  {
+   "path": "e6nh_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6nh_out/pn_reference.log",
+   "bytes": 97,
+   "sha256": "cb934f3ed8ada92968d017020bef452c0ceefbdfd28c8f66d56aad1440b10d1a"
+  },
+  {
+   "path": "e6nh_out/source_mock.log",
+   "bytes": 82,
+   "sha256": "81a818dccf0bc21ad2f564aad0babaefc8b6647e62e1aa4ac1fe7964f09af9ed"
+  },
+  {
+   "path": "e6nh_out/tests.json",
+   "bytes": 3000,
+   "sha256": "2a6ea21745b7e236f56bae927f71216e626247728bd665aa5f4466d86266d239"
+  },
+  {
+   "path": "e6nh_before_out/canvas.json",
+   "bytes": 696,
+   "sha256": "d933d1cdd7e3eb5f04a4a073c912fa0d43503cef12c4105d1780ac233bfab2ff"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Actual Tk/ViennaPS contract and existing measurement control; no general gate release.",
+ "log": {
+  "file": "run.log",
+  "sha256": "23bb7ea5b92d2cd766e3983a58de7082934788d635dfec6e8c8a5532922a42f5",
+  "bytes": 130
+ },
+ "redactions": {}
+}

@@ -1,0 +1,40 @@
+{
+  "missing": {
+    "texts": [
+      "형상 표시 차단 — 공정/이력 mesh 파일을 찾을 수 없습니다.\n계산된 형상 대신 임의 Si/식각 도식을 표시하지 않습니다."
+    ],
+    "solid_count": 0
+  },
+  "corrupt": {
+    "texts": [
+      "형상 표시 차단 — mesh를 읽거나 렌더링할 수 없습니다.\n계산된 형상 대신 임의 Si/식각 도식을 표시하지 않습니다."
+    ],
+    "solid_count": 0
+  },
+  "malformed": {
+    "system_exit": false,
+    "texts": [
+      "형상 표시 차단 — mesh를 읽거나 렌더링할 수 없습니다.\n계산된 형상 대신 임의 Si/식각 도식을 표시하지 않습니다."
+    ]
+  },
+  "real_geometry": {
+    "canvas_mesh_bbox_match": true,
+    "unsupported_geometry_preserved": true,
+    "texts": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "µm",
+      "REAL VIENNAPS MESH",
+      "미지원 상태 포함 (UNSUPPORTED_BY_MODEL) — 표시 형상만으로 공정 후 물리 상태를 보증하지 않습니다."
+    ]
+  }
+}

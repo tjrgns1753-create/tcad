@@ -1,0 +1,6 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Error: Couldn't read file 
+C:\Users\RUNNER~1\AppData\Local\Temp\tmpc8ymoltc\invalid.vtu as vtu
+
+PASS: before-fix false geometry reproduced
