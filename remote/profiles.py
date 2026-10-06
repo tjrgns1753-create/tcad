@@ -11,6 +11,26 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nd_pn_transition_pilot": {
+        "description": "Preregistered two-level symmetric PN transition mesh audit; production gate remains closed.",
+        "entry": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py",
+        "args": [], "params": {}, "timeout_s": 1830, "engine_info": False,
+        "inputs": [
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/PLAN.md",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/judge.py",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/test_contract.py",
+            "tests/integration/test_pn_2d_1d_consistency_real.py",
+            "tcad/characterization/pn_junction_iv_sweep.py",
+            "tcad/device/devsim/mesh_refine.py",
+            "tcad/device/devsim/mesh_import.py",
+            "tcad/device/devsim/doping_mapping.py",
+            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz",
+            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/pn_1d_diagnostic.json"
+        ],
+        "outputs": [{"glob": "e6nd_out/**/*", "max_mb": 120}],
+        "regenerate": "Fixed PLAN pilot only; never release production PN gate.",
+    },
     "e6nc_pn_completion_revalidation": {
         "description": "Engine-free PN evidence revalidation and rejection of incomplete audit success; no physical solve.",
         "entry": "docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py",

@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nc-pn-completion-001",
- "profile": "e6nc_pn_completion_revalidation",
+ "request_id": "e6nd-pn-transition-001",
+ "profile": "e6nd_pn_transition_pilot",
  "params": {},
- "note": "Engine-free stored PN evidence revalidation; historical incomplete audit must not become green. No new solve."
+ "note": "Two fixed transition meshes; fresh forward and reverse canonical audits; existing production PN gate stays closed."
 }
