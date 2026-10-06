@@ -7818,8 +7818,9 @@ class TCADApplication(tk.Tk):
             triangle_data = triangle_block.data
 
             points = mesh.points
-            xs = [p[0] for p in points]
-            ys = [p[1] for p in points]
+            # Preserve mesh values, but use double precision for pixel transforms.
+            xs = [float(p[0]) for p in points]
+            ys = [float(p[1]) for p in points]
             x_min, x_max = min(xs), max(xs)
             y_min, y_max = min(ys), max(ys)
             if (x_max - x_min) < 1e-9 or (x1 - x0) <= 0:
@@ -7866,7 +7867,7 @@ class TCADApplication(tk.Tk):
             material_names = {}
 
             def to_canvas(node_idx):
-                px, py = points[node_idx][0], points[node_idx][1]
+                px, py = float(points[node_idx][0]), float(points[node_idx][1])
                 return x0 + (px - x_min) * x_scale, surface_y - py * y_scale
 
             by_material = {}

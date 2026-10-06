@@ -30,4 +30,14 @@ text=ast.get_source_segment(source,redraw)
 assert 'visual_depth' not in text and 'VIENNAPS\\n' not in text
 assert 'self.wafer.processed\n            and display_mesh' not in text
 assert 'mesh_expected and not real_mesh_available' in text
+import numpy as np
+draw=next(n for n in cls.body if isinstance(n,ast.FunctionDef) and n.name=='_draw_real_mesh_result')
+transform=next(n for n in ast.walk(draw) if isinstance(n,ast.FunctionDef) and n.name=='to_canvas')
+points=np.array([[-5.,-5.],[5.,0.]],dtype=np.float32)
+scope={'points':points,'x0':70.,'x_min':-5.,'x_scale':56.,'surface_y':297.6,'y_scale':37.4}
+exec(compile(ast.fix_missing_locations(ast.Module(body=[transform],type_ignores=[])),'canvas_transform','exec'),scope)
+for i in range(2):
+    cx,cy=scope['to_canvas'](i)
+    assert abs((cx-70.)/56.-5.-float(points[i,0]))<1e-12
+    assert abs((297.6-cy)/37.4-float(points[i,1]))<1e-12
 print('PASS: 9 disclosure states, invented etch removed, source gating; engine imports 0')
