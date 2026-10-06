@@ -28,7 +28,9 @@ def capture_source_context(mesh_path, state, pins):
     return SourceContext(digest.hexdigest(), state, signature)
 
 def source_context_matches(context, mesh_path, state, pins):
+    if not isinstance(context,SourceContext):
+        return False
     current=capture_source_context(mesh_path,state,pins)
-    return (isinstance(context,SourceContext) and current is not None and
+    return (current is not None and
             context.state is current.state and context.mesh_sha256==current.mesh_sha256 and
             context.pins==current.pins)

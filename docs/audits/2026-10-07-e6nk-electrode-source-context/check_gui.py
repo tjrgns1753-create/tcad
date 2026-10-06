@@ -25,8 +25,10 @@ def main():
             state,doped=E.canonical(path,'ACTIVE')
             app.wafer_state,app.last_doped_result,app.last_final_mesh=state,doped,path
             app.electrode_pins=[]
-            app.add_electrode_pin('Source','Source',0.,-.25)
-            app.add_electrode_pin('Drain','Drain',2.,-.25)
+            # Coarse vertical boundary edge midpoint (-.5 + -.25)/2.
+            # Existing point-contact API selects edge MIDPOINTS within radius.
+            app.add_electrode_pin('Source','Source',0.,-.375)
+            app.add_electrode_pin('Drain','Drain',2.,-.375)
             imported=app.resolve_electrode_pins()
             assert imported is not None,errors
             assert source_context_matches(app._electrode_import_context,path,state,app.electrode_pins)
@@ -62,9 +64,13 @@ def main():
         with patch('tkinter.filedialog.asksaveasfilename',side_effect=AssertionError('STALE_EXPORT_DIALOG')):
             app._on_export_result_clicked()
         assert app.last_electrode_result is None
+        app._electrode_result_context=capture_source_context(path,state,app.electrode_pins)
+        app.reset()
+        assert app._electrode_result_context is None and app._electrode_import_context is None
         out=ROOT/'e6nk_out';out.mkdir(exist_ok=True)
         (out/'context.json').write_text(json.dumps({'pass':True,'cases':records,'same_source_export':True,
-                                                  'stale_export_blocked':True,'export_control':'SYNTHETIC'},indent=2),encoding='utf-8')
+                                                  'stale_export_blocked':True,'reset_context_cleared':True,
+                                                  'export_control':'SYNTHETIC'},indent=2),encoding='utf-8')
         print(json.dumps(records))
     finally:
         app._cleanup_electrode_device()

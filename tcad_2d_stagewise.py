@@ -6470,6 +6470,7 @@ class TCADApplication(tk.Tk):
 
     def _on_dc_operating_point_clicked(self):
         self.last_electrode_result = None
+        self._electrode_result_context = None
         try:
             vd = float(self.dc_drain_v_var.get())
             vg = float(self.dc_gate_v_var.get())
@@ -9021,6 +9022,7 @@ class TCADApplication(tk.Tk):
         self.electrode_pins = []
         self._electrode_contact_regions = {}
         self.last_electrode_result = None
+        self._electrode_result_context = None
         if hasattr(self, "electrode_listbox"):
             self.electrode_listbox.delete(0, "end")
 
