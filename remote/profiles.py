@@ -11,6 +11,15 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nh_canvas_before": {
+        "description": "Reproduce actual Tk false geometry before the canvas fix; no solve.",
+        "entry": "docs/audits/2026-10-06-e6nh-canvas-source-contract/check_canvas.py",
+        "args": ["--before"], "params": {}, "timeout_s": 60, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "docs/audits/2026-10-06-e6nh-canvas-source-contract/PLAN.md",
+                   "docs/audits/2026-10-06-e6nh-canvas-source-contract/check_canvas.py"],
+        "outputs": [{"glob": "e6nh_before_out/**/*", "max_mb": 5}],
+        "regenerate": "Read-only actual Tk reproduction on pre-fix source.",
+    },
     "e6ng_render_only": {
         "description": "Actual Tk rendering of immutable successful PN result; no engine import or solve.",
         "entry": "docs/audits/2026-10-06-e6ng-pn-reference-gui/render_check.py",
