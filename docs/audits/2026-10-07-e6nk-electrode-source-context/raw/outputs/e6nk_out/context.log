@@ -1,0 +1,67 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Drain has 0 Tetrahedra.
+Physical group name Drain has 0 Triangles.
+Physical group name Drain has 1 Lines.
+Physical group name Drain has 2 Points.
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Source has 0 Tetrahedra.
+Physical group name Source has 0 Triangles.
+Physical group name Source has 1 Lines.
+Physical group name Source has 2 Points.
+Device gui_electrode_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Drain in region Si with 2 nodes
+Contact Source in region Si with 2 nodes
+Physical group name Drain has 0 Tetrahedra.
+Physical group name Drain has 0 Triangles.
+Physical group name Drain has 1 Lines.
+Physical group name Drain has 2 Points.
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Source has 0 Tetrahedra.
+Physical group name Source has 0 Triangles.
+Physical group name Source has 1 Lines.
+Physical group name Source has 2 Points.
+Device gui_electrode_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Drain in region Si with 2 nodes
+Contact Source in region Si with 2 nodes
+Physical group name Drain has 0 Tetrahedra.
+Physical group name Drain has 0 Triangles.
+Physical group name Drain has 1 Lines.
+Physical group name Drain has 2 Points.
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Source has 0 Tetrahedra.
+Physical group name Source has 0 Triangles.
+Physical group name Source has 1 Lines.
+Physical group name Source has 2 Points.
+Device gui_electrode_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Drain in region Si with 2 nodes
+Contact Source in region Si with 2 nodes
+Physical group name Drain has 0 Tetrahedra.
+Physical group name Drain has 0 Triangles.
+Physical group name Drain has 1 Lines.
+Physical group name Drain has 2 Points.
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Source has 0 Tetrahedra.
+Physical group name Source has 0 Triangles.
+Physical group name Source has 1 Lines.
+Physical group name Source has 2 Points.
+Device gui_electrode_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Drain in region Si with 2 nodes
+Contact Source in region Si with 2 nodes
+{"state": {"solves": 0, "doping_writes": 0, "devices_remaining": 0}, "pin": {"solves": 0, "doping_writes": 0, "devices_remaining": 0}, "mesh_bytes": {"solves": 0, "doping_writes": 0, "devices_remaining": 0}, "missing_context": {"solves": 0, "doping_writes": 0, "devices_remaining": 0}}

@@ -1,0 +1,75 @@
+{
+  "pass": false,
+  "steps": {
+    "context": {
+      "status": "FAIL",
+      "started_unix": 1791299952.0728106,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 100376576,
+      "peak_sampled_tree_commit": 64118784,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 90,
+      "pid": 6900,
+      "exit_code": 1,
+      "ended_unix": 1791299955.08327,
+      "duration_s": 3.015999999999991
+    },
+    "source": {
+      "status": "COMPLETED",
+      "started_unix": 1791299955.08327,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 2019328,
+      "peak_sampled_tree_commit": 520192,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 30,
+      "pid": 8400,
+      "exit_code": 0,
+      "ended_unix": 1791299955.5893579,
+      "duration_s": 0.5
+    },
+    "validity": {
+      "status": "COMPLETED",
+      "started_unix": 1791299955.5893579,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 2019328,
+      "peak_sampled_tree_commit": 528384,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 30,
+      "pid": 6272,
+      "exit_code": 0,
+      "ended_unix": 1791299956.095065,
+      "duration_s": 0.5149999999999864
+    },
+    "entry_gate": {
+      "status": "COMPLETED",
+      "started_unix": 1791299956.0965974,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 85729280,
+      "peak_sampled_tree_commit": 54439936,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 60,
+      "pid": 4192,
+      "exit_code": 0,
+      "ended_unix": 1791299957.1012979,
+      "duration_s": 1.0
+    },
+    "existing_gui": {
+      "status": "COMPLETED",
+      "started_unix": 1791299957.1012979,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 104226816,
+      "peak_sampled_tree_commit": 73490432,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 120,
+      "pid": 1440,
+      "exit_code": 0,
+      "ended_unix": 1791299958.6091638,
+      "duration_s": 1.5160000000000196
+    }
+  }
+}

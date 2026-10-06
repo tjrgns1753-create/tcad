@@ -1,0 +1,29 @@
+{
+  "pass": true,
+  "cases": {
+    "state": {
+      "solves": 0,
+      "doping_writes": 0,
+      "devices_remaining": 0
+    },
+    "pin": {
+      "solves": 0,
+      "doping_writes": 0,
+      "devices_remaining": 0
+    },
+    "mesh_bytes": {
+      "solves": 0,
+      "doping_writes": 0,
+      "devices_remaining": 0
+    },
+    "missing_context": {
+      "solves": 0,
+      "doping_writes": 0,
+      "devices_remaining": 0
+    }
+  },
+  "same_source_export": true,
+  "stale_export_blocked": true,
+  "reset_context_cleared": true,
+  "export_control": "SYNTHETIC"
+}

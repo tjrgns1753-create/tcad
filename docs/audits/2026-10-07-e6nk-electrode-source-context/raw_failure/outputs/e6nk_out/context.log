@@ -1,0 +1,10 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Traceback (most recent call last):
+  File "<REPO>\docs\audits\2026-10-07-e6nk-electrode-source-context\check_gui.py", line 72, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "<REPO>\docs\audits\2026-10-07-e6nk-electrode-source-context\check_gui.py", line 31, in main
+    assert imported is not None,errors
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: ['(\'Electrode\', "Invalid pin placement:\\n\\nSource: no_boundary_nearby -- no \'Si\' boundary edge lies within radius_um=0.1 of (0.0000, -0.2500) um (wafer coords) -- this pin would produce no DevSim contact at all")']

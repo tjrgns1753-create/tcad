@@ -1,0 +1,147 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-10-06T15:19:11.852224+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nk-electrode-context-001",
+  "profile": "e6nk_electrode_context",
+  "params": {},
+  "note": "Resolved device and CSV result source context; existing physical gates unchanged."
+ },
+ "profile": "e6nk_electrode_context",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "d885c95acff53317a11a4d3ece1105b7a1247e656dad5534033f59ea90be2214",
+   "bytes": 409072
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "14745d7ff0eb7c34c38539117d2d01461d2342ab37d6ef0e82b1115521caeaa9",
+   "bytes": 1394
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6nk-electrode-source-context/PLAN.md",
+   "sha256": "7265b2d6d36225954fe974c62c7f83af5d923ac4e0f7d8927362a89cfa9172bc",
+   "bytes": 1444
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6nk-electrode-source-context/check_gui.py",
+   "sha256": "988e911d6fb5106296f6020b880bc5af081ea5aa637ff6596fef72972b133f7a",
+   "bytes": 3984
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6nk-electrode-source-context/run_checks.py",
+   "sha256": "764c7d767a3d105aaeee407fd308939cad35b5559c8a5384b02a6c8c01d61cd4",
+   "bytes": 1672
+  },
+  {
+   "path": "tests/unit/test_electrode_source_context_mock.py",
+   "sha256": "6bd28fe1d6de166f0406489395b737dc66f647c588a758cf09cb3ab54e722264",
+   "bytes": 2952
+  },
+  {
+   "path": "tests/unit/test_measurement_entry_point_gate_mock.py",
+   "sha256": "a3f5362ee705eefe8e2941b9351fd24b44a6ccdf73b1b2421aaf3ae93b74c2fa",
+   "bytes": 16140
+  }
+ ],
+ "request_sha256": "37d1693ea637bc471ff932432b7675c095fb0e66acad22ce9c20f58d7fedd624",
+ "source": {
+  "github_sha": "93867aebdbe21fec8713264c6f603c96facd01e2",
+  "git_head": "93867aebdbe21fec8713264c6f603c96facd01e2",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37486331211",
+  "run_number": "57",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-07-e6nk-electrode-source-context/run_checks.py"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T15:19:18.621482+00:00",
+ "duration_s": 6.769,
+ "outputs": [
+  {
+   "path": "e6nk_out/context.log",
+   "bytes": 713,
+   "sha256": "8a5d27a69ca473cb3db0e6642aa532f41af0cd60c616df759435e2ad67795cd4"
+  },
+  {
+   "path": "e6nk_out/entry_gate.log",
+   "bytes": 971,
+   "sha256": "990d027c1463f9d5275e4a93cac0da4c5c7659850b6342c198c30f9735a0d314"
+  },
+  {
+   "path": "e6nk_out/existing_gui.log",
+   "bytes": 11034,
+   "sha256": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+  },
+  {
+   "path": "e6nk_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6nk_out/source.log",
+   "bytes": 88,
+   "sha256": "0e58508806b2796ccad18a52a6379b00e40e395a9730acb6a1533ccab8008e1b"
+  },
+  {
+   "path": "e6nk_out/tests.json",
+   "bytes": 2499,
+   "sha256": "27ba115e4a8e087ce98f5af0285653b003014e2c4758b8f8aa5ff50894583a79"
+  },
+  {
+   "path": "e6nk_out/validity.log",
+   "bytes": 75,
+   "sha256": "4d55f22252f818f0fcd72e4adf615f7414e5e367ffcf5a89ee3b2f95821ca16a"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Actual Tk and DEVSIM import invalidation; synthetic CSV wiring; existing uniform DD control.",
+ "log": {
+  "file": "run.log",
+  "sha256": "2a38ba42eed3a4e695b45bc4c30d9574e7c0deb9f2b9116278ff79605c2e4213",
+  "bytes": 105
+ },
+ "redactions": {}
+}
