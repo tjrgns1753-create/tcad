@@ -1,0 +1,142 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-10-06T12:20:36.703154+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6ni-depth-doping-001",
+  "profile": "e6ni_depth_doping",
+  "params": {},
+  "note": "Actual 2D canonical depth display on mesh triangles; sign samples only, existing physical gates unchanged."
+ },
+ "profile": "e6ni_depth_doping",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "1cf3bffb78eb140c7eb68b39880f12150e411d256bee9d99003eaa268f29b198",
+   "bytes": 405339
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ni-depth-doping-display/PLAN.md",
+   "sha256": "4f944ea3b382900777dd31a2da7753c27e1f6cfc0aa000f06d51a4f345afd0fb",
+   "bytes": 2565
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ni-depth-doping-display/check_depth.py",
+   "sha256": "a6325e4d5d8958388d30e0df3754cab1f5c5e9f61da7004e2aee91e169583086",
+   "bytes": 6742
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ni-depth-doping-display/run_checks.py",
+   "sha256": "649f84681276fab2a98864ddb11a73a962dfaa617ad00ec184fa1cf71abc6659",
+   "bytes": 1771
+  },
+  {
+   "path": "tests/unit/test_gui_depth_doping_mock.py",
+   "sha256": "ca460b9ebadf9954b0ed5beb3fddb60820c3ea4dbdb252090db09e68c819c6dc",
+   "bytes": 3783
+  }
+ ],
+ "request_sha256": "e98057ffcabb4f53e05512b3f6021151f5d4b3c206789a625fc82119e1efd34f",
+ "source": {
+  "github_sha": "1676747257790e08bcd57834b03f20bb958f4adc",
+  "git_head": "1676747257790e08bcd57834b03f20bb958f4adc",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37462459623",
+  "run_number": "53",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6ni-depth-doping-display/run_checks.py"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T12:20:44.963668+00:00",
+ "duration_s": 8.261,
+ "outputs": [
+  {
+   "path": "e6ni_out/canonical_gate.log",
+   "bytes": 2109,
+   "sha256": "b4602e723208b6e206d5b8e2092aae7d01da34452defc6a6c01d611a3a395f6a"
+  },
+  {
+   "path": "e6ni_out/canvas_source.log",
+   "bytes": 82,
+   "sha256": "81a818dccf0bc21ad2f564aad0babaefc8b6647e62e1aa4ac1fe7964f09af9ed"
+  },
+  {
+   "path": "e6ni_out/depth.log",
+   "bytes": 1103,
+   "sha256": "243bf4673b7b0592303c8b5e1bbce6a23fc9c5921816319663a050d040db9b1e"
+  },
+  {
+   "path": "e6ni_out/existing_gui.log",
+   "bytes": 11034,
+   "sha256": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+  },
+  {
+   "path": "e6ni_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6ni_out/hover_legacy.log",
+   "bytes": 287,
+   "sha256": "34b2578d755568231d58e689e70bdc0829eaf85630802f00cb8ce7e49971d76b"
+  },
+  {
+   "path": "e6ni_out/source.log",
+   "bytes": 386,
+   "sha256": "ad2d234885cef7bb4e81e4434900d404c96a2b1ada3d742e9ed4dbacb7071066"
+  },
+  {
+   "path": "e6ni_out/tests.json",
+   "bytes": 2995,
+   "sha256": "5f8aeb762e23d8663a4d7a21b26aab1280c703317943801388a22fc72c46d9d8"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Depth-aware Tk display on a ViennaPS virgin mesh; no implant or transport capability approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "d14e9eb19f82734bd405b4d814b55c3b413b377b0e87048d0be586dbec655c06",
+  "bytes": 131
+ },
+ "redactions": {}
+}

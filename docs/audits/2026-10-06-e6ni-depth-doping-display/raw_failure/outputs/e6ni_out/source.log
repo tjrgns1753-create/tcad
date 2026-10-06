@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "<REPO>\tests\unit\test_gui_depth_doping_mock.py", line 64, in <module>
+    if __name__=='__main__': main()
+                             ^^^^^^
+  File "<REPO>\tests\unit\test_gui_depth_doping_mock.py", line 48, in main
+    assert app._doping_color_at(0,-.5,'Si')=='UNKNOWN'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

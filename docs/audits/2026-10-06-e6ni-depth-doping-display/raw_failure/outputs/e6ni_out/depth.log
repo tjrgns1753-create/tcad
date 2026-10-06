@@ -1,0 +1,16 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Traceback (most recent call last):
+  File "<REPO>\docs\audits\2026-10-06-e6ni-depth-doping-display\check_depth.py", line 117, in <module>
+    if __name__=='__main__': main()
+                             ^^^^^^
+  File "<REPO>\docs\audits\2026-10-06-e6ni-depth-doping-display\check_depth.py", line 95, in main
+    assert '이력 도핑 미보존' in '\n'.join(app.canvas.itemcget(i,'text') for i in app.canvas.find_all())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<REPO>\docs\audits\2026-10-06-e6ni-depth-doping-display\check_depth.py", line 95, in <genexpr>
+    assert '이력 도핑 미보존' in '\n'.join(app.canvas.itemcget(i,'text') for i in app.canvas.find_all())
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\tkinter\__init__.py", line 2966, in itemcget
+    return self.tk.call(
+           ^^^^^^^^^^^^^
+_tkinter.TclError: unknown option "-text"

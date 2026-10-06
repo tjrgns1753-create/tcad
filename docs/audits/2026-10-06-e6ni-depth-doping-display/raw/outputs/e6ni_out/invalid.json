@@ -1,0 +1,23 @@
+{
+  "pass": true,
+  "cases": {
+    "nan": {
+      "attempted_solves": 0,
+      "doping_writes": 0,
+      "resolution": "UNSUPPORTED_BY_MODEL",
+      "parameter": "dopant_concentration_validity"
+    },
+    "inf": {
+      "attempted_solves": 0,
+      "doping_writes": 0,
+      "resolution": "UNSUPPORTED_BY_MODEL",
+      "parameter": "dopant_concentration_validity"
+    },
+    "negative": {
+      "attempted_solves": 0,
+      "doping_writes": 0,
+      "resolution": "UNSUPPORTED_BY_MODEL",
+      "parameter": "dopant_concentration_validity"
+    }
+  }
+}

@@ -1,0 +1,172 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T12:24:50.032965+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6ni-depth-doping-002",
+  "profile": "e6ni_depth_doping",
+  "params": {},
+  "note": "Actual 2D canonical depth display on mesh triangles; sign samples only, existing physical gates unchanged."
+ },
+ "profile": "e6ni_depth_doping",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "1cf3bffb78eb140c7eb68b39880f12150e411d256bee9d99003eaa268f29b198",
+   "bytes": 405339
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ni-depth-doping-display/PLAN.md",
+   "sha256": "5fc02ede5c0c5e372bbcab18dfebadb2e413c3158975fea72f655ecbd76ffd4d",
+   "bytes": 3230
+  },
+  {
+   "path": "tcad/physics/wafer_state_v2.py",
+   "sha256": "7652062fb0eb03ed1ecab41c72aee3875d61e5503f2193bd015084a7a817de08",
+   "bytes": 61267
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ni-depth-doping-display/check_depth.py",
+   "sha256": "07c2cba00bec89ff3fd0ad7e7c249a5de33640f651917e064dc7bede1c0196df",
+   "bytes": 6802
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ni-depth-doping-display/check_invalid.py",
+   "sha256": "9a78f9bd7aa0f95895e0211c8c1b0678b819269a7f6429e72ee09c3fc9e490dc",
+   "bytes": 2201
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ni-depth-doping-display/run_checks.py",
+   "sha256": "4437c789799fef63eae34cc2a122f141ed5cd43d5b6333f0613c4a14eae3ad76",
+   "bytes": 1869
+  },
+  {
+   "path": "tests/unit/test_gui_depth_doping_mock.py",
+   "sha256": "5a120fb2d3c2aa2e40d7560d6e0dcb3f8712ae92fb01fc4452db3374f2c3861b",
+   "bytes": 4096
+  }
+ ],
+ "request_sha256": "9190c012ffdce3aea63cdfa552847f3d5556e6eb5896ab83ffc50553d32f8324",
+ "source": {
+  "github_sha": "481fe8a07978ccbff95487ce9f856ca57d75561f",
+  "git_head": "481fe8a07978ccbff95487ce9f856ca57d75561f",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37462960267",
+  "run_number": "54",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6ni-depth-doping-display/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T12:25:01.785275+00:00",
+ "duration_s": 11.752,
+ "outputs": [
+  {
+   "path": "e6ni_out/canonical_gate.log",
+   "bytes": 2109,
+   "sha256": "b4602e723208b6e206d5b8e2092aae7d01da34452defc6a6c01d611a3a395f6a"
+  },
+  {
+   "path": "e6ni_out/canvas_source.log",
+   "bytes": 82,
+   "sha256": "81a818dccf0bc21ad2f564aad0babaefc8b6647e62e1aa4ac1fe7964f09af9ed"
+  },
+  {
+   "path": "e6ni_out/depth.json",
+   "bytes": 874,
+   "sha256": "010055cfef9dd864235e7c9c1895f409c5f9afdb331619309d2e15331e9600a7"
+  },
+  {
+   "path": "e6ni_out/depth.log",
+   "bytes": 705,
+   "sha256": "d030890425aa79e231261cdc3ad85964257527431ea25e5aa165e0153288b7a2"
+  },
+  {
+   "path": "e6ni_out/existing_gui.log",
+   "bytes": 11034,
+   "sha256": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+  },
+  {
+   "path": "e6ni_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6ni_out/hover_legacy.log",
+   "bytes": 287,
+   "sha256": "34b2578d755568231d58e689e70bdc0829eaf85630802f00cb8ce7e49971d76b"
+  },
+  {
+   "path": "e6ni_out/invalid.json",
+   "bytes": 572,
+   "sha256": "1b55f509eaa3a4a9bbdea9a6ff5c58450eca091af480be6a3e826b289a5dbd49"
+  },
+  {
+   "path": "e6ni_out/invalid.log",
+   "bytes": 2544,
+   "sha256": "a12e90b2f63a72843c753a4136559861eeb1813beed0168697fc34956029291d"
+  },
+  {
+   "path": "e6ni_out/over_cap.vtu",
+   "bytes": 58805,
+   "sha256": "a6ebf39c7d82049525b29a05c9f00d7a697a36ac98899f38d38129e79a894e0c"
+  },
+  {
+   "path": "e6ni_out/source.log",
+   "bytes": 96,
+   "sha256": "2a2728587dfbc2690245f90350410d7e493e53d523ab5d9f48e4efb752e3720b"
+  },
+  {
+   "path": "e6ni_out/tests.json",
+   "bytes": 3486,
+   "sha256": "1ec268159607b126f4589c2e6d2ce95f37a8f5cb75c34d8f89e12e94cea89d52"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Depth-aware Tk display on a ViennaPS virgin mesh; no implant or transport capability approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "11116f4417dbc115ebd166cc720e965876f3b776acbafafa6487bd67f2ed0a13",
+  "bytes": 144
+ },
+ "redactions": {}
+}
