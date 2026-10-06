@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nh-canvas-before-001",
- "profile": "e6nh_canvas_before",
+ "request_id": "e6nh-canvas-contract-002",
+ "profile": "e6nh_canvas_contract",
  "params": {},
  "note": "Fixed 1D PN GUI, actual solve, physical checks, unchanged wafer and existing gates."
 }

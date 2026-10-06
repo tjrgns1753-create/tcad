@@ -11,6 +11,18 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nh_canvas_contract": {
+        "description": "Actual current-wafer canvas geometry source and unsupported disclosure; gates unchanged.",
+        "entry": "docs/audits/2026-10-06-e6nh-canvas-source-contract/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 400, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "docs/audits/2026-10-06-e6nh-canvas-source-contract/PLAN.md",
+                   "docs/audits/2026-10-06-e6nh-canvas-source-contract/check_canvas.py",
+                   "docs/audits/2026-10-06-e6nh-canvas-source-contract/run_checks.py",
+                   "tests/unit/test_gui_canvas_source_contract_mock.py"],
+        "outputs": [{"glob": "e6nh_out/**/*", "max_mb": 8},
+                    {"glob": "e6nh_before_out/**/*", "max_mb": 5}],
+        "regenerate": "Actual Tk/ViennaPS contract and existing measurement control; no general gate release.",
+    },
     "e6nh_canvas_before": {
         "description": "Reproduce actual Tk false geometry before the canvas fix; no solve.",
         "entry": "docs/audits/2026-10-06-e6nh-canvas-source-contract/check_canvas.py",

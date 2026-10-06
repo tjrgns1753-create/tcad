@@ -10,7 +10,17 @@ ROOT=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(ROOT))
 if os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted':
     raise RuntimeError('REMOTE_ONLY')
-import tcad_2d_stagewise as G
+if '--before' in sys.argv:
+    import subprocess
+    import types
+    revision='4316c3f'
+    old=subprocess.check_output(['git','show',revision+':tcad_2d_stagewise.py'],cwd=ROOT).decode('utf-8')
+    G=types.ModuleType('canvas_before_gui')
+    G.__file__=str(ROOT/'tcad_2d_stagewise.py')
+    sys.modules[G.__name__]=G
+    exec(compile(old,G.__file__,'exec'),G.__dict__)
+else:
+    import tcad_2d_stagewise as G
 
 def texts(app):
     return [app.canvas.itemcget(i,'text') for i in app.canvas.find_all() if app.canvas.type(i)=='text']
@@ -36,12 +46,23 @@ def main():
             else:
                 assert '형상 표시 차단' in '\n'.join(texts(app)) and not solids(app)
                 assert app._viewer_scale is None
-            path.write_text('not a volume mesh',encoding='utf-8')
+            import meshio
+            meshio.write(path,meshio.Mesh([[0.,0.,0.]],cells=[('vertex',[[0]])]))
             app.redraw()
             observations['corrupt']={'texts':texts(app),'solid_count':len(solids(app))}
             if before:
                 assert 'Si substrate' in texts(app) and solids(app)
             else:
+                assert '형상 표시 차단' in '\n'.join(texts(app)) and not solids(app)
+            path.write_text('not a volume mesh',encoding='utf-8')
+            terminated=False
+            try:
+                app.redraw()
+            except SystemExit:
+                terminated=True
+            observations['malformed']={'system_exit':terminated,'texts':texts(app)}
+            assert terminated is before
+            if not before:
                 assert '형상 표시 차단' in '\n'.join(texts(app)) and not solids(app)
         if not before:
             app.reset(); app.redraw()
