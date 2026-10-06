@@ -1,0 +1,189 @@
+{
+  "plan_sha256": "352a71f1cd042968b370a455bd9b163300b1feeceb62f7c617ddc21ad2567051",
+  "source_hashes": {
+    "arrays.npz": "3fb54277848ab4522cb23bf3fd6755d6a059e56130f1a31932f1617e10fa25b4",
+    "record.json": "52bb73beae473188308616e9c4fbcce1e879c6ba25e67924f377c08e1b7d50d5"
+  },
+  "devices": {
+    "fwd": {
+      "error": null,
+      "cleanup_ok": true,
+      "kind": "fwd",
+      "nodes": 3089,
+      "dimension": 1,
+      "canonical_audit": {
+        "canonical_checked": 3089,
+        "canonical_unresolved": 0,
+        "canonical_mismatch": 0
+      },
+      "doping_writes_before_solve": [
+        [
+          "node_model",
+          "Donors"
+        ],
+        [
+          "set_node_values",
+          "Donors"
+        ],
+        [
+          "node_model",
+          "Acceptors"
+        ],
+        [
+          "set_node_values",
+          "Acceptors"
+        ],
+        [
+          "node_model",
+          "NetDoping"
+        ],
+        [
+          "set_node_values",
+          "NetDoping"
+        ]
+      ],
+      "metadata": {
+        "temperature_k": 300.0,
+        "fixed_contacts": {
+          "Si_xmax": 0.0
+        },
+        "physics": "drift_diffusion",
+        "current_unit": null,
+        "current_normalization": null,
+        "device_dimension": 1
+      },
+      "params": {
+        "ElectronCharge": 1.6e-19,
+        "n_i": 10000000000.0,
+        "T": 300.0,
+        "mu_n": 400.0,
+        "mu_p": 200.0,
+        "taun": 1e-08,
+        "taup": 1e-08,
+        "Permittivity": 9.8235e-13,
+        "V_t": 0.025887193125000003
+      },
+      "currents": [
+        {
+          "V": 0.1,
+          "I_min": 4.028765891805344e-07,
+          "I_max": -4.0289093258466335e-07
+        },
+        {
+          "V": 0.2,
+          "I_min": 3.350685793347576e-06,
+          "I_max": -3.350635662468325e-06
+        },
+        {
+          "V": 0.3,
+          "I_min": 2.689037421520465e-05,
+          "I_max": -2.689032411892991e-05
+        },
+        {
+          "V": 0.4,
+          "I_min": 0.00025194460360605813,
+          "I_max": -0.00025194456476808217
+        },
+        {
+          "V": 0.5,
+          "I_min": 0.003894897288109238,
+          "I_max": -0.003894897321029118
+        },
+        {
+          "V": 0.6,
+          "I_min": 0.11820429420045647,
+          "I_max": -0.1182042942398795
+        }
+      ],
+      "solve_attempts": 8,
+      "solves": 8,
+      "solve_failures": 0,
+      "snapshot_failures": 0
+    },
+    "rev": {
+      "error": null,
+      "cleanup_ok": true,
+      "kind": "rev",
+      "nodes": 3089,
+      "dimension": 1,
+      "canonical_audit": {
+        "canonical_checked": 3089,
+        "canonical_unresolved": 0,
+        "canonical_mismatch": 0
+      },
+      "doping_writes_before_solve": [
+        [
+          "node_model",
+          "Donors"
+        ],
+        [
+          "set_node_values",
+          "Donors"
+        ],
+        [
+          "node_model",
+          "Acceptors"
+        ],
+        [
+          "set_node_values",
+          "Acceptors"
+        ],
+        [
+          "node_model",
+          "NetDoping"
+        ],
+        [
+          "set_node_values",
+          "NetDoping"
+        ]
+      ],
+      "metadata": {
+        "temperature_k": 300.0,
+        "fixed_contacts": {
+          "Si_xmax": 0.0
+        },
+        "physics": "drift_diffusion",
+        "current_unit": null,
+        "current_normalization": null,
+        "device_dimension": 1
+      },
+      "params": {
+        "ElectronCharge": 1.6e-19,
+        "n_i": 10000000000.0,
+        "T": 300.0,
+        "mu_n": 400.0,
+        "mu_p": 200.0,
+        "taun": 1e-08,
+        "taup": 1e-08,
+        "Permittivity": 9.8235e-13,
+        "V_t": 0.025887193125000003
+      },
+      "currents": [
+        {
+          "V": -0.25,
+          "I_min": -1.928128978719075e-07,
+          "I_max": 1.9283270899841586e-07
+        },
+        {
+          "V": -0.5,
+          "I_min": -3.386731107299445e-07,
+          "I_max": 3.386133112806099e-07
+        },
+        {
+          "V": -0.75,
+          "I_min": -4.7077721621686394e-07,
+          "I_max": 4.7086787829945337e-07
+        },
+        {
+          "V": -1.0,
+          "I_min": -5.926495063046791e-07,
+          "I_max": 5.927178028080865e-07
+        }
+      ],
+      "solve_attempts": 6,
+      "solves": 6,
+      "solve_failures": 0,
+      "snapshot_failures": 0
+    }
+  }
+}

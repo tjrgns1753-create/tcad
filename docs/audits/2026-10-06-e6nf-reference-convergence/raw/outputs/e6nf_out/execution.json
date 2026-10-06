@@ -1,0 +1,15 @@
+{
+  "status": "COMPLETED",
+  "started_unix": 1791272137.1731093,
+  "cleanup_ok": true,
+  "peak_sampled_tree_working_set": 120827904,
+  "peak_sampled_tree_commit": 95694848,
+  "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+  "interval_s": 0.5,
+  "candidate_budget_s": 120,
+  "pid": 5952,
+  "exit_code": 0,
+  "ended_unix": 1791272141.6851869,
+  "duration_s": 4.514999999999986,
+  "plan_sha256": "352a71f1cd042968b370a455bd9b163300b1feeceb62f7c617ddc21ad2567051"
+}

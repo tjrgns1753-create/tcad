@@ -1,0 +1,221 @@
+{
+  "status": "REFERENCE_CONVERGENCE_PASS",
+  "checks": [
+    {
+      "name": "fwd_current_0.1",
+      "pass": true
+    },
+    {
+      "name": "fwd_current_0.2",
+      "pass": true
+    },
+    {
+      "name": "fwd_current_0.3",
+      "pass": true
+    },
+    {
+      "name": "fwd_current_0.4",
+      "pass": true
+    },
+    {
+      "name": "fwd_current_0.5",
+      "pass": true
+    },
+    {
+      "name": "fwd_current_0.6",
+      "pass": true
+    },
+    {
+      "name": "fwd_monotonic",
+      "pass": true
+    },
+    {
+      "name": "fwd_profile_0.0",
+      "pass": true
+    },
+    {
+      "name": "fwd_profile_0.3",
+      "pass": true
+    },
+    {
+      "name": "fwd_profile_0.5",
+      "pass": true
+    },
+    {
+      "name": "fwd_profile_0.6",
+      "pass": true
+    },
+    {
+      "name": "rev_current_-0.25",
+      "pass": true
+    },
+    {
+      "name": "rev_current_-0.5",
+      "pass": true
+    },
+    {
+      "name": "rev_current_-0.75",
+      "pass": true
+    },
+    {
+      "name": "rev_current_-1.0",
+      "pass": true
+    },
+    {
+      "name": "rev_monotonic",
+      "pass": true
+    },
+    {
+      "name": "rev_profile_0.0",
+      "pass": true
+    },
+    {
+      "name": "rev_profile_-0.5",
+      "pass": true
+    },
+    {
+      "name": "rev_profile_-1.0",
+      "pass": true
+    }
+  ],
+  "metrics": {
+    "fwd": {
+      "currents": [
+        {
+          "V": 0.1,
+          "relative": 7.317927680531649e-05,
+          "kcl_relative": 3.560247607862451e-05,
+          "fine_J_A_per_cm2": 4.028765891805344e-07
+        },
+        {
+          "V": 0.2,
+          "relative": 5.5454209032896835e-05,
+          "kcl_relative": 1.4961378757325238e-05,
+          "fine_J_A_per_cm2": 3.350685793347576e-06
+        },
+        {
+          "V": 0.3,
+          "relative": 4.286026009642785e-05,
+          "kcl_relative": 1.8629816877873916e-06,
+          "fine_J_A_per_cm2": 2.689037421520465e-05
+        },
+        {
+          "V": 0.4,
+          "relative": 2.7155528581415336e-05,
+          "kcl_relative": 1.541528391991412e-07,
+          "fine_J_A_per_cm2": 0.00025194460360605813
+        },
+        {
+          "V": 0.5,
+          "relative": 1.177582154896387e-05,
+          "kcl_relative": 8.452053416191077e-09,
+          "fine_J_A_per_cm2": 0.003894897288109238
+        },
+        {
+          "V": 0.6,
+          "relative": 5.800412275992045e-06,
+          "kcl_relative": 3.335160921873912e-10,
+          "fine_J_A_per_cm2": 0.11820429420045647
+        }
+      ],
+      "profiles": [
+        {
+          "V": 0.0,
+          "potential_max_V": 6.767988025491403e-05,
+          "carriers_relative": {
+            "Electrons": 0.002611000942163493,
+            "Holes": 0.002617836114730374
+          },
+          "field_peak_normalized": 8.941567741305422e-05
+        },
+        {
+          "V": 0.3,
+          "potential_max_V": 5.3150326613349286e-05,
+          "carriers_relative": {
+            "Electrons": 0.0020510475477014995,
+            "Holes": 0.0020552617386608257
+          },
+          "field_peak_normalized": 0.00011444747115157425
+        },
+        {
+          "V": 0.5,
+          "potential_max_V": 4.0687691478996646e-05,
+          "carriers_relative": {
+            "Electrons": 0.0015705026903434802,
+            "Holes": 0.0015729711397100274
+          },
+          "field_peak_normalized": 0.00015044460418025082
+        },
+        {
+          "V": 0.6,
+          "potential_max_V": 3.2806859638911945e-05,
+          "carriers_relative": {
+            "Electrons": 0.0012665317004416816,
+            "Holes": 0.0012681158258309407
+          },
+          "field_peak_normalized": 0.00018630258273767605
+        }
+      ]
+    },
+    "rev": {
+      "currents": [
+        {
+          "V": -0.25,
+          "relative": 0.00014740562536308424,
+          "kcl_relative": 0.00010274793194347236,
+          "fine_J_A_per_cm2": -1.928128978719075e-07
+        },
+        {
+          "V": -0.5,
+          "relative": 1.0803372453568254e-11,
+          "kcl_relative": 0.00017656981744345812,
+          "fine_J_A_per_cm2": -3.386731107299445e-07
+        },
+        {
+          "V": -0.75,
+          "relative": 0.00012074378406378084,
+          "kcl_relative": 0.00019257958853231727,
+          "fine_J_A_per_cm2": -4.7077721621686394e-07
+        },
+        {
+          "V": -1.0,
+          "relative": 6.235019506617467e-12,
+          "kcl_relative": 0.00011523928170174113,
+          "fine_J_A_per_cm2": -5.926495063046791e-07
+        }
+      ],
+      "profiles": [
+        {
+          "V": 0.0,
+          "potential_max_V": 6.767988025491403e-05,
+          "carriers_relative": {
+            "Electrons": 0.002611000942163493,
+            "Holes": 0.002617836114730374
+          },
+          "field_peak_normalized": 8.941567741305422e-05
+        },
+        {
+          "V": -0.5,
+          "potential_max_V": 8.664587200662988e-05,
+          "carriers_relative": {
+            "Electrons": 0.0032382508677193207,
+            "Holes": 0.0032241942497810688
+          },
+          "field_peak_normalized": 7.020263295670036e-05
+        },
+        {
+          "V": -1.0,
+          "potential_max_V": 0.00010215927868340025,
+          "carriers_relative": {
+            "Electrons": 0.0031304545133365672,
+            "Holes": 0.003207582509576135
+          },
+          "field_peak_normalized": 6.174527015540594e-05
+        }
+      ]
+    }
+  },
+  "problems": [],
+  "production_gate_released": false,
+  "new_2d_solves": 0
+}
