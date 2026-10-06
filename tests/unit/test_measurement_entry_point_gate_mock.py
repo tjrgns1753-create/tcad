@@ -154,6 +154,11 @@ def _dc_operating_point(app, state, nodes):
     app.last_electrode_import = SimpleNamespace(
         device="dc_dev", mesh="dc_mesh", contacts=["Source", "Drain", "Gate"],
         interfaces=["Si_SiO2_interface"])
+    # This whole fixture uses FakeDevsim, not an actual mesh. A stable file is
+    # only its source-context token; no physical geometry claim is made here.
+    from tcad.characterization.source_context import capture_source_context
+    app.last_final_mesh = __file__
+    app._electrode_import_context = capture_source_context(__file__, state, app.electrode_pins)
     log_before = app.log.get("1.0", "end-1c")
     restores = [_patched(dcop, "solve_mosfet_dc_operating_point", recorder),
                 _patched(backend, "require_devsim", lambda: fake)]

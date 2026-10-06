@@ -868,6 +868,8 @@ class TCADApplication(tk.Tk):
         self.last_electrode_import = None
         self._electrode_contact_regions = {}
         self.last_electrode_result = None
+        self._electrode_import_context = None
+        self._electrode_result_context = None
 
         # Each category panel's LabelFrame, registered as it is built,
         # so the category selector can show exactly one at a time (see
@@ -6102,6 +6104,14 @@ class TCADApplication(tk.Tk):
         if getattr(self, "last_electrode_result", None) is None:
             self._notify_info("Export", "No result to export yet.")
             return
+        from tcad.characterization.source_context import source_context_matches
+        if not source_context_matches(getattr(self, "_electrode_result_context", None),
+                                      self.last_final_mesh, self.wafer_state, self.electrode_pins):
+            self.last_electrode_result = None
+            self._electrode_result_context = None
+            self._notify_error("Export", "Current wafer/doping/pins do not match the DC result source. "
+                               "No CSV was exported; compute a new result on the current device.")
+            return
         from tkinter import filedialog
         from tcad.characterization.io import save_csv
         path = filedialog.asksaveasfilename(defaultextension=".csv")
@@ -6140,6 +6150,7 @@ class TCADApplication(tk.Tk):
         so a leaked device from an abandoned RESOLVE (no DC-OP click
         ever reached) cannot poison a later, unrelated solve -- see
         CLAUDE.md's own "leaked DevSim device" trap."""
+        self._electrode_import_context = None
         if self.last_electrode_import is None:
             return
         from tcad.device.devsim import backend as devsim_backend
@@ -6168,6 +6179,11 @@ class TCADApplication(tk.Tk):
         mesh's own min-x instead -- the same single conversion every
         other caller uses.
         """
+        self.last_electrode_result = None
+        self._electrode_result_context = None
+        self._cleanup_electrode_device()
+        from tcad.characterization.source_context import capture_source_context, source_context_matches
+        source_context = capture_source_context(self.last_final_mesh, self.wafer_state, self.electrode_pins)
         if not self.electrode_pins:
             self._log("\nRESOLVE PINS: no pins placed yet -- nothing to resolve.\n")
             return None
@@ -6178,7 +6194,9 @@ class TCADApplication(tk.Tk):
         # A previous RESOLVE click's device (if the user never reached
         # DC OPERATING POINT, or clicked RESOLVE again) would otherwise
         # stay registered in DevSim and poison the next solve.
-        self._cleanup_electrode_device()
+        if source_context is None:
+            self._notify_error("Electrode", "Current mesh source cannot be read; pins were not resolved.")
+            return None
 
         from tcad.mesh.viennaps_adapter import build_process_result
         from tcad.device.devsim.contact_probe import (
@@ -6226,6 +6244,11 @@ class TCADApplication(tk.Tk):
             return None
 
         self.last_electrode_import = imported
+        if not source_context_matches(source_context, self.last_final_mesh, self.wafer_state, self.electrode_pins):
+            self._cleanup_electrode_device()
+            self._notify_error("Electrode", "Wafer source changed during pin resolution; no device was kept.")
+            return None
+        self._electrode_import_context = source_context
         # Which real MaterialRegion each contact actually landed on --
         # read by run_dc_operating_point() to tell a contact that is
         # genuinely on Si/SiO2 apart from one that resolved onto a
@@ -6246,6 +6269,7 @@ class TCADApplication(tk.Tk):
         contact after its Pin's own `name` field)."""
         # A failed new attempt must not leave the previous CSV result available.
         self.last_electrode_result = None
+        self._electrode_result_context = None
         import math
         try:
             if any(not math.isfinite(float(v)) for v in (drain_voltage, gate_voltage, body_voltage)):
@@ -6255,6 +6279,14 @@ class TCADApplication(tk.Tk):
             return None
         if self.last_electrode_import is None:
             self._log("\nDC OPERATING POINT: pins not resolved yet -- nothing to solve.\n")
+            return None
+
+        from tcad.characterization.source_context import source_context_matches
+        source_context = getattr(self, "_electrode_import_context", None)
+        if not source_context_matches(source_context, self.last_final_mesh, self.wafer_state, self.electrode_pins):
+            self._cleanup_electrode_device()
+            self._notify_error("Electrode", "Resolved device source no longer matches current wafer/doping/pins. "
+                               "No doping write or solve was run; resolve pins again on the current wafer.")
             return None
 
         imported = self.last_electrode_import
@@ -6388,6 +6420,8 @@ class TCADApplication(tk.Tk):
             # The ideal oxide gate has voltage evidence, not DD current evidence.
             validate_bias_point(op_point, (source_contact, drain_contact) +
                                 ((body_contact,) if body_contact else ()))
+            if not source_context_matches(source_context, self.last_final_mesh, self.wafer_state, self.electrode_pins):
+                raise ValueError("Wafer source changed during DC solve; no current result is retained.")
         except UnsupportedDopingState as exc:
             # Tier 1-1: blocked by the central canonical-state gate
             # before any doping write or solve -- not a solve failure.
@@ -6408,6 +6442,7 @@ class TCADApplication(tk.Tk):
             except Exception:
                 pass
             self.last_electrode_import = None
+            self._electrode_import_context = None
 
         from tcad.characterization.interface import CharacterizationResult
         self.last_electrode_result = CharacterizationResult(
@@ -6418,6 +6453,7 @@ class TCADApplication(tk.Tk):
                 "body_voltage": body_voltage,
             },
         )
+        self._electrode_result_context = source_context
 
         self._log(
             f"\n================================\n"
