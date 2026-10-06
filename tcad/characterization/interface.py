@@ -103,6 +103,23 @@ class BiasPoint:
     converged: bool = True
 
 
+def validate_bias_point(point: BiasPoint, required_contacts=()) -> None:
+    """Reject invalid terminal evidence, without replacing values or approving physics.
+
+    This is a GUI result-boundary check, not a convergence/charge-conservation
+    proof. Negative finite currents and zero are both legitimate values.
+    """
+    import math
+    if point.converged is not True or not point.currents or not point.voltages:
+        raise ValueError("Measurement result is empty or not converged; no current is reported.")
+    for contact in required_contacts:
+        if contact not in point.currents or contact not in point.voltages:
+            raise ValueError(f"Measurement result is missing contact {contact!r}.")
+    for values in (point.voltages, point.currents):
+        if any(not math.isfinite(float(value)) for value in values.values()):
+            raise ValueError("Measurement result contains a non-finite value; no current is reported.")
+
+
 @dataclass
 class CharacterizationResult:
     """A generic terminal-characteristics sweep result.

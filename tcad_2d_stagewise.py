@@ -5767,6 +5767,14 @@ class TCADApplication(tk.Tk):
             return None
 
     def run_measurement(self):
+        import math
+        try:
+            voltage = float(self.meas_voltage_var.get())
+            if not math.isfinite(voltage):
+                raise ValueError("non-finite voltage")
+        except (ValueError, TypeError, OverflowError):
+            self._notify_error("Measurement", "Source voltage must be finite and numeric. No solve was run.")
+            return
 
         if self.last_doped_result is None:
             # A statement of what is missing from the DEVICE, not an
@@ -5799,17 +5807,6 @@ class TCADApplication(tk.Tk):
 
         axis = self.meas_axis_var.get()
 
-        try:
-            voltage = float(self.meas_voltage_var.get())
-        except ValueError:
-
-            self._notify_error(
-                "Measurement recipe",
-                "Source voltage must be numeric.",
-            )
-
-            return
-
         doped_result = self.last_doped_result
 
         if self._doping_is_stale():
@@ -5832,7 +5829,7 @@ class TCADApplication(tk.Tk):
         from tcad.device.devsim.mesh_import import import_process_result
         from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
         from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
-        from tcad.characterization.interface import current_unit_note, format_current
+        from tcad.characterization.interface import current_unit_note, format_current, validate_bias_point
         from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
         from tcad.characterization.robust_iv_sweep import (
             run_robust_pn_junction_iv_sweep,
@@ -5966,6 +5963,9 @@ class TCADApplication(tk.Tk):
                     fixed_contacts={gnd_contact: 0.0},
                 )
 
+            if len(result.points) != 1:
+                raise ValueError("Measurement must return exactly one bias point.")
+            validate_bias_point(result.points[0], (source_contact, gnd_contact))
         except UnsupportedDopingState as exc:
 
             # Tier 1-1: the central canonical-state gate refused this
@@ -6244,6 +6244,15 @@ class TCADApplication(tk.Tk):
         among the resolved contacts. Contact names are the Pin names
         themselves (point_contacts in resolve_electrode_pins names each
         contact after its Pin's own `name` field)."""
+        # A failed new attempt must not leave the previous CSV result available.
+        self.last_electrode_result = None
+        import math
+        try:
+            if any(not math.isfinite(float(v)) for v in (drain_voltage, gate_voltage, body_voltage)):
+                raise ValueError("non-finite voltage")
+        except (ValueError, TypeError, OverflowError):
+            self._notify_error("Electrode", "Drain/Gate/Body V must be finite and numeric. No solve was run.")
+            return None
         if self.last_electrode_import is None:
             self._log("\nDC OPERATING POINT: pins not resolved yet -- nothing to solve.\n")
             return None
@@ -6375,6 +6384,10 @@ class TCADApplication(tk.Tk):
                 drain_voltage=drain_voltage, gate_voltage=gate_voltage,
                 body_contact=body_contact, body_voltage=body_voltage,
             )
+            from tcad.characterization.interface import validate_bias_point
+            # The ideal oxide gate has voltage evidence, not DD current evidence.
+            validate_bias_point(op_point, (source_contact, drain_contact) +
+                                ((body_contact,) if body_contact else ()))
         except UnsupportedDopingState as exc:
             # Tier 1-1: blocked by the central canonical-state gate
             # before any doping write or solve -- not a solve failure.
@@ -6420,6 +6433,7 @@ class TCADApplication(tk.Tk):
         return op_point
 
     def _on_dc_operating_point_clicked(self):
+        self.last_electrode_result = None
         try:
             vd = float(self.dc_drain_v_var.get())
             vg = float(self.dc_gate_v_var.get())

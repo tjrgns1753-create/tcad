@@ -11,6 +11,18 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nj_measurement_validity": {
+        "description": "Finite GUI measurement evidence boundary and failed DC retry; physical gates unchanged.",
+        "entry": "docs/audits/2026-10-06-e6nj-measurement-validity/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 300, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "tcad/characterization/interface.py",
+                   "docs/audits/2026-10-06-e6nj-measurement-validity/PLAN.md",
+                   "docs/audits/2026-10-06-e6nj-measurement-validity/check_gui.py",
+                   "docs/audits/2026-10-06-e6nj-measurement-validity/run_checks.py",
+                   "tests/unit/test_measurement_validity_mock.py"],
+        "outputs": [{"glob": "e6nj_out/**/*", "max_mb": 8}],
+        "regenerate": "Invalid input trapped before backend, existing supported uniform DD control; no PN approval.",
+    },
     "e6ni_depth_doping": {
         "description": "Actual mesh-centroid canonical 2D doping display and depth hover, existing gates unchanged.",
         "entry": "docs/audits/2026-10-06-e6ni-depth-doping-display/run_checks.py",
