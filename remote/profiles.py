@@ -11,6 +11,24 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nc_pn_completion_revalidation": {
+        "description": "Engine-free PN evidence revalidation and rejection of incomplete audit success; no physical solve.",
+        "entry": "docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py",
+        "args": [], "params": {}, "timeout_s": 120, "engine_info": False,
+        "inputs": [
+            "docs/audits/2026-10-06-e6nc-pn-completion-contract/PLAN.md",
+            "docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
+            "tests/integration/test_pn_2d_1d_consistency_real.py",
+            "tests/unit/test_e6m_completion_exit_mock.py",
+            "tests/unit/test_e6m_judge_mock.py",
+            "tests/unit/test_e6m_execution_contract_mock.py",
+            "tests/unit/test_e6l_correction_mock.py"
+        ],
+        "outputs": [{"glob": "e6nc_out/**/*", "max_mb": 10}],
+        "regenerate": "Recheck stored evidence only; incomplete historical PN is not approved.",
+    },
     "e6nb_native_2d_control": {
         "description": "Fixed native positive/negative controls and four manufactured 2D Poisson solves; not PN physics.",
         "entry": "docs/audits/2026-10-06-e6nb-native-2d-control/run_control.py",

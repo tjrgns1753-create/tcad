@@ -260,7 +260,7 @@ def run(out_dir):
         if isinstance(v, dict) and "verdict" in v:
             print(k, v["verdict"], [c["name"] for c in v.get("checks", []) if not c["pass"]][:5], v.get("problems", [])[:3])
     print("total solves:", raw["total_solves"], "leaked devices:", raw["leaked_devices"])
-    return 0
+    return J.completion_exit_code(verdict)
 
 
 if __name__ == "__main__":

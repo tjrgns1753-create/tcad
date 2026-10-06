@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nb-native-2d-control-002",
- "profile": "e6nb_native_2d_control",
+ "request_id": "e6nc-pn-completion-001",
+ "profile": "e6nc_pn_completion_revalidation",
  "params": {},
- "note": "Fixed analytical native positive control then manufactured 2D Poisson convergence; four scalar solves, not PN/DD."
+ "note": "Engine-free stored PN evidence revalidation; historical incomplete audit must not become green. No new solve."
 }

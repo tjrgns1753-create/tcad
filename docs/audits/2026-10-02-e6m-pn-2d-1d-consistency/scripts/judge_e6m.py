@@ -166,6 +166,29 @@ def _b(name, cond, value=None):
     return {"name": name, "value": value, "pass": bool(cond)}
 
 
+def completion_exit_code(verdicts):
+    """Exit status for this limited audit, never a production physics approval.
+
+    Missing, blocked or unevaluated evidence must not become a green job.
+    Keep separate category verdicts; this only determines process success.
+    """
+    if not isinstance(verdicts, dict):
+        return 1
+    integrity = verdicts.get("EVIDENCE_INTEGRITY")
+    if (not isinstance(integrity, dict) or integrity.get("verdict") != "PASS"
+            or integrity.get("problems") != []):
+        return 1
+    for name in CATEGORIES:
+        record = verdicts.get(name)
+        if not isinstance(record, dict) or record.get("verdict") != "PASS":
+            return 1
+        checks = record.get("checks")
+        if (not isinstance(checks, list) or not checks
+                or any(not isinstance(c, dict) or c.get("pass") is not True for c in checks)):
+            return 1
+    return 0
+
+
 def judge(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None):
     problems, S, c1 = validate(raw, npz, e6k_json, e6k_npz, e6j, expected_plan_sha256=expected_plan_sha256)
     res = {"judge_version": VERSION, "EVIDENCE_INTEGRITY": {"verdict": "PASS" if not problems else "EVIDENCE_INTEGRITY_FAIL", "problems": problems}}
