@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "request_id": "e6na-engine-free-compatibility-001",
+ "request_id": "e6na-engine-free-compatibility-002",
  "profile": "e6na_engine_free_compatibility",
  "params": {},
  "note": "Engine-free Python 3.11 and Windows Job compatibility. Read installed official helper source without importing engine. No physical computation."

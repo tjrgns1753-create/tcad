@@ -40,7 +40,7 @@ PROFILES = {
     "e6na_import_reduction": {
         "description": "E6N-A fixed-plan official import and discrete reduction diagnostics; no solve calls permitted.",
         "entry": "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
-        "args": [], "params": {}, "timeout_s": 1800,
+        "args": [], "params": {}, "timeout_s": 1830, "engine_info": False,
         "inputs": [
             "docs/audits/2026-10-02-e6na-import-reduction/PLAN.md",
             "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",

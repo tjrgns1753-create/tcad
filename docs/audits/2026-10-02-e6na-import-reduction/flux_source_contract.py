@@ -15,6 +15,10 @@ REVIEWED_FUNCTION_SHA = 'fd33b1c5c4a5f199916c550c138df3da8fce46a8ad8a8c8a87548b7
 
 def _canonical(node):
     if isinstance(node, ast.AST):
+        # Python 3.11에서는 동적으로 붙인 type_params가 iter_fields에 안 나온다.
+        # 구버전에서도 비어 있지 않은 속성은 계약상 반드시 차단한다.
+        if getattr(node, 'type_params', None):
+            raise ValueError('OFFICIAL_FLUX_SOURCE_UNSUPPORTED: type parameters')
         fields = []
         for key, value in ast.iter_fields(node):
             if key == 'type_params':
