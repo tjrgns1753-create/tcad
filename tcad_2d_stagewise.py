@@ -8971,6 +8971,7 @@ class TCADApplication(tk.Tk):
         self.last_doped_result = None
         self.wafer_state = None
         self.last_final_mesh = None
+        self._viewing_step_index = None
         self._viewer_depth_budget_um = {}
         self.history = []
         self.process_stage = "wafer"

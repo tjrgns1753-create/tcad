@@ -30,6 +30,8 @@ text=ast.get_source_segment(source,redraw)
 assert 'visual_depth' not in text and 'VIENNAPS\\n' not in text
 assert 'self.wafer.processed\n            and display_mesh' not in text
 assert 'mesh_expected and not real_mesh_available' in text
+reset=next(n for n in cls.body if isinstance(n,ast.FunctionDef) and n.name=='reset')
+assert 'self._viewing_step_index = None' in ast.get_source_segment(source,reset)
 import numpy as np
 draw=next(n for n in cls.body if isinstance(n,ast.FunctionDef) and n.name=='_draw_real_mesh_result')
 transform=next(n for n in ast.walk(draw) if isinstance(n,ast.FunctionDef) and n.name=='to_canvas')
