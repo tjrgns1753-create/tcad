@@ -1,0 +1,555 @@
+--- a/docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py
++++ b/docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py
+@@ -20,8 +20,10 @@
+ import e6m_metrics as M
+ from diagnostics import analyze, validate, checked_indices
+ from flux_source_contract import require_reviewed_source
++from resource_supervisor import supervise, require_elements, payload_check, TOTAL_CAP
+ 
+ PLAN_SHA = 'a7bb4e07d03a885c65d01db8f7ba6c341fee67d000e961e1ce6e597a1303e103'
++RESOURCE_CONTRACT_SHA = '8baef556d4e7eb71b12d125896303294833719851e89f632ad29bdcc0c1a5b4a'
+ INPUT_SHAS = {
+     'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_preflight.py':'47ce559e56e32d9d7214cc0ca30a0a360ba485e7661817e3b992725409448a9b',
+     'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_result.json':'5b7225e949c6f41bbd72bd73e8d4ea54f88b937221f52618b03cdec21c038f6f',
+@@ -108,10 +110,81 @@
+ 
+ 
+ def execute():
+-    return preflight(_execute)
++    def approved_resource_boundary():
++        digest=hashlib.sha256((HERE/'RESOURCE_EXECUTION_CONTRACT.md').read_bytes().replace(b'\r\n',b'\n')).hexdigest()
++        if digest!=RESOURCE_CONTRACT_SHA:
++            raise ValueError('RESOURCE_CONTRACT_PREFLIGHT_BLOCKED')
++        return _execute()
++    return preflight(approved_resource_boundary)
+ 
+ 
+ def _execute():
++    if '--candidate' not in sys.argv:
++        return _supervised_execute()
++    return _execute_candidate()
++
++
++def _supervised_execute():
++    """각 후보 엔진을 별도 Job Object에 격리. 부모에는 엔진 import가 없다."""
++    if os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
++        raise RuntimeError('REMOTE_ONLY')
++    require_inputs()
++    out = ROOT/'e6na_out'
++    out.mkdir(exist_ok=False)
++    deadline = time.monotonic()+1800
++    report = {'plan_sha':PLAN_SHA, 'source_sha':os.environ.get('GITHUB_SHA'),
++              'levels':{}, 'solve_attempts':0, 'pn':'NOT_RUN', 'verdict':'FAIL'}
++    raw_total = 0
++    stopped = False
++    for lv in M.LEVELS:
++        if stopped:
++            report['levels'][lv] = {'status':'NOT_RUN'}
++            continue
++        monitor = supervise([sys.executable,'-B',str(Path(__file__).resolve()),'--candidate',lv],
++                            ROOT, out/(lv+'.log'), total_deadline=deadline)
++        rec = {'status':'FAIL', 'supervisor':monitor}
++        rec['solve_attempts'] = None  # timeout/누락을 관측된 0으로 발명하지 않음.
++        try:
++            if monitor['status']!='COMPLETED' or not monitor['cleanup_ok']:
++                raise ValueError('SUPERVISOR_BLOCKED')
++            result_path = out/lv/'result.json'
++            child = json.loads(result_path.read_text(encoding='utf-8'))
++            c = child['levels'][lv]
++            rec['solve_attempts'] = child.get('solve_attempts')
++            if (child['plan_sha']!=PLAN_SHA or type(child['solve_attempts']) is not int or child['solve_attempts']!=0
++                    or c['status']!='IMPORT_PASS' or c['cleanup_ok'] is not True
++                    or child.get('candidate')!=lv or child.get('official_flux_source_matches') is not True
++                    or child.get('execution_status')!='COMPLETED'
++                    or c['diagnostic']['verdict'] not in ('NONINVARIANCE_WITNESS','INCONCLUSIVE','NOT_MEASURED')):
++                raise ValueError('CHILD_EVIDENCE_INCOMPLETE')
++            array_path = out/lv/(lv+'.npz')
++            if sha(array_path)!=c['array_sha']:
++                raise ValueError('CHILD_ARRAY_HASH_MISMATCH')
++            payload_check(c['raw_bytes'], array_path.stat().st_size, raw_total)
++            raw_total += c['raw_bytes']
++            if raw_total + sum(p.stat().st_size for p in out.rglob('*') if p.is_file() and p.suffix!='.npz') > TOTAL_CAP:
++                raise ValueError('OUTPUT_RESOURCE_CAP')
++            rec = dict(c, supervisor=monitor, solve_attempts=child['solve_attempts'])
++            stopped = c['diagnostic']['verdict']!='NONINVARIANCE_WITNESS'
++        except Exception as exc:
++            rec.update(error_type=type(exc).__name__, error=str(exc))
++            stopped = True
++        report['levels'][lv] = rec
++    failed = any(r['status']=='FAIL' for r in report['levels'].values())
++    attempts = [r.get('solve_attempts') for r in report['levels'].values() if r['status']!='NOT_RUN']
++    report['solve_attempts'] = sum(attempts) if all(type(v) is int for v in attempts) else None
++    report['execution_status'] = 'FAIL' if failed else 'COMPLETED'
++    report['verdict'] = 'FAIL' if failed else ('NONINVARIANCE_WITNESS' if not stopped else 'INCONCLUSIVE')
++    text = json.dumps(report,indent=2)+'\n'
++    payload_check(0,len(text.encode('utf-8')))
++    if raw_total + sum(p.stat().st_size for p in out.rglob('*') if p.is_file() and p.suffix!='.npz') + len(text.encode('utf-8')) > TOTAL_CAP:
++        raise ValueError('OUTPUT_RESOURCE_CAP')
++    (out/'result.json').write_text(text,encoding='utf-8')
++    print(json.dumps({k:report[k] for k in ('execution_status','verdict','solve_attempts')}))
++    return int(failed)
++
++
++def _execute_candidate():
+     if os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
+         raise RuntimeError('REMOTE_ONLY')
+     require_inputs()
+@@ -121,6 +194,10 @@
+     dv = backend.require_devsim()
+     report = {'plan_sha':PLAN_SHA,'source_sha':os.environ.get('GITHUB_SHA'),
+               'solve_attempts':0,'levels':{},'pn':'NOT_RUN', 'precision':{}}
++    index = sys.argv.index('--candidate')
++    if index+2 != len(sys.argv) or sys.argv[index+1] not in M.LEVELS:
++        raise ValueError('INVALID_CANDIDATE')
++    report['candidate'] = sys.argv[index+1]
+     return without_solve(dv, report, lambda: _execute_import_audit(dv, report))
+ 
+ 
+@@ -128,6 +205,8 @@
+     from devsim.python_packages import simple_physics
+     require_flux_source(simple_physics.CreateSiliconPotentialOnly, lambda: None)
+     out = ROOT/'e6na_out'
++    if 'candidate' in report:
++        out = out/report['candidate']
+     out.mkdir(exist_ok=False)
+     report.update(installed_simple_physics_sha=hashlib.sha256(inspect.getsource(simple_physics).encode()).hexdigest(),
+                   official_flux_source_matches=True)
+@@ -155,6 +234,9 @@
+     try:
+         ref=np.load(input_paths[-1])
+         for lv,ny,nn,nt in zip(M.LEVELS,(16,32,64),(8037,31173,122761),(15264,60736,242304)):
++            if 'candidate' in report and lv != report['candidate']:
++                continue
++            require_elements(nt, lambda: None)
+             started=time.monotonic()
+             rec=report['levels'][lv]={'status':'STARTED'}
+             name='e6na_'+lv
+@@ -164,6 +246,7 @@
+                 with patch.object(M,'Y_LINES_UM',np.linspace(-M.H_UM,0,ny+1).tolist()):
+                     p,t=M.build_mesh(x1)
+                 p,t,tags,_=R.structured_lateral_refine(p,t,np.zeros(len(t),dtype=np.int32),[0.],[0.1])
++                require_elements(len(t), lambda: None)
+                 assert (len(p),len(t))==(nn,nt)
+                 conf=C.check_conformity(p,t)
+                 geo=M.geometry_checks(p,t)
+@@ -204,7 +287,7 @@
+                 diagnostic,arrays=analyze(a)
+                 a.update(arrays,source_points_um=p,source_triangles=t)
+                 rec.update(diagnostic=diagnostic,contacts=contacts,area_gate=imported.area_conservation['Si'])
+-                size=sum(v.nbytes for v in a.values())
++                size=sum(v.nbytes for v in a.values()) + len(json.dumps(report).encode('utf-8'))
+                 byte_budget+=size
+                 if size>120*1024**2 or byte_budget>200*1024**2:
+                     raise ValueError('OUTPUT_RESOURCE_CAP')
+@@ -220,6 +303,11 @@
+                     raise ValueError('MEMORY_RESOURCE_CAP')
+                 rec.update(raw_bytes=size,peak_working_set=mem.peak_ws)
+                 np.savez_compressed(out/(lv+'.npz'),**a)
++                import zipfile
++                with zipfile.ZipFile(out/(lv+'.npz')) as archive:
++                    uncompressed=sum(entry.file_size for entry in archive.infolist())
++                payload_check(max(size,uncompressed), (out/(lv+'.npz')).stat().st_size)
++                rec['raw_bytes']=max(size,uncompressed)
+                 rec['array_sha']=sha(out/(lv+'.npz'))
+                 rec['status']='IMPORT_PASS'
+             except Exception as exc:
+--- a/docs/audits/2026-10-02-e6na-import-reduction/.gitattributes
++++ b/docs/audits/2026-10-02-e6na-import-reduction/.gitattributes
+@@ -2,3 +2,4 @@
+ raw/** -text -diff
+ FOLLOWUP_CHANGES.patch -text -diff
+ FLUX_GUARD_CHANGES.patch -text -diff
++RESOURCE_INTEGRATION.patch -text -diff
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -19,6 +19,11 @@
+             "docs/audits/2026-10-02-e6na-import-reduction/PLAN.md",
+             "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
+             "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
++            "docs/audits/2026-10-02-e6na-import-reduction/flux_source_contract.py",
++            "docs/audits/2026-10-02-e6na-import-reduction/REVIEWED_FLUX_REFERENCE.txt",
++            "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
++            "docs/audits/2026-10-02-e6na-import-reduction/RESOURCE_EXECUTION_CONTRACT.md",
++            "docs/audits/2026-10-02-e6na-import-reduction/test_resource_supervisor.py",
+             "docs/audits/2026-10-02-e6na-import-reduction/test_contract.py",
+             "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_result.json",
+             "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/GEOMETRY_DESIGN_RULE.md",
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py
+@@ -0,0 +1,208 @@
++"""엔진 없는 Windows 후보 감독. Working set은 주기 관측이며 commit 제한이 아니다."""
++import ctypes as C
++from ctypes import wintypes as W
++import json
++import math
++import os
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++import time
++
++INTERVAL_S = 0.5
++WORKING_SET_CAP = 6 * 1024**3
++TRIANGLE_CAP = 400000
++FILE_CAP = 120 * 1024**2
++TOTAL_CAP = 200 * 1024**2
++
++
++def require_elements(count, callback):
++    if type(count) is not int or not 0 < count <= TRIANGLE_CAP:
++        raise ValueError('ELEMENT_RESOURCE_CAP')
++    return callback()
++
++
++def payload_check(raw_bytes, file_bytes, previous_bytes=0):
++    if any(type(v) is not int or v < 0 for v in (raw_bytes, file_bytes, previous_bytes)):
++        raise ValueError('INVALID_SIZE_EVIDENCE')
++    if max(raw_bytes, file_bytes) > FILE_CAP or previous_bytes + max(raw_bytes, file_bytes) > TOTAL_CAP:
++        raise ValueError('OUTPUT_RESOURCE_CAP')
++
++
++class Job:
++    """별도 작업만 소유. breakaway 허용 안 함; 마지막 handle close 시 트리 종료."""
++    def __init__(self):
++        if os.name != 'nt':
++            raise RuntimeError('WINDOWS_JOB_REQUIRED')
++        self.k = C.WinDLL('kernel32', use_last_error=True)
++        self.ps = C.WinDLL('psapi', use_last_error=True)
++        self.k.CreateJobObjectW.argtypes = [C.c_void_p, W.LPCWSTR]
++        self.k.CreateJobObjectW.restype = W.HANDLE
++        self.k.CloseHandle.argtypes = [W.HANDLE]
++        self.k.CloseHandle.restype = W.BOOL
++        self.k.SetInformationJobObject.argtypes = [W.HANDLE, C.c_int, C.c_void_p, W.DWORD]
++        self.k.SetInformationJobObject.restype = W.BOOL
++        self.k.QueryInformationJobObject.argtypes = [W.HANDLE, C.c_int, C.c_void_p, W.DWORD, C.c_void_p]
++        self.k.QueryInformationJobObject.restype = W.BOOL
++        self.k.AssignProcessToJobObject.argtypes = [W.HANDLE, W.HANDLE]
++        self.k.AssignProcessToJobObject.restype = W.BOOL
++        self.k.TerminateJobObject.argtypes = [W.HANDLE, W.UINT]
++        self.k.TerminateJobObject.restype = W.BOOL
++        self.k.OpenProcess.argtypes = [W.DWORD, W.BOOL, W.DWORD]
++        self.k.OpenProcess.restype = W.HANDLE
++        self.ps.GetProcessMemoryInfo.argtypes = [W.HANDLE, C.c_void_p, W.DWORD]
++        self.ps.GetProcessMemoryInfo.restype = W.BOOL
++
++        class Basic(C.Structure):
++            _fields_ = [('per_process', C.c_int64), ('per_job', C.c_int64), ('flags', W.DWORD),
++                        ('min_ws', C.c_size_t), ('max_ws', C.c_size_t), ('active', W.DWORD),
++                        ('affinity', C.c_size_t), ('priority', W.DWORD), ('scheduling', W.DWORD)]
++        class IO(C.Structure):
++            _fields_ = [(n, C.c_uint64) for n in ('read_ops','write_ops','other_ops','read_bytes','write_bytes','other_bytes')]
++        class Extended(C.Structure):
++            _fields_ = [('basic', Basic), ('io', IO), ('process_memory', C.c_size_t),
++                        ('job_memory', C.c_size_t), ('peak_process', C.c_size_t), ('peak_job', C.c_size_t)]
++        limits = Extended()
++        limits.basic.flags = 0x2000  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
++        self.handle = self.k.CreateJobObjectW(None, None)
++        if not self.handle:
++            raise C.WinError(C.get_last_error())
++        if not self.k.SetInformationJobObject(self.handle, 9, C.byref(limits), C.sizeof(limits)):
++            err = C.get_last_error()
++            self.close()
++            raise C.WinError(err)
++
++    def assign(self, process):
++        if not self.k.AssignProcessToJobObject(self.handle, W.HANDLE(int(process._handle))):
++            raise C.WinError(C.get_last_error())
++
++    def pids(self):
++        # Overflow/query failure is fail-closed, never a partial process list.
++        buf = C.create_string_buffer(65536)
++        if not self.k.QueryInformationJobObject(self.handle, 3, buf, len(buf), None):
++            raise C.WinError(C.get_last_error())
++        assigned, listed = (W.DWORD * 2).from_buffer(buf)
++        if assigned != listed or 8 + listed * C.sizeof(C.c_size_t) > len(buf):
++            raise RuntimeError('PROCESS_LIST_INCOMPLETE')
++        return list((C.c_size_t * listed).from_buffer(buf, 8))
++
++    def memory(self):
++        class Memory(C.Structure):
++            _fields_ = [('cb', W.DWORD), ('faults', W.DWORD)] + [(n, C.c_size_t) for n in
++                        ('peak_ws','ws','peak_paged','paged','peak_nonpaged','nonpaged','pagefile','peak_pagefile')]
++        ws = commit = 0
++        for pid in self.pids():
++            handle = self.k.OpenProcess(0x410, False, pid)
++            if not handle:
++                raise RuntimeError('MEMORY_METRIC_UNAVAILABLE')
++            try:
++                mem = Memory()
++                mem.cb = C.sizeof(mem)
++                if not self.ps.GetProcessMemoryInfo(handle, C.byref(mem), mem.cb):
++                    raise RuntimeError('MEMORY_METRIC_UNAVAILABLE')
++                ws += mem.ws
++                commit += mem.pagefile
++            finally:
++                self.k.CloseHandle(handle)
++        return ws, commit
++
++    def stop(self):
++        if not self.k.TerminateJobObject(self.handle, 1):
++            raise C.WinError(C.get_last_error())
++
++    def close(self):
++        if self.handle:
++            if not self.k.CloseHandle(self.handle):
++                raise C.WinError(C.get_last_error())
++            self.handle = None
++
++
++def supervise(argv, cwd, log, *, candidate_s=600, total_deadline=None,
++              memory_cap=WORKING_SET_CAP, interval=INTERVAL_S, job_factory=Job):
++    """부모는 엔진을 읽지 않는다. 짧은 예산은 합성 테스트에서만 사용한다."""
++    if not argv or not all(isinstance(v, str) for v in argv):
++        raise ValueError('INVALID_ARGV')
++    if not all(math.isfinite(v) and v > 0 for v in (candidate_s, interval, memory_cap)):
++        raise ValueError('INVALID_RESOURCE_POLICY')
++    started = time.monotonic()
++    deadline = min(started + candidate_s, total_deadline if total_deadline is not None else math.inf)
++    rec = {'status':'STARTED', 'started_unix':time.time(), 'cleanup_ok':False,
++           'peak_sampled_tree_working_set':0, 'peak_sampled_tree_commit':0,
++           'memory_semantics':'sampled process-tree working-set sum; commit separately observed',
++           'interval_s':interval, 'candidate_budget_s':candidate_s}
++    job = process = None
++    try:
++        if started >= deadline:
++            raise TimeoutError('TOTAL_WALL_RESOURCE_CAP')
++        job = job_factory()
++        with tempfile.TemporaryDirectory(prefix='e6na_release_') as tmp:
++            release = Path(tmp)/'release'
++            with open(log, 'wb') as stream:
++                process = subprocess.Popen([sys.executable, '-B', str(Path(__file__).resolve()),
++                                            '--bootstrap', str(release), *argv], cwd=cwd,
++                                           stdout=stream, stderr=subprocess.STDOUT,
++                                           creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
++                rec['pid'] = process.pid
++                job.assign(process)
++                release.touch()  # The target cannot start before successful assignment.
++                while True:
++                    now = time.monotonic()
++                    if now >= deadline:
++                        raise TimeoutError('WALL_RESOURCE_CAP')
++                    ws, commit = job.memory()
++                    rec['peak_sampled_tree_working_set'] = max(ws, rec['peak_sampled_tree_working_set'])
++                    rec['peak_sampled_tree_commit'] = max(commit, rec['peak_sampled_tree_commit'])
++                    if ws > memory_cap:
++                        raise MemoryError('WORKING_SET_RESOURCE_CAP')
++                    if Path(log).stat().st_size > FILE_CAP:
++                        raise ValueError('LOG_RESOURCE_CAP')
++                    rc = process.poll()
++                    if rc is not None:
++                        rec['exit_code'] = rc
++                        if job.pids():
++                            raise RuntimeError('DESCENDANTS_REMAIN')
++                        rec['status'] = 'COMPLETED' if rc == 0 else 'FAIL'
++                        break
++                    time.sleep(min(interval, max(0, deadline - now)))
++    except Exception as exc:
++        rec.update(status='TIMEOUT' if isinstance(exc, TimeoutError) else 'FAIL',
++                   reason=str(exc), error_type=type(exc).__name__)
++    finally:
++        try:
++            if job is not None:
++                job.stop()
++                until = time.monotonic() + 5
++                while job.pids() and time.monotonic() < until:
++                    time.sleep(0.05)
++                if job.pids():
++                    raise RuntimeError('PROCESS_TREE_STOP_FAILED')
++            if process is not None:
++                if job is None or process.poll() is None:
++                    process.kill()  # Only the owned bootstrap, never an unrelated PID.
++                process.wait(timeout=5)
++                rec.setdefault('exit_code', process.returncode)
++            rec['cleanup_ok'] = True
++        except Exception as exc:
++            rec.update(status='FAIL', cleanup_error=str(exc))
++        finally:
++            if job is not None:
++                try:
++                    job.close()
++                except Exception as exc:
++                    rec.update(status='FAIL', cleanup_ok=False, cleanup_error=str(exc))
++        rec.update(ended_unix=time.time(), duration_s=time.monotonic()-started)
++    return rec
++
++
++if __name__ == '__main__':
++    if len(sys.argv) < 5 or sys.argv[1] != '--bootstrap':
++        raise SystemExit('BOOTSTRAP_ARGUMENTS_REQUIRED')
++    release = Path(sys.argv[2])
++    end = time.monotonic()+30
++    while not release.is_file():
++        if time.monotonic() >= end:
++            raise SystemExit('JOB_ASSIGNMENT_NOT_RELEASED')
++        time.sleep(0.02)
++    # Target Python runs inside the assigned Job and inherits its process-tree protection.
++    raise SystemExit(subprocess.call(sys.argv[3:]))
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/test_resource_supervisor.py
+@@ -0,0 +1,62 @@
++"""짧은 실제 Python 프로세스만 사용. 엔진 import/물리 계산 없음."""
++from pathlib import Path
++import sys
++import tempfile
++import time
++from resource_supervisor import Job, supervise, require_elements, payload_check
++
++
++def main():
++    with tempfile.TemporaryDirectory(prefix='e6na_supervisor_test_') as tmp:
++        root = Path(tmp)
++        def run(name, code, **kw):
++            r = supervise([sys.executable, '-B', '-c', code], tmp, root/(name+'.log'),
++                          candidate_s=kw.pop('candidate_s', 10), interval=0.05, **kw)
++            print(name, r, flush=True)
++            return r
++        r=run('normal', 'print("OK")')
++        assert r['status']=='COMPLETED' and r['exit_code']==0 and r['cleanup_ok']
++        r=run('error', 'raise SystemExit(7)')
++        assert r['status']=='FAIL' and r['exit_code']==7 and r['cleanup_ok']
++        r=run('timeout', 'import time; time.sleep(20)', candidate_s=0.8)
++        assert r['status']=='TIMEOUT' and r['cleanup_ok']
++        r=run('tree_timeout', 'import subprocess,sys,time; subprocess.Popen([sys.executable,"-c","import time;time.sleep(20)"]); print("spawned",flush=True);time.sleep(20)', candidate_s=1.5)
++        assert r['status']=='TIMEOUT' and r['cleanup_ok']
++        assert 'spawned' in (root/'tree_timeout.log').read_text()
++        r=run('total_deadline', 'raise AssertionError("must not run")', total_deadline=time.monotonic()-1)
++        assert r['status']=='TIMEOUT' and 'pid' not in r
++        class RefuseAssignment(Job):
++            def assign(self, process):
++                raise RuntimeError('synthetic assignment failure')
++        marker=root/'should_not_exist'
++        r=run('assignment', 'from pathlib import Path;Path("should_not_exist").touch()', job_factory=RefuseAssignment)
++        assert r['status']=='FAIL' and r['cleanup_ok'] and not marker.exists()
++        r=run('memory', 'import time;time.sleep(20)', memory_cap=1)
++        assert r['status']=='FAIL' and r['cleanup_ok'] and 'WORKING_SET' in r['reason']
++        class BrokenCleanup(Job):
++            def stop(self):
++                super().stop()
++                raise RuntimeError('synthetic cleanup failure')
++        r=run('cleanup', 'print("OK")', job_factory=BrokenCleanup)
++        assert r['status']=='FAIL' and not r['cleanup_ok']
++        calls=[]
++        try:
++            require_elements(400001, lambda:calls.append(1))
++        except ValueError:
++            pass
++        else:
++            raise AssertionError('element cap bypass')
++        assert not calls
++        payload_check(100,100,0)
++        try:
++            payload_check(100,121*1024**2,0)
++        except ValueError:
++            pass
++        else:
++            raise AssertionError('output cap bypass')
++    assert 'devsim' not in sys.modules and 'viennaps' not in sys.modules
++    print('RESOURCE_SUPERVISOR_PASS; ENGINE_IMPORTS=0')
++
++
++if __name__=='__main__':
++    main()
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/test_supervised_entry.py
+@@ -0,0 +1,69 @@
++"""부모 통합 경로의 합성 child 증거. 엔진과 remote 실행은 없음."""
++import hashlib
++import json
++from pathlib import Path
++import sys
++import tempfile
++from unittest.mock import patch
++import run_e6na as R
++
++
++def run_case(kind):
++    with tempfile.TemporaryDirectory(prefix='e6na_entry_') as tmp:
++        root=Path(tmp)
++        calls=[]
++        def fake(argv,cwd,log,**kw):
++            lv=argv[-1]
++            calls.append(lv)
++            assert argv[-2]=='--candidate' and 'total_deadline' in kw
++            monitor=dict(status='COMPLETED',cleanup_ok=True)
++            if kind=='timeout':
++                return dict(status='TIMEOUT',cleanup_ok=True)
++            folder=root/'e6na_out'/lv
++            folder.mkdir()
++            array=folder/(lv+'.npz')
++            array.write_bytes(b'synthetic unparsed array container')
++            rec=dict(status='IMPORT_PASS', cleanup_ok=kind!='cleanup',raw_bytes=100,
++                     array_sha=hashlib.sha256(array.read_bytes()).hexdigest(),
++                     diagnostic={'verdict':'INCONCLUSIVE' if kind=='inconclusive' else 'NONINVARIANCE_WITNESS'})
++            if kind=='hash':
++                rec['array_sha']='0'*64
++            child=dict(plan_sha=R.PLAN_SHA,solve_attempts=1 if kind=='solve' else 0,levels={lv:rec},
++                       candidate=lv,official_flux_source_matches=True,execution_status='COMPLETED')
++            if kind!='missing':
++                (folder/'result.json').write_text(json.dumps(child),encoding='utf-8')
++            return monitor
++        with patch.object(R,'ROOT',root),patch.object(R,'require_inputs'),patch.object(R,'supervise',fake),patch.dict(R.os.environ,{'RUNNER_ENVIRONMENT':'github-hosted'}):
++            rc=R._supervised_execute()
++        report=json.loads((root/'e6na_out/result.json').read_text())
++        if kind=='normal':
++            assert rc==0 and report['verdict']=='NONINVARIANCE_WITNESS' and len(calls)==3
++        elif kind=='inconclusive':
++            assert rc==0 and report['verdict']=='INCONCLUSIVE' and len(calls)==1
++        else:
++            assert rc==1 and report['verdict']=='FAIL' and len(calls)==1
++        if kind in ('timeout','missing'):
++            assert report['solve_attempts'] is None
++        if len(calls)==1:
++            assert all(report['levels'][lv]['status']=='NOT_RUN' for lv in R.M.LEVELS[1:])
++        print('PARENT_PATH',kind,'PASS')
++
++
++if __name__=='__main__':
++    for kind in ('normal','inconclusive','timeout','missing','hash','cleanup','solve'):
++        run_case(kind)
++    original=Path.read_bytes
++    calls=[]
++    def altered(path):
++        return b'wrong resource contract' if path.name=='RESOURCE_EXECUTION_CONTRACT.md' else original(path)
++    with patch.object(Path,'read_bytes',altered),patch.object(R,'_execute',lambda:calls.append(1)):
++        try:
++            R.execute()
++        except ValueError as exc:
++            assert 'RESOURCE_CONTRACT_PREFLIGHT_BLOCKED' in str(exc)
++        else:
++            raise AssertionError('resource contract bypass')
++    assert not calls
++    print('RESOURCE_CONTRACT_BLOCK callback=0')
++    assert 'devsim' not in sys.modules and 'viennaps' not in sys.modules
++    print('SUPERVISED_ENTRY_PASS; ENGINE_IMPORTS=0')
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/RESOURCE_EXECUTION_CONTRACT.md
+@@ -0,0 +1,28 @@
++# E6N-A 후보별 감독 계약 — 사용자 승인 후 구현
++
++기존 PLAN.md 및 기존 증거는 수정하지 않는다. 후보별 프로세스 격리 구조는
++사용자의 2026-10-02 "ㄱㄱ" 승인으로 도입한다. 원격 실행 승인은 별도다.
++
++- 부모는 엔진을 import하지 않는다. 후보별 새 Python bootstrap을 시작한다.
++- bootstrap은 부모의 release 파일이 생성되기 전에는 대상 코드를 시작하지 않는다.
++- 부모는 kill-on-close Windows Job Object에 bootstrap을 연결한 뒤에만 release한다.
++- Job Object 연결 실패면 후보를 실행하지 않는다. breakaway 플래그를 허용하지 않는다.
++- 후보 시작은 Popen 이전 monotonic 시각이다. 후보600초, 전체1800초는 기존 PLAN과 같다.
++- 전체 시작은 부모 입력 preflight 직후, output directory 생성 다음 시각이다.
++- 후보 및 전체 deadline의 작은 값으로 감시한다. 운영 감시 간격은0.5초다.
++- 정상/비정상/한계초과 모두 Job 트리 종료 및 잔존 PID0을 확인한다.
++- OS 정리 확인은 최대5초다. 이 시간은 계산 예산을 연장하지 않는 정리 비용이다.
++- working set은 Job에 속한 프로세스들의 현재 working set 합이며6GiB 초과 시 종료한다.
++- commit은 별도 관측한다. commit6GiB 강제한계를 설정했다고 주장하지 않는다.
++- 0.5초 사이의 순간 peak나 할당 자체를 방지하지 않는다. working set 보호는 sampled다.
++- 메모리/PID 조회 실패는 FAIL이다. 프로세스 종료와 조회 경합도 보수적으로 FAIL 처리한다.
++- 요소400000 상한은 예정 개수로 생성 전, 실제 개수로 생성 후 확인한다.
++- 파일120MiB/전체200MiB는 유지한다. raw 배열, JSON, NPZ uncompressed header 및
++  실제 serialized 크기를 확인한다. 로그는 주기 감시이므로 한 주기 초과량은 가능하다.
++- timeout/cleanup 실패/자식 증거 누락은 FAIL, 후속 후보 NOT_RUN이다.
++- timeout으로 solve 횟수 기록이 소실되면 None이다. 기록 없이0으로 만들지 않는다.
++- 부모는 child의 PLAN SHA/attempts/cleanup/status/NPZ SHA를 확인한 뒤에만 채점한다.
++- 부모의 트리 정리는 DEVSIM delete_device/delete_mesh 성공의 대체 증거가 아니다.
++
++이번 계약의 합성 검증은 운영 안전장치 검증이며 PN/메쉬 수렴/물리 정확도 증명이 아니다.
++Python3.11 및 GitHub-hosted Job 중첩 호환성은 원격에서 아직 확인하지 않았다.

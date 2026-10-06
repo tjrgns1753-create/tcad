@@ -1,0 +1,218 @@
+--- a/docs/audits/2026-10-02-e6na-import-reduction/.gitattributes
++++ b/docs/audits/2026-10-02-e6na-import-reduction/.gitattributes
+@@ -1,3 +1,4 @@
+ # 원격 원본 artifact는 checkout 줄바꿈 변환 및 text diff를 적용하지 않는다.
+ raw/** -text -diff
+ FOLLOWUP_CHANGES.patch -text -diff
++FLUX_GUARD_CHANGES.patch -text -diff
+--- a/docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py
++++ b/docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py
+@@ -19,6 +19,7 @@
+ sys.path.insert(0,str(M_DIR/'scripts'))
+ import e6m_metrics as M
+ from diagnostics import analyze, validate, checked_indices
++from flux_source_contract import require_reviewed_source
+ 
+ PLAN_SHA = 'a7bb4e07d03a885c65d01db8f7ba6c341fee67d000e961e1ce6e597a1303e103'
+ INPUT_SHAS = {
+@@ -62,14 +63,12 @@
+ 
+ 
+ def require_flux_source(function, callback):
+-    """설치 helper의 식 문자열 대응만 확인한다. 엔진 구현 동일성 증명은 아니다."""
++    """검토한 공식 helper AST를 대조한다. 엔진 구현 동일성 증명은 아니다."""
+     try:
+         source = inspect.getsource(function)
+     except Exception as exc:
+         raise ValueError('OFFICIAL_FLUX_SOURCE_UNAVAILABLE') from exc
+-    expected = ('(Potential@n0-Potential@n1)*EdgeInverseLength', 'Permittivity * ElectricField')
+-    if not all(expression in source for expression in expected):
+-        raise ValueError('OFFICIAL_FLUX_SOURCE_MISMATCH')
++    require_reviewed_source(source)
+     return callback()
+ 
+ 
+--- a/docs/audits/2026-10-02-e6na-import-reduction/test_review_followup.py
++++ b/docs/audits/2026-10-02-e6na-import-reduction/test_review_followup.py
+@@ -87,7 +87,7 @@
+     no['EdgeCouple']=w*no['EdgeLength']
+     assert D.analyze(no)[0]['verdict']=='NOT_MEASURED'
+     print('FULL_PATH no_candidate NOT_MEASURED')
+-    good='def helper():\n    field="(Potential@n0-Potential@n1)*EdgeInverseLength"\n    flux="Permittivity * ElectricField"\n'
++    good=(R.HERE/'REVIEWED_FLUX_REFERENCE.txt').read_text(encoding='utf-8')
+     for source in ('wrong',None):
+         callback=Mock()
+         kwargs={'return_value':source} if source is not None else {'side_effect':OSError('unavailable')}
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/flux_source_contract.py
+@@ -0,0 +1,51 @@
++"""검토된 공식 helper AST 하나만 허용하는 엔진 없는 소스 계약.
++
++공백/주석/함수 docstring만 무시한다. transitive helper나 native 엔진의
++동일성 증명이 아니다. 예상값은 검사 대상에서 런타임에 만들지 않는다.
++"""
++import ast
++import hashlib
++import json
++import textwrap
++
++# 로컬 설치 simple_physics.CreateSiliconPotentialOnly를 파일로 읽고 검토해 고정.
++# 대응 식/호출 경로는 REVIEWED_FLUX_REFERENCE.txt에 보존한다.
++REVIEWED_FUNCTION_SHA = 'fd33b1c5c4a5f199916c550c138df3da8fce46a8ad8a8c8a87548b73a205611e'
++
++
++def _canonical(node):
++    if isinstance(node, ast.AST):
++        fields = []
++        for key, value in ast.iter_fields(node):
++            if key == 'type_params':
++                if value:
++                    raise ValueError('OFFICIAL_FLUX_SOURCE_UNSUPPORTED: type parameters')
++                continue  # Python 3.11/3.12+의 빈 필드 차이만 제거.
++            fields.append([key, _canonical(value)])
++        return [type(node).__name__, fields]
++    if isinstance(node, list):
++        return [_canonical(value) for value in node]
++    return node
++
++
++def require_reviewed_source(source):
++    try:
++        if not isinstance(source, str):
++            raise ValueError('source is not text')
++        tree = ast.parse(textwrap.dedent(source))
++    except (SyntaxError, ValueError, TypeError) as exc:
++        raise ValueError('OFFICIAL_FLUX_SOURCE_UNPARSABLE') from exc
++    if len(tree.body) != 1 or not isinstance(tree.body[0], ast.FunctionDef):
++        raise ValueError('OFFICIAL_FLUX_SOURCE_UNSUPPORTED: single function required')
++    function = tree.body[0]
++    if function.name != 'CreateSiliconPotentialOnly':
++        raise ValueError('OFFICIAL_FLUX_SOURCE_UNSUPPORTED: function name')
++    first = function.body[0] if function.body else None
++    if (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)
++            and isinstance(first.value.value, str)):
++        function.body = function.body[1:]
++    serialized = json.dumps(_canonical(function), separators=(',', ':'), ensure_ascii=True)
++    digest = hashlib.sha256(serialized.encode('utf-8')).hexdigest()
++    if digest != REVIEWED_FUNCTION_SHA:
++        raise ValueError('OFFICIAL_FLUX_SOURCE_MISMATCH: reviewed AST differs')
++    return digest
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/REVIEWED_FLUX_REFERENCE.txt
+@@ -0,0 +1,35 @@
++def CreateSiliconPotentialOnly(device, region):
++    if not InNodeModelList(device, region, "Potential"):
++        print("Creating Node Solution Potential")
++        CreateSolution(device, region, "Potential")
++    elec_i = "n_i*exp(Potential/V_t)"
++    hole_i = "n_i^2/IntrinsicElectrons"
++    charge_i = "kahan3(IntrinsicHoles, -IntrinsicElectrons, NetDoping)"
++    pcharge_i = "-ElectronCharge * IntrinsicCharge"
++    for i in (
++        ("IntrinsicElectrons", elec_i),
++        ("IntrinsicHoles", hole_i),
++        ("IntrinsicCharge", charge_i),
++        ("PotentialIntrinsicCharge", pcharge_i),
++    ):
++        n = i[0]
++        e = i[1]
++        CreateNodeModel(device, region, n, e)
++        CreateNodeModelDerivative(device, region, n, e, "Potential")
++    for i in (
++        ("ElectricField", "(Potential@n0-Potential@n1)*EdgeInverseLength"),
++        ("PotentialEdgeFlux", "Permittivity * ElectricField"),
++    ):
++        n = i[0]
++        e = i[1]
++        CreateEdgeModel(device, region, n, e)
++        CreateEdgeModelDerivatives(device, region, n, e, "Potential")
++    equation(
++        device=device,
++        region=region,
++        name="PotentialEquation",
++        variable_name="Potential",
++        node_model="PotentialIntrinsicCharge",
++        edge_model="PotentialEdgeFlux",
++        variable_update="log_damp",
++    )
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/test_flux_source_contract.py
+@@ -0,0 +1,77 @@
++"""공식 helper 소스 계약의 엔진 없는 정상/우회 반례."""
++import ast
++import sys
++from pathlib import Path
++from unittest.mock import Mock, patch
++
++import run_e6na as R
++from flux_source_contract import REVIEWED_FUNCTION_SHA, _canonical, require_reviewed_source
++
++
++def main():
++    reference = (R.HERE/'REVIEWED_FLUX_REFERENCE.txt').read_text(encoding='utf-8')
++    # 데이터 reference를 Python spy로만 실행해 검토한 모델/방정식 연결을 독립 확인.
++    edges, equations = [], []
++    spies = dict(InNodeModelList=lambda *args:True,
++                 CreateSolution=Mock(),CreateNodeModel=Mock(),CreateNodeModelDerivative=Mock(),
++                 CreateEdgeModel=lambda device,region,name,equation:edges.append((name,equation)),
++                 CreateEdgeModelDerivatives=Mock(),equation=lambda **kwargs:equations.append(kwargs))
++    exec(compile(reference,'reviewed-reference-only','exec'),spies)
++    spies['CreateSiliconPotentialOnly']('fake-device','Si')
++    assert edges == [('ElectricField','(Potential@n0-Potential@n1)*EdgeInverseLength'),
++                     ('PotentialEdgeFlux','Permittivity * ElectricField')]
++    assert len(equations)==1 and equations[0]['edge_model']=='PotentialEdgeFlux'
++    assert equations[0]['name']=='PotentialEquation'
++    print('REFERENCE_SPY model definitions and equation connection PASS')
++
++    good_doc = reference.replace('    if not InNodeModelList', '    """changed documentation"""\n    if not InNodeModelList',1)
++    for label,source in (('normal',reference),('comments','# arbitrary comment\n'+reference),
++                         ('docstring',good_doc),('CRLF',reference.replace('\n','\r\n')),
++                         ('indentation','\n'.join('    '+s for s in reference.splitlines()))):
++        callback=Mock(return_value='OK')
++        with patch.object(R.inspect,'getsource',return_value=source):
++            assert R.require_flux_source(object(),callback)=='OK'
++        callback.assert_called_once()
++        assert require_reviewed_source(source)==REVIEWED_FUNCTION_SHA
++        print('ACCEPT',label,'callback=1')
++
++    comments='def CreateSiliconPotentialOnly(device, region):\n    # (Potential@n0-Potential@n1)*EdgeInverseLength\n    # Permittivity * ElectricField\n    actual_flux="0"\n'
++    doc='def CreateSiliconPotentialOnly(device, region):\n    """(Potential@n0-Potential@n1)*EdgeInverseLength; Permittivity * ElectricField"""\n    actual_flux="0"\n'
++    unused='def CreateSiliconPotentialOnly(device, region):\n    unused=("(Potential@n0-Potential@n1)*EdgeInverseLength", "Permittivity * ElectricField")\n    actual_flux="0"\n'
++    bad_cases=(('comment_only',comments),('docstring_only',doc),('unused_strings',unused),
++               ('electric_field',reference.replace('(Potential@n0-Potential@n1)*EdgeInverseLength','0')),
++               ('flux',reference.replace('Permittivity * ElectricField','0')),
++               ('equation_edge_model',reference.replace('edge_model="PotentialEdgeFlux"','edge_model="ElectricField"')),
++               ('model_creation',reference.replace('CreateEdgeModel(device, region, n, e)','CreateNodeModel(device, region, n, e)')),
++               ('unused_correct_function',reference+'\nwrong_flux = "0"\n'),
++               ('unsupported_structure','def CreateSiliconPotentialOnly(device,region):\n    return 0\n'),
++               ('syntax','def broken('),('nontext',None))
++    for label,source in bad_cases:
++        callback=Mock()
++        with patch.object(R.inspect,'getsource',return_value=source):
++            try:R.require_flux_source(object(),callback)
++            except ValueError:pass
++            else:raise AssertionError('false acceptance: '+label)
++        callback.assert_not_called()
++        print('BLOCK',label,'callback=0')
++    callback=Mock()
++    with patch.object(R.inspect,'getsource',side_effect=OSError('unavailable')):
++        try:R.require_flux_source(object(),callback)
++        except ValueError as exc:assert str(exc)=='OFFICIAL_FLUX_SOURCE_UNAVAILABLE'
++        else:raise AssertionError('missing source accepted')
++    callback.assert_not_called()
++    print('BLOCK unavailable callback=0')
++    # Python AST의 빈 type_params 유무는 같고, 비어 있지 않은 경우는 차단.
++    node=ast.parse(reference).body[0];baseline=_canonical(node)
++    node.type_params=[]
++    assert _canonical(node)==baseline
++    node.type_params=[ast.Name(id='T',ctx=ast.Load())]
++    try:_canonical(node)
++    except ValueError:pass
++    else:raise AssertionError('unsupported type parameters accepted')
++    assert not any(k in sys.modules for k in ('devsim','viennaps'))
++    print('FLUX CONTRACT PASS; actual engine imports=0; actual solve=0')
++
++
++if __name__=='__main__':
++    main()
+

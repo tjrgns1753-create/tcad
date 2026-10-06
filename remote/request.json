@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6na-import-reduction-001",
- "profile": "e6na_import_reduction",
+ "request_id": "e6na-engine-free-compatibility-001",
+ "profile": "e6na_engine_free_compatibility",
  "params": {},
- "note": "E6N-A import-only diagnostics. PLAN fixed in f9ddff7. Solve calls forbidden; N0 inconclusive/failure stops later levels. No gate or production change."
+ "note": "Engine-free Python 3.11 and Windows Job compatibility. Read installed official helper source without importing engine. No physical computation."
 }

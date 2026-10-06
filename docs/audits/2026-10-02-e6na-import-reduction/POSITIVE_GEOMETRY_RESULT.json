@@ -1,0 +1,88 @@
+{
+  "criteria_sha": "963d9a5c9b1933471a4edff04cdc14f807f3a56333a8a492f27e9728b61b8d70",
+  "verdict": "NONINVARIANCE_WITNESS",
+  "nodes": 21,
+  "triangles": 26,
+  "expected_row_6": {
+    "-1/4096": "-16777216",
+    "0": "33554432",
+    "1/4096": "-16777216"
+  },
+  "expected_row_11": {
+    "-1/4096": "-301989888/17",
+    "0": "603979776/17",
+    "1/4096": "-301989888/17"
+  },
+  "witness": {
+    "nodes": [
+      6,
+      11
+    ],
+    "classes": [
+      0,
+      0
+    ],
+    "x_cm": 0.0,
+    "power": 2,
+    "difference": 7352.941176470602,
+    "scale": 83886080.0,
+    "geometry_discrepancy_bound": 0.0,
+    "exact_projected_row_nonzero": true,
+    "exact_row_difference": {
+      "-1/4096": "16777216/17",
+      "0": "-33554432/17",
+      "1/4096": "16777216/17"
+    },
+    "verdict": "NONINVARIANCE_WITNESS"
+  },
+  "threshold_relative": 0.8388608,
+  "threshold_error": 0.0001862645149230957,
+  "actions": [
+    -125000.0,
+    -132352.9411764706
+  ],
+  "controls": [
+    {
+      "case": "missing_NodeVolume",
+      "status": "BLOCKED",
+      "reason": "EVIDENCE_BLOCKED: required array missing"
+    },
+    {
+      "case": "missing_EdgeLength",
+      "status": "BLOCKED",
+      "reason": "EVIDENCE_BLOCKED: required array missing"
+    },
+    {
+      "case": "missing_EdgeCouple",
+      "status": "BLOCKED",
+      "reason": "EVIDENCE_BLOCKED: required array missing"
+    },
+    {
+      "case": "nonfinite",
+      "status": "BLOCKED",
+      "reason": "EVIDENCE_BLOCKED: invalid EdgeCouple"
+    },
+    {
+      "case": "endpoint_range",
+      "status": "BLOCKED",
+      "reason": "EVIDENCE_BLOCKED: invalid endpoint/topology"
+    },
+    {
+      "case": "volume_corruption",
+      "status": "BLOCKED",
+      "reason": "LOCAL_GEOMETRY_WEIGHT_MISMATCH"
+    },
+    {
+      "case": "joint_scale_corruption",
+      "status": "BLOCKED",
+      "reason": "EVIDENCE_BLOCKED: EDGE_LENGTH_GEOMETRY_MISMATCH"
+    }
+  ],
+  "negative_verdict": "INCONCLUSIVE",
+  "legacy_transition_verdict": "INCONCLUSIVE",
+  "reversed_endpoints_verdict": "NONINVARIANCE_WITNESS",
+  "no_candidate_verdict": "NOT_MEASURED",
+  "engine_imports": 0,
+  "actual_solve_calls": 0,
+  "pn_validated": false
+}

@@ -1,0 +1,553 @@
+diff --git a/docs/audits/2026-10-02-e6na-import-reduction/.gitattributes b/docs/audits/2026-10-02-e6na-import-reduction/.gitattributes
+index f8a3379..d37ec57 100644
+--- a/docs/audits/2026-10-02-e6na-import-reduction/.gitattributes
++++ b/docs/audits/2026-10-02-e6na-import-reduction/.gitattributes
+@@ -1,2 +1,3 @@
+ # 원격 원본 artifact는 checkout 줄바꿈 변환 및 text diff를 적용하지 않는다.
+ raw/** -text -diff
++FOLLOWUP_CHANGES.patch -text -diff
+diff --git a/docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py b/docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py
+index 1ff543d..ba7698e 100644
+--- a/docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py
++++ b/docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py
+@@ -4,6 +4,21 @@ from fractions import Fraction as F
+ 
+ import numpy as np
+ 
++# float64 subtraction, squared norm and sqrt; no absolute length floor.
++EDGE_LENGTH_RTOL = 64 * np.finfo(np.float64).eps
++
++
++def checked_indices(values, node_count, width):
++    """공식 배열을 자르기 전에 유한성·정수성·범위를 검사한다."""
++    q = np.asarray(values)
++    if q.ndim != 2 or q.shape[1] != width or not len(q) or q.dtype.kind not in 'iuf':
++        raise ValueError('EVIDENCE_BLOCKED: invalid index array')
++    if not np.all(np.isfinite(q)) or np.any(q < 0) or np.any(q >= node_count):
++        raise ValueError('EVIDENCE_BLOCKED: index range/nonfinite')
++    if q.dtype.kind == 'f' and np.any(q != np.floor(q)):
++        raise ValueError('EVIDENCE_BLOCKED: fractional index')
++    return q.astype(np.int64)
++
+ 
+ def validate(a, solve_attempts=0, omitted=False):
+     if type(solve_attempts) is not int or solve_attempts != 0 or omitted:
+@@ -24,6 +39,12 @@ def validate(a, solve_attempts=0, omitted=False):
+         q = np.asarray(a[key])
+         if q.shape != (count,) or not np.all(np.isfinite(q)) or np.any(q <= 0 if positive else q < 0):
+             raise ValueError('EVIDENCE_BLOCKED: invalid ' + key)
++    delta = xy[e[:, 0]] - xy[e[:, 1]]
++    length = np.hypot(delta[:, 0], delta[:, 1])
++    if not np.all(np.isfinite(length)) or np.any(length <= 0):
++        raise ValueError('EVIDENCE_BLOCKED: invalid coordinate length')
++    if np.any(np.abs(np.asarray(a['EdgeLength']) - length) > EDGE_LENGTH_RTOL * length):
++        raise ValueError('EVIDENCE_BLOCKED: EDGE_LENGTH_GEOMETRY_MISMATCH')
+     return xy, t, e
+ 
+ 
+diff --git a/docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py b/docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py
+index 3404159..8da21c3 100644
+--- a/docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py
++++ b/docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py
+@@ -18,7 +18,7 @@ M_DIR = ROOT/'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency'
+ sys.path.insert(0,str(ROOT))
+ sys.path.insert(0,str(M_DIR/'scripts'))
+ import e6m_metrics as M
+-from diagnostics import analyze, validate
++from diagnostics import analyze, validate, checked_indices
+ 
+ PLAN_SHA = 'a7bb4e07d03a885c65d01db8f7ba6c341fee67d000e961e1ce6e597a1303e103'
+ INPUT_SHAS = {
+@@ -61,7 +61,58 @@ def require_inputs():
+             raise ValueError('INPUT_PREFLIGHT_BLOCKED: '+relative)
+ 
+ 
++def require_flux_source(function, callback):
++    """설치 helper의 식 문자열 대응만 확인한다. 엔진 구현 동일성 증명은 아니다."""
++    try:
++        source = inspect.getsource(function)
++    except Exception as exc:
++        raise ValueError('OFFICIAL_FLUX_SOURCE_UNAVAILABLE') from exc
++    expected = ('(Potential@n0-Potential@n1)*EdgeInverseLength', 'Permittivity * ElectricField')
++    if not all(expression in source for expression in expected):
++        raise ValueError('OFFICIAL_FLUX_SOURCE_MISMATCH')
++    return callback()
++
++
++def without_solve(dv, report, callback):
++    """엔진 확보 직후부터 helper import/np.load/cleanup 예외까지 보호한다."""
++    old_solve = dv.solve
++    def forbidden(*args, **kwargs):
++        report['solve_attempts'] += 1
++        raise RuntimeError('SOLVE_FORBIDDEN')
++    dv.solve = forbidden
++    try:
++        return callback()
++    finally:
++        dv.solve = old_solve
++
++
++def cleanup(dv, name, mesh, rec):
++    errors = []
++    for listing, remove, keyword, value in (
++        (dv.get_device_list, dv.delete_device, 'device', name),
++        (dv.get_mesh_list, dv.delete_mesh, 'mesh', mesh),
++    ):
++        try:
++            if value in listing():
++                remove(**{keyword: value})
++        except Exception as exc:
++            errors.append(type(exc).__name__ + ': ' + str(exc))
++    try:
++        leaked = bool(dv.get_device_list() or dv.get_mesh_list())
++    except Exception as exc:
++        errors.append(type(exc).__name__ + ': ' + str(exc))
++        leaked = True
++    rec['cleanup_ok'] = not errors and not leaked
++    if not rec['cleanup_ok']:
++        rec.update(status='FAIL', cleanup_errors=errors, error='CLEANUP_FAILED')
++    return rec['cleanup_ok']
++
++
+ def execute():
++    return preflight(_execute)
++
++
++def _execute():
+     if os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
+         raise RuntimeError('REMOTE_ONLY')
+     require_inputs()
+@@ -69,13 +120,18 @@ def execute():
+         raise ValueError('PRODUCTION_OR_TEST_SOURCE_CHANGED')
+     from tcad.device.devsim import backend
+     dv = backend.require_devsim()
++    report = {'plan_sha':PLAN_SHA,'source_sha':os.environ.get('GITHUB_SHA'),
++              'solve_attempts':0,'levels':{},'pn':'NOT_RUN', 'precision':{}}
++    return without_solve(dv, report, lambda: _execute_import_audit(dv, report))
++
++
++def _execute_import_audit(dv, report):
+     from devsim.python_packages import simple_physics
++    require_flux_source(simple_physics.CreateSiliconPotentialOnly, lambda: None)
+     out = ROOT/'e6na_out'
+     out.mkdir(exist_ok=False)
+-    report = {'plan_sha':PLAN_SHA,'source_sha':os.environ.get('GITHUB_SHA'), 'solve_attempts':0,'levels':{},'pn':'NOT_RUN',
+-              'installed_simple_physics_sha':hashlib.sha256(inspect.getsource(simple_physics).encode()).hexdigest(),
+-              'official_flux_source_matches':all(s in inspect.getsource(simple_physics.CreateSiliconPotentialOnly) for s in ('(Potential@n0-Potential@n1)*EdgeInverseLength','Permittivity * ElectricField')),
+-              'precision':{}}
++    report.update(installed_simple_physics_sha=hashlib.sha256(inspect.getsource(simple_physics).encode()).hexdigest(),
++                  official_flux_source_matches=True)
+     for key in ('extended_model','extended_equation'):
+         try:
+             report['precision'][key]=dv.get_parameter(name=key)
+@@ -94,16 +150,11 @@ def execute():
+     from tcad.mesh.viennaps_adapter import build_process_result
+     if dv.get_device_list() or dv.get_mesh_list():
+         raise RuntimeError('PREEXISTING_ENGINE_OBJECTS')
+-    old_solve=dv.solve
+-    def forbidden(*args,**kwargs):
+-        report['solve_attempts']+=1
+-        raise RuntimeError('SOLVE_FORBIDDEN')
+-    dv.solve=forbidden
+-    ref=np.load(input_paths[-1])
+     t0=time.monotonic()
+     byte_budget=0
+     failed=False
+     try:
++        ref=np.load(input_paths[-1])
+         for lv,ny,nn,nt in zip(M.LEVELS,(16,32,64),(8037,31173,122761),(15264,60736,242304)):
+             started=time.monotonic()
+             rec=report['levels'][lv]={'status':'STARTED'}
+@@ -127,10 +178,10 @@ def execute():
+                     raise ValueError('REGION_MISMATCH')
+                 a={k:np.array(dv.get_node_model_values(device=name,region='Si',name=k)) for k in ('x','y','NodeVolume')}
+                 a['xy']=np.column_stack((a.pop('x'),a.pop('y')))
+-                a['triangles']=np.array(dv.get_element_node_list(device=name,region='Si'),dtype=np.int64)
++                a['triangles']=checked_indices(dv.get_element_node_list(device=name,region='Si'), len(a['xy']), 3)
+                 for k in ('node_index','x','y'):
+                     dv.edge_from_node_model(device=name,region='Si',node_model=k)
+-                a['edges']=np.column_stack([np.array(dv.get_edge_model_values(device=name,region='Si',name='node_index@n'+str(k)),dtype=np.int64) for k in (0,1)])
++                a['edges']=checked_indices(np.column_stack([dv.get_edge_model_values(device=name,region='Si',name='node_index@n'+str(k)) for k in (0,1)]), len(a['xy']), 2)
+                 a.update({k:np.array(dv.get_edge_model_values(device=name,region='Si',name=k)) for k in ('EdgeCouple','EdgeLength')})
+                 validate(a,report['solve_attempts'])
+                 refpoints=p[:,:2]*1e-4
+@@ -176,13 +227,8 @@ def execute():
+                 rec.update(status='FAIL',error_type=type(exc).__name__,error=str(exc))
+                 failed=True
+             finally:
+-                if name in dv.get_device_list():
+-                    dv.delete_device(device=name)
+-                if mesh in dv.get_mesh_list():
+-                    dv.delete_mesh(mesh=mesh)
+                 rec['duration_s']=time.monotonic()-started
+-                rec['cleanup_ok']=not dv.get_device_list() and not dv.get_mesh_list()
+-                if not rec['cleanup_ok']:
++                if not cleanup(dv, name, mesh, rec):
+                     failed=True
+                 (out/'result.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+             if failed or report['solve_attempts'] or rec['diagnostic']['verdict']!='NONINVARIANCE_WITNESS':
+@@ -191,12 +237,16 @@ def execute():
+             report['levels'].setdefault(lv,{'status':'NOT_RUN'})
+         report['execution_status']='FAIL' if failed or report['solve_attempts'] else 'COMPLETED'
+         report['verdict']='FAIL' if failed or report['solve_attempts'] else ('NONINVARIANCE_WITNESS' if all(report['levels'][lv].get('diagnostic',{}).get('verdict')=='NONINVARIANCE_WITNESS' for lv in M.LEVELS) else 'INCONCLUSIVE')
++    except Exception as exc:
++        report.update(execution_status='FAIL', verdict='FAIL', error_type=type(exc).__name__, error=str(exc))
++        failed=True
+     finally:
+-        dv.solve=old_solve
++        report.setdefault('execution_status', 'FAIL')
++        report.setdefault('verdict', 'FAIL')
+         (out/'result.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+     print(json.dumps({k:report[k] for k in ('execution_status','verdict','solve_attempts')},indent=2))
+     return int(failed or report['solve_attempts']>0)
+ 
+ 
+ if __name__=='__main__':
+-    sys.exit(preflight(execute))
++    sys.exit(execute())
+
+diff --git a/docs/audits/2026-10-02-e6na-import-reduction/SYNTHETIC_REVIEW_CRITERIA.md b/docs/audits/2026-10-02-e6na-import-reduction/SYNTHETIC_REVIEW_CRITERIA.md
+new file mode 100644
+index 0000000..38300ed
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/SYNTHETIC_REVIEW_CRITERIA.md
+@@ -0,0 +1,40 @@
++# E6N-A 보완 합성 기준 — 엔진 실행 전 고정
++
++기존 PLAN은 수정하지 않는다. 기존 witness 문턱도 바꾸지 않는다.
++
++## fixture와 예상 판정
++
++좌표는 cm이다. x={-1e-5,0,1e-5}, y 범위 [-1e-5,0].
++정상 fixture는 y 4등분인 tensor grid이다. 모든 x=0의 제어체적 정규화
++x 연산자는 같으므로 INCONCLUSIVE를 예상한다(불변성 일반 증명은 아님).
++
++전이 fixture는 왼쪽 strip을 y 4등분, 오른쪽을 2등분한다.
++오른쪽 각 직사각형을 왼쪽 변의 중점을 공유하는 3개 직각/비둔각
++삼각형으로 연결한다. 폭=1e-5, 높이=5e-6이므로 전이 비둔각 조건
++w>=h/2를 충족한다. x=0의 midpoint와 coarse vertex는 서로 다른
++오른쪽 투영 가중치/제어체적을 가진다. 기존 네 polynomial 중
++이차 작용과 exact projected row의 차이로 NONINVARIANCE_WITNESS를 예상한다.
++이는 수학적 합성 대조군이며 PN·공정 검증이 아니다.
++
++동일 fixture의 좌표를 s=1e-6으로 축소하면 stencil coefficient는 여전히
++다르지만 고정 L=0.004cm의 polynomial 작용/row scale 비가 기존 문턱보다
++작아진다. 따라서 stencil-only 반례는 INCONCLUSIVE를 예상한다.
++좌표 단위나 실제 E6N 후보는 바꾸지 않는다.
++
++정상 fixture EdgeCouple에 float64 1 ULP 변화만 주면 INCONCLUSIVE를 예상한다.
++EdgeLength와 EdgeCouple 동시 2배, 누락, 잘못된 endpoint는 차단한다.
++endpoint 방향 반전은 정상이고, 비교 node 없는 메쉬는 NOT_MEASURED다.
++
++## 새 길이 무결성 기준
++
++공식 EdgeLength 정의는 두 endpoint 사이 거리다(DEVSIM models.html 표5.2).
++동일 저장 좌표에서 hypot으로 다시 계산한다. 허용 상대 차이는 64*eps64.
++float64 subtraction·곱/합·sqrt의 소수 연산 roundoff보다 여유 있는
++진단 기준이다. 엄밀한 native 전체 오차 정리나 원래 좌표 복원은 아니다.
++절대 길이 floor는 없고 길이 0/비유한은 차단한다. 이 새 증거 검사 기준은
++기존 witness/물리 tolerance를 완화하지 않는다. 실제 wheel 대응은 아직 미측정이다.
++
++## 자원 정책 변경 승인 전
++
++시간·메모리의 사후 검사 문제는 기존 단일-process 구조에서 해결됐다고
++주장하지 않는다. 별도 RESOURCE_POLICY_PROPOSAL.md를 검토하기 전 원격 재실행 금지.
+
+diff --git a/docs/audits/2026-10-02-e6na-import-reduction/CRITERIA_ERRATUM.md b/docs/audits/2026-10-02-e6na-import-reduction/CRITERIA_ERRATUM.md
+new file mode 100644
+index 0000000..619af64
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/CRITERIA_ERRATUM.md
+@@ -0,0 +1,16 @@
++# 합성 예상 판정 정정 — 최초 실패 보존
++
++SYNTHETIC_REVIEW_CRITERIA.md의 전이 fixture 예상은 틀렸다.
++최초 실행에서 정상 INCONCLUSIVE 뒤 전이 NONINVARIANCE_WITNESS assertion이 실패했다.
++측정 값: 이차 pair 차이 1923.0769230769074, row scale 약6.8e11.
++고정된 상대 문턱 1e-8*scale는 약6800이므로 witness를 충족하지 못한다.
++exact projected row 차이는 비영이다. 즉 stencil 차이와 충분한 witness는 다르다.
++
++메쉬 좌표·연결·물리 L·문턱은 변경하지 않았다. 잘못된 기대 assertion만
++INCONCLUSIVE로 정정했고, exact 차이와 polynomial 차이가 실제 존재함을 추가 검사한다.
++이 원 fixture와 축소 fixture는 모두 stencil-only 음성 대조군이다.
++
++원래 요구한 전체 analyze 경로의 NONINVARIANCE_WITNESS 양성 대조군은
++아직 충족하지 못했다. scalar classify 양성 테스트를 이것의 대체로 인정하지 않는다.
++결과에 맞춰 fixture 크기를 확대하거나 tolerance를 낮춰 양성으로 만들지 않는다.
++원격 실행 승인 전 별도 사전 계산/고정 fixture 검토가 필요하다.
+
+diff --git a/docs/audits/2026-10-02-e6na-import-reduction/RESOURCE_POLICY_PROPOSAL.md b/docs/audits/2026-10-02-e6na-import-reduction/RESOURCE_POLICY_PROPOSAL.md
+new file mode 100644
+index 0000000..8426bc9
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/RESOURCE_POLICY_PROPOSAL.md
+@@ -0,0 +1,43 @@
++# 자원 정책 변경안 — 승인 전, 실행기 미연결
++
++기존 PLAN과 실제 원격 실행 결과는 수정하지 않는다. 600초/후보, 1800초/전체,
++6GiB 메모리, 파일120MiB/전체200MiB 예산도 늘리지 않는다.
++현재 run_e6na.py의 사후 검사로 실행 중 제한을 보장한다고 주장하지 않는다.
++
++## 필요한 구조 변경
++
++부모 supervisor는 엔진을 import하지 않고 후보 하나씩 별도 child를 시작한다.
++child가 backend를 import한 직후 solve trap을 설치하고 기존 후보 import-only 경로를 실행한다.
++부모는 monotonic 시간을 이용해 후보 시작부터600초/전체1800초를 감시한다.
++Windows Job Object에 child를 생성 직후 배치하고 kill-on-close와 메모리 한계를 사용한다.
++할당 실패·Job Object 연결 실패·메모리 조회 실패는 실행을 허용하지 않는다.
++Job Object 메모리 commit 제한과 기존 working-set6GiB는 서로 다른 측정이므로
++이를 동일하다고 표현하지 않는다. working set/자식 합계도 감시하고
++정확한 측정 범위/감시 간격을 새 승인 문서에 고정해야 한다.
++
++현재 부모+단일 device 구조에서 후보 child로 옮기면 cleanup, 소스 식 확인,
++후보 결과 전달/NPZ 취합의 실행 계약이 바뀐다. 이번 보완에서는 구현·연결하지 않는다.
++아래 순수 policy prototype은 판단 로직 합성 검증만 하며 운영 watchdog이 아니다.
++
++## 실패와 cleanup
++
++한계/감시 실패면 부모가 child process tree를 종료하고 후보 FAIL + 이후 NOT_RUN으로 기록한다.
++종료 실패/후손 잔존/결과 불완전은 별도 오류이고 PASS로 바꾸지 않는다.
++native 함수가 멈추면 child의 finally cleanup은 보장되지 않는다.
++부모에서 process-tree 종료 확인을 별도로 기록하고 정상 엔진 cleanup과 구분한다.
++전체 wrapper timeout은 마지막 보호일 뿐 후보별 supervisor의 대체가 아니다.
++
++## 출력 완전성
++
++배열의 uncompressed nbytes와 UTF-8 JSON/witness/메타데이터 bytes를 합산한다.
++각 serialized file 및 전체 필수 payload 예산을 저장 전에 검사한다.
++NPZ header/ZIP container overhead와 최종 파일 실제 bytes도 저장 후 재확인한다.
++초과면 결과는 FAIL이고 저장된 일부 파일을 유효 증거 세트로 승인하지 않는다.
++artifact 전달의 omitted_outputs와 파일 누락/해시 오류를 사후 독립 verifier가 검사한다.
++report.json 내부 verdict만 보고 원격 결과를 승인하지 않는다.
++
++## 아직 필요한 승인
++
++후보별 프로세스 격리, 메모리 정의/OS 한계, 감독 interval, source 재확인,
++전체/후보 timer 시작점 및 artifact verifier의 실행 위치를 고정한 PLAN 보완 승인.
++승인 전 원격 재실행 없음. 기존 단일-process 실행기를 자원 계약 충족으로 승인하지 않음.
+
+diff --git a/docs/audits/2026-10-02-e6na-import-reduction/resource_policy_prototype.py b/docs/audits/2026-10-02-e6na-import-reduction/resource_policy_prototype.py
+new file mode 100644
+index 0000000..fb9a4ea
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/resource_policy_prototype.py
+@@ -0,0 +1,33 @@
++"""승인 전 순수 정책 prototype. 프로세스/엔진/운영 실행기에 연결되지 않는다."""
++import math
++
++
++def decision(elapsed_candidate, elapsed_total, working_set, metric_ok=True):
++    if not metric_ok or not all(isinstance(v,(int,float)) and math.isfinite(v) and v>=0
++                               for v in (elapsed_candidate,elapsed_total,working_set)):
++        return 'MONITOR_UNAVAILABLE'
++    if elapsed_candidate>=600 or elapsed_total>=1800:
++        return 'TIMEOUT'
++    if working_set>6*1024**3:
++        return 'MEMORY_LIMIT'
++    return 'CONTINUE'
++
++
++def payload_budget(files):
++    if not files or any(type(v) is not int or v<0 for v in files.values()):
++        return 'INVALID_SIZE_EVIDENCE'
++    if max(files.values())>120*1024**2 or sum(files.values())>200*1024**2:
++        return 'OUTPUT_LIMIT'
++    return 'WITHIN_BUDGET'
++
++
++def supervise_snapshot(snapshot, stop, finalize):
++    """합성 clock/프로세스 callback용. 실제 watchdog이 아니다."""
++    status=decision(**snapshot)
++    if status!='CONTINUE':
++        try:
++            stop()
++        except Exception:
++            status='PROCESS_TREE_STOP_FAILED'
++        finalize(status)
++    return status
+
+diff --git a/docs/audits/2026-10-02-e6na-import-reduction/test_resource_proposal.py b/docs/audits/2026-10-02-e6na-import-reduction/test_resource_proposal.py
+new file mode 100644
+index 0000000..143ecb3
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/test_resource_proposal.py
+@@ -0,0 +1,31 @@
++"""승인 전 자원 정책 합성 검증. 실제 프로세스/메모리/엔진 실행 없음."""
++import sys
++from unittest.mock import Mock
++from resource_policy_prototype import decision, payload_budget, supervise_snapshot
++
++
++def main():
++    base=dict(elapsed_candidate=1,elapsed_total=1,working_set=100,metric_ok=True)
++    for update,expected in (({},'CONTINUE'),({'elapsed_candidate':600},'TIMEOUT'),
++                            ({'elapsed_total':1800},'TIMEOUT'),({'working_set':6*1024**3+1},'MEMORY_LIMIT'),
++                            ({'metric_ok':False},'MONITOR_UNAVAILABLE'),
++                            ({'working_set':float('nan')},'MONITOR_UNAVAILABLE')):
++        snap=dict(base,**update);stop=Mock();finalize=Mock()
++        assert supervise_snapshot(snap,stop,finalize)==expected
++        if expected=='CONTINUE':
++            stop.assert_not_called();finalize.assert_not_called()
++        else:
++            stop.assert_called_once();finalize.assert_called_once_with(expected)
++        print('POLICY',expected)
++    stop=Mock(side_effect=RuntimeError('stop failed'));finalize=Mock()
++    assert supervise_snapshot(dict(base,elapsed_candidate=600),stop,finalize)=='PROCESS_TREE_STOP_FAILED'
++    finalize.assert_called_once_with('PROCESS_TREE_STOP_FAILED')
++    assert payload_budget({'arrays.npz':119*1024**2,'witness.json':82*1024**2})=='OUTPUT_LIMIT'
++    assert payload_budget({'witness.json':121*1024**2})=='OUTPUT_LIMIT'
++    assert payload_budget({'arrays.npz':1,'witness.json':1})=='WITHIN_BUDGET'
++    assert not any(k in sys.modules for k in ('devsim','viennaps'))
++    print('RESOURCE PROPOSAL TEST PASS; operational watchdog NOT_IMPLEMENTED')
++
++
++if __name__=='__main__':
++    main()
+
+diff --git a/docs/audits/2026-10-02-e6na-import-reduction/test_review_followup.py b/docs/audits/2026-10-02-e6na-import-reduction/test_review_followup.py
+new file mode 100644
+index 0000000..9b3ed3f
+--- /dev/null
++++ b/docs/audits/2026-10-02-e6na-import-reduction/test_review_followup.py
+@@ -0,0 +1,140 @@
++"""사전 기준의 합성 전체 경로. DEVSIM/ViennaPS는 import하지 않는다."""
++import sys
++from pathlib import Path
++from types import SimpleNamespace
++from unittest.mock import Mock, patch
++
++import numpy as np
++import diagnostics as D
++import run_e6na as R
++
++
++def blocked(callback, label):
++    try:
++        callback()
++    except (ValueError, RuntimeError, OSError):
++        print('BLOCKED', label)
++        return
++    raise AssertionError('false acceptance: ' + label)
++
++
++def fixture(transition=False, scale=1.0):
++    xy = [(-1e-5, y) for y in np.linspace(-1e-5, 0, 5)]
++    xy += [(0, y) for y in np.linspace(-1e-5, 0, 5)]
++    right = np.linspace(-1e-5, 0, 3 if transition else 5)
++    xy += [(1e-5, y) for y in right]
++    tri = []
++    for k in range(4):
++        tri.extend(((k, 5+k, k+1), (5+k, 6+k, k+1)))
++    if transition:
++        for k in range(2):
++            a, m, b, c, d = 5+2*k, 6+2*k, 7+2*k, 10+k, 11+k
++            tri.extend(((a,c,m), (m,c,d), (m,d,b)))
++    else:
++        for k in range(4):
++            tri.extend(((5+k,10+k,6+k), (10+k,11+k,6+k)))
++    xy = np.array(xy)*scale
++    tri = np.array(tri, dtype=np.int64)
++    edges = np.array(sorted({tuple(sorted((int(t[k]),int(t[(k+1)%3])))) for t in tri for k in range(3)}))
++    w, v = D.geometry_weights(xy, tri, edges)
++    delta = xy[edges[:,0]]-xy[edges[:,1]]
++    length = np.hypot(delta[:,0],delta[:,1])
++    return dict(xy=xy, triangles=tri, edges=edges, NodeVolume=v,
++                EdgeLength=length, EdgeCouple=w*length)
++
++
++def check_geometry(a):
++    C = R.load('followup_conformity', R.ROOT/'docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_e6h.py')
++    p = np.column_stack((a['xy'],np.zeros(len(a['xy']))))
++    result = C.check_conformity(p, a['triangles'])
++    assert result['pass'], result
++
++
++def main():
++    normal, transition = fixture(), fixture(True)
++    for name, a, expected in (('normal',normal,'INCONCLUSIVE'),
++                               ('transition',transition,'INCONCLUSIVE'),
++                               ('stencil_only',fixture(True,1e-6),'INCONCLUSIVE')):
++        check_geometry(a)
++        rec, arrays = D.analyze(a)
++        assert rec['verdict']==expected, (name,rec['verdict'])
++        assert arrays['actions'].shape==(4,len(a['xy']))
++        if name in ('transition','stencil_only'):
++            assert any(w['exact_projected_row_nonzero'] for w in rec['witnesses'])
++            assert any(w['difference']>0 for w in rec['witnesses'])
++        print('FULL_PATH', name, rec['verdict'])
++    b=dict(normal, edges=normal['edges'][:,::-1])
++    assert D.analyze(b)[0]['verdict']=='INCONCLUSIVE'
++    print('FULL_PATH reversed_endpoints INCONCLUSIVE')
++    b=dict(normal,EdgeCouple=np.nextafter(normal['EdgeCouple'],np.inf))
++    assert D.analyze(b)[0]['verdict']=='INCONCLUSIVE'
++    print('FULL_PATH roundoff_only INCONCLUSIVE')
++    blocked(lambda:D.analyze(dict(normal,EdgeLength=normal['EdgeLength']*2,
++                                   EdgeCouple=normal['EdgeCouple']*2)), 'joint_scale_corruption')
++    for key in ('NodeVolume','EdgeLength','EdgeCouple'):
++        b=dict(normal);b.pop(key)
++        blocked(lambda:D.analyze(b),'missing_'+key)
++    for label,value in (('fractional',0.5),('nan',np.nan),('negative',-1),('range',len(normal['xy']))):
++        e=normal['edges'].astype(float);e[0,0]=value
++        blocked(lambda:D.checked_indices(e,len(normal['xy']),2),'endpoint_'+label)
++    assert np.array_equal(D.checked_indices(normal['edges'].astype(float),len(normal['xy']),2),normal['edges'])
++    # 기존 비교 node 없는 control도 그대로 유지.
++    no=dict(normal,xy=normal['xy'].copy());no['xy'][:,0]+=1
++    # 단순 평행 이동은 길이 재계산 roundoff를 만들 수 있어 전체 기하를 다시 계산한다.
++    w,v=D.geometry_weights(no['xy'],no['triangles'],no['edges'])
++    delta=no['xy'][no['edges'][:,0]]-no['xy'][no['edges'][:,1]]
++    no.update(NodeVolume=v,EdgeLength=np.hypot(delta[:,0],delta[:,1]))
++    no['EdgeCouple']=w*no['EdgeLength']
++    assert D.analyze(no)[0]['verdict']=='NOT_MEASURED'
++    print('FULL_PATH no_candidate NOT_MEASURED')
++    good='def helper():\n    field="(Potential@n0-Potential@n1)*EdgeInverseLength"\n    flux="Permittivity * ElectricField"\n'
++    for source in ('wrong',None):
++        callback=Mock()
++        kwargs={'return_value':source} if source is not None else {'side_effect':OSError('unavailable')}
++        with patch.object(R.inspect,'getsource',**kwargs):
++            blocked(lambda:R.require_flux_source(object(),callback),'flux_source')
++        callback.assert_not_called()
++    callback=Mock(return_value='OK')
++    with patch.object(R.inspect,'getsource',return_value=good):
++        assert R.require_flux_source(object(),callback)=='OK'
++    callback.assert_called_once()
++    # 실제 execute 진입에도 PLAN이 앞서며 backend callback은 0회.
++    for value in (b'wrong',None):
++        callback=Mock()
++        kwargs={'return_value':value} if value is not None else {'side_effect':FileNotFoundError()}
++        with patch.object(Path,'read_bytes',**kwargs),patch.object(R,'_execute',callback):
++            blocked(R.execute,'actual_entry_plan')
++        callback.assert_not_called()
++    original=Mock()
++    dv=SimpleNamespace(solve=original)
++    for kind in ('np_load','cleanup'):
++        report={'solve_attempts':0}
++        def failing():
++            if kind=='np_load':
++                with patch.object(np,'load',side_effect=OSError('load failed')):
++                    np.load('not-read')
++            else:
++                raise RuntimeError('cleanup callback failed')
++        blocked(lambda:R.without_solve(dv,report,failing),'restore_'+kind)
++        assert dv.solve is original and report['solve_attempts']==0
++    report={'solve_attempts':0}
++    blocked(lambda:R.without_solve(dv,report,lambda:dv.solve()),'forbidden_solve')
++    assert report['solve_attempts']==1 and dv.solve is original
++    devices=['d']; meshes=['m']
++    fake=SimpleNamespace(get_device_list=lambda:list(devices),get_mesh_list=lambda:list(meshes),
++                         delete_device=Mock(side_effect=RuntimeError('delete failed')),
++                         delete_mesh=lambda **kw:meshes.clear())
++    rec={'status':'IMPORT_PASS'}
++    assert not R.cleanup(fake,'d','m',rec)
++    assert rec['status']=='FAIL' and not meshes and rec['cleanup_errors']
++    print('CLEANUP failure_is_FAIL and mesh_cleanup_attempted')
++    fake.delete_device=lambda **kw:devices.clear()
++    rec={}
++    assert R.cleanup(fake,'d','m',rec)
++    print('CLEANUP normal_PASS')
++    assert not any(k in sys.modules for k in ('devsim','viennaps'))
++    print('FOLLOWUP PASS; actual engine imports=0; actual solve=0')
++
++
++if __name__=='__main__':
++    main()
+

@@ -18,9 +18,12 @@ M_DIR = ROOT/'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency'
 sys.path.insert(0,str(ROOT))
 sys.path.insert(0,str(M_DIR/'scripts'))
 import e6m_metrics as M
-from diagnostics import analyze, validate
+from diagnostics import analyze, validate, checked_indices
+from flux_source_contract import require_reviewed_source
+from resource_supervisor import supervise, require_elements, payload_check, TOTAL_CAP
 
 PLAN_SHA = 'a7bb4e07d03a885c65d01db8f7ba6c341fee67d000e961e1ce6e597a1303e103'
+RESOURCE_CONTRACT_SHA = '8baef556d4e7eb71b12d125896303294833719851e89f632ad29bdcc0c1a5b4a'
 INPUT_SHAS = {
     'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_preflight.py':'47ce559e56e32d9d7214cc0ca30a0a360ba485e7661817e3b992725409448a9b',
     'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_result.json':'5b7225e949c6f41bbd72bd73e8d4ea54f88b937221f52618b03cdec21c038f6f',
@@ -61,7 +64,127 @@ def require_inputs():
             raise ValueError('INPUT_PREFLIGHT_BLOCKED: '+relative)
 
 
+def require_flux_source(function, callback):
+    """검토한 공식 helper AST를 대조한다. 엔진 구현 동일성 증명은 아니다."""
+    try:
+        source = inspect.getsource(function)
+    except Exception as exc:
+        raise ValueError('OFFICIAL_FLUX_SOURCE_UNAVAILABLE') from exc
+    require_reviewed_source(source)
+    return callback()
+
+
+def without_solve(dv, report, callback):
+    """엔진 확보 직후부터 helper import/np.load/cleanup 예외까지 보호한다."""
+    old_solve = dv.solve
+    def forbidden(*args, **kwargs):
+        report['solve_attempts'] += 1
+        raise RuntimeError('SOLVE_FORBIDDEN')
+    dv.solve = forbidden
+    try:
+        return callback()
+    finally:
+        dv.solve = old_solve
+
+
+def cleanup(dv, name, mesh, rec):
+    errors = []
+    for listing, remove, keyword, value in (
+        (dv.get_device_list, dv.delete_device, 'device', name),
+        (dv.get_mesh_list, dv.delete_mesh, 'mesh', mesh),
+    ):
+        try:
+            if value in listing():
+                remove(**{keyword: value})
+        except Exception as exc:
+            errors.append(type(exc).__name__ + ': ' + str(exc))
+    try:
+        leaked = bool(dv.get_device_list() or dv.get_mesh_list())
+    except Exception as exc:
+        errors.append(type(exc).__name__ + ': ' + str(exc))
+        leaked = True
+    rec['cleanup_ok'] = not errors and not leaked
+    if not rec['cleanup_ok']:
+        rec.update(status='FAIL', cleanup_errors=errors, error='CLEANUP_FAILED')
+    return rec['cleanup_ok']
+
+
 def execute():
+    def approved_resource_boundary():
+        digest=hashlib.sha256((HERE/'RESOURCE_EXECUTION_CONTRACT.md').read_bytes().replace(b'\r\n',b'\n')).hexdigest()
+        if digest!=RESOURCE_CONTRACT_SHA:
+            raise ValueError('RESOURCE_CONTRACT_PREFLIGHT_BLOCKED')
+        return _execute()
+    return preflight(approved_resource_boundary)
+
+
+def _execute():
+    if '--candidate' not in sys.argv:
+        return _supervised_execute()
+    return _execute_candidate()
+
+
+def _supervised_execute():
+    """각 후보 엔진을 별도 Job Object에 격리. 부모에는 엔진 import가 없다."""
+    if os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
+        raise RuntimeError('REMOTE_ONLY')
+    require_inputs()
+    out = ROOT/'e6na_out'
+    out.mkdir(exist_ok=False)
+    deadline = time.monotonic()+1800
+    report = {'plan_sha':PLAN_SHA, 'source_sha':os.environ.get('GITHUB_SHA'),
+              'levels':{}, 'solve_attempts':0, 'pn':'NOT_RUN', 'verdict':'FAIL'}
+    raw_total = 0
+    stopped = False
+    for lv in M.LEVELS:
+        if stopped:
+            report['levels'][lv] = {'status':'NOT_RUN'}
+            continue
+        monitor = supervise([sys.executable,'-B',str(Path(__file__).resolve()),'--candidate',lv],
+                            ROOT, out/(lv+'.log'), total_deadline=deadline)
+        rec = {'status':'FAIL', 'supervisor':monitor}
+        rec['solve_attempts'] = None  # timeout/누락을 관측된 0으로 발명하지 않음.
+        try:
+            if monitor['status']!='COMPLETED' or not monitor['cleanup_ok']:
+                raise ValueError('SUPERVISOR_BLOCKED')
+            result_path = out/lv/'result.json'
+            child = json.loads(result_path.read_text(encoding='utf-8'))
+            c = child['levels'][lv]
+            rec['solve_attempts'] = child.get('solve_attempts')
+            if (child['plan_sha']!=PLAN_SHA or type(child['solve_attempts']) is not int or child['solve_attempts']!=0
+                    or c['status']!='IMPORT_PASS' or c['cleanup_ok'] is not True
+                    or child.get('candidate')!=lv or child.get('official_flux_source_matches') is not True
+                    or child.get('execution_status')!='COMPLETED'
+                    or c['diagnostic']['verdict'] not in ('NONINVARIANCE_WITNESS','INCONCLUSIVE','NOT_MEASURED')):
+                raise ValueError('CHILD_EVIDENCE_INCOMPLETE')
+            array_path = out/lv/(lv+'.npz')
+            if sha(array_path)!=c['array_sha']:
+                raise ValueError('CHILD_ARRAY_HASH_MISMATCH')
+            payload_check(c['raw_bytes'], array_path.stat().st_size, raw_total)
+            raw_total += c['raw_bytes']
+            if raw_total + sum(p.stat().st_size for p in out.rglob('*') if p.is_file() and p.suffix!='.npz') > TOTAL_CAP:
+                raise ValueError('OUTPUT_RESOURCE_CAP')
+            rec = dict(c, supervisor=monitor, solve_attempts=child['solve_attempts'])
+            stopped = c['diagnostic']['verdict']!='NONINVARIANCE_WITNESS'
+        except Exception as exc:
+            rec.update(error_type=type(exc).__name__, error=str(exc))
+            stopped = True
+        report['levels'][lv] = rec
+    failed = any(r['status']=='FAIL' for r in report['levels'].values())
+    attempts = [r.get('solve_attempts') for r in report['levels'].values() if r['status']!='NOT_RUN']
+    report['solve_attempts'] = sum(attempts) if all(type(v) is int for v in attempts) else None
+    report['execution_status'] = 'FAIL' if failed else 'COMPLETED'
+    report['verdict'] = 'FAIL' if failed else ('NONINVARIANCE_WITNESS' if not stopped else 'INCONCLUSIVE')
+    text = json.dumps(report,indent=2)+'\n'
+    payload_check(0,len(text.encode('utf-8')))
+    if raw_total + sum(p.stat().st_size for p in out.rglob('*') if p.is_file() and p.suffix!='.npz') + len(text.encode('utf-8')) > TOTAL_CAP:
+        raise ValueError('OUTPUT_RESOURCE_CAP')
+    (out/'result.json').write_text(text,encoding='utf-8')
+    print(json.dumps({k:report[k] for k in ('execution_status','verdict','solve_attempts')}))
+    return int(failed)
+
+
+def _execute_candidate():
     if os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
         raise RuntimeError('REMOTE_ONLY')
     require_inputs()
@@ -69,13 +192,24 @@ def execute():
         raise ValueError('PRODUCTION_OR_TEST_SOURCE_CHANGED')
     from tcad.device.devsim import backend
     dv = backend.require_devsim()
+    report = {'plan_sha':PLAN_SHA,'source_sha':os.environ.get('GITHUB_SHA'),
+              'solve_attempts':0,'levels':{},'pn':'NOT_RUN', 'precision':{}}
+    index = sys.argv.index('--candidate')
+    if index+2 != len(sys.argv) or sys.argv[index+1] not in M.LEVELS:
+        raise ValueError('INVALID_CANDIDATE')
+    report['candidate'] = sys.argv[index+1]
+    return without_solve(dv, report, lambda: _execute_import_audit(dv, report))
+
+
+def _execute_import_audit(dv, report):
     from devsim.python_packages import simple_physics
+    require_flux_source(simple_physics.CreateSiliconPotentialOnly, lambda: None)
     out = ROOT/'e6na_out'
+    if 'candidate' in report:
+        out = out/report['candidate']
     out.mkdir(exist_ok=False)
-    report = {'plan_sha':PLAN_SHA,'source_sha':os.environ.get('GITHUB_SHA'), 'solve_attempts':0,'levels':{},'pn':'NOT_RUN',
-              'installed_simple_physics_sha':hashlib.sha256(inspect.getsource(simple_physics).encode()).hexdigest(),
-              'official_flux_source_matches':all(s in inspect.getsource(simple_physics.CreateSiliconPotentialOnly) for s in ('(Potential@n0-Potential@n1)*EdgeInverseLength','Permittivity * ElectricField')),
-              'precision':{}}
+    report.update(installed_simple_physics_sha=hashlib.sha256(inspect.getsource(simple_physics).encode()).hexdigest(),
+                  official_flux_source_matches=True)
     for key in ('extended_model','extended_equation'):
         try:
             report['precision'][key]=dv.get_parameter(name=key)
@@ -94,17 +228,15 @@ def execute():
     from tcad.mesh.viennaps_adapter import build_process_result
     if dv.get_device_list() or dv.get_mesh_list():
         raise RuntimeError('PREEXISTING_ENGINE_OBJECTS')
-    old_solve=dv.solve
-    def forbidden(*args,**kwargs):
-        report['solve_attempts']+=1
-        raise RuntimeError('SOLVE_FORBIDDEN')
-    dv.solve=forbidden
-    ref=np.load(input_paths[-1])
     t0=time.monotonic()
     byte_budget=0
     failed=False
     try:
+        ref=np.load(input_paths[-1])
         for lv,ny,nn,nt in zip(M.LEVELS,(16,32,64),(8037,31173,122761),(15264,60736,242304)):
+            if 'candidate' in report and lv != report['candidate']:
+                continue
+            require_elements(nt, lambda: None)
             started=time.monotonic()
             rec=report['levels'][lv]={'status':'STARTED'}
             name='e6na_'+lv
@@ -114,6 +246,7 @@ def execute():
                 with patch.object(M,'Y_LINES_UM',np.linspace(-M.H_UM,0,ny+1).tolist()):
                     p,t=M.build_mesh(x1)
                 p,t,tags,_=R.structured_lateral_refine(p,t,np.zeros(len(t),dtype=np.int32),[0.],[0.1])
+                require_elements(len(t), lambda: None)
                 assert (len(p),len(t))==(nn,nt)
                 conf=C.check_conformity(p,t)
                 geo=M.geometry_checks(p,t)
@@ -127,10 +260,10 @@ def execute():
                     raise ValueError('REGION_MISMATCH')
                 a={k:np.array(dv.get_node_model_values(device=name,region='Si',name=k)) for k in ('x','y','NodeVolume')}
                 a['xy']=np.column_stack((a.pop('x'),a.pop('y')))
-                a['triangles']=np.array(dv.get_element_node_list(device=name,region='Si'),dtype=np.int64)
+                a['triangles']=checked_indices(dv.get_element_node_list(device=name,region='Si'), len(a['xy']), 3)
                 for k in ('node_index','x','y'):
                     dv.edge_from_node_model(device=name,region='Si',node_model=k)
-                a['edges']=np.column_stack([np.array(dv.get_edge_model_values(device=name,region='Si',name='node_index@n'+str(k)),dtype=np.int64) for k in (0,1)])
+                a['edges']=checked_indices(np.column_stack([dv.get_edge_model_values(device=name,region='Si',name='node_index@n'+str(k)) for k in (0,1)]), len(a['xy']), 2)
                 a.update({k:np.array(dv.get_edge_model_values(device=name,region='Si',name=k)) for k in ('EdgeCouple','EdgeLength')})
                 validate(a,report['solve_attempts'])
                 refpoints=p[:,:2]*1e-4
@@ -154,7 +287,7 @@ def execute():
                 diagnostic,arrays=analyze(a)
                 a.update(arrays,source_points_um=p,source_triangles=t)
                 rec.update(diagnostic=diagnostic,contacts=contacts,area_gate=imported.area_conservation['Si'])
-                size=sum(v.nbytes for v in a.values())
+                size=sum(v.nbytes for v in a.values()) + len(json.dumps(report).encode('utf-8'))
                 byte_budget+=size
                 if size>120*1024**2 or byte_budget>200*1024**2:
                     raise ValueError('OUTPUT_RESOURCE_CAP')
@@ -170,19 +303,19 @@ def execute():
                     raise ValueError('MEMORY_RESOURCE_CAP')
                 rec.update(raw_bytes=size,peak_working_set=mem.peak_ws)
                 np.savez_compressed(out/(lv+'.npz'),**a)
+                import zipfile
+                with zipfile.ZipFile(out/(lv+'.npz')) as archive:
+                    uncompressed=sum(entry.file_size for entry in archive.infolist())
+                payload_check(max(size,uncompressed), (out/(lv+'.npz')).stat().st_size)
+                rec['raw_bytes']=max(size,uncompressed)
                 rec['array_sha']=sha(out/(lv+'.npz'))
                 rec['status']='IMPORT_PASS'
             except Exception as exc:
                 rec.update(status='FAIL',error_type=type(exc).__name__,error=str(exc))
                 failed=True
             finally:
-                if name in dv.get_device_list():
-                    dv.delete_device(device=name)
-                if mesh in dv.get_mesh_list():
-                    dv.delete_mesh(mesh=mesh)
                 rec['duration_s']=time.monotonic()-started
-                rec['cleanup_ok']=not dv.get_device_list() and not dv.get_mesh_list()
-                if not rec['cleanup_ok']:
+                if not cleanup(dv, name, mesh, rec):
                     failed=True
                 (out/'result.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
             if failed or report['solve_attempts'] or rec['diagnostic']['verdict']!='NONINVARIANCE_WITNESS':
@@ -191,12 +324,16 @@ def execute():
             report['levels'].setdefault(lv,{'status':'NOT_RUN'})
         report['execution_status']='FAIL' if failed or report['solve_attempts'] else 'COMPLETED'
         report['verdict']='FAIL' if failed or report['solve_attempts'] else ('NONINVARIANCE_WITNESS' if all(report['levels'][lv].get('diagnostic',{}).get('verdict')=='NONINVARIANCE_WITNESS' for lv in M.LEVELS) else 'INCONCLUSIVE')
+    except Exception as exc:
+        report.update(execution_status='FAIL', verdict='FAIL', error_type=type(exc).__name__, error=str(exc))
+        failed=True
     finally:
-        dv.solve=old_solve
+        report.setdefault('execution_status', 'FAIL')
+        report.setdefault('verdict', 'FAIL')
         (out/'result.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     print(json.dumps({k:report[k] for k in ('execution_status','verdict','solve_attempts')},indent=2))
     return int(failed or report['solve_attempts']>0)
 
 
 if __name__=='__main__':
-    sys.exit(preflight(execute))
+    sys.exit(execute())

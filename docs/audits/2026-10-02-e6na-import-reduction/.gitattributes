@@ -1,2 +1,5 @@
 # 원격 원본 artifact는 checkout 줄바꿈 변환 및 text diff를 적용하지 않는다.
 raw/** -text -diff
+FOLLOWUP_CHANGES.patch -text -diff
+FLUX_GUARD_CHANGES.patch -text -diff
+RESOURCE_INTEGRATION.patch -text -diff

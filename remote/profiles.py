@@ -11,6 +11,32 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6na_engine_free_compatibility": {
+        "description": "E6N-A Python 3.11 / nested Windows Job / AST / synthetic geometry controls; engine import forbidden.",
+        "entry": "docs/audits/2026-10-06-e6na-compatibility/run_compatibility.py",
+        "args": [], "params": {}, "timeout_s": 120, "engine_info": False,
+        "inputs": [
+            "docs/audits/2026-10-06-e6na-compatibility/PLAN.md",
+            "docs/audits/2026-10-06-e6na-compatibility/run_compatibility.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/flux_source_contract.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/REVIEWED_FLUX_REFERENCE.txt",
+            "docs/audits/2026-10-02-e6na-import-reduction/RESOURCE_EXECUTION_CONTRACT.md",
+            "docs/audits/2026-10-02-e6na-import-reduction/POSITIVE_GEOMETRY_CRITERIA.md",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_contract.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_review_followup.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_flux_source_contract.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_resource_supervisor.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_supervised_entry.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_positive_geometry.py",
+            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
+            "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_e6h.py"
+        ],
+        "outputs": [{"glob": "e6na_compat_out/**/*", "max_mb": 5}],
+        "regenerate": "Engine-free compatibility only. No PN or real mesh import approval.",
+    },
     "e6na_import_reduction": {
         "description": "E6N-A fixed-plan official import and discrete reduction diagnostics; no solve calls permitted.",
         "entry": "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
@@ -19,6 +45,11 @@ PROFILES = {
             "docs/audits/2026-10-02-e6na-import-reduction/PLAN.md",
             "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
             "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/flux_source_contract.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/REVIEWED_FLUX_REFERENCE.txt",
+            "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/RESOURCE_EXECUTION_CONTRACT.md",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_resource_supervisor.py",
             "docs/audits/2026-10-02-e6na-import-reduction/test_contract.py",
             "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_result.json",
             "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/GEOMETRY_DESIGN_RULE.md",

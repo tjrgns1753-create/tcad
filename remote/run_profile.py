@@ -203,7 +203,10 @@ def main():
             raise RuntimeError("refusing to run: not a GitHub-hosted runner (GITHUB_ACTIONS/RUNNER_ENVIRONMENT). "
                                "Long computations run remotely; use --validate-only locally.")
         summary["packages"] = package_versions()
-        summary["devsim"] = devsim_info()
+        if prof.get("engine_info", True):
+            summary["devsim"] = devsim_info()
+        else:
+            summary["devsim"] = {"status": "NOT_IMPORTED", "reason": "engine-free profile"}
         argv = [sys.executable, entry, *args]
         summary["argv"] = ["<python>", prof["entry"], *args]
         env = dict(os.environ)

@@ -4,6 +4,21 @@ from fractions import Fraction as F
 
 import numpy as np
 
+# float64 subtraction, squared norm and sqrt; no absolute length floor.
+EDGE_LENGTH_RTOL = 64 * np.finfo(np.float64).eps
+
+
+def checked_indices(values, node_count, width):
+    """공식 배열을 자르기 전에 유한성·정수성·범위를 검사한다."""
+    q = np.asarray(values)
+    if q.ndim != 2 or q.shape[1] != width or not len(q) or q.dtype.kind not in 'iuf':
+        raise ValueError('EVIDENCE_BLOCKED: invalid index array')
+    if not np.all(np.isfinite(q)) or np.any(q < 0) or np.any(q >= node_count):
+        raise ValueError('EVIDENCE_BLOCKED: index range/nonfinite')
+    if q.dtype.kind == 'f' and np.any(q != np.floor(q)):
+        raise ValueError('EVIDENCE_BLOCKED: fractional index')
+    return q.astype(np.int64)
+
 
 def validate(a, solve_attempts=0, omitted=False):
     if type(solve_attempts) is not int or solve_attempts != 0 or omitted:
@@ -24,6 +39,12 @@ def validate(a, solve_attempts=0, omitted=False):
         q = np.asarray(a[key])
         if q.shape != (count,) or not np.all(np.isfinite(q)) or np.any(q <= 0 if positive else q < 0):
             raise ValueError('EVIDENCE_BLOCKED: invalid ' + key)
+    delta = xy[e[:, 0]] - xy[e[:, 1]]
+    length = np.hypot(delta[:, 0], delta[:, 1])
+    if not np.all(np.isfinite(length)) or np.any(length <= 0):
+        raise ValueError('EVIDENCE_BLOCKED: invalid coordinate length')
+    if np.any(np.abs(np.asarray(a['EdgeLength']) - length) > EDGE_LENGTH_RTOL * length):
+        raise ValueError('EVIDENCE_BLOCKED: EDGE_LENGTH_GEOMETRY_MISMATCH')
     return xy, t, e
 
 
