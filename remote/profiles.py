@@ -11,6 +11,18 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6ng_render_only": {
+        "description": "Actual Tk rendering of immutable successful PN result; no engine import or solve.",
+        "entry": "docs/audits/2026-10-06-e6ng-pn-reference-gui/render_check.py",
+        "args": [], "params": {}, "timeout_s": 60, "engine_info": False,
+        "inputs": [
+            "tcad/characterization/pn_reference_view.py",
+            "docs/audits/2026-10-06-e6ng-pn-reference-gui/render_check.py",
+            "docs/audits/2026-10-06-e6ng-pn-reference-gui/raw/outputs/e6ng_out/result.json"
+        ],
+        "outputs": [{"glob": "e6ng_render_out/**/*", "max_mb": 5}],
+        "regenerate": "Render the immutable result without recalculation.",
+    },
     "e6ng_pn_reference_gui": {
         "description": "Fixed 1D PN reference GUI with physical checks; existing 2D gate unchanged.",
         "entry": "docs/audits/2026-10-06-e6ng-pn-reference-gui/run_tests.py",

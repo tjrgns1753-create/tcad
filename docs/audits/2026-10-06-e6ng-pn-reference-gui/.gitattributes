@@ -1,0 +1,3 @@
+raw/** -text -diff
+raw_render/** -text -diff
+CHANGE.patch -text -diff

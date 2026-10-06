@@ -1,0 +1,167 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T08:14:21.011153+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6ng-pn-reference-gui-002",
+  "profile": "e6ng_pn_reference_gui",
+  "params": {},
+  "note": "Fixed 1D PN GUI, actual solve, physical checks, unchanged wafer and existing gates."
+ },
+ "profile": "e6ng_pn_reference_gui",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-06-e6ng-pn-reference-gui/PLAN.md",
+   "sha256": "866b7ccbed7b50056205ad6c9280905afea00fb5cad7ec3598cf92f491f35a57",
+   "bytes": 2003
+  },
+  {
+   "path": "tcad/characterization/pn_reference.py",
+   "sha256": "877d6daa263aacdfa9fd5b288f7def01aca9ecd5d8bfde7514e8682db2d3d2dc",
+   "bytes": 12945
+  },
+  {
+   "path": "tcad/characterization/pn_reference_view.py",
+   "sha256": "2c9571437fcaf9c80b19fc281a5b528dc860edf167be5bbf666fd17fe22665ef",
+   "bytes": 4600
+  },
+  {
+   "path": "tcad/characterization/reference_data/pn_1d_arrays.npz",
+   "sha256": "3fb54277848ab4522cb23bf3fd6755d6a059e56130f1a31932f1617e10fa25b4",
+   "bytes": 426916
+  },
+  {
+   "path": "tcad/characterization/reference_data/pn_1d_record.json",
+   "sha256": "52bb73beae473188308616e9c4fbcce1e879c6ba25e67924f377c08e1b7d50d5",
+   "bytes": 6217
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "2aea13feaac3384bc67d4ffea1d402e8d0450c36a3525882419cc9ff063fad76",
+   "bytes": 403822
+  },
+  {
+   "path": "tests/unit/test_pn_reference_view_mock.py",
+   "sha256": "a03a84331679690299197331a8a690c7177e236dae32145404031288f166a849",
+   "bytes": 2473
+  },
+  {
+   "path": "tests/integration/test_pn_reference_gui_real.py",
+   "sha256": "96fb06698a9e95583724e98cf137648e76b2a857cfdfe2b0bd23a634bbcf6af6",
+   "bytes": 2854
+  }
+ ],
+ "request_sha256": "869eb69d3e61954e7dfdfd79059c2719a1bb98607fbf17bc9e9578a63ea22879",
+ "source": {
+  "github_sha": "5ec4c7d316e0237ad4c600c65163fcdb06e517a7",
+  "git_head": "5ec4c7d316e0237ad4c600c65163fcdb06e517a7",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37434698574",
+  "run_number": "45",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6ng-pn-reference-gui/run_tests.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T08:14:34.245413+00:00",
+ "duration_s": 13.234,
+ "outputs": [
+  {
+   "path": "e6ng_out/canonical_gate.log",
+   "bytes": 2109,
+   "sha256": "b4602e723208b6e206d5b8e2092aae7d01da34452defc6a6c01d611a3a395f6a"
+  },
+  {
+   "path": "e6ng_out/current_units.log",
+   "bytes": 41,
+   "sha256": "72edfd436068f55f46aa42204e391a8209b31f1b8c27b95d8a3cdbd6576fb92d"
+  },
+  {
+   "path": "e6ng_out/existing_gui.log",
+   "bytes": 11034,
+   "sha256": "91eaa77f19c8410ea9ffefabd883fd6b1ff10b3f430ca80b99201d330bd93e25"
+  },
+  {
+   "path": "e6ng_out/gui.json",
+   "bytes": 126,
+   "sha256": "78e4a4e960840a9eb72d9f859ed411cbd2955d8324ce03d117e634d627053f6c"
+  },
+  {
+   "path": "e6ng_out/gui_reference.log",
+   "bytes": 3575,
+   "sha256": "9fa6a5967dc7eaaa4ae6f6061d8b942b539c271b63b2f52923f0f7461b38ac28"
+  },
+  {
+   "path": "e6ng_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6ng_out/pn_reference.png",
+   "bytes": 89034,
+   "sha256": "06875d974da7fc254a5c4580551d508eab489620b367f5426afafd2288923c38"
+  },
+  {
+   "path": "e6ng_out/result.json",
+   "bytes": 1540003,
+   "sha256": "9b3212aad5eb00acd02fa1289442bbda0ee814b37078f5296f27b604d143705d"
+  },
+  {
+   "path": "e6ng_out/tests.json",
+   "bytes": 2535,
+   "sha256": "cfa9bd3c004f3a23d93b6999fd423a28d2ed1249a16e891c39679c7e618770da"
+  },
+  {
+   "path": "e6ng_out/view_mock.log",
+   "bytes": 97,
+   "sha256": "cb934f3ed8ada92968d017020bef452c0ceefbdfd28c8f66d56aad1440b10d1a"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "GUI button runs a fresh fixed 1D reference; no general 2D gate release.",
+ "log": {
+  "file": "run.log",
+  "sha256": "f4fdae5942dec500f833134b6537ae1bc3efb1002634f45b8eaffc0275077c62",
+  "bytes": 152
+ },
+ "redactions": {}
+}

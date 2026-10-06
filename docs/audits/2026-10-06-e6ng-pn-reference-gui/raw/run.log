@@ -1,0 +1,10 @@
+{
+  "pass": true,
+  "steps": {
+    "view_mock": 0,
+    "gui_reference": 0,
+    "canonical_gate": 0,
+    "current_units": 0,
+    "existing_gui": 0
+  }
+}

@@ -47,7 +47,9 @@ def figure_for_result(result):
     font=next((f for f in ('Malgun Gothic','NanumGothic','Noto Sans CJK KR') if f in available),None)
     if font:
         for text in fig.findobj(Text):
-            text.set_fontfamily(font)
+            # Korean labels and mathematical minus signs need different glyph sets.
+            text.set_fontfamily([font, 'DejaVu Sans'])
+            text.set_math_fontfamily('dejavusans')
     return fig
 
 
