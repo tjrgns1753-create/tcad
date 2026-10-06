@@ -11,6 +11,25 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6ne_matched_1d_reference": {
+        "description": "Exact-x 1D numerical PN reference; reuse N2 2D evidence without new 2D solves or gate changes.",
+        "entry": "docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py",
+        "args": [], "params": {}, "timeout_s": 330, "engine_info": False,
+        "inputs": [
+            "docs/audits/2026-10-06-e6ne-matched-1d-reference/PLAN.md",
+            "docs/audits/2026-10-06-e6ne-matched-1d-reference/common.py",
+            "docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py",
+            "docs/audits/2026-10-06-e6ne-matched-1d-reference/matched_judge.py",
+            "docs/audits/2026-10-06-e6ne-matched-1d-reference/test_contract.py",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/raw_fine/outputs/e6nd_fine_out/N2/arrays.npz",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/raw_fine/outputs/e6nd_fine_out/N2/record.json",
+            "tcad/characterization/pn_junction_iv_sweep.py",
+            "tcad/device/devsim/semiconductor_equation.py",
+            "tcad/device/devsim/doping_mapping.py"
+        ],
+        "outputs": [{"glob": "e6ne_out/**/*", "max_mb": 20}],
+        "regenerate": "Only three fresh 1D devices, 17 solves planned; never release production PN gate.",
+    },
     "e6nd_pn_fine_diagnostic": {
         "description": "Post-hoc N2-only PN diagnostic; old two-mesh failure retained, production gate closed.",
         "entry": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py",
