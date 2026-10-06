@@ -1,7 +1,9 @@
 """원격 원시 bytes·반례·대조군을 엔진 없이 재검사."""
 import hashlib
 import json
+import os
 from pathlib import Path
+import subprocess
 import sys
 def deny(event,args):
     if event=='import' and args[0].split('.')[0] in {'devsim','viennaps','viennals'}:
@@ -14,6 +16,13 @@ def main(root):
     assert summary['source']['run_id']=='37462960267'
     assert summary['status']=='PASS' and summary['exit_code']==0 and not summary['omitted_outputs']
     assert summary['runner']['runner_environment']=='github-hosted'
+    repository=Path(__file__).resolve().parents[3]
+    env=dict(os.environ,GIT_CONFIG_GLOBAL=os.devnull,GIT_CONFIG_NOSYSTEM='1')
+    for record in summary['inputs']:
+        blob=subprocess.check_output(['git','show',summary['source']['git_head']+':'+record['path']],cwd=repository,env=env)
+        lf=blob.replace(b'\r\n',b'\n')
+        variants=(blob,lf,lf.replace(b'\n',b'\r\n'))
+        assert any(len(v)==record['bytes'] and hashlib.sha256(v).hexdigest()==record['sha256'] for v in variants)
     for record in summary['outputs']+[summary['log']]:
         path=root/('outputs/'+record['path'] if 'path' in record else record['file'])
         data=path.read_bytes()
@@ -44,6 +53,7 @@ def main(root):
     existing=json.loads((out/'gui_unit_contract.json').read_text(encoding='utf-8'))
     assert existing['pass'] is True and all(c['pass'] is True for c in existing['checks'])
     print(json.dumps({'pass':True,'outputs_checked':len(summary['outputs'])+1,
+                      'source_inputs_checked':len(summary['inputs']),
                       'vertex_inverse_error_um':depth['vertex_inverse_error_um'],'engine_imports':0},indent=2))
 
 if __name__=='__main__': main(Path(sys.argv[1]))

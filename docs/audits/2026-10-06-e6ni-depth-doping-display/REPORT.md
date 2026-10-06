@@ -121,6 +121,12 @@ canonical의 숫자 유효성 검사는 변경했으므로 production 전체 무
 `verify_artifact.py`는 엔진 import 없이 full 실행 SHA, run ID, 12개 출력 + run.log
 bytes/SHA-256, 모든 대상 종료 코드, raw 색 개수, 무효 농도 차단 및 정상 대조군을 재검사했다.
 결과 PASS, 엔진 import 0회. `git diff --check`는 source 및 보완 보고서에서 0이다.
+추가로 7개 source input을 고정 실행 SHA의 git blob과 대조했다. 로컬은 LF이고 원격 checkout은
+CRLF이므로 raw input SHA를 로컬 bytes에 바로 대조하면 다르다. 같은 git blob에 CRLF 변환만
+적용한 bytes는 원격 input 길이와 SHA-256에 7/7 정확 일치한다. 코드 차이가 아니다.
+verifier에도 이 exact checkout 변형 검사(원본/LF/CRLF만 허용)를 추가했다.
+원시 출력 bytes와 해시는 정규화하지 않고 그대로 대조한다. source bytes 자체가
+checkout 간 동일하다는 주장은 하지 않는다. 실행 SHA와 보존 코드 내용은 동일하다.
 이전 E6N-H 보고서의 인용 diff context 빈 줄 공백 오류도 제거했다. 원시 patch는 손대지 않았다.
 
 실제 GUI/core/unit 전체 282줄 diff는 `CHANGE.patch`에 보존한다.
