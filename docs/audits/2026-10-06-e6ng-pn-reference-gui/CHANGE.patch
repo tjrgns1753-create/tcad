@@ -1,0 +1,537 @@
+diff --git a/tcad/characterization/pn_reference.py b/tcad/characterization/pn_reference.py
+new file mode 100644
+index 0000000..9944906
+--- /dev/null
++++ b/tcad/characterization/pn_reference.py
+@@ -0,0 +1,228 @@
++"""고정된 1D PN 기준 문제. 현재 공정 웨이퍼나 일반 2D PN의 승인 경로가 아니다."""
++from __future__ import annotations
++
++import hashlib
++import json
++import math
++from pathlib import Path
++import sys
++
++import numpy as np
++
++DATA = Path(__file__).with_name('reference_data')
++HASHES = {'pn_1d_arrays.npz':'3fb54277848ab4522cb23bf3fd6755d6a059e56130f1a31932f1617e10fa25b4',
++          'pn_1d_record.json':'52bb73beae473188308616e9c4fbcce1e879c6ba25e67924f377c08e1b7d50d5'}
++VOLTS = {'control':[.001], 'fwd':[.1,.2,.3,.4,.5,.6], 'rev':[-.25,-.5,-.75,-1.]}
++SNAPS = {'control':[.001], 'fwd':[0.,.3,.5,.6], 'rev':[0.,-.5,-1.]}
++CONTACTS = ['Si_xmin','Si_xmax']
++SCOPE = '고정된 1D 대칭 Si PN 기준 문제 — 현재 공정 웨이퍼의 측정이나 실험 검증이 아님'
++SOURCES = ['https://devsim.com/1d-diode-junction-part-ii/',
++           'https://doi.org/10.1109/T-ED.1969.16566',
++           'https://doi.org/10.1103/PhysRev.87.835',
++           'https://ocw.mit.edu/courses/6-012-microelectronic-devices-and-circuits-fall-2009/resources/mit6_012f09_lec04/']
++
++
++def reference():
++    for name,sha in HASHES.items():
++        if hashlib.sha256((DATA/name).read_bytes()).hexdigest()!=sha:
++            raise ValueError('PN_REFERENCE_HASH_MISMATCH:'+name)
++    with np.load(DATA/'pn_1d_arrays.npz',allow_pickle=False) as z:
++        arrays={k:z[k].copy() for k in z.files}
++    return json.loads((DATA/'pn_1d_record.json').read_text()),arrays
++
++
++def canonical(control=False):
++    from tcad.mesh.interface import MaterialRegion, ProcessResult
++    from tcad.physics.doping import apply_step_junction_doping, apply_uniform_doping
++    from tcad.physics.wafer_state_accumulation import initial_wafer_state_from_recipe, advance_wafer_state
++    # 명시적인 analytic 입력. 빈 path로 공정 mesh가 있다고 주장하지 않는다.
++    pr=ProcessResult('',material_regions=[MaterialRegion('Si',0)],metadata={'origin':'ANALYTIC_REFERENCE_NOT_PROCESS'})
++    if control:
++        doped=apply_uniform_doping(pr,donor_by_region_cm3={'Si':1e16},acceptor_by_region_cm3={'Si':0.},chemical_state='ACTIVE')
++    else:
++        doped=apply_step_junction_doping(pr,'Si','x',0.,1e17,1e17,chemical_state='ACTIVE')
++    initial=initial_wafer_state_from_recipe({'x_extent_um':40.,'silicon_depth_um':.1,'grid_delta_um':0.})
++    return advance_wafer_state(initial,doped,'doping')
++
++
++def build_device(dv,name,x):
++    mesh=name+'_mesh'
++    dv.create_1d_mesh(mesh=mesh)
++    for i,pos in enumerate(x):
++        tag={'tag':CONTACTS[0]} if i==0 else {'tag':CONTACTS[1]} if i==len(x)-1 else {}
++        dv.add_1d_mesh_line(mesh=mesh,pos=float(pos),ps=.004,**tag)
++    for c in CONTACTS:
++        dv.add_1d_contact(mesh=mesh,name=c,tag=c,material='metal')
++    dv.add_1d_region(mesh=mesh,region='Si',material='Si',tag1=CONTACTS[0],tag2=CONTACTS[1])
++    dv.finalize_mesh(mesh=mesh)
++    dv.create_device(mesh=mesh,device=name)
++    actual=np.array(dv.get_node_model_values(device=name,region='Si',name='x'))
++    if len(actual)!=1545 or not np.array_equal(np.sort(actual),x):
++        raise ValueError('PN_REFERENCE_NATIVE_COORDINATES_CHANGED')
++
++
++def run_device(dv,kind,x):
++    from tcad.device.devsim.doping_mapping import apply_doping
++    from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
++    name='pn_reference_'+kind
++    rec={'kind':kind,'error':None,'cleanup_ok':False,'solve_attempts':0,'solves':0,'solve_failures':0,'snapshot_failures':0,'profiles':{}}
++    original=dv.solve
++    def native(nm):
++        return np.array(dv.get_node_model_values(device=name,region='Si',name=nm))
++    def observed(*args,**kwargs):
++        rec['solve_attempts']+=1
++        try:
++            value=original(*args,**kwargs)
++        except Exception:
++            rec['solve_failures']+=1
++            raise
++        rec['solves']+=1
++        try:
++            if 'Electrons' in dv.get_node_model_list(device=name,region='Si'):
++                v=float(dv.get_parameter(device=name,name=CONTACTS[0]+'_bias'))
++                if v in SNAPS[kind]:
++                    rec['profiles'][str(v)]={nm:native(nm).tolist() for nm in ('Potential','Electrons','Holes')}
++                    rec['profiles'][str(v)]['ElectricField']=list(dv.get_edge_model_values(device=name,region='Si',name='ElectricField'))
++        except Exception:
++            rec['snapshot_failures']+=1
++            raise
++        return value
++    try:
++        build_device(dv,name,x)
++        xx,yy=native('x'),native('y')
++        state=canonical(kind=='control')
++        for a,b in zip(xx,yy):
++            q=state.net_doping_at(float(a)*1e4,float(b)*1e4)
++            expected=(1e16,0.,1e16) if kind=='control' else (1e17*(a>=0),1e17*(a<=0),1e17*((a>=0)*1-(a<=0)*1))
++            if q.physics_status is not None or (q.donor_concentration,q.acceptor_concentration,q.net_doping)!=expected:
++                raise ValueError('PN_REFERENCE_CANONICAL_UNSUPPORTED')
++        rec['canonical_checked']=len(xx)
++        apply_doping(name,'Si',state,length_scale_to_cm=1e-4)
++        rec['x_cm']=xx.tolist()
++        for nm in ('Donors','Acceptors','NetDoping'):
++            rec[nm]=native(nm).tolist()
++        dv.solve=observed
++        result=run_pn_junction_iv_sweep(name,'Si',CONTACTS,CONTACTS[0],VOLTS[kind],{CONTACTS[1]:0.})
++        rec['currents']=[{'V':pt.voltages[CONTACTS[0]],'left':pt.currents[CONTACTS[0]],'right':pt.currents[CONTACTS[1]]} for pt in result.points]
++        rec['params']={nm:float(dv.get_parameter(device=name,region='Si',name=nm)) for nm in ('ElectronCharge','n_i','T','mu_n','mu_p','taun','taup','Permittivity','V_t')}
++        dv.edge_from_node_model(device=name,region='Si',node_model='x')
++        for nm in ('x@n0','x@n1','EdgeLength'):
++            rec[nm]=list(dv.get_edge_model_values(device=name,region='Si',name=nm))
++    except Exception as exc:
++        rec['error']=type(exc).__name__+': '+str(exc)[:500]
++    finally:
++        dv.solve=original
++        try:
++            if name in dv.get_device_list():
++                dv.delete_device(device=name)
++            if name+'_mesh' in dv.get_mesh_list():
++                dv.delete_mesh(mesh=name+'_mesh')
++            rec['cleanup_ok']=not dv.get_device_list() and not dv.get_mesh_list()
++        except Exception as exc:
++            rec['error']='CLEANUP_FAILED: '+str(exc)[:300]
++    return rec
++
++
++def validate(devices,baseline,arrays):
++    checks=[]
++    def need(name,ok,value=None):
++        checks.append({'name':name,'pass':bool(ok),'value':value})
++    for kind in VOLTS:
++        r=devices[kind]
++        count=2+len(VOLTS[kind])
++        if r['error'] or r['cleanup_ok'] is not True or any(type(r.get(k)) is not int or r[k]!=v for k,v in {'solve_attempts':count,'solves':count,'solve_failures':0,'snapshot_failures':0,'canonical_checked':1545}.items()):
++            raise ValueError('PN_REFERENCE_INCOMPLETE:'+kind)
++        if r['params']!=baseline['devices'][kind]['params']:
++            raise ValueError('PN_REFERENCE_PARAMETERS_CHANGED')
++        x=np.asarray(r['x_cm'])
++        gx=arrays[kind+'_x']
++        if x.shape!=(1545,) or not np.all(np.isfinite(x)) or not np.array_equal(np.sort(x),np.sort(gx)):
++            raise ValueError('PN_REFERENCE_GRID_CHANGED')
++        for nm in ('Donors','Acceptors','NetDoping'):
++            if not np.array_equal(np.asarray(r[nm])[np.argsort(x)],arrays[kind+'_'+nm][np.argsort(gx)]):
++                raise ValueError('PN_REFERENCE_DOPING_CHANGED')
++        if len(r['currents'])!=len(VOLTS[kind]):
++            raise ValueError('PN_REFERENCE_CURRENTS_MISSING')
++        for row,g,v in zip(r['currents'],baseline['devices'][kind]['currents'],VOLTS[kind]):
++            if row['V']!=v or any(type(row[k]) not in (int,float) or not math.isfinite(row[k]) for k in ('V','left','right')) or row['left']==0:
++                raise ValueError('PN_REFERENCE_CURRENT_INVALID')
++            kcl=abs(row['left']+row['right'])/abs(row['left'])
++            need(kind+'_'+str(v)+'_전류보존',kcl<=(1e-6 if kind=='control' else 1e-3),kcl)
++            need(kind+'_'+str(v)+'_기준전류',abs(row['left']-g['I_min'])/abs(g['I_min'])<=.01)
++            need(kind+'_'+str(v)+'_전류부호',row['left']*v>0)
++        need(kind+'_전류단조성',np.all(np.diff(np.abs([r['left'] for r in r['currents']]))>0))
++        order=np.argsort(x)
++        go=np.argsort(gx)
++        e0,e1,ell=[np.asarray(r[nm]) for nm in ('x@n0','x@n1','EdgeLength')]
++        if any(a.shape!=(1544,) for a in (e0,e1,ell)) or np.any(ell<=0) or not np.all(np.isfinite(ell)):
++            raise ValueError('PN_REFERENCE_EDGE_INVALID')
++        xs=np.sort(x)
++        i0,i1=np.searchsorted(xs,e0),np.searchsorted(xs,e1)
++        if np.any(i0>=len(xs)) or np.any(i1>=len(xs)) or not np.array_equal(xs[i0],e0) or not np.array_equal(xs[i1],e1):
++            raise ValueError('PN_REFERENCE_EDGE_ENDPOINT_CHANGED')
++        pairs=np.sort(np.column_stack((e0,e1)),axis=1)
++        pairs=pairs[np.argsort(pairs[:,0])]
++        if not np.array_equal(pairs,np.column_stack((xs[:-1],xs[1:]))) or not np.allclose(ell,abs(e1-e0),rtol=1e-12,atol=0):
++            raise ValueError('PN_REFERENCE_EDGE_TOPOLOGY_CHANGED')
++        for v in SNAPS[kind]:
++            s=r['profiles'][str(v)]
++            for nm in ('Potential','Electrons','Holes'):
++                a=np.asarray(s[nm]); g=arrays[f'{kind}_{v}_{nm}']
++                if a.shape!=(1545,) or not np.all(np.isfinite(a)) or (nm!='Potential' and np.any(a<=0)):
++                    raise ValueError('PN_REFERENCE_PROFILE_INVALID')
++                error=float(np.max(abs(a[order]-g[go]))) if nm=='Potential' else float(np.max(abs(a[order]-g[go])/g[go]))
++                need(f'{kind}_{v}_{nm}_기준',error<=(.01*r['params']['V_t'] if nm=='Potential' else .01),error)
++            field=np.asarray(s['ElectricField'])
++            psi=np.asarray(s['Potential'])[order]
++            if field.shape!=(1544,) or not np.all(np.isfinite(field)):
++                raise ValueError('PN_REFERENCE_FIELD_INVALID')
++            need(f'{kind}_{v}_전계일관성',np.allclose(field,(psi[i0]-psi[i1])/ell,rtol=1e-9,atol=1e-7))
++    ctl=devices['control']; p=ctl['params']
++    n=(1e16+math.sqrt(1e32+4*p['n_i']**2))/2
++    theory=p['ElectronCharge']*(p['mu_n']*n+p['mu_p']*p['n_i']**2/n)*.001/.004
++    need('저항해석식_단위_A_per_cm2',abs(ctl['currents'][0]['left']-theory)/theory<=1e-6)
++    f,r=devices['fwd'],devices['rev']
++    order=np.argsort(f['x_cm'])
++    psi=np.asarray(f['profiles']['0.0']['Potential'])[order]
++    vbi=f['params']['V_t']*math.log(1e34/f['params']['n_i']**2)
++    need('문헌_내장전위',abs((psi[-1]-psi[0])-vbi)<=.01*f['params']['V_t'],{'computed_V':float(psi[-1]-psi[0]),'analytic_V':vbi})
++    e_eq=max(abs(np.asarray(f['profiles']['0.0']['ElectricField'])))
++    need('순방향_장벽완화',np.ptp(f['profiles']['0.6']['Potential'])<np.ptp(f['profiles']['0.0']['Potential']))
++    need('역방향_장벽증가',np.ptp(r['profiles']['-1.0']['Potential'])>np.ptp(r['profiles']['0.0']['Potential']))
++    need('순방향_전계완화',max(abs(np.asarray(f['profiles']['0.6']['ElectricField'])))<e_eq)
++    need('역방향_전계증가',max(abs(np.asarray(r['profiles']['-1.0']['ElectricField'])))>e_eq)
++    return checks
++
++
++def run(out):
++    baseline,arrays=reference()  # 엔진 import 전에 입력 무결성 검사.
++    from tcad.device.devsim import backend
++    dv=backend.require_devsim()
++    if dv.get_device_list() or dv.get_mesh_list():
++        raise RuntimeError('PN_REFERENCE_REQUIRES_EMPTY_ENGINE')
++    x=np.sort(arrays['fwd_x'])
++    devices={}
++    for kind in VOLTS:
++        devices[kind]=run_device(dv,kind,x)
++        if devices[kind]['error'] or not devices[kind]['cleanup_ok']:
++            break
++    problems=[]; checks=[]
++    try:
++        checks=validate(devices,baseline,arrays)
++    except Exception as exc:
++        problems.append(type(exc).__name__+': '+str(exc))
++    passed=bool(checks) and not problems and all(c['pass'] for c in checks)
++    result={'schema':1,'status':'REFERENCE_MODEL_CHECKS_PASS' if passed else 'REFERENCE_MODEL_CHECKS_FAILED',
++            'scope':SCOPE,'current_unit':'A/cm^2','checks':checks,'problems':problems,'devices':devices,
++            'references':SOURCES,'production_2d_gate_released':False}
++    Path(out).write_text(json.dumps(result,ensure_ascii=False,allow_nan=False),encoding='utf-8')
++    return 0 if passed else 1
++
++
++if __name__=='__main__':
++    try:
++        raise SystemExit(run(sys.argv[1]))
++    except Exception as exc:
++        Path(sys.argv[1]).write_text(json.dumps({'schema':1,'status':'REFERENCE_MODEL_CHECKS_FAILED','scope':SCOPE,'checks':[],
++                                              'problems':[type(exc).__name__+': '+str(exc)],'production_2d_gate_released':False},ensure_ascii=False),encoding='utf-8')
++        raise SystemExit(1)
+diff --git a/tcad/characterization/pn_reference_view.py b/tcad/characterization/pn_reference_view.py
+new file mode 100644
+index 0000000..01bfae4
+--- /dev/null
++++ b/tcad/characterization/pn_reference_view.py
+@@ -0,0 +1,87 @@
++"""PN 기준 문제 표시. 실패한 수치를 정상 그래프로 표시하지 않는다."""
++from . import pn_reference as P
++
++
++def require_pass(result):
++    if (result.get('schema')!=1 or result.get('status')!='REFERENCE_MODEL_CHECKS_PASS'
++            or result.get('scope')!=P.SCOPE or result.get('current_unit')!='A/cm^2'
++            or result.get('production_2d_gate_released') is not False or result.get('problems')!=[]):
++        raise ValueError('PN_REFERENCE_DISPLAY_BLOCKED')
++    baseline,arrays=P.reference()
++    checks=P.validate(result['devices'],baseline,arrays)
++    if not checks or not all(c['pass'] is True for c in checks) or checks!=result.get('checks'):
++        raise ValueError('PN_REFERENCE_DISPLAY_CHECKS_FAILED')
++    return checks
++
++
++def figure_for_result(result):
++    require_pass(result)
++    from matplotlib.figure import Figure
++    import numpy as np
++    fig=Figure(figsize=(10,7),dpi=100,constrained_layout=True)
++    iv,psi,carriers,field=fig.subplots(2,2).flat
++    for d,label in [('fwd','순방향'),('rev','역방향')]:
++        rows=result['devices'][d]['currents']
++        iv.semilogy([r['V'] for r in rows],[abs(r['left']) for r in rows],'o-',label=label)
++    iv.set(xlabel='인가 전압 (V)',ylabel='|전류 밀도| (A/cm²)',title='고정 1D PN — 제작 웨이퍼 결과 아님')
++    iv.legend()
++    for d,v in [('rev',-1.),('fwd',0.),('fwd',.6)]:
++        r=result['devices'][d]; s=r['profiles'][str(v)]
++        x=np.array(r['x_cm'])*1e4; order=np.argsort(x)
++        psi.plot(x[order],np.array(s['Potential'])[order],label=f'{v:+g} V')
++        e=(np.array(r['x@n0'])+np.array(r['x@n1']))*.5e4
++        eo=np.argsort(e)
++        field.plot(e[eo],np.array(s['ElectricField'])[eo],label=f'{v:+g} V')
++    r=result['devices']['fwd']; s=r['profiles']['0.0']
++    x=np.array(r['x_cm'])*1e4; order=np.argsort(x)
++    for nm,label in [('Electrons','전자'),('Holes','정공')]:
++        carriers.semilogy(x[order],np.array(s[nm])[order],label=label)
++    psi.set(xlabel='x (µm)',ylabel='정전위 (V)',xlim=(-.5,.5))
++    field.set(xlabel='x (µm)',ylabel='전계 (V/cm)',xlim=(-.5,.5))
++    carriers.set(xlabel='x (µm)',ylabel='캐리어 농도 (cm⁻³)',xlim=(-.5,.5),title='평형 캐리어 분포')
++    for ax in (psi,carriers,field):
++        ax.legend()
++    # Plain scientific notation avoids platform-dependent mathtext exponent glyphs.
++    from matplotlib.ticker import FuncFormatter
++    for ax in (iv, carriers):
++        ax.yaxis.set_major_formatter(FuncFormatter(lambda value, position: f'{value:.0e}'))
++    from matplotlib import font_manager
++    from matplotlib.text import Text
++    available={f.name for f in font_manager.fontManager.ttflist}
++    font=next((f for f in ('Malgun Gothic','NanumGothic','Noto Sans CJK KR') if f in available),None)
++    if font:
++        for text in fig.findobj(Text):
++            # Korean labels and mathematical minus signs need different glyph sets.
++            text.set_fontfamily([font, 'DejaVu Sans'])
++            text.set_math_fontfamily('dejavusans')
++    return fig
++
++
++def show_result(app,result):
++    import tkinter as tk
++    from tkinter import ttk
++    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
++    checks=require_pass(result)
++    window=tk.Toplevel(app)
++    window.title('PN 기준 다이오드 — 문헌 모델 및 수치 기준 검사')
++    ttk.Label(window,text='고정 1D Si PN | NA=ND=1e17 cm⁻³ | 300 K | ACTIVE 분석 입력\n'
++              '문헌 모델/수치 기준 검사 통과 — 현재 웨이퍼·제작 공정·실험 검증 결과가 아닙니다.',
++              foreground='#176b35').pack(anchor='w',padx=10,pady=8)
++    tabs=ttk.Notebook(window); tabs.pack(fill='both',expand=True)
++    plots=ttk.Frame(tabs); details=ttk.Frame(tabs)
++    tabs.add(plots,text='실제 DEVSIM 결과'); tabs.add(details,text='물리 검사 / 범위 / 문헌')
++    canvas=FigureCanvasTkAgg(figure_for_result(result),master=plots)
++    canvas.draw(); canvas.get_tk_widget().pack(fill='both',expand=True)
++    toolbar=NavigationToolbar2Tk(canvas,plots); toolbar.update()
++    window._pn_canvas=canvas
++    text=tk.Text(details,width=100,height=28,wrap='word')
++    text.pack(fill='both',expand=True)
++    text.insert('end',P.SCOPE+'\n\n'+
++                'Poisson + drift-diffusion + SG 전류 + SRH 모델의 고정 기준 문제입니다.\n'
++                '활성화, 산화 재분포, 실제 제작 도핑 및 avalanche breakdown은 검증 범위가 아닙니다.\n'
++                '이상 Shockley 전류식을 SRH 포함 전류의 정확한 등식으로 주장하지 않습니다.\n'
++                '일반 2D PN gate는 그대로 유지됩니다.\n\n'+
++                '\n'.join('통과: '+c['name']+((' | '+str(c['value'])) if c['value'] is not None else '') for c in checks)+
++                '\n\n문헌 / 공식 구현:\n'+'\n'.join(P.SOURCES))
++    text.configure(state='disabled')
++    return window
+diff --git a/tcad/characterization/reference_data/.gitattributes b/tcad/characterization/reference_data/.gitattributes
+new file mode 100644
+index 0000000..9419801
+--- /dev/null
++++ b/tcad/characterization/reference_data/.gitattributes
+@@ -0,0 +1,2 @@
++*.json -text -diff
++*.npz -text -diff
+diff --git a/tcad/characterization/reference_data/pn_1d_arrays.npz b/tcad/characterization/reference_data/pn_1d_arrays.npz
+new file mode 100644
+index 0000000..86d31b9
+Binary files /dev/null and b/tcad/characterization/reference_data/pn_1d_arrays.npz differ
+diff --git a/tcad/characterization/reference_data/pn_1d_record.json b/tcad/characterization/reference_data/pn_1d_record.json
+new file mode 100644
+index 0000000..f3f5d3f
+Binary files /dev/null and b/tcad/characterization/reference_data/pn_1d_record.json differ
+diff --git a/tcad_2d_stagewise.py b/tcad_2d_stagewise.py
+index ac5a036..38e00d8 100644
+--- a/tcad_2d_stagewise.py
++++ b/tcad_2d_stagewise.py
+@@ -5635,6 +5635,75 @@ class TCADApplication(tk.Tk):
+             pady=(12, 3),
+         )
+ 
++        ttk.Separator(frame).pack(fill="x", pady=8)
++        ttk.Label(frame, text="별도 기준 문제: 현재 웨이퍼와 무관한 고정 1D PN.\n"
++                  "문헌 모델 및 수치 검사 통과 시에만 그래프를 표시합니다.",
++                  wraplength=310).pack(anchor="w")
++        self.pn_reference_button = ttk.Button(
++            frame, text="PN 기준 다이오드 계산 (1D)", command=self.run_pn_reference)
++        self.pn_reference_button.pack(fill="x", pady=6)
++
++    def run_pn_reference(self):
++        """별도 subprocess의 기준 문제. 공정 상태와 일반 측정 gate는 변경하지 않는다."""
++        import time
++        if getattr(self, "_pn_reference_process", None) is not None:
++            return
++        old = getattr(self, "_pn_reference_window", None)
++        if old is not None and old.winfo_exists():
++            old.destroy()
++        directory = Path(tempfile.mkdtemp(prefix="tcad_pn_reference_"))
++        output = directory / "result.json"
++        self._pn_reference_result = None
++        self._pn_reference_output = output
++        log = (directory / "worker.log").open("w", encoding="utf-8")
++        try:
++            process = subprocess.Popen(
++                [sys.executable, "-B", "-m", "tcad.characterization.pn_reference", str(output)],
++                cwd=Path(__file__).resolve().parent, stdout=log, stderr=subprocess.STDOUT,
++                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
++        except Exception as exc:
++            log.close()
++            self._notify_error("PN 기준 문제", str(exc))
++            return
++        self._pn_reference_process = process
++        self.pn_reference_button.configure(state="disabled")
++        self._log("\nPN 기준 문제 계산 중 — 현재 공정 웨이퍼의 측정이 아닙니다.\n")
++        started = time.monotonic()
++
++        def close(event):
++            if event.widget is self and process.poll() is None:
++                process.kill()
++                process.wait(timeout=5)
++                log.close()
++        binding = self.bind("<Destroy>", close, add="+")
++
++        def poll():
++            if process.poll() is None:
++                if time.monotonic() - started <= 120:
++                    self.after(100, poll)
++                    return
++                process.kill()
++                process.wait(timeout=5)
++            log.close()
++            self.unbind("<Destroy>", binding)
++            self._pn_reference_process = None
++            self.pn_reference_button.configure(state="normal")
++            try:
++                if not output.exists():
++                    raise RuntimeError("기준 문제 계산 실패 또는 시간 초과. 정상 결과를 표시하지 않습니다.")
++                result = json.loads(output.read_text(encoding="utf-8"))
++                from tcad.characterization.pn_reference_view import show_result
++                if process.returncode != 0:
++                    raise RuntimeError("물리 검사 미통과: " + str(result.get("problems", [])) +
++                                       " | " + str([c["name"] for c in result.get("checks", []) if not c["pass"]]))
++                self._pn_reference_window = show_result(self, result)
++                self._pn_reference_result = result
++                self._log("PN 기준 문제: 문헌 모델/수치 기준 검사 통과. 현재 웨이퍼 및 실험 검증은 아님.\n")
++            except Exception as exc:
++                self._log("PN 기준 문제 검증 미통과 — 그래프 표시 차단.\n")
++                self._notify_error("PN 기준 문제 검증 미통과", str(exc))
++        self.after(100, poll)
++
+     def _refine_for_implant_windows(self, doped_result):
+         """Graded-refine the real mesh at every implant-window edge.
+ 
+diff --git a/tests/integration/test_pn_reference_gui_real.py b/tests/integration/test_pn_reference_gui_real.py
+new file mode 100644
+index 0000000..35905e6
+--- /dev/null
++++ b/tests/integration/test_pn_reference_gui_real.py
+@@ -0,0 +1,52 @@
++"""실제 Tk 버튼→subprocess→DEVSIM→그림, 공정 wafer 상태 무변경."""
++import json
++import os
++from pathlib import Path
++import sys
++import time
++from unittest.mock import patch
++
++ROOT=Path(__file__).resolve().parents[2]
++sys.path.insert(0,str(ROOT))
++if os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted':
++    raise RuntimeError('REMOTE_ONLY_TEST')
++import tcad_2d_stagewise as G
++from tcad.characterization.pn_reference_view import require_pass
++
++out=Path(sys.argv[1]); out.mkdir(parents=True,exist_ok=True)
++modal=[]
++with patch.object(G.messagebox,'showinfo',side_effect=lambda *a,**k:modal.append('info')),patch.object(G.messagebox,'showerror',side_effect=lambda *a,**k:modal.append('error')):
++    app=G.TCADApplication(); app.withdraw()
++    before=(app.wafer_state,app.last_final_mesh,app.last_doped_result,app.wafer.processed,app.process_stage)
++    try:
++        app.pn_reference_button.invoke()
++        assert app._pn_reference_process is not None
++        app.pn_reference_button.invoke()  # 중복 실행 금지.
++        deadline=time.monotonic()+120
++        updates=0
++        while app._pn_reference_process is not None and time.monotonic()<deadline:
++            app.update(); updates+=1; time.sleep(.01)
++        assert app._pn_reference_process is None,'GUI_REFERENCE_TIMEOUT'
++        result=app._pn_reference_result
++        if result is None:
++            if app._pn_reference_output.exists():
++                (out/'failed_result.json').write_bytes(app._pn_reference_output.read_bytes())
++            raise AssertionError('NO_ACCEPTED_RESULT: '+app.log.get('1.0','end'))
++        require_pass(result)
++        assert before==(app.wafer_state,app.last_final_mesh,app.last_doped_result,app.wafer.processed,app.process_stage)
++        assert updates>1 and not modal
++        fig=app._pn_reference_window._pn_canvas.figure
++        assert len(fig.axes)==4
++        assert [len(ax.lines) for ax in fig.axes]==[2,3,2,3]
++        fig.savefig(out/'pn_reference.png')
++        (out/'result.json').write_text(json.dumps(result,ensure_ascii=False),encoding='utf-8')
++        (out/'gui.json').write_text(json.dumps({'updates':updates,'modal_calls':modal,'wafer_unchanged':True,'axes':4,
++                                               'solves':sum(d['solves'] for d in result['devices'].values()),
++                                               'status':result['status']},ensure_ascii=False),encoding='utf-8')
++        with patch.object(G.subprocess,'Popen',side_effect=OSError('SYNTHETIC_LAUNCH_FAILURE')):
++            app.run_pn_reference()
++            assert not app._pn_reference_window.winfo_exists()
++            assert app._pn_reference_result is None
++        print('PASS: real GUI benchmark, 17 solves, 4 plots, state unchanged, no modal, failure removes stale graph')
++    finally:
++        app.destroy()
+diff --git a/tests/unit/test_pn_reference_view_mock.py b/tests/unit/test_pn_reference_view_mock.py
+new file mode 100644
+index 0000000..8dcf464
+--- /dev/null
++++ b/tests/unit/test_pn_reference_view_mock.py
+@@ -0,0 +1,50 @@
++"""기준 GUI 표시 gate와 canonical 입력. 로컬 engine import 금지."""
++import copy
++from pathlib import Path
++import sys
++
++sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
++def deny(event,args):
++    if event=='import' and args[0].split('.')[0] in ('devsim','viennaps','viennals'):
++        raise AssertionError('ENGINE_IMPORT_FORBIDDEN')
++sys.addaudithook(deny)
++from tcad.characterization import pn_reference as P
++from tcad.characterization.pn_reference_view import require_pass
++
++base,a=P.reference()
++devices={}
++for d in P.VOLTS:
++    r=copy.deepcopy(base['devices'][d])
++    r['canonical_checked']=1545
++    r['x_cm']=a[d+'_x'].tolist()
++    r['currents']=[{'V':c['V'],'left':c['I_min'],'right':c['I_max']} for c in r['currents']]
++    r['profiles']={str(v):{nm:a[f'{d}_{v}_{nm}'].tolist() for nm in ('Potential','Electrons','Holes','ElectricField')} for v in P.SNAPS[d]}
++    for nm in ('Donors','Acceptors','NetDoping','x@n0','x@n1','EdgeLength'):
++        r[nm]=a[d+'_'+nm].tolist()
++    devices[d]=r
++checks=P.validate(devices,base,a)
++assert checks and all(c['pass'] for c in checks),[c for c in checks if not c['pass']]
++good={'schema':1,'status':'REFERENCE_MODEL_CHECKS_PASS','scope':P.SCOPE,'current_unit':'A/cm^2',
++      'production_2d_gate_released':False,'problems':[],'devices':devices,'checks':checks}
++assert require_pass(good)==checks
++changes=[lambda z:z.update(checks=[]),lambda z:z.update(current_unit='A'),
++         lambda z:z.update(production_2d_gate_released=True),lambda z:z.update(problems=['failed']),
++         lambda z:z['devices']['rev'].update(solves=5),
++         lambda z:z['devices']['rev']['profiles']['-1.0']['Holes'].__setitem__(0,float('nan')),
++         lambda z:z['devices']['fwd']['currents'][0].update(left=-1.),
++         lambda z:z['devices']['control'].update(cleanup_ok=False)]
++for mutate in changes:
++    z=copy.deepcopy(good); mutate(z)
++    try:
++        require_pass(z)
++        raise AssertionError('FALSE_GREEN')
++    except (ValueError,KeyError):
++        pass
++state=P.canonical()
++assert state.net_doping_at(-1.,0.).net_doping==-1e17
++assert state.net_doping_at(1.,0.).net_doping==1e17
++assert state.net_doping_at(0.,0.).net_doping==0.
++control=P.canonical(control=True)
++assert control.net_doping_at(-1.,0.).net_doping==1e16
++assert control.net_doping_at(1.,0.).net_doping==1e16
++print('PASS: reference display normal + 8 rejection controls + canonical ACTIVE state; engine imports 0')

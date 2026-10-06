@@ -1,0 +1,102 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T11:35:49.648789+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6ng-pn-reference-render-004",
+  "profile": "e6ng_render_only",
+  "params": {},
+  "note": "Fixed 1D PN GUI, actual solve, physical checks, unchanged wafer and existing gates."
+ },
+ "profile": "e6ng_render_only",
+ "inputs": [
+  {
+   "path": "tcad/characterization/pn_reference_view.py",
+   "sha256": "e1c75beaadafd5876ea4f63ce5d6ce8aaefaac3b5025e0323d2fbacbcdc8ba12",
+   "bytes": 5012
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ng-pn-reference-gui/render_check.py",
+   "sha256": "76501e0a54be3a5212d73596ec5483f6fbe15bd667ed6df2b40c4eb1cb9e0209",
+   "bytes": 2253
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ng-pn-reference-gui/raw/outputs/e6ng_out/result.json",
+   "sha256": "9b3212aad5eb00acd02fa1289442bbda0ee814b37078f5296f27b604d143705d",
+   "bytes": 1540003
+  }
+ ],
+ "request_sha256": "0f62461af3cb0bf26d39ab5d0d4316edd24f110d1d3e7804cfcf5d514beae716",
+ "source": {
+  "github_sha": "e14661d0c095636ea5c61b3dfbe6c376079df330",
+  "git_head": "e14661d0c095636ea5c61b3dfbe6c376079df330",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37457369364",
+  "run_number": "47",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6ng-pn-reference-gui/render_check.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T11:36:03.176609+00:00",
+ "duration_s": 13.528,
+ "outputs": [
+  {
+   "path": "e6ng_render_out/pn_reference.png",
+   "bytes": 98139,
+   "sha256": "8e63c5b00156dabf55d0316e169c59f02f2610d34102d2b24c78e889591cdc65"
+  },
+  {
+   "path": "e6ng_render_out/render.json",
+   "bytes": 195,
+   "sha256": "daf34ea2cb322a885e378531c4c17611f70700fed04ca705e356831a295b984f"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Render the immutable result without recalculation.",
+ "log": {
+  "file": "run.log",
+  "sha256": "f40ea36a377ac370720e6deb503569580f9693943ebe2f1f9e86dc97bc1e316e",
+  "bytes": 175
+ },
+ "redactions": {}
+}

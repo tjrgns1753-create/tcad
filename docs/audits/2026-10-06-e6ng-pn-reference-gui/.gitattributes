@@ -1,3 +1,4 @@
 raw/** -text -diff
 raw_render/** -text -diff
+raw_render_final/** -text -diff
 CHANGE.patch -text -diff
