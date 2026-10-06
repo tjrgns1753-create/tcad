@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nf-reference-convergence-001",
- "profile": "e6nf_reference_convergence",
+ "request_id": "e6ng-pn-reference-gui-001",
+ "profile": "e6ng_pn_reference_gui",
  "params": {},
- "note": "Official 1D interval bisection; reuse the existing runner; no new 2D solve or production gate change."
+ "note": "Fixed 1D PN GUI, actual solve, physical checks, unchanged wafer and existing gates."
 }

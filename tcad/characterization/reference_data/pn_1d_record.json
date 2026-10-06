@@ -1,0 +1,270 @@
+{
+  "plan_sha256": "631e73ffd7b004f2e0d789d20201360d6f02d5d66b7b4e68fc802d2c842c117b",
+  "source_hashes": {
+    "arrays.npz": "eb5538684433427b6c328d4e3b334566353a16d0e391a28c24e434d54b1784e7",
+    "record.json": "ef4466ff4c35f432ad0db46109a786da855a71266600e377cf3e36da1588dce5"
+  },
+  "devices": {
+    "control": {
+      "error": null,
+      "cleanup_ok": true,
+      "kind": "control",
+      "nodes": 1545,
+      "dimension": 1,
+      "canonical_audit": {
+        "canonical_checked": 1545,
+        "canonical_unresolved": 0,
+        "canonical_mismatch": 0
+      },
+      "doping_writes_before_solve": [
+        [
+          "node_model",
+          "Donors"
+        ],
+        [
+          "set_node_values",
+          "Donors"
+        ],
+        [
+          "node_model",
+          "Acceptors"
+        ],
+        [
+          "set_node_values",
+          "Acceptors"
+        ],
+        [
+          "node_model",
+          "NetDoping"
+        ],
+        [
+          "set_node_values",
+          "NetDoping"
+        ]
+      ],
+      "metadata": {
+        "temperature_k": 300.0,
+        "fixed_contacts": {
+          "Si_xmax": 0.0
+        },
+        "physics": "drift_diffusion",
+        "current_unit": null,
+        "current_normalization": null,
+        "device_dimension": 1
+      },
+      "params": {
+        "ElectronCharge": 1.6e-19,
+        "n_i": 10000000000.0,
+        "T": 300.0,
+        "mu_n": 400.0,
+        "mu_p": 200.0,
+        "taun": 1e-08,
+        "taup": 1e-08,
+        "Permittivity": 9.8235e-13,
+        "V_t": 0.025887193125000003
+      },
+      "currents": [
+        {
+          "V": 0.001,
+          "I_min": 0.15999999999986808,
+          "I_max": -0.1599999999983885
+        }
+      ],
+      "solve_attempts": 3,
+      "solves": 3,
+      "solve_failures": 0,
+      "snapshot_failures": 0
+    },
+    "fwd": {
+      "error": null,
+      "cleanup_ok": true,
+      "kind": "fwd",
+      "nodes": 1545,
+      "dimension": 1,
+      "canonical_audit": {
+        "canonical_checked": 1545,
+        "canonical_unresolved": 0,
+        "canonical_mismatch": 0
+      },
+      "doping_writes_before_solve": [
+        [
+          "node_model",
+          "Donors"
+        ],
+        [
+          "set_node_values",
+          "Donors"
+        ],
+        [
+          "node_model",
+          "Acceptors"
+        ],
+        [
+          "set_node_values",
+          "Acceptors"
+        ],
+        [
+          "node_model",
+          "NetDoping"
+        ],
+        [
+          "set_node_values",
+          "NetDoping"
+        ]
+      ],
+      "metadata": {
+        "temperature_k": 300.0,
+        "fixed_contacts": {
+          "Si_xmax": 0.0
+        },
+        "physics": "drift_diffusion",
+        "current_unit": null,
+        "current_normalization": null,
+        "device_dimension": 1
+      },
+      "params": {
+        "ElectronCharge": 1.6e-19,
+        "n_i": 10000000000.0,
+        "T": 300.0,
+        "mu_n": 400.0,
+        "mu_p": 200.0,
+        "taun": 1e-08,
+        "taup": 1e-08,
+        "Permittivity": 9.8235e-13,
+        "V_t": 0.025887193125000003
+      },
+      "currents": [
+        {
+          "V": 0.1,
+          "I_min": 4.0290607139797244e-07,
+          "I_max": -4.028866196088029e-07
+        },
+        {
+          "V": 0.2,
+          "I_min": 3.350871602977964e-06,
+          "I_max": -3.350866877874583e-06
+        },
+        {
+          "V": 0.3,
+          "I_min": 2.6891526743637603e-05,
+          "I_max": -2.6891542360491605e-05
+        },
+        {
+          "V": 0.4,
+          "I_min": 0.0002519514452949423,
+          "I_max": -0.0002519514416247535
+        },
+        {
+          "V": 0.5,
+          "I_min": 0.003894943153724654,
+          "I_max": -0.003894943154104298
+        },
+        {
+          "V": 0.6,
+          "I_min": 0.11820497983409563,
+          "I_max": -0.11820497984876287
+        }
+      ],
+      "solve_attempts": 8,
+      "solves": 8,
+      "solve_failures": 0,
+      "snapshot_failures": 0
+    },
+    "rev": {
+      "error": null,
+      "cleanup_ok": true,
+      "kind": "rev",
+      "nodes": 1545,
+      "dimension": 1,
+      "canonical_audit": {
+        "canonical_checked": 1545,
+        "canonical_unresolved": 0,
+        "canonical_mismatch": 0
+      },
+      "doping_writes_before_solve": [
+        [
+          "node_model",
+          "Donors"
+        ],
+        [
+          "set_node_values",
+          "Donors"
+        ],
+        [
+          "node_model",
+          "Acceptors"
+        ],
+        [
+          "set_node_values",
+          "Acceptors"
+        ],
+        [
+          "node_model",
+          "NetDoping"
+        ],
+        [
+          "set_node_values",
+          "NetDoping"
+        ]
+      ],
+      "metadata": {
+        "temperature_k": 300.0,
+        "fixed_contacts": {
+          "Si_xmax": 0.0
+        },
+        "physics": "drift_diffusion",
+        "current_unit": null,
+        "current_normalization": null,
+        "device_dimension": 1
+      },
+      "params": {
+        "ElectronCharge": 1.6e-19,
+        "n_i": 10000000000.0,
+        "T": 300.0,
+        "mu_n": 400.0,
+        "mu_p": 200.0,
+        "taun": 1e-08,
+        "taup": 1e-08,
+        "Permittivity": 9.8235e-13,
+        "V_t": 0.025887193125000003
+      },
+      "currents": [
+        {
+          "V": -0.25,
+          "I_min": -1.927844761661186e-07,
+          "I_max": 1.9277490542941903e-07
+        },
+        {
+          "V": -0.5,
+          "I_min": -3.3867311073360333e-07,
+          "I_max": 3.3867111485061406e-07
+        },
+        {
+          "V": -0.75,
+          "I_min": -4.7083405963940097e-07,
+          "I_max": 4.708678782999602e-07
+        },
+        {
+          "V": -1.0,
+          "I_min": -5.926495063083743e-07,
+          "I_max": 5.92659999239096e-07
+        }
+      ],
+      "solve_attempts": 6,
+      "solves": 6,
+      "solve_failures": 0,
+      "snapshot_failures": 0
+    }
+  },
+  "new_2d_solves": 0,
+  "production_gate_released": false,
+  "unit_control": {
+    "pass": true,
+    "relative": 2.3243559854578378e-12,
+    "kcl_relative": 9.247463905744787e-12,
+    "J_theory_A_per_cm2": 0.16000000000023998,
+    "I_min_raw": 0.15999999999986808,
+    "audit_unit": "A/cm^2",
+    "production_metadata_unit_unchanged": null
+  }
+}

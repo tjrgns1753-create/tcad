@@ -11,6 +11,23 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6ng_pn_reference_gui": {
+        "description": "Fixed 1D PN reference GUI with physical checks; existing 2D gate unchanged.",
+        "entry": "docs/audits/2026-10-06-e6ng-pn-reference-gui/run_tests.py",
+        "args": [], "params": {}, "timeout_s": 500, "engine_info": False,
+        "inputs": [
+            "docs/audits/2026-10-06-e6ng-pn-reference-gui/PLAN.md",
+            "tcad/characterization/pn_reference.py",
+            "tcad/characterization/pn_reference_view.py",
+            "tcad/characterization/reference_data/pn_1d_arrays.npz",
+            "tcad/characterization/reference_data/pn_1d_record.json",
+            "tcad_2d_stagewise.py",
+            "tests/unit/test_pn_reference_view_mock.py",
+            "tests/integration/test_pn_reference_gui_real.py"
+        ],
+        "outputs": [{"glob": "e6ng_out/**/*", "max_mb": 15}],
+        "regenerate": "GUI button runs a fresh fixed 1D reference; no general 2D gate release.",
+    },
     "e6nf_reference_convergence": {
         "description": "Official 1D API interval bisection; 14 PN solves only, production gates unchanged.",
         "entry": "docs/audits/2026-10-06-e6nf-reference-convergence/convergence.py",

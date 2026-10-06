@@ -5635,6 +5635,74 @@ class TCADApplication(tk.Tk):
             pady=(12, 3),
         )
 
+        ttk.Separator(frame).pack(fill="x", pady=8)
+        ttk.Label(frame, text="별도 기준 문제: 현재 웨이퍼와 무관한 고정 1D PN.\n"
+                  "문헌 모델 및 수치 검사 통과 시에만 그래프를 표시합니다.",
+                  wraplength=310).pack(anchor="w")
+        self.pn_reference_button = ttk.Button(
+            frame, text="PN 기준 다이오드 계산 (1D)", command=self.run_pn_reference)
+        self.pn_reference_button.pack(fill="x", pady=6)
+
+    def run_pn_reference(self):
+        """별도 subprocess의 기준 문제. 공정 상태와 일반 측정 gate는 변경하지 않는다."""
+        import time
+        if getattr(self, "_pn_reference_process", None) is not None:
+            return
+        old = getattr(self, "_pn_reference_window", None)
+        if old is not None and old.winfo_exists():
+            old.destroy()
+        directory = Path(tempfile.mkdtemp(prefix="tcad_pn_reference_"))
+        output = directory / "result.json"
+        self._pn_reference_result = None
+        log = (directory / "worker.log").open("w", encoding="utf-8")
+        try:
+            process = subprocess.Popen(
+                [sys.executable, "-B", "-m", "tcad.characterization.pn_reference", str(output)],
+                cwd=Path(__file__).resolve().parent, stdout=log, stderr=subprocess.STDOUT,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except Exception as exc:
+            log.close()
+            self._notify_error("PN 기준 문제", str(exc))
+            return
+        self._pn_reference_process = process
+        self.pn_reference_button.configure(state="disabled")
+        self._log("\nPN 기준 문제 계산 중 — 현재 공정 웨이퍼의 측정이 아닙니다.\n")
+        started = time.monotonic()
+
+        def close(event):
+            if event.widget is self and process.poll() is None:
+                process.kill()
+                process.wait(timeout=5)
+                log.close()
+        binding = self.bind("<Destroy>", close, add="+")
+
+        def poll():
+            if process.poll() is None:
+                if time.monotonic() - started <= 120:
+                    self.after(100, poll)
+                    return
+                process.kill()
+                process.wait(timeout=5)
+            log.close()
+            self.unbind("<Destroy>", binding)
+            self._pn_reference_process = None
+            self.pn_reference_button.configure(state="normal")
+            try:
+                if not output.exists():
+                    raise RuntimeError("기준 문제 계산 실패 또는 시간 초과. 정상 결과를 표시하지 않습니다.")
+                result = json.loads(output.read_text(encoding="utf-8"))
+                from tcad.characterization.pn_reference_view import show_result
+                if process.returncode != 0:
+                    raise RuntimeError("물리 검사 미통과: " + str(result.get("problems", [])) +
+                                       " | " + str([c["name"] for c in result.get("checks", []) if not c["pass"]]))
+                self._pn_reference_window = show_result(self, result)
+                self._pn_reference_result = result
+                self._log("PN 기준 문제: 문헌 모델/수치 기준 검사 통과. 현재 웨이퍼 및 실험 검증은 아님.\n")
+            except Exception as exc:
+                self._log("PN 기준 문제 검증 미통과 — 그래프 표시 차단.\n")
+                self._notify_error("PN 기준 문제 검증 미통과", str(exc))
+        self.after(100, poll)
+
     def _refine_for_implant_windows(self, doped_result):
         """Graded-refine the real mesh at every implant-window edge.
 
