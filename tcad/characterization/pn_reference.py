@@ -38,7 +38,7 @@ def canonical(control=False):
     # 명시적인 analytic 입력. 빈 path로 공정 mesh가 있다고 주장하지 않는다.
     pr=ProcessResult('',material_regions=[MaterialRegion('Si',0)],metadata={'origin':'ANALYTIC_REFERENCE_NOT_PROCESS'})
     if control:
-        doped=apply_uniform_doping(pr,{'Si':1e16},{'Si':0.},chemical_state='ACTIVE')
+        doped=apply_uniform_doping(pr,donor_by_region_cm3={'Si':1e16},acceptor_by_region_cm3={'Si':0.},chemical_state='ACTIVE')
     else:
         doped=apply_step_junction_doping(pr,'Si','x',0.,1e17,1e17,chemical_state='ACTIVE')
     initial=initial_wafer_state_from_recipe({'x_extent_um':40.,'silicon_depth_um':.1,'grid_delta_um':0.})

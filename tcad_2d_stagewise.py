@@ -5654,6 +5654,7 @@ class TCADApplication(tk.Tk):
         directory = Path(tempfile.mkdtemp(prefix="tcad_pn_reference_"))
         output = directory / "result.json"
         self._pn_reference_result = None
+        self._pn_reference_output = output
         log = (directory / "worker.log").open("w", encoding="utf-8")
         try:
             process = subprocess.Popen(

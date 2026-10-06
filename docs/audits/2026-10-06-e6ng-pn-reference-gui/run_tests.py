@@ -20,6 +20,9 @@ def main():
     records={}
     for name,args,budget in steps:
         records[name]=supervise([sys.executable,'-B',*args],ROOT,out/(name+'.log'),candidate_s=budget)
+        log=out/(name+'.log')
+        text=log.read_text(encoding='utf-8',errors='replace')
+        log.write_text(text.replace(str(ROOT),'<REPO>').replace(str(Path.home()),'<USERPROFILE>'),encoding='utf-8',newline='\n')
     passed=all(v['status']=='COMPLETED' and v['cleanup_ok'] is True and v.get('exit_code')==0 for v in records.values())
     (out/'tests.json').write_text(json.dumps({'pass':passed,'steps':records},indent=2),encoding='utf-8')
     print(json.dumps({'pass':passed,'steps':{k:v.get('exit_code') for k,v in records.items()}},indent=2))

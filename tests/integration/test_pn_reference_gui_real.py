@@ -28,7 +28,10 @@ with patch.object(G.messagebox,'showinfo',side_effect=lambda *a,**k:modal.append
             app.update(); updates+=1; time.sleep(.01)
         assert app._pn_reference_process is None,'GUI_REFERENCE_TIMEOUT'
         result=app._pn_reference_result
-        assert result is not None,'NO_ACCEPTED_RESULT'
+        if result is None:
+            if app._pn_reference_output.exists():
+                (out/'failed_result.json').write_bytes(app._pn_reference_output.read_bytes())
+            raise AssertionError('NO_ACCEPTED_RESULT: '+app.log.get('1.0','end'))
         require_pass(result)
         assert before==(app.wafer_state,app.last_final_mesh,app.last_doped_result,app.wafer.processed,app.process_stage)
         assert updates>1 and not modal

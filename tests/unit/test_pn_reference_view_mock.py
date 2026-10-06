@@ -44,4 +44,7 @@ state=P.canonical()
 assert state.net_doping_at(-1.,0.).net_doping==-1e17
 assert state.net_doping_at(1.,0.).net_doping==1e17
 assert state.net_doping_at(0.,0.).net_doping==0.
+control=P.canonical(control=True)
+assert control.net_doping_at(-1.,0.).net_doping==1e16
+assert control.net_doping_at(1.,0.).net_doping==1e16
 print('PASS: reference display normal + 8 rejection controls + canonical ACTIVE state; engine imports 0')
