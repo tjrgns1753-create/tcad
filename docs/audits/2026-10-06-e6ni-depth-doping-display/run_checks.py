@@ -11,6 +11,7 @@ def main():
     if os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted': raise RuntimeError('REMOTE_ONLY')
     out=ROOT/'e6ni_out'; out.mkdir(exist_ok=True)
     cases=[('depth',['docs/audits/2026-10-06-e6ni-depth-doping-display/check_depth.py'],120),
+           ('invalid',['docs/audits/2026-10-06-e6ni-depth-doping-display/check_invalid.py'],60),
            ('source',['tests/unit/test_gui_depth_doping_mock.py'],30),
            ('canvas_source',['tests/unit/test_gui_canvas_source_contract_mock.py'],30),
            ('hover_legacy',['tests/unit/test_doping_unsupported_hover_note_mock.py'],30),

@@ -44,8 +44,12 @@ def main():
     s=app.wafer_state
     app.wafer_state=replace(s,cells=s.cells+(replace(s.cells[0],cell_id='overlap',material_instance_id='other'),))
     assert app._doping_color_at(0,-.5,'Si')=='UNKNOWN'
-    app.wafer_state=replace(s,attachments=(replace(s.attachments[0],concentration_at=lambda x,y:float('nan')),))
-    assert app._doping_color_at(0,-.5,'Si')=='UNKNOWN'
+    for bad in (float('nan'),float('inf'),-1.0):
+        app.wafer_state=replace(s,attachments=(replace(s.attachments[0],concentration_at=lambda x,y,bad=bad:bad),))
+        result=app.wafer_state.net_doping_at(0,-.5)
+        assert result.donor_concentration is result.acceptor_concentration is result.net_doping is None
+        assert result.physics_status['entries'][0]['parameter']=='dopant_concentration_validity'
+        assert app._doping_color_at(0,-.5,'Si')=='UNKNOWN'
     for chemical in ('CHEMICAL','UNKNOWN'):
         app.wafer_state=state(chemical)
         assert app._doping_color_at(0,-.5,'Si')=='#2f6fed'

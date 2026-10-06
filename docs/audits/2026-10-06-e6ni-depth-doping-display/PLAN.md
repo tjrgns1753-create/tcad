@@ -32,3 +32,12 @@ legacy helper는 호환용으로 보존하고 production overlay만 2D 조회로
 `_on_canvas_motion`이 hover의 단일 production caller이며 마우스 y 전달을 추가한다.
 구형 hover 테스트의 직접 x 호출은 기본 y=0으로 유지한다. 과거 `surface_profile` helper는
 다른 guide/테스트 계약 때문에 삭제하지 않는다.
+
+## 구현 중 반례에 따른 한정 보완
+
+합성 raw 농도 NaN 반례에서 `max(0.0, NaN)`이 0으로 처리되는 canonical 결함이 확인됐다.
+이전의 canonical 무변경 범위에 대한 예외로, 농도 값 유효성 검사만 추가한다.
+비유한값 및 음수 도펀트 농도는 세 concentration=None + UNSUPPORTED_BY_MODEL로 반환한다.
+수식/분포/적분/활성화/gate 조건은 변경하지 않는다. 원격 actual GUI/DevSim 대조에서
+NaN/inf/음수 각각 0 doping writes, 0 solves 및 해당 원인 note를 요구한다.
+이미 시작된 첫 원격 run은 취소·은폐하지 않고 실패 결과를 보존한다.

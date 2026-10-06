@@ -384,7 +384,24 @@ class WaferStateV2:
                     continue
                 if not _point_in(a.support_region_um, x_um, y_um):
                     continue
-                mag = max(0.0, float(a.concentration_at(x_um, y_um)))
+                import math
+                mag = float(a.concentration_at(x_um, y_um))
+                if not math.isfinite(mag) or mag < 0.0:
+                    return DopingQueryResult(
+                        donor_concentration=None, acceptor_concentration=None, net_doping=None,
+                        physics_status={
+                            "resolution": "UNSUPPORTED_BY_MODEL",
+                            "entries": [{
+                                "parameter": "dopant_concentration_validity",
+                                "material": owning.material,
+                                "resolution": "UNSUPPORTED_BY_MODEL",
+                                "note": f"attachment {a.attachment_id!r} returned a non-finite "
+                                        f"or negative dopant concentration at ({x_um}, {y_um}); "
+                                        "invalid concentration is not known zero",
+                            }],
+                            "notes": [],
+                        },
+                    )
                 if a.polarity == "donor":
                     donor += mag
                 else:

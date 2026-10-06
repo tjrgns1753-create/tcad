@@ -92,7 +92,7 @@ def main():
         app.completed_steps=[{}]; app.flow_step_meshes=[path]; app._viewing_step_index=0
         app.redraw()
         assert not app.canvas.find_withtag('canonical_doping_sample')
-        assert '이력 도핑 미보존' in '\n'.join(app.canvas.itemcget(i,'text') for i in app.canvas.find_all())
+        assert '이력 도핑 미보존' in '\n'.join(app.canvas.itemcget(i,'text') for i in app.canvas.find_all() if app.canvas.type(i)=='text')
         records['history_no_current_doping']=True
         app._viewing_step_index=None
         # Valid refined mesh above resource cap; not duplicated/invalid triangles.
@@ -104,7 +104,7 @@ def main():
         meshio.write(refined,meshio.Mesh(pts,[('triangle',tris)],cell_data={'Material':[tags]}))
         app.last_final_mesh=str(refined); app.redraw()
         assert not app.canvas.find_withtag('canonical_doping_sample')
-        assert '도핑 채색 생략' in '\n'.join(app.canvas.itemcget(i,'text') for i in app.canvas.find_all())
+        assert '도핑 채색 생략' in '\n'.join(app.canvas.itemcget(i,'text') for i in app.canvas.find_all() if app.canvas.type(i)=='text')
         records['resource_cap']={'triangles':len(tris),'no_partial_fill':True}
         assert Path(path).read_bytes()==original
         records['mesh_unchanged']=True

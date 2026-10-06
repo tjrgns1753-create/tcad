@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "request_id": "e6ni-depth-doping-001",
+ "request_id": "e6ni-depth-doping-002",
  "profile": "e6ni_depth_doping",
  "params": {},
  "note": "Actual 2D canonical depth display on mesh triangles; sign samples only, existing physical gates unchanged."
