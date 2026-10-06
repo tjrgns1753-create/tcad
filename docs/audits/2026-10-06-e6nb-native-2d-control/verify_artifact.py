@@ -52,6 +52,17 @@ def verify(root,expected_source=SOURCE_SHA):
         with np.load(out/(label+'.npz'),allow_pickle=False) as z:
             a={k:z[k] for k in z.files}
         xy,t,e=R.validate(a)
+        gw,gv=R.geometry_weights(xy,t,e)
+        if (np.max(abs(a['EdgeCouple']/a['EdgeLength']-gw)/np.maximum(1,abs(gw)))>1e-10
+                or np.max(abs(a['NodeVolume']-gv)/gv)>1e-10):
+            raise ValueError('NATIVE_GEOMETRY_MISMATCH')
+        # Native element node lists do not promise a coherent winding.
+        # Normalize a diagnostic copy only; never modify the raw evidence or engine mesh.
+        oriented=t.copy()
+        u=xy[t[:,1]]-xy[t[:,0]];v2=xy[t[:,2]]-xy[t[:,0]]
+        reverse=(u[:,0]*v2[:,1]-u[:,1]*v2[:,0])<0
+        oriented[reverse]=oriented[reverse][:,[0,2,1]]
+        R.check_geometry(dict(a,triangles=oriented))
         x,y=xy.T;Lx=np.ptp(x);Ly=np.ptp(y)
         # Independent continuous formula, not native Source or recorded analytic array.
         exact=np.sin(np.pi*(x-x.min())/Lx)*np.cos(np.pi*(y-y.min())/Ly)

@@ -1,0 +1,217 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T05:54:11.030897+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nb-native-2d-control-002",
+  "profile": "e6nb_native_2d_control",
+  "params": {},
+  "note": "Fixed analytical native positive control then manufactured 2D Poisson convergence; four scalar solves, not PN/DD."
+ },
+ "profile": "e6nb_native_2d_control",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-06-e6nb-native-2d-control/PLAN.md",
+   "sha256": "f199eb653c02ed00a68d190a178719db95f921c6e5cce49cef0ef94e0e3a9e18",
+   "bytes": 4875
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nb-native-2d-control/run_control.py",
+   "sha256": "1199a3950fcdb725ce86a8dd8d046d091b557da4c9bf2084c0e0e2e264066093",
+   "bytes": 17496
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nb-native-2d-control/test_contract.py",
+   "sha256": "16237aa5fb24d5c09c14fb0c347cd6429abb4033371724aaf2fb7e0a60f7eea6",
+   "bytes": 4434
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nb-native-2d-control/SNAPSHOT_CORRECTION.md",
+   "sha256": "92a06abd63308b6c125cad7242a05a9030e1d6e22c6f132817ccf00c91503568",
+   "bytes": 1592
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
+   "sha256": "b16ad26cb7459b632737ae29496b33c346898df033d8ce327bf9453699936cd1",
+   "bytes": 9734
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/flux_source_contract.py",
+   "sha256": "edf6d77530ff990d83063fb27ec489c5ad023fd22e614c1012ef65f88bd18aba",
+   "bytes": 2681
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
+   "sha256": "ab4517a398e1605d79aa01c01a2901b95da6e0529db69c8a03808977cc15c049",
+   "bytes": 18354
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_positive_geometry.py",
+   "sha256": "70026fd09f997d821f65b4c2bf209c1b5fc3700bef59b8424aad39b19513bff5",
+   "bytes": 7641
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_review_followup.py",
+   "sha256": "0974ebbb77a734222e3e2b257f1d92162d78694ca0ee396b75165b27d28b4c27",
+   "bytes": 6771
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/POSITIVE_GEOMETRY_CRITERIA.md",
+   "sha256": "63757b71b7e918451fa7068238e3c11ff3946e452e8b70bc6690fc4d6b936b81",
+   "bytes": 4713
+  },
+  {
+   "path": "tcad/device/devsim/mesh_refine.py",
+   "sha256": "3b84190bbb4c0cfe9f13b668518820f8822e0fd04b2de0ec6c6194483f7c507d",
+   "bytes": 24346
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  }
+ ],
+ "request_sha256": "e7c12aedab694b217a09a9bfd978780f6ac4e1d2bfd0ff583cbb46c9e3efe43c",
+ "source": {
+  "github_sha": "0c37e56a52563d67fd44386ace189c4eaa7cd139",
+  "git_head": "0c37e56a52563d67fd44386ace189c4eaa7cd139",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37420757648",
+  "run_number": "38",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6nb-native-2d-control/run_control.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T05:54:13.002775+00:00",
+ "duration_s": 1.972,
+ "outputs": [
+  {
+   "path": "e6nb_out/M0.npz",
+   "bytes": 3819,
+   "sha256": "0b442e700a6a1ce72652726b932187355a040f064b05bb9b6327d595f6635268"
+  },
+  {
+   "path": "e6nb_out/M0.vtu",
+   "bytes": 1265,
+   "sha256": "1660c1a3aa9bc6461b83a877c38fb88aae472ac74e07f166c7c1423bb3ebfc19"
+  },
+  {
+   "path": "e6nb_out/M1.npz",
+   "bytes": 6222,
+   "sha256": "7ff9a507cc5f9ce6e6605c5bd4f17378f32ce86a0695aa0b97ba6d08d0d19244"
+  },
+  {
+   "path": "e6nb_out/M1.vtu",
+   "bytes": 1990,
+   "sha256": "c736a0a90c240e69a5e8a62a3a76cf50f710aaa3a483cdcf659d5c2de59e76c1"
+  },
+  {
+   "path": "e6nb_out/M2.npz",
+   "bytes": 14997,
+   "sha256": "2864849b0cda810ae2d5bbf7aa1fbd5f77075050a58481e47c4846bd728f9a23"
+  },
+  {
+   "path": "e6nb_out/M2.vtu",
+   "bytes": 4919,
+   "sha256": "4ccfa8055ef50e078d8da746c5bad2d833fddaf90bb820b9d2209d0a49df4d3d"
+  },
+  {
+   "path": "e6nb_out/M3.npz",
+   "bytes": 48542,
+   "sha256": "04c2a9e2cbea180793c3b6baedc1c5b892af78a3b78555c0820b681d5a1fb169"
+  },
+  {
+   "path": "e6nb_out/M3.vtu",
+   "bytes": 17796,
+   "sha256": "23cdee76d0c2085e68767f13f4edd025ec4bf2d0ce13180513592989fe2a60ee"
+  },
+  {
+   "path": "e6nb_out/child.log",
+   "bytes": 6444,
+   "sha256": "eef15f7bc99b2eef5d7eb88c82405aa31d43887349010ee5bd212dbf733871f9"
+  },
+  {
+   "path": "e6nb_out/positive.npz",
+   "bytes": 3224,
+   "sha256": "4441191eceacbe74a9b6cb776754761e4a9f7635efe1e5d3243900f802e912ee"
+  },
+  {
+   "path": "e6nb_out/positive.vtu",
+   "bytes": 1265,
+   "sha256": "1660c1a3aa9bc6461b83a877c38fb88aae472ac74e07f166c7c1423bb3ebfc19"
+  },
+  {
+   "path": "e6nb_out/result.json",
+   "bytes": 23649,
+   "sha256": "fa8c0a5b18ba2874916338d477b7f3bf45cd134100dc2de86802685acaf9e828"
+  },
+  {
+   "path": "e6nb_out/supervisor.json",
+   "bytes": 481,
+   "sha256": "ec155b5683bd157573f7706426a7c237dd318797d7b82cc211497eadd89c53d0"
+  },
+  {
+   "path": "e6nb_out/tensor.npz",
+   "bytes": 2943,
+   "sha256": "2d3aff002ebc5973a643559e0acd731e47ed80f9c50ed660b7828baea56e48a8"
+  },
+  {
+   "path": "e6nb_out/tensor.vtu",
+   "bytes": 1165,
+   "sha256": "1add5e75efed49ac1aeba82e64ae553d53510bbfd14154f55adcb8a917e5deea"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Independent fixed-plan 2D numerical audit; never release PN or process gates.",
+ "log": {
+  "file": "run.log",
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "bytes": 0
+ },
+ "redactions": {}
+}

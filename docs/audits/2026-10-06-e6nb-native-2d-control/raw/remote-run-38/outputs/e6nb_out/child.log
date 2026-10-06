@@ -1,0 +1,139 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 26 Triangles.
+Physical group name Si has 46 Lines.
+Physical group name Si has 21 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 4 Lines.
+Physical group name Si_xmax has 5 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 4 Lines.
+Physical group name Si_xmin has 5 Points.
+Device positive has 21 coordinates with max index 20
+Region Si has 21 nodes.
+Contact Si_xmax in region Si with 5 nodes
+Contact Si_xmin in region Si with 5 nodes
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 16 Triangles.
+Physical group name Si has 30 Lines.
+Physical group name Si has 15 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 4 Lines.
+Physical group name Si_xmax has 5 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 4 Lines.
+Physical group name Si_xmin has 5 Points.
+Device tensor has 15 coordinates with max index 14
+Region Si has 15 nodes.
+Contact Si_xmax in region Si with 5 nodes
+Contact Si_xmin in region Si with 5 nodes
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 26 Triangles.
+Physical group name Si has 46 Lines.
+Physical group name Si has 21 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 4 Lines.
+Physical group name Si_xmax has 5 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 4 Lines.
+Physical group name Si_xmin has 5 Points.
+Device M0 has 21 coordinates with max index 20
+Region Si has 21 nodes.
+Contact Si_xmax in region Si with 5 nodes
+Contact Si_xmin in region Si with 5 nodes
+number of equations 21
+Iteration: 0
+  Device: "M0"	RelError: 1.00000e+00	AbsError: 1.21536e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.21536e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.21536e+00
+Iteration: 1
+  Device: "M0"	RelError: 1.22103e-14	AbsError: 4.48492e-16
+    Region: "Si"	RelError: 1.22103e-14	AbsError: 4.48492e-16
+      Equation: "PotentialEquation"	RelError: 1.22103e-14	AbsError: 4.48492e-16
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 104 Triangles.
+Physical group name Si has 170 Lines.
+Physical group name Si has 67 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 8 Lines.
+Physical group name Si_xmax has 9 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 8 Lines.
+Physical group name Si_xmin has 9 Points.
+Device M1 has 67 coordinates with max index 66
+Region Si has 67 nodes.
+Contact Si_xmax in region Si with 9 nodes
+Contact Si_xmin in region Si with 9 nodes
+number of equations 67
+Iteration: 0
+  Device: "M1"	RelError: 1.00000e+00	AbsError: 1.04916e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.04916e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.04916e+00
+Iteration: 1
+  Device: "M1"	RelError: 1.35801e-13	AbsError: 1.22809e-15
+    Region: "Si"	RelError: 1.35801e-13	AbsError: 1.22809e-15
+      Equation: "PotentialEquation"	RelError: 1.35801e-13	AbsError: 1.22809e-15
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 416 Triangles.
+Physical group name Si has 652 Lines.
+Physical group name Si has 237 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 16 Lines.
+Physical group name Si_xmax has 17 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 16 Lines.
+Physical group name Si_xmin has 17 Points.
+Device M2 has 237 coordinates with max index 236
+Region Si has 237 nodes.
+Contact Si_xmax in region Si with 17 nodes
+Contact Si_xmin in region Si with 17 nodes
+number of equations 237
+Iteration: 0
+  Device: "M2"	RelError: 1.00000e+00	AbsError: 1.01202e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.01202e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.01202e+00
+Iteration: 1
+  Device: "M2"	RelError: 8.21664e-12	AbsError: 6.01534e-15
+    Region: "Si"	RelError: 8.21664e-12	AbsError: 6.01534e-15
+      Equation: "PotentialEquation"	RelError: 8.21664e-12	AbsError: 6.01534e-15
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1664 Triangles.
+Physical group name Si has 2552 Lines.
+Physical group name Si has 889 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 32 Lines.
+Physical group name Si_xmax has 33 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 32 Lines.
+Physical group name Si_xmin has 33 Points.
+Device M3 has 889 coordinates with max index 888
+Region Si has 889 nodes.
+Contact Si_xmax in region Si with 33 nodes
+Contact Si_xmin in region Si with 33 nodes
+number of equations 889
+Iteration: 0
+  Device: "M3"	RelError: 1.00000e+00	AbsError: 1.00299e+00
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00299e+00
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00299e+00
+Iteration: 1
+  Device: "M3"	RelError: 1.54372e-10	AbsError: 2.02465e-14
+    Region: "Si"	RelError: 1.54372e-10	AbsError: 2.02465e-14
+      Equation: "PotentialEquation"	RelError: 1.54372e-10	AbsError: 2.02465e-14
+Iteration: 2
+  Device: "M3"	RelError: 2.88771e-13	AbsError: 1.03479e-16
+    Region: "Si"	RelError: 2.88771e-13	AbsError: 1.03479e-16
+      Equation: "PotentialEquation"	RelError: 2.88771e-13	AbsError: 1.03479e-16
+{"execution_status": "COMPLETED", "b0": "PASS", "solve_attempts": 4, "solve_successes": 4, "judgment": {"verdict": "MMS_2D_NUMERICAL_PASS", "rates": [{"linf": 2.131172633055663, "l2": 2.1702069089846483}, {"linf": 2.0323976575413365, "l2": 2.045503897832504}, {"linf": 2.0083398740934406, "l2": 2.011695632460265}], "pn_approved": false}}
