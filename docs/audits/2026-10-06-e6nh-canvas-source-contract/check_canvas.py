@@ -83,8 +83,19 @@ def main():
                     for coords in si for i in range(0,len(coords),2)]
             import numpy as np
             drawn=np.asarray(points)
-            assert np.allclose(drawn.min(axis=0),mesh.points[:,:2].min(axis=0),rtol=0,atol=1e-7)
-            assert np.allclose(drawn.max(axis=0),mesh.points[:,:2].max(axis=0),rtol=0,atol=1e-7)
+            block=next(i for i,c in enumerate(mesh.cells) if c.type=='triangle')
+            triangles=mesh.cells[block].data
+            tags=mesh.cell_data['Material'][block]
+            silicon_tag=int(G.viennaps_session.require_viennaps().Material.Si)
+            actual=mesh.points[np.unique(triangles[tags==silicon_tag]),:2]
+            bbox={'drawn_min':drawn.min(axis=0).tolist(),'drawn_max':drawn.max(axis=0).tolist(),
+                  'silicon_min':actual.min(axis=0).tolist(),'silicon_max':actual.max(axis=0).tolist(),
+                  'all_points_min':mesh.points[:,:2].min(axis=0).tolist(),
+                  'all_points_max':mesh.points[:,:2].max(axis=0).tolist()}
+            (out/'bbox.json').write_text(json.dumps(bbox,indent=2),encoding='utf-8')
+            print(json.dumps(bbox))
+            assert np.allclose(drawn.min(axis=0),actual.min(axis=0),rtol=0,atol=1e-7)
+            assert np.allclose(drawn.max(axis=0),actual.max(axis=0),rtol=0,atol=1e-7)
             before_si=si
             app.ox_time_var.set(.5)
             app.run_oxidation(); app.redraw()
