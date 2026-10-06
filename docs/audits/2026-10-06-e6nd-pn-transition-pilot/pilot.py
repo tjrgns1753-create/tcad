@@ -47,7 +47,7 @@ def worker(level, out):
     if dv.get_device_list() or dv.get_mesh_list():
         raise RuntimeError('NONEMPTY_ENGINE')
     refs = np.load(T.E6K/'states.npz', allow_pickle=False)
-    lv, ny, expected = [('L0',16,(8037,15264)), ('L1',32,(31173,60736))][level]
+    lv, ny, expected = [('L0',16,(8037,15264)), ('L1',32,(31173,60736)), ('L2',64,(122761,242304))][level]
     with patch.object(M, 'Y_LINES_UM', np.linspace(-M.H_UM,0,ny+1).tolist()):
         p, t = M.build_mesh(M.e6k_snapshot(refs,lv,'rev',0)['x'])
     p,t,tags,_ = R.structured_lateral_refine(p,t,np.zeros(len(t),dtype=int),[0.],[.1])

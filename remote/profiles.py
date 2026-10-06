@@ -11,6 +11,21 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nd_pn_fine_diagnostic": {
+        "description": "Post-hoc N2-only PN diagnostic; old two-mesh failure retained, production gate closed.",
+        "entry": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py",
+        "args": [], "params": {}, "timeout_s": 930, "engine_info": False,
+        "inputs": [
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/PLAN.md",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/PLAN_FINE.md",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/judge.py",
+            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/raw/outputs/e6nd_out/result.json"
+        ],
+        "outputs": [{"glob": "e6nd_fine_out/**/*", "max_mb": 120}],
+        "regenerate": "Only N2; preserve prior failed physical acceptance and all production gates.",
+    },
     "e6nd_pn_transition_pilot": {
         "description": "Preregistered two-level symmetric PN transition mesh audit; production gate remains closed.",
         "entry": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py",

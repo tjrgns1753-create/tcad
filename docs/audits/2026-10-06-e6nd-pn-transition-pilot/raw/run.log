@@ -1,0 +1,714 @@
+{
+  "status": "PILOT_NOT_APPROVED",
+  "checks": [
+    {
+      "name": "L0_fwd_gate",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_solve_counts",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_units",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_parameters",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_doping_arrays",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_topology",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_volume",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_Si_xmin",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_Si_xmax",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_current_0.1",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_current_0.2",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_current_0.3",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_current_0.4",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_current_0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_current_0.6",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_monotonic",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_profile_0.0",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_profile_0.3",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_profile_0.5",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L0_fwd_profile_0.6",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L0_rev_gate",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_solve_counts",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_units",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_parameters",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_doping_arrays",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_topology",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_volume",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_Si_xmin",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_Si_xmax",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_current_-0.25",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_current_-0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_current_-0.75",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_current_-1.0",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_monotonic",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L0_rev_profile_0.0",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L0_rev_profile_-0.5",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L0_rev_profile_-1.0",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_gate",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_solve_counts",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_units",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_parameters",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_doping_arrays",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_topology",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_volume",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_Si_xmin",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_Si_xmax",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_current_0.1",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_current_0.2",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_current_0.3",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_current_0.4",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_current_0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_current_0.6",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_monotonic",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_profile_0.0",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_profile_0.3",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_profile_0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_fwd_profile_0.6",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_gate",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_solve_counts",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_units",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_parameters",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_doping_arrays",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_topology",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_volume",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_Si_xmin",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_Si_xmax",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_current_-0.25",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_current_-0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_current_-0.75",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_current_-1.0",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_monotonic",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "L1_rev_profile_0.0",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L1_rev_profile_-0.5",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "L1_rev_profile_-1.0",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "mesh_0.1",
+      "pass": true,
+      "value": 0.0006523563641482883
+    },
+    {
+      "name": "mesh_0.2",
+      "pass": true,
+      "value": 0.0006153600034394282
+    },
+    {
+      "name": "mesh_0.3",
+      "pass": true,
+      "value": 0.0005447255879036536
+    },
+    {
+      "name": "mesh_0.4",
+      "pass": true,
+      "value": 0.00040252996077175414
+    },
+    {
+      "name": "mesh_0.5",
+      "pass": true,
+      "value": 0.00019985201364176004
+    },
+    {
+      "name": "mesh_0.6",
+      "pass": true,
+      "value": 9.87898582456566e-05
+    },
+    {
+      "name": "mesh_-0.25",
+      "pass": true,
+      "value": 7.37085640279576e-05
+    },
+    {
+      "name": "mesh_-0.5",
+      "pass": true,
+      "value": 4.1962324153911025e-05
+    },
+    {
+      "name": "mesh_-0.75",
+      "pass": true,
+      "value": 3.0180350505803576e-05
+    },
+    {
+      "name": "mesh_-1.0",
+      "pass": true,
+      "value": 9.591395598724848e-05
+    }
+  ],
+  "metrics": {
+    "L0_fwd": {
+      "currents": [
+        {
+          "V": 0.1,
+          "J_A_per_cm2": 4.032689818145472e-07,
+          "reference_rel": 0.007823076005412934,
+          "kcl_rel": 1.3119567920043908e-05
+        },
+        {
+          "V": 0.2,
+          "J_A_per_cm2": 3.3537340115183316e-06,
+          "reference_rel": 0.00711277079253899,
+          "kcl_rel": 2.4468817942447905e-06
+        },
+        {
+          "V": 0.3,
+          "J_A_per_cm2": 2.691132822794035e-05,
+          "reference_rel": 0.004844743333820165,
+          "kcl_rel": 4.7229606750283787e-07
+        },
+        {
+          "V": 0.4,
+          "J_A_per_cm2": 0.0002520844451821028,
+          "reference_rel": 0.00266335740182578,
+          "kcl_rel": 9.66548276110536e-09
+        },
+        {
+          "V": 0.5,
+          "J_A_per_cm2": 0.0038959329550715092,
+          "reference_rel": 0.0008794085826692824,
+          "kcl_rel": 2.1535603407067233e-09
+        },
+        {
+          "V": 0.6,
+          "J_A_per_cm2": 0.11821955829233202,
+          "reference_rel": 0.00016976036769985548,
+          "kcl_rel": 5.891601162226463e-11
+        }
+      ],
+      "profiles": [
+        {
+          "V": 0.0,
+          "potential_max_V": 0.0006226673072377426,
+          "y_spread_V": 1.671320555285405e-06,
+          "carriers_relative": {
+            "Electrons": 0.024344711615081702,
+            "Holes": 0.023766131985683253
+          },
+          "field_peak_normalized": 0.01689668380018904
+        },
+        {
+          "V": 0.3,
+          "potential_max_V": 0.0005555902280371949,
+          "y_spread_V": 5.258989772966016e-07,
+          "carriers_relative": {
+            "Electrons": 0.021694060370605225,
+            "Holes": 0.021233082605996892
+          },
+          "field_peak_normalized": 0.02077170527305741
+        },
+        {
+          "V": 0.5,
+          "potential_max_V": 0.0004974880352456301,
+          "y_spread_V": 1.9237758364099022e-07,
+          "carriers_relative": {
+            "Electrons": 0.019403727549282535,
+            "Holes": 0.019033197434830923
+          },
+          "field_peak_normalized": 0.026441677721564593
+        },
+        {
+          "V": 0.6,
+          "potential_max_V": 0.00045923724702823243,
+          "y_spread_V": 1.0087614493725638e-07,
+          "carriers_relative": {
+            "Electrons": 0.017899704768348273,
+            "Holes": 0.017580099657450332
+          },
+          "field_peak_normalized": 0.03258759870852699
+        }
+      ]
+    },
+    "L0_rev": {
+      "currents": [
+        {
+          "V": -0.25,
+          "J_A_per_cm2": -1.9281289794994358e-07,
+          "reference_rel": 0.0004788389497767052,
+          "kcl_rel": 1.4541693145143276e-05
+        },
+        {
+          "V": -0.5,
+          "J_A_per_cm2": -3.386731108082063e-07,
+          "reference_rel": 0.00023072888078708845,
+          "kcl_rel": 4.8836324150530695e-05
+        },
+        {
+          "V": -0.75,
+          "J_A_per_cm2": -4.7084827056892787e-07,
+          "reference_rel": 0.00018105554695696855,
+          "kcl_rel": 4.634835994517969e-06
+        },
+        {
+          "V": -1.0,
+          "J_A_per_cm2": -5.925926629645856e-07,
+          "reference_rel": 0.00019180971876147168,
+          "kcl_rel": 2.5839754714221705e-05
+        }
+      ],
+      "profiles": [
+        {
+          "V": 0.0,
+          "potential_max_V": 0.0006226673072377426,
+          "y_spread_V": 1.671320555285405e-06,
+          "carriers_relative": {
+            "Electrons": 0.024344711615081702,
+            "Holes": 0.023766131985683253
+          },
+          "field_peak_normalized": 0.01689668380018904
+        },
+        {
+          "V": -0.5,
+          "potential_max_V": 0.0007100254794764338,
+          "y_spread_V": 6.947830170855873e-06,
+          "carriers_relative": {
+            "Electrons": 0.1043343854996753,
+            "Holes": 0.1250727168288982
+          },
+          "field_peak_normalized": 0.013822664196500146
+        },
+        {
+          "V": -1.0,
+          "potential_max_V": 0.0007824900616206776,
+          "y_spread_V": 1.788102117150636e-05,
+          "carriers_relative": {
+            "Electrons": 0.13598197339855,
+            "Holes": 0.12433910084594307
+          },
+          "field_peak_normalized": 0.012220967851695685
+        }
+      ]
+    },
+    "L1_fwd": {
+      "currents": [
+        {
+          "V": 0.1,
+          "J_A_per_cm2": 4.030060782346204e-07,
+          "reference_rel": 0.0010919325689615529,
+          "kcl_rel": 1.901564807213394e-06
+        },
+        {
+          "V": 0.2,
+          "J_A_per_cm2": 3.3516715269160008e-06,
+          "reference_rel": 0.000998565542859776,
+          "kcl_rel": 7.984804720412235e-08
+        },
+        {
+          "V": 0.3,
+          "J_A_per_cm2": 2.6896676919792563e-05,
+          "reference_rel": 0.0007870177911697949,
+          "kcl_rel": 1.2776056685276303e-07
+        },
+        {
+          "V": 0.4,
+          "J_A_per_cm2": 0.00025198301446917337,
+          "reference_rel": 0.0004975873568986727,
+          "kcl_rel": 2.4310689512943812e-08
+        },
+        {
+          "V": 0.5,
+          "J_A_per_cm2": 0.0038951545006011183,
+          "reference_rel": 0.0001785950288052201,
+          "kcl_rel": 7.238157846605214e-10
+        },
+        {
+          "V": 0.6,
+          "J_A_per_cm2": 0.11820788055256871,
+          "reference_rel": 3.601726320903256e-05,
+          "kcl_rel": 3.13323971959471e-11
+        }
+      ],
+      "profiles": [
+        {
+          "V": 0.0,
+          "potential_max_V": 0.00027084784882698207,
+          "y_spread_V": 4.169884326721274e-07,
+          "carriers_relative": {
+            "Electrons": 0.010517543980108027,
+            "Holes": 0.010408076576964376
+          },
+          "field_peak_normalized": 0.008362835137064113
+        },
+        {
+          "V": 0.3,
+          "potential_max_V": 0.0002294124952712806,
+          "y_spread_V": 1.3104483145842671e-07,
+          "carriers_relative": {
+            "Electrons": 0.0089014256378901,
+            "Holes": 0.00882280162695718
+          },
+          "field_peak_normalized": 0.010238818576267059
+        },
+        {
+          "V": 0.5,
+          "potential_max_V": 0.00019379307600708717,
+          "y_spread_V": 4.7886042436884324e-08,
+          "carriers_relative": {
+            "Electrons": 0.007514255573740025,
+            "Holes": 0.007457934464345409
+          },
+          "field_peak_normalized": 0.012948693232379654
+        },
+        {
+          "V": 0.6,
+          "potential_max_V": 0.00017106825736745712,
+          "y_spread_V": 2.509293553498715e-08,
+          "carriers_relative": {
+            "Electrons": 0.006630553821161379,
+            "Holes": 0.006585741789340024
+          },
+          "field_peak_normalized": 0.015880092280791683
+        }
+      ]
+    },
+    "L1_rev": {
+      "currents": [
+        {
+          "V": -0.25,
+          "J_A_per_cm2": -1.927986870355757e-07,
+          "reference_rel": 7.370282244603221e-05,
+          "kcl_rel": 7.335130821282857e-05
+        },
+        {
+          "V": -0.5,
+          "J_A_per_cm2": -3.3865889989367134e-07,
+          "reference_rel": 8.391725255233894e-05,
+          "kcl_rel": 4.210345154808739e-05
+        },
+        {
+          "V": -0.75,
+          "J_A_per_cm2": -4.7086248136365546e-07,
+          "reference_rel": 1.5998937211613655e-13,
+          "kcl_rel": 2.169526375436981e-07
+        },
+        {
+          "V": -1.0,
+          "J_A_per_cm2": -5.926495063232509e-07,
+          "reference_rel": 4.7954729112379306e-05,
+          "kcl_rel": 1.4450713459742478e-06
+        }
+      ],
+      "profiles": [
+        {
+          "V": 0.0,
+          "potential_max_V": 0.00027084784882698207,
+          "y_spread_V": 4.169884326721274e-07,
+          "carriers_relative": {
+            "Electrons": 0.010517543980108027,
+            "Holes": 0.010408076576964376
+          },
+          "field_peak_normalized": 0.008362835137064113
+        },
+        {
+          "V": -0.5,
+          "potential_max_V": 0.00032488632635224723,
+          "y_spread_V": 1.7359917178216833e-06,
+          "carriers_relative": {
+            "Electrons": 0.026731536652719136,
+            "Holes": 0.03777284523000954
+          },
+          "field_peak_normalized": 0.006869724502763334
+        },
+        {
+          "V": -1.0,
+          "potential_max_V": 0.0003691668042730134,
+          "y_spread_V": 4.47054984742401e-06,
+          "carriers_relative": {
+            "Electrons": 0.03550488045322257,
+            "Holes": 0.042945347803424114
+          },
+          "field_peak_normalized": 0.006076022114073329
+        }
+      ]
+    }
+  },
+  "problems": [],
+  "production_gate_released": false,
+  "scope": "two-level symmetric Si PN audit; not general PN approval"
+}

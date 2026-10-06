@@ -1,0 +1,386 @@
+{
+  "level": "L1",
+  "plan_sha256": "a11d5440fdfaf4e2e0e58be464a62080f08e08831427e611677338f69c22768d",
+  "geometry": {
+    "area_cm2": 4e-08,
+    "area_expected_cm2": 4e-08,
+    "area_rel_err": 0.0,
+    "obtuse_triangles": 0,
+    "degenerate_triangles": 0,
+    "n_triangles": 60736,
+    "n_points": 31173
+  },
+  "conformity": {
+    "nodes": 31173,
+    "triangles": 60736,
+    "index_valid": true,
+    "duplicate_coordinates": 0,
+    "duplicate_triangles": 0,
+    "unused_nodes": 0,
+    "degenerate": 0,
+    "one_orientation": true,
+    "edges": 91908,
+    "edges_with_more_than_two_owners": 0,
+    "interior_edges_same_direction": 0,
+    "boundary_edges": 1608,
+    "boundary_edges_off_rectangle": 0,
+    "boundary_covers_rectangle_exactly": true,
+    "area_equals_rectangle": true,
+    "hanging_nodes": 0,
+    "pass": true
+  },
+  "devices": {
+    "fwd": {
+      "error": null,
+      "cleanup_ok": true,
+      "node_count": 31173,
+      "area_gate": {
+        "triangles": 60736,
+        "devsim_elements": 60736,
+        "nodes": 31173,
+        "A": 4e-08,
+        "certification_limit": 1e-08,
+        "budget_basis": "ASSUMED_BOUND: E_NV = 128 u sum_t A_t / sin(theta_min,t), inherited from 7H-E2 PLAN section 4, not derived from DEVSIM source; E_A = gamma4 two-product rounding bound + u A; E_S = u S (correctly rounded fsum)",
+        "S": 4e-08,
+        "relative_difference": 0.0,
+        "E_A": 2.2204460492503142e-23,
+        "E_S": 4.440892098500626e-24,
+        "E_NV": 2.5024483683364485e-20,
+        "B": 2.505112903595549e-20,
+        "relative_uncertainty": 6.262782258988873e-13,
+        "pass": true
+      },
+      "contacts": {
+        "Si_xmin": [
+          0,
+          685,
+          1370,
+          2055,
+          2740,
+          3425,
+          4110,
+          4795,
+          5480,
+          6165,
+          6850,
+          7535,
+          8220,
+          8905,
+          9590,
+          10275,
+          10960,
+          11645,
+          12330,
+          13015,
+          13700,
+          14385,
+          15070,
+          15755,
+          16440,
+          17125,
+          17810,
+          18495,
+          19180,
+          19865,
+          20550,
+          21235,
+          21920
+        ],
+        "Si_xmax": [
+          684,
+          1369,
+          2054,
+          2739,
+          3424,
+          4109,
+          4794,
+          5479,
+          6164,
+          6849,
+          7534,
+          8219,
+          8904,
+          9589,
+          10274,
+          10959,
+          11644,
+          12329,
+          13014,
+          13699,
+          14384,
+          15069,
+          15754,
+          16439,
+          17124,
+          17809,
+          18494,
+          19179,
+          19864,
+          20549,
+          21234,
+          21919,
+          22604
+        ]
+      },
+      "gate": {
+        "resolution": "UNSUPPORTED_BY_MODEL",
+        "reason_code": "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED",
+        "device": "e6nd_L1_fwd",
+        "region": "Si",
+        "total_nodes": 31173,
+        "blocked_nodes": 31173,
+        "first_blocked_node": null,
+        "entries": [
+          {
+            "parameter": "step_junction_2d_unverified",
+            "material": "Si",
+            "resolution": "UNSUPPORTED_BY_MODEL",
+            "provenance": "DERIVED",
+            "note": "instance 'si#substrate' carries an ACTIVE step_junction_v1 attachment on a 2D device"
+          }
+        ],
+        "notes": [
+          "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED: canonical concentrations preserved, 2D transport (doping write + solve) not executed, no current/field/depletion numbers"
+        ]
+      },
+      "gate_counts": {
+        "writes": 0,
+        "attempts": 0
+      },
+      "canonical_audit": {
+        "canonical_checked": 31173,
+        "canonical_unresolved": 0,
+        "canonical_mismatch": 0
+      },
+      "metadata": {
+        "temperature_k": 300.0,
+        "fixed_contacts": {
+          "Si_xmax": 0.0
+        },
+        "physics": "drift_diffusion",
+        "current_unit": "A/cm",
+        "current_normalization": "per_out_of_plane_depth",
+        "device_dimension": 2,
+        "current_convention": "DevSim 2D device convention: every current/charge/capacitance value in this result is PER UNIT DEPTH in the unmodeled 3rd dimension (DevSim implicitly assumes 1cm of device depth out-of-plane for a 2D device) -- NOT the total value of a real device with a specific physical width. To get a real device's actual current/charge, multiply by that device's real depth in cm (e.g. a real 1um-wide device: multiply by 1e-4)."
+      },
+      "params": {
+        "ElectronCharge": 1.6e-19,
+        "n_i": 10000000000.0,
+        "T": 300.0,
+        "mu_n": 400.0,
+        "mu_p": 200.0,
+        "taun": 1e-08,
+        "taup": 1e-08,
+        "Permittivity": 9.8235e-13,
+        "V_t": 0.025887193125000003
+      },
+      "currents": [
+        {
+          "V": 0.1,
+          "I_min": 4.030060782346205e-12,
+          "I_max": -4.030068445767959e-12
+        },
+        {
+          "V": 0.2,
+          "I_min": 3.351671526916001e-11,
+          "I_max": -3.351671794540427e-11
+        },
+        {
+          "V": 0.3,
+          "I_min": 2.6896676919792565e-10,
+          "I_max": -2.6896673483457875e-10
+        },
+        {
+          "V": 0.4,
+          "I_min": 2.519830144691734e-09,
+          "I_max": -2.519830205950542e-09
+        },
+        {
+          "V": 0.5,
+          "I_min": 3.895154500601119e-08,
+          "I_max": -3.8951544977817445e-08
+        },
+        {
+          "V": 0.6,
+          "I_min": 1.1820788055256872e-06,
+          "I_max": -1.1820788055627246e-06
+        }
+      ],
+      "solve_attempts": 8,
+      "solves": 8,
+      "solve_failures": 0,
+      "snapshot_failures": 0
+    },
+    "rev": {
+      "error": null,
+      "cleanup_ok": true,
+      "node_count": 31173,
+      "area_gate": {
+        "triangles": 60736,
+        "devsim_elements": 60736,
+        "nodes": 31173,
+        "A": 4e-08,
+        "certification_limit": 1e-08,
+        "budget_basis": "ASSUMED_BOUND: E_NV = 128 u sum_t A_t / sin(theta_min,t), inherited from 7H-E2 PLAN section 4, not derived from DEVSIM source; E_A = gamma4 two-product rounding bound + u A; E_S = u S (correctly rounded fsum)",
+        "S": 4e-08,
+        "relative_difference": 0.0,
+        "E_A": 2.2204460492503142e-23,
+        "E_S": 4.440892098500626e-24,
+        "E_NV": 2.5024483683364485e-20,
+        "B": 2.505112903595549e-20,
+        "relative_uncertainty": 6.262782258988873e-13,
+        "pass": true
+      },
+      "contacts": {
+        "Si_xmin": [
+          0,
+          685,
+          1370,
+          2055,
+          2740,
+          3425,
+          4110,
+          4795,
+          5480,
+          6165,
+          6850,
+          7535,
+          8220,
+          8905,
+          9590,
+          10275,
+          10960,
+          11645,
+          12330,
+          13015,
+          13700,
+          14385,
+          15070,
+          15755,
+          16440,
+          17125,
+          17810,
+          18495,
+          19180,
+          19865,
+          20550,
+          21235,
+          21920
+        ],
+        "Si_xmax": [
+          684,
+          1369,
+          2054,
+          2739,
+          3424,
+          4109,
+          4794,
+          5479,
+          6164,
+          6849,
+          7534,
+          8219,
+          8904,
+          9589,
+          10274,
+          10959,
+          11644,
+          12329,
+          13014,
+          13699,
+          14384,
+          15069,
+          15754,
+          16439,
+          17124,
+          17809,
+          18494,
+          19179,
+          19864,
+          20549,
+          21234,
+          21919,
+          22604
+        ]
+      },
+      "gate": {
+        "resolution": "UNSUPPORTED_BY_MODEL",
+        "reason_code": "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED",
+        "device": "e6nd_L1_rev",
+        "region": "Si",
+        "total_nodes": 31173,
+        "blocked_nodes": 31173,
+        "first_blocked_node": null,
+        "entries": [
+          {
+            "parameter": "step_junction_2d_unverified",
+            "material": "Si",
+            "resolution": "UNSUPPORTED_BY_MODEL",
+            "provenance": "DERIVED",
+            "note": "instance 'si#substrate' carries an ACTIVE step_junction_v1 attachment on a 2D device"
+          }
+        ],
+        "notes": [
+          "STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED: canonical concentrations preserved, 2D transport (doping write + solve) not executed, no current/field/depletion numbers"
+        ]
+      },
+      "gate_counts": {
+        "writes": 0,
+        "attempts": 0
+      },
+      "canonical_audit": {
+        "canonical_checked": 31173,
+        "canonical_unresolved": 0,
+        "canonical_mismatch": 0
+      },
+      "metadata": {
+        "temperature_k": 300.0,
+        "fixed_contacts": {
+          "Si_xmax": 0.0
+        },
+        "physics": "drift_diffusion",
+        "current_unit": "A/cm",
+        "current_normalization": "per_out_of_plane_depth",
+        "device_dimension": 2,
+        "current_convention": "DevSim 2D device convention: every current/charge/capacitance value in this result is PER UNIT DEPTH in the unmodeled 3rd dimension (DevSim implicitly assumes 1cm of device depth out-of-plane for a 2D device) -- NOT the total value of a real device with a specific physical width. To get a real device's actual current/charge, multiply by that device's real depth in cm (e.g. a real 1um-wide device: multiply by 1e-4)."
+      },
+      "params": {
+        "ElectronCharge": 1.6e-19,
+        "n_i": 10000000000.0,
+        "T": 300.0,
+        "mu_n": 400.0,
+        "mu_p": 200.0,
+        "taun": 1e-08,
+        "taup": 1e-08,
+        "Permittivity": 9.8235e-13,
+        "V_t": 0.025887193125000003
+      },
+      "currents": [
+        {
+          "V": -0.25,
+          "I_min": -1.9279868703557573e-12,
+          "I_max": 1.9278454499965995e-12
+        },
+        {
+          "V": -0.5,
+          "I_min": -3.3865889989367137e-12,
+          "I_max": 3.3867315860225437e-12
+        },
+        {
+          "V": -0.75,
+          "I_min": -4.708624813636555e-12,
+          "I_max": 4.708625835185127e-12
+        },
+        {
+          "V": -1.0,
+          "I_min": -5.9264950632325094e-12,
+          "I_max": 5.926503627440707e-12
+        }
+      ],
+      "solve_attempts": 6,
+      "solves": 6,
+      "solve_failures": 0,
+      "snapshot_failures": 0
+    }
+  }
+}

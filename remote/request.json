@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nd-pn-transition-001",
- "profile": "e6nd_pn_transition_pilot",
+ "request_id": "e6nd-pn-fine-001",
+ "profile": "e6nd_pn_fine_diagnostic",
  "params": {},
- "note": "Two fixed transition meshes; fresh forward and reverse canonical audits; existing production PN gate stays closed."
+ "note": "Post-hoc third mesh only; original pilot remains not approved; no tolerance or production changes."
 }

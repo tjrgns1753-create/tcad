@@ -1,0 +1,602 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 60736 Triangles.
+Physical group name Si has 91908 Lines.
+Physical group name Si has 31173 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 32 Lines.
+Physical group name Si_xmax has 33 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 32 Lines.
+Physical group name Si_xmin has 33 Points.
+Device e6nd_L1_fwd has 31173 coordinates with max index 31172
+Region Si has 31173 nodes.
+Contact Si_xmax in region Si with 33 nodes
+Contact Si_xmin in region Si with 33 nodes
+Creating Node Solution Potential
+number of equations 31173
+Iteration: 0
+  Device: "e6nd_L1_fwd"	RelError: 1.00000e+00	AbsError: 3.26531e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.26531e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.26531e-01
+Iteration: 1
+  Device: "e6nd_L1_fwd"	RelError: 2.09475e+00	AbsError: 1.46917e-01
+    Region: "Si"	RelError: 2.09475e+00	AbsError: 1.46917e-01
+      Equation: "PotentialEquation"	RelError: 2.09475e+00	AbsError: 1.46917e-01
+Iteration: 2
+  Device: "e6nd_L1_fwd"	RelError: 4.03974e+01	AbsError: 6.35084e-02
+    Region: "Si"	RelError: 4.03974e+01	AbsError: 6.35084e-02
+      Equation: "PotentialEquation"	RelError: 4.03974e+01	AbsError: 6.35084e-02
+Iteration: 3
+  Device: "e6nd_L1_fwd"	RelError: 9.53397e-01	AbsError: 5.73651e-02
+    Region: "Si"	RelError: 9.53397e-01	AbsError: 5.73651e-02
+      Equation: "PotentialEquation"	RelError: 9.53397e-01	AbsError: 5.73651e-02
+Iteration: 4
+  Device: "e6nd_L1_fwd"	RelError: 1.03646e+00	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 1.03646e+00	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 1.03646e+00	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "e6nd_L1_fwd"	RelError: 3.99887e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 3.99887e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 3.99887e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "e6nd_L1_fwd"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "e6nd_L1_fwd"	RelError: 4.94127e-02	AbsError: 2.01091e-02
+    Region: "Si"	RelError: 4.94127e-02	AbsError: 2.01091e-02
+      Equation: "PotentialEquation"	RelError: 4.94127e-02	AbsError: 2.01091e-02
+Iteration: 8
+  Device: "e6nd_L1_fwd"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "e6nd_L1_fwd"	RelError: 3.56256e-14	AbsError: 5.59163e-17
+    Region: "Si"	RelError: 3.56256e-14	AbsError: 5.59163e-17
+      Equation: "PotentialEquation"	RelError: 3.56256e-14	AbsError: 5.59163e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_fwd"	RelError: 6.59311e-14	AbsError: 1.00800e+03
+    Region: "Si"	RelError: 6.59311e-14	AbsError: 1.00800e+03
+      Equation: "ElectronContinuityEquation"	RelError: 9.01518e-15	AbsError: 4.96000e+02
+      Equation: "HoleContinuityEquation"	RelError: 8.48726e-15	AbsError: 5.12000e+02
+      Equation: "PotentialEquation"	RelError: 4.84286e-14	AbsError: 1.37411e-16
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_fwd"	RelError: 1.00557e+01	AbsError: 2.23687e+16
+    Region: "Si"	RelError: 1.00557e+01	AbsError: 2.23687e+16
+      Equation: "ElectronContinuityEquation"	RelError: 7.91928e-01	AbsError: 1.11852e+16
+      Equation: "HoleContinuityEquation"	RelError: 7.91213e-01	AbsError: 1.11836e+16
+      Equation: "PotentialEquation"	RelError: 8.47252e+00	AbsError: 4.09542e-02
+Iteration: 1
+  Device: "e6nd_L1_fwd"	RelError: 1.48387e+02	AbsError: 2.84028e+15
+    Region: "Si"	RelError: 1.48387e+02	AbsError: 2.84028e+15
+      Equation: "ElectronContinuityEquation"	RelError: 6.89811e-01	AbsError: 1.46202e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.85125e-01	AbsError: 1.37827e+15
+      Equation: "PotentialEquation"	RelError: 1.46912e+02	AbsError: 3.07632e-02
+Iteration: 2
+  Device: "e6nd_L1_fwd"	RelError: 1.29034e+00	AbsError: 2.35477e+14
+    Region: "Si"	RelError: 1.29034e+00	AbsError: 2.35477e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.13154e-01	AbsError: 9.81382e+13
+      Equation: "HoleContinuityEquation"	RelError: 4.94855e-01	AbsError: 1.37339e+14
+      Equation: "PotentialEquation"	RelError: 2.82328e-01	AbsError: 2.58431e-02
+Iteration: 3
+  Device: "e6nd_L1_fwd"	RelError: 3.93944e-01	AbsError: 1.45456e+13
+    Region: "Si"	RelError: 3.93944e-01	AbsError: 1.45456e+13
+      Equation: "ElectronContinuityEquation"	RelError: 2.87177e-01	AbsError: 1.60243e+11
+      Equation: "HoleContinuityEquation"	RelError: 7.78775e-02	AbsError: 1.43854e+13
+      Equation: "PotentialEquation"	RelError: 2.88897e-02	AbsError: 9.16533e-03
+Iteration: 4
+  Device: "e6nd_L1_fwd"	RelError: 9.86156e-02	AbsError: 1.17904e+13
+    Region: "Si"	RelError: 9.86156e-02	AbsError: 1.17904e+13
+      Equation: "ElectronContinuityEquation"	RelError: 8.66319e-02	AbsError: 5.78975e+11
+      Equation: "HoleContinuityEquation"	RelError: 2.89505e-04	AbsError: 1.12114e+13
+      Equation: "PotentialEquation"	RelError: 1.16942e-02	AbsError: 4.08728e-06
+Iteration: 5
+  Device: "e6nd_L1_fwd"	RelError: 8.64351e-06	AbsError: 2.64422e+08
+    Region: "Si"	RelError: 8.64351e-06	AbsError: 2.64422e+08
+      Equation: "ElectronContinuityEquation"	RelError: 8.61218e-06	AbsError: 3.77397e+06
+      Equation: "HoleContinuityEquation"	RelError: 3.06830e-08	AbsError: 2.60648e+08
+      Equation: "PotentialEquation"	RelError: 6.46776e-10	AbsError: 3.18401e-11
+Iteration: 6
+  Device: "e6nd_L1_fwd"	RelError: 1.51106e-13	AbsError: 6.35014e+01
+    Region: "Si"	RelError: 1.51106e-13	AbsError: 6.35014e+01
+      Equation: "ElectronContinuityEquation"	RelError: 7.67084e-15	AbsError: 2.60744e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.05519e-15	AbsError: 3.74270e+01
+      Equation: "PotentialEquation"	RelError: 1.41380e-13	AbsError: 6.44328e-17
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_fwd"	RelError: 2.89739e+01	AbsError: 2.39419e+16
+    Region: "Si"	RelError: 2.89739e+01	AbsError: 2.39419e+16
+      Equation: "ElectronContinuityEquation"	RelError: 7.94196e-01	AbsError: 1.19727e+16
+      Equation: "HoleContinuityEquation"	RelError: 7.94134e-01	AbsError: 1.19693e+16
+      Equation: "PotentialEquation"	RelError: 2.73856e+01	AbsError: 4.09542e-02
+Iteration: 1
+  Device: "e6nd_L1_fwd"	RelError: 1.23545e+01	AbsError: 3.31028e+15
+    Region: "Si"	RelError: 1.23545e+01	AbsError: 3.31028e+15
+      Equation: "ElectronContinuityEquation"	RelError: 6.90786e-01	AbsError: 1.71017e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.86546e-01	AbsError: 1.60010e+15
+      Equation: "PotentialEquation"	RelError: 1.08771e+01	AbsError: 3.07632e-02
+Iteration: 2
+  Device: "e6nd_L1_fwd"	RelError: 4.98503e+00	AbsError: 3.37310e+14
+    Region: "Si"	RelError: 4.98503e+00	AbsError: 3.37310e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.13236e-01	AbsError: 1.64555e+14
+      Equation: "HoleContinuityEquation"	RelError: 4.96749e-01	AbsError: 1.72755e+14
+      Equation: "PotentialEquation"	RelError: 3.97505e+00	AbsError: 2.58477e-02
+Iteration: 3
+  Device: "e6nd_L1_fwd"	RelError: 4.06301e-01	AbsError: 1.49040e+13
+    Region: "Si"	RelError: 4.06301e-01	AbsError: 1.49040e+13
+      Equation: "ElectronContinuityEquation"	RelError: 2.87773e-01	AbsError: 5.19116e+11
+      Equation: "HoleContinuityEquation"	RelError: 7.63397e-02	AbsError: 1.43849e+13
+      Equation: "PotentialEquation"	RelError: 4.21875e-02	AbsError: 9.16533e-03
+Iteration: 4
+  Device: "e6nd_L1_fwd"	RelError: 8.82272e-02	AbsError: 1.08879e+13
+    Region: "Si"	RelError: 8.82272e-02	AbsError: 1.08879e+13
+      Equation: "ElectronContinuityEquation"	RelError: 8.68098e-02	AbsError: 5.84258e+11
+      Equation: "HoleContinuityEquation"	RelError: 2.64552e-04	AbsError: 1.03036e+13
+      Equation: "PotentialEquation"	RelError: 1.15285e-03	AbsError: 3.78751e-06
+Iteration: 5
+  Device: "e6nd_L1_fwd"	RelError: 7.96081e-06	AbsError: 2.30388e+08
+    Region: "Si"	RelError: 7.96081e-06	AbsError: 2.30388e+08
+      Equation: "ElectronContinuityEquation"	RelError: 7.93497e-06	AbsError: 3.90335e+06
+      Equation: "HoleContinuityEquation"	RelError: 2.55628e-08	AbsError: 2.26485e+08
+      Equation: "PotentialEquation"	RelError: 2.79336e-10	AbsError: 2.77259e-11
+Iteration: 6
+  Device: "e6nd_L1_fwd"	RelError: 1.94957e-14	AbsError: 5.30602e+01
+    Region: "Si"	RelError: 1.94957e-14	AbsError: 5.30602e+01
+      Equation: "ElectronContinuityEquation"	RelError: 8.64203e-15	AbsError: 2.74827e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.24556e-15	AbsError: 2.55775e+01
+      Equation: "PotentialEquation"	RelError: 8.60808e-15	AbsError: 6.10004e-17
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_fwd"	RelError: 1.42519e+01	AbsError: 2.59234e+16
+    Region: "Si"	RelError: 1.42519e+01	AbsError: 2.59234e+16
+      Equation: "ElectronContinuityEquation"	RelError: 7.94291e-01	AbsError: 1.29628e+16
+      Equation: "HoleContinuityEquation"	RelError: 7.94262e-01	AbsError: 1.29606e+16
+      Equation: "PotentialEquation"	RelError: 1.26634e+01	AbsError: 4.09542e-02
+Iteration: 1
+  Device: "e6nd_L1_fwd"	RelError: 9.80503e+00	AbsError: 3.95985e+15
+    Region: "Si"	RelError: 9.80503e+00	AbsError: 3.95985e+15
+      Equation: "ElectronContinuityEquation"	RelError: 6.90906e-01	AbsError: 2.05658e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.86692e-01	AbsError: 1.90327e+15
+      Equation: "PotentialEquation"	RelError: 8.32743e+00	AbsError: 3.07632e-02
+Iteration: 2
+  Device: "e6nd_L1_fwd"	RelError: 6.20637e+00	AbsError: 5.05103e+14
+    Region: "Si"	RelError: 6.20637e+00	AbsError: 5.05103e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.13495e-01	AbsError: 2.78142e+14
+      Equation: "HoleContinuityEquation"	RelError: 4.98351e-01	AbsError: 2.26961e+14
+      Equation: "PotentialEquation"	RelError: 5.19452e+00	AbsError: 2.58949e-02
+Iteration: 3
+  Device: "e6nd_L1_fwd"	RelError: 4.42358e-01	AbsError: 1.80568e+13
+    Region: "Si"	RelError: 4.42358e-01	AbsError: 1.80568e+13
+      Equation: "ElectronContinuityEquation"	RelError: 2.87804e-01	AbsError: 1.19985e+12
+      Equation: "HoleContinuityEquation"	RelError: 7.63870e-02	AbsError: 1.68569e+13
+      Equation: "PotentialEquation"	RelError: 7.81676e-02	AbsError: 9.16533e-03
+Iteration: 4
+  Device: "e6nd_L1_fwd"	RelError: 8.81112e-02	AbsError: 9.84753e+12
+    Region: "Si"	RelError: 8.81112e-02	AbsError: 9.84753e+12
+      Equation: "ElectronContinuityEquation"	RelError: 8.67225e-02	AbsError: 5.87743e+11
+      Equation: "HoleContinuityEquation"	RelError: 2.39125e-04	AbsError: 9.25979e+12
+      Equation: "PotentialEquation"	RelError: 1.14964e-03	AbsError: 3.45007e-06
+Iteration: 5
+  Device: "e6nd_L1_fwd"	RelError: 7.16748e-06	AbsError: 1.93887e+08
+    Region: "Si"	RelError: 7.16748e-06	AbsError: 1.93887e+08
+      Equation: "ElectronContinuityEquation"	RelError: 7.14644e-06	AbsError: 4.01783e+06
+      Equation: "HoleContinuityEquation"	RelError: 2.04716e-08	AbsError: 1.89869e+08
+      Equation: "PotentialEquation"	RelError: 5.70997e-10	AbsError: 2.33369e-11
+Iteration: 6
+  Device: "e6nd_L1_fwd"	RelError: 1.27732e-14	AbsError: 6.49352e+01
+    Region: "Si"	RelError: 1.27732e-14	AbsError: 6.49352e+01
+      Equation: "ElectronContinuityEquation"	RelError: 6.49896e-15	AbsError: 3.42856e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.76855e-15	AbsError: 3.06496e+01
+      Equation: "PotentialEquation"	RelError: 4.50565e-15	AbsError: 3.43729e-17
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_fwd"	RelError: 6.08216e+01	AbsError: 2.84770e+16
+    Region: "Si"	RelError: 6.08216e+01	AbsError: 2.84770e+16
+      Equation: "ElectronContinuityEquation"	RelError: 7.94288e-01	AbsError: 1.42368e+16
+      Equation: "HoleContinuityEquation"	RelError: 7.94257e-01	AbsError: 1.42402e+16
+      Equation: "PotentialEquation"	RelError: 5.92331e+01	AbsError: 4.09542e-02
+Iteration: 1
+  Device: "e6nd_L1_fwd"	RelError: 1.96572e+02	AbsError: 4.92627e+15
+    Region: "Si"	RelError: 1.96572e+02	AbsError: 4.92627e+15
+      Equation: "ElectronContinuityEquation"	RelError: 6.91104e-01	AbsError: 2.57963e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.86690e-01	AbsError: 2.34664e+15
+      Equation: "PotentialEquation"	RelError: 1.95094e+02	AbsError: 3.07632e-02
+Iteration: 2
+  Device: "e6nd_L1_fwd"	RelError: 1.49616e+02	AbsError: 7.80504e+14
+    Region: "Si"	RelError: 1.49616e+02	AbsError: 7.80504e+14
+      Equation: "ElectronContinuityEquation"	RelError: 5.13664e-01	AbsError: 4.65071e+14
+      Equation: "HoleContinuityEquation"	RelError: 5.00812e-01	AbsError: 3.15433e+14
+      Equation: "PotentialEquation"	RelError: 1.48601e+02	AbsError: 2.57971e-02
+Iteration: 3
+  Device: "e6nd_L1_fwd"	RelError: 1.21224e+00	AbsError: 2.74324e+13
+    Region: "Si"	RelError: 1.21224e+00	AbsError: 2.74324e+13
+      Equation: "ElectronContinuityEquation"	RelError: 2.85715e-01	AbsError: 2.68839e+12
+      Equation: "HoleContinuityEquation"	RelError: 7.64683e-02	AbsError: 2.47440e+13
+      Equation: "PotentialEquation"	RelError: 8.50055e-01	AbsError: 9.16533e-03
+Iteration: 4
+  Device: "e6nd_L1_fwd"	RelError: 1.04461e-01	AbsError: 8.72751e+12
+    Region: "Si"	RelError: 1.04461e-01	AbsError: 8.72751e+12
+      Equation: "ElectronContinuityEquation"	RelError: 8.61031e-02	AbsError: 5.85111e+11
+      Equation: "HoleContinuityEquation"	RelError: 2.21035e-04	AbsError: 8.14240e+12
+      Equation: "PotentialEquation"	RelError: 1.81373e-02	AbsError: 3.02435e-06
+Iteration: 5
+  Device: "e6nd_L1_fwd"	RelError: 6.25319e-06	AbsError: 1.52518e+08
+    Region: "Si"	RelError: 6.25319e-06	AbsError: 1.52518e+08
+      Equation: "ElectronContinuityEquation"	RelError: 6.18104e-06	AbsError: 4.11751e+06
+      Equation: "HoleContinuityEquation"	RelError: 1.59970e-08	AbsError: 1.48401e+08
+      Equation: "PotentialEquation"	RelError: 5.61510e-08	AbsError: 1.84768e-11
+Iteration: 6
+  Device: "e6nd_L1_fwd"	RelError: 9.94371e-14	AbsError: 5.33567e+01
+    Region: "Si"	RelError: 9.94371e-14	AbsError: 5.33567e+01
+      Equation: "ElectronContinuityEquation"	RelError: 3.45510e-15	AbsError: 2.33775e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.13459e-15	AbsError: 2.99792e+01
+      Equation: "PotentialEquation"	RelError: 9.48474e-14	AbsError: 4.57270e-17
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_fwd"	RelError: 3.31642e+00	AbsError: 3.19745e+16
+    Region: "Si"	RelError: 3.31642e+00	AbsError: 3.19745e+16
+      Equation: "ElectronContinuityEquation"	RelError: 7.94278e-01	AbsError: 1.59883e+16
+      Equation: "HoleContinuityEquation"	RelError: 7.94243e-01	AbsError: 1.59861e+16
+      Equation: "PotentialEquation"	RelError: 1.72790e+00	AbsError: 4.09542e-02
+Iteration: 1
+  Device: "e6nd_L1_fwd"	RelError: 2.04303e+00	AbsError: 6.47481e+15
+    Region: "Si"	RelError: 2.04303e+00	AbsError: 6.47481e+15
+      Equation: "ElectronContinuityEquation"	RelError: 6.90897e-01	AbsError: 3.42787e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.87312e-01	AbsError: 3.04695e+15
+      Equation: "PotentialEquation"	RelError: 5.64823e-01	AbsError: 3.07632e-02
+Iteration: 2
+  Device: "e6nd_L1_fwd"	RelError: 1.30306e+00	AbsError: 1.23503e+15
+    Region: "Si"	RelError: 1.30306e+00	AbsError: 1.23503e+15
+      Equation: "ElectronContinuityEquation"	RelError: 5.13031e-01	AbsError: 7.55473e+14
+      Equation: "HoleContinuityEquation"	RelError: 5.04019e-01	AbsError: 4.79557e+14
+      Equation: "PotentialEquation"	RelError: 2.86014e-01	AbsError: 2.57635e-02
+Iteration: 3
+  Device: "e6nd_L1_fwd"	RelError: 4.71219e-01	AbsError: 4.96310e+13
+    Region: "Si"	RelError: 4.71219e-01	AbsError: 4.96310e+13
+      Equation: "ElectronContinuityEquation"	RelError: 2.86613e-01	AbsError: 6.75318e+12
+      Equation: "HoleContinuityEquation"	RelError: 7.38438e-02	AbsError: 4.28779e+13
+      Equation: "PotentialEquation"	RelError: 1.10762e-01	AbsError: 9.16533e-03
+Iteration: 4
+  Device: "e6nd_L1_fwd"	RelError: 8.64804e-02	AbsError: 7.03178e+12
+    Region: "Si"	RelError: 8.64804e-02	AbsError: 7.03178e+12
+      Equation: "ElectronContinuityEquation"	RelError: 8.62565e-02	AbsError: 5.35320e+11
+      Equation: "HoleContinuityEquation"	RelError: 2.00787e-04	AbsError: 6.49646e+12
+      Equation: "PotentialEquation"	RelError: 2.31039e-05	AbsError: 2.37624e-06
+Iteration: 5
+  Device: "e6nd_L1_fwd"	RelError: 4.92815e-06	AbsError: 1.01809e+08
+    Region: "Si"	RelError: 4.92815e-06	AbsError: 1.01809e+08
+      Equation: "ElectronContinuityEquation"	RelError: 4.91747e-06	AbsError: 4.17611e+06
+      Equation: "HoleContinuityEquation"	RelError: 1.05077e-08	AbsError: 9.76326e+07
+      Equation: "PotentialEquation"	RelError: 1.68829e-10	AbsError: 1.49741e-11
+Iteration: 6
+  Device: "e6nd_L1_fwd"	RelError: 8.82500e-15	AbsError: 6.57553e+01
+    Region: "Si"	RelError: 8.82500e-15	AbsError: 6.57553e+01
+      Equation: "ElectronContinuityEquation"	RelError: 5.81864e-15	AbsError: 2.89765e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.48861e-15	AbsError: 3.67788e+01
+      Equation: "PotentialEquation"	RelError: 5.17741e-16	AbsError: 9.00058e-17
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_fwd"	RelError: 1.91953e+00	AbsError: 3.72046e+16
+    Region: "Si"	RelError: 1.91953e+00	AbsError: 3.72046e+16
+      Equation: "ElectronContinuityEquation"	RelError: 7.94252e-01	AbsError: 1.86047e+16
+      Equation: "HoleContinuityEquation"	RelError: 7.94209e-01	AbsError: 1.85998e+16
+      Equation: "PotentialEquation"	RelError: 3.31072e-01	AbsError: 4.09542e-02
+Iteration: 1
+  Device: "e6nd_L1_fwd"	RelError: 1.67737e+00	AbsError: 9.39190e+15
+    Region: "Si"	RelError: 1.67737e+00	AbsError: 9.39190e+15
+      Equation: "ElectronContinuityEquation"	RelError: 6.91352e-01	AbsError: 5.07306e+15
+      Equation: "HoleContinuityEquation"	RelError: 7.86858e-01	AbsError: 4.31884e+15
+      Equation: "PotentialEquation"	RelError: 1.99160e-01	AbsError: 3.07632e-02
+Iteration: 2
+  Device: "e6nd_L1_fwd"	RelError: 1.15813e+00	AbsError: 1.99918e+15
+    Region: "Si"	RelError: 1.15813e+00	AbsError: 1.99918e+15
+      Equation: "ElectronContinuityEquation"	RelError: 5.12392e-01	AbsError: 1.15292e+15
+      Equation: "HoleContinuityEquation"	RelError: 5.08859e-01	AbsError: 8.46256e+14
+      Equation: "PotentialEquation"	RelError: 1.36878e-01	AbsError: 2.57738e-02
+Iteration: 3
+  Device: "e6nd_L1_fwd"	RelError: 4.07554e-01	AbsError: 1.97097e+14
+    Region: "Si"	RelError: 4.07554e-01	AbsError: 1.97097e+14
+      Equation: "ElectronContinuityEquation"	RelError: 2.85109e-01	AbsError: 3.31753e+13
+      Equation: "HoleContinuityEquation"	RelError: 7.22917e-02	AbsError: 1.63922e+14
+      Equation: "PotentialEquation"	RelError: 5.01529e-02	AbsError: 9.16533e-03
+Iteration: 4
+  Device: "e6nd_L1_fwd"	RelError: 8.54407e-02	AbsError: 5.40184e+12
+    Region: "Si"	RelError: 8.54407e-02	AbsError: 5.40184e+12
+      Equation: "ElectronContinuityEquation"	RelError: 8.53687e-02	AbsError: 1.05842e+12
+      Equation: "HoleContinuityEquation"	RelError: 5.61185e-05	AbsError: 4.34342e+12
+      Equation: "PotentialEquation"	RelError: 1.58089e-05	AbsError: 2.88800e-06
+Iteration: 5
+  Device: "e6nd_L1_fwd"	RelError: 4.03243e-06	AbsError: 1.12719e+08
+    Region: "Si"	RelError: 4.03243e-06	AbsError: 1.12719e+08
+      Equation: "ElectronContinuityEquation"	RelError: 4.02423e-06	AbsError: 4.53618e+07
+      Equation: "HoleContinuityEquation"	RelError: 7.44333e-09	AbsError: 6.73573e+07
+      Equation: "PotentialEquation"	RelError: 7.52500e-10	AbsError: 1.37469e-10
+Iteration: 6
+  Device: "e6nd_L1_fwd"	RelError: 1.26323e-14	AbsError: 7.18071e+01
+    Region: "Si"	RelError: 1.26323e-14	AbsError: 7.18071e+01
+      Equation: "ElectronContinuityEquation"	RelError: 9.25167e-15	AbsError: 3.03554e+01
+      Equation: "HoleContinuityEquation"	RelError: 3.14852e-15	AbsError: 4.14517e+01
+      Equation: "PotentialEquation"	RelError: 2.32117e-16	AbsError: 7.76193e-17
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 60736 Triangles.
+Physical group name Si has 91908 Lines.
+Physical group name Si has 31173 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 32 Lines.
+Physical group name Si_xmax has 33 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 32 Lines.
+Physical group name Si_xmin has 33 Points.
+Device e6nd_L1_rev has 31173 coordinates with max index 31172
+Region Si has 31173 nodes.
+Contact Si_xmax in region Si with 33 nodes
+Contact Si_xmin in region Si with 33 nodes
+Creating Node Solution Potential
+number of equations 31173
+Iteration: 0
+  Device: "e6nd_L1_rev"	RelError: 1.00000e+00	AbsError: 3.26531e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 3.26531e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 3.26531e-01
+Iteration: 1
+  Device: "e6nd_L1_rev"	RelError: 2.09475e+00	AbsError: 1.46917e-01
+    Region: "Si"	RelError: 2.09475e+00	AbsError: 1.46917e-01
+      Equation: "PotentialEquation"	RelError: 2.09475e+00	AbsError: 1.46917e-01
+Iteration: 2
+  Device: "e6nd_L1_rev"	RelError: 4.03974e+01	AbsError: 6.35084e-02
+    Region: "Si"	RelError: 4.03974e+01	AbsError: 6.35084e-02
+      Equation: "PotentialEquation"	RelError: 4.03974e+01	AbsError: 6.35084e-02
+Iteration: 3
+  Device: "e6nd_L1_rev"	RelError: 9.53397e-01	AbsError: 5.73651e-02
+    Region: "Si"	RelError: 9.53397e-01	AbsError: 5.73651e-02
+      Equation: "PotentialEquation"	RelError: 9.53397e-01	AbsError: 5.73651e-02
+Iteration: 4
+  Device: "e6nd_L1_rev"	RelError: 1.03646e+00	AbsError: 5.01960e-02
+    Region: "Si"	RelError: 1.03646e+00	AbsError: 5.01960e-02
+      Equation: "PotentialEquation"	RelError: 1.03646e+00	AbsError: 5.01960e-02
+Iteration: 5
+  Device: "e6nd_L1_rev"	RelError: 3.99887e-01	AbsError: 4.17220e-02
+    Region: "Si"	RelError: 3.99887e-01	AbsError: 4.17220e-02
+      Equation: "PotentialEquation"	RelError: 3.99887e-01	AbsError: 4.17220e-02
+Iteration: 6
+  Device: "e6nd_L1_rev"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+    Region: "Si"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+      Equation: "PotentialEquation"	RelError: 8.18607e-02	AbsError: 3.16681e-02
+Iteration: 7
+  Device: "e6nd_L1_rev"	RelError: 4.94127e-02	AbsError: 2.01091e-02
+    Region: "Si"	RelError: 4.94127e-02	AbsError: 2.01091e-02
+      Equation: "PotentialEquation"	RelError: 4.94127e-02	AbsError: 2.01091e-02
+Iteration: 8
+  Device: "e6nd_L1_rev"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+    Region: "Si"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+      Equation: "PotentialEquation"	RelError: 2.46584e-02	AbsError: 1.02888e-02
+Iteration: 9
+  Device: "e6nd_L1_rev"	RelError: 3.56256e-14	AbsError: 5.59163e-17
+    Region: "Si"	RelError: 3.56256e-14	AbsError: 5.59163e-17
+      Equation: "PotentialEquation"	RelError: 3.56256e-14	AbsError: 5.59163e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_rev"	RelError: 6.59311e-14	AbsError: 1.00800e+03
+    Region: "Si"	RelError: 6.59311e-14	AbsError: 1.00800e+03
+      Equation: "ElectronContinuityEquation"	RelError: 9.01518e-15	AbsError: 4.96000e+02
+      Equation: "HoleContinuityEquation"	RelError: 8.48726e-15	AbsError: 5.12000e+02
+      Equation: "PotentialEquation"	RelError: 4.84286e-14	AbsError: 1.37411e-16
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_rev"	RelError: 2.07808e+03	AbsError: 5.59219e+16
+    Region: "Si"	RelError: 2.07808e+03	AbsError: 5.59219e+16
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.79629e+16
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.79589e+16
+      Equation: "PotentialEquation"	RelError: 8.00790e+01	AbsError: 6.12741e-02
+Iteration: 1
+  Device: "e6nd_L1_rev"	RelError: 2.01727e+03	AbsError: 1.76164e+16
+    Region: "Si"	RelError: 2.01727e+03	AbsError: 1.76164e+16
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 9.34696e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 8.26940e+15
+      Equation: "PotentialEquation"	RelError: 1.92661e+01	AbsError: 5.47695e-02
+Iteration: 2
+  Device: "e6nd_L1_rev"	RelError: 2.01161e+03	AbsError: 4.25786e+15
+    Region: "Si"	RelError: 2.01161e+03	AbsError: 4.25786e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.32240e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.93546e+15
+      Equation: "PotentialEquation"	RelError: 1.36059e+01	AbsError: 4.71388e-02
+Iteration: 3
+  Device: "e6nd_L1_rev"	RelError: 2.00357e+03	AbsError: 6.06642e+14
+    Region: "Si"	RelError: 2.00357e+03	AbsError: 6.06642e+14
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.17646e+14
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 3.88995e+14
+      Equation: "PotentialEquation"	RelError: 5.57218e+00	AbsError: 3.80896e-02
+Iteration: 4
+  Device: "e6nd_L1_rev"	RelError: 1.00013e+03	AbsError: 6.85019e+13
+    Region: "Si"	RelError: 1.00013e+03	AbsError: 6.85019e+13
+      Equation: "ElectronContinuityEquation"	RelError: 1.08729e+00	AbsError: 1.72854e+12
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 6.67734e+13
+      Equation: "PotentialEquation"	RelError: 4.68772e-02	AbsError: 2.74092e-02
+Iteration: 5
+  Device: "e6nd_L1_rev"	RelError: 4.29483e+00	AbsError: 7.98811e+12
+    Region: "Si"	RelError: 4.29483e+00	AbsError: 7.98811e+12
+      Equation: "ElectronContinuityEquation"	RelError: 3.26288e+00	AbsError: 6.91680e+10
+      Equation: "HoleContinuityEquation"	RelError: 1.00000e+00	AbsError: 7.91895e+12
+      Equation: "PotentialEquation"	RelError: 3.19499e-02	AbsError: 2.13187e-02
+Iteration: 6
+  Device: "e6nd_L1_rev"	RelError: 4.72963e-01	AbsError: 2.49514e+12
+    Region: "Si"	RelError: 4.72963e-01	AbsError: 2.49514e+12
+      Equation: "ElectronContinuityEquation"	RelError: 4.69798e-01	AbsError: 1.08117e+11
+      Equation: "HoleContinuityEquation"	RelError: 2.93338e-03	AbsError: 2.38702e+12
+      Equation: "PotentialEquation"	RelError: 2.30995e-04	AbsError: 8.20847e-07
+Iteration: 7
+  Device: "e6nd_L1_rev"	RelError: 1.76602e-06	AbsError: 2.19009e+06
+    Region: "Si"	RelError: 1.76602e-06	AbsError: 2.19009e+06
+      Equation: "ElectronContinuityEquation"	RelError: 1.72233e-06	AbsError: 1.27569e+05
+      Equation: "HoleContinuityEquation"	RelError: 4.36804e-08	AbsError: 2.06252e+06
+      Equation: "PotentialEquation"	RelError: 1.22672e-11	AbsError: 6.52048e-13
+Iteration: 8
+  Device: "e6nd_L1_rev"	RelError: 1.32609e-14	AbsError: 7.16028e+01
+    Region: "Si"	RelError: 1.32609e-14	AbsError: 7.16028e+01
+      Equation: "ElectronContinuityEquation"	RelError: 1.65921e-15	AbsError: 3.34873e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.90491e-15	AbsError: 3.81155e+01
+      Equation: "PotentialEquation"	RelError: 9.69679e-15	AbsError: 6.81327e-17
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_rev"	RelError: 2.01865e+03	AbsError: 4.86555e+16
+    Region: "Si"	RelError: 2.01865e+03	AbsError: 4.86555e+16
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.43236e+16
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.43318e+16
+      Equation: "PotentialEquation"	RelError: 2.06536e+01	AbsError: 6.12741e-02
+Iteration: 1
+  Device: "e6nd_L1_rev"	RelError: 2.00405e+03	AbsError: 1.40418e+16
+    Region: "Si"	RelError: 2.00405e+03	AbsError: 1.40418e+16
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 7.13026e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 6.91157e+15
+      Equation: "PotentialEquation"	RelError: 6.04755e+00	AbsError: 5.47695e-02
+Iteration: 2
+  Device: "e6nd_L1_rev"	RelError: 2.00653e+03	AbsError: 3.37125e+15
+    Region: "Si"	RelError: 2.00653e+03	AbsError: 3.37125e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.89271e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.47854e+15
+      Equation: "PotentialEquation"	RelError: 8.52532e+00	AbsError: 4.71388e-02
+Iteration: 3
+  Device: "e6nd_L1_rev"	RelError: 2.00403e+03	AbsError: 3.57209e+14
+    Region: "Si"	RelError: 2.00403e+03	AbsError: 3.57209e+14
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 9.57511e+13
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.61458e+14
+      Equation: "PotentialEquation"	RelError: 6.02862e+00	AbsError: 3.80896e-02
+Iteration: 4
+  Device: "e6nd_L1_rev"	RelError: 1.00003e+03	AbsError: 4.21889e+13
+    Region: "Si"	RelError: 1.00003e+03	AbsError: 4.21889e+13
+      Equation: "ElectronContinuityEquation"	RelError: 1.00000e+00	AbsError: 9.76087e+11
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 4.12128e+13
+      Equation: "PotentialEquation"	RelError: 3.30113e-02	AbsError: 2.74092e-02
+Iteration: 5
+  Device: "e6nd_L1_rev"	RelError: 1.34377e+00	AbsError: 4.39126e+12
+    Region: "Si"	RelError: 1.34377e+00	AbsError: 4.39126e+12
+      Equation: "ElectronContinuityEquation"	RelError: 3.20527e-01	AbsError: 3.90992e+09
+      Equation: "HoleContinuityEquation"	RelError: 1.00000e+00	AbsError: 4.38735e+12
+      Equation: "PotentialEquation"	RelError: 2.32419e-02	AbsError: 2.13187e-02
+Iteration: 6
+  Device: "e6nd_L1_rev"	RelError: 1.20673e-01	AbsError: 6.55907e+11
+    Region: "Si"	RelError: 1.20673e-01	AbsError: 6.55907e+11
+      Equation: "ElectronContinuityEquation"	RelError: 1.18911e-01	AbsError: 4.52341e+10
+      Equation: "HoleContinuityEquation"	RelError: 1.61135e-03	AbsError: 6.10673e+11
+      Equation: "PotentialEquation"	RelError: 1.50481e-04	AbsError: 3.93690e-07
+Iteration: 7
+  Device: "e6nd_L1_rev"	RelError: 2.23597e-06	AbsError: 4.93505e+05
+    Region: "Si"	RelError: 2.23597e-06	AbsError: 4.93505e+05
+      Equation: "ElectronContinuityEquation"	RelError: 2.22844e-06	AbsError: 2.20319e+04
+      Equation: "HoleContinuityEquation"	RelError: 7.52524e-09	AbsError: 4.71474e+05
+      Equation: "PotentialEquation"	RelError: 4.91412e-12	AbsError: 1.47485e-13
+Iteration: 8
+  Device: "e6nd_L1_rev"	RelError: 1.45531e-14	AbsError: 4.82962e+01
+    Region: "Si"	RelError: 1.45531e-14	AbsError: 4.82962e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.32112e-15	AbsError: 2.76172e+01
+      Equation: "HoleContinuityEquation"	RelError: 1.47044e-15	AbsError: 2.06789e+01
+      Equation: "PotentialEquation"	RelError: 1.07616e-14	AbsError: 6.63562e-17
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_rev"	RelError: 2.01176e+03	AbsError: 4.36727e+16
+    Region: "Si"	RelError: 2.01176e+03	AbsError: 4.36727e+16
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.18345e+16
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.18382e+16
+      Equation: "PotentialEquation"	RelError: 1.37620e+01	AbsError: 6.12741e-02
+Iteration: 1
+  Device: "e6nd_L1_rev"	RelError: 2.00575e+03	AbsError: 1.16329e+16
+    Region: "Si"	RelError: 2.00575e+03	AbsError: 1.16329e+16
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 6.01721e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 5.61574e+15
+      Equation: "PotentialEquation"	RelError: 7.74983e+00	AbsError: 5.47695e-02
+Iteration: 2
+  Device: "e6nd_L1_rev"	RelError: 2.00211e+03	AbsError: 2.66510e+15
+    Region: "Si"	RelError: 2.00211e+03	AbsError: 2.66510e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.49989e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.16521e+15
+      Equation: "PotentialEquation"	RelError: 4.11428e+00	AbsError: 4.71388e-02
+Iteration: 3
+  Device: "e6nd_L1_rev"	RelError: 4.04499e+03	AbsError: 2.24370e+14
+    Region: "Si"	RelError: 4.04499e+03	AbsError: 2.24370e+14
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 3.80263e+13
+      Equation: "HoleContinuityEquation"	RelError: 3.04587e+03	AbsError: 1.86343e+14
+      Equation: "PotentialEquation"	RelError: 1.13840e-01	AbsError: 3.80896e-02
+Iteration: 4
+  Device: "e6nd_L1_rev"	RelError: 1.00003e+03	AbsError: 2.80508e+13
+    Region: "Si"	RelError: 1.00003e+03	AbsError: 2.80508e+13
+      Equation: "ElectronContinuityEquation"	RelError: 1.00000e+00	AbsError: 5.77075e+11
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 2.74738e+13
+      Equation: "PotentialEquation"	RelError: 2.52966e-02	AbsError: 2.74092e-02
+Iteration: 5
+  Device: "e6nd_L1_rev"	RelError: 1.30878e+00	AbsError: 2.62265e+12
+    Region: "Si"	RelError: 1.30878e+00	AbsError: 2.62265e+12
+      Equation: "ElectronContinuityEquation"	RelError: 2.90650e-01	AbsError: 1.77494e+10
+      Equation: "HoleContinuityEquation"	RelError: 9.99863e-01	AbsError: 2.60491e+12
+      Equation: "PotentialEquation"	RelError: 1.82640e-02	AbsError: 2.13187e-02
+Iteration: 6
+  Device: "e6nd_L1_rev"	RelError: 8.09573e-02	AbsError: 2.87851e+11
+    Region: "Si"	RelError: 8.09573e-02	AbsError: 2.87851e+11
+      Equation: "ElectronContinuityEquation"	RelError: 8.07823e-02	AbsError: 2.35277e+10
+      Equation: "HoleContinuityEquation"	RelError: 1.55310e-04	AbsError: 2.64324e+11
+      Equation: "PotentialEquation"	RelError: 1.96929e-05	AbsError: 2.42056e-07
+Iteration: 7
+  Device: "e6nd_L1_rev"	RelError: 3.32559e-08	AbsError: 1.76081e+05
+    Region: "Si"	RelError: 3.32559e-08	AbsError: 1.76081e+05
+      Equation: "ElectronContinuityEquation"	RelError: 3.31923e-08	AbsError: 5.90340e+03
+      Equation: "HoleContinuityEquation"	RelError: 6.31025e-11	AbsError: 1.70178e+05
+      Equation: "PotentialEquation"	RelError: 4.18916e-13	AbsError: 5.81697e-14
+number of equations 93519
+Iteration: 0
+  Device: "e6nd_L1_rev"	RelError: 2.00797e+03	AbsError: 3.99480e+16
+    Region: "Si"	RelError: 2.00797e+03	AbsError: 3.99480e+16
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.99757e+16
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.99723e+16
+      Equation: "PotentialEquation"	RelError: 9.96880e+00	AbsError: 6.12741e-02
+Iteration: 1
+  Device: "e6nd_L1_rev"	RelError: 2.02362e+03	AbsError: 9.43768e+15
+    Region: "Si"	RelError: 2.02362e+03	AbsError: 9.43768e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 4.79607e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 4.64161e+15
+      Equation: "PotentialEquation"	RelError: 2.56223e+01	AbsError: 5.47695e-02
+Iteration: 2
+  Device: "e6nd_L1_rev"	RelError: 2.00120e+03	AbsError: 2.14253e+15
+    Region: "Si"	RelError: 2.00120e+03	AbsError: 2.14253e+15
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.20983e+15
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 9.32700e+14
+      Equation: "PotentialEquation"	RelError: 3.20175e+00	AbsError: 4.71388e-02
+Iteration: 3
+  Device: "e6nd_L1_rev"	RelError: 1.99806e+03	AbsError: 1.51615e+14
+    Region: "Si"	RelError: 1.99806e+03	AbsError: 1.51615e+14
+      Equation: "ElectronContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.32558e+13
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.38359e+14
+      Equation: "PotentialEquation"	RelError: 5.67232e-02	AbsError: 3.80896e-02
+Iteration: 4
+  Device: "e6nd_L1_rev"	RelError: 1.00002e+03	AbsError: 1.95682e+13
+    Region: "Si"	RelError: 1.00002e+03	AbsError: 1.95682e+13
+      Equation: "ElectronContinuityEquation"	RelError: 1.00000e+00	AbsError: 3.50730e+11
+      Equation: "HoleContinuityEquation"	RelError: 9.99000e+02	AbsError: 1.92175e+13
+      Equation: "PotentialEquation"	RelError: 2.06066e-02	AbsError: 2.74092e-02
+Iteration: 5
+  Device: "e6nd_L1_rev"	RelError: 1.28693e+00	AbsError: 1.64266e+12
+    Region: "Si"	RelError: 1.28693e+00	AbsError: 1.64266e+12
+      Equation: "ElectronContinuityEquation"	RelError: 2.73797e-01	AbsError: 2.61780e+10
+      Equation: "HoleContinuityEquation"	RelError: 9.98090e-01	AbsError: 1.61648e+12
+      Equation: "PotentialEquation"	RelError: 1.50423e-02	AbsError: 2.13187e-02
+Iteration: 6
+  Device: "e6nd_L1_rev"	RelError: 7.26955e-02	AbsError: 2.38056e+11
+    Region: "Si"	RelError: 7.26955e-02	AbsError: 2.38056e+11
+      Equation: "ElectronContinuityEquation"	RelError: 7.17273e-02	AbsError: 2.09702e+10
+      Equation: "HoleContinuityEquation"	RelError: 9.52340e-04	AbsError: 2.17086e+11
+      Equation: "PotentialEquation"	RelError: 1.58793e-05	AbsError: 2.45352e-07
+Iteration: 7
+  Device: "e6nd_L1_rev"	RelError: 7.35832e-07	AbsError: 2.36236e+05
+    Region: "Si"	RelError: 7.35832e-07	AbsError: 2.36236e+05
+      Equation: "ElectronContinuityEquation"	RelError: 7.33777e-07	AbsError: 4.66354e+03
+      Equation: "HoleContinuityEquation"	RelError: 2.05568e-09	AbsError: 2.31573e+05
+      Equation: "PotentialEquation"	RelError: 3.08091e-13	AbsError: 6.60290e-14

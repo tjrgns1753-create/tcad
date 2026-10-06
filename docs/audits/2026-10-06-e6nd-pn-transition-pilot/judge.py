@@ -70,6 +70,14 @@ def evaluate_device(dr, arrays, lv, direction, reference, states, T):
     ex0,ex1,ey0,ey1,length = [a(nm) for nm in ('x@n0','x@n1','y@n0','y@n1','EdgeLength')]
     if any(z.shape!=length.shape for z in (ex0,ex1,ey0,ey1)) or np.any(length<=0):
         raise ValueError('EDGE_GEOMETRY_INVALID')
+    coordinate_ids = {tuple(v):i for i,v in enumerate(xy)}
+    try:
+        e0 = np.array([coordinate_ids[(xx,yy)] for xx,yy in zip(ex0,ey0)])
+        e1 = np.array([coordinate_ids[(xx,yy)] for xx,yy in zip(ex1,ey1)])
+    except KeyError as exc:
+        raise ValueError('EDGE_ENDPOINT_NOT_NODE') from exc
+    native_length = np.hypot(ex1-ex0,ey1-ey0)
+    need('edge_length',np.allclose(length,native_length,rtol=1e-12,atol=0))
     horizontal = (ey0==ey1)&(ex0!=ex1)
     if not np.any(horizontal):
         raise ValueError('HORIZONTAL_EDGES_MISSING')
@@ -81,6 +89,7 @@ def evaluate_device(dr, arrays, lv, direction, reference, states, T):
             raise ValueError('REFERENCE_SUPPORT_INVALID')
         values = {nm:a(f'{v}_{nm}',n if nm!='ElectricField' else len(length)) for nm in M.SNAP_ARRAYS}
         psi = values['Potential']
+        need(f'native_field_relation_{v}',np.allclose(values['ElectricField'],(psi[e0]-psi[e1])/length,rtol=1e-9,atol=1e-7))
         err = float(np.max(np.abs(psi-np.interp(x,rx,r['Potential']))))
         spread = max(float(np.ptp(psi[x==xx])) for xx in np.unique(x))
         carriers = {}

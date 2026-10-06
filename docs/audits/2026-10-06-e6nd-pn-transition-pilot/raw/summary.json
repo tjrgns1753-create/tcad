@@ -1,0 +1,172 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-10-06T06:30:50.319313+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nd-pn-transition-001",
+  "profile": "e6nd_pn_transition_pilot",
+  "params": {},
+  "note": "Two fixed transition meshes; fresh forward and reverse canonical audits; existing production PN gate stays closed."
+ },
+ "profile": "e6nd_pn_transition_pilot",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/PLAN.md",
+   "sha256": "5b445a41874fcf327a0dd44d8d713538d99dd4c314a76048fdb77ad2ef2cb42a",
+   "bytes": 3734
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py",
+   "sha256": "5cf631fea63df4f73ce4462d08d9c9df9c30174b67d44b296974fa3c3648f855",
+   "bytes": 8261
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/judge.py",
+   "sha256": "62deccc08fe680b0c4befef60456257ebc73f7b250ba612e1d58e58869663b71",
+   "bytes": 8493
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/test_contract.py",
+   "sha256": "d50963f86beb91c5b98c0429e24b3bfe913b4e2c7c3a0437b8390fb887ec06cf",
+   "bytes": 3455
+  },
+  {
+   "path": "tests/integration/test_pn_2d_1d_consistency_real.py",
+   "sha256": "2d4852cea409a57c75c76a1a5adc47d230a62c7fb59dfd72fbe7b6291b9e9b3d",
+   "bytes": 15676
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "tcad/device/devsim/mesh_refine.py",
+   "sha256": "3b84190bbb4c0cfe9f13b668518820f8822e0fd04b2de0ec6c6194483f7c507d",
+   "bytes": 24346
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz",
+   "sha256": "65c1a938a6521a14897ed2ec2dfc04178e254248e5a2778f9e0b7d1a56e1c8e2",
+   "bytes": 887153
+  },
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/pn_1d_diagnostic.json",
+   "sha256": "c023cc4d16ae64e1b082ddf86d0cbe2bf492fd723beeb0e0fbd8ac00826e9f87",
+   "bytes": 28699
+  }
+ ],
+ "request_sha256": "112de0c1b54476525da614b5b4f7f1685be4bc520dc5cc43ae5159f6dd33a7c8",
+ "source": {
+  "github_sha": "0aae0a35bcfa38ceca374556199a451dd01c3076",
+  "git_head": "0aae0a35bcfa38ceca374556199a451dd01c3076",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37424050614",
+  "run_number": "40",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T06:31:53.242586+00:00",
+ "duration_s": 62.923,
+ "outputs": [
+  {
+   "path": "e6nd_out/N0.log",
+   "bytes": 38878,
+   "sha256": "7aa9fb7f4826f939213e84510cc6941a017db3774bc22ed0431ca4b8a325bca8"
+  },
+  {
+   "path": "e6nd_out/N0/arrays.npz",
+   "bytes": 576077,
+   "sha256": "ab99882579df49e3337465c1fa009bef65b5aa98602e76537c18f3002db90071"
+  },
+  {
+   "path": "e6nd_out/N0/record.json",
+   "bytes": 9397,
+   "sha256": "713f6e388b4cf55c466bd6f55693dcb957272af34d505b4304bb5205cec814c3"
+  },
+  {
+   "path": "e6nd_out/N1.log",
+   "bytes": 38084,
+   "sha256": "061595f546038e40f29b9f91e3e0587afd60ff6063c654da37754c25da7eeca5"
+  },
+  {
+   "path": "e6nd_out/N1/arrays.npz",
+   "bytes": 1933724,
+   "sha256": "5de10f1f6a01d156d4895a384e80478514953c04d9d8ebff68b730164172a835"
+  },
+  {
+   "path": "e6nd_out/N1/record.json",
+   "bytes": 10443,
+   "sha256": "d35dbe991161941d7a1c965a80c031f5b6ef1e696e5cb04699dd92fbb1bb660f"
+  },
+  {
+   "path": "e6nd_out/execution.json",
+   "bytes": 1099,
+   "sha256": "6090ef05fd4cd1c0dd6b4ac78601c0c78725fe4a5e2298c505308c93d3267c76"
+  },
+  {
+   "path": "e6nd_out/result.json",
+   "bytes": 16277,
+   "sha256": "5d7ece3dac59bff201e1fe5c68111546cd2a6636d9cbdab7e2143691ac1f10c0"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Fixed PLAN pilot only; never release production PN gate.",
+ "log": {
+  "file": "run.log",
+  "sha256": "15d7f1c5a87a7ba8caddf4a117e2d1a703eb50bc6fd1572fdf1c6bd4402cb77d",
+  "bytes": 16278
+ },
+ "redactions": {}
+}
