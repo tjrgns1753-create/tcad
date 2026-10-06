@@ -1,0 +1,187 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T05:32:47.917911+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6na-import-reduction-supervised-001",
+  "profile": "e6na_import_reduction",
+  "params": {},
+  "note": "Fixed E6N-A import-only audit after compatibility PASS. No solves; stop after first unsupported or inconclusive candidate."
+ },
+ "profile": "e6na_import_reduction",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/PLAN.md",
+   "sha256": "b5fc37ae34827f15af7195e3944ae6a1f916e1f169628f7c321485c68eddfee8",
+   "bytes": 7740
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
+   "sha256": "ab4517a398e1605d79aa01c01a2901b95da6e0529db69c8a03808977cc15c049",
+   "bytes": 18354
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
+   "sha256": "b16ad26cb7459b632737ae29496b33c346898df033d8ce327bf9453699936cd1",
+   "bytes": 9734
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/flux_source_contract.py",
+   "sha256": "edf6d77530ff990d83063fb27ec489c5ad023fd22e614c1012ef65f88bd18aba",
+   "bytes": 2681
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/REVIEWED_FLUX_REFERENCE.txt",
+   "sha256": "26bf83f7badf06d1f95392b40ccd7b6b131457e44309d1c08172df469e220a0c",
+   "bytes": 1348
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/RESOURCE_EXECUTION_CONTRACT.md",
+   "sha256": "595c09fe717d96bf8dafb192bb0b9da416b8419d9a41eba94d1a0745b1ca788a",
+   "bytes": 2547
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_resource_supervisor.py",
+   "sha256": "6372f5e8f83c4333ce2197220ae7143403f7edbbf428abfc20936579f0404f44",
+   "bytes": 2949
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_contract.py",
+   "sha256": "e94a301e7cfab8fd053a87f06eea931b90800f12eded09a98a925c1e7d703006",
+   "bytes": 2854
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/e6n_geometry_result.json",
+   "sha256": "77a57e6efcbe377d33c89c5d90499e6b057b2676064b826bea759b0bd49e9bc8",
+   "bytes": 6505
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/GEOMETRY_DESIGN_RULE.md",
+   "sha256": "ac5e9c15e7f850f8dea12b709c1aecc9981c7f547d62d46783242fa2f2781f35",
+   "bytes": 1432
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
+   "sha256": "cfedbe77df4dc08a6cdc1da81a4bf0e14ac04336be45651fc68304e22c72595c",
+   "bytes": 17433
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py",
+   "sha256": "038f28a655a092a341b42499ab658c27d7815a0ac431e88b7c70cee2287f5e2c",
+   "bytes": 19011
+  },
+  {
+   "path": "tests/integration/test_pn_2d_1d_consistency_real.py",
+   "sha256": "7581bc4813a14237f71925bc26ba865c79c73efe84ea2d6dc9341e92d747beeb",
+   "bytes": 15646
+  },
+  {
+   "path": "tcad/device/devsim/mesh_refine.py",
+   "sha256": "3b84190bbb4c0cfe9f13b668518820f8822e0fd04b2de0ec6c6194483f7c507d",
+   "bytes": 24346
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_e6h.py",
+   "sha256": "87a41856f034a42b771d947d82434184d62f8e0e97d7e0b3e80f79c8a1190dd5",
+   "bytes": 5996
+  },
+  {
+   "path": "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz",
+   "sha256": "65c1a938a6521a14897ed2ec2dfc04178e254248e5a2778f9e0b7d1a56e1c8e2",
+   "bytes": 887153
+  }
+ ],
+ "request_sha256": "ff303572eb998785226989cc156610f7173240d9689314b79895c534f2d83e83",
+ "source": {
+  "github_sha": "2cbb78fb44789c03b805885531edc0ee84de6b83",
+  "git_head": "2cbb78fb44789c03b805885531edc0ee84de6b83",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37419006613",
+  "run_number": "36",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T05:32:50.388907+00:00",
+ "duration_s": 2.471,
+ "outputs": [
+  {
+   "path": "e6na_out/L0.log",
+   "bytes": 894,
+   "sha256": "d5625504b9b29e61d014b8cd2ed37c47b1cb32cf25169dc37203417a4210cb68"
+  },
+  {
+   "path": "e6na_out/L0/L0.npz",
+   "bytes": 389103,
+   "sha256": "69ffbc42aea5c11fea0347c922d872bb0387c0c87934c2ed14af93eaeffa222b"
+  },
+  {
+   "path": "e6na_out/L0/result.json",
+   "bytes": 106278,
+   "sha256": "d5566c6102e8ca584431addb0fa716ff18e3b06c47d294b6eaa329d057f71781"
+  },
+  {
+   "path": "e6na_out/result.json",
+   "bytes": 105571,
+   "sha256": "7a1e86dcf435313c0a89d211c719c4f8740b3ba7f98c82a268cddb2006b4407f"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Only rerun after explicit approval; no solve permitted.",
+ "log": {
+  "file": "run.log",
+  "sha256": "7b39e6ce0aa2fe9f8a513fb9cf8a4d8b8864ec3ad4c34388e6d099dca9a17de2",
+  "bytes": 82
+ },
+ "redactions": {}
+}

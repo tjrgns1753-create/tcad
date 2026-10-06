@@ -1,0 +1,23 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 15264 Triangles.
+Physical group name Si has 23300 Lines.
+Physical group name Si has 8037 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 16 Lines.
+Physical group name Si_xmax has 17 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 16 Lines.
+Physical group name Si_xmin has 17 Points.
+Device e6na_L0 has 8037 coordinates with max index 8036
+Region Si has 8037 nodes.
+Contact Si_xmax in region Si with 17 nodes
+Contact Si_xmin in region Si with 17 nodes
+{
+  "execution_status": "COMPLETED",
+  "verdict": "INCONCLUSIVE",
+  "solve_attempts": 0
+}

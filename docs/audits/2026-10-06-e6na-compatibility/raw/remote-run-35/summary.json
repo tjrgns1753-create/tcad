@@ -1,0 +1,197 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T05:30:10.513237+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6na-engine-free-compatibility-002",
+  "profile": "e6na_engine_free_compatibility",
+  "params": {},
+  "note": "Engine-free Python 3.11 and Windows Job compatibility. Read installed official helper source without importing engine. No physical computation."
+ },
+ "profile": "e6na_engine_free_compatibility",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-06-e6na-compatibility/PLAN.md",
+   "sha256": "ea4a782c85f76022965af7763f8c7afce84396eaa39acea9028a3404cdbd555e",
+   "bytes": 1253
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6na-compatibility/run_compatibility.py",
+   "sha256": "f36839f2b0898b82388631be4ba1fad9d119b27bc3a585ba9bb90be88c42835a",
+   "bytes": 4069
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
+   "sha256": "ab4517a398e1605d79aa01c01a2901b95da6e0529db69c8a03808977cc15c049",
+   "bytes": 18354
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
+   "sha256": "b16ad26cb7459b632737ae29496b33c346898df033d8ce327bf9453699936cd1",
+   "bytes": 9734
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/flux_source_contract.py",
+   "sha256": "edf6d77530ff990d83063fb27ec489c5ad023fd22e614c1012ef65f88bd18aba",
+   "bytes": 2681
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/REVIEWED_FLUX_REFERENCE.txt",
+   "sha256": "26bf83f7badf06d1f95392b40ccd7b6b131457e44309d1c08172df469e220a0c",
+   "bytes": 1348
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/RESOURCE_EXECUTION_CONTRACT.md",
+   "sha256": "595c09fe717d96bf8dafb192bb0b9da416b8419d9a41eba94d1a0745b1ca788a",
+   "bytes": 2547
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/POSITIVE_GEOMETRY_CRITERIA.md",
+   "sha256": "63757b71b7e918451fa7068238e3c11ff3946e452e8b70bc6690fc4d6b936b81",
+   "bytes": 4713
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_contract.py",
+   "sha256": "e94a301e7cfab8fd053a87f06eea931b90800f12eded09a98a925c1e7d703006",
+   "bytes": 2854
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_review_followup.py",
+   "sha256": "0974ebbb77a734222e3e2b257f1d92162d78694ca0ee396b75165b27d28b4c27",
+   "bytes": 6771
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_flux_source_contract.py",
+   "sha256": "52917359ee9f7bc7a954c6036f6afc1bb02b67be0fdfc938a975670605e4e33a",
+   "bytes": 4778
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_resource_supervisor.py",
+   "sha256": "6372f5e8f83c4333ce2197220ae7143403f7edbbf428abfc20936579f0404f44",
+   "bytes": 2949
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_supervised_entry.py",
+   "sha256": "bf51a61d7385e869da6516012302008e7f9a1673a4047b632bd32af8b28e73bf",
+   "bytes": 3268
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/test_positive_geometry.py",
+   "sha256": "70026fd09f997d821f65b4c2bf209c1b5fc3700bef59b8424aad39b19513bff5",
+   "bytes": 7641
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
+   "sha256": "cfedbe77df4dc08a6cdc1da81a4bf0e14ac04336be45651fc68304e22c72595c",
+   "bytes": 17433
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6h-conformity-poisson/scripts/conformity_e6h.py",
+   "sha256": "87a41856f034a42b771d947d82434184d62f8e0e97d7e0b3e80f79c8a1190dd5",
+   "bytes": 5996
+  }
+ ],
+ "request_sha256": "a8ea8838870074bab119e0d4095b470cb9baa72520966e6ac7a3c5106947b2db",
+ "source": {
+  "github_sha": "33db041942fe18446443834673d1c3010c0fe219",
+  "git_head": "33db041942fe18446443834673d1c3010c0fe219",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37418782974",
+  "run_number": "35",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6na-compatibility/run_compatibility.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T05:30:16.847778+00:00",
+ "duration_s": 6.335,
+ "outputs": [
+  {
+   "path": "e6na_compat_out/result.json",
+   "bytes": 3534,
+   "sha256": "5a35a58fab15dfdbf20e7fa12f133fc0c666cf031adf38003bcf775f77e2dce1"
+  },
+  {
+   "path": "e6na_compat_out/test_contract.py.log",
+   "bytes": 65,
+   "sha256": "c5351147cf4701155c41df9a06d55323683d45e2b241162e97dcc291ad3b20c7"
+  },
+  {
+   "path": "e6na_compat_out/test_flux_source_contract.py.log",
+   "bytes": 629,
+   "sha256": "ed3c34e32d26d20c28becb7207c92ee1e3f11fcd47c7a4850efef2b5dddfa409"
+  },
+  {
+   "path": "e6na_compat_out/test_positive_geometry.py.log",
+   "bytes": 860,
+   "sha256": "b67052efa7d6d2fc6b5d0c30fe36785d291f01d8ace28d7a906790dc714d3c5a"
+  },
+  {
+   "path": "e6na_compat_out/test_resource_supervisor.py.log",
+   "bytes": 3485,
+   "sha256": "981b116eadf3c4cd03f660d4aaffdd7a2fe2b7c7a1bc12cc5fa859a4c85a387f"
+  },
+  {
+   "path": "e6na_compat_out/test_review_followup.py.log",
+   "bytes": 715,
+   "sha256": "40f14d04ed9145de3a9df3145d28b5994fb8f95b232cd2844edf7b8e99f29a7b"
+  },
+  {
+   "path": "e6na_compat_out/test_supervised_entry.py.log",
+   "bytes": 773,
+   "sha256": "67071afa6bf8154b8b4f952b45d0a6c6bc1fe1a704c2093751b82362b78b8dc6"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Engine-free compatibility only. No PN or real mesh import approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "8ce178d0aac2a2df4bad23ca7ae46b9dc6e597d0bf3d4b628e9ef5ca25a091f9",
+  "bytes": 2880
+ },
+ "redactions": {}
+}

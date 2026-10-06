@@ -1,0 +1,24 @@
+FULL_PATH normal INCONCLUSIVE
+FULL_PATH transition INCONCLUSIVE
+FULL_PATH stencil_only INCONCLUSIVE
+FULL_PATH reversed_endpoints INCONCLUSIVE
+FULL_PATH roundoff_only INCONCLUSIVE
+BLOCKED joint_scale_corruption
+BLOCKED missing_NodeVolume
+BLOCKED missing_EdgeLength
+BLOCKED missing_EdgeCouple
+BLOCKED endpoint_fractional
+BLOCKED endpoint_nan
+BLOCKED endpoint_negative
+BLOCKED endpoint_range
+FULL_PATH no_candidate NOT_MEASURED
+BLOCKED flux_source
+BLOCKED flux_source
+BLOCKED actual_entry_plan
+BLOCKED actual_entry_plan
+BLOCKED restore_np_load
+BLOCKED restore_cleanup
+BLOCKED forbidden_solve
+CLEANUP failure_is_FAIL and mesh_cleanup_attempted
+CLEANUP normal_PASS
+FOLLOWUP PASS; actual engine imports=0; actual solve=0

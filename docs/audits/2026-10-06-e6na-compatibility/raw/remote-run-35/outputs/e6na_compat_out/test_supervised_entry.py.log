@@ -1,0 +1,16 @@
+{"execution_status": "COMPLETED", "verdict": "NONINVARIANCE_WITNESS", "solve_attempts": 0}
+PARENT_PATH normal PASS
+{"execution_status": "COMPLETED", "verdict": "INCONCLUSIVE", "solve_attempts": 0}
+PARENT_PATH inconclusive PASS
+{"execution_status": "FAIL", "verdict": "FAIL", "solve_attempts": null}
+PARENT_PATH timeout PASS
+{"execution_status": "FAIL", "verdict": "FAIL", "solve_attempts": null}
+PARENT_PATH missing PASS
+{"execution_status": "FAIL", "verdict": "FAIL", "solve_attempts": 0}
+PARENT_PATH hash PASS
+{"execution_status": "FAIL", "verdict": "FAIL", "solve_attempts": 0}
+PARENT_PATH cleanup PASS
+{"execution_status": "FAIL", "verdict": "FAIL", "solve_attempts": 1}
+PARENT_PATH solve PASS
+RESOURCE_CONTRACT_BLOCK callback=0
+SUPERVISED_ENTRY_PASS; ENGINE_IMPORTS=0

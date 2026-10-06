@@ -1,0 +1,19 @@
+REFERENCE_SPY model definitions and equation connection PASS
+ACCEPT normal callback=1
+ACCEPT comments callback=1
+ACCEPT docstring callback=1
+ACCEPT CRLF callback=1
+ACCEPT indentation callback=1
+BLOCK comment_only callback=0
+BLOCK docstring_only callback=0
+BLOCK unused_strings callback=0
+BLOCK electric_field callback=0
+BLOCK flux callback=0
+BLOCK equation_edge_model callback=0
+BLOCK model_creation callback=0
+BLOCK unused_correct_function callback=0
+BLOCK unsupported_structure callback=0
+BLOCK syntax callback=0
+BLOCK nontext callback=0
+BLOCK unavailable callback=0
+FLUX CONTRACT PASS; actual engine imports=0; actual solve=0

@@ -1,0 +1,9 @@
+POSITIVE_WITNESS {"nodes": [6, 11], "classes": [0, 0], "x_cm": 0.0, "power": 2, "difference": 7352.941176470602, "scale": 83886080.0, "geometry_discrepancy_bound": 0.0, "exact_projected_row_nonzero": true, "exact_row_difference": {"-1/4096": "16777216/17", "0": "-33554432/17", "1/4096": "16777216/17"}, "verdict": "NONINVARIANCE_WITNESS"}
+BLOCKED missing_NodeVolume EVIDENCE_BLOCKED: required array missing
+BLOCKED missing_EdgeLength EVIDENCE_BLOCKED: required array missing
+BLOCKED missing_EdgeCouple EVIDENCE_BLOCKED: required array missing
+BLOCKED nonfinite EVIDENCE_BLOCKED: invalid EdgeCouple
+BLOCKED endpoint_range EVIDENCE_BLOCKED: invalid endpoint/topology
+BLOCKED volume_corruption LOCAL_GEOMETRY_WEIGHT_MISMATCH
+BLOCKED joint_scale_corruption EVIDENCE_BLOCKED: EDGE_LENGTH_GEOMETRY_MISMATCH
+POSITIVE_GEOMETRY_PASS; ENGINE_IMPORTS=0; ACTUAL_SOLVES=0
