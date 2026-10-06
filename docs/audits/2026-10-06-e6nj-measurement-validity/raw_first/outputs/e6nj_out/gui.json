@@ -1,0 +1,22 @@
+{
+  "pass": true,
+  "cases": {
+    "nan": {
+      "engine_prepare_attempts": 0,
+      "previous_result_cleared": true
+    },
+    "inf": {
+      "engine_prepare_attempts": 0,
+      "previous_result_cleared": true
+    },
+    "-inf": {
+      "engine_prepare_attempts": 0,
+      "previous_result_cleared": true
+    },
+    "bad": {
+      "engine_prepare_attempts": 0,
+      "previous_result_cleared": true
+    }
+  },
+  "failed_retry_no_export": true
+}

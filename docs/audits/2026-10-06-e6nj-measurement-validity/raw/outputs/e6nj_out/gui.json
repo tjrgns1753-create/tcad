@@ -1,0 +1,34 @@
+{
+  "pass": true,
+  "cases": {
+    "nan": {
+      "engine_prepare_attempts": 0,
+      "previous_result_cleared": true
+    },
+    "inf": {
+      "engine_prepare_attempts": 0,
+      "previous_result_cleared": true
+    },
+    "-inf": {
+      "engine_prepare_attempts": 0,
+      "previous_result_cleared": true
+    },
+    "bad": {
+      "engine_prepare_attempts": 0,
+      "previous_result_cleared": true
+    }
+  },
+  "failed_retry_no_export": true,
+  "controlled_output_faults": {
+    "nan_current": {
+      "attempted_solves": 3,
+      "success_block_absent": true,
+      "devices_remaining": 0
+    },
+    "not_converged": {
+      "attempted_solves": 3,
+      "success_block_absent": true,
+      "devices_remaining": 0
+    }
+  }
+}

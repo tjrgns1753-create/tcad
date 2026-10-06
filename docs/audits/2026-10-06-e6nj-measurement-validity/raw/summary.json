@@ -1,0 +1,152 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T12:47:04.500572+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nj-measurement-validity-002",
+  "profile": "e6nj_measurement_validity",
+  "params": {},
+  "note": "Finite measurement input/output and failed DC retry export boundary; existing physical gates unchanged."
+ },
+ "profile": "e6nj_measurement_validity",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "d3be600e5ac4c3c018d847aeb3bef7fa97b9559504bd8f1fecf9b9d571e398fd",
+   "bytes": 406551
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "1980c4e091c7220bf4fede2a4c1c185f26e6f9b7483c7edec102d3cb7cf10e82",
+   "bytes": 7412
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nj-measurement-validity/PLAN.md",
+   "sha256": "934bb8401465e5940079fa451b713ccf702821fe275bd52ccffa4517d330ea5b",
+   "bytes": 1705
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nj-measurement-validity/check_gui.py",
+   "sha256": "71e77769cce7a79d5411fb8fe46fa8a94049e8cda7f953ddd099e4a39475c1e0",
+   "bytes": 3939
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nj-measurement-validity/run_checks.py",
+   "sha256": "3fbb624ab172b107968986b1151ec74121af599e139de373f4585bf486605717",
+   "bytes": 1682
+  },
+  {
+   "path": "tests/unit/test_measurement_validity_mock.py",
+   "sha256": "85aae496bc9f5124d99d8c8a0c659377ef36966446fe50d63926200e13f3d3b8",
+   "bytes": 3088
+  },
+  {
+   "path": "tests/unit/test_measurement_entry_point_gate_mock.py",
+   "sha256": "f27ac9658f554bcad725335eddc7e88c2fd326fa6a203843cee659094814063c",
+   "bytes": 15771
+  }
+ ],
+ "request_sha256": "50ac32905ee85b8cd88076b16bb4ed74c1ec6601f33f867d9869693fe173cd9b",
+ "source": {
+  "github_sha": "2bab11c33d0df69a5e094a9ce973e62bcbe09dfa",
+  "git_head": "2bab11c33d0df69a5e094a9ce973e62bcbe09dfa",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37465658115",
+  "run_number": "56",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6nj-measurement-validity/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T12:47:12.271063+00:00",
+ "duration_s": 7.77,
+ "outputs": [
+  {
+   "path": "e6nj_out/boundary.log",
+   "bytes": 75,
+   "sha256": "4d55f22252f818f0fcd72e4adf615f7414e5e367ffcf5a89ee3b2f95821ca16a"
+  },
+  {
+   "path": "e6nj_out/canonical_gate.log",
+   "bytes": 2109,
+   "sha256": "b4602e723208b6e206d5b8e2092aae7d01da34452defc6a6c01d611a3a395f6a"
+  },
+  {
+   "path": "e6nj_out/entry_gate.log",
+   "bytes": 971,
+   "sha256": "990d027c1463f9d5275e4a93cac0da4c5c7659850b6342c198c30f9735a0d314"
+  },
+  {
+   "path": "e6nj_out/existing_gui.log",
+   "bytes": 11034,
+   "sha256": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+  },
+  {
+   "path": "e6nj_out/gui.json",
+   "bytes": 761,
+   "sha256": "0dd4d38ede264d434f607b5b6c1abea3c91b28a3bb162ab16e367e4b729f2328"
+  },
+  {
+   "path": "e6nj_out/gui.log",
+   "bytes": 8732,
+   "sha256": "325ba9b5b98b168229eff1bf647266d529af4b2dc877a2d572d6670a05a5688a"
+  },
+  {
+   "path": "e6nj_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6nj_out/tests.json",
+   "bytes": 2513,
+   "sha256": "5e20387af9ab4ce472d9ca2af5e530ddee328eac108b3c804907b6d9d017e231"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Invalid input trapped before backend, existing supported uniform DD control; no PN approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "7aa3cc5f0475105989e09c8ad5178111540b1be58adaaf93268ec28dd98363a2",
+  "bytes": 108
+ },
+ "redactions": {}
+}

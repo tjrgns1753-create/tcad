@@ -1,0 +1,142 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T12:43:43.289598+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nj-measurement-validity-001",
+  "profile": "e6nj_measurement_validity",
+  "params": {},
+  "note": "Finite measurement input/output and failed DC retry export boundary; existing physical gates unchanged."
+ },
+ "profile": "e6nj_measurement_validity",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "d3be600e5ac4c3c018d847aeb3bef7fa97b9559504bd8f1fecf9b9d571e398fd",
+   "bytes": 406551
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "1980c4e091c7220bf4fede2a4c1c185f26e6f9b7483c7edec102d3cb7cf10e82",
+   "bytes": 7412
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nj-measurement-validity/PLAN.md",
+   "sha256": "353a1786550c03daf26bf3ea1f98b1d0b9d90455b47578fa3f497a6d19a61028",
+   "bytes": 1327
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nj-measurement-validity/check_gui.py",
+   "sha256": "4f0b821c362371439a267205f170611c7ea682338775669b541486fd9bab2adf",
+   "bytes": 2210
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nj-measurement-validity/run_checks.py",
+   "sha256": "3bbea59310bc8b90adc022b0212fdd060ef83526e16a4637b899b2f9bf199227",
+   "bytes": 1596
+  },
+  {
+   "path": "tests/unit/test_measurement_validity_mock.py",
+   "sha256": "9fc9719eefaf21a369fd5c77b310b7b461a589292dc334bb7b0d4f05347d0f57",
+   "bytes": 2905
+  }
+ ],
+ "request_sha256": "1b9246a4c5b4bafce7715fadd9099307c2ff6efed1d704909c349c5c0a1e0112",
+ "source": {
+  "github_sha": "422b3aeb92ae505e17fd67b779a06caa3ad3d547",
+  "git_head": "422b3aeb92ae505e17fd67b779a06caa3ad3d547",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37465268440",
+  "run_number": "55",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6nj-measurement-validity/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T12:43:49.031257+00:00",
+ "duration_s": 5.742,
+ "outputs": [
+  {
+   "path": "e6nj_out/boundary.log",
+   "bytes": 75,
+   "sha256": "4d55f22252f818f0fcd72e4adf615f7414e5e367ffcf5a89ee3b2f95821ca16a"
+  },
+  {
+   "path": "e6nj_out/canonical_gate.log",
+   "bytes": 2109,
+   "sha256": "b4602e723208b6e206d5b8e2092aae7d01da34452defc6a6c01d611a3a395f6a"
+  },
+  {
+   "path": "e6nj_out/existing_gui.log",
+   "bytes": 11034,
+   "sha256": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+  },
+  {
+   "path": "e6nj_out/gui.json",
+   "bytes": 467,
+   "sha256": "929fbe836ef307eae2d2e9b2fd6036276f4dfe66d169c97afd7df76258787c18"
+  },
+  {
+   "path": "e6nj_out/gui.log",
+   "bytes": 386,
+   "sha256": "935d457271b6dbe41124552b5ae719210736cc08237b14d701c012b22be19ac6"
+  },
+  {
+   "path": "e6nj_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6nj_out/tests.json",
+   "bytes": 1998,
+   "sha256": "06c638ffd929ea205e1734e487cc2a840ee2770a291c6de19feb9a3b038790b4"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Invalid input trapped before backend, existing supported uniform DD control; no PN approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "b4a8fec8aa824cd09cbd96f1ff155b161803723609760ee7bf42a32890ba8c4f",
+  "bytes": 91
+ },
+ "redactions": {}
+}
