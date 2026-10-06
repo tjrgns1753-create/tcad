@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6na-import-reduction-supervised-001",
- "profile": "e6na_import_reduction",
+ "request_id": "e6nb-native-2d-control-001",
+ "profile": "e6nb_native_2d_control",
  "params": {},
- "note": "Fixed E6N-A import-only audit after compatibility PASS. No solves; stop after first unsupported or inconclusive candidate."
+ "note": "Fixed analytical native positive control then manufactured 2D Poisson convergence; four scalar solves, not PN/DD."
 }

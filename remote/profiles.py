@@ -11,6 +11,27 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nb_native_2d_control": {
+        "description": "Fixed native positive/negative controls and four manufactured 2D Poisson solves; not PN physics.",
+        "entry": "docs/audits/2026-10-06-e6nb-native-2d-control/run_control.py",
+        "args": [], "params": {}, "timeout_s": 150, "engine_info": False,
+        "inputs": [
+            "docs/audits/2026-10-06-e6nb-native-2d-control/PLAN.md",
+            "docs/audits/2026-10-06-e6nb-native-2d-control/run_control.py",
+            "docs/audits/2026-10-06-e6nb-native-2d-control/test_contract.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/diagnostics.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/flux_source_contract.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/run_e6na.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_positive_geometry.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/test_review_followup.py",
+            "docs/audits/2026-10-02-e6na-import-reduction/POSITIVE_GEOMETRY_CRITERIA.md",
+            "tcad/device/devsim/mesh_refine.py",
+            "tcad/device/devsim/mesh_import.py"
+        ],
+        "outputs": [{"glob": "e6nb_out/**/*", "max_mb": 50}],
+        "regenerate": "Independent fixed-plan 2D numerical audit; never release PN or process gates.",
+    },
     "e6na_engine_free_compatibility": {
         "description": "E6N-A Python 3.11 / nested Windows Job / AST / synthetic geometry controls; engine import forbidden.",
         "entry": "docs/audits/2026-10-06-e6na-compatibility/run_compatibility.py",
