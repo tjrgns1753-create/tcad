@@ -1,0 +1,253 @@
+diff --git a/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py b/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py
+index d3c1df6..1a6f89f 100644
+--- a/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py
++++ b/docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py
+@@ -166,6 +166,29 @@ def _b(name, cond, value=None):
+     return {"name": name, "value": value, "pass": bool(cond)}
+ 
+ 
++def completion_exit_code(verdicts):
++    """Exit status for this limited audit, never a production physics approval.
++
++    Missing, blocked or unevaluated evidence must not become a green job.
++    Keep separate category verdicts; this only determines process success.
++    """
++    if not isinstance(verdicts, dict):
++        return 1
++    integrity = verdicts.get("EVIDENCE_INTEGRITY")
++    if (not isinstance(integrity, dict) or integrity.get("verdict") != "PASS"
++            or integrity.get("problems") != []):
++        return 1
++    for name in CATEGORIES:
++        record = verdicts.get(name)
++        if not isinstance(record, dict) or record.get("verdict") != "PASS":
++            return 1
++        checks = record.get("checks")
++        if (not isinstance(checks, list) or not checks
++                or any(not isinstance(c, dict) or c.get("pass") is not True for c in checks)):
++            return 1
++    return 0
++
++
+ def judge(raw, npz, e6k_json, e6k_npz, e6j=None, *, expected_plan_sha256=None):
+     problems, S, c1 = validate(raw, npz, e6k_json, e6k_npz, e6j, expected_plan_sha256=expected_plan_sha256)
+     res = {"judge_version": VERSION, "EVIDENCE_INTEGRITY": {"verdict": "PASS" if not problems else "EVIDENCE_INTEGRITY_FAIL", "problems": problems}}
+diff --git a/docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py b/docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py
+new file mode 100644
+index 0000000..705d942
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py
+@@ -0,0 +1,96 @@
++"""원본 PN 증거 재검토와 종료 계약 시험. 엔진 import/solve 없음."""
++import ast
++import hashlib
++import json
++import os
++from pathlib import Path
++import runpy
++import sys
++
++HERE = Path(__file__).resolve().parent
++ROOT = HERE.parents[2]
++PLAN_SHA = '836dfbaff593b8b20ad702f0bbffa6c941770581cd67715e912f29476aa1e2e0'
++BASE = ROOT / 'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency'
++DATA = BASE / 'data/remote_run_36904995835/remote-run-32/outputs/e6m_out'
++REF = ROOT / 'docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out'
++UNIT = ROOT / 'docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/data/remote_run_36759423132/remote-run-24/outputs/e6j_out/gui_unit_contract.json'
++TESTS = ('test_e6m_completion_exit_mock.py', 'test_e6m_judge_mock.py',
++         'test_e6m_execution_contract_mock.py', 'test_e6l_correction_mock.py')
++
++
++def no_engine(event, args):
++    if event == 'import' and args[0].split('.')[0] in ('devsim', 'viennaps', 'viennals'):
++        raise RuntimeError('ENGINE_IMPORT_FORBIDDEN')
++
++
++def main():
++    sys.addaudithook(no_engine)
++    if hashlib.sha256((HERE / 'PLAN.md').read_bytes().replace(b'\r\n', b'\n')).hexdigest() != PLAN_SHA:
++        raise ValueError('PLAN_HASH_MISMATCH')
++    if '--local' not in sys.argv and (os.name != 'nt' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'):
++        raise ValueError('REMOTE_WINDOWS_REQUIRED')
++    sys.path.insert(0, str(ROOT))
++    sys.path.insert(0, str(BASE / 'scripts'))
++    import numpy as np
++    import judge_e6m as J
++    import e6m_metrics as M
++    preserved = (DATA / 'pn_2d_consistency.json', DATA / 'arrays.npz', REF / 'pn_1d_diagnostic.json', REF / 'states.npz',
++                 BASE / 'PLAN.md', UNIT)
++    hashes = lambda: {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in preserved}
++    before = hashes()
++    tests = []
++    for name in TESTS:
++        path = ROOT / 'tests/unit' / name
++        old_argv = sys.argv
++        try:
++            sys.argv = [str(path)]
++            try:
++                runpy.run_path(str(path), run_name='__main__')
++            except SystemExit as exc:
++                if exc.code not in (0, None):
++                    raise
++        finally:
++            sys.argv = old_argv
++        tests.append({'test': name, 'status': 'PASS'})
++    raw = json.loads((DATA / 'pn_2d_consistency.json').read_text(encoding='utf-8'))
++    ref = json.loads((REF / 'pn_1d_diagnostic.json').read_text(encoding='utf-8'))
++    unit = json.loads(UNIT.read_text(encoding='utf-8'))
++    with np.load(DATA / 'arrays.npz', allow_pickle=False) as arrays, np.load(REF / 'states.npz', allow_pickle=False) as ref_arrays:
++        verdicts = J.judge(raw, arrays, ref, ref_arrays, unit)
++        metrics = M.compute(raw, arrays, ref, ref_arrays)
++    rc = J.completion_exit_code(verdicts)
++    if rc != 1 or verdicts['G2_PRODUCTION_GATE_HELD_AND_AUDIT_DOPING']['verdict'] != 'NOT_EVALUATED':
++        raise AssertionError('PRESERVED_INCOMPLETE_EVIDENCE_MUST_NOT_GREEN')
++    old_verdicts = {k: v['verdict'] for k, v in raw['verdicts'].items() if isinstance(v, dict) and 'verdict' in v}
++    statuses = {k: v['verdict'] for k, v in verdicts.items() if isinstance(v, dict) and 'verdict' in v}
++    source = ROOT / 'tests/integration/test_pn_2d_1d_consistency_real.py'
++    ast.parse(source.read_text(encoding='utf-8'))
++    after = hashes()
++    if before != after or {'devsim', 'viennaps', 'viennals'}.intersection(sys.modules):
++        raise AssertionError('RAW_CHANGED_OR_ENGINE_IMPORTED')
++    cur = metrics['levels']['L2']['currents']
++    diagnostics = {
++        'current_density_L2_A_per_cm2': {k: v['J_2d_A_per_cm2'] for k, v in cur.items()},
++        'max_kcl_relative': max(v['kcl_rel'] for L in metrics['levels'].values() for v in L['currents'].values()),
++        'max_current_relative_2d_vs_1d': max(v['rel_diff'] for L in metrics['levels'].values() for v in L['currents'].values()),
++        'max_y_potential_spread_V': max(p['psi_y_spread_V'] for L in metrics['levels'].values() for p in L['profiles'].values()),
++        'mesh_sensitivity': metrics['mesh_sensitivity'],
++        'equilibrium': metrics['equilibrium_diagnostics_not_judged'],
++    }
++    report = dict(status='PASS', source_sha=os.environ.get('GITHUB_SHA'), plan_sha=PLAN_SHA,
++                  tests=tests, original_recorded_verdicts=old_verdicts, current_verdicts=statuses,
++                  revalidated_audit_exit_code=rc, canonical_evidence=verdicts['canonical_evidence'],
++                  raw_hashes=before, raw_hashes_unchanged=True, diagnostics_not_approved=diagnostics,
++                  recorded_historical_solves=raw['total_solves'], engine_imports=0, new_solves=0,
++                  pn_approved=False, gate_released=False)
++    if '--local' not in sys.argv:
++        out = ROOT / 'e6nc_out'
++        out.mkdir(exist_ok=False)
++        (out / 'result.json').write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
++    print(json.dumps(report, indent=2))
++    # This revalidation checks that incomplete evidence is rejected, not that PN passed.
++    return 0
++
++
++if __name__ == '__main__':
++    raise SystemExit(main())
+diff --git a/remote/profiles.py b/remote/profiles.py
+index 1fc7cac..ba395c5 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -11,6 +11,24 @@ remote/request.json that selects it. See remote/README.md.
+ 
+ # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
+ PROFILES = {
++    "e6nc_pn_completion_revalidation": {
++        "description": "Engine-free PN evidence revalidation and rejection of incomplete audit success; no physical solve.",
++        "entry": "docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py",
++        "args": [], "params": {}, "timeout_s": 120, "engine_info": False,
++        "inputs": [
++            "docs/audits/2026-10-06-e6nc-pn-completion-contract/PLAN.md",
++            "docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py",
++            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py",
++            "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
++            "tests/integration/test_pn_2d_1d_consistency_real.py",
++            "tests/unit/test_e6m_completion_exit_mock.py",
++            "tests/unit/test_e6m_judge_mock.py",
++            "tests/unit/test_e6m_execution_contract_mock.py",
++            "tests/unit/test_e6l_correction_mock.py"
++        ],
++        "outputs": [{"glob": "e6nc_out/**/*", "max_mb": 10}],
++        "regenerate": "Recheck stored evidence only; incomplete historical PN is not approved.",
++    },
+     "e6nb_native_2d_control": {
+         "description": "Fixed native positive/negative controls and four manufactured 2D Poisson solves; not PN physics.",
+         "entry": "docs/audits/2026-10-06-e6nb-native-2d-control/run_control.py",
+diff --git a/remote/request.json b/remote/request.json
+index 5a1111d..00288b1 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -1,7 +1,7 @@
+ {
+  "schema": 1,
+- "request_id": "e6nb-native-2d-control-002",
+- "profile": "e6nb_native_2d_control",
++ "request_id": "e6nc-pn-completion-001",
++ "profile": "e6nc_pn_completion_revalidation",
+  "params": {},
+- "note": "Fixed analytical native positive control then manufactured 2D Poisson convergence; four scalar solves, not PN/DD."
++ "note": "Engine-free stored PN evidence revalidation; historical incomplete audit must not become green. No new solve."
+ }
+diff --git a/tests/integration/test_pn_2d_1d_consistency_real.py b/tests/integration/test_pn_2d_1d_consistency_real.py
+index 8755938..c8de934 100644
+--- a/tests/integration/test_pn_2d_1d_consistency_real.py
++++ b/tests/integration/test_pn_2d_1d_consistency_real.py
+@@ -260,7 +260,7 @@ def run(out_dir):
+         if isinstance(v, dict) and "verdict" in v:
+             print(k, v["verdict"], [c["name"] for c in v.get("checks", []) if not c["pass"]][:5], v.get("problems", [])[:3])
+     print("total solves:", raw["total_solves"], "leaked devices:", raw["leaked_devices"])
+-    return 0
++    return J.completion_exit_code(verdict)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tests/unit/test_e6m_completion_exit_mock.py b/tests/unit/test_e6m_completion_exit_mock.py
+new file mode 100644
+index 0000000..50bb359
+--- /dev/null
++++ b/tests/unit/test_e6m_completion_exit_mock.py
+@@ -0,0 +1,53 @@
++"""엔진 없이 PN 감사의 실패/미평가가 정상 종료되지 않는지 검증한다."""
++import ast
++import copy
++from pathlib import Path
++import sys
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT / 'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts'))
++import judge_e6m as J
++
++
++def run():
++    valid = {'EVIDENCE_INTEGRITY': {'verdict': 'PASS', 'problems': []}}
++    valid.update({k: {'verdict': 'PASS', 'checks': [{'pass': True}]} for k in J.CATEGORIES})
++    assert J.completion_exit_code(valid) == 0
++    count = 1
++    for name in J.CATEGORIES:
++        for status in ('FAIL', 'NOT_EVALUATED', 'BLOCKED_GATE_OR_AUDIT_DOPING', 'EVIDENCE_INTEGRITY_FAIL'):
++            v = copy.deepcopy(valid)
++            v[name]['verdict'] = status
++            assert J.completion_exit_code(v) == 1, (name, status)
++            count += 1
++        v = copy.deepcopy(valid)
++        del v[name]
++        assert J.completion_exit_code(v) == 1
++        count += 1
++        for checks in ([], None, [{'pass': 1}], [{'pass': 'True'}], [{'pass': False}], [{}]):
++            v = copy.deepcopy(valid)
++            v[name]['checks'] = checks
++            assert J.completion_exit_code(v) == 1
++            count += 1
++    for record in (None, {}, {'verdict': 'PASS'}, {'verdict': 'PASS', 'problems': ['missing']},
++                   {'verdict': 'FAIL', 'problems': []}):
++        v = copy.deepcopy(valid)
++        v['EVIDENCE_INTEGRITY'] = record
++        assert J.completion_exit_code(v) == 1
++        count += 1
++    assert J.completion_exit_code(None) == 1
++    count += 1
++    source = ROOT / 'tests/integration/test_pn_2d_1d_consistency_real.py'
++    tree = ast.parse(source.read_text(encoding='utf-8'))
++    fn = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'run')
++    returns = [n for n in ast.walk(fn) if isinstance(n, ast.Return)]
++    assert len(returns) == 1
++    assert ast.unparse(returns[0].value) == 'J.completion_exit_code(verdict)'
++    count += 1
++    assert not {'devsim', 'viennaps', 'viennals'}.intersection(sys.modules)
++    print(f'PASS: {count} completion-contract cases; engine imports=0; solves=0')
++    return count
++
++
++if __name__ == '__main__':
++    run()
+

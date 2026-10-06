@@ -1,0 +1,127 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T06:11:04.376122+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nc-pn-completion-001",
+  "profile": "e6nc_pn_completion_revalidation",
+  "params": {},
+  "note": "Engine-free stored PN evidence revalidation; historical incomplete audit must not become green. No new solve."
+ },
+ "profile": "e6nc_pn_completion_revalidation",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-06-e6nc-pn-completion-contract/PLAN.md",
+   "sha256": "edba7b7204eb6b5b0a7d886cf7ffed70d0ba1b48cc74998fede152098cdf116d",
+   "bytes": 2545
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py",
+   "sha256": "58d7bdafd52451391e7be48cc4a54d0e9e8c24a44173faa58ca13afce8fb5af0",
+   "bytes": 5248
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/judge_e6m.py",
+   "sha256": "599a13b8ce9043b5121c49a3cb9ed1c8d2a5613e7dc93da9fd51dd3d7175575a",
+   "bytes": 19944
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/scripts/e6m_metrics.py",
+   "sha256": "cfedbe77df4dc08a6cdc1da81a4bf0e14ac04336be45651fc68304e22c72595c",
+   "bytes": 17433
+  },
+  {
+   "path": "tests/integration/test_pn_2d_1d_consistency_real.py",
+   "sha256": "2d4852cea409a57c75c76a1a5adc47d230a62c7fb59dfd72fbe7b6291b9e9b3d",
+   "bytes": 15676
+  },
+  {
+   "path": "tests/unit/test_e6m_completion_exit_mock.py",
+   "sha256": "8aded917612c5c3c894a35fb91c9388e93aa066d7d4da7c6ddf683b396f2f5b1",
+   "bytes": 2246
+  },
+  {
+   "path": "tests/unit/test_e6m_judge_mock.py",
+   "sha256": "4413dd4ae2abbb548fcb74c4dfc3ce0c8e3d53279d429dcc0752388d8dbf0965",
+   "bytes": 18079
+  },
+  {
+   "path": "tests/unit/test_e6m_execution_contract_mock.py",
+   "sha256": "2b5cd4cb99ec3dcdd4cab2dece396c4fcf92314218993d05b41a560a823a36f6",
+   "bytes": 4280
+  },
+  {
+   "path": "tests/unit/test_e6l_correction_mock.py",
+   "sha256": "655aface8ddb940501bfddc2289745724d0d02f6dcde9ae7fda2a17249ca12d0",
+   "bytes": 2723
+  }
+ ],
+ "request_sha256": "81c13495bf7dea5df872f5194eadd7ad755f946d3875cc9e1fce50697c72c590",
+ "source": {
+  "github_sha": "a556d65615d8dad62c36323daccadedb0263a3d2",
+  "git_head": "a556d65615d8dad62c36323daccadedb0263a3d2",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37422271669",
+  "run_number": "39",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T06:11:22.487812+00:00",
+ "duration_s": 18.112,
+ "outputs": [
+  {
+   "path": "e6nc_out/result.json",
+   "bytes": 4706,
+   "sha256": "204532ccd9e3e05799dbca7ffb8b2a20d9621ff89f23c9544436d429057d39ee"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Recheck stored evidence only; incomplete historical PN is not approved.",
+ "log": {
+  "file": "run.log",
+  "sha256": "29c1ed1d03376aacac27205f1c1ac0703bb853427a1217098888e2f61fa9f50a",
+  "bytes": 5379
+ },
+ "redactions": {}
+}

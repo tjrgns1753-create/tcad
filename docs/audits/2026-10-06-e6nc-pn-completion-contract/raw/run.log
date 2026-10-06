@@ -1,0 +1,125 @@
+PASS: 107 completion-contract cases; engine imports=0; solves=0
+E6M hardened cases: both directions, PLAN, arrays, unknown-state callback traps PASS
+E6M JUDGE / METRICS SYNTHETIC CHECKS PASSED
+PLAN different backend/mesh/write/sweep/solve blocked before engine
+PLAN missing backend/mesh/write/sweep/solve blocked before engine
+PLAN valid_lf valid preflight reached synthetic backend
+PLAN valid_crlf valid preflight reached synthetic backend
+OBSERVER success attempts/successes/solve_failures/snapshot_failures (1, 1, 0, 0)
+OBSERVER solve attempts/successes/solve_failures/snapshot_failures (1, 0, 1, 0)
+OBSERVER snapshot attempts/successes/solve_failures/snapshot_failures (1, 1, 0, 1)
+E6M EXECUTION CONTRACT PASS; engine imports=0, real solves=0
+E6L CORRECTION_1 NUMERIC CHECKS PASSED
+{
+  "status": "PASS",
+  "source_sha": "a556d65615d8dad62c36323daccadedb0263a3d2",
+  "plan_sha": "836dfbaff593b8b20ad702f0bbffa6c941770581cd67715e912f29476aa1e2e0",
+  "tests": [
+    {
+      "test": "test_e6m_completion_exit_mock.py",
+      "status": "PASS"
+    },
+    {
+      "test": "test_e6m_judge_mock.py",
+      "status": "PASS"
+    },
+    {
+      "test": "test_e6m_execution_contract_mock.py",
+      "status": "PASS"
+    },
+    {
+      "test": "test_e6l_correction_mock.py",
+      "status": "PASS"
+    }
+  ],
+  "original_recorded_verdicts": {
+    "EVIDENCE_INTEGRITY": "PASS",
+    "G1_GEOMETRY_AND_IMPORT": "PASS",
+    "G2_PRODUCTION_GATE_HELD_AND_AUDIT_DOPING": "PASS",
+    "G3_UNIT": "PASS",
+    "G4_CONVERGENCE_AND_CONSERVATION": "PASS",
+    "G5_Y_INVARIANCE": "PASS",
+    "G6_CURRENT_2D_VS_1D": "PASS",
+    "G7_PROFILE_2D_VS_1D": "PASS",
+    "G8_JUNCTION_FIELD_2D_VS_1D": "PASS",
+    "G9_MESH_SENSITIVITY_2D": "PASS"
+  },
+  "current_verdicts": {
+    "EVIDENCE_INTEGRITY": "PASS",
+    "G1_GEOMETRY_AND_IMPORT": "PASS",
+    "G2_PRODUCTION_GATE_HELD_AND_AUDIT_DOPING": "NOT_EVALUATED",
+    "G3_UNIT": "PASS",
+    "G4_CONVERGENCE_AND_CONSERVATION": "BLOCKED_GATE_OR_AUDIT_DOPING",
+    "G5_Y_INVARIANCE": "BLOCKED_GATE_OR_AUDIT_DOPING",
+    "G6_CURRENT_2D_VS_1D": "BLOCKED_GATE_OR_AUDIT_DOPING",
+    "G7_PROFILE_2D_VS_1D": "BLOCKED_GATE_OR_AUDIT_DOPING",
+    "G8_JUNCTION_FIELD_2D_VS_1D": "BLOCKED_GATE_OR_AUDIT_DOPING",
+    "G9_MESH_SENSITIVITY_2D": "BLOCKED_GATE_OR_AUDIT_DOPING"
+  },
+  "revalidated_audit_exit_code": 1,
+  "canonical_evidence": {
+    "L0_fwd": "RECORDED_VALID",
+    "L0_rev": "NOT_RECORDED",
+    "L1_fwd": "RECORDED_VALID",
+    "L1_rev": "NOT_RECORDED",
+    "L2_fwd": "RECORDED_VALID",
+    "L2_rev": "NOT_RECORDED"
+  },
+  "raw_hashes": {
+    "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/data/remote_run_36904995835/remote-run-32/outputs/e6m_out/pn_2d_consistency.json": "4ee9ff8edda9ee3246f5549ee9cf1f198e90fed9e23bcacd3272dab77152aa05",
+    "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/data/remote_run_36904995835/remote-run-32/outputs/e6m_out/arrays.npz": "6ec993c6f5201da46f901e11a7cc62a2edb921c5f05d946371be53c6338c174b",
+    "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/pn_1d_diagnostic.json": "c023cc4d16ae64e1b082ddf86d0cbe2bf492fd723beeb0e0fbd8ac00826e9f87",
+    "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz": "65c1a938a6521a14897ed2ec2dfc04178e254248e5a2778f9e0b7d1a56e1c8e2",
+    "docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/PLAN.md": "b291bef83a3be9582b08b0b07795f1e97eba9361e1c04a184558a6d96dd6df2d",
+    "docs/audits/2026-10-01-batch7h-e6j-current-unit-and-pn-plan/data/remote_run_36759423132/remote-run-24/outputs/e6j_out/gui_unit_contract.json": "641577513eb263c038b9da7aa19a7a652af0464e9fabdfa5dd8da58f0238c9b1"
+  },
+  "raw_hashes_unchanged": true,
+  "diagnostics_not_approved": {
+    "current_density_L2_A_per_cm2": {
+      "+0.100": 4.0300554737916043e-07,
+      "+0.200": 3.3516176727607063e-06,
+      "+0.300": 2.689617724149849e-05,
+      "+0.400": 0.0002519783721623097,
+      "+0.500": 0.0038950895183886766,
+      "+0.600": 0.11820589992006583,
+      "-0.250": -1.9278447616608137e-07,
+      "-0.500": -3.386731107335662e-07,
+      "-0.750": -4.708340596393616e-07,
+      "-1.000": -5.926495063083291e-07
+    },
+    "max_kcl_relative": 7.18271329684699e-05,
+    "max_current_relative_2d_vs_1d": 3.199381193735343e-10,
+    "max_y_potential_spread_V": 2.220446049250313e-16,
+    "mesh_sensitivity": {
+      "J_0.6_L1_vs_L2": 5.277494783517904e-05,
+      "J_-1.0_L1_vs_L2": 4.7957054075647384e-05,
+      "E_junction_left_-1.0_L1_vs_L2": 0.004681732219974291
+    },
+    "equilibrium": {
+      "E_dep_center_0V": 116584.6063412554,
+      "E_PB_center_0V": 112910.12637894512,
+      "levels": {
+        "L0": {
+          "E_PB_edge_mean_left_0V": 109831.20517567068,
+          "abs_E_x_2d_left_0V_mean": 109766.77369204495,
+          "abs_E_x_1d_left_0V": 109766.77369204495
+        },
+        "L1": {
+          "E_PB_edge_mean_left_0V": 111392.53513552884,
+          "abs_E_x_2d_left_0V_mean": 111343.17382863762,
+          "abs_E_x_1d_left_0V": 111343.17382863762
+        },
+        "L2": {
+          "E_PB_edge_mean_left_0V": 112173.85539036409,
+          "abs_E_x_2d_left_0V_mean": 112136.3558328944,
+          "abs_E_x_1d_left_0V": 112136.35583289442
+        }
+      }
+    }
+  },
+  "recorded_historical_solves": 42,
+  "engine_imports": 0,
+  "new_solves": 0,
+  "pn_approved": false,
+  "gate_released": false
+}
