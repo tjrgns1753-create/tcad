@@ -1,0 +1,639 @@
+diff --git a/docs/audits/2026-10-06-e6ne-matched-1d-reference/PLAN.md b/docs/audits/2026-10-06-e6ne-matched-1d-reference/PLAN.md
+new file mode 100644
+index 0000000..1c35fbe
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6ne-matched-1d-reference/PLAN.md
+@@ -0,0 +1,73 @@
++# E6N-E: N2와 동일한 x격자의 1D 수치 기준
++
++## 1. 목적과 물리 제한
++
++E6N-D의 실제 PN 전류는 안정적이지만 내부 carrier 비교는 실패했다.
++N2의 역바이어스 정공 최대차는 1.39%, 공통 x좌표에서는 0.73%였다.
++이번 작업은 reference 보간 오차를 분리하는 사후 진단이며 이전 미승인을
++취소하거나 TCAD 제조 공정 전체/일반 PN을 승인하는 작업이 아니다.
++기존 42회 2D solve는 재사용하고 한 번도 재실행하지 않는다.
++
++물리 조건은 기존 N2와 동일: 단일 Si, 길이 40 um, 높이 0.1 um,
++대칭 x=0 PN 접합, donor/acceptor 1e17 cm^-3 ACTIVE, 300 K,
++기존 production 이동도/SRH 수명/Poisson·SG drift-diffusion/솔버 설정.
++공식 API만 사용하고 엔진 내부·production 코드·gate는 수정하지 않는다.
++공식 예제: https://devsim.net/examples_diode.html ; SG 원문 DOI
++10.1109/T-ED.1969.16566. 1D와 2D 비교는 같은 모델의 수치 일관성 검증이지
++실측 제작 논문과의 독립 일치는 아니다. y 균일 물리 문제에 한정한다.
++
++## 2. 고정 입력과 실행
++
++E6N-D2 원격 run 37424675525, source 7b2d2178597ef042fcd9b068df2018a797dafa1d.
++`N2/arrays.npz` SHA eb5538684433427b6c328d4e3b334566353a16d0e391a28c24e434d54b1784e7.
++`N2/record.json` SHA ef4466ff4c35f432ad0db46109a786da855a71266600e377cf3e36da1588dce5.
++순·역방향 native x의 unique 배열은 정확히 동일하고 1545개다.
++이 x값(cm)을 재변환/보간/반올림하지 않고 공식 create_1d_mesh/add_1d_mesh_line에
++직접 공급한다. 각 line의 ps는 전체 길이 0.004 cm로 지정해 추가 subdivision을
++요청하지 않는다. 최종 native x의 집합·개수·중복을 정확 대조하고 불일치면
++숫자 근사나 fallback 없이 solve 전에 중단한다.
++
++먼저 같은 x격자에서 uniform donor=1e16 cm^-3 ACTIVE 저항 대조군을
++fresh device로 실행: 초기 2 solve와 +1 mV 한 점, 총 3 solve.
++PN은 fresh forward/reverse 각각 기존 바이어스 전체를 유지한다:
++forward 0.1,0.2,0.3,0.4,0.5,0.6 V / reverse -0.25,-0.5,-0.75,-1 V.
++초기 2 solve씩 포함 총 14 solve. 전체 새 1D solve 17회 예정, 2D solve 0.
++모든 장치에서 canonical query를 node별 검사하고 실제 production apply_doping을
++호출한다. 1D에 2D PN gate를 거짓으로 적용하거나 강제로 해제하지 않는다.
++생성한 node 모델과 전달된 실제 Donors/Acceptors/NetDoping을 원시 배열로 저장한다.
++
++## 3. 사전 판정 조건
++
++필수 증거 누락/None/비유한/오류/cleanup 실패는 PASS가 아니다.
++모든 장치의 node 수=1545, canonical checked=1545, unresolved=mismatch=0.
++solve 시도/성공 각각 control3/forward8/reverse6, 실패·snapshot 실패=0.
++실제 native dimension=1. Production metadata의 1D current_unit=None은 유지한다.
++별도 audit 대조군으로만 1D raw current를 A/cm²로 해석한다.
++대조군 n0=(ND+sqrt(ND²+4ni²))/2, p0=ni²/n0,
++sigma=q*(mu_n*n0+mu_p*p0), J=sigma*0.001/L.
++native 단자 raw 값과 해석식 상대차<=1e-6, KCL 상대차<=1e-6를 요구한다.
++이 대조군이 실패하면 PN 실행도 차단한다. 1D production 단위 표시를 고치지 않는다.
++
++N2의 2D I/H와 새 1D raw J: forward 상대차<=1%, reverse<=2%,
++각 장치 KCL<=1e-3, 순·역 전류 부호/증가 경향을 확인한다.
++T/ni/q/mu_n/mu_p/taun/taup/eps/Vt를 두 결과에서 실제 parameter로 대조한다.
++기존 snapshot bias: forward 0,0.3,0.5,0.6 / reverse 0,-0.5,-1 V.
++native 2D 각 x를 정확히 같은 1D node에 매핑(보간 금지)하여 전위 최대차<=0.01Vt,
++전자/정공 최대 상대차<=1%, 2D y 전위 spread<=1e-5 V.
++수평 2D edge의 동일한 두 x 끝점에서 새 1D psi 차/실제 edge length를 계산한다.
++이는 동일 구간 평균 전계이며 중심점 전계로 부르지 않는다.
++전계 차는 기준 peak field로 정규화<=2%, 0장 지점의 상대오차를 쓰지 않는다.
++1D/2D native E와 실제 psi 차/edge length 관계를 따로 확인한다.
++Native x/y/NodeVolume/도핑/edge geometry/전위/carrier/전계/단자 전류를 보존한다.
++
++## 4. 실행 경계/자원/완료
++
++PLAN의 LF-normalized SHA 및 위 입력의 byte SHA를 backend 준비보다 앞서 검사.
++로컬은 읽기·정적 검사·엔진 없는 합성 반례만, 실제 import/solve는 GitHub Windows.
++기존 Windows Job supervisor: 전체 300초, sampled working set 6 GiB,
++artifact 20 MB. 실패 시 재시도/허용오차 조정 없이 기록하고 다음 장치 중단.
++MATCHED_REFERENCE_PASS는 이 문제의 동일 x격자 수치 비교가 통과했다는 뜻만이다.
++원래 E6N-D 실패와 gate는 유지한다. 전체 regression/main 병합/엔진 내부 수정 금지.
++Serena는 현재 도구 목록에 없어 rg/직접 읽기로 조사했다. 조사 대상은 공식 1D
++메쉬 builder, canonical mapping, 기존 Obs/PN sweep/strict cleanup이며,
++새 audit/profile 외 production caller나 bypass를 만들지 않는다.
+diff --git a/docs/audits/2026-10-06-e6ne-matched-1d-reference/common.py b/docs/audits/2026-10-06-e6ne-matched-1d-reference/common.py
+new file mode 100644
+index 0000000..8e3c8b1
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6ne-matched-1d-reference/common.py
+@@ -0,0 +1,54 @@
++"""고정 입력과 정확 좌표 계약. NumPy 외 엔진 import는 없다."""
++import hashlib
++import json
++from pathlib import Path
++import sys
++
++import numpy as np
++
++HERE = Path(__file__).resolve().parent
++ROOT = HERE.parents[2]
++PREVIOUS = ROOT/'docs/audits/2026-10-06-e6nd-pn-transition-pilot'
++DATA = PREVIOUS/'raw_fine/outputs/e6nd_fine_out/N2'
++sys.path.insert(0,str(PREVIOUS))
++import pilot as P
++
++PLAN_SHA = '631e73ffd7b004f2e0d789d20201360d6f02d5d66b7b4e68fc802d2c842c117b'
++INPUT_SHA = {'arrays.npz':'eb5538684433427b6c328d4e3b334566353a16d0e391a28c24e434d54b1784e7',
++             'record.json':'ef4466ff4c35f432ad0db46109a786da855a71266600e377cf3e36da1588dce5'}
++
++
++def preflight(callback=None):
++    sha = hashlib.sha256((HERE/'PLAN.md').read_bytes().replace(b'\r\n',b'\n')).hexdigest()
++    if sha!=PLAN_SHA:
++        raise ValueError('PLAN_HASH_MISMATCH')
++    for name,expected in INPUT_SHA.items():
++        if hashlib.sha256((DATA/name).read_bytes()).hexdigest()!=expected:
++            raise ValueError('SOURCE_EVIDENCE_HASH_MISMATCH:'+name)
++    return callback() if callback is not None else sha
++
++
++def matched_indices(expected, actual):
++    """근사 좌표나 보간 없이 actual node를 unique 1D 좌표에 매핑한다."""
++    expected,actual = np.asarray(expected),np.asarray(actual)
++    if (expected.ndim!=1 or actual.ndim!=1 or expected.dtype.kind not in 'if'
++            or actual.dtype.kind not in 'if' or not len(expected)
++            or not np.all(np.isfinite(expected)) or not np.all(np.isfinite(actual))
++            or np.any(np.diff(expected)<=0)):
++        raise ValueError('INVALID_COORDINATE_ARRAY')
++    indices = np.searchsorted(expected,actual)
++    if np.any(indices>=len(expected)) or not np.array_equal(expected[indices],actual):
++        raise ValueError('EXACT_COORDINATE_MISMATCH')
++    return indices
++
++
++def unique_source_x(arrays):
++    x = np.unique(arrays['fwd_x'])
++    if (len(x)!=1545 or not np.array_equal(x,np.unique(arrays['rev_x']))
++            or x[0]!=-.002 or x[-1]!=.002 or not np.any(x==0)):
++        raise ValueError('SOURCE_GRID_CONTRACT_MISMATCH')
++    return x
++
++
++def save(path,obj):
++    path.write_text(json.dumps(obj,indent=2,allow_nan=False),encoding='utf-8',newline='\n')
+diff --git a/docs/audits/2026-10-06-e6ne-matched-1d-reference/matched_judge.py b/docs/audits/2026-10-06-e6ne-matched-1d-reference/matched_judge.py
+new file mode 100644
+index 0000000..f3859f8
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6ne-matched-1d-reference/matched_judge.py
+@@ -0,0 +1,177 @@
++"""원시 배열에서 보간 없는 동일 x PN 비교. 엔진을 호출하지 않는다."""
++import json
++import math
++from pathlib import Path
++
++import numpy as np
++
++import common as C
++
++
++def number(v):
++    return type(v) in (int,float) and math.isfinite(v)
++
++
++def arr(arrays,key,size=None,positive=False):
++    v = np.asarray(arrays[key])
++    if (v.dtype.kind not in 'if' or v.ndim!=1 or not np.all(np.isfinite(v))
++            or (size is not None and v.shape!=(size,)) or (positive and np.any(v<=0))):
++        raise ValueError('INVALID_ARRAY:'+key)
++    return v
++
++
++def device_contract(dr,arrays,kind,x):
++    if dr.get('error') is not None or dr.get('cleanup_ok') is not True:
++        raise ValueError('DEVICE_ERROR_OR_CLEANUP:'+kind)
++    expected = 3 if kind=='control' else 2+len(C.P.M.VOLTAGES[kind])
++    for name,want in {'nodes':1545,'dimension':1,'solve_attempts':expected,'solves':expected,'solve_failures':0,'snapshot_failures':0}.items():
++        if type(dr.get(name)) is not int or dr[name]!=want:
++            raise ValueError('DEVICE_COUNT_OR_DIMENSION:'+kind+':'+name)
++    C.P.M.require_canonical(dr['canonical_audit'],1545)
++    actual = arr(arrays,kind+'_x',1545)
++    if len(np.unique(actual))!=1545 or not np.array_equal(np.sort(actual),x):
++        raise ValueError('REFERENCE_GRID_CHANGED')
++    C.matched_indices(x,actual)
++    if not np.all(arr(arrays,kind+'_y',1545)==0):
++        raise ValueError('NOT_1D_Y')
++    volumes = arr(arrays,kind+'_NodeVolume',1545)
++    if np.any(volumes<0) or abs(math.fsum(volumes)/.004-1)>1e-12:
++        raise ValueError('1D_VOLUME_LENGTH_MISMATCH')
++    donors,acceptors = (np.full(1545,1e16),np.zeros(1545)) if kind=='control' else (1e17*(actual>=0),1e17*(actual<=0))
++    for nm,values in [('Donors',donors),('Acceptors',acceptors),('NetDoping',donors-acceptors)]:
++        if not np.array_equal(arr(arrays,kind+'_'+nm,1545),values):
++            raise ValueError('ACTUAL_DOPING_MISMATCH:'+kind+':'+nm)
++    expected_writes = [('node_model',nm) for nm in ('Donors','Acceptors','NetDoping')]+[('set_node_values',nm) for nm in ('Donors','Acceptors','NetDoping')]
++    writes = dr['doping_writes_before_solve']
++    if sorted(map(tuple,writes))!=sorted(expected_writes):
++        raise ValueError('PRODUCTION_DOPING_WRITES_MISSING')
++    md = dr['metadata']
++    if type(md.get('device_dimension')) is not int or md['device_dimension']!=1 or md.get('current_unit') is not None or md.get('current_normalization') is not None:
++        raise ValueError('1D_PRODUCTION_METADATA_CHANGED')
++    if not all(number(dr['params'].get(k)) for k in C.P.T.J.PARAMS+('V_t',)):
++        raise ValueError('PHYSICS_PARAMETERS_MISSING')
++    volts = [.001] if kind=='control' else C.P.M.VOLTAGES[kind]
++    currents = dr['currents']
++    if len(currents)!=len(volts) or any(not all(number(c.get(k)) for k in ('V','I_min','I_max')) or c['V']!=v for c,v in zip(currents,volts)):
++        raise ValueError('CURRENTS_MISSING_OR_INVALID')
++    e0,e1,ell = [arr(arrays,kind+'_'+nm,1544) for nm in ('x@n0','x@n1','EdgeLength')]
++    C.matched_indices(x,e0)
++    C.matched_indices(x,e1)
++    if np.any(ell<=0) or not np.allclose(ell,abs(e1-e0),rtol=1e-12,atol=0):
++        raise ValueError('EDGE_LENGTH_MISMATCH')
++    pairs = np.sort(np.column_stack((e0,e1)),axis=1)
++    pairs = pairs[np.argsort(pairs[:,0])]
++    if not np.array_equal(pairs,np.column_stack((x[:-1],x[1:]))):
++        raise ValueError('1D_EDGE_TOPOLOGY_MISMATCH')
++    return np.argsort(actual)
++
++
++def unit_control(dr,arrays,x):
++    device_contract(dr,arrays,'control',x)
++    p = dr['params']
++    ni = p['n_i']
++    n0 = (1e16+math.sqrt(1e32+4*ni*ni))/2
++    p0 = ni*ni/n0
++    sigma = p['ElectronCharge']*(p['mu_n']*n0+p['mu_p']*p0)
++    theory = sigma*.001/(x[-1]-x[0])
++    c = dr['currents'][0]
++    if theory<=0 or c['I_min']==0:
++        raise ValueError('UNIT_CONTROL_INVALID_REFERENCE')
++    relative = abs(c['I_min']-theory)/abs(theory)
++    kcl = abs(c['I_min']+c['I_max'])/abs(c['I_min'])
++    return {'pass':bool(relative<=1e-6 and kcl<=1e-6),'relative':relative,'kcl_relative':kcl,
++            'J_theory_A_per_cm2':theory,'I_min_raw':c['I_min'],
++            'audit_unit':'A/cm^2' if relative<=1e-6 and kcl<=1e-6 else None,
++            'production_metadata_unit_unchanged':None}
++
++
++def compare(raw,reference,source_raw,source_arrays):
++    x = C.unique_source_x(source_arrays)
++    if raw.get('plan_sha256')!=C.PLAN_SHA or raw.get('source_hashes')!=C.INPUT_SHA or type(raw.get('new_2d_solves')) is not int or raw['new_2d_solves']!=0 or raw.get('production_gate_released') is not False:
++        raise ValueError('REFERENCE_IDENTITY_CHANGED')
++    unit = unit_control(raw['devices']['control'],reference,x)
++    if unit['pass'] is not True:
++        raise ValueError('UNIT_CONTROL_NOT_ESTABLISHED')
++    checks,metrics = [],{}
++    def need(name,ok,value=None):
++        checks.append({'name':name,'pass':bool(ok),'value':value})
++    for d in C.P.M.DIRECTIONS:
++        dr,original = raw['devices'][d],source_raw['devices'][d]
++        order = device_contract(dr,reference,d,x)
++        x2,y2 = [arr(source_arrays,d+'_'+nm,122761) for nm in ('x','y')]
++        match = C.matched_indices(x,x2)
++        C.P.M.require_canonical(original['canonical_audit'],122761)
++        if original['error'] is not None or original['cleanup_ok'] is not True or original['gate_counts']!={'writes':0,'attempts':0} or original['gate']['reason_code']!=C.P.T.J.GATE_REASON:
++            raise ValueError('ORIGINAL_2D_GATE_OR_DEVICE_ERROR')
++        md = original['metadata']
++        if md.get('current_unit')!='A/cm' or md.get('current_normalization')!='per_out_of_plane_depth' or md.get('device_dimension')!=2:
++            raise ValueError('ORIGINAL_2D_UNIT_UNKNOWN')
++        need(d+'_parameters',all(number(original['params'].get(k)) and math.isclose(dr['params'][k],original['params'][k],rel_tol=1e-12,abs_tol=0) for k in C.P.T.J.PARAMS+('V_t',)))
++        if len(original['currents'])!=len(dr['currents']):
++            raise ValueError('ORIGINAL_CURRENT_INCOMPLETE')
++        currents = []
++        for ref,c2,v in zip(dr['currents'],original['currents'],C.P.M.VOLTAGES[d]):
++            if c2['V']!=v or any(not number(c2.get(k)) for k in ('V','I_min','I_max')) or ref['I_min']==0 or c2['I_min']==0:
++                raise ValueError('CURRENT_BIAS_OR_FINITE_CONTRACT')
++            j2 = c2['I_min']/C.P.M.H_CM
++            relative = abs(j2-ref['I_min'])/abs(ref['I_min'])
++            kcl1 = abs(ref['I_min']+ref['I_max'])/abs(ref['I_min'])
++            kcl2 = abs(c2['I_min']+c2['I_max'])/abs(c2['I_min'])
++            need(f'{d}_current_{v}',relative<=(.01 if d=='fwd' else .02) and max(kcl1,kcl2)<=1e-3 and j2*v>0 and ref['I_min']*v>0)
++            currents.append({'V':v,'J_2D_A_per_cm2':j2,'J_1D_A_per_cm2':ref['I_min'],'relative':relative,'kcl_1d':kcl1,'kcl_2d':kcl2})
++        need(d+'_monotonic',np.all(np.diff(np.abs([c['J_1D_A_per_cm2'] for c in currents]))>0) and np.all(np.diff(np.abs([c['J_2D_A_per_cm2'] for c in currents]))>0))
++        ex0,ex1,ey0,ey1,ell = [arr(source_arrays,d+'_'+nm) for nm in ('x@n0','x@n1','y@n0','y@n1','EdgeLength')]
++        if any(a.shape!=ell.shape for a in (ex0,ex1,ey0,ey1)) or np.any(ell<=0):
++            raise ValueError('2D_EDGE_GEOMETRY_INVALID')
++        m0,m1 = C.matched_indices(x,ex0),C.matched_indices(x,ex1)
++        horizontal = (ey0==ey1)&(ex0!=ex1)
++        if not np.any(horizontal):
++            raise ValueError('NO_HORIZONTAL_2D_EDGE')
++        re0,re1,rell = [arr(reference,d+'_'+nm,1544) for nm in ('x@n0','x@n1','EdgeLength')]
++        r0,r1 = C.matched_indices(x,re0),C.matched_indices(x,re1)
++        yorder = np.argsort(x2,kind='stable')
++        starts = np.r_[0,np.flatnonzero(np.diff(x2[yorder]))+1]
++        profiles = []
++        for v in C.P.M.SNAP_BIASES[d]:
++            values1 = {nm:arr(reference,f'{d}_{v}_{nm}',1545 if nm!='ElectricField' else 1544,positive=nm in ('Electrons','Holes')) for nm in C.P.M.SNAP_ARRAYS}
++            values2 = {nm:arr(source_arrays,f'{d}_{v}_{nm}',len(x2) if nm!='ElectricField' else len(ell),positive=nm in ('Electrons','Holes')) for nm in C.P.M.SNAP_ARRAYS}
++            psi1 = values1['Potential'][order]
++            need(f'{d}_native_1d_field_{v}',np.allclose(values1['ElectricField'],(psi1[r0]-psi1[r1])/rell,rtol=1e-9,atol=1e-7))
++            psi_error = float(np.max(np.abs(values2['Potential']-psi1[match])))
++            psi_sorted = values2['Potential'][yorder]
++            spread = float(np.max(np.maximum.reduceat(psi_sorted,starts)-np.minimum.reduceat(psi_sorted,starts)))
++            carriers = {}
++            locations = {}
++            for nm in ('Electrons','Holes'):
++                expected = values1[nm][order][match]
++                relative = np.abs(values2[nm]-expected)/expected
++                imax = int(np.argmax(relative))
++                carriers[nm] = float(relative[imax])
++                locations[nm] = [float(x2[imax]*1e4),float(y2[imax]*1e4)]
++            expected_field = (psi1[m0]-psi1[m1])/ell
++            denominator = float(np.max(np.abs(expected_field[horizontal])))
++            if denominator<=0:
++                raise ValueError('ZERO_REFERENCE_FIELD')
++            field_error = float(np.max(np.abs(values2['ElectricField'][horizontal]-expected_field[horizontal]))/denominator)
++            need(f'{d}_profile_{v}',psi_error<=.01*dr['params']['V_t'] and spread<=1e-5 and max(carriers.values())<=.01 and field_error<=.02)
++            profiles.append({'V':v,'potential_max_V':psi_error,'y_spread_V':spread,'carriers_relative':carriers,'carrier_max_location_um':locations,'field_peak_normalized':field_error})
++        metrics[d] = {'currents':currents,'profiles':profiles}
++    return {'unit_control':unit,'checks':checks,'metrics':metrics}
++
++
++def judge(out):
++    problems,checks,metrics,unit = [],[],{},None
++    try:
++        C.preflight()
++        execution = json.loads((out/'execution.json').read_text())
++        if execution['plan_sha256']!=C.PLAN_SHA or execution['status']!='COMPLETED' or execution['cleanup_ok'] is not True or execution['exit_code']!=0:
++            raise ValueError('REFERENCE_EXECUTION_INCOMPLETE')
++        raw = json.loads((out/'reference/record.json').read_text())
++        original = json.loads((C.DATA/'record.json').read_text())
++        with np.load(out/'reference/arrays.npz',allow_pickle=False) as reference,np.load(C.DATA/'arrays.npz',allow_pickle=False) as source:
++            result = compare(raw,reference,original,source)
++            checks,metrics,unit = result['checks'],result['metrics'],result['unit_control']
++    except Exception as exc:
++        problems.append(type(exc).__name__+': '+str(exc))
++    passed = bool(checks) and not problems and all(c['pass'] is True for c in checks)
++    return {'status':'MATCHED_REFERENCE_PASS' if passed else 'MATCHED_REFERENCE_NOT_APPROVED','unit_control':unit,'checks':checks,'metrics':metrics,'problems':problems,'production_gate_released':False,'new_2d_solves':0,'scope':'exact-x consistency for symmetric PN only; not general PN or fabrication validation'}
+diff --git a/docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py b/docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py
+new file mode 100644
+index 0000000..a04112d
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py
+@@ -0,0 +1,157 @@
++"""공식 API와 기존 production 물리 경로의 동일 x격자 1D 참조."""
++import importlib.util
++import json
++import os
++from pathlib import Path
++import sys
++
++import numpy as np
++
++import common as C
++
++
++def build_device(dv,name,x):
++    mesh = name+'_mesh'
++    dv.create_1d_mesh(mesh=mesh)
++    for k,xx in enumerate(x):
++        kw = {'tag':C.P.T.C_MIN} if k==0 else {'tag':C.P.T.C_MAX} if k==len(x)-1 else {}
++        dv.add_1d_mesh_line(mesh=mesh,pos=float(xx),ps=float(x[-1]-x[0]),**kw)
++    for cn in (C.P.T.C_MIN,C.P.T.C_MAX):
++        dv.add_1d_contact(mesh=mesh,name=cn,tag=cn,material='metal')
++    dv.add_1d_region(mesh=mesh,material='Si',region='Si',tag1=C.P.T.C_MIN,tag2=C.P.T.C_MAX)
++    dv.finalize_mesh(mesh=mesh)
++    dv.create_device(mesh=mesh,device=name)
++    actual = np.array(dv.get_node_model_values(device=name,region='Si',name='x'))
++    if len(actual)!=len(x) or len(np.unique(actual))!=len(x) or not np.array_equal(np.sort(actual),x):
++        raise ValueError('OFFICIAL_1D_MESH_NOT_EXACT_SOURCE_GRID')
++    return mesh
++
++
++def canonical_audit(state,x,y,kind):
++    rec = dict(canonical_checked=0,canonical_unresolved=0,canonical_mismatch=0)
++    if len(x)!=len(y):
++        raise ValueError('CANONICAL_COORDINATE_LENGTH')
++    for xx,yy in zip(x,y):
++        q = state.net_doping_at(float(xx)/1e-4,float(yy)/1e-4)
++        rec['canonical_checked'] += 1
++        values = (q.donor_concentration,q.acceptor_concentration,q.net_doping)
++        expected = (1e16,0.,1e16) if kind=='control' else (1e17*(xx>=0),1e17*(xx<=0),1e17*((xx>=0)*1-(xx<=0)*1))
++        if q.physics_status is not None or any(v is None or not np.isfinite(v) for v in values):
++            rec['canonical_unresolved'] += 1
++        elif values!=expected:
++            rec['canonical_mismatch'] += 1
++    C.P.M.require_canonical(rec,len(x))
++    return rec
++
++
++def run_device(dv,state,kind,x,arrays,raw):
++    from tcad.device.devsim.doping_mapping import apply_doping
++    from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
++    from run_e6na import cleanup
++    name = 'e6ne_'+kind
++    rec = {'error':None,'cleanup_ok':False,'kind':kind}
++    raw['devices'][kind] = rec
++    obs = None
++    mesh = name+'_mesh'
++    try:
++        build_device(dv,name,x)
++        native = lambda nm:np.array(dv.get_node_model_values(device=name,region='Si',name=nm))
++        xx,yy = native('x'),native('y')
++        rec.update(nodes=len(xx),dimension=int(dv.get_dimension(device=name)))
++        rec['canonical_audit'] = canonical_audit(state,xx,yy,kind)
++        obs = C.P.T.Obs(dv,name)
++        obs.install()
++        apply_doping(name,'Si',state,length_scale_to_cm=1e-4)
++        rec['doping_writes_before_solve'] = [list(w) for w in obs.writes]
++        volts = [.001] if kind=='control' else C.P.M.VOLTAGES[kind]
++        result = run_pn_junction_iv_sweep(device=name,region='Si',all_contacts=[C.P.T.C_MIN,C.P.T.C_MAX],sweep_contact=C.P.T.C_MIN,sweep_voltages=volts,fixed_contacts={C.P.T.C_MAX:0.})
++        rec['metadata'] = dict(result.metadata)
++        rec['params'] = {nm:float(dv.get_parameter(device=name,region='Si',name=nm)) for nm in C.P.T.J.PARAMS+('V_t',)}
++        rec['currents'] = [{'V':v,'I_min':float(pt.currents[C.P.T.C_MIN]),'I_max':float(pt.currents[C.P.T.C_MAX])} for v,pt in zip(volts,result.points)]
++        for nm in ('x','y','NodeVolume','Donors','Acceptors','NetDoping'):
++            arrays[kind+'_'+nm] = native(nm)
++        dv.edge_from_node_model(device=name,region='Si',node_model='x')
++        for nm in ('x@n0','x@n1','EdgeLength'):
++            arrays[kind+'_'+nm] = np.array(dv.get_edge_model_values(device=name,region='Si',name=nm))
++        needed = [.001] if kind=='control' else C.P.M.SNAP_BIASES[kind]
++        for v in needed:
++            hit = [s for s in obs.snaps if s['has_DD'] and abs(s['bias_min']-v)<1e-12 and s['bias_max']==0]
++            if not hit:
++                raise ValueError('SNAPSHOT_MISSING')
++            for nm in C.P.M.SNAP_ARRAYS:
++                arrays[f'{kind}_{v}_{nm}'] = hit[-1][nm]
++    except Exception as exc:
++        rec['error'] = type(exc).__name__+': '+str(exc).replace(str(C.ROOT),'<REPO>')[:700]
++    finally:
++        if obs is not None:
++            rec.update(solve_attempts=obs.solve_attempts,solves=obs.solves,solve_failures=obs.solve_failures,snapshot_failures=obs.snapshot_failures)
++            obs.restore()
++        cleanup(dv,name,mesh,rec)
++    return rec
++
++
++def worker(out):
++    C.preflight()  # backend import 및 mesh 생성 이전 경계.
++    if os.name!='nt' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted':
++        raise RuntimeError('REMOTE_WINDOWS_ONLY')
++    from tcad.device.devsim import backend
++    from run_e6na import require_inputs
++    from matched_judge import unit_control
++    require_inputs()
++    dv = backend.require_devsim()
++    if dv.get_device_list() or dv.get_mesh_list():
++        raise RuntimeError('ENGINE_NOT_EMPTY')
++    with np.load(C.DATA/'arrays.npz',allow_pickle=False) as source:
++        x = C.unique_source_x(source)
++        state,_ = C.P.T.canonical(C.P.T.write_mesh(source['points_um'],source['triangles'],'matched_state'))
++    spec = importlib.util.spec_from_file_location('e6k_original',C.ROOT/'tests/integration/test_pn_1d_diagnostic_real.py')
++    one = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(one)
++    control_state = one.canonical('res',20.,'matched_control')
++    raw = {'plan_sha256':C.PLAN_SHA,'source_hashes':C.INPUT_SHA,'devices':{},'new_2d_solves':0,'production_gate_released':False}
++    arrays = {}
++    out.mkdir(parents=True,exist_ok=True)
++    def persist():
++        C.save(out/'record.json',raw)
++        np.savez_compressed(out/'arrays.npz',**arrays)
++    control = run_device(dv,control_state,'control',x,arrays,raw)
++    persist()
++    try:
++        result = unit_control(control,arrays,x)
++        raw['unit_control'] = result
++        persist()
++        if not result['pass']:
++            return 1
++    except Exception as exc:
++        raw['unit_error'] = str(exc)
++        persist()
++        return 1
++    for direction in C.P.M.DIRECTIONS:
++        dr = run_device(dv,state,direction,x,arrays,raw)
++        persist()
++        if dr['error'] or not dr['cleanup_ok']:
++            return 1
++    return 0
++
++
++def main():
++    C.preflight()
++    if os.name!='nt' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted':
++        raise RuntimeError('REMOTE_WINDOWS_ONLY')
++    if len(sys.argv)>1 and sys.argv[1]=='--worker':
++        return worker(Path(sys.argv[2]))
++    from resource_supervisor import supervise
++    from matched_judge import judge
++    out = C.ROOT/'e6ne_out'
++    out.mkdir(exist_ok=True)
++    execution = supervise([sys.executable,'-B',str(__file__),'--worker',str(out/'reference')],C.ROOT,out/'reference.log',candidate_s=300)
++    execution['plan_sha256'] = C.PLAN_SHA
++    C.save(out/'execution.json',execution)
++    result = judge(out)
++    C.save(out/'result.json',result)
++    print(json.dumps(result,indent=2))
++    return 0 if result['status']=='MATCHED_REFERENCE_PASS' else 1
++
++
++if __name__=='__main__':
++    raise SystemExit(main())
+diff --git a/docs/audits/2026-10-06-e6ne-matched-1d-reference/test_contract.py b/docs/audits/2026-10-06-e6ne-matched-1d-reference/test_contract.py
+new file mode 100644
+index 0000000..8c858d5
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6ne-matched-1d-reference/test_contract.py
+@@ -0,0 +1,103 @@
++"""보존된 데이터의 합성 정상/손상 입력. 실제 물리 결과를 생성하지 않는다."""
++import copy
++import json
++import math
++import sys
++from unittest.mock import patch
++
++import numpy as np
++
++import common as C
++import matched_judge as J
++
++
++def fixture():
++    with np.load(C.DATA/'arrays.npz',allow_pickle=False) as archive:
++        source = {k:np.array(archive[k],copy=True) for k in archive.files}
++    original = json.loads((C.DATA/'record.json').read_text())
++    x = C.unique_source_x(source)
++    volumes = np.r_[np.diff(x)/2,0]+np.r_[0,np.diff(x)/2]
++    raw = {'plan_sha256':C.PLAN_SHA,'source_hashes':C.INPUT_SHA,'new_2d_solves':0,'production_gate_released':False,'devices':{}}
++    arrays = {}
++    for d in ('control','fwd','rev'):
++        params = dict(original['devices']['fwd']['params'])
++        count = 3 if d=='control' else 2+len(C.P.M.VOLTAGES[d])
++        dr = {'error':None,'cleanup_ok':True,'nodes':1545,'dimension':1,'solve_attempts':count,'solves':count,'solve_failures':0,'snapshot_failures':0,'canonical_audit':{'canonical_checked':1545,'canonical_unresolved':0,'canonical_mismatch':0},'metadata':{'device_dimension':1,'current_unit':None,'current_normalization':None},'params':params,'doping_writes_before_solve':[[action,nm] for action in ('node_model','set_node_values') for nm in ('Donors','Acceptors','NetDoping')]}
++        raw['devices'][d] = dr
++        arrays[d+'_x'],arrays[d+'_y'],arrays[d+'_NodeVolume'] = x.copy(),np.zeros(1545),volumes.copy()
++        donors,acceptors = (np.full(1545,1e16),np.zeros(1545)) if d=='control' else (1e17*(x>=0),1e17*(x<=0))
++        for nm,val in [('Donors',donors),('Acceptors',acceptors),('NetDoping',donors-acceptors)]:
++            arrays[d+'_'+nm] = val
++        arrays[d+'_x@n0'],arrays[d+'_x@n1'],arrays[d+'_EdgeLength'] = x[:-1],x[1:],np.diff(x)
++        if d=='control':
++            ni = params['n_i']
++            n0 = (1e16+math.sqrt(1e32+4*ni*ni))/2
++            theory = params['ElectronCharge']*(params['mu_n']*n0+params['mu_p']*ni*ni/n0)*.001/.004
++            dr['currents'] = [{'V':.001,'I_min':theory,'I_max':-theory}]
++        else:
++            dr['currents'] = [{'V':q['V'],'I_min':q['I_min']/C.P.M.H_CM,'I_max':q['I_max']/C.P.M.H_CM} for q in original['devices'][d]['currents']]
++            index = C.matched_indices(x,source[d+'_x'])
++            counts = np.bincount(index,minlength=1545)
++            e0,e1 = [C.matched_indices(x,source[d+'_'+nm]) for nm in ('x@n0','x@n1')]
++            for v in C.P.M.SNAP_BIASES[d]:
++                for nm in ('Potential','Electrons','Holes'):
++                    # 명시적인 합성 y-균일 정상 fixture. 실제 원시 배열은 수정하지 않는다.
++                    val = np.bincount(index,weights=source[f'{d}_{v}_{nm}'],minlength=1545)/counts
++                    arrays[f'{d}_{v}_{nm}'] = val
++                    source[f'{d}_{v}_{nm}'] = val[index]
++                psi = arrays[f'{d}_{v}_Potential']
++                arrays[f'{d}_{v}_ElectricField'] = (psi[:-1]-psi[1:])/np.diff(x)
++                source[f'{d}_{v}_ElectricField'] = (psi[e0]-psi[e1])/source[d+'_EdgeLength']
++    return raw,arrays,original,source
++
++
++def main():
++    def forbid(event,args):
++        if event=='import' and args[0].split('.')[0] in ('devsim','viennaps'):
++            raise AssertionError('ENGINE_IMPORT_FORBIDDEN')
++    sys.addaudithook(forbid)
++    calls = []
++    C.preflight(lambda:calls.append('valid'))
++    for target,name,bad in [(C,'PLAN_SHA','0'*64),(C,'INPUT_SHA',{k:'0'*64 for k in C.INPUT_SHA})]:
++        with patch.object(target,name,bad):
++            try:
++                C.preflight(lambda:calls.append('invalid'))
++                raise AssertionError('BAD_PREFLIGHT_ACCEPTED')
++            except ValueError:
++                pass
++    assert calls==['valid']
++    raw,arrays,original,source = fixture()
++    result = J.compare(raw,arrays,original,source)
++    assert result['checks'] and all(c['pass'] for c in result['checks']),[c for c in result['checks'] if not c['pass']]
++    mutations = [lambda r:r['devices']['rev']['canonical_audit'].update(canonical_unresolved=1),lambda r:r['devices']['fwd'].update(nodes=True),lambda r:r['devices']['rev'].update(solves=5),lambda r:r['devices']['control'].update(cleanup_ok=False),lambda r:r['devices']['control']['currents'][0].update(I_min=1),lambda r:r['devices']['fwd']['metadata'].update(current_unit='A'),lambda r:r['devices']['rev']['currents'].pop(),lambda r:r.update(new_2d_solves=1),lambda r:r.update(production_gate_released=True)]
++    tested = 0
++    for mutate in mutations:
++        changed = copy.deepcopy(raw)
++        mutate(changed)
++        try:
++            res = J.compare(changed,arrays,original,source)
++            assert not all(c['pass'] for c in res['checks'])
++        except (ValueError,KeyError):
++            pass
++        tested += 1
++    for key,value in [('rev_x',np.nextafter(arrays['rev_x'][0],np.inf)),('rev_-1.0_Holes',0),('fwd_0.6_ElectricField',float('nan')),('rev_EdgeLength',0),('rev_NetDoping',1)]:
++        changed = {k:np.array(v,copy=True) for k,v in arrays.items()}
++        changed[key][0] = value
++        try:
++            res = J.compare(raw,changed,original,source)
++            assert not all(c['pass'] for c in res['checks'])
++        except (ValueError,KeyError):
++            pass
++        tested += 1
++    altered = copy.deepcopy(raw)
++    altered['devices']['rev']['currents'][0]['V'] = -.3
++    try:
++        J.compare(altered,arrays,original,source)
++        raise AssertionError('BIAS_CHANGE_ACCEPTED')
++    except ValueError:
++        tested += 1
++    print('PASS: synthetic normal control,',tested,'negative controls, 2 preflight traps; engine imports 0')
++
++
++if __name__=='__main__':
++    main()
+diff --git a/remote/profiles.py b/remote/profiles.py
+index 5ea2774..061fcbc 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -11,6 +11,25 @@ remote/request.json that selects it. See remote/README.md.
+ 
+ # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
+ PROFILES = {
++    "e6ne_matched_1d_reference": {
++        "description": "Exact-x 1D numerical PN reference; reuse N2 2D evidence without new 2D solves or gate changes.",
++        "entry": "docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py",
++        "args": [], "params": {}, "timeout_s": 330, "engine_info": False,
++        "inputs": [
++            "docs/audits/2026-10-06-e6ne-matched-1d-reference/PLAN.md",
++            "docs/audits/2026-10-06-e6ne-matched-1d-reference/common.py",
++            "docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py",
++            "docs/audits/2026-10-06-e6ne-matched-1d-reference/matched_judge.py",
++            "docs/audits/2026-10-06-e6ne-matched-1d-reference/test_contract.py",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/raw_fine/outputs/e6nd_fine_out/N2/arrays.npz",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/raw_fine/outputs/e6nd_fine_out/N2/record.json",
++            "tcad/characterization/pn_junction_iv_sweep.py",
++            "tcad/device/devsim/semiconductor_equation.py",
++            "tcad/device/devsim/doping_mapping.py"
++        ],
++        "outputs": [{"glob": "e6ne_out/**/*", "max_mb": 20}],
++        "regenerate": "Only three fresh 1D devices, 17 solves planned; never release production PN gate.",
++    },
+     "e6nd_pn_fine_diagnostic": {
+         "description": "Post-hoc N2-only PN diagnostic; old two-mesh failure retained, production gate closed.",
+         "entry": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py",
+diff --git a/remote/request.json b/remote/request.json
+index 5b50b03..b475b93 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -1,7 +1,7 @@
+ {
+  "schema": 1,
+- "request_id": "e6nd-pn-fine-001",
+- "profile": "e6nd_pn_fine_diagnostic",
++ "request_id": "e6ne-matched-reference-001",
++ "profile": "e6ne_matched_1d_reference",
+  "params": {},
+- "note": "Post-hoc third mesh only; original pilot remains not approved; no tolerance or production changes."
++ "note": "Exact native x coordinates; new 1D reference only; no interpolation, no repeated 2D solve, no production changes."
+ }

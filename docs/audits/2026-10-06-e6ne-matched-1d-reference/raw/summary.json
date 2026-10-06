@@ -1,0 +1,152 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-06T07:20:58.737752+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6ne-matched-reference-001",
+  "profile": "e6ne_matched_1d_reference",
+  "params": {},
+  "note": "Exact native x coordinates; new 1D reference only; no interpolation, no repeated 2D solve, no production changes."
+ },
+ "profile": "e6ne_matched_1d_reference",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-06-e6ne-matched-1d-reference/PLAN.md",
+   "sha256": "7544425e1ff8ac798a36b8f4cda6d750df40c8175087bb619b3dce03e3282ab7",
+   "bytes": 5067
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ne-matched-1d-reference/common.py",
+   "sha256": "85f27f66322eb3032cf0e1987a2d7b1e1c87f130c1eb1a4fb022cd5ecb42bd32",
+   "bytes": 2266
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py",
+   "sha256": "e54fcb5f187135a89255fd64b9c7c8ac9d97d1e712547c734f348c945ef0aad9",
+   "bytes": 7205
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ne-matched-1d-reference/matched_judge.py",
+   "sha256": "3a33eee80df7ca6c085c1e2e647ed2b832b02af403208155aed5f2eac31d5893",
+   "bytes": 11152
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6ne-matched-1d-reference/test_contract.py",
+   "sha256": "fc161d1b7b97ab596aa0f905ea2b8f89af739f2668820759b60889b6b597486d",
+   "bytes": 5799
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/raw_fine/outputs/e6nd_fine_out/N2/arrays.npz",
+   "sha256": "eb5538684433427b6c328d4e3b334566353a16d0e391a28c24e434d54b1784e7",
+   "bytes": 20773896
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/raw_fine/outputs/e6nd_fine_out/N2/record.json",
+   "sha256": "ef4466ff4c35f432ad0db46109a786da855a71266600e377cf3e36da1588dce5",
+   "bytes": 12667
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "tcad/device/devsim/semiconductor_equation.py",
+   "sha256": "3de029f1bb9be99490721da0ec1dd8d9f2b055f8e93be8d046d957bb05df3370",
+   "bytes": 7129
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  }
+ ],
+ "request_sha256": "e5ce343ad0a9e8900f3221c84d7831e162e80bfa9dea005b1f7b86297fd2f621",
+ "source": {
+  "github_sha": "ef0140593a0190cb974ec5a2c79cc7abda7ed212",
+  "git_head": "ef0140593a0190cb974ec5a2c79cc7abda7ed212",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37429019975",
+  "run_number": "42",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T07:21:03.078116+00:00",
+ "duration_s": 4.34,
+ "outputs": [
+  {
+   "path": "e6ne_out/execution.json",
+   "bytes": 487,
+   "sha256": "4beca33fd51f399aa49d9d2a6cce17828c11252ea13bc55a60e86f5f38242cf4"
+  },
+  {
+   "path": "e6ne_out/reference.log",
+   "bytes": 40043,
+   "sha256": "b96032abf82bae9f15921bc8dd7fa918d4ed4e42177fc57db2c246b60c0caa3c"
+  },
+  {
+   "path": "e6ne_out/reference/arrays.npz",
+   "bytes": 426916,
+   "sha256": "3fb54277848ab4522cb23bf3fd6755d6a059e56130f1a31932f1617e10fa25b4"
+  },
+  {
+   "path": "e6ne_out/reference/record.json",
+   "bytes": 6217,
+   "sha256": "52bb73beae473188308616e9c4fbcce1e879c6ba25e67924f377c08e1b7d50d5"
+  },
+  {
+   "path": "e6ne_out/result.json",
+   "bytes": 10154,
+   "sha256": "6e34536c0c768744f0d0858993a030c74d735ef7a388089c49bfa2e0ce70360f"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Only three fresh 1D devices, 17 solves planned; never release production PN gate.",
+ "log": {
+  "file": "run.log",
+  "sha256": "3d8a629b5a23ed510f3034cfc928c36884fc1b74ad82e7ba6b91e546afc08cfd",
+  "bytes": 10155
+ },
+ "redactions": {}
+}

@@ -1,0 +1,392 @@
+{
+  "status": "MATCHED_REFERENCE_PASS",
+  "unit_control": {
+    "pass": true,
+    "relative": 2.3243559854578378e-12,
+    "kcl_relative": 9.247463905744787e-12,
+    "J_theory_A_per_cm2": 0.16000000000023998,
+    "I_min_raw": 0.15999999999986808,
+    "audit_unit": "A/cm^2",
+    "production_metadata_unit_unchanged": null
+  },
+  "checks": [
+    {
+      "name": "fwd_parameters",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_current_0.1",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_current_0.2",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_current_0.3",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_current_0.4",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_current_0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_current_0.6",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_monotonic",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_native_1d_field_0.0",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_profile_0.0",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_native_1d_field_0.3",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_profile_0.3",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_native_1d_field_0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_profile_0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_native_1d_field_0.6",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "fwd_profile_0.6",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_parameters",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_current_-0.25",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_current_-0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_current_-0.75",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_current_-1.0",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_monotonic",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_native_1d_field_0.0",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_profile_0.0",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_native_1d_field_-0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_profile_-0.5",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_native_1d_field_-1.0",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "rev_profile_-1.0",
+      "pass": true,
+      "value": null
+    }
+  ],
+  "metrics": {
+    "fwd": {
+      "currents": [
+        {
+          "V": 0.1,
+          "J_2D_A_per_cm2": 4.029060713979176e-07,
+          "J_1D_A_per_cm2": 4.0290607139797244e-07,
+          "relative": 1.3612448962215352e-13,
+          "kcl_1d": 4.827871940978754e-05,
+          "kcl_2d": 4.8278719283104026e-05
+        },
+        {
+          "V": 0.2,
+          "J_2D_A_per_cm2": 3.350871602976231e-06,
+          "J_1D_A_per_cm2": 3.350871602977964e-06,
+          "relative": 5.17187650085468e-13,
+          "kcl_1d": 1.4101117382978317e-06,
+          "kcl_2d": 1.4101112566981966e-06
+        },
+        {
+          "V": 0.3,
+          "J_2D_A_per_cm2": 2.6891526743588584e-05,
+          "J_1D_A_per_cm2": 2.6891526743637603e-05,
+          "relative": 1.822860084918705e-12,
+          "kcl_1d": 5.807351196628475e-07,
+          "kcl_2d": 5.8073682323397e-07
+        },
+        {
+          "V": 0.4,
+          "J_2D_A_per_cm2": 0.00025195144351740443,
+          "J_1D_A_per_cm2": 0.0002519514452949423,
+          "relative": 7.055081024623205e-09,
+          "kcl_1d": 1.456704790411681e-08,
+          "kcl_2d": 7.512228249178522e-09
+        },
+        {
+          "V": 0.5,
+          "J_2D_A_per_cm2": 0.003894943162366439,
+          "J_1D_A_per_cm2": 0.003894943153724654,
+          "relative": 2.218719100471346e-09,
+          "kcl_1d": 9.747094734196817e-11,
+          "kcl_2d": 2.1213082190494006e-09
+        },
+        {
+          "V": 0.6,
+          "J_2D_A_per_cm2": 0.11820498114184719,
+          "J_1D_A_per_cm2": 0.11820497983409563,
+          "relative": 1.1063421876606171e-08,
+          "kcl_1d": 1.2408309417789097e-10,
+          "kcl_2d": 2.169074334680887e-10
+        }
+      ],
+      "profiles": [
+        {
+          "V": 0.0,
+          "potential_max_V": 6.566466843049845e-07,
+          "y_spread_V": 1.155628039373191e-07,
+          "carriers_relative": {
+            "Electrons": 2.5365374807210173e-05,
+            "Holes": 2.5366018223404906e-05
+          },
+          "carrier_max_location_um": {
+            "Electrons": [
+              -0.1007083673831055,
+              -0.09921875000000001
+            ],
+            "Holes": [
+              -0.1007083673831055,
+              -0.09453125000000001
+            ]
+          },
+          "field_peak_normalized": 3.562585863304073e-05
+        },
+        {
+          "V": 0.3,
+          "potential_max_V": 2.0489575393300985e-07,
+          "y_spread_V": 3.639152597323392e-08,
+          "carriers_relative": {
+            "Electrons": 7.943120109897089e-06,
+            "Holes": 7.914978039043145e-06
+          },
+          "carrier_max_location_um": {
+            "Electrons": [
+              -0.1007083673831055,
+              -0.013281250000000003
+            ],
+            "Holes": [
+              -0.1007083673831055,
+              -0.09921875000000001
+            ]
+          },
+          "field_peak_normalized": 1.4248725591333773e-05
+        },
+        {
+          "V": 0.5,
+          "potential_max_V": 7.471833007866024e-08,
+          "y_spread_V": 1.3303564819211466e-08,
+          "carriers_relative": {
+            "Electrons": 2.897297873836059e-06,
+            "Holes": 2.8863087317470803e-06
+          },
+          "carrier_max_location_um": {
+            "Electrons": [
+              -0.1007083673831055,
+              -0.09921875000000001
+            ],
+            "Holes": [
+              -0.1007083673831055,
+              -0.09921875000000001
+            ]
+          },
+          "field_peak_normalized": 6.806651087328227e-06
+        },
+        {
+          "V": 0.6,
+          "potential_max_V": 3.91291560541962e-08,
+          "y_spread_V": 6.971442201297862e-09,
+          "carriers_relative": {
+            "Electrons": 1.5177789334014356e-06,
+            "Holes": 1.5114938333613396e-06
+          },
+          "carrier_max_location_um": {
+            "Electrons": [
+              -0.1007083673831055,
+              -0.09921875000000001
+            ],
+            "Holes": [
+              -0.1007083673831055,
+              -0.09921875000000001
+            ]
+          },
+          "field_peak_normalized": 4.428266180748159e-06
+        }
+      ]
+    },
+    "rev": {
+      "currents": [
+        {
+          "V": -0.25,
+          "J_2D_A_per_cm2": -1.9278447616611501e-07,
+          "J_1D_A_per_cm2": -1.927844761661186e-07,
+          "relative": 1.8673132284410813e-14,
+          "kcl_1d": 4.9644747802930264e-05,
+          "kcl_2d": 4.96447477858491e-05
+        },
+        {
+          "V": -0.5,
+          "J_2D_A_per_cm2": -3.386731107335965e-07,
+          "J_1D_A_per_cm2": -3.3867311073360333e-07,
+          "relative": 2.016458620657834e-14,
+          "kcl_1d": 5.893243148075543e-06,
+          "kcl_2d": 5.893243129009208e-06
+        },
+        {
+          "V": -0.75,
+          "J_2D_A_per_cm2": -4.708340596393922e-07,
+          "J_1D_A_per_cm2": -4.7083405963940097e-07,
+          "relative": 1.8664679514676214e-14,
+          "kcl_1d": 7.182713286532557e-05,
+          "kcl_2d": 7.18271328830251e-05
+        },
+        {
+          "V": -1.0,
+          "J_2D_A_per_cm2": -5.926495063083647e-07,
+          "J_1D_A_per_cm2": -5.926495063083743e-07,
+          "relative": 1.6078846865102383e-14,
+          "kcl_1d": 1.7705120159667397e-05,
+          "kcl_2d": 1.7705120174373258e-05
+        }
+      ],
+      "profiles": [
+        {
+          "V": 0.0,
+          "potential_max_V": 6.566466843049845e-07,
+          "y_spread_V": 1.155628039373191e-07,
+          "carriers_relative": {
+            "Electrons": 2.5365374807210173e-05,
+            "Holes": 2.5366018223404906e-05
+          },
+          "carrier_max_location_um": {
+            "Electrons": [
+              -0.1007083673831055,
+              -0.09921875000000001
+            ],
+            "Holes": [
+              -0.1007083673831055,
+              -0.09453125000000001
+            ]
+          },
+          "field_peak_normalized": 3.562585863304073e-05
+        },
+        {
+          "V": -0.5,
+          "potential_max_V": 2.8404795338055067e-06,
+          "y_spread_V": 4.758813406668949e-07,
+          "carriers_relative": {
+            "Electrons": 0.00010888985190272358,
+            "Holes": 0.00010973130079253287
+          },
+          "carrier_max_location_um": {
+            "Electrons": [
+              0.10083629541752816,
+              -0.09921875000000001
+            ],
+            "Holes": [
+              -0.1007083673831055,
+              -0.08984375
+            ]
+          },
+          "field_peak_normalized": 0.00011651411678159071
+        },
+        {
+          "V": -1.0,
+          "potential_max_V": 7.849055806863348e-06,
+          "y_spread_V": 1.1939839490437976e-06,
+          "carriers_relative": {
+            "Electrons": 0.00030145057546591926,
+            "Holes": 0.00030324824375510805
+          },
+          "carrier_max_location_um": {
+            "Electrons": [
+              0.10083629541752816,
+              -0.09921875000000001
+            ],
+            "Holes": [
+              -0.1007083673831055,
+              -0.07890625000000002
+            ]
+          },
+          "field_peak_normalized": 0.0002571272302026728
+        }
+      ]
+    }
+  },
+  "problems": [],
+  "production_gate_released": false,
+  "new_2d_solves": 0,
+  "scope": "exact-x consistency for symmetric PN only; not general PN or fabrication validation"
+}
