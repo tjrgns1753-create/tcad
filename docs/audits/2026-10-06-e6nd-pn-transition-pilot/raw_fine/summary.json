@@ -1,0 +1,132 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-10-06T06:37:21.311789+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nd-pn-fine-001",
+  "profile": "e6nd_pn_fine_diagnostic",
+  "params": {},
+  "note": "Post-hoc third mesh only; original pilot remains not approved; no tolerance or production changes."
+ },
+ "profile": "e6nd_pn_fine_diagnostic",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/PLAN.md",
+   "sha256": "5b445a41874fcf327a0dd44d8d713538d99dd4c314a76048fdb77ad2ef2cb42a",
+   "bytes": 3734
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/PLAN_FINE.md",
+   "sha256": "3ef424fa75f7f7cfec5cebb910e9d77db0c021c88e3eb85a86496fa4d8fa2156",
+   "bytes": 1754
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py",
+   "sha256": "8befc0be5c848e5221e33c7d41afdf73a9b016ffb51a781d3a54787d6c22f5ed",
+   "bytes": 3691
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py",
+   "sha256": "c21783de4478599d5b4f3fea63adbb505baeeb5984182409253622e66c714887",
+   "bytes": 8288
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/judge.py",
+   "sha256": "c3ba8f3610fd862b0525e0429d70eb4e8033d82ff0e942ffb323b20275c9f16c",
+   "bytes": 9055
+  },
+  {
+   "path": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/raw/outputs/e6nd_out/result.json",
+   "sha256": "5d7ece3dac59bff201e1fe5c68111546cd2a6636d9cbdab7e2143691ac1f10c0",
+   "bytes": 16277
+  }
+ ],
+ "request_sha256": "fa6e034e551a4a074554959cc46c5ec9ba03d093739fed9059ba7d60a65ebe67",
+ "source": {
+  "github_sha": "7b2d2178597ef042fcd9b068df2018a797dafa1d",
+  "git_head": "7b2d2178597ef042fcd9b068df2018a797dafa1d",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37424675525",
+  "run_number": "41",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-10-06T06:42:53.017197+00:00",
+ "duration_s": 331.705,
+ "outputs": [
+  {
+   "path": "e6nd_fine_out/N2.log",
+   "bytes": 38110,
+   "sha256": "e44ba0341ee6b6fbe85b7b693e761fec273e9683f58f29cdcd0d62a664901a2e"
+  },
+  {
+   "path": "e6nd_fine_out/N2/arrays.npz",
+   "bytes": 20773896,
+   "sha256": "eb5538684433427b6c328d4e3b334566353a16d0e391a28c24e434d54b1784e7"
+  },
+  {
+   "path": "e6nd_fine_out/N2/record.json",
+   "bytes": 12667,
+   "sha256": "ef4466ff4c35f432ad0db46109a786da855a71266600e377cf3e36da1588dce5"
+  },
+  {
+   "path": "e6nd_fine_out/execution.json",
+   "bytes": 494,
+   "sha256": "fde0909145cf069ec1b4c85ba10fbc6a21dc4402db690fed155335a61bef2dca"
+  },
+  {
+   "path": "e6nd_fine_out/result.json",
+   "bytes": 9694,
+   "sha256": "78eadce1f5c8bd7db2c1ae406295f9691924ace69186c9a78639e218b1ba8447"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Only N2; preserve prior failed physical acceptance and all production gates.",
+ "log": {
+  "file": "run.log",
+  "sha256": "3fefaee93216e3e5ed143faedc2d44b12b8db267c5513e4247353b16ee6d2cd5",
+  "bytes": 9695
+ },
+ "redactions": {}
+}

@@ -1,0 +1,579 @@
+{
+  "label": "POST_HOC_DIAGNOSTIC_NOT_APPROVAL",
+  "profiles": [
+    {
+      "level": "L0",
+      "direction": "fwd",
+      "V": 0.0,
+      "common_nodes": 4610,
+      "added_nodes": 3427,
+      "Potential": {
+        "all_max": 0.0006226673072377426,
+        "common_max": 0.00030952614242926686,
+        "added_max": 0.0006226673072377426,
+        "max_location_um": [
+          0.002,
+          -0.1
+        ],
+        "value_at_max": 0.021956972734926198,
+        "reference_at_max": 0.021334305427688455
+      },
+      "Electrons": {
+        "all_max": 0.024344711615081702,
+        "common_max": 0.012028496029433918,
+        "added_max": 0.024344711615081702,
+        "max_location_um": [
+          0.002,
+          -0.015625
+        ],
+        "value_at_max": 23353901558.191666,
+        "reference_at_max": 22798869651.379005
+      },
+      "Holes": {
+        "all_max": 0.023766131985683253,
+        "common_max": 0.01188553096738358,
+        "added_max": 0.023766131985683253,
+        "max_location_um": [
+          0.002,
+          -0.07500000000000002
+        ],
+        "value_at_max": 4281939775.7083936,
+        "reference_at_max": 4386182364.701158
+      },
+      "fine_L2_potential_max_V": 5.51261695465044e-05
+    },
+    {
+      "level": "L0",
+      "direction": "fwd",
+      "V": 0.3,
+      "common_nodes": 4610,
+      "added_nodes": 3427,
+      "Potential": {
+        "all_max": 0.0005555902280371949,
+        "common_max": 0.00024314236914621534,
+        "added_max": 0.0005555902280371949,
+        "max_location_um": [
+          0.002,
+          -0.1
+        ],
+        "value_at_max": 0.16717573854503195,
+        "reference_at_max": 0.16662014831699476
+      },
+      "Electrons": {
+        "all_max": 0.021694060370605225,
+        "common_max": 0.009436703508770256,
+        "added_max": 0.021694060370605225,
+        "max_location_um": [
+          0.002,
+          -0.1
+        ],
+        "value_at_max": 6376910661201.17,
+        "reference_at_max": 6241507030869.921
+      },
+      "Holes": {
+        "all_max": 0.021233082605996892,
+        "common_max": 0.009348307474102308,
+        "added_max": 0.021233082605996892,
+        "max_location_um": [
+          0.002,
+          -0.06875
+        ],
+        "value_at_max": 1691664222916.8281,
+        "reference_at_max": 1728362690701.6187
+      },
+      "fine_L2_potential_max_V": 4.5481777602621176e-05
+    },
+    {
+      "level": "L0",
+      "direction": "fwd",
+      "V": 0.5,
+      "common_nodes": 4610,
+      "added_nodes": 3427,
+      "Potential": {
+        "all_max": 0.0004974880352456301,
+        "common_max": 0.00018621186163800263,
+        "added_max": 0.0004974880352456301,
+        "max_location_um": [
+          0.002,
+          -0.1
+        ],
+        "value_at_max": 0.2630743213231299,
+        "reference_at_max": 0.2625768332878843
+      },
+      "Electrons": {
+        "all_max": 0.019403727549282535,
+        "common_max": 0.007219284813612093,
+        "added_max": 0.019403727549282535,
+        "max_location_um": [
+          0.002,
+          -0.1
+        ],
+        "value_at_max": 259074565449897.8,
+        "reference_at_max": 254143239276484.78
+      },
+      "Holes": {
+        "all_max": 0.019033197434830923,
+        "common_max": 0.007167212258286634,
+        "added_max": 0.019033197434830923,
+        "max_location_um": [
+          0.002,
+          -0.03750000000000001
+        ],
+        "value_at_max": 94345679390240.52,
+        "reference_at_max": 96176220381293.48
+      },
+      "fine_L2_potential_max_V": 3.657376689236713e-05
+    },
+    {
+      "level": "L0",
+      "direction": "fwd",
+      "V": 0.6,
+      "common_nodes": 4610,
+      "added_nodes": 3427,
+      "Potential": {
+        "all_max": 0.00045923724702823243,
+        "common_max": 0.0001500051828838278,
+        "added_max": 0.00045923724702823243,
+        "max_location_um": [
+          0.002,
+          -0.1
+        ],
+        "value_at_max": 0.31046656776986475,
+        "reference_at_max": 0.3100073305228365
+      },
+      "Electrons": {
+        "all_max": 0.017899704768348273,
+        "common_max": 0.005811929678309949,
+        "added_max": 0.017899704768348273,
+        "max_location_um": [
+          0.002,
+          -0.043750000000000004
+        ],
+        "value_at_max": 1614050829045295.0,
+        "reference_at_max": 1585667842798537.5
+      },
+      "Holes": {
+        "all_max": 0.017580099657450332,
+        "common_max": 0.0057772011475766384,
+        "added_max": 0.017580099657450332,
+        "max_location_um": [
+          0.002,
+          -0.0031250000000000028
+        ],
+        "value_at_max": 718087084680924.8,
+        "reference_at_max": 730937030520801.2
+      },
+      "fine_L2_potential_max_V": 2.9944319282354526e-05
+    },
+    {
+      "level": "L0",
+      "direction": "rev",
+      "V": 0.0,
+      "common_nodes": 4610,
+      "added_nodes": 3427,
+      "Potential": {
+        "all_max": 0.0006226673072377426,
+        "common_max": 0.00030952614242926686,
+        "added_max": 0.0006226673072377426,
+        "max_location_um": [
+          0.002,
+          -0.1
+        ],
+        "value_at_max": 0.021956972734926198,
+        "reference_at_max": 0.021334305427688455
+      },
+      "Electrons": {
+        "all_max": 0.024344711615081702,
+        "common_max": 0.012028496029433918,
+        "added_max": 0.024344711615081702,
+        "max_location_um": [
+          0.002,
+          -0.015625
+        ],
+        "value_at_max": 23353901558.191666,
+        "reference_at_max": 22798869651.379005
+      },
+      "Holes": {
+        "all_max": 0.023766131985683253,
+        "common_max": 0.01188553096738358,
+        "added_max": 0.023766131985683253,
+        "max_location_um": [
+          0.002,
+          -0.07500000000000002
+        ],
+        "value_at_max": 4281939775.7083936,
+        "reference_at_max": 4386182364.701158
+      },
+      "fine_L2_potential_max_V": 5.51261695465044e-05
+    },
+    {
+      "level": "L0",
+      "direction": "rev",
+      "V": -0.5,
+      "common_nodes": 4610,
+      "added_nodes": 3427,
+      "Potential": {
+        "all_max": 0.0007100254794764338,
+        "common_max": 0.00039578856181254896,
+        "added_max": 0.0007100254794764338,
+        "max_location_um": [
+          0.002,
+          -0.1
+        ],
+        "value_at_max": -0.2218033163034456,
+        "reference_at_max": -0.22251334178292204
+      },
+      "Electrons": {
+        "all_max": 0.1043343854996753,
+        "common_max": 0.061281592396890905,
+        "added_max": 0.1043343854996753,
+        "max_location_um": [
+          -0.005806618636793281,
+          -0.09375000000000001
+        ],
+        "value_at_max": 43107.31586086396,
+        "reference_at_max": 48128.80517347172
+      },
+      "Holes": {
+        "all_max": 0.1250727168288982,
+        "common_max": 0.07101117359857073,
+        "added_max": 0.1250727168288982,
+        "max_location_um": [
+          0.006027397260273974,
+          -0.1
+        ],
+        "value_at_max": 56319.28624815419,
+        "reference_at_max": 64370.24805539219
+      },
+      "fine_L2_potential_max_V": 8.665878622737822e-05
+    },
+    {
+      "level": "L0",
+      "direction": "rev",
+      "V": -1.0,
+      "common_nodes": 4610,
+      "added_nodes": 3427,
+      "Potential": {
+        "all_max": 0.0007824900616206776,
+        "common_max": 0.00046524226954880454,
+        "added_max": 0.0007824900616206776,
+        "max_location_um": [
+          0.002,
+          -0.1
+        ],
+        "value_at_max": -0.46670136381067523,
+        "reference_at_max": -0.4674838538722959
+      },
+      "Electrons": {
+        "all_max": 0.13598197339855,
+        "common_max": 0.05946048369190683,
+        "added_max": 0.13598197339855,
+        "max_location_um": [
+          0.01010996434603115,
+          -0.07187500000000001
+        ],
+        "value_at_max": 63341.832457433535,
+        "reference_at_max": 73310.77652000372
+      },
+      "Holes": {
+        "all_max": 0.12433910084594307,
+        "common_max": 0.07614103546469768,
+        "added_max": 0.12433910084594307,
+        "max_location_um": [
+          -0.014021588225760944,
+          -0.1
+        ],
+        "value_at_max": 320554.77995869756,
+        "reference_at_max": 366071.8210306906
+      },
+      "fine_L2_potential_max_V": 0.000259328692420846
+    },
+    {
+      "level": "L1",
+      "direction": "fwd",
+      "V": 0.0,
+      "common_nodes": 17920,
+      "added_nodes": 13253,
+      "Potential": {
+        "all_max": 0.00027084784882698207,
+        "common_max": 0.00019264925613253242,
+        "added_max": 0.00027084784882698207,
+        "max_location_um": [
+          0.001,
+          -0.012499999999999997
+        ],
+        "value_at_max": 0.011019866692889175,
+        "reference_at_max": 0.010749018844062192
+      },
+      "Electrons": {
+        "all_max": 0.010517543980108027,
+        "common_max": 0.0074696346010691365,
+        "added_max": 0.010517543980108027,
+        "max_location_um": [
+          0.001,
+          -0.05625
+        ],
+        "value_at_max": 15306430941.954767,
+        "reference_at_max": 15147120436.590929
+      },
+      "Holes": {
+        "all_max": 0.010408076576964376,
+        "common_max": 0.007414252841506012,
+        "added_max": 0.010408076576964376,
+        "max_location_um": [
+          0.001,
+          -0.07968750000000001
+        ],
+        "value_at_max": 6533201657.474603,
+        "reference_at_max": 6601914893.238026
+      },
+      "fine_L2_potential_max_V": 7.806982204495744e-05
+    },
+    {
+      "level": "L1",
+      "direction": "fwd",
+      "V": 0.3,
+      "common_nodes": 17920,
+      "added_nodes": 13253,
+      "Potential": {
+        "all_max": 0.0002294124952712806,
+        "common_max": 0.00015130134624738445,
+        "added_max": 0.0002294124952712806,
+        "max_location_um": [
+          0.001,
+          -0.1
+        ],
+        "value_at_max": 0.15863731127540986,
+        "reference_at_max": 0.15840789878013858
+      },
+      "Electrons": {
+        "all_max": 0.0089014256378901,
+        "common_max": 0.005861774069702002,
+        "added_max": 0.0089014256378901,
+        "max_location_um": [
+          0.001,
+          -0.09843750000000002
+        ],
+        "value_at_max": 4585281376416.305,
+        "reference_at_max": 4544825946218.884
+      },
+      "Holes": {
+        "all_max": 0.00882280162695718,
+        "common_max": 0.005827575019180328,
+        "added_max": 0.00882280162695718,
+        "max_location_um": [
+          0.001,
+          -0.1
+        ],
+        "value_at_max": 2352657428229.4814,
+        "reference_at_max": 2373599223318.722
+      },
+      "fine_L2_potential_max_V": 6.131361067224228e-05
+    },
+    {
+      "level": "L1",
+      "direction": "fwd",
+      "V": 0.5,
+      "common_nodes": 17920,
+      "added_nodes": 13253,
+      "Potential": {
+        "all_max": 0.00019379307600708717,
+        "common_max": 0.00011582892377978715,
+        "added_max": 0.00019379307600708717,
+        "max_location_um": [
+          0.001,
+          -0.1
+        ],
+        "value_at_max": 0.2565931652017842,
+        "reference_at_max": 0.2563993721257771
+      },
+      "Electrons": {
+        "all_max": 0.007514255573740025,
+        "common_max": 0.004484439117298679,
+        "added_max": 0.007514255573740025,
+        "max_location_um": [
+          0.001,
+          0.0
+        ],
+        "value_at_max": 201694433590014.34,
+        "reference_at_max": 200190153612424.3
+      },
+      "Holes": {
+        "all_max": 0.007457934464345409,
+        "common_max": 0.004464348314487259,
+        "added_max": 0.007457934464345409,
+        "max_location_um": [
+          0.001,
+          -0.012499999999999997
+        ],
+        "value_at_max": 121186271287330.06,
+        "reference_at_max": 122096861680042.06
+      },
+      "fine_L2_potential_max_V": 4.693699241897775e-05
+    },
+    {
+      "level": "L1",
+      "direction": "fwd",
+      "V": 0.6,
+      "common_nodes": 17920,
+      "added_nodes": 13253,
+      "Potential": {
+        "all_max": 0.00017106825736745712,
+        "common_max": 9.335965232393217e-05,
+        "added_max": 0.00017106825736745712,
+        "max_location_um": [
+          0.001,
+          -0.1
+        ],
+        "value_at_max": 0.30528560680866673,
+        "reference_at_max": 0.3051145385512993
+      },
+      "Electrons": {
+        "all_max": 0.006630553821161379,
+        "common_max": 0.0036130767693127227,
+        "added_max": 0.006630553821161379,
+        "max_location_um": [
+          0.001,
+          -0.1
+        ],
+        "value_at_max": 1321289743996819.5,
+        "reference_at_max": 1312586568112019.2
+      },
+      "Holes": {
+        "all_max": 0.006585741789340024,
+        "common_max": 0.003599826606407104,
+        "added_max": 0.006585741789340024,
+        "max_location_um": [
+          0.001,
+          -0.018750000000000006
+        ],
+        "value_at_max": 877199689773849.2,
+        "reference_at_max": 883014998550416.8
+      },
+      "fine_L2_potential_max_V": 3.784933731959539e-05
+    },
+    {
+      "level": "L1",
+      "direction": "rev",
+      "V": 0.0,
+      "common_nodes": 17920,
+      "added_nodes": 13253,
+      "Potential": {
+        "all_max": 0.00027084784882698207,
+        "common_max": 0.00019264925613253242,
+        "added_max": 0.00027084784882698207,
+        "max_location_um": [
+          0.001,
+          -0.012499999999999997
+        ],
+        "value_at_max": 0.011019866692889175,
+        "reference_at_max": 0.010749018844062192
+      },
+      "Electrons": {
+        "all_max": 0.010517543980108027,
+        "common_max": 0.0074696346010691365,
+        "added_max": 0.010517543980108027,
+        "max_location_um": [
+          0.001,
+          -0.05625
+        ],
+        "value_at_max": 15306430941.954767,
+        "reference_at_max": 15147120436.590929
+      },
+      "Holes": {
+        "all_max": 0.010408076576964376,
+        "common_max": 0.007414252841506012,
+        "added_max": 0.010408076576964376,
+        "max_location_um": [
+          0.001,
+          -0.07968750000000001
+        ],
+        "value_at_max": 6533201657.474603,
+        "reference_at_max": 6601914893.238026
+      },
+      "fine_L2_potential_max_V": 7.806982204495744e-05
+    },
+    {
+      "level": "L1",
+      "direction": "rev",
+      "V": -0.5,
+      "common_nodes": 17920,
+      "added_nodes": 13253,
+      "Potential": {
+        "all_max": 0.00032488632635224723,
+        "common_max": 0.0002465465635444475,
+        "added_max": 0.00032488632635224723,
+        "max_location_um": [
+          0.001,
+          -0.1
+        ],
+        "value_at_max": -0.23587091175661679,
+        "reference_at_max": -0.23619579808296903
+      },
+      "Electrons": {
+        "all_max": 0.026731536652719136,
+        "common_max": 0.014125119321114515,
+        "added_max": 0.026731536652719136,
+        "max_location_um": [
+          -0.006922228585371465,
+          -0.0265625
+        ],
+        "value_at_max": 30264.52180133166,
+        "reference_at_max": 31095.759228903215
+      },
+      "Holes": {
+        "all_max": 0.03777284523000954,
+        "common_max": 0.01978990309873223,
+        "added_max": 0.03777284523000954,
+        "max_location_um": [
+          0.005027072680788898,
+          -0.09062500000000001
+        ],
+        "value_at_max": 74639.72267673952,
+        "reference_at_max": 77569.75294942835
+      },
+      "fine_L2_potential_max_V": 9.987323571747364e-05
+    },
+    {
+      "level": "L1",
+      "direction": "rev",
+      "V": -1.0,
+      "common_nodes": 17920,
+      "added_nodes": 13253,
+      "Potential": {
+        "all_max": 0.0003691668042730134,
+        "common_max": 0.0002904379028754178,
+        "added_max": 0.0003691668042730134,
+        "max_location_um": [
+          0.001,
+          -0.1
+        ],
+        "value_at_max": -0.48332912072607814,
+        "reference_at_max": -0.48369828753035116
+      },
+      "Electrons": {
+        "all_max": 0.03550488045322257,
+        "common_max": 0.01635443412153851,
+        "added_max": 0.03550488045322257,
+        "max_location_um": [
+          0.011170294715806245,
+          -0.012499999999999997
+        ],
+        "value_at_max": 84570.26920737795,
+        "reference_at_max": 87683.45997138697
+      },
+      "Holes": {
+        "all_max": 0.042945347803424114,
+        "common_max": 0.019815982217616046,
+        "added_max": 0.042945347803424114,
+        "max_location_um": [
+          -0.013104126090369456,
+          -0.0171875
+        ],
+        "value_at_max": 223250.07057229202,
+        "reference_at_max": 233267.83905172136
+      },
+      "fine_L2_potential_max_V": 0.00011752843304824179
+    }
+  ]
+}

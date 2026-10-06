@@ -32,6 +32,12 @@ def evaluate(out):
             raise ValueError('FINE_IDENTITY_INVALID')
         ref = json.loads((P.T.E6K/'pn_1d_diagnostic.json').read_text())
         previous = json.loads((P.HERE/'raw/outputs/e6nd_out/result.json').read_text())
+        manifest = json.loads((P.HERE/'raw/summary.json').read_text())
+        old_file = P.HERE/'raw/outputs/e6nd_out/result.json'
+        expected = [r for r in manifest['outputs'] if r['path']=='e6nd_out/result.json']
+        if (manifest['source']['github_sha']!='0aae0a35bcfa38ceca374556199a451dd01c3076'
+                or len(expected)!=1 or hashlib.sha256(old_file.read_bytes()).hexdigest()!=expected[0]['sha256']):
+            raise ValueError('PREVIOUS_MESH_EVIDENCE_HASH')
         with np.load(out/'N2/arrays.npz',allow_pickle=False) as arrays, np.load(P.T.E6K/'states.npz',allow_pickle=False) as states:
             g = P.M.geometry_checks(arrays['points_um'],arrays['triangles'])
             if g['n_points']!=122761 or g['n_triangles']!=242304 or g['obtuse_triangles'] or g['degenerate_triangles'] or g['area_rel_err']>1e-12:
@@ -40,6 +46,9 @@ def evaluate(out):
                 cc,mm = evaluate_device(raw['devices'][d],arrays,'L2',d,ref,states,P.T)
                 checks.extend({'name':'L2_'+d+'_'+c['name'],'pass':c['pass'],'value':c['value']} for c in cc)
                 metrics['L2_'+d] = mm
+                if (len(previous['metrics']['L1_'+d]['currents'])!=len(mm['currents'])
+                        or [c['V'] for c in previous['metrics']['L1_'+d]['currents']]!=P.M.VOLTAGES[d]):
+                    raise ValueError('PREVIOUS_MESH_EVIDENCE_INCOMPLETE')
                 for old,new in zip(previous['metrics']['L1_'+d]['currents'],mm['currents']):
                     if old['V']!=new['V']:
                         raise ValueError('MESH_BIAS_IDENTITY')

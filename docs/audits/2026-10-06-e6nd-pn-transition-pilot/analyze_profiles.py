@@ -8,11 +8,14 @@ import numpy as np
 import pilot as P
 
 
-def analyze(out):
+def analyze(out, fine_out=None):
     result = {'label':'POST_HOC_DIAGNOSTIC_NOT_APPROVAL','profiles':[]}
     with np.load(P.T.E6K/'states.npz',allow_pickle=False) as ref:
-        for k,lv in enumerate(('L0','L1')):
-            with np.load(out/f'N{k}/arrays.npz',allow_pickle=False) as arr:
+        files = [('L0',out/'N0/arrays.npz'),('L1',out/'N1/arrays.npz')]
+        if fine_out is not None:
+            files.append(('L2',fine_out/'N2/arrays.npz'))
+        for lv,path in files:
+            with np.load(path,allow_pickle=False) as arr:
                 for direction in P.M.DIRECTIONS:
                     x,y = arr[direction+'_x'],arr[direction+'_y']
                     for bias in P.M.SNAP_BIASES[direction]:
@@ -34,4 +37,4 @@ def analyze(out):
 
 
 if __name__=='__main__':
-    print(json.dumps(analyze(Path(sys.argv[1])),indent=2))
+    print(json.dumps(analyze(Path(sys.argv[1]),Path(sys.argv[2]) if len(sys.argv)>2 else None),indent=2))

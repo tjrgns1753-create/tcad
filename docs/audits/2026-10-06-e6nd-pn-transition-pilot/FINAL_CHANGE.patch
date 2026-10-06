@@ -1,0 +1,640 @@
+diff --git a/docs/audits/2026-10-06-e6nd-pn-transition-pilot/analyze_profiles.py b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/analyze_profiles.py
+new file mode 100644
+index 0000000..082d875
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/analyze_profiles.py
+@@ -0,0 +1,40 @@
++"""사후 원인 분리: 공통 x와 추가 x를 구분. 사전 판정은 변경하지 않는다."""
++import json
++from pathlib import Path
++import sys
++
++import numpy as np
++
++import pilot as P
++
++
++def analyze(out, fine_out=None):
++    result = {'label':'POST_HOC_DIAGNOSTIC_NOT_APPROVAL','profiles':[]}
++    with np.load(P.T.E6K/'states.npz',allow_pickle=False) as ref:
++        files = [('L0',out/'N0/arrays.npz'),('L1',out/'N1/arrays.npz')]
++        if fine_out is not None:
++            files.append(('L2',fine_out/'N2/arrays.npz'))
++        for lv,path in files:
++            with np.load(path,allow_pickle=False) as arr:
++                for direction in P.M.DIRECTIONS:
++                    x,y = arr[direction+'_x'],arr[direction+'_y']
++                    for bias in P.M.SNAP_BIASES[direction]:
++                        r = P.M.e6k_snapshot(ref,lv,direction,bias)
++                        shared = np.isin(x,r['x'])
++                        psi = arr[f'{direction}_{bias}_Potential']
++                        rec = {'level':lv,'direction':direction,'V':bias,'common_nodes':int(shared.sum()),'added_nodes':int((~shared).sum())}
++                        for nm in ('Potential','Electrons','Holes'):
++                            v = arr[f'{direction}_{bias}_{nm}']
++                            expected = np.interp(x,r['x'],r[nm]) if nm=='Potential' else np.exp(np.interp(x,r['x'],np.log(r[nm])))
++                            diff = np.abs(v-expected) if nm=='Potential' else np.abs(v-expected)/expected
++                            imax = int(np.argmax(diff))
++                            rec[nm] = {'all_max':float(diff[imax]),'common_max':float(np.max(diff[shared])),'added_max':float(np.max(diff[~shared])) if np.any(~shared) else None,'max_location_um':[float(x[imax]*1e4),float(y[imax]*1e4)],'value_at_max':float(v[imax]),'reference_at_max':float(expected[imax])}
++                        # 더 세밀한 1D 기준과의 비교는 사후 진단이며 고정 판정을 덮어쓰지 않는다.
++                        fine = P.M.e6k_snapshot(ref,'L2',direction,bias)
++                        rec['fine_L2_potential_max_V'] = float(np.max(np.abs(psi-np.interp(x,fine['x'],fine['Potential']))))
++                        result['profiles'].append(rec)
++    return result
++
++
++if __name__=='__main__':
++    print(json.dumps(analyze(Path(sys.argv[1]),Path(sys.argv[2]) if len(sys.argv)>2 else None),indent=2))
+diff --git a/docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py
+new file mode 100644
+index 0000000..229d829
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py
+@@ -0,0 +1,82 @@
++"""별도 사후 확장 계획. N0/N1을 재실행하거나 기존 실패를 덮어쓰지 않는다."""
++import hashlib
++import json
++import os
++from pathlib import Path
++import sys
++
++import numpy as np
++
++import pilot as P
++from judge import evaluate_device
++
++FINE_SHA = '82f6467eb31576f97761939d998861ae7dc06d57e5978b869ab9f94bb598333a'
++
++
++def preflight():
++    P.require_plan()
++    sha = hashlib.sha256((P.HERE/'PLAN_FINE.md').read_bytes().replace(b'\r\n',b'\n')).hexdigest()
++    if sha!=FINE_SHA:
++        raise ValueError('FINE_PLAN_HASH_MISMATCH')
++
++
++def evaluate(out):
++    checks, metrics, problems = [],{},[]
++    try:
++        preflight()
++        supervisor = json.loads((out/'execution.json').read_text())
++        if supervisor['plan_sha256']!=FINE_SHA or supervisor['status']!='COMPLETED' or supervisor['cleanup_ok'] is not True or supervisor['exit_code']!=0:
++            raise ValueError('FINE_EXECUTION_FAILED')
++        raw = json.loads((out/'N2/record.json').read_text())
++        if raw['plan_sha256']!=P.PLAN_SHA or raw['level']!='L2' or raw['conformity']['pass'] is not True:
++            raise ValueError('FINE_IDENTITY_INVALID')
++        ref = json.loads((P.T.E6K/'pn_1d_diagnostic.json').read_text())
++        previous = json.loads((P.HERE/'raw/outputs/e6nd_out/result.json').read_text())
++        manifest = json.loads((P.HERE/'raw/summary.json').read_text())
++        old_file = P.HERE/'raw/outputs/e6nd_out/result.json'
++        expected = [r for r in manifest['outputs'] if r['path']=='e6nd_out/result.json']
++        if (manifest['source']['github_sha']!='0aae0a35bcfa38ceca374556199a451dd01c3076'
++                or len(expected)!=1 or hashlib.sha256(old_file.read_bytes()).hexdigest()!=expected[0]['sha256']):
++            raise ValueError('PREVIOUS_MESH_EVIDENCE_HASH')
++        with np.load(out/'N2/arrays.npz',allow_pickle=False) as arrays, np.load(P.T.E6K/'states.npz',allow_pickle=False) as states:
++            g = P.M.geometry_checks(arrays['points_um'],arrays['triangles'])
++            if g['n_points']!=122761 or g['n_triangles']!=242304 or g['obtuse_triangles'] or g['degenerate_triangles'] or g['area_rel_err']>1e-12:
++                raise ValueError('FINE_GEOMETRY_INVALID')
++            for d in P.M.DIRECTIONS:
++                cc,mm = evaluate_device(raw['devices'][d],arrays,'L2',d,ref,states,P.T)
++                checks.extend({'name':'L2_'+d+'_'+c['name'],'pass':c['pass'],'value':c['value']} for c in cc)
++                metrics['L2_'+d] = mm
++                if (len(previous['metrics']['L1_'+d]['currents'])!=len(mm['currents'])
++                        or [c['V'] for c in previous['metrics']['L1_'+d]['currents']]!=P.M.VOLTAGES[d]):
++                    raise ValueError('PREVIOUS_MESH_EVIDENCE_INCOMPLETE')
++                for old,new in zip(previous['metrics']['L1_'+d]['currents'],mm['currents']):
++                    if old['V']!=new['V']:
++                        raise ValueError('MESH_BIAS_IDENTITY')
++                    diff = abs(old['J_A_per_cm2']-new['J_A_per_cm2'])/abs(new['J_A_per_cm2'])
++                    checks.append({'name':'N1_N2_'+str(new['V']),'pass':bool(diff<=(.01 if d=='fwd' else .02)),'value':diff})
++    except Exception as exc:
++        problems.append(type(exc).__name__+': '+str(exc))
++    passed = bool(checks) and not problems and all(c['pass'] is True for c in checks)
++    return {'status':'FINE_PILOT_PASS' if passed else 'FINE_PILOT_NOT_APPROVED','checks':checks,'metrics':metrics,'problems':problems,'production_gate_released':False,'original_pilot_status':'PILOT_NOT_APPROVED','scope':'post-hoc third mesh diagnostic; not general PN approval'}
++
++
++def main():
++    preflight()
++    if os.name!='nt' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted':
++        raise RuntimeError('REMOTE_WINDOWS_ONLY')
++    if len(sys.argv)>1 and sys.argv[1]=='--worker':
++        return P.worker(2,Path(sys.argv[2]))
++    from resource_supervisor import supervise
++    out = P.ROOT/'e6nd_fine_out'
++    out.mkdir(exist_ok=True)
++    rec = supervise([sys.executable,'-B',str(__file__),'--worker',str(out/'N2')],P.ROOT,out/'N2.log',candidate_s=900)
++    rec['plan_sha256'] = FINE_SHA
++    P.save(out/'execution.json',rec)
++    result = evaluate(out)
++    P.save(out/'result.json',result)
++    print(json.dumps(result,indent=2))
++    return 0 if result['status']=='FINE_PILOT_PASS' else 1
++
++
++if __name__=='__main__':
++    raise SystemExit(main())
+diff --git a/docs/audits/2026-10-06-e6nd-pn-transition-pilot/judge.py b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/judge.py
+new file mode 100644
+index 0000000..3db7793
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/judge.py
+@@ -0,0 +1,140 @@
++"""엔진 없는 원시 증거 재계산. 누락/오류는 정상 승인하지 않는다."""
++import json
++import math
++from pathlib import Path
++
++import numpy as np
++
++
++def evaluate_device(dr, arrays, lv, direction, reference, states, T):
++    M = T.M
++    checks, metrics = [], {}
++
++    def need(name, condition, value=None):
++        checks.append({'name':name,'pass':bool(condition),'value':value})
++
++    def a(nm, size=None):
++        v = np.asarray(arrays[direction+'_'+nm])
++        if v.dtype.kind not in 'iuf' or not np.all(np.isfinite(v)) or (size is not None and v.shape!=(size,)):
++            raise ValueError('INVALID_ARRAY:'+nm)
++        return v
++
++    if dr.get('error') is not None or dr.get('cleanup_ok') is not True:
++        raise ValueError('DEVICE_ERROR_OR_CLEANUP')
++    x,y = a('x'),a('y')
++    n = len(x)
++    if x.ndim!=1 or y.shape!=x.shape or type(dr.get('node_count')) is not int or dr['node_count']!=n:
++        raise ValueError('NODE_COUNT_MISMATCH')
++    M.require_canonical(dr['canonical_audit'],n)
++    need('gate',dr['gate']['reason_code']==T.J.GATE_REASON and dr['gate']['resolution']=='UNSUPPORTED_BY_MODEL' and dr['gate_counts']=={'writes':0,'attempts':0})
++    need('solve_counts',all(type(dr.get(k)) is int and dr[k]==v for k,v in {'solve_attempts':2+len(M.VOLTAGES[direction]),'solves':2+len(M.VOLTAGES[direction]),'solve_failures':0,'snapshot_failures':0}.items()))
++    md = dr['metadata']
++    need('units',md.get('current_unit')=='A/cm' and md.get('current_normalization')=='per_out_of_plane_depth' and type(md.get('device_dimension')) is int and md['device_dimension']==2)
++    rp = reference['reference_parameters']
++    need('parameters',all(math.isfinite(dr['params'][k]) and math.isclose(dr['params'][k],rp[T.J.REF_OF[k]],rel_tol=1e-12,abs_tol=0) for k in T.J.PARAMS))
++    need('doping_arrays',np.array_equal(a('Donors',n),M.N_DOP*(x>=0)) and np.array_equal(a('Acceptors',n),M.N_DOP*(x<=0)) and np.array_equal(a('NetDoping',n),M.N_DOP*((x>=0)*1-(x<=0)*1)))
++    p,t = arrays['points_um'],arrays['triangles']
++    imported = a('elements')
++    if imported.dtype.kind not in 'iu' or imported.shape!=t.shape or np.any(imported<0) or np.any(imported>=n):
++        raise ValueError('ELEMENTS_INVALID')
++    xy = np.column_stack((x,y))
++    order, target = np.lexsort((y,x)), np.lexsort((p[:,1],p[:,0]))
++    if len(p)!=n or len(np.unique(xy,axis=0))!=n or not np.all(np.abs(xy[order]-p[target,:2]*1e-4)<=[4e-15,1e-17]):
++        raise ValueError('COORDINATE_MAPPING_INVALID')
++    mapping = np.empty(n,dtype=int)
++    mapping[order] = target
++    sortrows = lambda z: np.array(sorted(map(tuple,np.sort(z,axis=1))))
++    need('topology',np.array_equal(sortrows(mapping[imported]),sortrows(t)))
++    need('volume',np.all(a('NodeVolume',n)>=0) and abs(math.fsum(a('NodeVolume',n))/(M.L_CM*M.H_CM)-1)<=1e-12 and dr['area_gate']['pass'] is True)
++    for contact,xx in [(T.C_MIN,-.002),(T.C_MAX,.002)]:
++        idx = np.asarray(dr['contacts'][contact])
++        if idx.dtype.kind not in 'iu' or idx.ndim!=1 or not len(idx) or np.any(idx<0) or np.any(idx>=n):
++            raise ValueError('CONTACT_INDICES')
++        need(contact,np.array_equal(np.sort(idx),np.flatnonzero(x==xx)) and min(y[idx])==-M.H_CM and max(y[idx])==0)
++    currents = dr['currents']
++    if len(currents)!=len(M.VOLTAGES[direction]):
++        raise ValueError('CURRENTS_INCOMPLETE')
++    metrics['currents'] = []
++    for c,v in zip(currents,M.VOLTAGES[direction]):
++        if any(type(c[k]) not in (int,float) or not math.isfinite(c[k]) for k in ('V','I_min','I_max')) or c['V']!=v:
++            raise ValueError('CURRENT_INVALID')
++        c1 = [q for q in reference['devices'][lv+'_'+direction]['currents'] if q['V']==v]
++        if len(c1)!=1 or c1[0]['I_l']==0 or c['I_min']==0:
++            raise ValueError('REFERENCE_INVALID')
++        j = c['I_min']/M.H_CM
++        rel = abs(j-c1[0]['I_l'])/abs(c1[0]['I_l'])
++        kcl = abs(c['I_min']+c['I_max'])/abs(c['I_min'])
++        need(f'current_{v}',rel<=(.01 if direction=='fwd' else .02) and j*v>0 and kcl<=1e-3)
++        metrics['currents'].append({'V':v,'J_A_per_cm2':j,'reference_rel':rel,'kcl_rel':kcl})
++    need('monotonic',bool(np.all(np.diff(np.abs([c['I_min'] for c in currents]))>0)))
++    ex0,ex1,ey0,ey1,length = [a(nm) for nm in ('x@n0','x@n1','y@n0','y@n1','EdgeLength')]
++    if any(z.shape!=length.shape for z in (ex0,ex1,ey0,ey1)) or np.any(length<=0):
++        raise ValueError('EDGE_GEOMETRY_INVALID')
++    coordinate_ids = {tuple(v):i for i,v in enumerate(xy)}
++    try:
++        e0 = np.array([coordinate_ids[(xx,yy)] for xx,yy in zip(ex0,ey0)])
++        e1 = np.array([coordinate_ids[(xx,yy)] for xx,yy in zip(ex1,ey1)])
++    except KeyError as exc:
++        raise ValueError('EDGE_ENDPOINT_NOT_NODE') from exc
++    native_length = np.hypot(ex1-ex0,ey1-ey0)
++    need('edge_length',np.allclose(length,native_length,rtol=1e-12,atol=0))
++    horizontal = (ey0==ey1)&(ex0!=ex1)
++    if not np.any(horizontal):
++        raise ValueError('HORIZONTAL_EDGES_MISSING')
++    metrics['profiles'] = []
++    for v in M.SNAP_BIASES[direction]:
++        r = M.e6k_snapshot(states,lv,direction,v)
++        rx = r['x']
++        if np.any(np.diff(rx)<=0) or min(x)<min(rx) or max(x)>max(rx):
++            raise ValueError('REFERENCE_SUPPORT_INVALID')
++        values = {nm:a(f'{v}_{nm}',n if nm!='ElectricField' else len(length)) for nm in M.SNAP_ARRAYS}
++        psi = values['Potential']
++        need(f'native_field_relation_{v}',np.allclose(values['ElectricField'],(psi[e0]-psi[e1])/length,rtol=1e-9,atol=1e-7))
++        err = float(np.max(np.abs(psi-np.interp(x,rx,r['Potential']))))
++        spread = max(float(np.ptp(psi[x==xx])) for xx in np.unique(x))
++        carriers = {}
++        for nm in ('Electrons','Holes'):
++            if np.any(values[nm]<=0) or np.any(r[nm]<=0):
++                raise ValueError('NONPOSITIVE_CARRIER')
++            rr = np.exp(np.interp(x,rx,np.log(r[nm])))
++            carriers[nm] = float(np.max(np.abs(values[nm]-rr)/rr))
++        expected = (np.interp(ex0,rx,r['Potential'])-np.interp(ex1,rx,r['Potential']))/length
++        denom = float(np.max(np.abs(expected[horizontal])))
++        if denom<=0:
++            raise ValueError('ZERO_FIELD_REFERENCE')
++        field = float(np.max(np.abs(values['ElectricField'][horizontal]-expected[horizontal]))/denom)
++        need(f'profile_{v}',err<=.01*dr['params']['V_t'] and spread<=1e-5 and max(carriers.values())<=.01 and field<=.02)
++        metrics['profiles'].append({'V':v,'potential_max_V':err,'y_spread_V':spread,'carriers_relative':carriers,'field_peak_normalized':field})
++    return checks,metrics
++
++
++def judge(out):
++    import pilot as T
++    checks, metrics, problems = [],{},[]
++    try:
++        T.require_plan()
++        execution = json.loads((out/'execution.json').read_text(encoding='utf-8'))
++        if execution['plan_sha256']!=T.PLAN_SHA or len(execution['supervisors'])!=2 or any(s['status']!='COMPLETED' or s['cleanup_ok'] is not True or s.get('exit_code')!=0 for s in execution['supervisors']):
++            raise ValueError('EXECUTION_INCOMPLETE')
++        refs = json.loads((T.T.E6K/'pn_1d_diagnostic.json').read_text())
++        with np.load(T.T.E6K/'states.npz',allow_pickle=False) as states:
++            for k,lv in enumerate(('L0','L1')):
++                raw = json.loads((out/f'N{k}/record.json').read_text())
++                if raw['level']!=lv or raw['plan_sha256']!=T.PLAN_SHA or raw['conformity']['pass'] is not True:
++                    raise ValueError('IDENTITY_OR_CONFORMITY')
++                with np.load(out/f'N{k}/arrays.npz',allow_pickle=False) as arrays:
++                    g = T.M.geometry_checks(arrays['points_um'],arrays['triangles'])
++                    if g['obtuse_triangles'] or g['degenerate_triangles'] or g['area_rel_err']>1e-12:
++                        raise ValueError('GEOMETRY_INVALID')
++                    for direction in T.M.DIRECTIONS:
++                        cc, mm = evaluate_device(raw['devices'][direction],arrays,lv,direction,refs,states,T.T)
++                        checks.extend({'name':lv+'_'+direction+'_'+c['name'],**{a:b for a,b in c.items() if a!='name'}} for c in cc)
++                        metrics[lv+'_'+direction] = mm
++        for direction in T.M.DIRECTIONS:
++            for c0,c1 in zip(metrics['L0_'+direction]['currents'],metrics['L1_'+direction]['currents']):
++                rel = abs(c0['J_A_per_cm2']-c1['J_A_per_cm2'])/abs(c1['J_A_per_cm2'])
++                checks.append({'name':'mesh_'+str(c0['V']),'pass':bool(rel<=(.01 if direction=='fwd' else .02)),'value':rel})
++    except Exception as exc:
++        problems.append(type(exc).__name__+': '+str(exc))
++    passed = not problems and bool(checks) and all(c['pass'] is True for c in checks)
++    return {'status':'PILOT_PASS' if passed else 'PILOT_NOT_APPROVED','checks':checks,'metrics':metrics,'problems':problems,'production_gate_released':False,'scope':'two-level symmetric Si PN audit; not general PN approval'}
+diff --git a/docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py
+new file mode 100644
+index 0000000..0c07e60
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py
+@@ -0,0 +1,157 @@
++"""고정 계획의 전이 메쉬 PN 파일럿. Production 물리/게이트는 수정하지 않는다."""
++import hashlib
++import importlib.util
++import json
++import os
++import sys
++import time
++from pathlib import Path
++from unittest.mock import patch
++
++import numpy as np
++
++HERE = Path(__file__).resolve().parent
++ROOT = HERE.parents[2]
++PLAN_SHA = 'a11d5440fdfaf4e2e0e58be464a62080f08e08831427e611677338f69c22768d'
++sys.path.insert(0, str(ROOT))
++sys.path.insert(0, str(ROOT/'docs/audits/2026-10-02-e6na-import-reduction'))
++spec = importlib.util.spec_from_file_location('pn_existing', ROOT/'tests/integration/test_pn_2d_1d_consistency_real.py')
++T = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(T)
++M = T.M
++
++
++def require_plan():
++    sha = hashlib.sha256((HERE/'PLAN.md').read_bytes().replace(b'\r\n', b'\n')).hexdigest()
++    if sha != PLAN_SHA:
++        raise ValueError('PLAN_HASH_MISMATCH')
++    return sha
++
++
++def save(path, obj):
++    path.write_text(json.dumps(obj, indent=2, allow_nan=False), encoding='utf-8', newline='\n')
++
++
++def worker(level, out):
++    require_plan()  # 엔진 준비/메쉬 생성보다 먼저 실행한다.
++    if os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted' or os.name != 'nt':
++        raise RuntimeError('REMOTE_WINDOWS_ONLY')
++    from tcad.device.devsim import backend, mesh_refine as R
++    from tcad.device.devsim.mesh_import import import_process_result
++    from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
++    from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
++    from conformity_e6h import check_conformity
++    from run_e6na import cleanup, require_inputs
++    require_inputs()
++    dv = backend.require_devsim()
++    if dv.get_device_list() or dv.get_mesh_list():
++        raise RuntimeError('NONEMPTY_ENGINE')
++    refs = np.load(T.E6K/'states.npz', allow_pickle=False)
++    lv, ny, expected = [('L0',16,(8037,15264)), ('L1',32,(31173,60736)), ('L2',64,(122761,242304))][level]
++    with patch.object(M, 'Y_LINES_UM', np.linspace(-M.H_UM,0,ny+1).tolist()):
++        p, t = M.build_mesh(M.e6k_snapshot(refs,lv,'rev',0)['x'])
++    p,t,tags,_ = R.structured_lateral_refine(p,t,np.zeros(len(t),dtype=int),[0.],[.1])
++    g, c = M.geometry_checks(p,t), check_conformity(p,t)
++    if (len(p),len(t)) != expected or not c['pass'] or g['obtuse_triangles'] or g['degenerate_triangles'] or g['area_rel_err']>1e-12:
++        raise RuntimeError('GEOMETRY_BLOCKED')
++    state, doped = T.canonical(T.write_mesh(p,t,lv))
++    rec = {'level':lv,'plan_sha256':PLAN_SHA,'geometry':g,'conformity':c,'devices':{}}
++    arr = {'points_um':p,'triangles':t}
++    out.mkdir(parents=True,exist_ok=True)
++    for direction in M.DIRECTIONS:
++        name = f'e6nd_{lv}_{direction}'
++        mesh = name+'_mesh'
++        dr = {'error':None, 'cleanup_ok':False}
++        rec['devices'][direction] = dr
++        obs = None
++        try:
++            imp = import_process_result(doped,mesh_name=mesh,device_name=name,contact_regions=['Si'],contact_axis='x',length_scale_to_cm=T.LENGTH_SCALE)
++            x = np.array(dv.get_node_model_values(device=name,region='Si',name='x'))
++            y = np.array(dv.get_node_model_values(device=name,region='Si',name='y'))
++            dr['node_count'] = len(x)
++            dr['area_gate'] = imp.area_conservation['Si']
++            if not dr['area_gate']['pass'] or list(imp.regions)!=['Si']:
++                raise RuntimeError('IMPORT_AREA_BLOCKED')
++            dr['contacts'] = {}
++            for cn, xx in [(T.C_MIN,-.002),(T.C_MAX,.002)]:
++                idx = T.nodes_of_contact(dv,name,cn)
++                if not idx or not np.all(x[idx]==xx) or min(y[idx])!=-M.H_CM or max(y[idx])!=0:
++                    raise RuntimeError('CONTACT_BLOCKED')
++                dr['contacts'][cn] = idx
++            gate = T.Obs(dv,name)
++            gate.install()
++            try:
++                apply_doping(name,'Si',state,length_scale_to_cm=T.LENGTH_SCALE)
++                raise RuntimeError('PRODUCTION_GATE_NOT_RAISED')
++            except UnsupportedDopingState as exc:
++                dr['gate'] = dict(exc.physics_status or {})
++            finally:
++                gate.restore()
++                dr['gate_counts'] = {'writes':len(gate.writes),'attempts':gate.solve_attempts}
++            if dr['gate'].get('reason_code')!=T.J.GATE_REASON or gate.writes or gate.solve_attempts:
++                raise RuntimeError('GATE_CONTRACT_BLOCKED')
++            dr['canonical_audit'] = M.canonical_checks(state,x,y,T.LENGTH_SCALE)
++            M.require_canonical(dr['canonical_audit'],len(x))
++            obs = T.Obs(dv,name)
++            obs.install()
++            for nm, vals in [('Donors',M.N_DOP*(x>=0)),('Acceptors',M.N_DOP*(x<=0)),('NetDoping',M.N_DOP*((x>=0)*1-(x<=0)*1))]:
++                dv.node_model(device=name,region='Si',name=nm,equation='0')
++                dv.set_node_values(device=name,region='Si',name=nm,values=vals.tolist())
++            sweep = run_pn_junction_iv_sweep(device=name,region='Si',all_contacts=imp.contacts,sweep_contact=T.C_MIN,sweep_voltages=M.VOLTAGES[direction],fixed_contacts={T.C_MAX:0.})
++            dr['metadata'] = dict(sweep.metadata)
++            dr['params'] = {n:float(dv.get_parameter(device=name,region='Si',name=n)) for n in T.J.PARAMS+('V_t',)}
++            dr['currents'] = [{'V':v,'I_min':float(pt.currents[T.C_MIN]),'I_max':float(pt.currents[T.C_MAX])} for v,pt in zip(M.VOLTAGES[direction],sweep.points)]
++            dv.edge_from_node_model(device=name,region='Si',node_model='x')
++            dv.edge_from_node_model(device=name,region='Si',node_model='y')
++            arr[direction+'_x'],arr[direction+'_y'] = x,y
++            for nm in ('NodeVolume','Donors','Acceptors','NetDoping'):
++                arr[direction+'_'+nm] = np.array(dv.get_node_model_values(device=name,region='Si',name=nm))
++            for nm in ('x@n0','x@n1','y@n0','y@n1','EdgeLength','EdgeCouple'):
++                arr[direction+'_'+nm] = np.array(dv.get_edge_model_values(device=name,region='Si',name=nm))
++            arr[direction+'_elements'] = np.array(dv.get_element_node_list(device=name,region='Si'))
++            for bias in M.SNAP_BIASES[direction]:
++                hit = [s for s in obs.snaps if s['has_DD'] and abs(s['bias_min']-bias)<1e-12 and s['bias_max']==0]
++                if not hit:
++                    raise RuntimeError('SNAPSHOT_MISSING')
++                for nm in M.SNAP_ARRAYS:
++                    arr[f'{direction}_{bias}_{nm}'] = hit[-1][nm]
++        except Exception as exc:
++            dr['error'] = type(exc).__name__+': '+str(exc).replace(str(ROOT),'<REPO>')[:800]
++        finally:
++            if obs is not None:
++                dr.update(solve_attempts=obs.solve_attempts,solves=obs.solves,solve_failures=obs.solve_failures,snapshot_failures=obs.snapshot_failures)
++                obs.restore()
++            cleanup(dv,name,mesh,dr)
++            save(out/'record.json',rec)
++            np.savez_compressed(out/'arrays.npz',**arr)
++        if dr['error'] or not dr['cleanup_ok']:
++            return 1
++    return 0
++
++
++def main():
++    require_plan()
++    if len(sys.argv)>1 and sys.argv[1]=='--worker':
++        return worker(int(sys.argv[2]),Path(sys.argv[3]))
++    if os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted' or os.name!='nt':
++        raise RuntimeError('REMOTE_WINDOWS_ONLY')
++    from resource_supervisor import supervise
++    from judge import judge
++    out = ROOT/'e6nd_out'
++    out.mkdir(exist_ok=True)
++    records = []
++    deadline = time.monotonic()+1800
++    for level in range(2):
++        rec = supervise([sys.executable,'-B',str(__file__),'--worker',str(level),str(out/f'N{level}')],ROOT,out/f'N{level}.log',candidate_s=900,total_deadline=deadline)
++        records.append(rec)
++        if rec['status']!='COMPLETED' or not rec['cleanup_ok']:
++            break
++    save(out/'execution.json',{'plan_sha256':PLAN_SHA,'supervisors':records,'pn_production_approved':False})
++    result = judge(out)
++    save(out/'result.json',result)
++    print(json.dumps(result,indent=2),flush=True)
++    return 0 if result['status']=='PILOT_PASS' else 1
++
++
++if __name__=='__main__':
++    raise SystemExit(main())
+diff --git a/docs/audits/2026-10-06-e6nd-pn-transition-pilot/test_contract.py b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/test_contract.py
+new file mode 100644
+index 0000000..4e02eda
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/test_contract.py
+@@ -0,0 +1,76 @@
++"""엔진 없는 정상 대조군과 실패 반례. 과거 증거를 수정하지 않는다."""
++import copy
++import json
++import sys
++from pathlib import Path
++from unittest.mock import patch
++
++import numpy as np
++
++import pilot as P
++from judge import evaluate_device, judge
++
++
++def main():
++    def forbidden(event,args):
++        if event=='import' and args[0].split('.')[0] in ('devsim','viennaps'):
++            raise AssertionError('LOCAL_ENGINE_IMPORT_FORBIDDEN')
++    sys.addaudithook(forbidden)
++    P.require_plan()
++    with patch.object(P,'PLAN_SHA','0'*64):
++        try:
++            P.require_plan()
++            raise AssertionError('BAD_PLAN_ACCEPTED')
++        except ValueError:
++            pass
++    old = P.ROOT/'docs/audits/2026-10-02-e6m-pn-2d-1d-consistency/data/remote_run_36904995835/remote-run-32/outputs/e6m_out'
++    raw = json.loads((old/'pn_2d_consistency.json').read_text())
++    ref = json.loads((P.T.E6K/'pn_1d_diagnostic.json').read_text())
++    with np.load(old/'arrays.npz',allow_pickle=False) as src, np.load(P.T.E6K/'states.npz',allow_pickle=False) as states:
++        lv,d = 'L0','fwd'
++        arrays = {'points_um':src[lv+'__points_um'],'triangles':src[lv+'__triangles']}
++        for nm in P.M.GEOM_ARRAYS:
++            rename = {'edge_x0':'x@n0','edge_x1':'x@n1','edge_y0':'y@n0','edge_y1':'y@n1','element_nodes':'elements'}.get(nm,nm)
++            arrays[d+'_'+rename] = src[P.M.akey(lv,d,nm)]
++        for v in P.M.SNAP_BIASES[d]:
++            for nm in P.M.SNAP_ARRAYS:
++                arrays[f'{d}_{v}_{nm}'] = src[P.M.akey(lv,d,nm,v)]
++        dr = copy.deepcopy(raw['levels'][lv]['devices'][d])
++        gi = raw['levels'][lv]['geometry_import']
++        # 테스트용 합성 wrapper: 과거 누락 기록을 실제 증거로 승격하지 않는다.
++        dr.update(error=None,cleanup_ok=True,node_count=len(arrays[d+'_x']),area_gate=gi['area_gate'],gate={'reason_code':P.T.J.GATE_REASON,'resolution':'UNSUPPORTED_BY_MODEL'},gate_counts={'writes':0,'attempts':0},solve_attempts=8,solves=8,solve_failures=0,snapshot_failures=0)
++        dr['canonical_audit'] = {'canonical_checked':dr['node_count'],'canonical_unresolved':0,'canonical_mismatch':0}
++        dr['contacts'] = {cn:np.flatnonzero(arrays[d+'_x']==xx).tolist() for cn,xx in [(P.T.C_MIN,-.002),(P.T.C_MAX,.002)]}
++        cc,mm = evaluate_device(dr,arrays,lv,d,ref,states,P.T)
++        assert cc and all(c['pass'] for c in cc),[c for c in cc if not c['pass']]
++        mutations = [lambda q:q['canonical_audit'].update(canonical_unresolved=1),lambda q:q['canonical_audit'].update(canonical_checked=True),lambda q:q.update(cleanup_ok=False),lambda q:q.update(solves=7),lambda q:q['gate_counts'].update(writes=1),lambda q:q['metadata'].update(current_unit='A'),lambda q:q['currents'][0].update(I_min=float('nan')),lambda q:q['currents'].pop(),lambda q:q['contacts'][P.T.C_MIN].pop()]
++        for mutate in mutations:
++            changed = copy.deepcopy(dr)
++            mutate(changed)
++            try:
++                checks,_ = evaluate_device(changed,arrays,lv,d,ref,states,P.T)
++                assert not all(c['pass'] for c in checks)
++            except (ValueError,KeyError):
++                pass
++        for name,bad in [(f'{d}_0.6_Potential',float('nan')),(f'{d}_0.6_ElectricField',1e9),(d+'_x@n0',.123),(d+'_EdgeLength',0.)]:
++            altered = {k:np.array(v,copy=True) for k,v in arrays.items()}
++            altered[name][0] = bad
++            try:
++                checks,_ = evaluate_device(dr,altered,lv,d,ref,states,P.T)
++                assert not all(c['pass'] for c in checks)
++            except (ValueError,KeyError):
++                pass
++    assert judge(Path('missing_e6nd_fixture'))['status']=='PILOT_NOT_APPROVED'
++    import fine_pilot as F
++    F.preflight()
++    with patch.object(F,'FINE_SHA','0'*64):
++        try:
++            F.preflight()
++            raise AssertionError('BAD_FINE_PLAN_ACCEPTED')
++        except ValueError:
++            pass
++    print('PASS: normal wrapper + 13 negative controls + PLAN trap + missing evidence; engine imports 0')
++
++
++if __name__=='__main__':
++    main()
+diff --git a/docs/audits/2026-10-06-e6nd-pn-transition-pilot/verify_artifact.py b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/verify_artifact.py
+new file mode 100644
+index 0000000..fa773ab
+--- /dev/null
++++ b/docs/audits/2026-10-06-e6nd-pn-transition-pilot/verify_artifact.py
+@@ -0,0 +1,48 @@
++"""독립 로컬 재판정: artifact 바이트 해시와 실제 소스 SHA를 확인한다."""
++import hashlib
++import json
++from pathlib import Path
++import sys
++
++import pilot
++from judge import judge
++
++EXPECTED_SOURCES = {'e6nd_pn_transition_pilot':'0aae0a35bcfa38ceca374556199a451dd01c3076',
++                    'e6nd_pn_fine_diagnostic':'7b2d2178597ef042fcd9b068df2018a797dafa1d'}
++
++
++def main(path):
++    path = Path(path)
++    summary = json.loads((path/'summary.json').read_text())
++    expected = EXPECTED_SOURCES.get(summary['profile'])
++    if expected is None or summary['source']['github_sha']!=expected or summary['omitted_outputs'] or summary['log_truncated']:
++        raise ValueError('ARTIFACT_IDENTITY_OR_COMPLETENESS_FAIL')
++    verified = 0
++    for file,r in [(path/'run.log',summary['log'])]+[(path/'outputs'/r['path'],r) for r in summary['outputs']]:
++        if file.stat().st_size!=r['bytes'] or hashlib.sha256(file.read_bytes()).hexdigest()!=r['sha256']:
++            raise ValueError('RAW_ARTIFACT_HASH_FAIL')
++        verified += 1
++    fine = summary['profile']=='e6nd_pn_fine_diagnostic'
++    out = path/('outputs/e6nd_fine_out' if fine else 'outputs/e6nd_out')
++    stored = json.loads((out/'result.json').read_text())
++    if fine:
++        from fine_pilot import evaluate
++        recomputed = evaluate(out)
++    else:
++        recomputed = judge(out)
++    # 원래 수치 기준은 그대로 두고, 추가한 배열 관계 검사만 별도로 평가한다.
++    stored_checks = {c['name']:c['pass'] for c in stored['checks']}
++    new_checks = {c['name']:c['pass'] for c in recomputed['checks']}
++    if any(name not in new_checks or new_checks[name]!=value for name,value in stored_checks.items()):
++        raise ValueError('RECOMPUTED_ORIGINAL_CHECK_DIFFERS')
++    if stored['metrics']!=recomputed['metrics'] or stored['problems']!=recomputed['problems'] or stored['production_gate_released'] is not False:
++        raise ValueError('RECOMPUTED_RAW_METRICS_DIFFERS')
++    should_succeed = stored['status'] in ('PILOT_PASS','FINE_PILOT_PASS')
++    if (type(summary['exit_code']) is not int or summary['exit_code']!=(0 if should_succeed else 1)
++            or summary['status']!=('PASS' if should_succeed else 'FAIL') or stored['status']!=recomputed['status']):
++        raise ValueError('EXIT_STATUS_OR_RECOMPUTED_VERDICT_CONFLICT')
++    print(json.dumps({'artifact_files_verified':verified,'source_sha':expected,'remote_status':summary['status'],'remote_exit_code':summary['exit_code'],'stored_status':stored['status'],'recomputed':recomputed},indent=2))
++
++
++if __name__=='__main__':
++    main(sys.argv[1])
+diff --git a/remote/profiles.py b/remote/profiles.py
+index ba395c5..5ea2774 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -11,6 +11,41 @@ remote/request.json that selects it. See remote/README.md.
+ 
+ # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
+ PROFILES = {
++    "e6nd_pn_fine_diagnostic": {
++        "description": "Post-hoc N2-only PN diagnostic; old two-mesh failure retained, production gate closed.",
++        "entry": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py",
++        "args": [], "params": {}, "timeout_s": 930, "engine_info": False,
++        "inputs": [
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/PLAN.md",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/PLAN_FINE.md",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/fine_pilot.py",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/judge.py",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/raw/outputs/e6nd_out/result.json"
++        ],
++        "outputs": [{"glob": "e6nd_fine_out/**/*", "max_mb": 120}],
++        "regenerate": "Only N2; preserve prior failed physical acceptance and all production gates.",
++    },
++    "e6nd_pn_transition_pilot": {
++        "description": "Preregistered two-level symmetric PN transition mesh audit; production gate remains closed.",
++        "entry": "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py",
++        "args": [], "params": {}, "timeout_s": 1830, "engine_info": False,
++        "inputs": [
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/PLAN.md",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/pilot.py",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/judge.py",
++            "docs/audits/2026-10-06-e6nd-pn-transition-pilot/test_contract.py",
++            "tests/integration/test_pn_2d_1d_consistency_real.py",
++            "tcad/characterization/pn_junction_iv_sweep.py",
++            "tcad/device/devsim/mesh_refine.py",
++            "tcad/device/devsim/mesh_import.py",
++            "tcad/device/devsim/doping_mapping.py",
++            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/states.npz",
++            "docs/audits/2026-10-01-e6k-pn-1d-diagnostic/data/remote_run_36815925901/remote-run-31/outputs/e6k_out/pn_1d_diagnostic.json"
++        ],
++        "outputs": [{"glob": "e6nd_out/**/*", "max_mb": 120}],
++        "regenerate": "Fixed PLAN pilot only; never release production PN gate.",
++    },
+     "e6nc_pn_completion_revalidation": {
+         "description": "Engine-free PN evidence revalidation and rejection of incomplete audit success; no physical solve.",
+         "entry": "docs/audits/2026-10-06-e6nc-pn-completion-contract/revalidate.py",
+diff --git a/remote/request.json b/remote/request.json
+index 00288b1..5b50b03 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -1,7 +1,7 @@
+ {
+  "schema": 1,
+- "request_id": "e6nc-pn-completion-001",
+- "profile": "e6nc_pn_completion_revalidation",
++ "request_id": "e6nd-pn-fine-001",
++ "profile": "e6nd_pn_fine_diagnostic",
+  "params": {},
+- "note": "Engine-free stored PN evidence revalidation; historical incomplete audit must not become green. No new solve."
++ "note": "Post-hoc third mesh only; original pilot remains not approved; no tolerance or production changes."
+ }

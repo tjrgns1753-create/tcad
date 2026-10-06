@@ -52,8 +52,24 @@ def main():
                 assert not all(c['pass'] for c in checks)
             except (ValueError,KeyError):
                 pass
+        for name,bad in [(f'{d}_0.6_Potential',float('nan')),(f'{d}_0.6_ElectricField',1e9),(d+'_x@n0',.123),(d+'_EdgeLength',0.)]:
+            altered = {k:np.array(v,copy=True) for k,v in arrays.items()}
+            altered[name][0] = bad
+            try:
+                checks,_ = evaluate_device(dr,altered,lv,d,ref,states,P.T)
+                assert not all(c['pass'] for c in checks)
+            except (ValueError,KeyError):
+                pass
     assert judge(Path('missing_e6nd_fixture'))['status']=='PILOT_NOT_APPROVED'
-    print('PASS: normal wrapper + 9 negative controls + PLAN trap + missing evidence; engine imports 0')
+    import fine_pilot as F
+    F.preflight()
+    with patch.object(F,'FINE_SHA','0'*64):
+        try:
+            F.preflight()
+            raise AssertionError('BAD_FINE_PLAN_ACCEPTED')
+        except ValueError:
+            pass
+    print('PASS: normal wrapper + 13 negative controls + PLAN trap + missing evidence; engine imports 0')
 
 
 if __name__=='__main__':

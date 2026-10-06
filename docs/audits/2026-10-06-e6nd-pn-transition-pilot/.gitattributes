@@ -1,2 +1,3 @@
 raw/** -text -diff
+raw_fine/** -text -diff
 *.patch -text -diff
