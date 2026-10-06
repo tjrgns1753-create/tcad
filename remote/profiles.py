@@ -11,6 +11,20 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nf_reference_convergence": {
+        "description": "Official 1D API interval bisection; 14 PN solves only, production gates unchanged.",
+        "entry": "docs/audits/2026-10-06-e6nf-reference-convergence/convergence.py",
+        "args": [], "params": {}, "timeout_s": 150, "engine_info": False,
+        "inputs": [
+            "docs/audits/2026-10-06-e6nf-reference-convergence/PLAN.md",
+            "docs/audits/2026-10-06-e6nf-reference-convergence/convergence.py",
+            "docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py",
+            "docs/audits/2026-10-06-e6ne-matched-1d-reference/raw/outputs/e6ne_out/reference/arrays.npz",
+            "docs/audits/2026-10-06-e6ne-matched-1d-reference/raw/outputs/e6ne_out/reference/record.json"
+        ],
+        "outputs": [{"glob": "e6nf_out/**/*", "max_mb": 10}],
+        "regenerate": "Official 1D API only; no new 2D solves or gate release.",
+    },
     "e6ne_matched_1d_reference": {
         "description": "Exact-x 1D numerical PN reference; reuse N2 2D evidence without new 2D solves or gate changes.",
         "entry": "docs/audits/2026-10-06-e6ne-matched-1d-reference/run_reference.py",

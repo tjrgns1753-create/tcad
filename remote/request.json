@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6ne-matched-reference-001",
- "profile": "e6ne_matched_1d_reference",
+ "request_id": "e6nf-reference-convergence-001",
+ "profile": "e6nf_reference_convergence",
  "params": {},
- "note": "Exact native x coordinates; new 1D reference only; no interpolation, no repeated 2D solve, no production changes."
+ "note": "Official 1D interval bisection; reuse the existing runner; no new 2D solve or production gate change."
 }
