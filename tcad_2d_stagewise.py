@@ -1458,27 +1458,23 @@ class TCADApplication(tk.Tk):
         x_um = x_min + (event.x - x0) / x_scale
         y_um = (surface_y - event.y) / y_scale
         readout = f"X {x_um:+8.3f} µm   Y {y_um:+8.3f} µm"
-        readout += self._doping_unsupported_hover_note(x_um)
+        readout += self._doping_unsupported_hover_note(x_um, y_um)
         self.coord_var.set(readout)
 
-    def _doping_unsupported_hover_note(self, x_um: float) -> str:
-        """Empty normally; a real explanation appended to the
-        coordinate readout when hovering the doping overlay over an
-        UNSUPPORTED_BY_MODEL bucket -- so a user does not read the gray
-        hatch (_DOPING_UNSUPPORTED_MARKER, see _doping_color_segments())
-        as "doping is gone". Reuses net_doping_at()'s own real
-        physics_status note verbatim (the same computed fact the
-        overlay itself and _log_physics_status() already surface),
-        never a separately-worded approximation -- see
-        WaferState._polarity_sum()'s own note text, which already says
-        the dopant is preserved and excluded rather than zeroed.
+    def _doping_unsupported_hover_note(self, x_um: float, y_um: float = 0.0) -> str:
+        """Read canonical uncertainty at the cursor's actual (x,y).
+        Empty normally; the query's own unsupported note is displayed
+        instead of interpreting unknown as an absent dopant. Historical
+        geometry does not query the current wafer's doping.
         """
         if self.viewer_layer_var.get() != "doping" or self.wafer_state is None:
             return ""
+        if self._viewing_step_index is not None:
+            return "   [이력 도핑 미보존 — 현재 상태를 조회하지 않습니다.]"
         try:
-            result = self.wafer_state.net_doping_at(x_um)
+            result = self.wafer_state.net_doping_at(x_um, y_um)
         except Exception:
-            return ""
+            return "   [UNSUPPORTED: 이 좌표의 도핑 조회 실패]"
         if not result.physics_status:
             return ""
         notes = [e.get("note", "") for e in result.physics_status.get("entries", []) if e.get("note")]
@@ -7995,61 +7991,31 @@ class TCADApplication(tk.Tk):
             # the viewer's layer switch, _make_cross_section) -- GEOMETRY
             # shows the bare material fill, matching what each layer
             # name promises.
-            if self.viewer_layer_var.get() == "doping" and self.last_doped_result is not None and getattr(
-                self.last_doped_result, "doping", None
-            ) is not None:
-                for region_name in {r.region for r in self.last_doped_result.doping.regions}:
-                    region_tag = next(
-                        (t for t, n in material_names.items() if n == region_name),
-                        None,
-                    )
-                    if region_tag is None:
-                        continue
-                    profile = self._material_surface_profile(
-                        triangle_data, points, tags, region_tag, x_min, x_max,
-                    )
-                    if not profile:
-                        continue
-
-                    for x_lo_um, x_hi_um, color in self._doping_color_segments(
-                        region_name, x_min, x_max
-                    ):
-                        if x_hi_um <= x_lo_um:
-                            continue
-                        for seg_x_lo, seg_x_hi, seg_y_top, seg_y_bot in profile:
-                            # Intersect this surface bucket with the
-                            # doping color segment's own x-range (e.g.
-                            # step_junction only tints one side).
-                            lo = max(seg_x_lo, x_lo_um)
-                            hi = min(seg_x_hi, x_hi_um)
-                            if hi <= lo:
-                                continue
-                            cx_lo = x0 + (lo - x_min) * x_scale
-                            cx_hi = x0 + (hi - x_min) * x_scale
-                            cy_top = surface_y - seg_y_top * y_scale
-                            cy_bot = surface_y - seg_y_bot * y_scale
-                            # An UNSUPPORTED_BY_MODEL bucket (spec Sec6)
-                            # must never be blended into the normal n/p
-                            # blue/red convention -- rendered as a
-                            # distinct dim-gray hatch (sparser stipple
-                            # than the gray50 used for a real sign)
-                            # instead of passed as a literal Tk color. A
-                            # genuinely-zero bucket (final-review Fix 5)
-                            # is a DIFFERENT fact ("known, and zero" vs
-                            # "unknown") and gets its own distinct token
-                            # (FG_MUTED, not FG_DIM) and an even sparser
-                            # stipple so the three cases are all
-                            # visually distinguishable at a glance.
-                            if color == _DOPING_UNSUPPORTED_MARKER:
-                                fill, stipple = Tokens.FG_DIM, "gray25"
-                            elif color == _DOPING_ZERO_MARKER:
-                                fill, stipple = Tokens.FG_MUTED, "gray12"
-                            else:
-                                fill, stipple = color, "gray50"
-                            canvas.create_rectangle(
-                                cx_lo, cy_top, cx_hi, cy_bot,
-                                fill=fill, outline="", stipple=stipple,
-                            )
+            if self.viewer_layer_var.get() == "doping":
+                if self._viewing_step_index is not None:
+                    doping_note = "이력 도핑 미보존 — 현재 도핑을 과거 mesh에 표시하지 않습니다."
+                elif len(triangle_data) > _MAX_RENDERED_TRIANGLES:
+                    doping_note = f"도핑 채색 생략 — {len(triangle_data)}개 삼각형, 표시 상한 {_MAX_RENDERED_TRIANGLES}개."
+                else:
+                    # Display samples only: no surface-column extrusion, inventory
+                    # integration, invented interpolation or transport approval.
+                    for i, tri in enumerate(triangle_data):
+                        px = sum(float(points[n][0]) for n in tri) / 3.0
+                        py = sum(float(points[n][1]) for n in tri) / 3.0
+                        color = self._doping_color_at(px, py, material_names[tags[i]])
+                        if color == _DOPING_UNSUPPORTED_MARKER:
+                            fill, stipple = Tokens.FG_DIM, "gray25"
+                        elif color == _DOPING_ZERO_MARKER:
+                            fill, stipple = Tokens.FG_MUTED, "gray12"
+                        else:
+                            fill, stipple = color, "gray50"
+                        coords = [v for n in tri for v in to_canvas(n)]
+                        canvas.create_polygon(coords, fill=fill, outline="", stipple=stipple,
+                                              tags=("canonical_doping_sample",))
+                    doping_note = "도핑: 삼각형 중심의 활성 net 부호 표본 — n 파랑 / p 빨강 / 미상 회색; 농도 크기·셀 내부 분포 미표시."
+                canvas.create_text(x0 + 5, surface_y + 28, text=doping_note,
+                                   anchor="w", fill=Tokens.FG_DIM,
+                                   font=(Tokens.FONT_UI, 8))
 
             canvas.create_text(
                 x0 + 5, surface_y + 12,
@@ -8060,6 +8026,48 @@ class TCADApplication(tk.Tk):
             return True
         except Exception:
             return False
+
+    def _canvas_doping_query(self, x_um, y_um, material):
+        """Read one exact canonical owner; display only, no electrical gate bypass."""
+        import math
+        from tcad.physics.wafer_state_v2 import WaferStateV2, DopingQueryResult
+
+        def unknown(note):
+            return DopingQueryResult(None, None, None, {
+                "resolution": "UNSUPPORTED_BY_MODEL",
+                "entries": [{"note": note}],
+            })
+
+        state = self.wafer_state
+        if self._viewing_step_index is not None:
+            return unknown("이력 도핑 상태가 보존되지 않았습니다.")
+        if not isinstance(state, WaferStateV2):
+            return unknown("정확한 canonical 2D 도핑 상태가 없습니다.")
+        present = [c for c in state.cells if c.lifecycle not in ("REMOVED", "CONVERTED")]
+        if any(c.bounds_um is None for c in present):
+            return unknown("소유 재료의 정확한 geometry가 없습니다.")
+        found = [c for c in present if c.bounds_um[0] <= x_um <= c.bounds_um[1]
+                 and c.bounds_um[2] <= y_um <= c.bounds_um[3]]
+        # A display sample is not a DevSim node: do not snap or guess its owner.
+        if len(found) != 1 or found[0].material != material or found[0].lifecycle != "ACTIVE":
+            return unknown("이 표본 좌표와 mesh 재료에 유일한 ACTIVE 소유 cell이 없습니다.")
+        try:
+            result = state.net_doping_at(x_um, y_um, owning_cell=found[0])
+            values = (result.donor_concentration, result.acceptor_concentration, result.net_doping)
+            if result.physics_status is not None or any(v is None or not math.isfinite(v) for v in values):
+                return result if result.physics_status is not None else unknown("유한한 활성 도핑 값이 없습니다.")
+            return result
+        except Exception:
+            return unknown("canonical 도핑 표본 조회에 실패했습니다.")
+
+    def _doping_color_at(self, x_um, y_um, material):
+        """Sign at one mesh-centroid sample; not a concentration contour."""
+        result = self._canvas_doping_query(x_um, y_um, material)
+        if result.physics_status is not None or result.net_doping is None:
+            return _DOPING_UNSUPPORTED_MARKER
+        if result.net_doping == 0.0:
+            return _DOPING_ZERO_MARKER
+        return "#2f6fed" if result.net_doping > 0 else "#e0393e"
 
     def _doping_color_segments(self, region_name, x_min_um, x_max_um, n_buckets=60):
         """(x_lo_um, x_hi_um, color) segments covering [x_min_um,

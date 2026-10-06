@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nh-canvas-contract-005",
- "profile": "e6nh_canvas_contract",
+ "request_id": "e6ni-depth-doping-001",
+ "profile": "e6ni_depth_doping",
  "params": {},
- "note": "Fixed 1D PN GUI, actual solve, physical checks, unchanged wafer and existing gates."
+ "note": "Actual 2D canonical depth display on mesh triangles; sign samples only, existing physical gates unchanged."
 }

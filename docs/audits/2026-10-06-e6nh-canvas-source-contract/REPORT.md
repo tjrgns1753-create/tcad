@@ -153,13 +153,13 @@ index 38e00d8..4834124 100644
 +        file missing, no triangle cells, degenerate bounds, etc.). The
 +        caller reports unavailable geometry instead of inventing a
 +        replacement substrate. This must never raise.
- 
+
          mesh_path : which mesh to draw. Defaults to self.last_final_mesh
          (the real current wafer) when None -- every existing caller
 @@ -7805,7 +7805,11 @@ class TCADApplication(tk.Tk):
                  return False
              module = viennaps_session.require_viennaps()
- 
+
 -            mesh = meshio.read(mesh_path)
 +            try:
 +                mesh = meshio.read(mesh_path)
@@ -171,7 +171,7 @@ index 38e00d8..4834124 100644
                  return False
 @@ -7814,8 +7818,9 @@ class TCADApplication(tk.Tk):
              triangle_data = triangle_block.data
- 
+
              points = mesh.points
 -            xs = [p[0] for p in points]
 -            ys = [p[1] for p in points]
@@ -183,17 +183,17 @@ index 38e00d8..4834124 100644
              if (x_max - x_min) < 1e-9 or (x1 - x0) <= 0:
 @@ -7862,7 +7867,7 @@ class TCADApplication(tk.Tk):
              material_names = {}
- 
+
              def to_canvas(node_idx):
 -                px, py = points[node_idx][0], points[node_idx][1]
 +                px, py = float(points[node_idx][0]), float(points[node_idx][1])
                  return x0 + (px - x_min) * x_scale, surface_y - py * y_scale
- 
+
              by_material = {}
 @@ -8220,6 +8225,31 @@ class TCADApplication(tk.Tk):
- 
+
          self.redraw()
- 
+
 +    def _canvas_state_note(self):
 +        """Disclosure only; never grants a device-physics capability."""
 +        if self._viewing_step_index is not None:
@@ -220,14 +220,14 @@ index 38e00d8..4834124 100644
 +        )
 +
      def redraw(self):
- 
+
          canvas = self.canvas
 @@ -8227,6 +8257,7 @@ class TCADApplication(tk.Tk):
          canvas.delete(
              "all"
          )
 +        self._viewer_scale = None
- 
+
          width = max(
              canvas.winfo_width(),
 @@ -8277,7 +8308,10 @@ class TCADApplication(tk.Tk):
@@ -240,7 +240,7 @@ index 38e00d8..4834124 100644
 +                self._draw_canvas_unavailable(canvas, x0, width, "선택한 이력 mesh가 없습니다.")
 +                return
              display_mesh = self.flow_step_meshes[self._viewing_step_index]
- 
+
          # Whether a REAL PHYSICAL mesh exists to draw -- mesh existence
 @@ -8289,13 +8323,19 @@ class TCADApplication(tk.Tk):
          # even though nothing was actually lost. Litho-stage visuals
@@ -257,7 +257,7 @@ index 38e00d8..4834124 100644
 +        if mesh_expected and not real_mesh_available:
 +            self._draw_canvas_unavailable(canvas, x0, width, "공정/이력 mesh 파일을 찾을 수 없습니다.")
 +            return
- 
+
          if not real_mesh_available:
 +            canvas.create_text(
 +                x0, 55, anchor="nw", width=width - 140,
@@ -270,7 +270,7 @@ index 38e00d8..4834124 100644
 @@ -8551,80 +8591,16 @@ class TCADApplication(tk.Tk):
                      fill="#155ea8",
                  )
- 
+
 -        # Prefer drawing the actual ViennaPS mesh (real geometry, e.g.
 -        # isotropic undercut) when one is available from the last
 -        # successful run_etch(). Falls back to the placeholder rectangle
@@ -352,7 +352,7 @@ index 38e00d8..4834124 100644
 +                text=self._canvas_state_note(), fill=Tokens.FG_DIM,
 +                font=(Tokens.FONT_UI, 9),
              )
- 
+
          # Current PR/mask, drawn as real solid material -- on top of the
 @@ -8995,6 +8971,7 @@ class TCADApplication(tk.Tk):
          self.last_doped_result = None

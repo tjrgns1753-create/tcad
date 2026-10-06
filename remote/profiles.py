@@ -11,6 +11,17 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6ni_depth_doping": {
+        "description": "Actual mesh-centroid canonical 2D doping display and depth hover, existing gates unchanged.",
+        "entry": "docs/audits/2026-10-06-e6ni-depth-doping-display/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 400, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "docs/audits/2026-10-06-e6ni-depth-doping-display/PLAN.md",
+                   "docs/audits/2026-10-06-e6ni-depth-doping-display/check_depth.py",
+                   "docs/audits/2026-10-06-e6ni-depth-doping-display/run_checks.py",
+                   "tests/unit/test_gui_depth_doping_mock.py"],
+        "outputs": [{"glob": "e6ni_out/**/*", "max_mb": 8}],
+        "regenerate": "Depth-aware Tk display on a ViennaPS virgin mesh; no implant or transport capability approval.",
+    },
     "e6nh_canvas_contract": {
         "description": "Actual current-wafer canvas geometry source and unsupported disclosure; gates unchanged.",
         "entry": "docs/audits/2026-10-06-e6nh-canvas-source-contract/run_checks.py",
