@@ -25,6 +25,8 @@ else:
     from tcad.characterization.interface import BiasPoint, validate_bias_point
     good = BiasPoint({'a': .1, 'b': 0.}, {'a': -1e-10, 'b': 1e-10})
     assert validate_bias_point(good, ('a', 'b')) is None
+    # Ideal gate voltage is present but there is no invented gate DD current.
+    assert validate_bias_point(BiasPoint({'a':.1,'b':0.,'gate':1.}, good.currents), ('a','b')) is None
     for point in (BiasPoint({}, {}), BiasPoint(good.voltages, good.currents, False),
                   BiasPoint(good.voltages, {'a': 1.}),
                   *[BiasPoint({'a': bad, 'b': 0.}, good.currents) for bad in (float('nan'), float('inf'))],

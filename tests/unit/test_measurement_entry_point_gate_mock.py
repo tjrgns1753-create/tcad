@@ -141,7 +141,10 @@ def _dc_operating_point(app, state, nodes):
     from tcad.mesh.pin import Pin
 
     fake = FakeDevsim(*zip(*nodes))
-    recorder = Recorder(SimpleNamespace(currents={"Source": -1.0e-6, "Drain": 1.0e-6, "Gate": 0.0}))
+    from tcad.characterization.interface import BiasPoint
+    recorder = Recorder(BiasPoint(
+        voltages={"Source": 0.0, "Drain": 0.1, "Gate": 1.0},
+        currents={"Source": -1.0e-6, "Drain": 1.0e-6}))
     app.wafer_state = state
     app.last_physics_status = None
     app.electrode_pins = [Pin(name="Source", role="Source", x_um=1.0, y_um=0.0),

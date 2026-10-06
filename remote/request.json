@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "request_id": "e6nj-measurement-validity-001",
+ "request_id": "e6nj-measurement-validity-002",
  "profile": "e6nj_measurement_validity",
  "params": {},
  "note": "Finite measurement input/output and failed DC retry export boundary; existing physical gates unchanged."

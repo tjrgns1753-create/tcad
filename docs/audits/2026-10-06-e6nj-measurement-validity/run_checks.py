@@ -13,6 +13,7 @@ def main():
     cases=[('gui',['docs/audits/2026-10-06-e6nj-measurement-validity/check_gui.py'],60),
            ('boundary',['tests/unit/test_measurement_validity_mock.py'],30),
            ('canonical_gate',['tests/unit/test_measurement_canonical_state_gate_mock.py'],30),
+           ('entry_gate',['tests/unit/test_measurement_entry_point_gate_mock.py'],60),
            ('existing_gui',['tests/integration/test_gui_current_unit_contract_real.py',str(out)],120)]
     records={}
     for name,args,budget in cases:
@@ -26,5 +27,4 @@ def main():
     return 0 if passed else 1
 
 if __name__=='__main__': raise SystemExit(main())
-
 
