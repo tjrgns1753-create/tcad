@@ -1,0 +1,37 @@
+{
+  "pass": true,
+  "solves": 3,
+  "readouts": {
+    "potential": {
+      "node_index": 0,
+      "xy_um": [
+        -1.0,
+        -0.5
+      ],
+      "raw_value": 0.3576447899345236,
+      "text": "X   -1.000 \u00b5m   Y   -0.500 \u00b5m   [\uac00\uae4c\uc6b4 \ud45c\uc2dc \ub178\ub4dc (-1.0000, -0.5000) \u00b5m: 3.576448e-01 V; \ubcf4\uac04 \uc544\ub2d8]"
+    },
+    "electron": {
+      "node_index": 0,
+      "xy_um": [
+        -1.0,
+        -0.5
+      ],
+      "raw_value": 1.000000000001e+16,
+      "text": "X   -1.000 \u00b5m   Y   -0.500 \u00b5m   [\uac00\uae4c\uc6b4 \ud45c\uc2dc \ub178\ub4dc (-1.0000, -0.5000) \u00b5m: 1.000000e+16 cm^-3; \ubcf4\uac04 \uc544\ub2d8]"
+    },
+    "hole": {
+      "node_index": 0,
+      "xy_um": [
+        -1.0,
+        -0.5
+      ],
+      "raw_value": 9999.99999999,
+      "text": "X   -1.000 \u00b5m   Y   -0.500 \u00b5m   [\uac00\uae4c\uc6b4 \ud45c\uc2dc \ub178\ub4dc (-1.0000, -0.5000) \u00b5m: 1.000000e+04 cm^-3; \ubcf4\uac04 \uc544\ub2d8]"
+    }
+  },
+  "reset_cleared": true,
+  "outside_no_value": true,
+  "stale_no_value": true,
+  "device_cleanup": true
+}
