@@ -1,0 +1,14 @@
+{
+  "pass": true,
+  "solves": 3,
+  "node_count": 73,
+  "file_sha256": "8111c300184eccc680938178e6112fc6e8152e2b4789cc1cdfa79d935df1056f",
+  "source_mesh_sha256": "ad1ad8a16d43fd2e0b57653258d9f6e92aff02154112df0fc732c95993eb5805",
+  "all_arrays_equal": true,
+  "all_contact_bias_currents_equal": true,
+  "result_deepcopied": true,
+  "stale_blocked_before_dialog": true,
+  "write_trace_hides_old_map": true,
+  "failed_retry_blocks_export": true,
+  "device_cleanup": true
+}
