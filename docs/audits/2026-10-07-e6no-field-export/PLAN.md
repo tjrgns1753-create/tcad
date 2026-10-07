@@ -9,6 +9,7 @@ current 단위 metadata, input mesh SHA와 GUI_SESSION_ONLY canonical 출처를 
 새 측정 시도·reset에서 필드와 연계 결과를 함께 지운다. mesh/state/pins/측정 설정
 불일치·이력 표시·없거나 실패한 결과는 저장 대화상자 전에 차단한다. 대화상자 후에도
 출처를 재검사한다. 단일 파일 임시 저장→os.replace로 완성본만 교체한다.
+측정 설정 변수 변경 시 redraw를 연결해 기존 지도도 즉시 미표시한다(추가 solve 없음).
 invalid 배열/길이/negative carrier/nonfinite/미수렴/voltage·unit·출처 누락은 저장 금지.
 내부 Python object id를 portable canonical proof로 저장하지 않는다.
 
