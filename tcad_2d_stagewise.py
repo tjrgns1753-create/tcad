@@ -1461,6 +1461,7 @@ class TCADApplication(tk.Tk):
         y_um = (surface_y - event.y) / y_scale
         readout = f"X {x_um:+8.3f} µm   Y {y_um:+8.3f} µm"
         readout += self._doping_unsupported_hover_note(x_um, y_um)
+        readout += getattr(self, "_measurement_field_hover_note", lambda event: "")(event)
         self.coord_var.set(readout)
 
     def _doping_unsupported_hover_note(self, x_um: float, y_um: float = 0.0) -> str:
@@ -8913,6 +8914,30 @@ class TCADApplication(tk.Tk):
         self.canvas.create_text((x0+x1)/2, surface_y-35, text=text, fill=Tokens.FG_MUTED,
                                 font=(Tokens.FONT_UI, 9), width=x1-x0-40, tags="solved_field_note")
 
+    def _measurement_field_hover_note(self, event):
+        """Read a nearby displayed node, not the field at the cursor coordinate."""
+        from tcad.characterization.node_fields import FIELD_NAMES, FIELD_UNITS, node_near_pixel
+        from tcad.characterization.source_context import source_context_matches
+        layer = self.viewer_layer_var.get()
+        if layer not in FIELD_NAMES or self._viewing_step_index is not None:
+            return ""
+        try:
+            fields = getattr(self, "_measurement_fields", None)
+            if fields is None or len(self.canvas.find_withtag("solved_field_node")) != len(fields.xy_um):
+                return ""
+            settings = (float(self.meas_voltage_var.get()), self.meas_axis_var.get(), self.meas_source_pin.get())
+            if (settings != getattr(self, "_measurement_fields_settings", None) or
+                    not source_context_matches(getattr(self, "_measurement_fields_context", None),
+                                               self.last_final_mesh, self.wafer_state, self.electrode_pins)):
+                return ""
+            node = node_near_pixel(fields, layer, self._viewer_scale, event.x, event.y)
+            if node is None:
+                return ""
+            x, y, value = node
+            return f"   [가까운 표시 노드 ({x:+.4f}, {y:+.4f}) µm: {value:.6e} {FIELD_UNITS[layer]}; 보간 아님]"
+        except (ValueError, TypeError, OverflowError):
+            return ""
+
     # --------------------------------------------------------
     # STAGES
     # --------------------------------------------------------
@@ -9051,6 +9076,10 @@ class TCADApplication(tk.Tk):
     # --------------------------------------------------------
 
     def reset(self):
+
+        self._measurement_fields = None
+        self._measurement_fields_context = None
+        self._measurement_fields_settings = None
 
         # A device left over from a RESOLVE click that never reached DC
         # OPERATING POINT would otherwise stay registered in DevSim and

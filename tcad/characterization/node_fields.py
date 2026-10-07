@@ -57,3 +57,18 @@ def field_samples(fields, layer):
         t = (v-lo)/(hi-lo) if hi > lo else .5
         return f"#{round(255*t):02x}40{round(255*(1-t)):02x}"
     return tuple((x, y, v, color(v)) for (x, y), v in zip(fields.xy_um, values)), lo, hi
+
+
+def node_near_pixel(fields, layer, transform, px, py, radius=3.0):
+    """Nearest displayed node inside a UI hit radius; never an interpolated value."""
+    samples, _, _ = field_samples(fields, layer)
+    cx0, xmin, xs, sy, ys = transform
+    if not all(math.isfinite(v) for v in (*transform, px, py, radius)) or xs <= 0 or ys <= 0 or radius <= 0:
+        raise ValueError("Invalid screen coordinate transform.")
+    nearest = None
+    best = radius * radius
+    for x, y, value, _ in samples:
+        distance = (cx0+(x-xmin)*xs-px)**2 + (sy-y*ys-py)**2
+        if distance <= best:
+            nearest, best = (x, y, value), distance
+    return nearest

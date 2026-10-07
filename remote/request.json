@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nm-node-fields-001",
- "profile": "e6nm_node_fields",
+ "request_id": "e6nn-field-hover-001",
+ "profile": "e6nn_field_hover",
  "params": {},
- "note": "Supported measurement node-field capture and sample display; gates and physical equations unchanged."
+ "note": "Read actual displayed node values on hover; reset releases the old snapshot."
 }
