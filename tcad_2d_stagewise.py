@@ -8354,6 +8354,8 @@ class TCADApplication(tk.Tk):
     def redraw(self):
 
         canvas = self.canvas
+        if hasattr(self, "coord_var"):
+            self.coord_var.set("")
 
         canvas.delete(
             "all"

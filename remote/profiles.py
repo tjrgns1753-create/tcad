@@ -19,6 +19,7 @@ PROFILES = {
                    "docs/audits/2026-10-07-e6no-field-export/PLAN.md", "docs/audits/2026-10-07-e6no-field-export/check_gui.py",
                    "docs/audits/2026-10-07-e6no-field-export/run_checks.py", "tests/unit/test_node_field_export_mock.py",
                    "tests/unit/test_node_field_hover_mock.py", "tests/unit/test_node_fields_mock.py",
+                   "docs/audits/2026-10-07-e6np-readout-invalidation/PLAN.md", "tests/unit/test_field_readout_invalidation_mock.py",
                    "tests/integration/test_gui_current_unit_contract_real.py", "tests/integration/test_uniform_resistor_dd_current_real.py"],
         "outputs": [{"glob": "e6no_out/**/*", "max_mb": 8}],
         "regenerate": "Actual supported uniform DD field export, not generic TCAD validation.",

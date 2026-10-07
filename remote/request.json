@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6no-field-export-001",
+ "request_id": "e6np-readout-invalidation-001",
  "profile": "e6no_field_export",
  "params": {},
- "note": "Export actual solved field arrays with their own bias/units/source; stale attempts blocked."
+ "note": "Reuse actual field export control and verify stale numeric readout clears on redraw/reset."
 }

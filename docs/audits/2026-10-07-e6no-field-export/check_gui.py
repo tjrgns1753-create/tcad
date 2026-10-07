@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import sys
+from types import SimpleNamespace as S
 ROOT=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/'tests/integration'))
 def main():
@@ -41,17 +42,25 @@ def main():
         assert payload['source_evidence']['mesh_sha256']==hashlib.sha256(Path(path).read_bytes()).hexdigest()
         before=target.read_bytes()
         app.viewer_layer_var.set('potential');app.redraw();assert len(app.canvas.find_withtag('solved_field_node'))==73
+        cx0,xmin,xs,sy,ys=app._viewer_scale;x,y=f.xy_um[0]
+        app._on_canvas_motion(S(x=cx0+(x-xmin)*xs,y=sy-y*ys))
+        readout=app.coord_var.get();assert '보간 아님' in readout
         app.meas_voltage_var.set('.002')  # write trace must invalidate without manual redraw
         assert not app.canvas.find_withtag('solved_field_node')
+        assert app.coord_var.get()==''
         app._on_export_node_fields_clicked();assert len(calls)==1 and target.read_bytes()==before
         app.meas_voltage_var.set('nan');app.run_measurement()
         assert app._measurement_fields_result is app._measurement_fields is None
         app._on_export_node_fields_clicked();assert len(calls)==1
+        # Deliberately restore the old real readout as a UI fault fixture;
+        # resetting must clear it even with no further mouse event.
+        app.coord_var.set(readout);app.reset();assert app.coord_var.get()==''
         assert not list(out.glob('*.tmp'))
         (out/'export.json').write_text(json.dumps({'pass':True,'solves':obs.solves,'node_count':73,
             'file_sha256':hashlib.sha256(before).hexdigest(),'source_mesh_sha256':payload['source_evidence']['mesh_sha256'],
             'all_arrays_equal':True,'all_contact_bias_currents_equal':True,'result_deepcopied':True,
             'stale_blocked_before_dialog':True,'write_trace_hides_old_map':True,'failed_retry_blocks_export':True,
+            'redraw_cleared_readout':True,'reset_fault_fixture_cleared_readout':True,
             'device_cleanup':not dv.get_device_list()},indent=2),encoding='utf-8')
         print('PASS actual field export arrays/bias/units/source; trace clears stale display; failed retry/dialog blocked')
     finally:

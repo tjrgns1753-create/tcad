@@ -13,6 +13,7 @@ def main():
            ('pure',['tests/unit/test_node_field_export_mock.py'],30),
            ('hover',['tests/unit/test_node_field_hover_mock.py'],30),
            ('snapshot',['tests/unit/test_node_fields_mock.py'],30),
+           ('readout',['tests/unit/test_field_readout_invalidation_mock.py'],30),
            ('gate_control',['tests/integration/test_gui_current_unit_contract_real.py',str(out)],120)]
     records={}
     for name,args,budget in cases:
