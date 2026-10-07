@@ -4,7 +4,6 @@ import json
 import os
 from pathlib import Path
 import sys
-import tempfile
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[3]
 sys.path[:0]=[str(ROOT),str(ROOT/'tests/unit')]
@@ -24,18 +23,17 @@ def main():
         assert result.metadata['source_evidence']['mesh_sha256']==hashlib.sha256(Path(M.__file__).read_bytes()).hexdigest()
         assert 'NOT_GENERAL_PHYSICS_APPROVAL' in result.metadata['verification_scope']
         assert 'A/cm' in log
-        with tempfile.TemporaryDirectory() as tmp:
-            csv=Path(tmp)/'한국어.csv'
-            with patch('tkinter.filedialog.asksaveasfilename',return_value=str(csv)):
-                app._on_export_result_clicked()
-            companion=Path(str(csv)+'.metadata.json')
-            payload=json.loads(companion.read_text(encoding='utf-8'))
-            assert payload['metadata']['export_evidence']['csv_sha256']==hashlib.sha256(csv.read_bytes()).hexdigest()
-            assert payload['points'][0]['currents']==point.currents
-            assert payload['points'][0]['voltages']['Gate']==1.
-            assert payload['points'][0]['converged'] is True
-            assert all('A_per_cm' in s for s in csv.read_text(encoding='utf-8').splitlines()[0].split(',')[1:])
         out=ROOT/'e6nl_out';out.mkdir(exist_ok=True)
+        csv=out/'한국어.csv'
+        with patch('tkinter.filedialog.asksaveasfilename',return_value=str(csv)):
+            app._on_export_result_clicked()
+        companion=Path(str(csv)+'.metadata.json')
+        payload=json.loads(companion.read_text(encoding='utf-8'))
+        assert payload['metadata']['export_evidence']['csv_sha256']==hashlib.sha256(csv.read_bytes()).hexdigest()
+        assert payload['points'][0]['currents']==point.currents
+        assert payload['points'][0]['voltages']['Gate']==1.
+        assert payload['points'][0]['converged'] is True
+        assert all('A_per_cm' in s for s in csv.read_text(encoding='utf-8').splitlines()[0].split(',')[1:])
         (out/'export.json').write_text(json.dumps({'pass':True,'current_unit':'A/cm','source_sha_verified':True,
             'csv_sha_verified':True,'full_bias_preserved':True,'gui_mock_dc':'SYNTHETIC_NOT_PHYSICS_EVIDENCE'},indent=2),encoding='utf-8')
         print('PASS: GUI DC unit/source/log + companion hash/full bias; DC result is mock')
