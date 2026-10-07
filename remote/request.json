@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nn-field-hover-001",
- "profile": "e6nn_field_hover",
+ "request_id": "e6no-field-export-001",
+ "profile": "e6no_field_export",
  "params": {},
- "note": "Read actual displayed node values on hover; reset releases the old snapshot."
+ "note": "Export actual solved field arrays with their own bias/units/source; stale attempts blocked."
 }

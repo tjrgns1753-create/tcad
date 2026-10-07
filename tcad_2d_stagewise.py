@@ -1360,11 +1360,9 @@ class TCADApplication(tk.Tk):
 
     #: Visualization layers for the center viewer. "geometry" and
     #: "doping" read data this GUI already has on hand (the real mesh /
-    #: self.last_doped_result). "potential"/"electron"/"hole" need
-    #: node-level DevSim field data the measurement worker does not
-    #: serialize back today (only terminal currents) -- the toggle exists
-    #: so the surface is complete, but shows an honest placeholder rather
-    #: than fabricated field data until that plumbing exists.
+    #: self.last_doped_result). "potential"/"electron"/"hole" show real
+    #: solved node samples retained by the supported two-terminal measurement.
+    #: Missing/stale/over-budget fields remain explicitly unavailable.
     _VIEWER_LAYERS = ("geometry", "doping", "potential", "electron", "hole")
     _VIEWER_LAYER_LABELS = {
         "geometry": "GEOMETRY", "doping": "DOPING", "potential": "POTENTIAL",
@@ -5621,6 +5619,10 @@ class TCADApplication(tk.Tk):
         self.meas_voltage_var = self._field(
             frame, "Source voltage (V)", 0.3,
         )
+        # Editing requested bias/contacts must hide an older computed map
+        # immediately, not only after clicking MEASURE or moving the cursor.
+        for variable in (self.meas_voltage_var, self.meas_axis_var, self.meas_source_pin):
+            variable.trace_add("write", lambda *_: self.redraw())
 
         self.measure_button = ttk.Button(
             frame,
@@ -5633,6 +5635,8 @@ class TCADApplication(tk.Tk):
             padx=12,
             pady=(12, 3),
         )
+        ttk.Button(frame, text="실제 노드 필드 저장 (JSON)",
+                   command=self._on_export_node_fields_clicked).pack(fill="x", padx=12, pady=3)
 
         ttk.Separator(frame).pack(fill="x", pady=8)
         ttk.Label(frame, text="별도 기준 문제: 현재 웨이퍼와 무관한 고정 1D PN.\n"
@@ -5773,6 +5777,7 @@ class TCADApplication(tk.Tk):
         # Any new attempt invalidates the previous field, including bad input.
         self._measurement_fields = None
         self._measurement_fields_context = None
+        self._measurement_fields_result = None
         getattr(self, "redraw", lambda: None)()
         import math
         try:
@@ -5979,6 +5984,8 @@ class TCADApplication(tk.Tk):
             from tcad.characterization.node_fields import capture_node_fields
             try:
                 fields = capture_node_fields(module, imported.device, region, length_scale_to_cm)
+                from copy import deepcopy
+                field_result = deepcopy(result)
             except Exception as exc:
                 # Field export failure does not invalidate an already-validated
                 # terminal current. It never leaves an older field in place.
@@ -5987,6 +5994,7 @@ class TCADApplication(tk.Tk):
                 if source_context_matches(field_context, self.last_final_mesh, self.wafer_state, self.electrode_pins):
                     self._measurement_fields = fields
                     self._measurement_fields_context = field_context
+                    self._measurement_fields_result = field_result
                     self._measurement_fields_settings = (voltage, axis, self.meas_source_pin.get())
         except UnsupportedDopingState as exc:
 
@@ -8938,6 +8946,39 @@ class TCADApplication(tk.Tk):
         except (ValueError, TypeError, OverflowError):
             return ""
 
+    def _on_export_node_fields_clicked(self):
+        """Export only the successful field's own bias and current wafer source."""
+        from tcad.characterization.source_context import source_context_matches
+        from tcad.characterization.node_fields import save_node_field_evidence
+        def matches():
+            try:
+                return (self._viewing_step_index is None and
+                    (float(self.meas_voltage_var.get()), self.meas_axis_var.get(), self.meas_source_pin.get()) ==
+                        getattr(self, "_measurement_fields_settings", None) and
+                    getattr(self, "_measurement_fields", None) is not None and
+                    getattr(self, "_measurement_fields_result", None) is not None and
+                    source_context_matches(getattr(self, "_measurement_fields_context", None),
+                                           self.last_final_mesh, self.wafer_state, self.electrode_pins))
+            except (ValueError, TypeError, OverflowError):
+                return False
+        if not matches():
+            self._notify_error("필드 저장", "현재 웨이퍼와 일치하는 성공한 노드 측정 결과가 없습니다. 파일을 저장하지 않습니다.")
+            return
+        path = filedialog.asksaveasfilename(title="실제 노드 필드 저장", defaultextension=".json",
+                                          filetypes=[("Node field evidence", "*.json")])
+        if not path:
+            return
+        if not matches():
+            self._notify_error("필드 저장", "파일 선택 중 웨이퍼 또는 측정 설정이 바뀌었습니다. 저장하지 않습니다.")
+            return
+        try:
+            save_node_field_evidence(self._measurement_fields, self._measurement_fields_result,
+                                     self._measurement_fields_context, path)
+        except Exception as exc:
+            self._notify_error("필드 저장", f"노드 필드 증거 저장 실패: {exc}")
+            return
+        self._log(f"\n실제 노드 필드 저장: {path} (보간 없음; 일반 TCAD 물리 승인 파일 아님)\n")
+
     # --------------------------------------------------------
     # STAGES
     # --------------------------------------------------------
@@ -9080,6 +9121,7 @@ class TCADApplication(tk.Tk):
         self._measurement_fields = None
         self._measurement_fields_context = None
         self._measurement_fields_settings = None
+        self._measurement_fields_result = None
 
         # A device left over from a RESOLVE click that never reached DC
         # OPERATING POINT would otherwise stay registered in DevSim and

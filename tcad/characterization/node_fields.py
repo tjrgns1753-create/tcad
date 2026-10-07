@@ -17,6 +17,20 @@ class NodeFields:
     hole: tuple
 
 
+def validate_node_fields(fields):
+    """Evidence validation, not a new physical model or mesh approval."""
+    if not isinstance(fields, NodeFields) or not fields.region or not 0 < len(fields.xy_um) <= MAX_CAPTURE_NODES:
+        raise ValueError("Invalid field snapshot or capture resource limit.")
+    for key in FIELD_NAMES:
+        values = getattr(fields, key)
+        if len(values) != len(fields.xy_um) or not all(math.isfinite(v) for v in values):
+            raise ValueError("Field array length/non-finite evidence error.")
+        if key != "potential" and any(v < 0 for v in values):
+            raise ValueError("Negative carrier concentration.")
+    if any(len(p) != 2 or not all(math.isfinite(v) for v in p) for p in fields.xy_um):
+        raise ValueError("Invalid node coordinates.")
+
+
 def capture_node_fields(module, device, region, length_scale_to_cm):
     """Caller must validate the successful bias point before calling.
 
@@ -42,7 +56,9 @@ def capture_node_fields(module, device, region, length_scale_to_cm):
     xy = tuple((a / scale, b / scale) for a, b in zip(x, arrays[1]))
     if not all(math.isfinite(v) for pair in xy for v in pair):
         raise ValueError("Converted coordinates are non-finite.")
-    return NodeFields(region, xy, *arrays[2:])
+    fields = NodeFields(region, xy, *arrays[2:])
+    validate_node_fields(fields)
+    return fields
 
 
 def field_samples(fields, layer):
@@ -57,6 +73,49 @@ def field_samples(fields, layer):
         t = (v-lo)/(hi-lo) if hi > lo else .5
         return f"#{round(255*t):02x}40{round(255*(1-t)):02x}"
     return tuple((x, y, v, color(v)) for (x, y), v in zip(fields.xy_um, values)), lo, hi
+
+
+def save_node_field_evidence(fields, result, context, path):
+    """Single atomic JSON replacement of actual fields plus bias/source evidence.
+
+    Caller must compare context against the current wafer before invoking.
+    GUI_SESSION_ONLY provenance is not a serialized canonical state/checkpoint.
+    """
+    from dataclasses import asdict
+    import json
+    import os
+    from pathlib import Path
+    import tempfile
+    from tcad.characterization.interface import validate_bias_point
+    from tcad.characterization.source_context import source_evidence
+    validate_node_fields(fields)
+    if len(result.points) != 1 or result.region != fields.region:
+        raise ValueError("Field export needs its own single-bias region result.")
+    point = result.points[0]
+    validate_bias_point(point)
+    if result.sweep_contact not in point.voltages:
+        raise ValueError("Field result lacks its sweep voltage.")
+    if (result.metadata.get("current_unit") != "A/cm" or result.metadata.get("device_dimension") != 2 or
+            result.metadata.get("current_normalization") != "per_out_of_plane_depth"):
+        raise ValueError("Field export is limited to established 2D current units.")
+    payload = {"schema": 1, "sampling": "ACTUAL_NODES_NO_INTERPOLATION", "node_count": len(fields.xy_um),
+               "units": {"xy_um": "um", **FIELD_UNITS}, "snapshot": asdict(fields),
+               "measurement": {"name": result.name, "region": result.region, "sweep_contact": result.sweep_contact,
+                   "metadata": result.metadata, "voltages": point.voltages, "currents": point.currents, "converged": point.converged},
+               "source_evidence": source_evidence(context), "physics_scope": "SUPPORTED_MEASUREMENT_NOT_GENERAL_TCAD_APPROVAL"}
+    data = json.dumps(payload, indent=2, ensure_ascii=False, allow_nan=False)
+    target = Path(path)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n", dir=target.parent,
+                                         prefix=".node_fields_", suffix=".tmp", delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(data)
+        os.replace(temporary, target)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+    return str(target)
 
 
 def node_near_pixel(fields, layer, transform, px, py, radius=3.0):

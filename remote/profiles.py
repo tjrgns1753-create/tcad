@@ -11,6 +11,18 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6no_field_export": {
+        "description": "Actual node arrays with single-bias units/source JSON; no model or gate change.",
+        "entry": "docs/audits/2026-10-07-e6no-field-export/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 350, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "tcad/characterization/node_fields.py", "tcad/characterization/source_context.py",
+                   "docs/audits/2026-10-07-e6no-field-export/PLAN.md", "docs/audits/2026-10-07-e6no-field-export/check_gui.py",
+                   "docs/audits/2026-10-07-e6no-field-export/run_checks.py", "tests/unit/test_node_field_export_mock.py",
+                   "tests/unit/test_node_field_hover_mock.py", "tests/unit/test_node_fields_mock.py",
+                   "tests/integration/test_gui_current_unit_contract_real.py", "tests/integration/test_uniform_resistor_dd_current_real.py"],
+        "outputs": [{"glob": "e6no_out/**/*", "max_mb": 8}],
+        "regenerate": "Actual supported uniform DD field export, not generic TCAD validation.",
+    },
     "e6nn_field_hover": {
         "description": "Exact displayed-node hover and reset; physical equations and gates unchanged.",
         "entry": "docs/audits/2026-10-07-e6nn-field-hover/run_checks.py",
