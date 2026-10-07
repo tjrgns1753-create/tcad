@@ -1,0 +1,173 @@
+diff --git a/tcad/characterization/node_fields.py b/tcad/characterization/node_fields.py
+new file mode 100644
+index 0000000..87571de
+--- /dev/null
++++ b/tcad/characterization/node_fields.py
+@@ -0,0 +1,59 @@
++"""Copy already-solved DEVSIM node values; no engine import or interpolation."""
++from dataclasses import dataclass
++import math
++
++FIELD_NAMES = {"potential": "Potential", "electron": "Electrons", "hole": "Holes"}
++FIELD_UNITS = {"potential": "V", "electron": "cm^-3", "hole": "cm^-3"}
++MAX_CAPTURE_NODES = 20_000
++MAX_DISPLAY_NODES = 2_000
++
++
++@dataclass(frozen=True)
++class NodeFields:
++    region: str
++    xy_um: tuple
++    potential: tuple
++    electron: tuple
++    hole: tuple
++
++
++def capture_node_fields(module, device, region, length_scale_to_cm):
++    """Caller must validate the successful bias point before calling.
++
++    Public API only; copies into immutable tuples independent of device lifetime.
++    Absence/invalidity is not zero and never triggers a new solve.
++    """
++    scale = float(length_scale_to_cm)
++    if not math.isfinite(scale) or scale <= 0:
++        raise ValueError("Invalid node-coordinate length scale.")
++    names = set(module.get_node_model_list(device=device, region=region))
++    if not {"x", "y", *FIELD_NAMES.values()} <= names:
++        raise ValueError("Required solved node fields are missing.")
++    read = lambda name: tuple(float(v) for v in module.get_node_model_values(
++        device=device, region=region, name=name))
++    x = read("x")
++    if not 0 < len(x) <= MAX_CAPTURE_NODES:
++        raise ValueError("Node field capture resource limit or empty region.")
++    arrays = [x, read("y"), *(read(name) for name in FIELD_NAMES.values())]
++    if any(len(a) != len(x) or not all(math.isfinite(v) for v in a) for a in arrays):
++        raise ValueError("Node field arrays differ in length or contain non-finite values.")
++    if any(v < 0 for a in arrays[3:] for v in a):
++        raise ValueError("Negative carrier concentration is not displayable.")
++    xy = tuple((a / scale, b / scale) for a, b in zip(x, arrays[1]))
++    if not all(math.isfinite(v) for pair in xy for v in pair):
++        raise ValueError("Converted coordinates are non-finite.")
++    return NodeFields(region, xy, *arrays[2:])
++
++
++def field_samples(fields, layer):
++    """All actual nodes, linear blue/red range. No decimation or interpolation."""
++    if not isinstance(fields, NodeFields) or layer not in FIELD_NAMES:
++        raise ValueError("No solved field snapshot.")
++    if len(fields.xy_um) > MAX_DISPLAY_NODES:
++        raise ValueError("Node display resource limit; no partial map shown.")
++    values = getattr(fields, layer)
++    lo, hi = min(values), max(values)
++    def color(v):
++        t = (v-lo)/(hi-lo) if hi > lo else .5
++        return f"#{round(255*t):02x}40{round(255*(1-t)):02x}"
++    return tuple((x, y, v, color(v)) for (x, y), v in zip(fields.xy_um, values)), lo, hi
+diff --git a/tcad_2d_stagewise.py b/tcad_2d_stagewise.py
+index f9df5dd..f8aa09a 100644
+--- a/tcad_2d_stagewise.py
++++ b/tcad_2d_stagewise.py
+@@ -5769,6 +5769,10 @@ class TCADApplication(tk.Tk):
+             return None
+ 
+     def run_measurement(self):
++        # Any new attempt invalidates the previous field, including bad input.
++        self._measurement_fields = None
++        self._measurement_fields_context = None
++        getattr(self, "redraw", lambda: None)()
+         import math
+         try:
+             voltage = float(self.meas_voltage_var.get())
+@@ -5828,6 +5832,9 @@ class TCADApplication(tk.Tk):
+         region = doped_result.doping.regions[0].region
+         kind = doped_result.doping.kind
+ 
++        from tcad.characterization.source_context import capture_source_context, source_context_matches
++        field_context = capture_source_context(self.last_final_mesh, self.wafer_state, self.electrode_pins)
++
+         from tcad.device.devsim.mesh_import import import_process_result
+         from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
+         from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
+@@ -5968,6 +5975,18 @@ class TCADApplication(tk.Tk):
+             if len(result.points) != 1:
+                 raise ValueError("Measurement must return exactly one bias point.")
+             validate_bias_point(result.points[0], (source_contact, gnd_contact))
++            from tcad.characterization.node_fields import capture_node_fields
++            try:
++                fields = capture_node_fields(module, imported.device, region, length_scale_to_cm)
++            except Exception as exc:
++                # Field export failure does not invalidate an already-validated
++                # terminal current. It never leaves an older field in place.
++                self._log(f"Node fields unavailable: {exc}\n")
++            else:
++                if source_context_matches(field_context, self.last_final_mesh, self.wafer_state, self.electrode_pins):
++                    self._measurement_fields = fields
++                    self._measurement_fields_context = field_context
++                    self._measurement_fields_settings = (voltage, axis, self.meas_source_pin.get())
+         except UnsupportedDopingState as exc:
+ 
+             # Tier 1-1: the central canonical-state gate refused this
+@@ -6018,6 +6037,7 @@ class TCADApplication(tk.Tk):
+         point = result.points[0]
+         source_i = point.currents[source_contact]
+         gnd_i = point.currents[gnd_contact]
++        self.redraw()
+ 
+         self.history.append(
+             f"Measurement: {source_contact}={voltage}V"
+@@ -8864,28 +8884,34 @@ class TCADApplication(tk.Tk):
+                         text="UV EXPOSURE", fill="#2e86de",
+                     )
+ 
+-        # POTENTIAL / ELECTRON / HOLE layers need per-node DevSim field
+-        # data (Potential/Electrons/Holes), which run_measurement's
+-        # worker does not serialize back to the GUI today -- only
+-        # terminal currents (see run_measurement / _make_measurement_panel).
+-        # Rather than silently ignoring the layer switch or fabricating
+-        # a fake field map, say plainly that the data isn't there yet.
+-        # This is the one honest limitation flagged in the redesign plan.
+         selected_layer = self.viewer_layer_var.get()
+         if selected_layer in ("potential", "electron", "hole"):
+-            T = Tokens
+-            canvas.create_rectangle(
+-                x0, surface_y - 20, x1, surface_y + 20,
+-                fill=T.BG_1, outline=T.LINE_STRONG,
+-            )
+-            canvas.create_text(
+-                (x0 + x1) / 2, surface_y,
+-                text=f"{self._VIEWER_LAYER_LABELS[selected_layer]} field data not "
+-                     "available — device measurement does not export per-node "
+-                     "field values yet (terminal currents only).",
+-                fill=T.FG_MUTED, font=(T.FONT_UI, 9), justify="center",
+-                width=x1 - x0 - 40,
+-            )
++            self._draw_measurement_field(selected_layer, x0, x1, surface_y)
++
++    def _draw_measurement_field(self, layer, x0, x1, surface_y):
++        """Display actual solved node samples only, on the current wafer."""
++        from tcad.characterization.source_context import source_context_matches
++        from tcad.characterization.node_fields import field_samples, FIELD_UNITS
++        try:
++            settings = (float(self.meas_voltage_var.get()), self.meas_axis_var.get(), self.meas_source_pin.get())
++            if (self._viewing_step_index is not None or
++                    settings != getattr(self, "_measurement_fields_settings", None) or
++                    not source_context_matches(getattr(self, "_measurement_fields_context", None),
++                                               self.last_final_mesh, self.wafer_state, self.electrode_pins)):
++                raise ValueError("No matching current-wafer measurement; remeasure to obtain node fields.")
++            samples, lo, hi = field_samples(getattr(self, "_measurement_fields", None), layer)
++            if not self._viewer_scale:
++                raise ValueError("No current mesh coordinate transform.")
++            cx0, xmin, xs, sy, ys = self._viewer_scale
++            for x, y, value, color in samples:
++                cx, cy = cx0 + (x-xmin)*xs, sy-y*ys
++                self.canvas.create_oval(cx-2, cy-2, cx+2, cy+2, fill=color, outline=color, tags="solved_field_node")
++            text = (f"{layer}: {len(samples)} actual node samples; linear blue={lo:.4e}, red={hi:.4e} {FIELD_UNITS[layer]}. "
++                    "No interpolation; selected measurement bias only.")
++        except (ValueError, TypeError, OverflowError) as exc:
++            text = f"Field unavailable: {exc}"
++        self.canvas.create_text((x0+x1)/2, surface_y-35, text=text, fill=Tokens.FG_MUTED,
++                                font=(Tokens.FONT_UI, 9), width=x1-x0-40, tags="solved_field_note")
+ 
+     # --------------------------------------------------------
+     # STAGES
+

@@ -1,0 +1,162 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-07T04:12:12.233024+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nm-node-fields-001",
+  "profile": "e6nm_node_fields",
+  "params": {},
+  "note": "Supported measurement node-field capture and sample display; gates and physical equations unchanged."
+ },
+ "profile": "e6nm_node_fields",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "55736a81cd510a85fa97873b7252849d7213563ab3b0a20c71b0896f4b3632b4",
+   "bytes": 412275
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "f81869b1ac7ecf50c524230b45f169835bbd9f03aa5d334d2d661577d99741b6",
+   "bytes": 2732
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "16eb8d75591f866cb9f689714e29f396932db247361c4ac4b66773dbf48ec8a1",
+   "bytes": 1880
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6nm-node-fields/PLAN.md",
+   "sha256": "a97a8955548f80f0ab8c8e642a48971a753b79ed76647942b4f900bac1a58e5e",
+   "bytes": 1797
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6nm-node-fields/check_gui.py",
+   "sha256": "1da2f7937ac3fac2fdd7acda3c24fa72bfdd5087f6c8aa3c572bbf2069c7f907",
+   "bytes": 4002
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6nm-node-fields/run_checks.py",
+   "sha256": "16385ea87cd69c14a45abca016c6f3941d032d620cd5950aac4ad764a1a2a633",
+   "bytes": 1626
+  },
+  {
+   "path": "tests/unit/test_node_fields_mock.py",
+   "sha256": "8483bc4506d9fcc420d1e96cd02fda846f1fe43eea85680fa15552724eb969e7",
+   "bytes": 3637
+  },
+  {
+   "path": "tests/integration/test_gui_current_unit_contract_real.py",
+   "sha256": "a58478f3a8604dcd948ad2de917c13e515fd2782be269ff9ea4c12b415b2ea42",
+   "bytes": 7802
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  }
+ ],
+ "request_sha256": "9353c3dc4a638e2a36115f09948d5cbe0b9ce1149455aa3f542414b1e8baa1ff",
+ "source": {
+  "github_sha": "1b03e34fd3a80eb830ceec1c97124bf5c61ec18e",
+  "git_head": "1b03e34fd3a80eb830ceec1c97124bf5c61ec18e",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37570252227",
+  "run_number": "61",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-07-e6nm-node-fields/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-07T04:12:18.994207+00:00",
+ "duration_s": 6.761,
+ "outputs": [
+  {
+   "path": "e6nm_out/entry_gate.log",
+   "bytes": 971,
+   "sha256": "990d027c1463f9d5275e4a93cac0da4c5c7659850b6342c198c30f9735a0d314"
+  },
+  {
+   "path": "e6nm_out/fields.json",
+   "bytes": 10217,
+   "sha256": "b202140955d94eec1961ad8fdfdb08eccbb29ae38f1b826e03b794be6200779b"
+  },
+  {
+   "path": "e6nm_out/fields.log",
+   "bytes": 4371,
+   "sha256": "a221e7ce805e194b1e83f3e4488d003a2509684f77a712cdcdecfa4eca1c0610"
+  },
+  {
+   "path": "e6nm_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6nm_out/pure.log",
+   "bytes": 87,
+   "sha256": "e8bd0c6b5c6b75001b58305314ffeba553c3d074d095f5ba0871a2ce306da959"
+  },
+  {
+   "path": "e6nm_out/tests.json",
+   "bytes": 2490,
+   "sha256": "b26caf3c8c862ef38e21e5550dc42423bf757d36a0adb84e2ce54d9d5c914562"
+  },
+  {
+   "path": "e6nm_out/uniform_control.log",
+   "bytes": 11034,
+   "sha256": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+  },
+  {
+   "path": "e6nm_out/validity.log",
+   "bytes": 75,
+   "sha256": "4d55f22252f818f0fcd72e4adf615f7414e5e367ffcf5a89ee3b2f95821ca16a"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Actual uniform DD field snapshot and Tk node-sample map, not general PN approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "d3c5cd3f03f6f105b9d40d76bdb6ac4294462ab1c0c2cb30e0edab7a8021452e",
+  "bytes": 104
+ },
+ "redactions": {}
+}
