@@ -11,6 +11,19 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nm_node_fields": {
+        "description": "Preserve actual supported measurement node fields and display all-node samples; gates unchanged.",
+        "entry": "docs/audits/2026-10-07-e6nm-node-fields/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 350, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "tcad/characterization/node_fields.py", "tcad/characterization/source_context.py",
+                   "docs/audits/2026-10-07-e6nm-node-fields/PLAN.md",
+                   "docs/audits/2026-10-07-e6nm-node-fields/check_gui.py",
+                   "docs/audits/2026-10-07-e6nm-node-fields/run_checks.py",
+                   "tests/unit/test_node_fields_mock.py", "tests/integration/test_gui_current_unit_contract_real.py",
+                   "tests/integration/test_uniform_resistor_dd_current_real.py"],
+        "outputs": [{"glob": "e6nm_out/**/*", "max_mb": 8}],
+        "regenerate": "Actual uniform DD field snapshot and Tk node-sample map, not general PN approval.",
+    },
     "e6nl_export_evidence": {
         "description": "DC unit metadata and CSV companion evidence; no physical model changes.",
         "entry": "docs/audits/2026-10-07-e6nl-export-evidence/run_checks.py",

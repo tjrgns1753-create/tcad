@@ -5769,6 +5769,10 @@ class TCADApplication(tk.Tk):
             return None
 
     def run_measurement(self):
+        # Any new attempt invalidates the previous field, including bad input.
+        self._measurement_fields = None
+        self._measurement_fields_context = None
+        getattr(self, "redraw", lambda: None)()
         import math
         try:
             voltage = float(self.meas_voltage_var.get())
@@ -5827,6 +5831,9 @@ class TCADApplication(tk.Tk):
 
         region = doped_result.doping.regions[0].region
         kind = doped_result.doping.kind
+
+        from tcad.characterization.source_context import capture_source_context, source_context_matches
+        field_context = capture_source_context(self.last_final_mesh, self.wafer_state, self.electrode_pins)
 
         from tcad.device.devsim.mesh_import import import_process_result
         from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
@@ -5968,6 +5975,18 @@ class TCADApplication(tk.Tk):
             if len(result.points) != 1:
                 raise ValueError("Measurement must return exactly one bias point.")
             validate_bias_point(result.points[0], (source_contact, gnd_contact))
+            from tcad.characterization.node_fields import capture_node_fields
+            try:
+                fields = capture_node_fields(module, imported.device, region, length_scale_to_cm)
+            except Exception as exc:
+                # Field export failure does not invalidate an already-validated
+                # terminal current. It never leaves an older field in place.
+                self._log(f"Node fields unavailable: {exc}\n")
+            else:
+                if source_context_matches(field_context, self.last_final_mesh, self.wafer_state, self.electrode_pins):
+                    self._measurement_fields = fields
+                    self._measurement_fields_context = field_context
+                    self._measurement_fields_settings = (voltage, axis, self.meas_source_pin.get())
         except UnsupportedDopingState as exc:
 
             # Tier 1-1: the central canonical-state gate refused this
@@ -6018,6 +6037,7 @@ class TCADApplication(tk.Tk):
         point = result.points[0]
         source_i = point.currents[source_contact]
         gnd_i = point.currents[gnd_contact]
+        self.redraw()
 
         self.history.append(
             f"Measurement: {source_contact}={voltage}V"
@@ -8864,28 +8884,34 @@ class TCADApplication(tk.Tk):
                         text="UV EXPOSURE", fill="#2e86de",
                     )
 
-        # POTENTIAL / ELECTRON / HOLE layers need per-node DevSim field
-        # data (Potential/Electrons/Holes), which run_measurement's
-        # worker does not serialize back to the GUI today -- only
-        # terminal currents (see run_measurement / _make_measurement_panel).
-        # Rather than silently ignoring the layer switch or fabricating
-        # a fake field map, say plainly that the data isn't there yet.
-        # This is the one honest limitation flagged in the redesign plan.
         selected_layer = self.viewer_layer_var.get()
         if selected_layer in ("potential", "electron", "hole"):
-            T = Tokens
-            canvas.create_rectangle(
-                x0, surface_y - 20, x1, surface_y + 20,
-                fill=T.BG_1, outline=T.LINE_STRONG,
-            )
-            canvas.create_text(
-                (x0 + x1) / 2, surface_y,
-                text=f"{self._VIEWER_LAYER_LABELS[selected_layer]} field data not "
-                     "available — device measurement does not export per-node "
-                     "field values yet (terminal currents only).",
-                fill=T.FG_MUTED, font=(T.FONT_UI, 9), justify="center",
-                width=x1 - x0 - 40,
-            )
+            self._draw_measurement_field(selected_layer, x0, x1, surface_y)
+
+    def _draw_measurement_field(self, layer, x0, x1, surface_y):
+        """Display actual solved node samples only, on the current wafer."""
+        from tcad.characterization.source_context import source_context_matches
+        from tcad.characterization.node_fields import field_samples, FIELD_UNITS
+        try:
+            settings = (float(self.meas_voltage_var.get()), self.meas_axis_var.get(), self.meas_source_pin.get())
+            if (self._viewing_step_index is not None or
+                    settings != getattr(self, "_measurement_fields_settings", None) or
+                    not source_context_matches(getattr(self, "_measurement_fields_context", None),
+                                               self.last_final_mesh, self.wafer_state, self.electrode_pins)):
+                raise ValueError("No matching current-wafer measurement; remeasure to obtain node fields.")
+            samples, lo, hi = field_samples(getattr(self, "_measurement_fields", None), layer)
+            if not self._viewer_scale:
+                raise ValueError("No current mesh coordinate transform.")
+            cx0, xmin, xs, sy, ys = self._viewer_scale
+            for x, y, value, color in samples:
+                cx, cy = cx0 + (x-xmin)*xs, sy-y*ys
+                self.canvas.create_oval(cx-2, cy-2, cx+2, cy+2, fill=color, outline=color, tags="solved_field_node")
+            text = (f"{layer}: {len(samples)} actual node samples; linear blue={lo:.4e}, red={hi:.4e} {FIELD_UNITS[layer]}. "
+                    "No interpolation; selected measurement bias only.")
+        except (ValueError, TypeError, OverflowError) as exc:
+            text = f"Field unavailable: {exc}"
+        self.canvas.create_text((x0+x1)/2, surface_y-35, text=text, fill=Tokens.FG_MUTED,
+                                font=(Tokens.FONT_UI, 9), width=x1-x0-40, tags="solved_field_note")
 
     # --------------------------------------------------------
     # STAGES
