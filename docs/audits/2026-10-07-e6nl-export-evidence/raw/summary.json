@@ -1,0 +1,167 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-07T03:10:09.701083+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nl-export-evidence-002",
+  "profile": "e6nl_export_evidence",
+  "params": {},
+  "note": "DC units and CSV/JSON evidence companion; gates and physical equations unchanged."
+ },
+ "profile": "e6nl_export_evidence",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "ddf0acbb1ea3ea8fcc6621d7bb5b97610614c03001fd05da90fd87e5c3be9697",
+   "bytes": 410156
+  },
+  {
+   "path": "tcad/characterization/io.py",
+   "sha256": "138cf14f459168f11d9d03867753c783f4c9c03243eeb56250193d80848a71f0",
+   "bytes": 4512
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "16eb8d75591f866cb9f689714e29f396932db247361c4ac4b66773dbf48ec8a1",
+   "bytes": 1880
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6nl-export-evidence/PLAN.md",
+   "sha256": "f910ac18ce8493f72a8a4c7daf068658f12caf52f06d444475205d7dd83fceeb",
+   "bytes": 1326
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6nl-export-evidence/check_gui.py",
+   "sha256": "78c0fb90789b58f340a0614fc925c530374761c1f538ec1f95a7fdc2a65451a1",
+   "bytes": 2323
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6nl-export-evidence/run_checks.py",
+   "sha256": "7fb4acedcec6ceee5bec9400714810fedbb46a15d6407ec0508f21fb48280d8d",
+   "bytes": 1663
+  },
+  {
+   "path": "tests/unit/test_measurement_export_evidence_mock.py",
+   "sha256": "114a8032c4a015892a61f5173731c101505153b95d2191190f8c786bb3a2e8c8",
+   "bytes": 2916
+  },
+  {
+   "path": "tests/unit/test_measurement_entry_point_gate_mock.py",
+   "sha256": "a3f5362ee705eefe8e2941b9351fd24b44a6ccdf73b1b2421aaf3ae93b74c2fa",
+   "bytes": 16140
+  }
+ ],
+ "request_sha256": "972044f16aef245dfb90c06d78754b84ae6f59735b4f9d6c0134d326626308f8",
+ "source": {
+  "github_sha": "84eb856f19db6e635d28845dfec13e7b2748138a",
+  "git_head": "84eb856f19db6e635d28845dfec13e7b2748138a",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37565421867",
+  "run_number": "60",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-07-e6nl-export-evidence/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-07T03:10:20.472978+00:00",
+ "duration_s": 10.772,
+ "outputs": [
+  {
+   "path": "e6nl_out/bundle.log",
+   "bytes": 102,
+   "sha256": "760039f39d5db11ed0f546a80cfb675c24c67c3adf5bc9ccf81c5b8c6c12cbd7"
+  },
+  {
+   "path": "e6nl_out/entry_gate.log",
+   "bytes": 971,
+   "sha256": "990d027c1463f9d5275e4a93cac0da4c5c7659850b6342c198c30f9735a0d314"
+  },
+  {
+   "path": "e6nl_out/existing_gui.log",
+   "bytes": 11034,
+   "sha256": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+  },
+  {
+   "path": "e6nl_out/export.json",
+   "bytes": 192,
+   "sha256": "bcc0b59cd13cdea3c024ea9fab170bf092b66fc7c76d79d9f1aa618b5de74cbd"
+  },
+  {
+   "path": "e6nl_out/export.log",
+   "bytes": 171,
+   "sha256": "86249c3f2c6b5d607b9516d396c7856a3219141b713295a5530ec553456e97f2"
+  },
+  {
+   "path": "e6nl_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6nl_out/tests.json",
+   "bytes": 2508,
+   "sha256": "14c8e7ab0caa8e28b74df18258bf5a845a842579b2ed601540c7ce958eed37d3"
+  },
+  {
+   "path": "e6nl_out/units.log",
+   "bytes": 41,
+   "sha256": "72edfd436068f55f46aa42204e391a8209b31f1b8c27b95d8a3cdbd6576fb92d"
+  },
+  {
+   "path": "e6nl_out/\ud55c\uad6d\uc5b4.csv",
+   "bytes": 70,
+   "sha256": "14e8db1205b131321ec6cb4c5a42750ec91506afcc184430067c6ed26d02adf2"
+  },
+  {
+   "path": "e6nl_out/\ud55c\uad6d\uc5b4.csv.metadata.json",
+   "bytes": 1912,
+   "sha256": "c219003d64ad41a93a8e84724a6b14364268770cd5e09d5a18a598ce9edcf8a6"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "GUI mock DC export wiring and actual existing uniform DD current control; no MOSFET approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "dcfb961b9c726cd3ed4734dd5703f826aece1f7f3a277dfaee0ea54d3380c932",
+  "bytes": 100
+ },
+ "redactions": {}
+}

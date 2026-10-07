@@ -1,0 +1,61 @@
+{
+  "name": "dc_operating_point",
+  "device": "dc_dev",
+  "region": "Si",
+  "sweep_contact": "Drain",
+  "metadata": {
+    "drain_voltage": 0.1,
+    "gate_voltage": 1.0,
+    "body_voltage": 0.0,
+    "current_unit": "A/cm",
+    "current_normalization": "per_out_of_plane_depth",
+    "device_dimension": 2,
+    "current_convention": "DevSim 2D device convention: every current/charge/capacitance value in this result is PER UNIT DEPTH in the unmodeled 3rd dimension (DevSim implicitly assumes 1cm of device depth out-of-plane for a 2D device) -- NOT the total value of a real device with a specific physical width. To get a real device's actual current/charge, multiply by that device's real depth in cm (e.g. a real 1um-wide device: multiply by 1e-4).",
+    "source_evidence": {
+      "mesh_sha256": "a3f5362ee705eefe8e2941b9351fd24b44a6ccdf73b1b2421aaf3ae93b74c2fa",
+      "canonical_record": "GUI_SESSION_ONLY",
+      "pins": [
+        {
+          "name": "Source",
+          "role": "Source",
+          "x_um": 1.0,
+          "y_um": 0.0,
+          "target_region": null
+        },
+        {
+          "name": "Drain",
+          "role": "Drain",
+          "x_um": 3.0,
+          "y_um": 0.0,
+          "target_region": null
+        },
+        {
+          "name": "Gate",
+          "role": "Gate",
+          "x_um": 2.0,
+          "y_um": 0.1,
+          "target_region": null
+        }
+      ]
+    },
+    "verification_scope": "INPUT_SOURCE_MATCH_ONLY_NOT_GENERAL_PHYSICS_APPROVAL",
+    "export_evidence": {
+      "schema": 1,
+      "csv_sha256": "14e8db1205b131321ec6cb4c5a42750ec91506afcc184430067c6ed26d02adf2"
+    }
+  },
+  "points": [
+    {
+      "voltages": {
+        "Source": 0.0,
+        "Drain": 0.1,
+        "Gate": 1.0
+      },
+      "currents": {
+        "Source": -1e-06,
+        "Drain": 1e-06
+      },
+      "converged": true
+    }
+  ]
+}

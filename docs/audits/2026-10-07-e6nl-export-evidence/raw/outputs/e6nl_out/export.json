@@ -1,0 +1,8 @@
+{
+  "pass": true,
+  "current_unit": "A/cm",
+  "source_sha_verified": true,
+  "csv_sha_verified": true,
+  "full_bias_preserved": true,
+  "gui_mock_dc": "SYNTHETIC_NOT_PHYSICS_EVIDENCE"
+}
