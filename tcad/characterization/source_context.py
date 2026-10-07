@@ -34,3 +34,11 @@ def source_context_matches(context, mesh_path, state, pins):
     return (current is not None and
             context.state is current.state and context.mesh_sha256==current.mesh_sha256 and
             context.pins==current.pins)
+
+def source_evidence(context):
+    """Portable subset only. Never serialize a Python id as canonical proof."""
+    if not isinstance(context, SourceContext):
+        raise ValueError("Source context is missing.")
+    return {"mesh_sha256": context.mesh_sha256, "canonical_record": "GUI_SESSION_ONLY",
+            "pins": [{"name": p[0], "role": p[1], "x_um": p[2], "y_um": p[3], "target_region": p[4]}
+                     for p in context.pins]}

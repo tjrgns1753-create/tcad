@@ -6113,12 +6113,18 @@ class TCADApplication(tk.Tk):
                                "No CSV was exported; compute a new result on the current device.")
             return
         from tkinter import filedialog
-        from tcad.characterization.io import save_csv
+        from tcad.characterization.io import save_measurement_bundle
         path = filedialog.asksaveasfilename(defaultextension=".csv")
         if not path:
             return
-        save_csv(self.last_electrode_result, path)
-        self._log(f"\nResult exported to {path}\n")
+        try:
+            companion = save_measurement_bundle(self.last_electrode_result, path)
+        except Exception as exc:
+            self._notify_error("Export", f"Measurement evidence export failed: {exc}. "
+                               "Do not treat an incomplete CSV/JSON pair as verified evidence.")
+            return
+        self._log(f"\nResult exported to {path}; evidence companion: {companion}. "
+                  "Source match is not a general physical-accuracy approval.\n")
 
     def add_electrode_pin(self, name, role, x_um, y_um, target_region=None):
         """Programmatic pin add (used by the GUI's own ADD PIN button
@@ -6422,6 +6428,7 @@ class TCADApplication(tk.Tk):
                                 ((body_contact,) if body_contact else ()))
             if not source_context_matches(source_context, self.last_final_mesh, self.wafer_state, self.electrode_pins):
                 raise ValueError("Wafer source changed during DC solve; no current result is retained.")
+            dimension = module.get_dimension(device=imported.device)
         except UnsupportedDopingState as exc:
             # Tier 1-1: blocked by the central canonical-state gate
             # before any doping write or solve -- not a solve failure.
@@ -6444,27 +6451,33 @@ class TCADApplication(tk.Tk):
             self.last_electrode_import = None
             self._electrode_import_context = None
 
-        from tcad.characterization.interface import CharacterizationResult
+        from tcad.characterization.interface import CharacterizationResult, current_unit_metadata, format_current
+        from tcad.characterization.source_context import source_evidence
         self.last_electrode_result = CharacterizationResult(
             name="dc_operating_point", device=imported.device, region="Si",
             sweep_contact=drain_contact, points=[op_point],
             metadata={
                 "drain_voltage": drain_voltage, "gate_voltage": gate_voltage,
                 "body_voltage": body_voltage,
+                **current_unit_metadata(dimension),
+                "source_evidence": source_evidence(source_context),
+                "verification_scope": "INPUT_SOURCE_MATCH_ONLY_NOT_GENERAL_PHYSICS_APPROVAL",
             },
         )
         self._electrode_result_context = source_context
+        displayed_currents = {name: format_current(value, self.last_electrode_result.metadata)
+                              for name, value in op_point.currents.items()}
 
         self._log(
             f"\n================================\n"
             f"DC OPERATING POINT\n"
             f"================================\n"
             f"Vd={drain_voltage:+.4f}V Vg={gate_voltage:+.4f}V Vb={body_voltage:+.4f}V\n"
-            f"currents={op_point.currents}\n"
+            f"currents={displayed_currents}\n"
         )
         self._notify_info(
             "Electrode",
-            f"DC operating point solved.\n\ncurrents={op_point.currents}",
+            f"DC operating point solved.\n\ncurrents={displayed_currents}",
         )
         return op_point
 

@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nk-electrode-context-002",
- "profile": "e6nk_electrode_context",
+ "request_id": "e6nl-export-evidence-001",
+ "profile": "e6nl_export_evidence",
  "params": {},
- "note": "Resolved device and CSV result source context; existing physical gates unchanged."
+ "note": "DC units and CSV/JSON evidence companion; gates and physical equations unchanged."
 }

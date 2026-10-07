@@ -11,6 +11,18 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nl_export_evidence": {
+        "description": "DC unit metadata and CSV companion evidence; no physical model changes.",
+        "entry": "docs/audits/2026-10-07-e6nl-export-evidence/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 320, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "tcad/characterization/io.py", "tcad/characterization/source_context.py",
+                   "docs/audits/2026-10-07-e6nl-export-evidence/PLAN.md",
+                   "docs/audits/2026-10-07-e6nl-export-evidence/check_gui.py",
+                   "docs/audits/2026-10-07-e6nl-export-evidence/run_checks.py",
+                   "tests/unit/test_measurement_export_evidence_mock.py"],
+        "outputs": [{"glob": "e6nl_out/**/*", "max_mb": 8}],
+        "regenerate": "GUI mock DC export wiring and actual existing uniform DD current control; no MOSFET approval.",
+    },
     "e6nk_electrode_context": {
         "description": "Bind resolved devices and exported DC results to current mesh/state/pins; gates unchanged.",
         "entry": "docs/audits/2026-10-07-e6nk-electrode-source-context/run_checks.py",
