@@ -11,6 +11,22 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nx_integration_cross_regression": {
+        "description": "Three fixed real GUI/canonical integration scripts, once each; unchanged assertions.",
+        "entry": "docs/audits/2026-10-10-e6nx-integration-cross-regression/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 650, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nx-integration-cross-regression/PLAN.md",
+                   "docs/audits/2026-10-10-e6nx-integration-cross-regression/MANIFEST.json",
+                   "docs/audits/2026-10-10-e6nx-integration-cross-regression/run_checks.py",
+                   "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+                   "tests/integration/test_measurement_canonical_state_gate_real.py",
+                   "tests/integration/test_gui_headless_no_modal_hang_real.py",
+                   "tests/integration/test_gui_doping_donor_acceptor_real.py",
+                   "remote/run_profile.py", "tcad_2d_stagewise.py", "tcad/characterization/interface.py",
+                   "tcad/characterization/node_fields.py", "tcad/physics/wafer_state_v2.py"],
+        "outputs": [{"glob": "e6nx_out/**/*", "max_mb": 8}],
+        "regenerate": "Fixed integration contracts, including stale-expectation diagnosis; no gate removal.",
+    },
     "e6nw_unit_cross_regression": {
         "description": "Exactly 83 fixed tracked unit scripts once; no integration or historical PN audit execution.",
         "entry": "docs/audits/2026-10-10-e6nw-unit-cross-regression/run_checks.py",

@@ -1,7 +1,7 @@
 {
  "schema": 1,
-  "request_id": "e6nw-unit-cross-regression-001",
-  "profile": "e6nw_unit_cross_regression",
+  "request_id": "e6nx-integration-cross-regression-001",
+  "profile": "e6nx_integration_cross_regression",
  "params": {},
-  "note": "One fixed 83-file unit-only cross regression; no integration or previous PN solve repetitions."
+  "note": "Three fixed existing integration scripts once each; no assertion edits or PN audit repeat."
 }
