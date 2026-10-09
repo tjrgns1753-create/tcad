@@ -1,0 +1,10 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[1] all 13 process buttons enabled on a pristine wafer
+[2] develop / expose / strip / resolve pins / DC op with nothing to act on: no-ops, no state invented
+[4] the resist cycle still works when reached out of order
+[5,6] thermal oxidation builds no mask; LOCOS is isolated from it
+[7] no blocking dialog raised anywhere in the above
+
+NO FORCED ORDER: every process reachable at any time, no
+prerequisite, no blocking dialog, LOCOS independent

@@ -1,0 +1,9 @@
+PASS A: inherited identity -> out is prior_state, attachment + 1e17 query intact; the two schemas are mutually exclusive
+PASS B: fresh materialization + no prior -> exactly one MODELLED Si cell from the transition's bounds, 0 attachments, undoped query 0.0, grid matches, only initial-geometry provenance
+PASS C: fresh materialization + same-bounds doped prior -> NOT preserved, 0 active attachments, ledgered, query None/UNSUPPORTED_BY_MODEL (equal bounds do not prove equal history)
+PASS D: fresh materialization + different-bounds prior (x[-2,2] y[-2,0] vs x[-1,1] y[-0.5,0]) -> not preserved, old bounds not linked to the new mesh, every device query blocked
+PASS E: fresh materialization + prior with an added SiN/SiO2 cell -> the extra cell is not active, no electrical state survives, 0 invented continuity
+PASS F: 42 malformed materialization variants -> never canonical, never identity, fail-closed with a prior, no MODELLED cell without one; builder refuses 8 unstatable recipes
+PASS G: after a fresh-mismatch fail-closed, a valid deposition, an inherited identity and a second fresh materialization never resurrect the old attachment
+
+ALL ZERO-DURATION IDENTITY / MATERIALIZATION STATE-CONTRACT TESTS PASS

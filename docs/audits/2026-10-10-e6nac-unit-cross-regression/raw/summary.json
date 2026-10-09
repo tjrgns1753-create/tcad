@@ -1,0 +1,574 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T20:08:31.547572+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nac-unit-cross-regression-001",
+  "profile": "e6nac_unit_cross_regression",
+  "params": {},
+  "note": "Exactly 86 manifest-fixed unit scripts after intrinsic GUI changes; regression only, not broader physical approval."
+ },
+ "profile": "e6nac_unit_cross_regression",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6nac-unit-cross-regression/PLAN.md",
+   "sha256": "330b8608d744a15f953b23aae05275fad562a7cec877f707ad75edd9a241bc11",
+   "bytes": 976
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nac-unit-cross-regression/MANIFEST.json",
+   "sha256": "67fc3f950e58940844e60b3809e73b7772fe6d9b1d1cc20200c7e31415b7864c",
+   "bytes": 14651
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nac-unit-cross-regression/run_checks.py",
+   "sha256": "20112c672126f82cd01030576836056bba8fb5a65c0199ca11181c0dfc1eab32",
+   "bytes": 3385
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "remote/run_profile.py",
+   "sha256": "dada5ddc9c42b7b1db4a6bf2aa0f9512c64962a8cf400f3b7becda1f3accbb8a",
+   "bytes": 14660
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "b601206dd9e374abf379f5cb28960bb90321c3fe834f370f7829d5d5cbeaea2b",
+   "bytes": 420212
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "4d7bf8fd49fc411b0565772242dbe0f7ccafd4209443c0d4385f6de826be217a",
+   "bytes": 7958
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  },
+  {
+   "path": "tcad/characterization/intrinsic.py",
+   "sha256": "553530629db6c595548be34e5f46eca9e080d8957d63ea0367bf05f4e57cc87c",
+   "bytes": 4380
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "269d6d7028cc4985ecd4d0107084428ab4048ebfaad6add63e47a6c1b4a485da",
+   "bytes": 3020
+  },
+  {
+   "path": "tcad/physics/wafer_state_v2.py",
+   "sha256": "7652062fb0eb03ed1ecab41c72aee3875d61e5503f2193bd015084a7a817de08",
+   "bytes": 61267
+  }
+ ],
+ "request_sha256": "7f7357b6cae857093ac065d39e30cf9c8b1e2ac8099aadbf2eee4667ea6c2113",
+ "source": {
+  "github_sha": "7940b1363101fdf3b79da8d3ab0844d2ff948d38",
+  "git_head": "7940b1363101fdf3b79da8d3ab0844d2ff948d38",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37984855464",
+  "run_number": "78",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nac-unit-cross-regression/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T20:10:53.531157+00:00",
+ "duration_s": 141.984,
+ "outputs": [
+  {
+   "path": "e6nac_out/records.json",
+   "bytes": 63578,
+   "sha256": "92f11936fec6a136b48da3836875c4e85613631a83c30a2a96f476994929307f"
+  },
+  {
+   "path": "e6nac_out/test_advance_wafer_state_result_contract_mock.log",
+   "bytes": 651,
+   "sha256": "d4c6b131ccf03e390a5df201e2988b293ed51de56581d6763c4ee774090ebd80"
+  },
+  {
+   "path": "e6nac_out/test_anneal_profile_mock.log",
+   "bytes": 1530,
+   "sha256": "c1a4412968fe9de3d863547b63dbf5a1f833ad0f074f56bff0137af50e017b4b"
+  },
+  {
+   "path": "e6nac_out/test_cad_negative_validation_mock.log",
+   "bytes": 466,
+   "sha256": "6e5a0a920f8ad8c4bded6142abb02286e6b0e1fea4d86df235ed7424029eebb3"
+  },
+  {
+   "path": "e6nac_out/test_cli_doping_initial_state_branch_mock.log",
+   "bytes": 773,
+   "sha256": "d676e581a57ad1eae752218025c5eba87255f89bcbbf9a967f5f493ebddaac00"
+  },
+  {
+   "path": "e6nac_out/test_current_unit_contract_mock.log",
+   "bytes": 41,
+   "sha256": "72edfd436068f55f46aa42204e391a8209b31f1b8c27b95d8a3cdbd6576fb92d"
+  },
+  {
+   "path": "e6nac_out/test_dc_operating_point_mock.log",
+   "bytes": 30,
+   "sha256": "445f41b8820078431ee054097fdf58385479e57aa57a28456c1d66ef9c6b43bd"
+  },
+  {
+   "path": "e6nac_out/test_diffusion_model_mock.log",
+   "bytes": 837,
+   "sha256": "018094f4ca7250a32b903e843b3d15ab4d20c1765a6e65e792376d82cf46e2bb"
+  },
+  {
+   "path": "e6nac_out/test_dopant_activation_compensation_mock.log",
+   "bytes": 1862,
+   "sha256": "4f26f871b5d1365328740e696f7792cf425c09219e4330741d28455e1bc6e5ac"
+  },
+  {
+   "path": "e6nac_out/test_dopant_models_mock.log",
+   "bytes": 698,
+   "sha256": "886c9ce22b9a82c6b22255bf599e41699a7dafce464ad8d1f48f855c5b83928d"
+  },
+  {
+   "path": "e6nac_out/test_dopant_profile_mock.log",
+   "bytes": 743,
+   "sha256": "fd9f518c23cb890ceb693e88eaee261a97092dd611648951b0dbd1417d783e58"
+  },
+  {
+   "path": "e6nac_out/test_dopant_rev2_contract_mock.log",
+   "bytes": 2479,
+   "sha256": "2093b90310bbe317c980580d19f60bdbadc802a20aafd380cd1a00e1a7c3cb36"
+  },
+  {
+   "path": "e6nac_out/test_doping_staleness_mock.log",
+   "bytes": 219,
+   "sha256": "97cde87caf08ef7a647baeb526ab5a549338b040e6a0eef2846c764b9287a8d3"
+  },
+  {
+   "path": "e6nac_out/test_doping_unsupported_hover_note_mock.log",
+   "bytes": 287,
+   "sha256": "34b2578d755568231d58e689e70bdc0829eaf85630802f00cb8ce7e49971d76b"
+  },
+  {
+   "path": "e6nac_out/test_e6l_correction_mock.log",
+   "bytes": 39,
+   "sha256": "845a38112a246d9da63416d00eb594a50e65df8213ea7c8409e35a4bc296d874"
+  },
+  {
+   "path": "e6nac_out/test_e6m_completion_exit_mock.log",
+   "bytes": 64,
+   "sha256": "7b765e09ee1c6ca6c5fd71b07dc5bbcbaedc456fcac16eb5a0e967b6f704651f"
+  },
+  {
+   "path": "e6nac_out/test_e6m_execution_contract_mock.log",
+   "bytes": 554,
+   "sha256": "24325adeb268cfc5509bb4df6c2a1b250afcf16230f675811d093263cbbab31f"
+  },
+  {
+   "path": "e6nac_out/test_e6m_judge_mock.log",
+   "bytes": 129,
+   "sha256": "ffe44b99510f67685042913cb428b27e80c34c0c4d310cf135fa4e4933e0dff0"
+  },
+  {
+   "path": "e6nac_out/test_electrode_source_context_mock.log",
+   "bytes": 88,
+   "sha256": "0e58508806b2796ccad18a52a6379b00e40e395a9730acb6a1533ccab8008e1b"
+  },
+  {
+   "path": "e6nac_out/test_etch_material_summary_mock.log",
+   "bytes": 2280,
+   "sha256": "e47cc58f1b8825dc595aaf9908da8f93fba0e6c1c6b2f30e6a3f494b842c8e9c"
+  },
+  {
+   "path": "e6nac_out/test_field_readout_invalidation_mock.log",
+   "bytes": 76,
+   "sha256": "704a76235d7bb3412696dbe3ccf93f34a3f12875b47e3786ba24e7e9248078f6"
+  },
+  {
+   "path": "e6nac_out/test_gaussian_implant_no_existing_param_mock.log",
+   "bytes": 604,
+   "sha256": "84058484ea377e7e20ba68acd70882932e461f669962d6bab675c02c1e426067"
+  },
+  {
+   "path": "e6nac_out/test_gui_canvas_source_contract_mock.log",
+   "bytes": 82,
+   "sha256": "81a818dccf0bc21ad2f564aad0babaefc8b6647e62e1aa4ac1fe7964f09af9ed"
+  },
+  {
+   "path": "e6nac_out/test_gui_depth_doping_mock.log",
+   "bytes": 96,
+   "sha256": "2a2728587dfbc2690245f90350410d7e493e53d523ab5d9f48e4efb752e3720b"
+  },
+  {
+   "path": "e6nac_out/test_gui_doping_application_truthfulness_mock.log",
+   "bytes": 1680,
+   "sha256": "40b2512988f8c2afe8a080817da29a0869d9aa1de5dc327cfe2b492dc04165f6"
+  },
+  {
+   "path": "e6nac_out/test_gui_error_dialog_visibility_gate_mock.log",
+   "bytes": 318,
+   "sha256": "e3628474ad424378a21b40b1c516d76ee11498aed5eacae4159bc46e0e66746d"
+  },
+  {
+   "path": "e6nac_out/test_gui_gate_stack_state_mock.log",
+   "bytes": 181,
+   "sha256": "646217bd14306b67880d3bee7a0badfb24f91cfdcd4b05be51ef5ddc2f319d6c"
+  },
+  {
+   "path": "e6nac_out/test_gui_litho_lifecycle_mock.log",
+   "bytes": 407,
+   "sha256": "22181fc906e0a76c3b87c56ff8c1cdd2188ecac86d804e2a2238074148bf8eac"
+  },
+  {
+   "path": "e6nac_out/test_gui_no_forced_order_mock.log",
+   "bytes": 540,
+   "sha256": "186f5eebd44817b78c9d3bd787dcd84c81e65c1f7cb9540edbf49fa0dbdb4acf"
+  },
+  {
+   "path": "e6nac_out/test_implant_windows_from_mask_mock.log",
+   "bytes": 614,
+   "sha256": "8f951133468690e36262da8180198b278883b2ecadb712334b3afb17227cbfc4"
+  },
+  {
+   "path": "e6nac_out/test_intrinsic_measurement_contract_mock.log",
+   "bytes": 129,
+   "sha256": "2f02af81b8a11d109df57e9b3543490dbc5d8f27fd1bce0f119ae835b3f6e3c0"
+  },
+  {
+   "path": "e6nac_out/test_intrinsic_refusal_status_mock.log",
+   "bytes": 72,
+   "sha256": "ee1a6e9376638198da26fb4a1b906033e3bb11575c90ef69960ee4b4057a7842"
+  },
+  {
+   "path": "e6nac_out/test_mask_spans_from_openings_mock.log",
+   "bytes": 378,
+   "sha256": "8bc40029f99d54fa1618faa3d0f12d4edeb4ecaff2271b89d36b6ea0513661f4"
+  },
+  {
+   "path": "e6nac_out/test_measurement_canonical_state_gate_mock.log",
+   "bytes": 2109,
+   "sha256": "8d3e794fec5514299dd76d430124198c6e9f1b6896502e3718c4462ce1ed6a2e"
+  },
+  {
+   "path": "e6nac_out/test_measurement_entry_point_gate_mock.log",
+   "bytes": 971,
+   "sha256": "990d027c1463f9d5275e4a93cac0da4c5c7659850b6342c198c30f9735a0d314"
+  },
+  {
+   "path": "e6nac_out/test_measurement_export_evidence_mock.log",
+   "bytes": 102,
+   "sha256": "760039f39d5db11ed0f546a80cfb675c24c67c3adf5bc9ccf81c5b8c6c12cbd7"
+  },
+  {
+   "path": "e6nac_out/test_measurement_missing_profile_status_mock.log",
+   "bytes": 51,
+   "sha256": "d71ed7e51698dce33cf031050202da11ad715a1db994fc26af6103461e77fa46"
+  },
+  {
+   "path": "e6nac_out/test_measurement_requested_bias_mock.log",
+   "bytes": 264,
+   "sha256": "9e583bcd88ca2c9d45702ed8935d34f44dbcbe80f2a37dd54c6acd832ada5fa2"
+  },
+  {
+   "path": "e6nac_out/test_measurement_validity_mock.log",
+   "bytes": 75,
+   "sha256": "4d55f22252f818f0fcd72e4adf615f7414e5e367ffcf5a89ee3b2f95821ca16a"
+  },
+  {
+   "path": "e6nac_out/test_mesh_area_conservation_mock.log",
+   "bytes": 903,
+   "sha256": "0bfbda7b0c355c80e37ca67f4edb39bae0c00824d25adc71b7abc6c26a7a11c4"
+  },
+  {
+   "path": "e6nac_out/test_mesh_conformity_check_mock.log",
+   "bytes": 140,
+   "sha256": "d3db5bcd32188a618a97bb185884789a06e510d5c3bc3f6d845857ae25e7661b"
+  },
+  {
+   "path": "e6nac_out/test_mesh_implant_refine_fallback_mock.log",
+   "bytes": 253,
+   "sha256": "206db9be223f1c94bd01b40b055aceda19cf26f919a4c14b4e2a595a34754058"
+  },
+  {
+   "path": "e6nac_out/test_mesh_refine_mock.log",
+   "bytes": 711,
+   "sha256": "fa75b59159fddd210a485eb7bed0a8916e50e11fb01da969eba8ab67bba5fab9"
+  },
+  {
+   "path": "e6nac_out/test_mesh_structured_remesh_mock.log",
+   "bytes": 675,
+   "sha256": "4cf3034a1bce354ac8d56120cbb1a1be51c186b31dc41ae82883d6f17880d0e4"
+  },
+  {
+   "path": "e6nac_out/test_node_field_caption_mock.log",
+   "bytes": 109,
+   "sha256": "097fb46d038e49d08c08b04d3602c0999f84fd5e6a2377f9d60d46d41681b208"
+  },
+  {
+   "path": "e6nac_out/test_node_field_contacts_mock.log",
+   "bytes": 323,
+   "sha256": "2daf2385ef1039ef2fe0c08984f033eb6101dc8f17bac65d131dc06a7260b182"
+  },
+  {
+   "path": "e6nac_out/test_node_field_export_mock.log",
+   "bytes": 114,
+   "sha256": "e643c1420529b55e4fc1c7b6fab35f15463edcfdbc7f0732361b525abdb60c9a"
+  },
+  {
+   "path": "e6nac_out/test_node_field_hover_mock.log",
+   "bytes": 110,
+   "sha256": "8c37c049d9ab0402aee9aa605712629406f81c5da3f1f1ec6c5cfa9fab66a57e"
+  },
+  {
+   "path": "e6nac_out/test_node_fields_mock.log",
+   "bytes": 87,
+   "sha256": "e8bd0c6b5c6b75001b58305314ffeba553c3d074d095f5ba0871a2ce306da959"
+  },
+  {
+   "path": "e6nac_out/test_pb_equilibrium_mock.log",
+   "bytes": 39,
+   "sha256": "1687589b77a4b1b8475f06e6ad1d56ea03b94b7b9b37fcd67397d85fd917d484"
+  },
+  {
+   "path": "e6nac_out/test_phase1_bosch_mock.log",
+   "bytes": 31,
+   "sha256": "a80ccbbe7debc0955d552b5f04b94026ce0c9a5b66b3235b7f07bc85dbfe23cd"
+  },
+  {
+   "path": "e6nac_out/test_physics_tables_mock.log",
+   "bytes": 70,
+   "sha256": "57e5eb1c35d9abc238b6ed39ca0ceb6a2209aec07d66db4c27430a7508259ecc"
+  },
+  {
+   "path": "e6nac_out/test_physics_values_mock.log",
+   "bytes": 189,
+   "sha256": "3170298951280822b9ff68ba418d57b28552eda954d55803b94c58ab781a4434"
+  },
+  {
+   "path": "e6nac_out/test_pin_model_mock.log",
+   "bytes": 142,
+   "sha256": "92f788289b14e6c8f78d4bea60d5ca606b6ae3db5041df8e04501f072bac509b"
+  },
+  {
+   "path": "e6nac_out/test_pn_judge_integrity_mock.log",
+   "bytes": 88,
+   "sha256": "6ebf3a85f2edcaaeae4cb6219822b07091a7cee9e225a02c63888651037123fa"
+  },
+  {
+   "path": "e6nac_out/test_pn_judge_mock.log",
+   "bytes": 22,
+   "sha256": "d7f5204703cb5c31f7ecc34387456893da7909952ebe22b58c35fcd39a5c7786"
+  },
+  {
+   "path": "e6nac_out/test_pn_reference_mock.log",
+   "bytes": 32,
+   "sha256": "5d463c36ce7d0a3700e6f5e9c671b8266f1c5d9f079dec3f0cf88d7b0c82f98e"
+  },
+  {
+   "path": "e6nac_out/test_pn_reference_view_mock.log",
+   "bytes": 97,
+   "sha256": "cb934f3ed8ada92968d017020bef452c0ceefbdfd28c8f66d56aad1440b10d1a"
+  },
+  {
+   "path": "e6nac_out/test_remote_engine_evidence_scope_mock.log",
+   "bytes": 82,
+   "sha256": "74128e47e67972ba9c76f810f9b9968b2d62abb26a9a159d1c75ee6c89be199b"
+  },
+  {
+   "path": "e6nac_out/test_resistor_dd_judge_mock.log",
+   "bytes": 75,
+   "sha256": "a68a8220364af95e426c0d702ea98bb84204bc2e1c3ad9cb61d903788cf42758"
+  },
+  {
+   "path": "e6nac_out/test_resolver_mock.log",
+   "bytes": 322,
+   "sha256": "783bae4c009ef3a7590049ceacd7b1462cbd4a1d3543ea49993d207b3ad0302d"
+  },
+  {
+   "path": "e6nac_out/test_step_junction_2d_gate_mock.log",
+   "bytes": 553,
+   "sha256": "bacd6ee346eaf0c8d6035c361a9f5ec2aab1260c9112d984bb88132035e1405e"
+  },
+  {
+   "path": "e6nac_out/test_step_junction_2d_gate_precedence_mock.log",
+   "bytes": 1442,
+   "sha256": "9994b175fa2437e33aae6df6a578bd2e42de92b7344b3d13e2c24ae017382ac8"
+  },
+  {
+   "path": "e6nac_out/test_thermal_anneal_mock.log",
+   "bytes": 1268,
+   "sha256": "4c7a7db4235b7a2e6938634e1c8213621a2b78f78019e9df5fb7c8e8b02fb302"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_doping_mock.log",
+   "bytes": 1078,
+   "sha256": "9dac4c44a3f2b860144e821e4173a6986f2acd626068fba35f7777572bb40019"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_anneal_fail_closed_mock.log",
+   "bytes": 296,
+   "sha256": "499cc56b63ae7e8e6ebf5e8c6c6c90d70bb364cb183403ec76c70c1fa843f582"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_apply_doping_barrier_mock.log",
+   "bytes": 320,
+   "sha256": "36c53364e5839f61f31fcdc276736d87ffa14f034e8059222d69ea915d3beb80"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_barrier_physics_mock.log",
+   "bytes": 429,
+   "sha256": "143f68b12825bbd4c583ac637ae55140c0c94055dd83b72490494ab1be39769b"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_devsim_mapping_gate_mock.log",
+   "bytes": 552,
+   "sha256": "a75a4f2227f8b721fcb15787f4df20b8e59fe0a5b0a805d56e865f460e19b5a0"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_etch_conservation_mock.log",
+   "bytes": 408,
+   "sha256": "a137fab754c55baf22d56b804fbabe63a300273d07b25f521822d7ed6a933936"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_exact_inventory_mock.log",
+   "bytes": 237,
+   "sha256": "e2a0fdbc4c6381fd425038c4efdbee37009ab7cc0f8c9f8123079f29a84adf43"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_explicit_doping_target_mock.log",
+   "bytes": 256,
+   "sha256": "d16c36aa2322e1a5e6ccdda17f5a205ef917c28e792431b0b8946bac6241d1df"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_fail_closed_no_resurrection_mock.log",
+   "bytes": 399,
+   "sha256": "23825d815d0e6508e8408624b025bba72e3fc79c1bd316b03da111751ea2a249"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_gate_stack_fallback_fail_closed_mock.log",
+   "bytes": 288,
+   "sha256": "25fbcc3444b4a112f6297209ab7702d9f244dca26915896a462a973dc59ebdf9"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_instance_not_name_mock.log",
+   "bytes": 251,
+   "sha256": "b74b4480d8153647eed5c97e369b565adebc1c9f15cb67fe838ff6fa6e0c04c9"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_legacy_migration_fail_closed_mock.log",
+   "bytes": 441,
+   "sha256": "c782f36124e8a1c3e8b1b27a38d6c31731974091242680f78c31f08b454dfad8"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_multi_extent_provenance_mock.log",
+   "bytes": 365,
+   "sha256": "bb10da2a059b1ba20d7613ae9fc5878d3f77738d3b13d07e6a1dfa9389addfb5"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_no_last_step_category_mock.log",
+   "bytes": 308,
+   "sha256": "4af59101dbca7a7db9ceb889ee3d4870b9f751aec44bfd3b821b53c8bfcad2bb"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_no_numeric_without_exact_integral_mock.log",
+   "bytes": 303,
+   "sha256": "adb6d5755188e61d7e000726f27d95f4b07ffcee0eed61edfbc01de0f29b5b63"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_oxidation_unsupported_mock.log",
+   "bytes": 585,
+   "sha256": "166693690f53a41896d4bbdb22540b0f2ca6df9c3a0a0ffb0ccf61881fbe44d6"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_redeposit_no_resurrection_mock.log",
+   "bytes": 405,
+   "sha256": "b5d5464a65d9ea10986d6419640331ae41ee3535ab2510a0030204e9f44a60a8"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_remesh_preserved_mock.log",
+   "bytes": 256,
+   "sha256": "447098cc91b83b89bebc698798f125c1541fafbe910b7a221ff95cb2665d9a7e"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_transform_structural_validation_mock.log",
+   "bytes": 515,
+   "sha256": "5464b2533e42897f0af82df996858b4a4b15a34c39e0acc12c32b74329d7975b"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_transform_targets_instance_mock.log",
+   "bytes": 392,
+   "sha256": "af8096c04d1ffb363ab98bae1cb9951790faaaeae4dc26a17eb69661f0290fce"
+  },
+  {
+   "path": "e6nac_out/test_wafer_state_v2_unsupported_returns_none_mock.log",
+   "bytes": 354,
+   "sha256": "5b3ef70c042e669aa569366da7c7e09e02d0eeb978d2db951beb3db996b8bd6b"
+  },
+  {
+   "path": "e6nac_out/test_waferstate_sequential_advance_mock.log",
+   "bytes": 3681,
+   "sha256": "bca085371b6450b478fabc557e877cccf4ce807c44233a40bd75606c59edc911"
+  },
+  {
+   "path": "e6nac_out/test_zero_duration_identity_state_contract_mock.log",
+   "bytes": 1217,
+   "sha256": "e748fc0a9fd27801e6b3d1ccc084794ab9d9595398cb029da397008c79c6cf58"
+  },
+  {
+   "path": "e6nac_out/verdict.json",
+   "bytes": 209,
+   "sha256": "b65d16e909a887d48ae86013e6b126a6e0a5c55dda832833b734e1a8023c0773"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Fixed complete 86-unit set, independent subprocesses once each.",
+ "log": {
+  "file": "run.log",
+  "sha256": "28acb9033cbe7a585dd9ff367f5ff083fcf4b0369b27a4694070b62aed5b7846",
+  "bytes": 10142
+ },
+ "redactions": {}
+}

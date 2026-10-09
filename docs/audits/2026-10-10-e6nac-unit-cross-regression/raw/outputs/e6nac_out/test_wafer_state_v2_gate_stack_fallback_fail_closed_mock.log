@@ -1,0 +1,3 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Legacy state from a mesh-only result + synthetic intrinsic profile: explicitly fail-closed -- net_doping_at is None/UNSUPPORTED_BY_MODEL, apply_doping raises UnsupportedDopingState, 0 writes.

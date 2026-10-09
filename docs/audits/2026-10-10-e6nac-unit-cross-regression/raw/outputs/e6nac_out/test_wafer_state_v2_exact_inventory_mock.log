@@ -1,0 +1,4 @@
+[1] uniform inventory over a non-lattice rectangle is EXACT: 8.549177583669e+09
+[2] etch of a non-lattice sub-rectangle: remaining + removed == initial exactly
+
+WaferState v2 exact-inventory test PASS -- no sample grid, no approximation

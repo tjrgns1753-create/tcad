@@ -1,0 +1,9 @@
+[1] fail-closed: input_instance not ACTIVE+MODELLED (converted lifecycle)
+[2] fail-closed: oxidation target is not Si
+[3] fail-closed: deposition added_cell has non-positive area
+[4] fail-closed: deposition new_instance_id collides with an existing instance
+[5] fail-closed: deposition new_instance_id duplicated within the transform
+[6] fail-closed: deposition output_instance_ids does not match added instances
+[7] a well-formed deposition still applies normally
+
+WaferState v2 P1 structural-validation test PASS

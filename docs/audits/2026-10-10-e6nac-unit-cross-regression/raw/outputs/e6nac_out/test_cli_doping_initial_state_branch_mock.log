@@ -1,0 +1,5 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+<WORKSPACE>\tcad\cli\run_pipeline.py:297: UserWarning: config.device.length_scale_to_cm=1.0 with config.doping set: this is the specific value known to break doped DevSim solves (ProcessResult is in um; pass 0.0001 to convert to the cm DevSim's own semiconductor constants assume). Proceeding with 1.0 because it was passed explicitly, but this is very likely not what you want.
+  length_scale_to_cm = _resolve_length_scale_to_cm(cfg or {}, True)
+CLI _apply_device_doping: explicit-bounds recipes build a MODELLED initial state (Branch A); a real process category still fails closed regardless (regression guard); a recipe with no explicit bounds is unchanged legacy Branch B.

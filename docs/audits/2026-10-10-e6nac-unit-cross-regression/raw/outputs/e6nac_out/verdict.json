@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "counts": {
+    "PASS": 86,
+    "FAIL": 0,
+    "TIMEOUT": 0,
+    "ERROR": 0
+  },
+  "expected_files": 86,
+  "recorded_files": 86,
+  "scope": "UNIT_SCRIPTS_NOT_PHYSICAL_APPROVAL"
+}

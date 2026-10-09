@@ -1,0 +1,3 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+dope -> anneal -> measurement: no crash, solver calls = 0, donor/acceptor/net all None, UNSUPPORTED_BY_MODEL event present, prior exact inventory (8.000e+09 cm^-1) preserved in the unresolved ledger.

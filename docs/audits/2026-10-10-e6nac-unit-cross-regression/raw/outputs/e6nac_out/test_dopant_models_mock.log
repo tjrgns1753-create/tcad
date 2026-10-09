@@ -1,0 +1,5 @@
+registered anneal handlers: ['gaussian_v1']
+B (gaussian_v1) straggle 0.2000 -> 0.2007 um
+As (uniform_v1) model_params unchanged: True
+physics_status: {'resolution': 'UNSUPPORTED_BY_MODEL', 'entries': [{'parameter': 'anneal_redistribution', 'material': 'As', 'resolution': 'UNSUPPORTED_BY_MODEL', 'provenance': 'DERIVED', 'note': "no anneal/redistribution handler registered for model='uniform_v1'"}], 'notes': []}
+ANNEAL_HANDLERS registers gaussian_v1 only; apply_thermal_anneal dispatches per-profile, widening gaussian_v1 profiles and flagging (never silently skipping) any other model as UNSUPPORTED_BY_MODEL, while always recording the raw thermal event regardless of whether a handler exists.

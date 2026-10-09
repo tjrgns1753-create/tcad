@@ -1,0 +1,1 @@
+Explicit doping target resolution: ambiguous multi-instance material names and split instances fail closed instead of picking the first cell; an explicit target_instance_id binds correctly; order-independent; _instance_for_host/_support_for_host are gone.

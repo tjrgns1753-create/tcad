@@ -1,0 +1,16 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+PASS GUI DC operating point blocked [no canonical state]
+PASS GUI DC operating point blocked [anneal fail-closed]
+PASS GUI DC operating point blocked [node outside every cell]
+PASS GUI DC operating point supported control
+PASS GUI DC operating point blocked [2D ACTIVE step_junction_v1]
+PASS CLI pn_junction_iv blocked [doping on a fail-closed process step]
+PASS CLI pn_junction_iv blocked [no doping configured]
+PASS CLI pn_junction_iv blocked [node outside every cell]
+PASS CLI pn_junction_iv supported control
+PASS CLI mos_cv blocked [doping on a fail-closed process step]
+PASS CLI mos_cv blocked [no doping configured]
+PASS CLI mos_cv blocked [node outside every cell]
+PASS CLI mos_cv supported control
+Entry-point gate: GUI DC operating point and CLI pn_junction_iv / mos_cv never reach their characterization with an unsupported canonical state; supported controls do.

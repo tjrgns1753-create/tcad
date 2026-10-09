@@ -1,0 +1,8 @@
+PLAN different backend/mesh/write/sweep/solve blocked before engine
+PLAN missing backend/mesh/write/sweep/solve blocked before engine
+PLAN valid_lf valid preflight reached synthetic backend
+PLAN valid_crlf valid preflight reached synthetic backend
+OBSERVER success attempts/successes/solve_failures/snapshot_failures (1, 1, 0, 0)
+OBSERVER solve attempts/successes/solve_failures/snapshot_failures (1, 0, 1, 0)
+OBSERVER snapshot attempts/successes/solve_failures/snapshot_failures (1, 1, 0, 1)
+E6M EXECUTION CONTRACT PASS; engine imports=0, real solves=0

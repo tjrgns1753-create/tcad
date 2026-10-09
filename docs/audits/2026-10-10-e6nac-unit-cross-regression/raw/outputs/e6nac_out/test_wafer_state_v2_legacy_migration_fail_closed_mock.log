@@ -1,0 +1,7 @@
+[1] migrated v1 cell is LEGACY_UNRESOLVED with bounds_um=None
+[2] a migration provenance event is recorded
+[3] attach_dopant on a legacy cell: no active attachment, ledger entry total=None, UNKNOWN_GEOMETRIC_SUPPORT
+[4] a device-active-doping query returns UNSUPPORTED_BY_MODEL, all three values None
+[5] a following step: still fail-closed, nothing invented
+
+WaferState v2 test 9 PASS -- v1 -> v2 migration is fail-closed, nothing invented
