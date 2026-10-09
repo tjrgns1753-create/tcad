@@ -1,7 +1,7 @@
 {
  "schema": 1,
-  "request_id": "e6nz-intrinsic-api-capability-001",
-  "profile": "e6nz_intrinsic_api_capability",
+  "request_id": "e6naa-intrinsic-gui-001",
+  "profile": "e6naa_intrinsic_gui",
  "params": {},
-  "note": "Known-zero canonical input through public DD APIs; intrinsic capability pilot only, GUI and gates unchanged."
+  "note": "Known-undoped low-field GUI and analytic full-field guard; unsupported fabrication, activation and PN gates unchanged."
 }

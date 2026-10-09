@@ -5788,7 +5788,24 @@ class TCADApplication(tk.Tk):
             self._notify_error("Measurement", "Source voltage must be finite and numeric. No solve was run.")
             return
 
+        intrinsic_input = False
         if self.last_doped_result is None:
+            from tcad.characterization.intrinsic import known_undoped_si, validate_intrinsic_bias
+            # Only a pristine GUI may materialize its explicit initial wafer.
+            if (getattr(self, 'wafer_state', None) is None and getattr(self, 'last_final_mesh', None) is None
+                    and getattr(self, 'wafer', None) is not None and not self.wafer.processed
+                    and not self._resist_spans_um()):
+                if not self._materialize_current_wafer():
+                    return
+            if known_undoped_si(getattr(self, 'wafer_state', None)) and getattr(self, 'last_final_mesh', None):
+                try:
+                    validate_intrinsic_bias(self.wafer_state, self.meas_axis_var.get(), voltage)
+                except ValueError as exc:
+                    self._notify_error('Measurement', str(exc) + '. No doping write or solve was run.')
+                    return
+                intrinsic_input = True
+
+        if self.last_doped_result is None and not intrinsic_input:
             # Missing GUI device evidence is not absence of thermal carriers.
             # Preserve CHEMICAL/UNKNOWN provenance and expose its actual limit.
             from tcad.characterization.source_context import missing_device_profile_status
@@ -5821,9 +5838,10 @@ class TCADApplication(tk.Tk):
 
         axis = self.meas_axis_var.get()
 
-        doped_result = self.last_doped_result
+        doped_result = (build_process_result({'final_mesh': self.last_final_mesh, 'snapshots': []})
+                        if intrinsic_input else self.last_doped_result)
 
-        if self._doping_is_stale():
+        if not intrinsic_input and self._doping_is_stale():
             # Re-apply the SAME doping specification to the CURRENT mesh
             # instead of solving the geometry as it was before the last
             # process step. Not a prerequisite: nothing is refused, and
@@ -5837,8 +5855,8 @@ class TCADApplication(tk.Tk):
                 return
             doped_result = self.last_doped_result
 
-        region = doped_result.doping.regions[0].region
-        kind = doped_result.doping.kind
+        region = 'Si' if intrinsic_input else doped_result.doping.regions[0].region
+        kind = 'intrinsic_known_undoped' if intrinsic_input else doped_result.doping.kind
 
         from tcad.characterization.source_context import capture_source_context, source_context_matches
         field_context = capture_source_context(self.last_final_mesh, self.wafer_state, self.electrode_pins)
@@ -5884,8 +5902,7 @@ class TCADApplication(tk.Tk):
 
         else:
             self._log(
-                "\n(No mesh refinement needed -- uniform doping has no "
-                "junction to resolve.)\n"
+                "\n(No mesh refinement requested for this uniform device input.)\n"
             )
 
         # WaferState v2 P0-C: barrier exclusion is no longer derived or
@@ -5991,13 +6008,23 @@ class TCADApplication(tk.Tk):
             from tcad.characterization.node_fields import capture_node_fields
             try:
                 fields = capture_node_fields(module, imported.device, region, length_scale_to_cm)
-                from copy import deepcopy
-                field_result = deepcopy(result)
             except Exception as exc:
+                if intrinsic_input:
+                    raise ValueError('INTRINSIC_FULL_FIELD_EVIDENCE_UNAVAILABLE: ' + str(exc)) from exc
                 # Field export failure does not invalidate an already-validated
                 # terminal current. It never leaves an older field in place.
                 self._log(f"Node fields unavailable: {exc}\n")
             else:
+                if intrinsic_input:
+                    from tcad.characterization.intrinsic import validate_intrinsic_result
+                    params = {key: float(module.get_parameter(device=imported.device, region=region, name=key))
+                              for key in ('ElectronCharge', 'n_i', 'mu_n', 'mu_p')}
+                    result.metadata['intrinsic_analytic_validation'] = validate_intrinsic_result(
+                        self.wafer_state, axis, voltage, fields, result, params, source_contact, gnd_contact,
+                        source_at_max=(source_contact == max_contact))
+                    result.metadata['device_input'] = 'CANONICAL_KNOWN_UNDOPED'
+                from copy import deepcopy
+                field_result = deepcopy(result)
                 if source_context_matches(field_context, self.last_final_mesh, self.wafer_state, self.electrode_pins):
                     self._measurement_fields = fields
                     self._measurement_fields_context = field_context

@@ -11,6 +11,27 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6naa_intrinsic_gui": {
+        "description": "Known-undoped low-field GUI, live analytic field guard, explicit and fresh input; existing canonical gate control.",
+        "entry": "docs/audits/2026-10-10-e6naa-intrinsic-gui/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 480, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6naa-intrinsic-gui/PLAN.md",
+                   "docs/audits/2026-10-10-e6naa-intrinsic-gui/check_gui.py",
+                   "docs/audits/2026-10-10-e6naa-intrinsic-gui/run_checks.py",
+                   "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+                   "tests/unit/test_intrinsic_measurement_contract_mock.py",
+                   "tests/unit/test_measurement_missing_profile_status_mock.py",
+                   "tests/unit/test_measurement_requested_bias_mock.py",
+                   "tests/integration/test_measurement_canonical_state_gate_real.py",
+                   "tests/integration/test_uniform_resistor_dd_current_real.py",
+                   "tests/integration/test_mesh_gate_poisson_transition_real.py",
+                   "tcad/characterization/intrinsic.py", "tcad/characterization/node_fields.py",
+                   "tcad/characterization/source_context.py", "tcad_2d_stagewise.py",
+                   "tcad/device/devsim/doping_mapping.py", "tcad/device/devsim/mesh_import.py",
+                   "tcad/characterization/pn_junction_iv_sweep.py", "tcad/physics/wafer_state_v2.py"],
+        "outputs": [{"glob": "e6naa_out/**/*", "max_mb": 8}],
+        "regenerate": "Five supported GUI requests and four refusal controls; no fabricated doping profile.",
+    },
     "e6nz_intrinsic_api_capability": {
         "description": "Known-undoped Si official DD API pilot, thermal electrons and holes; no GUI/gate approval.",
         "entry": "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/run_checks.py",
