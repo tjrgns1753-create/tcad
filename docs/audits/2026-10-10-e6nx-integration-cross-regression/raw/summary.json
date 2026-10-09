@@ -1,0 +1,164 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-10-09T19:28:11.848870+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nx-integration-cross-regression-001",
+  "profile": "e6nx_integration_cross_regression",
+  "params": {},
+  "note": "Three fixed existing integration scripts once each; no assertion edits or PN audit repeat."
+ },
+ "profile": "e6nx_integration_cross_regression",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6nx-integration-cross-regression/PLAN.md",
+   "sha256": "032dac4673bd3731bb17ec9d0be4efdec18155c01e55990ed76c3c169f05ffac",
+   "bytes": 2544
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nx-integration-cross-regression/MANIFEST.json",
+   "sha256": "a4d8e29ba126ceb0824fc2ff5c427aa491332f4c92d61203b9d3e430c72244ed",
+   "bytes": 578
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nx-integration-cross-regression/run_checks.py",
+   "sha256": "61266dc43324e385a498cac6e1c844d1d64ccb92f73af30f41379eeb1ccd67c8",
+   "bytes": 3630
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "tests/integration/test_measurement_canonical_state_gate_real.py",
+   "sha256": "abbdebfed757c8edad33dd7e118aea02c46eba129afb33680bc975d624740497",
+   "bytes": 19332
+  },
+  {
+   "path": "tests/integration/test_gui_headless_no_modal_hang_real.py",
+   "sha256": "b2d86c65248059a24f72b775bf2b2c156754f3d34e70d993c68ed894f5f71f1e",
+   "bytes": 40204
+  },
+  {
+   "path": "tests/integration/test_gui_doping_donor_acceptor_real.py",
+   "sha256": "e7f81752de380df13cb94fd9de8a3007318189aaafac207b044d038ed5cc0a12",
+   "bytes": 22643
+  },
+  {
+   "path": "remote/run_profile.py",
+   "sha256": "dada5ddc9c42b7b1db4a6bf2aa0f9512c64962a8cf400f3b7becda1f3accbb8a",
+   "bytes": 14660
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "22855ababf073dd331f8bfae9bc945301e9cec539ebe01a21f617e470cfc7352",
+   "bytes": 417257
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "4d7bf8fd49fc411b0565772242dbe0f7ccafd4209443c0d4385f6de826be217a",
+   "bytes": 7958
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  },
+  {
+   "path": "tcad/physics/wafer_state_v2.py",
+   "sha256": "7652062fb0eb03ed1ecab41c72aee3875d61e5503f2193bd015084a7a817de08",
+   "bytes": 61267
+  }
+ ],
+ "request_sha256": "bc1ee81207ac0be79f49d5484a647572d4f0e4be2606fafaf567e84817da8e91",
+ "source": {
+  "github_sha": "014d012957407e7401603cec573894299a2f9833",
+  "git_head": "014d012957407e7401603cec573894299a2f9833",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37980319550",
+  "run_number": "73",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nx-integration-cross-regression/run_checks.py"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T19:28:30.678294+00:00",
+ "duration_s": 18.829,
+ "outputs": [
+  {
+   "path": "e6nx_out/records.json",
+   "bytes": 2372,
+   "sha256": "229c9c877968d7d9fa9ea609a31c305ff0af0172934df5b043394e06abe25b25"
+  },
+  {
+   "path": "e6nx_out/test_gui_doping_donor_acceptor_real.log",
+   "bytes": 2955,
+   "sha256": "6dc2a9dc0e794cf7df7aae546c385df70043668269b839b7065d32ee9542fbfc"
+  },
+  {
+   "path": "e6nx_out/test_gui_headless_no_modal_hang_real.log",
+   "bytes": 6490,
+   "sha256": "82dcb64ff04e63143bbcffac68420e3c7475db14b439d6becd04f698e319dcb4"
+  },
+  {
+   "path": "e6nx_out/test_measurement_canonical_state_gate_real.log",
+   "bytes": 19204,
+   "sha256": "06bb5ca6eca089ff97e3b433410570d54b518650cb20e4b8c7a28175d7d181ee"
+  },
+  {
+   "path": "e6nx_out/verdict.json",
+   "bytes": 239,
+   "sha256": "0c6c592b3cffdd63cc762195df08158d97c62d31f477bb348094185723b6aea8"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Fixed integration contracts, including stale-expectation diagnosis; no gate removal.",
+ "log": {
+  "file": "run.log",
+  "sha256": "d737a3dab6e05df0b6cfd7fb9b2b4126b43dc682dd6d4ed13206a89743b9f226",
+  "bytes": 480
+ },
+ "redactions": {}
+}

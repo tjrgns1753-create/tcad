@@ -1,0 +1,25 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2500 Triangles.
+Physical group name Si has 3825 Lines.
+Physical group name Si has 1326 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 25 Lines.
+Physical group name Si_xmax has 26 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 25 Lines.
+Physical group name Si_xmin has 26 Points.
+Device gui_measure_device has 1326 coordinates with max index 1325
+Region Si has 1326 nodes.
+Contact Si_xmax in region Si with 26 nodes
+Contact Si_xmin in region Si with 26 nodes
+Traceback (most recent call last):
+  File "<WORKSPACE>\tests\integration\test_gui_doping_donor_acceptor_real.py", line 469, in <module>
+    main()
+  File "<WORKSPACE>\tests\integration\test_gui_doping_donor_acceptor_real.py", line 148, in main
+    assert "Measurement: Voltage source" in meas_log_delta, (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: a real DevSim solve must still report its own result in the log panel, got: "NOTE: the doping profile was attached to an earlier mesh. Re-applying the same doping to the current geometry before measuring.\n\n\n================================\nDOPING APPLIED: UNIFORM\n================================\nACTIVE ANALYTIC PROFILE DECLARED (DECLARED ANALYTIC ACTIVE PROFILE: the user's own electrically-active device profile -- not a simulated implant, anneal or activation)\nregion='Si' donor=1.000e+16 acceptor=5.000e+15 -> net_doping_cm3=5.000e+15\nMaterials in mesh: ['Si']\nAccumulated dopant profile(s) on this wafer: 2\n(DopingProfile attached only -- no DevSim solve run.)\n\nNOTE: COMPENSATED_TRANSPORT_MODEL_MISSING -- donor and acceptor coexist over a finite area (instance 'si#substrate': donor 'att:doping:1:2' and acceptor 'att:doping:2:2' coexist over the finite area (-5.0, 5.0, -5.0, 0.0)). The canonical concentrations are kept; a DevSim measurement of this region is UNSUPPORTED_BY_MODEL (no compensation-aware transport model).\n\n\n(No mesh refinement needed -- uniform doping has no junction to resolve.)\n\nERROR — Measurement: UNSUPPORTED_BY_MODEL (COMPENSATED_TRANSPORT_MODEL_MISSING): device 'gui_measure_device' region 'Si' holds donor AND acceptor dopant over a finite area (1326 of 1326 mesh node(s) blocked (region-level: compensated region)). The canonical concentrations are kept, but the drift-diffusion model has no compensation-aware ionized-impurity scattering / mobility, so the device solve must not proceed.\ninstance 'si#substrate': donor 'att:doping:1:2' and acceptor 'att:doping:2:2' coexist over the finite area (-5.0, 5.0, -5.0, 0.0)\n\nMeasurement blocked: no doping was written to DevSim, no solve was run, and no current is reported.\n\n"

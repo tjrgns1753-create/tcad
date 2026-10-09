@@ -1,0 +1,13 @@
+{
+  "pass": false,
+  "counts": {
+    "PASS": 2,
+    "FAIL": 1,
+    "TIMEOUT": 0,
+    "ERROR": 0,
+    "SKIP": 0
+  },
+  "expected_files": 3,
+  "recorded_files": 3,
+  "scope": "INTEGRATION_CONTRACTS_NOT_GENERAL_PHYSICS_APPROVAL"
+}

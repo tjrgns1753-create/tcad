@@ -1,0 +1,45 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[A] withdrawn window and trap calibration
+    OK: winfo_viewable()=0; all 8 blocking messagebox functions trapped, each direct call recorded, log cleared
+[B] FRESH 0 h thermal request = materialization of a virgin Si wafer (not an identity)
+    OK: transition materialization/inherited=False, materials ['Si'], Si 50.000 um^2, not promoted, no marker, no success wording, modal calls 0
+[C] INHERITED 0 h thermal request = identity (existing wafer preserved)
+    OK: transition identity/inherited=True; exported geometry and loaded native domains equal B's; mesh file sha B=c19836cb9f07 C=c19836cb9f07; .vpsd bytes B=b98ab32f0974 C=b40b402800b2 (byte hashes may differ; content compared)
+[D] default etch (Bosch DRIE) on the preserved wafer
+    OK: Si only; Si top lowered by 0.0693..0.0911 um at the 9 sampled columns (bound: > 0.1 x grid = 0.010; observation only, no exact depth or hash is asserted); Si area 50.000 -> 49.201; processed/etched/stage='etched'
+[E] default deposition (Isotropic, SiO2) on the etched wafer
+    OK: materials ['Si', 'SiO2'] (the SiO2 is a DEPOSITED film); film thickness 0.0240..0.0242 um at 9/9 columns (bound: > 0.1 x grid = 0.010); Si top change <= 0.0010 um; no Mask; stage='deposited'
+[F] positive-time oxidation on a fresh wafer = UNSUPPORTED_BY_MODEL
+    OK: transition {'kind': 'unsupported', 'category': 'oxidation', 'reason': 'OXIDATION_CAPABILITY_PROOF_MISSING'}; physics UNSUPPORTED_BY_MODEL/OXIDATION_CAPABILITY_PROOF_MISSING; last-known mesh ['Si']; not promoted, no marker, no success wording, 4 fail-closed facts, not an ERROR
+[G] worker-side wafer-state/recipe validation failure (fresh 0 h thermal, grid_delta_um = -1)
+    OK: worker subprocess ran (return code 0, result file created by it) and returned success=False, error ValueError('recipe bounds do not describe a valid virgin Si wafer: x_extent_um=10.0, silic...; raised by tcad's validator in wafer_state_accumulation.py INSIDE the worker (ViennaPS solver not involved); no mesh, no state, logged as ERROR, not unsupported; modal calls 0
+
+[S] false-green guards: every contract check fails, for its own reason, when its subject is broken
+    [guard OK] a materialization is judged as an identity: fails for the expected reason  (B judged as identity: not an inherited identity: {'kind': 'materialization', 'reason': 'zero_duratio)
+    [guard OK] an inherited identity changes the geometry: fails for the expected reason  (identity vs etched: exported geometry differs: ['Si'] {'Si': 50.0} vs ['Si'] {'Si': 49.2013435363769)
+    [guard OK] a zero-duration log says simulation complete: fails for the expected reason  (B+wording: success wording 'simulation complete' in the log of a request that did not oxidize:)
+    [guard OK] a zero-duration step lights the Film / oxide marker: fails for the expected reason  (B+marker: the Film / oxide marker or another SESSION STATE marker changed: [0] -> [0, 1], on-screen )
+    [guard OK] the etch does not change the geometry: fails for the expected reason  (unchanged etch: the etch did not lower the Si top by at least 0.01 um (0.1 x grid) at every sampled )
+    [guard OK] the etch lowers the Si by less than 0.1 x grid: fails for the expected reason  (sub-bound etch: the etch did not lower the Si top by at least 0.01 um (0.1 x grid) at every sampled )
+    [guard OK] the deposition adds no film: fails for the expected reason  (no film: no SiO2 film was added: materials ['Si'])
+    [guard OK] the film is thinner than 0.1 x grid: fails for the expected reason  (thin film: SiO2 film missing or thinner than 0.01 um (0.1 x grid) at a sampled column: [0.005 0.005 )
+    [guard OK] an unsupported request is judged as a successful step: fails for the expected reason  (F as a real step: not a plain successful step: {'success': True, 'final_mesh': '<USERPROFILE>\)
+    [guard OK] a worker validation error is judged as unsupported: fails for the expected reason  (G as unsupported: not an unsupported result: transition {}, success False)
+    [guard OK] an unsupported result is judged as a worker error: fails for the expected reason  (F as an error: the worker reported success True, expected a failure)
+    [guard OK] a worker error leaves no ERROR entry in the log: fails for the expected reason  (G silent: no ERROR entry / failure notice in the log delta:)
+    [guard OK] a messagebox call is recorded during a scenario: fails for the expected reason  (simulated modal call: 1 modal dialog call(s) reached tkinter.messagebox: [('showinfo', ('simulated',)
+    [guard OK] the trap does not record direct calls: fails for the expected reason  (the trap did not record every direct call: [])
+
+| scenario | request | transition / status | solver meaning | materials | geometry change | processed / stage / marker | modal calls |
+|---|---|---|---|---|---|---|---|
+| B fresh zero-time | 0 h, grid 0.1 | materialization (inherited=False) | no oxidation solver (production log + existing in-process traps) | Si | virgin Si created | processed=False / stage='wafer' / Film-oxide marker lit=False | 0 |
+| C inherited zero-time | 0 h, on B | identity (inherited=True) | no oxidation solver; identity | Si | none (equal to B) | processed=False / stage='wafer' / Film-oxide marker lit=False | 0 |
+| D default etch | Bosch DRIE defaults, on C | real step, no transition | real ViennaPS etch | Si | Si top lowered 0.069..0.091 um | processed=True / stage='etched' / Film-oxide marker lit=False | 0 |
+| E default deposition | Isotropic SiO2 defaults, on D | real step, no transition | real ViennaPS deposition | Si+SiO2 | SiO2 film 0.024..0.024 um | processed=True / stage='deposited' / Film-oxide marker lit=True | 0 |
+| F positive-time | 0.4 h, fresh | unsupported OXIDATION_CAPABILITY_PROOF_MISSING | no solver call (capability gate) | Si | none (last-known) | processed=False / stage='wafer' / Film-oxide marker lit=False | 0 |
+| G validation failure | 0 h, grid -1, fresh | worker success=False (ValueError) | no solver; tcad validator ValueError in the worker | - | none, nothing adopted | processed=False / stage='wafer' / Film-oxide marker lit=False | 0 |
+
+HEADLESS NO MODAL HANG: fresh zero-duration materialization, inherited identity, real etch, real deposition,
+positive-time UNSUPPORTED and a worker-side validation failure all ran through the real GUI dispatch with
+no dialog wait -- every messagebox function was trapped and none fired.
