@@ -1,0 +1,174 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T19:41:15.325144+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nz-intrinsic-api-capability-001",
+  "profile": "e6nz_intrinsic_api_capability",
+  "params": {},
+  "note": "Known-zero canonical input through public DD APIs; intrinsic capability pilot only, GUI and gates unchanged."
+ },
+ "profile": "e6nz_intrinsic_api_capability",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/PLAN.md",
+   "sha256": "6e1dc770a9dcbc87ddb44ea535df037b0ba450e062f7ebf94348243ff71207c0",
+   "bytes": 2306
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/run_checks.py",
+   "sha256": "61cef497295deb1b88dd330f0877bf8ea0e1b60a962eb9d8684df850f0aff457",
+   "bytes": 1308
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/check_api.py",
+   "sha256": "123c251d8bf0e5710e7c0d45dabef56a16337ecee7af4645d96f9210f0856eed",
+   "bytes": 5523
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/judge.py",
+   "sha256": "8a89c3b31c8d1fec97d9e1c9bc633e406c3f7f7f96cb16478a683f7428450d1c",
+   "bytes": 3961
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/test_judge.py",
+   "sha256": "d9951ce1d72312c5bd18cba030460e52e6285b2427989743938e98bc21cae2b5",
+   "bytes": 2269
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  },
+  {
+   "path": "tests/integration/test_mesh_gate_poisson_transition_real.py",
+   "sha256": "311642d0af6311f9ddfcbbd6871330e671c8557ae2e24a55c52b26ccfd5ff6f5",
+   "bytes": 11322
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "tcad/device/devsim/semiconductor_equation.py",
+   "sha256": "3de029f1bb9be99490721da0ec1dd8d9f2b055f8e93be8d046d957bb05df3370",
+   "bytes": 7129
+  },
+  {
+   "path": "tcad/physics/wafer_state_v2.py",
+   "sha256": "7652062fb0eb03ed1ecab41c72aee3875d61e5503f2193bd015084a7a817de08",
+   "bytes": 61267
+  },
+  {
+   "path": "tcad/physics/wafer_state_accumulation.py",
+   "sha256": "dfb12c8a756bfb3582dcdf827f1470f65556aa6662181c1aba42062dbae4f1bb",
+   "bytes": 27500
+  }
+ ],
+ "request_sha256": "c628b10f200f7741e8bb31942d24fbdbe956e35f639e1c9a6876fe50016e3839",
+ "source": {
+  "github_sha": "79ea8e3a56034f28eaa832e53b8f2e3c370b46a4",
+  "git_head": "79ea8e3a56034f28eaa832e53b8f2e3c370b46a4",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37981805856",
+  "run_number": "75",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T19:41:17.581766+00:00",
+ "duration_s": 2.257,
+ "outputs": [
+  {
+   "path": "e6nz_out/api.log",
+   "bytes": 8051,
+   "sha256": "e3f83257f6c9f4ef97ab22eee13a295b0e2e4fe90ce768520906c8fea076d70d"
+  },
+  {
+   "path": "e6nz_out/judge.log",
+   "bytes": 75,
+   "sha256": "0c7e9468474d0da4a4bed0d39c7e080507c74086e4db0d9451746d0d4129f1ad"
+  },
+  {
+   "path": "e6nz_out/records.json",
+   "bytes": 48475,
+   "sha256": "c3a8ecf6c4d64a7d7ddf65abe0d75b043295fa9797b1760d6283aeecde389aaa"
+  },
+  {
+   "path": "e6nz_out/steps.json",
+   "bytes": 922,
+   "sha256": "8af6904694f8287263a409198891db0ec3d5ff400c90592547c41a7ca25a7d97"
+  },
+  {
+   "path": "e6nz_out/verdict.json",
+   "bytes": 4199,
+   "sha256": "d1fa6c515c24d232b4c5a9641c07003eb740c0d7052aa217b621967f75fc9124"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Three fresh intrinsic low-field biases, missing/unresolved refusal; no fake zero profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "4e3891f84affeff0b91224d608e3c59267bf92b1748c2535f7379ec23966c708",
+  "bytes": 809
+ },
+ "redactions": {}
+}

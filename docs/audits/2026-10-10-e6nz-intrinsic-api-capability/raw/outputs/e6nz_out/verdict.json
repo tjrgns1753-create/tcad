@@ -1,0 +1,230 @@
+{
+  "pass": true,
+  "checks": [
+    {
+      "name": "exact cases",
+      "pass": true
+    },
+    {
+      "name": "zero metadata",
+      "pass": true
+    },
+    {
+      "name": "zero parameters",
+      "pass": true
+    },
+    {
+      "name": "zero units",
+      "pass": true
+    },
+    {
+      "name": "zero full arrays",
+      "pass": true
+    },
+    {
+      "name": "zero finite arrays",
+      "pass": true
+    },
+    {
+      "name": "zero known zero doping",
+      "pass": true
+    },
+    {
+      "name": "zero canonical preserved",
+      "pass": true
+    },
+    {
+      "name": "zero contacts",
+      "pass": true
+    },
+    {
+      "name": "zero actual result currents",
+      "pass": true
+    },
+    {
+      "name": "zero current",
+      "pass": true
+    },
+    {
+      "name": "zero KCL",
+      "pass": true
+    },
+    {
+      "name": "zero Electrons uniform",
+      "pass": true
+    },
+    {
+      "name": "zero Holes uniform",
+      "pass": true
+    },
+    {
+      "name": "zero length",
+      "pass": true
+    },
+    {
+      "name": "zero affine Potential",
+      "pass": true
+    },
+    {
+      "name": "zero cleanup",
+      "pass": true
+    },
+    {
+      "name": "positive metadata",
+      "pass": true
+    },
+    {
+      "name": "positive parameters",
+      "pass": true
+    },
+    {
+      "name": "positive units",
+      "pass": true
+    },
+    {
+      "name": "positive full arrays",
+      "pass": true
+    },
+    {
+      "name": "positive finite arrays",
+      "pass": true
+    },
+    {
+      "name": "positive known zero doping",
+      "pass": true
+    },
+    {
+      "name": "positive canonical preserved",
+      "pass": true
+    },
+    {
+      "name": "positive contacts",
+      "pass": true
+    },
+    {
+      "name": "positive actual result currents",
+      "pass": true
+    },
+    {
+      "name": "positive current",
+      "pass": true
+    },
+    {
+      "name": "positive KCL",
+      "pass": true
+    },
+    {
+      "name": "positive Electrons uniform",
+      "pass": true
+    },
+    {
+      "name": "positive Holes uniform",
+      "pass": true
+    },
+    {
+      "name": "positive length",
+      "pass": true
+    },
+    {
+      "name": "positive affine Potential",
+      "pass": true
+    },
+    {
+      "name": "positive electron fraction",
+      "pass": true
+    },
+    {
+      "name": "positive hole fraction",
+      "pass": true
+    },
+    {
+      "name": "positive cleanup",
+      "pass": true
+    },
+    {
+      "name": "negative metadata",
+      "pass": true
+    },
+    {
+      "name": "negative parameters",
+      "pass": true
+    },
+    {
+      "name": "negative units",
+      "pass": true
+    },
+    {
+      "name": "negative full arrays",
+      "pass": true
+    },
+    {
+      "name": "negative finite arrays",
+      "pass": true
+    },
+    {
+      "name": "negative known zero doping",
+      "pass": true
+    },
+    {
+      "name": "negative canonical preserved",
+      "pass": true
+    },
+    {
+      "name": "negative contacts",
+      "pass": true
+    },
+    {
+      "name": "negative actual result currents",
+      "pass": true
+    },
+    {
+      "name": "negative current",
+      "pass": true
+    },
+    {
+      "name": "negative KCL",
+      "pass": true
+    },
+    {
+      "name": "negative Electrons uniform",
+      "pass": true
+    },
+    {
+      "name": "negative Holes uniform",
+      "pass": true
+    },
+    {
+      "name": "negative length",
+      "pass": true
+    },
+    {
+      "name": "negative affine Potential",
+      "pass": true
+    },
+    {
+      "name": "negative electron fraction",
+      "pass": true
+    },
+    {
+      "name": "negative hole fraction",
+      "pass": true
+    },
+    {
+      "name": "negative cleanup",
+      "pass": true
+    },
+    {
+      "name": "exact blocked cases",
+      "pass": true
+    },
+    {
+      "name": "missing refusal",
+      "pass": true
+    },
+    {
+      "name": "unresolved refusal",
+      "pass": true
+    }
+  ],
+  "scope": "KNOWN_UNDOPED_API_PILOT_NOT_GUI_OR_PN_APPROVAL"
+}
