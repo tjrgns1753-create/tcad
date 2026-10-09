@@ -5790,7 +5790,7 @@ class TCADApplication(tk.Tk):
 
         intrinsic_input = False
         if self.last_doped_result is None:
-            from tcad.characterization.intrinsic import known_undoped_si, validate_intrinsic_bias
+            from tcad.characterization.intrinsic import known_undoped_si, validate_intrinsic_bias, intrinsic_refusal_status
             # Only a pristine GUI may materialize its explicit initial wafer.
             if (getattr(self, 'wafer_state', None) is None and getattr(self, 'last_final_mesh', None) is None
                     and getattr(self, 'wafer', None) is not None and not self.wafer.processed
@@ -5801,6 +5801,8 @@ class TCADApplication(tk.Tk):
                 try:
                     validate_intrinsic_bias(self.wafer_state, self.meas_axis_var.get(), voltage)
                 except ValueError as exc:
+                    self.last_physics_status = intrinsic_refusal_status('INTRINSIC_LOW_FIELD_CAPABILITY_UNVERIFIED', str(exc))
+                    self._log_physics_status({'physics_status': self.last_physics_status})
                     self._notify_error('Measurement', str(exc) + '. No doping write or solve was run.')
                     return
                 intrinsic_input = True
@@ -6060,7 +6062,10 @@ class TCADApplication(tk.Tk):
             return
 
         except Exception as exc:
-
+            if intrinsic_input:
+                from tcad.characterization.intrinsic import intrinsic_refusal_status
+                self.last_physics_status = intrinsic_refusal_status('INTRINSIC_RESULT_NOT_VALIDATED', str(exc))
+                self._log_physics_status({'physics_status': self.last_physics_status})
             self._notify_error(
                 "Measurement",
                 str(exc),

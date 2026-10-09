@@ -1,7 +1,7 @@
 {
  "schema": 1,
-  "request_id": "e6naa-intrinsic-gui-001",
-  "profile": "e6naa_intrinsic_gui",
+  "request_id": "e6nab-intrinsic-refusal-001",
+  "profile": "e6nab_intrinsic_refusal",
  "params": {},
-  "note": "Known-undoped low-field GUI and analytic full-field guard; unsupported fabrication, activation and PN gates unchanged."
+  "note": "Actual opposite-source controls and explicitly labelled post-solve fault injections; no physical-model or gate changes."
 }

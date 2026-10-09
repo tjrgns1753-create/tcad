@@ -4,6 +4,12 @@ from tcad.physics.wafer_state_v2 import WaferStateV2
 from tcad.characterization.node_fields import validate_node_fields
 from tcad.characterization.interface import validate_bias_point
 
+def intrinsic_refusal_status(reason, note):
+    """Result validity only; never modify or activate the canonical wafer."""
+    return {'resolution': 'UNSUPPORTED_BY_MODEL', 'reason_code': reason,
+            'entries': [{'parameter': 'intrinsic_device_measurement', 'material': 'Si',
+                         'resolution': 'UNSUPPORTED_BY_MODEL', 'provenance': 'DERIVED', 'note': note}]}
+
 def known_undoped_si(state):
     if not isinstance(state, WaferStateV2) or len(state.cells)!=1 or state.attachments or state.unresolved_inventory:
         return False
