@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nt-uniform-gui-bias-axis-001",
- "profile": "e6nt_uniform_gui_bias_axis",
+  "request_id": "e6nu-carrier-compensation-order-001",
+  "profile": "e6nu_carrier_compensation_order",
  "params": {},
- "note": "Actual uniform Si GUI physical comparisons for polarity, zero bias, swapped contacts and x/y axes."
+  "note": "Actual uniform p/n carrier and compensated ACTIVE declaration order checks; no implant or PN gate approval."
 }

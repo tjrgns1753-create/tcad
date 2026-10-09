@@ -11,6 +11,27 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nu_carrier_compensation_order": {
+        "description": "Twelve actual uniform ACTIVE GUI requests: p/n majority and compensated declarations in both orders.",
+        "entry": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 500, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "tcad/characterization/node_fields.py",
+                   "tcad/characterization/interface.py", "tcad/characterization/source_context.py",
+                   "tcad/characterization/pn_junction_iv_sweep.py", "tcad/physics/doping.py",
+                   "tcad/physics/wafer_state_accumulation.py", "tcad/physics/wafer_state_v2.py",
+                   "tcad/device/devsim/doping_mapping.py",
+                   "docs/audits/2026-10-10-e6nu-carrier-compensation-order/PLAN.md",
+                   "docs/audits/2026-10-10-e6nu-carrier-compensation-order/check_matrix.py",
+                   "docs/audits/2026-10-10-e6nu-carrier-compensation-order/judge.py",
+                   "docs/audits/2026-10-10-e6nu-carrier-compensation-order/test_contract.py",
+                   "docs/audits/2026-10-10-e6nu-carrier-compensation-order/run_checks.py",
+                   "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/resistor_judge.py",
+                   "tests/integration/test_uniform_resistor_dd_current_real.py",
+                   "tests/unit/test_measurement_requested_bias_mock.py", "tests/unit/test_node_field_caption_mock.py",
+                   "tests/unit/test_wafer_state_v2_fail_closed_no_resurrection_mock.py"],
+        "outputs": [{"glob": "e6nu_out/**/*", "max_mb": 12}],
+        "regenerate": "36 actual constant-mobility uniform resistor solves; ACTIVE declarations, not implantation or activation simulation.",
+    },
     "e6nt_uniform_gui_bias_axis": {
         "description": "Eight actual supported uniform Si GUI requests: polarity, zero, source swap, x/y axis; existing analytic criteria.",
         "entry": "docs/audits/2026-10-10-e6nt-uniform-gui-bias-axis/run_checks.py",
