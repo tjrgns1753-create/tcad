@@ -1,0 +1,1 @@
+{"mode": "after", "cases": {"only_source": "BLOCKED", "missing_ground_current": "BLOCKED", "missing_ground_voltage": "BLOCKED", "different_contacts": "BLOCKED", "extra_current": "BLOCKED", "three_contacts": "BLOCKED", "blank_contact": "BLOCKED", "non_string_contact": "BLOCKED"}, "normal_controls": 3, "engine_imports": 0}

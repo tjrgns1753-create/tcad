@@ -1,0 +1,278 @@
+{
+  "pass": true,
+  "checks": [
+    {
+      "name": "x_max_pos_current",
+      "value": 1.0977546996399267e-13,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "x_max_pos_kcl",
+      "value": 0.0,
+      "limit": 1e-06,
+      "pass": true
+    },
+    {
+      "name": "x_max_pos_carrier",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "x_max_pos_potential",
+      "value": 5.551115123125783e-14,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "x_max_neg_current",
+      "value": 1.0977546996399267e-13,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "x_max_neg_kcl",
+      "value": 0.0,
+      "limit": 1e-06,
+      "pass": true
+    },
+    {
+      "name": "x_max_neg_carrier",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "x_max_neg_potential",
+      "value": 5.551115123125783e-14,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "x_max_zero_current",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "x_max_zero_kcl",
+      "value": 0.0,
+      "limit": 1e-06,
+      "pass": true
+    },
+    {
+      "name": "x_max_zero_carrier",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "x_max_zero_potential",
+      "value": 0.0,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "x_min_pos_current",
+      "value": 1.0977546996399267e-13,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "x_min_pos_kcl",
+      "value": 0.0,
+      "limit": 1e-06,
+      "pass": true
+    },
+    {
+      "name": "x_min_pos_carrier",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "x_min_pos_potential",
+      "value": 5.551115123125783e-14,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "y_max_pos_current",
+      "value": 4.353749348880574e-14,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "y_max_pos_kcl",
+      "value": 0.0,
+      "limit": 1e-06,
+      "pass": true
+    },
+    {
+      "name": "y_max_pos_carrier",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "y_max_pos_potential",
+      "value": 5.551115123125783e-14,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "y_min_pos_current",
+      "value": 4.353749348880574e-14,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "y_min_pos_kcl",
+      "value": 4.489274620441059e-14,
+      "limit": 1e-06,
+      "pass": true
+    },
+    {
+      "name": "y_min_pos_carrier",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "y_min_pos_potential",
+      "value": 5.551115123125783e-14,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "y_max_neg_current",
+      "value": 4.353749348880574e-14,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "y_max_neg_kcl",
+      "value": 0.0,
+      "limit": 1e-06,
+      "pass": true
+    },
+    {
+      "name": "y_max_neg_carrier",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "y_max_neg_potential",
+      "value": 5.551115123125783e-14,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "y_max_zero_current",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "y_max_zero_kcl",
+      "value": 0.0,
+      "limit": 1e-06,
+      "pass": true
+    },
+    {
+      "name": "y_max_zero_carrier",
+      "value": 0.0,
+      "limit": 0.0001,
+      "pass": true
+    },
+    {
+      "name": "y_max_zero_potential",
+      "value": 0.0,
+      "limit": 0.01,
+      "pass": true
+    },
+    {
+      "name": "axis_current_ratio",
+      "value": 6.616929226765933e-14,
+      "limit": 0.01,
+      "pass": true
+    }
+  ],
+  "metrics": {
+    "x_max_pos": {
+      "source_current_A_per_cm": 0.0001600000000002224,
+      "ground_current_A_per_cm": -0.0001600000000002224,
+      "G_A_per_V_per_cm": 0.16000000000023998,
+      "current_error": 1.0977546996399267e-13,
+      "kcl": 0.0,
+      "n_uniformity": 0.0,
+      "potential_linearity": 5.551115123125783e-14
+    },
+    "x_max_neg": {
+      "source_current_A_per_cm": -0.0001600000000002224,
+      "ground_current_A_per_cm": 0.0001600000000002224,
+      "G_A_per_V_per_cm": 0.16000000000023998,
+      "current_error": 1.0977546996399267e-13,
+      "kcl": 0.0,
+      "n_uniformity": 0.0,
+      "potential_linearity": 5.551115123125783e-14
+    },
+    "x_max_zero": {
+      "source_current_A_per_cm": 0.0,
+      "ground_current_A_per_cm": 0.0,
+      "G_A_per_V_per_cm": 0.16000000000023998,
+      "current_error": 0.0,
+      "kcl": 0.0,
+      "n_uniformity": 0.0,
+      "potential_linearity": 0.0
+    },
+    "x_min_pos": {
+      "source_current_A_per_cm": 0.0001600000000002224,
+      "ground_current_A_per_cm": -0.0001600000000002224,
+      "G_A_per_V_per_cm": 0.16000000000023998,
+      "current_error": 1.0977546996399267e-13,
+      "kcl": 0.0,
+      "n_uniformity": 0.0,
+      "potential_linearity": 5.551115123125783e-14
+    },
+    "y_max_pos": {
+      "source_current_A_per_cm": 0.002560000000003728,
+      "ground_current_A_per_cm": -0.002560000000003728,
+      "G_A_per_V_per_cm": 2.5600000000038396,
+      "current_error": 4.353749348880574e-14,
+      "kcl": 0.0,
+      "n_uniformity": 0.0,
+      "potential_linearity": 5.551115123125783e-14
+    },
+    "y_min_pos": {
+      "source_current_A_per_cm": 0.002560000000003728,
+      "ground_current_A_per_cm": -0.002560000000003843,
+      "G_A_per_V_per_cm": 2.5600000000038396,
+      "current_error": 4.353749348880574e-14,
+      "kcl": 4.489274620441059e-14,
+      "n_uniformity": 0.0,
+      "potential_linearity": 5.551115123125783e-14
+    },
+    "y_max_neg": {
+      "source_current_A_per_cm": -0.002560000000003728,
+      "ground_current_A_per_cm": 0.002560000000003728,
+      "G_A_per_V_per_cm": 2.5600000000038396,
+      "current_error": 4.353749348880574e-14,
+      "kcl": 0.0,
+      "n_uniformity": 0.0,
+      "potential_linearity": 5.551115123125783e-14
+    },
+    "y_max_zero": {
+      "source_current_A_per_cm": 0.0,
+      "ground_current_A_per_cm": 0.0,
+      "G_A_per_V_per_cm": 2.5600000000038396,
+      "current_error": 0.0,
+      "kcl": 0.0,
+      "n_uniformity": 0.0,
+      "potential_linearity": 0.0
+    }
+  },
+  "axis_current_ratio": 16.00000000000106
+}

@@ -1,0 +1,232 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T18:41:03.839735+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nt-uniform-gui-bias-axis-001",
+  "profile": "e6nt_uniform_gui_bias_axis",
+  "params": {},
+  "note": "Actual uniform Si GUI physical comparisons for polarity, zero bias, swapped contacts and x/y axes."
+ },
+ "profile": "e6nt_uniform_gui_bias_axis",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "22855ababf073dd331f8bfae9bc945301e9cec539ebe01a21f617e470cfc7352",
+   "bytes": 417257
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "4d7bf8fd49fc411b0565772242dbe0f7ccafd4209443c0d4385f6de826be217a",
+   "bytes": 7958
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "16eb8d75591f866cb9f689714e29f396932db247361c4ac4b66773dbf48ec8a1",
+   "bytes": 1880
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nt-uniform-gui-bias-axis/PLAN.md",
+   "sha256": "3da354ac574692a16b0672014f92c9877f2fdee03dd203faed0f32df0c15aba2",
+   "bytes": 2985
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nt-uniform-gui-bias-axis/check_matrix.py",
+   "sha256": "5bebba5bb61c0087446f9cf6f160a47407db5f0d5b7b7eaf95f321a473c3bcb3",
+   "bytes": 5681
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nt-uniform-gui-bias-axis/judge.py",
+   "sha256": "257076b7435549449dfb25ae423bb3839c6e00d5f8905a284ce6e98c821ff96b",
+   "bytes": 6543
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nt-uniform-gui-bias-axis/test_contract.py",
+   "sha256": "2efc0c9b53ddd2d308fc4c95da69a287462943a32c919ea9730042ce709794be",
+   "bytes": 3446
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nt-uniform-gui-bias-axis/run_checks.py",
+   "sha256": "0d2cc7d93eaecdbae01c355c3d482ac06b31a3874e8ed716ab32011d76df9716",
+   "bytes": 1802
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/resistor_judge.py",
+   "sha256": "8281dfc69e396ccf7c40dbf3ea9bc1aacb44a6a809c1e5749d226e20ef8273d3",
+   "bytes": 5283
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  },
+  {
+   "path": "tests/unit/test_measurement_requested_bias_mock.py",
+   "sha256": "6251b02b3d118fa638dd40b427fd33544aa19b8cf8ddda8885970e4704b34e68",
+   "bytes": 4097
+  },
+  {
+   "path": "tests/unit/test_node_field_caption_mock.py",
+   "sha256": "1dc05178d7413eff749ce00511c469a0daa8c6b491133776e34b1936731e191b",
+   "bytes": 4027
+  },
+  {
+   "path": "tests/unit/test_node_field_contacts_mock.py",
+   "sha256": "9df382c93c6972867dd5e9d641da2f9f71443c4ecbede9db25e7cc9159142e85",
+   "bytes": 4354
+  }
+ ],
+ "request_sha256": "028fc12ed8857869c3a2905a33b29c9338951fec8b8bc6325fde0faa16685088",
+ "source": {
+  "github_sha": "ddf01be947cad338f2905226733f5c49ee5d34b6",
+  "git_head": "ddf01be947cad338f2905226733f5c49ee5d34b6",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37974877904",
+  "run_number": "68",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nt-uniform-gui-bias-axis/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T18:41:10.630900+00:00",
+ "duration_s": 6.791,
+ "outputs": [
+  {
+   "path": "e6nt_out/bias.log",
+   "bytes": 264,
+   "sha256": "9e583bcd88ca2c9d45702ed8935d34f44dbcbe80f2a37dd54c6acd832ada5fa2"
+  },
+  {
+   "path": "e6nt_out/caption.log",
+   "bytes": 109,
+   "sha256": "097fb46d038e49d08c08b04d3602c0999f84fd5e6a2377f9d60d46d41681b208"
+  },
+  {
+   "path": "e6nt_out/contacts.log",
+   "bytes": 323,
+   "sha256": "2daf2385ef1039ef2fe0c08984f033eb6101dc8f17bac65d131dc06a7260b182"
+  },
+  {
+   "path": "e6nt_out/judge.log",
+   "bytes": 91,
+   "sha256": "2e484012cfc9f4d81e6ed8f570725e119e88210532316af8d008851f2a8053ca"
+  },
+  {
+   "path": "e6nt_out/matrix.log",
+   "bytes": 33301,
+   "sha256": "1b4c9eadfbd1c8f83dc6a6c7214040aff35053980aabcc9e76caea36e9221d0a"
+  },
+  {
+   "path": "e6nt_out/records.json",
+   "bytes": 105628,
+   "sha256": "10c176b9348cc293316f1573b89f2ece203e4ea0681db755f3935f6a6eb4c36c"
+  },
+  {
+   "path": "e6nt_out/tests.json",
+   "bytes": 2472,
+   "sha256": "aa3e65df0cf70881b2947b858d04f412056ea9d0d9d675ed3359aeb6503a8ca7"
+  },
+  {
+   "path": "e6nt_out/verdict.json",
+   "bytes": 6706,
+   "sha256": "f4686b203980c9a4cce1a367f12805218da568eefcfb60c215af31ff61e728b8"
+  },
+  {
+   "path": "e6nt_out/x_max_neg_fields.json",
+   "bytes": 10301,
+   "sha256": "b86f6c1236497f6ae8abd357384b372d0381bb14625dbc6f5fb2813abe35c2a3"
+  },
+  {
+   "path": "e6nt_out/x_max_pos_fields.json",
+   "bytes": 10300,
+   "sha256": "8111c300184eccc680938178e6112fc6e8152e2b4789cc1cdfa79d935df1056f"
+  },
+  {
+   "path": "e6nt_out/x_max_zero_fields.json",
+   "bytes": 10240,
+   "sha256": "6c99d4f801d6a2ddeba13111e58a6e5acdc8a3a238bdf70240d52a3f4c523e8d"
+  },
+  {
+   "path": "e6nt_out/x_min_pos_fields.json",
+   "bytes": 10297,
+   "sha256": "7c7557883fafc0e7eb42fd87ed316196d5eda5b16794e674194c8aa439a38807"
+  },
+  {
+   "path": "e6nt_out/y_max_neg_fields.json",
+   "bytes": 10285,
+   "sha256": "b46b61586029a5940c5da8a2c38a54b97346f36c9f1902301be8d0f8eb656e68"
+  },
+  {
+   "path": "e6nt_out/y_max_pos_fields.json",
+   "bytes": 10284,
+   "sha256": "8657d8155b43b8e9bd6bd56e6190adc4d77f420706b91e380555a611aaf8f343"
+  },
+  {
+   "path": "e6nt_out/y_max_zero_fields.json",
+   "bytes": 10240,
+   "sha256": "9a9b69efb0212358316d291051ca178a5d2fb0b4d03ef75edd9f0c32bccf68ce"
+  },
+  {
+   "path": "e6nt_out/y_min_pos_fields.json",
+   "bytes": 10278,
+   "sha256": "381c080b538bca199b0cd7ec26397a02a8338487b4bad4bb769e05e2c959ff4c"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "24 actual low-field uniform resistor solves only; no PN/oxide/MOS capability approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "bc4a8ef27b8bb2160fd310e1c97058426077c07fc1c6bc0c351e65fd6d6e4aef",
+  "bytes": 91
+ },
+ "redactions": {}
+}

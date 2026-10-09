@@ -1,0 +1,607 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+    Region: "Si"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+      Equation: "PotentialEquation"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+    Region: "Si"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+      Equation: "PotentialEquation"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+    Region: "Si"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+      Equation: "PotentialEquation"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+    Region: "Si"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+      Equation: "PotentialEquation"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+    Region: "Si"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.20000e-15	AbsError: 2.20000e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.17384e-15	AbsError: 2.17384e-11
+      Equation: "PotentialEquation"	RelError: 1.55213e-16	AbsError: 5.55112e-17
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.78827e-03	AbsError: 9.65599e-02
+    Region: "Si"	RelError: 2.78827e-03	AbsError: 9.65599e-02
+      Equation: "ElectronContinuityEquation"	RelError: 9.55599e-18	AbsError: 9.55599e-02
+      Equation: "HoleContinuityEquation"	RelError: 1.07786e-16	AbsError: 1.07786e-12
+      Equation: "PotentialEquation"	RelError: 2.78827e-03	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 2.59151e-16	AbsError: 3.71758e-04
+    Region: "Si"	RelError: 2.59151e-16	AbsError: 3.71758e-04
+      Equation: "ElectronContinuityEquation"	RelError: 3.71758e-20	AbsError: 3.71758e-04
+      Equation: "HoleContinuityEquation"	RelError: 1.81581e-16	AbsError: 1.81581e-12
+      Equation: "PotentialEquation"	RelError: 7.75323e-17	AbsError: 2.77484e-17
+x_max_pos {'Si_xmin': -0.0001600000000002224, 'Si_xmax': 0.0001600000000002224}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+    Region: "Si"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+      Equation: "PotentialEquation"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+    Region: "Si"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+      Equation: "PotentialEquation"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+    Region: "Si"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+      Equation: "PotentialEquation"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+    Region: "Si"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+      Equation: "PotentialEquation"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+    Region: "Si"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.20000e-15	AbsError: 2.20000e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.17384e-15	AbsError: 2.17384e-11
+      Equation: "PotentialEquation"	RelError: 1.55213e-16	AbsError: 5.55112e-17
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.80391e-03	AbsError: 9.65599e-02
+    Region: "Si"	RelError: 2.80391e-03	AbsError: 9.65599e-02
+      Equation: "ElectronContinuityEquation"	RelError: 9.55599e-18	AbsError: 9.55599e-02
+      Equation: "HoleContinuityEquation"	RelError: 1.07786e-16	AbsError: 1.07786e-12
+      Equation: "PotentialEquation"	RelError: 2.80391e-03	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 2.63139e-16	AbsError: 3.71783e-04
+    Region: "Si"	RelError: 2.63139e-16	AbsError: 3.71783e-04
+      Equation: "ElectronContinuityEquation"	RelError: 3.71783e-20	AbsError: 3.71783e-04
+      Equation: "HoleContinuityEquation"	RelError: 1.85353e-16	AbsError: 1.85353e-12
+      Equation: "PotentialEquation"	RelError: 7.77492e-17	AbsError: 2.77484e-17
+x_max_neg {'Si_xmin': 0.0001600000000002224, 'Si_xmax': -0.0001600000000002224}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+    Region: "Si"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+      Equation: "PotentialEquation"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+    Region: "Si"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+      Equation: "PotentialEquation"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+    Region: "Si"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+      Equation: "PotentialEquation"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+    Region: "Si"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+      Equation: "PotentialEquation"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+    Region: "Si"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.20000e-15	AbsError: 2.20000e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.17384e-15	AbsError: 2.17384e-11
+      Equation: "PotentialEquation"	RelError: 1.55213e-16	AbsError: 5.55112e-17
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.07255e-24	AbsError: 1.00008e-08
+    Region: "Si"	RelError: 2.07255e-24	AbsError: 1.00008e-08
+      Equation: "ElectronContinuityEquation"	RelError: 1.00008e-24	AbsError: 1.00008e-08
+      Equation: "HoleContinuityEquation"	RelError: 1.00008e-24	AbsError: 1.00008e-20
+      Equation: "PotentialEquation"	RelError: 7.23882e-26	AbsError: 2.58893e-26
+x_max_zero {'Si_xmin': 0.0, 'Si_xmax': 0.0}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.50243e-01
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+    Region: "Si"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+      Equation: "PotentialEquation"	RelError: 4.95922e-01	AbsError: 1.47812e-01
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+    Region: "Si"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+      Equation: "PotentialEquation"	RelError: 3.03726e-01	AbsError: 8.00027e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+    Region: "Si"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+      Equation: "PotentialEquation"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+    Region: "Si"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+      Equation: "PotentialEquation"	RelError: 1.59208e-16	AbsError: 5.69399e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+    Region: "Si"	RelError: 4.52905e-15	AbsError: 2.20000e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.20000e-15	AbsError: 2.20000e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.17384e-15	AbsError: 2.17384e-11
+      Equation: "PotentialEquation"	RelError: 1.55213e-16	AbsError: 5.55112e-17
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.78827e-03	AbsError: 8.21460e-02
+    Region: "Si"	RelError: 2.78827e-03	AbsError: 8.21460e-02
+      Equation: "ElectronContinuityEquation"	RelError: 8.11460e-18	AbsError: 8.11460e-02
+      Equation: "HoleContinuityEquation"	RelError: 7.84669e-17	AbsError: 7.84669e-13
+      Equation: "PotentialEquation"	RelError: 2.78827e-03	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 7.80270e-17	AbsError: 3.71099e-04
+    Region: "Si"	RelError: 7.80270e-17	AbsError: 3.71099e-04
+      Equation: "ElectronContinuityEquation"	RelError: 3.71099e-20	AbsError: 3.71099e-04
+      Equation: "HoleContinuityEquation"	RelError: 4.67316e-19	AbsError: 4.67316e-15
+      Equation: "PotentialEquation"	RelError: 7.75226e-17	AbsError: 2.77449e-17
+x_min_pos {'Si_xmin': 0.0001600000000002224, 'Si_xmax': -0.0001600000000002224}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_ymax has 0 Tetrahedra.
+Physical group name Si_ymax has 0 Triangles.
+Physical group name Si_ymax has 12 Lines.
+Physical group name Si_ymax has 13 Points.
+Physical group name Si_ymin has 0 Tetrahedra.
+Physical group name Si_ymin has 0 Triangles.
+Physical group name Si_ymin has 12 Lines.
+Physical group name Si_ymin has 13 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_ymax in region Si with 13 nodes
+Contact Si_ymin in region Si with 13 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+    Region: "Si"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+      Equation: "PotentialEquation"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+    Region: "Si"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+      Equation: "PotentialEquation"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+    Region: "Si"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+      Equation: "PotentialEquation"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+    Region: "Si"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+      Equation: "PotentialEquation"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 5.49238e-11	AbsError: 2.65028e+05
+    Region: "Si"	RelError: 5.49238e-11	AbsError: 2.65028e+05
+      Equation: "ElectronContinuityEquation"	RelError: 2.65028e-11	AbsError: 2.65028e+05
+      Equation: "HoleContinuityEquation"	RelError: 2.65027e-11	AbsError: 2.65027e-07
+      Equation: "PotentialEquation"	RelError: 1.91828e-12	AbsError: 6.86062e-13
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.78827e-03	AbsError: 1.05704e-01
+    Region: "Si"	RelError: 2.78827e-03	AbsError: 1.05704e-01
+      Equation: "ElectronContinuityEquation"	RelError: 1.04704e-17	AbsError: 1.04704e-01
+      Equation: "HoleContinuityEquation"	RelError: 1.90080e-17	AbsError: 1.90080e-13
+      Equation: "PotentialEquation"	RelError: 2.78827e-03	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 7.83394e-17	AbsError: 2.20479e-03
+    Region: "Si"	RelError: 7.83394e-17	AbsError: 2.20479e-03
+      Equation: "ElectronContinuityEquation"	RelError: 2.20479e-19	AbsError: 2.20479e-03
+      Equation: "HoleContinuityEquation"	RelError: 5.01399e-19	AbsError: 5.01399e-15
+      Equation: "PotentialEquation"	RelError: 7.76175e-17	AbsError: 2.77789e-17
+y_max_pos {'Si_ymin': -0.002560000000003728, 'Si_ymax': 0.002560000000003728}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_ymax has 0 Tetrahedra.
+Physical group name Si_ymax has 0 Triangles.
+Physical group name Si_ymax has 12 Lines.
+Physical group name Si_ymax has 13 Points.
+Physical group name Si_ymin has 0 Tetrahedra.
+Physical group name Si_ymin has 0 Triangles.
+Physical group name Si_ymin has 12 Lines.
+Physical group name Si_ymin has 13 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_ymax in region Si with 13 nodes
+Contact Si_ymin in region Si with 13 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+    Region: "Si"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+      Equation: "PotentialEquation"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+    Region: "Si"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+      Equation: "PotentialEquation"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+    Region: "Si"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+      Equation: "PotentialEquation"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+    Region: "Si"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+      Equation: "PotentialEquation"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 5.49238e-11	AbsError: 2.65028e+05
+    Region: "Si"	RelError: 5.49238e-11	AbsError: 2.65028e+05
+      Equation: "ElectronContinuityEquation"	RelError: 2.65028e-11	AbsError: 2.65028e+05
+      Equation: "HoleContinuityEquation"	RelError: 2.65027e-11	AbsError: 2.65027e-07
+      Equation: "PotentialEquation"	RelError: 1.91828e-12	AbsError: 6.86062e-13
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.78827e-03	AbsError: 1.26645e-01
+    Region: "Si"	RelError: 2.78827e-03	AbsError: 1.26645e-01
+      Equation: "ElectronContinuityEquation"	RelError: 1.25645e-17	AbsError: 1.25645e-01
+      Equation: "HoleContinuityEquation"	RelError: 1.98889e-17	AbsError: 1.98889e-13
+      Equation: "PotentialEquation"	RelError: 2.78827e-03	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 7.84350e-17	AbsError: 2.71350e-03
+    Region: "Si"	RelError: 7.84350e-17	AbsError: 2.71350e-03
+      Equation: "ElectronContinuityEquation"	RelError: 2.71350e-19	AbsError: 2.71350e-03
+      Equation: "HoleContinuityEquation"	RelError: 6.08193e-19	AbsError: 6.08193e-15
+      Equation: "PotentialEquation"	RelError: 7.75555e-17	AbsError: 2.77567e-17
+y_min_pos {'Si_ymin': 0.002560000000003728, 'Si_ymax': -0.002560000000003843}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_ymax has 0 Tetrahedra.
+Physical group name Si_ymax has 0 Triangles.
+Physical group name Si_ymax has 12 Lines.
+Physical group name Si_ymax has 13 Points.
+Physical group name Si_ymin has 0 Tetrahedra.
+Physical group name Si_ymin has 0 Triangles.
+Physical group name Si_ymin has 12 Lines.
+Physical group name Si_ymin has 13 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_ymax in region Si with 13 nodes
+Contact Si_ymin in region Si with 13 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+    Region: "Si"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+      Equation: "PotentialEquation"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+    Region: "Si"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+      Equation: "PotentialEquation"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+    Region: "Si"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+      Equation: "PotentialEquation"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+    Region: "Si"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+      Equation: "PotentialEquation"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 5.49238e-11	AbsError: 2.65028e+05
+    Region: "Si"	RelError: 5.49238e-11	AbsError: 2.65028e+05
+      Equation: "ElectronContinuityEquation"	RelError: 2.65028e-11	AbsError: 2.65028e+05
+      Equation: "HoleContinuityEquation"	RelError: 2.65027e-11	AbsError: 2.65027e-07
+      Equation: "PotentialEquation"	RelError: 1.91828e-12	AbsError: 6.86062e-13
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.80391e-03	AbsError: 1.05704e-01
+    Region: "Si"	RelError: 2.80391e-03	AbsError: 1.05704e-01
+      Equation: "ElectronContinuityEquation"	RelError: 1.04704e-17	AbsError: 1.04704e-01
+      Equation: "HoleContinuityEquation"	RelError: 1.90080e-17	AbsError: 1.90080e-13
+      Equation: "PotentialEquation"	RelError: 2.80391e-03	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 7.84489e-17	AbsError: 2.20190e-03
+    Region: "Si"	RelError: 7.84489e-17	AbsError: 2.20190e-03
+      Equation: "ElectronContinuityEquation"	RelError: 2.20190e-19	AbsError: 2.20190e-03
+      Equation: "HoleContinuityEquation"	RelError: 5.02655e-19	AbsError: 5.02655e-15
+      Equation: "PotentialEquation"	RelError: 7.77261e-17	AbsError: 2.77789e-17
+y_max_neg {'Si_ymin': 0.002560000000003728, 'Si_ymax': -0.002560000000003728}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_ymax has 0 Tetrahedra.
+Physical group name Si_ymax has 0 Triangles.
+Physical group name Si_ymax has 12 Lines.
+Physical group name Si_ymax has 13 Points.
+Physical group name Si_ymin has 0 Tetrahedra.
+Physical group name Si_ymin has 0 Triangles.
+Physical group name Si_ymin has 12 Lines.
+Physical group name Si_ymin has 13 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_ymax in region Si with 13 nodes
+Contact Si_ymin in region Si with 13 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 9.18895e-02
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+    Region: "Si"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+      Equation: "PotentialEquation"	RelError: 4.92247e-01	AbsError: 8.90832e-02
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+    Region: "Si"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+      Equation: "PotentialEquation"	RelError: 3.21046e-01	AbsError: 8.55517e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+    Region: "Si"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+      Equation: "PotentialEquation"	RelError: 2.16847e-01	AbsError: 7.33404e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+    Region: "Si"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+      Equation: "PotentialEquation"	RelError: 7.01600e-07	AbsError: 2.50924e-07
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 5.49238e-11	AbsError: 2.65028e+05
+    Region: "Si"	RelError: 5.49238e-11	AbsError: 2.65028e+05
+      Equation: "ElectronContinuityEquation"	RelError: 2.65028e-11	AbsError: 2.65028e+05
+      Equation: "HoleContinuityEquation"	RelError: 2.65027e-11	AbsError: 2.65027e-07
+      Equation: "PotentialEquation"	RelError: 1.91828e-12	AbsError: 6.86062e-13
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.05891e-24	AbsError: 9.93500e-09
+    Region: "Si"	RelError: 2.05891e-24	AbsError: 9.93500e-09
+      Equation: "ElectronContinuityEquation"	RelError: 9.93500e-25	AbsError: 9.93500e-09
+      Equation: "HoleContinuityEquation"	RelError: 9.93500e-25	AbsError: 9.93500e-21
+      Equation: "PotentialEquation"	RelError: 7.19119e-26	AbsError: 2.57189e-26
+y_max_zero {'Si_ymin': 0.0, 'Si_ymax': 0.0}
+{"pass": true, "cases": 8, "solves": 24}
