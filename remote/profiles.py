@@ -11,6 +11,20 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nac_unit_cross_regression": {
+        "description": "Exactly 86 fixed unit scripts after intrinsic GUI changes; no physical capability approval.",
+        "entry": "docs/audits/2026-10-10-e6nac-unit-cross-regression/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 900, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nac-unit-cross-regression/PLAN.md",
+                   "docs/audits/2026-10-10-e6nac-unit-cross-regression/MANIFEST.json",
+                   "docs/audits/2026-10-10-e6nac-unit-cross-regression/run_checks.py",
+                   "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+                   "remote/run_profile.py", "tcad_2d_stagewise.py", "tcad/characterization/interface.py",
+                   "tcad/characterization/node_fields.py", "tcad/characterization/intrinsic.py",
+                   "tcad/characterization/source_context.py", "tcad/physics/wafer_state_v2.py"],
+        "outputs": [{"glob": "e6nac_out/**/*", "max_mb": 8}],
+        "regenerate": "Fixed complete 86-unit set, independent subprocesses once each.",
+    },
     "e6nab_intrinsic_refusal": {
         "description": "Opposite-contact intrinsic GUI controls and audit-only corrupted-result injection; no engine model changes.",
         "entry": "docs/audits/2026-10-10-e6nab-intrinsic-refusal/run_checks.py",
