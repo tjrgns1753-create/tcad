@@ -12,6 +12,7 @@ def deny(event,args):
 sys.addaudithook(deny)
 from tcad.characterization.node_fields import capture_node_fields,field_samples,MAX_CAPTURE_NODES
 from tcad.characterization.source_context import capture_source_context
+from tcad.characterization.interface import BiasPoint, CharacterizationResult, current_unit_metadata
 class API:
     def __init__(self):
         self.a={'x':[0,1e-4], 'y':[0,-1e-4], 'Potential':[-.2,.3], 'Electrons':[1e16,2e16], 'Holes':[1e4,0]}
@@ -43,6 +44,8 @@ with tempfile.TemporaryDirectory() as d:
     state=object(); settings=[.001,'x','max']; nodes=[]; notes=[]
     app=S(last_final_mesh=p,wafer_state=state,electrode_pins=[],_viewing_step_index=None,
           _measurement_fields=fields,_measurement_fields_context=capture_source_context(p,state,[]),
+          _measurement_fields_result=CharacterizationResult('synthetic','deleted','Si','a',
+              [BiasPoint({'a':.001,'b':0},{'a':1e-6,'b':-1e-6})],current_unit_metadata(2)),
           _measurement_fields_settings=tuple(settings),_viewer_scale=(0,0,1,0,1),
           meas_voltage_var=S(get=lambda:settings[0]),meas_axis_var=S(get=lambda:settings[1]),meas_source_pin=S(get=lambda:settings[2]),
           canvas=S(create_oval=lambda *a,**k:nodes.append((a,k)),create_text=lambda *a,**k:notes.append(k['text'])))

@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nq-field-contact-evidence-001",
- "profile": "e6nq_field_contact_evidence",
+ "request_id": "e6nr-field-physical-caption-001",
+ "profile": "e6nr_field_physical_caption",
  "params": {},
- "note": "Verify complete two-terminal evidence and unchanged actual uniform DD node export."
+ "note": "Verify actual region/contact voltages, raw Potential convention and unchanged supported fields."
 }

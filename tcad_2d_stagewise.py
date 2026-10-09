@@ -8902,7 +8902,7 @@ class TCADApplication(tk.Tk):
     def _draw_measurement_field(self, layer, x0, x1, surface_y):
         """Display actual solved node samples only, on the current wafer."""
         from tcad.characterization.source_context import source_context_matches
-        from tcad.characterization.node_fields import field_samples, FIELD_UNITS
+        from tcad.characterization.node_fields import field_samples, field_caption
         try:
             settings = (float(self.meas_voltage_var.get()), self.meas_axis_var.get(), self.meas_source_pin.get())
             if (self._viewing_step_index is not None or
@@ -8910,18 +8910,18 @@ class TCADApplication(tk.Tk):
                     not source_context_matches(getattr(self, "_measurement_fields_context", None),
                                                self.last_final_mesh, self.wafer_state, self.electrode_pins)):
                 raise ValueError("No matching current-wafer measurement; remeasure to obtain node fields.")
-            samples, lo, hi = field_samples(getattr(self, "_measurement_fields", None), layer)
+            fields = getattr(self, "_measurement_fields", None)
+            text = field_caption(fields, getattr(self, "_measurement_fields_result", None), layer)
+            samples, _, _ = field_samples(fields, layer)
             if not self._viewer_scale:
                 raise ValueError("No current mesh coordinate transform.")
             cx0, xmin, xs, sy, ys = self._viewer_scale
             for x, y, value, color in samples:
                 cx, cy = cx0 + (x-xmin)*xs, sy-y*ys
                 self.canvas.create_oval(cx-2, cy-2, cx+2, cy+2, fill=color, outline=color, tags="solved_field_node")
-            text = (f"{layer}: {len(samples)} actual node samples; linear blue={lo:.4e}, red={hi:.4e} {FIELD_UNITS[layer]}. "
-                    "No interpolation; selected measurement bias only.")
         except (ValueError, TypeError, OverflowError) as exc:
             text = f"Field unavailable: {exc}"
-        self.canvas.create_text((x0+x1)/2, surface_y-35, text=text, fill=Tokens.FG_MUTED,
+        self.canvas.create_text((x0+x1)/2, surface_y-12, text=text, anchor="s", fill=Tokens.FG_MUTED,
                                 font=(Tokens.FONT_UI, 9), width=x1-x0-40, tags="solved_field_note")
 
     def _measurement_field_hover_note(self, event):

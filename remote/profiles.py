@@ -11,6 +11,23 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nr_field_physical_caption": {
+        "description": "Actual field region/contact bias and raw Potential convention; no equations or gate changes.",
+        "entry": "docs/audits/2026-10-10-e6nr-field-physical-caption/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 400, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "tcad/characterization/node_fields.py",
+                   "tcad/characterization/interface.py", "tcad/characterization/source_context.py",
+                   "docs/audits/2026-10-10-e6nr-field-physical-caption/PLAN.md",
+                   "docs/audits/2026-10-10-e6nr-field-physical-caption/run_checks.py",
+                   "docs/audits/2026-10-10-e6nr-field-physical-caption/check_gui.py",
+                   "tests/unit/test_node_field_caption_mock.py", "tests/unit/test_node_field_contacts_mock.py",
+                   "tests/unit/test_node_field_export_mock.py", "tests/unit/test_node_field_hover_mock.py",
+                   "tests/unit/test_node_fields_mock.py", "tests/unit/test_field_readout_invalidation_mock.py",
+                   "tests/integration/test_gui_current_unit_contract_real.py",
+                   "tests/integration/test_uniform_resistor_dd_current_real.py"],
+        "outputs": [{"glob": "e6nr_out/**/*", "max_mb": 8}],
+        "regenerate": "Actual unchanged uniform DD fields with physically explicit captions; no PN approval.",
+    },
     "e6nq_field_contact_evidence": {
         "description": "Complete two-terminal field export evidence; physical models and gates unchanged.",
         "entry": "docs/audits/2026-10-10-e6nq-field-contact-evidence/run_checks.py",

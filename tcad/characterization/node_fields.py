@@ -75,21 +75,11 @@ def field_samples(fields, layer):
     return tuple((x, y, v, color(v)) for (x, y), v in zip(fields.xy_um, values)), lo, hi
 
 
-def save_node_field_evidence(fields, result, context, path):
-    """Single atomic JSON replacement of actual fields plus bias/source evidence.
-
-    Caller must compare context against the current wafer before invoking.
-    GUI_SESSION_ONLY provenance is not a serialized canonical state/checkpoint.
-    """
-    from dataclasses import asdict
-    import json
-    import os
-    from pathlib import Path
-    import tempfile
+def _field_bias_point(fields, result):
+    """Shared evidence boundary for displaying/saving the same 2-terminal result."""
     from tcad.characterization.interface import validate_bias_point
-    from tcad.characterization.source_context import source_evidence
     validate_node_fields(fields)
-    if len(result.points) != 1 or result.region != fields.region:
+    if result is None or len(result.points) != 1 or result.region != fields.region:
         raise ValueError("Field export needs its own single-bias region result.")
     point = result.points[0]
     validate_bias_point(point)
@@ -102,6 +92,35 @@ def save_node_field_evidence(fields, result, context, path):
     if (result.metadata.get("current_unit") != "A/cm" or result.metadata.get("device_dimension") != 2 or
             result.metadata.get("current_normalization") != "per_out_of_plane_depth"):
         raise ValueError("Field export is limited to established 2D current units.")
+    return point
+
+
+def field_caption(fields, result, layer):
+    """Describe original solved values; never rebase Potential to a contact bias."""
+    point = _field_bias_point(fields, result)
+    samples, lo, hi = field_samples(fields, layer)
+    bias = "; ".join(f"{contact}={float(value):+.6g} V" for contact, value in point.voltages.items())
+    text = (f"영역 {fields.region} | {len(samples)} 실제 노드 (actual node samples) | {bias}\n"
+            f"{layer}: 선형색 파랑={lo:.4e}, 빨강={hi:.4e} {FIELD_UNITS[layer]}; "
+            "보간 없음 (No interpolation).")
+    if layer == "potential":
+        text += "\nDEVSIM 원시 Potential; 접점 인가전압과 전위 기준이 다를 수 있음."
+    return text
+
+
+def save_node_field_evidence(fields, result, context, path):
+    """Single atomic JSON replacement of actual fields plus bias/source evidence.
+
+    Caller must compare context against the current wafer before invoking.
+    GUI_SESSION_ONLY provenance is not a serialized canonical state/checkpoint.
+    """
+    from dataclasses import asdict
+    import json
+    import os
+    from pathlib import Path
+    import tempfile
+    from tcad.characterization.source_context import source_evidence
+    point = _field_bias_point(fields, result)
     payload = {"schema": 1, "sampling": "ACTUAL_NODES_NO_INTERPOLATION", "node_count": len(fields.xy_um),
                "units": {"xy_um": "um", **FIELD_UNITS}, "snapshot": asdict(fields),
                "measurement": {"name": result.name, "region": result.region, "sweep_contact": result.sweep_contact,
