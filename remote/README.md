@@ -25,6 +25,16 @@ Add an entry to `PROFILES` in `remote/profiles.py`: `entry` (a script inside the
 recreate anything omitted for size). Commit it together with the request that uses it.
 Validate locally without running anything: `python remote/run_profile.py --validate-only --out <dir>`.
 
+## 엔진 정보의 증거 범위
+
+`engine_info`는 별도의 버전 조회 프로세스를 켜거나 끄는 옵션이며 profile 자식의
+실제 엔진 사용을 관측하지 않는다. `summary.devsim.scope=ISOLATED_VERSION_PROBE`,
+`profile_execution_observed=false`를 확인해야 한다. 조회를 끈 경우 `NOT_PROBED`이며,
+이를 "자식이 엔진을 import하지 않았다 / solve 0회"로 읽으면 안 된다.
+실제 solve·write·cleanup 기록은 profile별 원본 outputs에서 따로 검증한다.
+이 변경 이전의 `NOT_IMPORTED / engine-free profile`도 전체 자식의 실행 증거가
+아니다. 과거 원본 summary를 수정하지 않고 해당 보고서에서 범위를 설명한다.
+
 ## Guarantees
 
 - Refuses to execute outside a GitHub-hosted runner (`GITHUB_ACTIONS=true`, `RUNNER_ENVIRONMENT=github-hosted`).

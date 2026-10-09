@@ -11,6 +11,19 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nv_runner_engine_evidence_scope": {
+        "description": "Engine-free scope metadata checks; does not repeat any physical calculation.",
+        "entry": "docs/audits/2026-10-10-e6nv-runner-engine-evidence-scope/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 150, "engine_info": False,
+        "inputs": ["remote/run_profile.py", "remote/README.md",
+                   "docs/audits/2026-10-10-e6nv-runner-engine-evidence-scope/CHECKS.md",
+                   "docs/audits/2026-10-10-e6nv-runner-engine-evidence-scope/run_checks.py",
+                   "tests/unit/test_remote_engine_evidence_scope_mock.py",
+                   "tests/unit/test_measurement_requested_bias_mock.py", "tests/unit/test_node_field_caption_mock.py",
+                   "tcad_2d_stagewise.py", "tcad/characterization/interface.py", "tcad/characterization/node_fields.py"],
+        "outputs": [{"glob": "e6nv_out/**/*", "max_mb": 2}],
+        "regenerate": "Three pure contract tests; no engine import and no physical solve.",
+    },
     "e6nu_carrier_compensation_boundary": {
         "description": "Four actual p/n uniform numeric GUI controls plus eight preserved compensated transport refusals.",
         "entry": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/run_boundary.py",

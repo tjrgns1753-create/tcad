@@ -205,8 +205,11 @@ def main():
         summary["packages"] = package_versions()
         if prof.get("engine_info", True):
             summary["devsim"] = devsim_info()
+            summary["devsim"].update({"scope": "ISOLATED_VERSION_PROBE", "profile_execution_observed": False})
         else:
-            summary["devsim"] = {"status": "NOT_IMPORTED", "reason": "engine-free profile"}
+            summary["devsim"] = {"status": "NOT_PROBED", "scope": "ISOLATED_VERSION_PROBE",
+                                 "profile_execution_observed": False,
+                                 "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"}
         argv = [sys.executable, entry, *args]
         summary["argv"] = ["<python>", prof["entry"], *args]
         env = dict(os.environ)

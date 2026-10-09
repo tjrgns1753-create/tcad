@@ -1,7 +1,7 @@
 {
  "schema": 1,
-  "request_id": "e6nu-carrier-compensation-boundary-001",
-  "profile": "e6nu_carrier_compensation_boundary",
+  "request_id": "e6nv-runner-engine-evidence-scope-001",
+  "profile": "e6nv_runner_engine_evidence_scope",
  "params": {},
-  "note": "Separate single-polarity numeric controls from compensated capability refusal; initial run FAIL remains preserved."
+  "note": "Evidence scope correction only; no physical calculation is repeated."
 }
