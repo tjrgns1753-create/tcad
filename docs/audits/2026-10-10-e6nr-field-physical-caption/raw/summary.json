@@ -1,0 +1,212 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T18:25:37.632473+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nr-field-physical-caption-001",
+  "profile": "e6nr_field_physical_caption",
+  "params": {},
+  "note": "Verify actual region/contact voltages, raw Potential convention and unchanged supported fields."
+ },
+ "profile": "e6nr_field_physical_caption",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "040a140f5118fa3a02503e875f1f8e94c5deeb4f53c479e2ee1902e1f72a019c",
+   "bytes": 416799
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "1980c4e091c7220bf4fede2a4c1c185f26e6f9b7483c7edec102d3cb7cf10e82",
+   "bytes": 7412
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "16eb8d75591f866cb9f689714e29f396932db247361c4ac4b66773dbf48ec8a1",
+   "bytes": 1880
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nr-field-physical-caption/PLAN.md",
+   "sha256": "ae1f8bbea30f023b684f8728b7e37b247e82014fb7e35fe46faff3da3ad9e15e",
+   "bytes": 2805
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nr-field-physical-caption/run_checks.py",
+   "sha256": "b04968aa69638ea5f19c74d15329995d381c462cc51425001b00b0637b94be42",
+   "bytes": 2028
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nr-field-physical-caption/check_gui.py",
+   "sha256": "ef41fd92471f6a9e528db4d8679d5d030075d22f8e2f87fe15f6a914552d965e",
+   "bytes": 6043
+  },
+  {
+   "path": "tests/unit/test_node_field_caption_mock.py",
+   "sha256": "1dc05178d7413eff749ce00511c469a0daa8c6b491133776e34b1936731e191b",
+   "bytes": 4027
+  },
+  {
+   "path": "tests/unit/test_node_field_contacts_mock.py",
+   "sha256": "9df382c93c6972867dd5e9d641da2f9f71443c4ecbede9db25e7cc9159142e85",
+   "bytes": 4354
+  },
+  {
+   "path": "tests/unit/test_node_field_export_mock.py",
+   "sha256": "20f5ae13c12149be1e16158020b3e795a927b555e3ec2376de1b8945726184f7",
+   "bytes": 4212
+  },
+  {
+   "path": "tests/unit/test_node_field_hover_mock.py",
+   "sha256": "cb71fae812e3d3c0e5cc15450356616ae532d75ab86ea0e5498c28d0fa2ae291",
+   "bytes": 3162
+  },
+  {
+   "path": "tests/unit/test_node_fields_mock.py",
+   "sha256": "e15d568cff4b18162feb43e093c196e840b96af3433413e9e29ecc3284f2595f",
+   "bytes": 3925
+  },
+  {
+   "path": "tests/unit/test_field_readout_invalidation_mock.py",
+   "sha256": "cd76ce28c18a89767abe45981c67f0f0bb0af12467dddff6f6d9c77ec518c85e",
+   "bytes": 1366
+  },
+  {
+   "path": "tests/integration/test_gui_current_unit_contract_real.py",
+   "sha256": "a58478f3a8604dcd948ad2de917c13e515fd2782be269ff9ea4c12b415b2ea42",
+   "bytes": 7802
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  }
+ ],
+ "request_sha256": "3ac56676957a1c256b9cddc52a96beced619a17e1cd6bc5218cea10e0ceb0bee",
+ "source": {
+  "github_sha": "87bc92277eb7219276bbf8f5345749559e00110f",
+  "git_head": "87bc92277eb7219276bbf8f5345749559e00110f",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37973087515",
+  "run_number": "66",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nr-field-physical-caption/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T18:25:46.355558+00:00",
+ "duration_s": 8.724,
+ "outputs": [
+  {
+   "path": "e6nr_out/caption.json",
+   "bytes": 12049,
+   "sha256": "93f8d698cb09e2138103043376cc5acd46503fe9463e48430a6a342041c72e2a"
+  },
+  {
+   "path": "e6nr_out/caption.log",
+   "bytes": 4373,
+   "sha256": "42df1e7edcf58fb5c9d343ef3fa8338227f8c8b59a89488fe2c903dd222c74ff"
+  },
+  {
+   "path": "e6nr_out/contacts.log",
+   "bytes": 323,
+   "sha256": "2daf2385ef1039ef2fe0c08984f033eb6101dc8f17bac65d131dc06a7260b182"
+  },
+  {
+   "path": "e6nr_out/gate_control.log",
+   "bytes": 11034,
+   "sha256": "91eaa77f19c8410ea9ffefabd883fd6b1ff10b3f430ca80b99201d330bd93e25"
+  },
+  {
+   "path": "e6nr_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6nr_out/hover.log",
+   "bytes": 110,
+   "sha256": "8c37c049d9ab0402aee9aa605712629406f81c5da3f1f1ec6c5cfa9fab66a57e"
+  },
+  {
+   "path": "e6nr_out/pure_caption.log",
+   "bytes": 109,
+   "sha256": "097fb46d038e49d08c08b04d3602c0999f84fd5e6a2377f9d60d46d41681b208"
+  },
+  {
+   "path": "e6nr_out/pure_export.log",
+   "bytes": 114,
+   "sha256": "e643c1420529b55e4fc1c7b6fab35f15463edcfdbc7f0732361b525abdb60c9a"
+  },
+  {
+   "path": "e6nr_out/readout.log",
+   "bytes": 76,
+   "sha256": "704a76235d7bb3412696dbe3ccf93f34a3f12875b47e3786ba24e7e9248078f6"
+  },
+  {
+   "path": "e6nr_out/snapshot.log",
+   "bytes": 87,
+   "sha256": "e8bd0c6b5c6b75001b58305314ffeba553c3d074d095f5ba0871a2ce306da959"
+  },
+  {
+   "path": "e6nr_out/tests.json",
+   "bytes": 3948,
+   "sha256": "db9c56486b1a09d0184bf68302504cc04255b00f72f3625cc1851f2b05104521"
+  },
+  {
+   "path": "e6nr_out/\uc2e4\uc81c\ub178\ub4dc.json",
+   "bytes": 10300,
+   "sha256": "8111c300184eccc680938178e6112fc6e8152e2b4789cc1cdfa79d935df1056f"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Actual unchanged uniform DD fields with physically explicit captions; no PN approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "3ef754214bd7e87303aab0190055262b653e9233f8c7a129adb92ce972d6d08a",
+  "bytes": 152
+ },
+ "redactions": {}
+}
