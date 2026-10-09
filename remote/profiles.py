@@ -11,6 +11,24 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nz_intrinsic_api_capability": {
+        "description": "Known-undoped Si official DD API pilot, thermal electrons and holes; no GUI/gate approval.",
+        "entry": "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 240, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nz-intrinsic-api-capability/PLAN.md",
+                   "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/run_checks.py",
+                   "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/check_api.py",
+                   "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/judge.py",
+                   "docs/audits/2026-10-10-e6nz-intrinsic-api-capability/test_judge.py",
+                   "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+                   "tests/integration/test_uniform_resistor_dd_current_real.py",
+                   "tests/integration/test_mesh_gate_poisson_transition_real.py",
+                   "tcad/device/devsim/doping_mapping.py", "tcad/device/devsim/mesh_import.py",
+                   "tcad/characterization/pn_junction_iv_sweep.py", "tcad/device/devsim/semiconductor_equation.py",
+                   "tcad/physics/wafer_state_v2.py", "tcad/physics/wafer_state_accumulation.py"],
+        "outputs": [{"glob": "e6nz_out/**/*", "max_mb": 4}],
+        "regenerate": "Three fresh intrinsic low-field biases, missing/unresolved refusal; no fake zero profile.",
+    },
     "e6ny_missing_profile_physics_status": {
         "description": "Actual CHEMICAL refusal status and supported canonical controls; no activation physics added.",
         "entry": "docs/audits/2026-10-10-e6ny-missing-profile-physics-status/run_checks.py",

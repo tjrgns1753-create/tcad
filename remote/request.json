@@ -1,7 +1,7 @@
 {
  "schema": 1,
-  "request_id": "e6ny-missing-profile-physics-status-001",
-  "profile": "e6ny_missing_profile_physics_status",
+  "request_id": "e6nz-intrinsic-api-capability-001",
+  "profile": "e6nz_intrinsic_api_capability",
  "params": {},
-  "note": "Strengthened CHEMICAL refusal status plus supported controls; no new activation model or gate removal."
+  "note": "Known-zero canonical input through public DD APIs; intrinsic capability pilot only, GUI and gates unchanged."
 }
