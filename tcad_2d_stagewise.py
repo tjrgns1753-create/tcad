@@ -5980,7 +5980,12 @@ class TCADApplication(tk.Tk):
 
             if len(result.points) != 1:
                 raise ValueError("Measurement must return exactly one bias point.")
-            validate_bias_point(result.points[0], (source_contact, gnd_contact))
+            if (result.region != region or result.sweep_contact != source_contact or
+                    set(result.points[0].voltages) != set(imported.contacts) or
+                    set(result.points[0].currents) != set(imported.contacts)):
+                raise ValueError("Measurement result identity does not match the imported two-terminal request.")
+            validate_bias_point(result.points[0], (source_contact, gnd_contact),
+                                expected_voltages={source_contact: voltage, gnd_contact: 0.0})
             from tcad.characterization.node_fields import capture_node_fields
             try:
                 fields = capture_node_fields(module, imported.device, region, length_scale_to_cm)

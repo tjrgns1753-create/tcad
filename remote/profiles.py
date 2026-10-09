@@ -11,6 +11,24 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6ns_requested_bias_evidence": {
+        "description": "Requested terminal voltage/result identity boundary, controlled metadata faults after actual solves.",
+        "entry": "docs/audits/2026-10-10-e6ns-requested-bias-evidence/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 400, "engine_info": False,
+        "inputs": ["tcad_2d_stagewise.py", "tcad/characterization/interface.py",
+                   "tcad/characterization/node_fields.py", "tcad/characterization/source_context.py",
+                   "tcad/characterization/pn_junction_iv_sweep.py", "tcad/characterization/robust_iv_sweep.py",
+                   "docs/audits/2026-10-10-e6ns-requested-bias-evidence/PLAN.md",
+                   "docs/audits/2026-10-10-e6ns-requested-bias-evidence/run_checks.py",
+                   "docs/audits/2026-10-10-e6ns-requested-bias-evidence/check_gui.py",
+                   "tests/unit/test_measurement_requested_bias_mock.py", "tests/unit/test_measurement_validity_mock.py",
+                   "tests/unit/test_node_field_caption_mock.py", "tests/unit/test_node_field_contacts_mock.py",
+                   "tests/unit/test_node_field_export_mock.py", "tests/unit/test_node_field_hover_mock.py",
+                   "tests/unit/test_node_fields_mock.py", "tests/unit/test_field_readout_invalidation_mock.py",
+                   "tests/integration/test_uniform_resistor_dd_current_real.py"],
+        "outputs": [{"glob": "e6ns_out/**/*", "max_mb": 8}],
+        "regenerate": "Same supported uniform DD; injected record corruption is not an observed engine failure.",
+    },
     "e6nr_field_physical_caption": {
         "description": "Actual field region/contact bias and raw Potential convention; no equations or gate changes.",
         "entry": "docs/audits/2026-10-10-e6nr-field-physical-caption/run_checks.py",

@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nr-field-physical-caption-001",
- "profile": "e6nr_field_physical_caption",
+ "request_id": "e6ns-requested-bias-evidence-001",
+ "profile": "e6ns_requested_bias_evidence",
  "params": {},
- "note": "Verify actual region/contact voltages, raw Potential convention and unchanged supported fields."
+ "note": "Match result to actual requested bias before reporting current or capturing/exporting fields."
 }

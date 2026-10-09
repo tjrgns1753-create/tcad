@@ -103,7 +103,7 @@ class BiasPoint:
     converged: bool = True
 
 
-def validate_bias_point(point: BiasPoint, required_contacts=()) -> None:
+def validate_bias_point(point: BiasPoint, required_contacts=(), expected_voltages=None) -> None:
     """Reject invalid terminal evidence, without replacing values or approving physics.
 
     This is a GUI result-boundary check, not a convergence/charge-conservation
@@ -118,6 +118,13 @@ def validate_bias_point(point: BiasPoint, required_contacts=()) -> None:
     for values in (point.voltages, point.currents):
         if any(not math.isfinite(float(value)) for value in values.values()):
             raise ValueError("Measurement result contains a non-finite value; no current is reported.")
+    if expected_voltages is not None:
+        # Command metadata, not the solved electrostatic Potential: the sweep
+        # producers copy the requested values into BiasPoint without rounding.
+        for contact, voltage in expected_voltages.items():
+            if (contact not in point.voltages or not math.isfinite(float(voltage)) or
+                    float(point.voltages[contact]) != float(voltage)):
+                raise ValueError(f"Measurement voltage record does not match request for {contact!r}.")
 
 
 @dataclass
