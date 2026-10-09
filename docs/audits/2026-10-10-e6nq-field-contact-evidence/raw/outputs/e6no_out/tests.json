@@ -1,0 +1,103 @@
+{
+  "pass": true,
+  "steps": {
+    "export": {
+      "status": "COMPLETED",
+      "started_unix": 1791569919.646191,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 100446208,
+      "peak_sampled_tree_commit": 63590400,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 90,
+      "pid": 2352,
+      "exit_code": 0,
+      "ended_unix": 1791569922.6577473,
+      "duration_s": 3.015000000000043
+    },
+    "contacts": {
+      "status": "COMPLETED",
+      "started_unix": 1791569922.6577473,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 2072576,
+      "peak_sampled_tree_commit": 577536,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 30,
+      "pid": 4748,
+      "exit_code": 0,
+      "ended_unix": 1791569923.1633961,
+      "duration_s": 0.5
+    },
+    "pure": {
+      "status": "COMPLETED",
+      "started_unix": 1791569923.1633961,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 2019328,
+      "peak_sampled_tree_commit": 528384,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 30,
+      "pid": 7372,
+      "exit_code": 0,
+      "ended_unix": 1791569923.668594,
+      "duration_s": 0.5159999999999627
+    },
+    "hover": {
+      "status": "COMPLETED",
+      "started_unix": 1791569923.6701589,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 2064384,
+      "peak_sampled_tree_commit": 569344,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 30,
+      "pid": 7724,
+      "exit_code": 0,
+      "ended_unix": 1791569924.173766,
+      "duration_s": 0.5
+    },
+    "snapshot": {
+      "status": "COMPLETED",
+      "started_unix": 1791569924.173766,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 2064384,
+      "peak_sampled_tree_commit": 569344,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 30,
+      "pid": 9740,
+      "exit_code": 0,
+      "ended_unix": 1791569924.6795008,
+      "duration_s": 0.5
+    },
+    "readout": {
+      "status": "COMPLETED",
+      "started_unix": 1791569924.6795008,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 2019328,
+      "peak_sampled_tree_commit": 516096,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 30,
+      "pid": 2732,
+      "exit_code": 0,
+      "ended_unix": 1791569925.1845393,
+      "duration_s": 0.5160000000000196
+    },
+    "gate_control": {
+      "status": "COMPLETED",
+      "started_unix": 1791569925.1864212,
+      "cleanup_ok": true,
+      "peak_sampled_tree_working_set": 103333888,
+      "peak_sampled_tree_commit": 73285632,
+      "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+      "interval_s": 0.5,
+      "candidate_budget_s": 120,
+      "pid": 6336,
+      "exit_code": 0,
+      "ended_unix": 1791569926.691658,
+      "duration_s": 1.5
+    }
+  }
+}

@@ -1,0 +1,202 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T18:18:39.428733+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nq-field-contact-evidence-001",
+  "profile": "e6nq_field_contact_evidence",
+  "params": {},
+  "note": "Verify complete two-terminal evidence and unchanged actual uniform DD node export."
+ },
+ "profile": "e6nq_field_contact_evidence",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "f7e4d64fb8e56c608cc0dfb7a0987acabbd9f5793e3fa479f518785b83beecc4",
+   "bytes": 416859
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "e8cbd933ee344c0e73f3c4d6bf83c08ca8029c623a41bac6e878af32368339c1",
+   "bytes": 6944
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "1980c4e091c7220bf4fede2a4c1c185f26e6f9b7483c7edec102d3cb7cf10e82",
+   "bytes": 7412
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "16eb8d75591f866cb9f689714e29f396932db247361c4ac4b66773dbf48ec8a1",
+   "bytes": 1880
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nq-field-contact-evidence/PLAN.md",
+   "sha256": "7296674e0fb9c6902c4d59eaf8f3f538e100cfdadafc3365865ca610e6bde262",
+   "bytes": 2448
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nq-field-contact-evidence/run_checks.py",
+   "sha256": "65d453c71f7ad98e785e089c67645712b015e77f28749072f7af46bf9f2ebbec",
+   "bytes": 1950
+  },
+  {
+   "path": "docs/audits/2026-10-07-e6no-field-export/check_gui.py",
+   "sha256": "76538acb70c4fab30c3361f4d140163d3064d44600ad32fa417fa050a276ce1c",
+   "bytes": 4677
+  },
+  {
+   "path": "tests/unit/test_node_field_contacts_mock.py",
+   "sha256": "9df382c93c6972867dd5e9d641da2f9f71443c4ecbede9db25e7cc9159142e85",
+   "bytes": 4354
+  },
+  {
+   "path": "tests/unit/test_node_field_export_mock.py",
+   "sha256": "20f5ae13c12149be1e16158020b3e795a927b555e3ec2376de1b8945726184f7",
+   "bytes": 4212
+  },
+  {
+   "path": "tests/unit/test_node_field_hover_mock.py",
+   "sha256": "cb71fae812e3d3c0e5cc15450356616ae532d75ab86ea0e5498c28d0fa2ae291",
+   "bytes": 3162
+  },
+  {
+   "path": "tests/unit/test_node_fields_mock.py",
+   "sha256": "8483bc4506d9fcc420d1e96cd02fda846f1fe43eea85680fa15552724eb969e7",
+   "bytes": 3637
+  },
+  {
+   "path": "tests/unit/test_field_readout_invalidation_mock.py",
+   "sha256": "cd76ce28c18a89767abe45981c67f0f0bb0af12467dddff6f6d9c77ec518c85e",
+   "bytes": 1366
+  },
+  {
+   "path": "tests/integration/test_gui_current_unit_contract_real.py",
+   "sha256": "a58478f3a8604dcd948ad2de917c13e515fd2782be269ff9ea4c12b415b2ea42",
+   "bytes": 7802
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  }
+ ],
+ "request_sha256": "c07bf1bcc098329423968d05e0562502827547889457d57966be5d981d565d25",
+ "source": {
+  "github_sha": "4b58898c91dc10b319a2a49b8e4242517732f847",
+  "git_head": "4b58898c91dc10b319a2a49b8e4242517732f847",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37972284680",
+  "run_number": "65",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nq-field-contact-evidence/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T18:18:46.701753+00:00",
+ "duration_s": 7.273,
+ "outputs": [
+  {
+   "path": "e6no_out/contacts.log",
+   "bytes": 323,
+   "sha256": "2daf2385ef1039ef2fe0c08984f033eb6101dc8f17bac65d131dc06a7260b182"
+  },
+  {
+   "path": "e6no_out/export.json",
+   "bytes": 566,
+   "sha256": "202f47e691b266bf406b074774ed63d30cd76fbf43ba9b36e6583dda64926273"
+  },
+  {
+   "path": "e6no_out/export.log",
+   "bytes": 4376,
+   "sha256": "6132ad8385775297a06781227c85ac5bf85bb5459f3cab49ccc70bf2305a0172"
+  },
+  {
+   "path": "e6no_out/gate_control.log",
+   "bytes": 11034,
+   "sha256": "5cbf15e64138761b028e5546d49c2d4471e0a2aea88f87f654b5a2d9d3603e41"
+  },
+  {
+   "path": "e6no_out/gui_unit_contract.json",
+   "bytes": 11003,
+   "sha256": "016f213f535482b490fd31b15c4e4c0662712119e4fc905f977a803c2b594e51"
+  },
+  {
+   "path": "e6no_out/hover.log",
+   "bytes": 110,
+   "sha256": "8c37c049d9ab0402aee9aa605712629406f81c5da3f1f1ec6c5cfa9fab66a57e"
+  },
+  {
+   "path": "e6no_out/pure.log",
+   "bytes": 114,
+   "sha256": "e643c1420529b55e4fc1c7b6fab35f15463edcfdbc7f0732361b525abdb60c9a"
+  },
+  {
+   "path": "e6no_out/readout.log",
+   "bytes": 76,
+   "sha256": "704a76235d7bb3412696dbe3ccf93f34a3f12875b47e3786ba24e7e9248078f6"
+  },
+  {
+   "path": "e6no_out/snapshot.log",
+   "bytes": 87,
+   "sha256": "e8bd0c6b5c6b75001b58305314ffeba553c3d074d095f5ba0871a2ce306da959"
+  },
+  {
+   "path": "e6no_out/tests.json",
+   "bytes": 3455,
+   "sha256": "6c10181bc8b106a14e6ec76c4d11c326fd440a7e62e7e627169ac425a7e41335"
+  },
+  {
+   "path": "e6no_out/\uc2e4\uc81c\ub178\ub4dc.json",
+   "bytes": 10300,
+   "sha256": "8111c300184eccc680938178e6112fc6e8152e2b4789cc1cdfa79d935df1056f"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Existing actual uniform DD GUI export plus complete contact evidence controls, not PN approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "3be08baba39a81bca442d63755da50c9fe4bdb95b29b149f30227349f9dbb817",
+  "bytes": 125
+ },
+ "redactions": {}
+}
