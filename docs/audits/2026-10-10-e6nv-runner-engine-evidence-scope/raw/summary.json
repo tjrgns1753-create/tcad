@@ -1,0 +1,149 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T19:09:36.073630+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nv-runner-engine-evidence-scope-001",
+  "profile": "e6nv_runner_engine_evidence_scope",
+  "params": {},
+  "note": "Evidence scope correction only; no physical calculation is repeated."
+ },
+ "profile": "e6nv_runner_engine_evidence_scope",
+ "inputs": [
+  {
+   "path": "remote/run_profile.py",
+   "sha256": "dada5ddc9c42b7b1db4a6bf2aa0f9512c64962a8cf400f3b7becda1f3accbb8a",
+   "bytes": 14660
+  },
+  {
+   "path": "remote/README.md",
+   "sha256": "f74612feb60c15103b4e477c97a7c754cc8a4f00df5d4ec1827539481aec5d85",
+   "bytes": 3122
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nv-runner-engine-evidence-scope/CHECKS.md",
+   "sha256": "ad484f26d6590577ccfd380f9e62252c4c2c7a05f3dc806ceda9a160b62781d2",
+   "bytes": 1569
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nv-runner-engine-evidence-scope/run_checks.py",
+   "sha256": "72fd5c82860bbd5ce9ae1fe392c60d1484a12324d20446d36119a20f55e73f3c",
+   "bytes": 1481
+  },
+  {
+   "path": "tests/unit/test_remote_engine_evidence_scope_mock.py",
+   "sha256": "afa1a4ecead3da41c4cf6950097bd033cc87424020762ce875dd1683a16f01fd",
+   "bytes": 2905
+  },
+  {
+   "path": "tests/unit/test_measurement_requested_bias_mock.py",
+   "sha256": "6251b02b3d118fa638dd40b427fd33544aa19b8cf8ddda8885970e4704b34e68",
+   "bytes": 4097
+  },
+  {
+   "path": "tests/unit/test_node_field_caption_mock.py",
+   "sha256": "1dc05178d7413eff749ce00511c469a0daa8c6b491133776e34b1936731e191b",
+   "bytes": 4027
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "22855ababf073dd331f8bfae9bc945301e9cec539ebe01a21f617e470cfc7352",
+   "bytes": 417257
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "4d7bf8fd49fc411b0565772242dbe0f7ccafd4209443c0d4385f6de826be217a",
+   "bytes": 7958
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  }
+ ],
+ "request_sha256": "d716338609f111379a6ac68e1ccb3edad50eebe656bdfcf2e8c63d6d3bbe6879",
+ "source": {
+  "github_sha": "3cfed5d4768c8f5232af0b02b2dd5d40a70ef37c",
+  "git_head": "3cfed5d4768c8f5232af0b02b2dd5d40a70ef37c",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37978207835",
+  "run_number": "71",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nv-runner-engine-evidence-scope/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T19:09:37.741683+00:00",
+ "duration_s": 1.668,
+ "outputs": [
+  {
+   "path": "e6nv_out/bias.log",
+   "bytes": 264,
+   "sha256": "9e583bcd88ca2c9d45702ed8935d34f44dbcbe80f2a37dd54c6acd832ada5fa2"
+  },
+  {
+   "path": "e6nv_out/caption.log",
+   "bytes": 109,
+   "sha256": "097fb46d038e49d08c08b04d3602c0999f84fd5e6a2377f9d60d46d41681b208"
+  },
+  {
+   "path": "e6nv_out/scope.log",
+   "bytes": 82,
+   "sha256": "74128e47e67972ba9c76f810f9b9968b2d62abb26a9a159d1c75ee6c89be199b"
+  },
+  {
+   "path": "e6nv_out/tests.json",
+   "bytes": 1491,
+   "sha256": "ce3621eef1ff1e2c9072b6796e52733f15ef652265d712ad2d769c1230c45b71"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Three pure contract tests; no engine import and no physical solve.",
+ "log": {
+  "file": "run.log",
+  "sha256": "3d84e7e2bb5e5667874e435ea4f3534734ae03e95a3a10f21cec16c16d5e04b7",
+  "bytes": 63
+ },
+ "redactions": {}
+}
