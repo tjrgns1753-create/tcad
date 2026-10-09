@@ -5789,15 +5789,17 @@ class TCADApplication(tk.Tk):
             return
 
         if self.last_doped_result is None:
-            # A statement of what is missing from the DEVICE, not an
-            # instruction about process order: a drift-diffusion solve
-            # needs a doping profile because without one there are no
-            # carriers to solve for.
+            # Missing GUI device evidence is not absence of thermal carriers.
+            # Preserve CHEMICAL/UNKNOWN provenance and expose its actual limit.
+            from tcad.characterization.source_context import missing_device_profile_status
+            self.last_physics_status = missing_device_profile_status(getattr(self, 'wafer_state', None))
+            self._log_physics_status({'physics_status': self.last_physics_status})
             self._notify_info(
                 "Device measurement",
-                "This wafer carries no doping profile, so there is no device "
-                "to measure — a drift-diffusion solve has no carrier "
-                "concentrations without one.",
+                "Measurement blocked (UNSUPPORTED_BY_MODEL): "
+                + self.last_physics_status['reason_code'] + ". "
+                + self.last_physics_status['entries'][0]['note']
+                + " No doping write or solve was run; no carrier or current value was computed.",
             )
             return
 

@@ -341,6 +341,10 @@ def main():
     b0 = metrics["B0"]
     assert metrics["B0_states"] and all(state == "CHEMICAL" for _, state in metrics["B0_states"]), metrics["B0_states"]
     assert b0["solve_calls"] == 0 and b0["doping_writes"] == 0 and not b0["currents_in_log"], b0
+    assert b0["unsupported_in_log"] and b0["history_entries_added"] == 0, b0
+    assert b0["last_physics_status"]["resolution"] == "UNSUPPORTED_BY_MODEL", b0
+    assert b0["last_physics_status"]["reason_code"] == "DOPANT_ACTIVATION_MODEL_MISSING", b0
+    assert "has no carrier" not in b0["log_delta"] and "carries no doping profile" not in b0["log_delta"], b0
 
     # ---- B1: supported, accumulated ----
     b1 = metrics["B1"]

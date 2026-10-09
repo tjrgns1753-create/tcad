@@ -1,7 +1,7 @@
 {
  "schema": 1,
-  "request_id": "e6nx-integration-cross-regression-001",
-  "profile": "e6nx_integration_cross_regression",
+  "request_id": "e6ny-missing-profile-physics-status-001",
+  "profile": "e6ny_missing_profile_physics_status",
  "params": {},
-  "note": "Three fixed existing integration scripts once each; no assertion edits or PN audit repeat."
+  "note": "Strengthened CHEMICAL refusal status plus supported controls; no new activation model or gate removal."
 }

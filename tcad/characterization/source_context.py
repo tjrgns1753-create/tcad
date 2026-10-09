@@ -3,6 +3,23 @@ from dataclasses import dataclass
 import hashlib
 from pathlib import Path
 
+def missing_device_profile_status(state):
+    """Describe unavailable GUI input, not an absence of thermal carriers.
+
+    This is metadata only: it neither queries concentrations nor activates,
+    removes or reconstructs any canonical dopant attachment.
+    """
+    attachments = tuple(getattr(state, 'attachments', ()) or ())
+    inactive = [a for a in attachments if getattr(a, 'chemical_state', 'UNKNOWN') != 'ACTIVE']
+    reason = 'DOPANT_ACTIVATION_MODEL_MISSING' if inactive else 'DEVICE_PROFILE_NOT_AVAILABLE'
+    note = ('Canonical dopant records exist but electrical activation is unresolved; '
+            'CHEMICAL/UNKNOWN records are not electrically active device inputs.' if inactive else
+            'This GUI request has no available validated device profile. '
+            'This does not imply that the semiconductor has no thermal carriers.')
+    return {'resolution': 'UNSUPPORTED_BY_MODEL', 'reason_code': reason,
+            'entries': [{'parameter': 'measurement_device_input', 'material': '?',
+                         'resolution': 'UNSUPPORTED_BY_MODEL', 'provenance': 'DERIVED', 'note': note}]}
+
 @dataclass(frozen=True, eq=False)
 class SourceContext:
     mesh_sha256: str

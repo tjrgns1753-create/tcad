@@ -11,6 +11,22 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6ny_missing_profile_physics_status": {
+        "description": "Actual CHEMICAL refusal status and supported canonical controls; no activation physics added.",
+        "entry": "docs/audits/2026-10-10-e6ny-missing-profile-physics-status/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 250, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6ny-missing-profile-physics-status/PLAN.md",
+                   "docs/audits/2026-10-10-e6ny-missing-profile-physics-status/MANIFEST.json",
+                   "docs/audits/2026-10-10-e6ny-missing-profile-physics-status/run_checks.py",
+                   "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+                   "tests/unit/test_measurement_missing_profile_status_mock.py",
+                   "tests/unit/test_electrode_source_context_mock.py",
+                   "tests/integration/test_measurement_canonical_state_gate_real.py",
+                   "tcad_2d_stagewise.py", "tcad/characterization/source_context.py",
+                   "tcad/characterization/interface.py", "tcad/characterization/node_fields.py"],
+        "outputs": [{"glob": "e6ny_out/**/*", "max_mb": 4}],
+        "regenerate": "Status propagation only; unchanged canonical physics and engine/gate equations.",
+    },
     "e6nx_integration_cross_regression": {
         "description": "Three fixed real GUI/canonical integration scripts, once each; unchanged assertions.",
         "entry": "docs/audits/2026-10-10-e6nx-integration-cross-regression/run_checks.py",
