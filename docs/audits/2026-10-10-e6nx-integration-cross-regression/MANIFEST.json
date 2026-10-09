@@ -1,0 +1,17 @@
+{
+  "count": 3,
+  "tests": [
+    {
+      "path": "tests/integration/test_measurement_canonical_state_gate_real.py",
+      "lf_sha256": "dec013e58214e80b71600adb45aed9d1efae65ce6629484f2c37b02cc5df4abe"
+    },
+    {
+      "path": "tests/integration/test_gui_headless_no_modal_hang_real.py",
+      "lf_sha256": "7c6c3ab80e508cca7e667b91c1b054eb3f6531a84ba9ff961ffefc94d733d4af"
+    },
+    {
+      "path": "tests/integration/test_gui_doping_donor_acceptor_real.py",
+      "lf_sha256": "56c1ecef0038c5813f17a766ded3735c6332fedd0aa844cff691a12ae094c18e"
+    }
+  ]
+}
