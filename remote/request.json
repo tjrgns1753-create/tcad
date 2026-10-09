@@ -1,7 +1,7 @@
 {
  "schema": 1,
-  "request_id": "e6nu-carrier-compensation-order-001",
-  "profile": "e6nu_carrier_compensation_order",
+  "request_id": "e6nu-carrier-compensation-boundary-001",
+  "profile": "e6nu_carrier_compensation_boundary",
  "params": {},
-  "note": "Actual uniform p/n carrier and compensated ACTIVE declaration order checks; no implant or PN gate approval."
+  "note": "Separate single-polarity numeric controls from compensated capability refusal; initial run FAIL remains preserved."
 }

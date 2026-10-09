@@ -19,7 +19,7 @@ from tcad.characterization.node_fields import NodeFields, field_caption
 from tcad.characterization.interface import BiasPoint, CharacterizationResult, current_unit_metadata
 
 
-def main():
+def synthetic_records():
     records = {}
     xy = tuple((-1+(i%9)/4,-.5+(i//9)/16) for i in range(73))
     for name,profile,voltage in CASES:
@@ -38,6 +38,11 @@ def main():
             'export_equal':True,'success_log_present':True,'rendered':{layer:{'nodes':73,'text':field_caption(fields,result,layer)}
                 for layer in ('potential','electron','hole')}}
     records = json.loads(json.dumps(records))
+    return records
+
+
+def main():
+    records = synthetic_records()
     verdict = evaluate(records)
     assert verdict['pass'] is True and len(verdict['checks']) == 62, verdict
     for fault in ('lost_donor','lost_acceptor','wrong_sign','order_changed','nan','missing','unknown_query'):

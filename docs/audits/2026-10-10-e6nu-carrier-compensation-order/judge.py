@@ -26,11 +26,11 @@ def require(condition, name):
         raise ValueError(name)
 
 
-def evaluate(records):
+def evaluate(records, cases=CASES):
     checks, metrics = [], {}
     try:
-        require(set(records) == {row[0] for row in CASES}, 'CASE_SET')
-        for name, profile, voltage in CASES:
+        require(set(records) == {row[0] for row in cases}, 'CASE_SET')
+        for name, profile, voltage in cases:
             r = records[name]
             donor = sum(p[0] for p in PROFILES[profile])
             acceptor = sum(p[1] for p in PROFILES[profile])
@@ -86,6 +86,8 @@ def evaluate(records):
             checks.append({'name':'p_over_n_'+sign,'value':abs(ratio/.5-1),'limit':TOL_CURRENT,
                            'pass':math.isfinite(ratio) and abs(ratio/.5-1)<=TOL_CURRENT})
             for label,a,b in (('n_order','n_comp_da','n_comp_ad'),('p_order','p_comp_ad','p_comp_da')):
+                if a+'_'+sign not in records or b+'_'+sign not in records:
+                    continue
                 ra,rb=records[a+'_'+sign],records[b+'_'+sign]
                 ma,mb=metrics[a+'_'+sign],metrics[b+'_'+sign]
                 errs=[abs(ma['source_current_A_per_cm']-mb['source_current_A_per_cm'])/abs(ma['G_A_per_V_per_cm']*.001)]
