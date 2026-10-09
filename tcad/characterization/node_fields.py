@@ -93,6 +93,10 @@ def save_node_field_evidence(fields, result, context, path):
         raise ValueError("Field export needs its own single-bias region result.")
     point = result.points[0]
     validate_bias_point(point)
+    contacts = set(point.voltages)
+    if (len(contacts) != 2 or contacts != set(point.currents) or
+            any(not isinstance(name, str) or not name.strip() for name in contacts)):
+        raise ValueError("Field export requires the same two named contacts in voltages and currents.")
     if result.sweep_contact not in point.voltages:
         raise ValueError("Field result lacks its sweep voltage.")
     if (result.metadata.get("current_unit") != "A/cm" or result.metadata.get("device_dimension") != 2 or

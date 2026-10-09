@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6np-readout-invalidation-001",
- "profile": "e6no_field_export",
+ "request_id": "e6nq-field-contact-evidence-001",
+ "profile": "e6nq_field_contact_evidence",
  "params": {},
- "note": "Reuse actual field export control and verify stale numeric readout clears on redraw/reset."
+ "note": "Verify complete two-terminal evidence and unchanged actual uniform DD node export."
 }
