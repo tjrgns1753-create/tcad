@@ -1,0 +1,227 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-10-09T18:51:53.544523+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nu-carrier-compensation-order-001",
+  "profile": "e6nu_carrier_compensation_order",
+  "params": {},
+  "note": "Actual uniform p/n carrier and compensated ACTIVE declaration order checks; no implant or PN gate approval."
+ },
+ "profile": "e6nu_carrier_compensation_order",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "22855ababf073dd331f8bfae9bc945301e9cec539ebe01a21f617e470cfc7352",
+   "bytes": 417257
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "4d7bf8fd49fc411b0565772242dbe0f7ccafd4209443c0d4385f6de826be217a",
+   "bytes": 7958
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "16eb8d75591f866cb9f689714e29f396932db247361c4ac4b66773dbf48ec8a1",
+   "bytes": 1880
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "tcad/physics/doping.py",
+   "sha256": "5bca505bb74632e590b14eab74ea4a77eb0feebeb9996e235fa0e013b95829d1",
+   "bytes": 18912
+  },
+  {
+   "path": "tcad/physics/wafer_state_accumulation.py",
+   "sha256": "dfb12c8a756bfb3582dcdf827f1470f65556aa6662181c1aba42062dbae4f1bb",
+   "bytes": 27500
+  },
+  {
+   "path": "tcad/physics/wafer_state_v2.py",
+   "sha256": "7652062fb0eb03ed1ecab41c72aee3875d61e5503f2193bd015084a7a817de08",
+   "bytes": 61267
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/PLAN.md",
+   "sha256": "2bdfc1d582dc680302cee3cc2ff780582b12b43f5f31d051c40e2bb12c7c68e4",
+   "bytes": 3501
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/check_matrix.py",
+   "sha256": "f21624b52f6ebf850710cfc127eabb9c4f8ad3f0f3004fda92e99ae93fa4d7d9",
+   "bytes": 7004
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/judge.py",
+   "sha256": "4dfd78aa812aa3e97d5b6496b34dbc954a58e13f25fde46b4f79a224b4a2c4c6",
+   "bytes": 7296
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/test_contract.py",
+   "sha256": "e9affb2c299ab80be784d147d35ba097bce4ce1038d598844f5730803d5008a1",
+   "bytes": 3387
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/run_checks.py",
+   "sha256": "f5727caa66e09d8ef072c2522ce60212b32faf977e48c1c401f0e11a475924b9",
+   "bytes": 1724
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/resistor_judge.py",
+   "sha256": "8281dfc69e396ccf7c40dbf3ea9bc1aacb44a6a809c1e5749d226e20ef8273d3",
+   "bytes": 5283
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  },
+  {
+   "path": "tests/unit/test_measurement_requested_bias_mock.py",
+   "sha256": "6251b02b3d118fa638dd40b427fd33544aa19b8cf8ddda8885970e4704b34e68",
+   "bytes": 4097
+  },
+  {
+   "path": "tests/unit/test_node_field_caption_mock.py",
+   "sha256": "1dc05178d7413eff749ce00511c469a0daa8c6b491133776e34b1936731e191b",
+   "bytes": 4027
+  },
+  {
+   "path": "tests/unit/test_wafer_state_v2_fail_closed_no_resurrection_mock.py",
+   "sha256": "7d1e741797ba42bc13ac960bb87c7c1146511225d4241bffec394b88a0e16455",
+   "bytes": 3634
+  }
+ ],
+ "request_sha256": "1ccbd431fddc05a775e4269715f607ac0aa84908f58654a58cad0a18f6e4cc1f",
+ "source": {
+  "github_sha": "d6c1f1393170380cd88406c90265b6b50ebbd9ad",
+  "git_head": "d6c1f1393170380cd88406c90265b6b50ebbd9ad",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37976122403",
+  "run_number": "69",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nu-carrier-compensation-order/run_checks.py"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T18:51:59.305923+00:00",
+ "duration_s": 5.761,
+ "outputs": [
+  {
+   "path": "e6nu_out/bias.log",
+   "bytes": 264,
+   "sha256": "9e583bcd88ca2c9d45702ed8935d34f44dbcbe80f2a37dd54c6acd832ada5fa2"
+  },
+  {
+   "path": "e6nu_out/caption.log",
+   "bytes": 109,
+   "sha256": "097fb46d038e49d08c08b04d3602c0999f84fd5e6a2377f9d60d46d41681b208"
+  },
+  {
+   "path": "e6nu_out/judge.log",
+   "bytes": 63,
+   "sha256": "6ef4a58236a20318b10786de4274dd088eccc3d6619566e35bc7291ca17f59d2"
+  },
+  {
+   "path": "e6nu_out/matrix.log",
+   "bytes": 19202,
+   "sha256": "c02d02388bc08dc301b0f85071e81c3d68ae0f2aa8ca8f3f35b354d590d795b5"
+  },
+  {
+   "path": "e6nu_out/n_single_neg_fields.json",
+   "bytes": 10301,
+   "sha256": "b86f6c1236497f6ae8abd357384b372d0381bb14625dbc6f5fb2813abe35c2a3"
+  },
+  {
+   "path": "e6nu_out/n_single_pos_fields.json",
+   "bytes": 10300,
+   "sha256": "8111c300184eccc680938178e6112fc6e8152e2b4789cc1cdfa79d935df1056f"
+  },
+  {
+   "path": "e6nu_out/no_resurrection.log",
+   "bytes": 399,
+   "sha256": "23825d815d0e6508e8408624b025bba72e3fc79c1bd316b03da111751ea2a249"
+  },
+  {
+   "path": "e6nu_out/p_single_neg_fields.json",
+   "bytes": 10371,
+   "sha256": "299e20de0dc28a8f835f68ad1b900eb4cc47fe3704d1d8f7b81e4956f31b7ff5"
+  },
+  {
+   "path": "e6nu_out/p_single_pos_fields.json",
+   "bytes": 10376,
+   "sha256": "eb0209e18c1dc93141ae79b8d3f4afb866c23734cde2486bf9e1831587c96d4a"
+  },
+  {
+   "path": "e6nu_out/records.json",
+   "bytes": 68029,
+   "sha256": "7dfa3d97f8b059fbb4cdc29ded1a450b51db3ed52d1caca5dee0b8fed0cfdae3"
+  },
+  {
+   "path": "e6nu_out/tests.json",
+   "bytes": 2475,
+   "sha256": "749f93aff7fbf0c38fd3da6243cf80093dcedc818291c25a684b8eb179ea127b"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "36 actual constant-mobility uniform resistor solves; ACTIVE declarations, not implantation or activation simulation.",
+ "log": {
+  "file": "run.log",
+  "sha256": "14388119e76eec1f8159d9172214a31ba47c209739e8d98eec3551eb10301c4d",
+  "bytes": 99
+ },
+ "redactions": {}
+}

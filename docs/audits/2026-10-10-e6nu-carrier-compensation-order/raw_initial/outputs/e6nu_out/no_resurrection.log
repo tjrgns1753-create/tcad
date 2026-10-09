@@ -1,0 +1,6 @@
+[1] fail-closed: the attachment is gone from the active set, ledgered
+[2] a following valid remesh: old region still UNSUPPORTED, doping not resurrected
+[3] deposition: new cell queryable (real 0); old region stays UNSUPPORTED; nothing resurrected
+[4] only a fresh explicit attach_dopant() on a real new instance adds active doping
+
+WaferState v2 fail-closed test PASS -- no attachment resurrection
