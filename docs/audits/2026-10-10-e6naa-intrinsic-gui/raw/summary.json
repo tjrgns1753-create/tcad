@@ -1,0 +1,234 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T19:56:39.786374+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6naa-intrinsic-gui-001",
+  "profile": "e6naa_intrinsic_gui",
+  "params": {},
+  "note": "Known-undoped low-field GUI and analytic full-field guard; unsupported fabrication, activation and PN gates unchanged."
+ },
+ "profile": "e6naa_intrinsic_gui",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6naa-intrinsic-gui/PLAN.md",
+   "sha256": "38159199bbfd61ecf18bc92390ce4db54841336023846acb21909c1b7b0f354b",
+   "bytes": 2548
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naa-intrinsic-gui/check_gui.py",
+   "sha256": "d112fcb7aee3cabb8325e1f369876e901f100472bcd0ac40b5b6a6d39101a9df",
+   "bytes": 7093
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naa-intrinsic-gui/run_checks.py",
+   "sha256": "b5b3342f91d4e252136656cd7d16e7e5a6f5c13bcc3ee5095a51cd67c5f225fe",
+   "bytes": 1591
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "tests/unit/test_intrinsic_measurement_contract_mock.py",
+   "sha256": "2e4c0dce1fd5520f42cd6d21ea41417dfdc4ff839e640331fddf75e7ac916ad0",
+   "bytes": 2916
+  },
+  {
+   "path": "tests/unit/test_measurement_missing_profile_status_mock.py",
+   "sha256": "1e2f735f3e3da2c7d9a0ebf184db7f494d63c9f3c51dfebb700d9a4ca187bb53",
+   "bytes": 3277
+  },
+  {
+   "path": "tests/unit/test_measurement_requested_bias_mock.py",
+   "sha256": "6251b02b3d118fa638dd40b427fd33544aa19b8cf8ddda8885970e4704b34e68",
+   "bytes": 4097
+  },
+  {
+   "path": "tests/integration/test_measurement_canonical_state_gate_real.py",
+   "sha256": "f4d36e0162250ff6163684f0ee719db8eb3725797a2994d5a768a59d347787f1",
+   "bytes": 19697
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  },
+  {
+   "path": "tests/integration/test_mesh_gate_poisson_transition_real.py",
+   "sha256": "311642d0af6311f9ddfcbbd6871330e671c8557ae2e24a55c52b26ccfd5ff6f5",
+   "bytes": 11322
+  },
+  {
+   "path": "tcad/characterization/intrinsic.py",
+   "sha256": "289e7133df0a767214fdf693b82b4b7310c2496753920544a7ff87346f93daf1",
+   "bytes": 3986
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "269d6d7028cc4985ecd4d0107084428ab4048ebfaad6add63e47a6c1b4a485da",
+   "bytes": 3020
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "5b8c43f9bccbed894d18969881090bc8e46b20ca2d6af5fc8399889ea6967170",
+   "bytes": 419648
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "tcad/physics/wafer_state_v2.py",
+   "sha256": "7652062fb0eb03ed1ecab41c72aee3875d61e5503f2193bd015084a7a817de08",
+   "bytes": 61267
+  }
+ ],
+ "request_sha256": "aa6ca4de41bec77db7fbe71657cff69cc286a04533280fad25eb5e4bb5b169f9",
+ "source": {
+  "github_sha": "ad59b772cc9b1fb157816808306231e806bf4a29",
+  "git_head": "ad59b772cc9b1fb157816808306231e806bf4a29",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37983547425",
+  "run_number": "76",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6naa-intrinsic-gui/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T19:56:53.657565+00:00",
+ "duration_s": 13.871,
+ "outputs": [
+  {
+   "path": "e6naa_out/bias.log",
+   "bytes": 264,
+   "sha256": "9e583bcd88ca2c9d45702ed8935d34f44dbcbe80f2a37dd54c6acd832ada5fa2"
+  },
+  {
+   "path": "e6naa_out/canonical.log",
+   "bytes": 19574,
+   "sha256": "c3d443ff4c6cb2e81d32895ea033d2b80f5cb81515f5c5ecb0bd734320d92222"
+  },
+  {
+   "path": "e6naa_out/contract.log",
+   "bytes": 129,
+   "sha256": "2f02af81b8a11d109df57e9b3543490dbc5d8f27fd1bce0f119ae835b3f6e3c0"
+  },
+  {
+   "path": "e6naa_out/fresh_gui_fields.json",
+   "bytes": 5379,
+   "sha256": "b951a2f22ef1e9649f33a1435c41d8086fc93f225bebbaf26774a53e1c1a9bb1"
+  },
+  {
+   "path": "e6naa_out/gui.log",
+   "bytes": 11871,
+   "sha256": "68a4260926980d355fab556e2d12c6614dad8182702f17176dd4c93ad8e02e71"
+  },
+  {
+   "path": "e6naa_out/missing.log",
+   "bytes": 51,
+   "sha256": "d71ed7e51698dce33cf031050202da11ad715a1db994fc26af6103461e77fa46"
+  },
+  {
+   "path": "e6naa_out/records.json",
+   "bytes": 78730,
+   "sha256": "6e67d718a8d6f7ee8896c38534a945971f1ed2af443f769471e59682f3c86ed1"
+  },
+  {
+   "path": "e6naa_out/steps.json",
+   "bytes": 2317,
+   "sha256": "0a9776ccc5d439ea37d85545333c880e1fc2b05b3e8ac1907d44719369874c1b"
+  },
+  {
+   "path": "e6naa_out/verdict.json",
+   "bytes": 55,
+   "sha256": "2064f08a030a11608ae1657342746804ff7ee39504084b7402e0c169d07caac6"
+  },
+  {
+   "path": "e6naa_out/x_negative_fields.json",
+   "bytes": 9642,
+   "sha256": "1a552210589394277d53c8a4ebd705061027d5f8adf72ccae4ac64d1d208f4f0"
+  },
+  {
+   "path": "e6naa_out/x_positive_fields.json",
+   "bytes": 9571,
+   "sha256": "bd4518e196ead418b8dc0068c0cab55875fbd4f300f727b641242a60e9ee2e3f"
+  },
+  {
+   "path": "e6naa_out/x_zero_fields.json",
+   "bytes": 9061,
+   "sha256": "2416cf54ccd8f1e53d543dda97cb70dd27d3f35a38e1d264c7a5e24cf3ef615d"
+  },
+  {
+   "path": "e6naa_out/y_positive_fields.json",
+   "bytes": 9514,
+   "sha256": "08d7060174451fb76bac89ffd582219f529d384f9418178a17f756c2287df6ee"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Five supported GUI requests and four refusal controls; no fabricated doping profile.",
+ "log": {
+  "file": "run.log",
+  "sha256": "7c2ce84c527f0e9368ebbd8dd0e9f98fdcb09bb6d4e1724675e746989ace9940",
+  "bytes": 2000
+ },
+ "redactions": {}
+}
