@@ -1,0 +1,242 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T19:05:05.361056+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nu-carrier-compensation-boundary-001",
+  "profile": "e6nu_carrier_compensation_boundary",
+  "params": {},
+  "note": "Separate single-polarity numeric controls from compensated capability refusal; initial run FAIL remains preserved."
+ },
+ "profile": "e6nu_carrier_compensation_boundary",
+ "inputs": [
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "22855ababf073dd331f8bfae9bc945301e9cec539ebe01a21f617e470cfc7352",
+   "bytes": 417257
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "4d7bf8fd49fc411b0565772242dbe0f7ccafd4209443c0d4385f6de826be217a",
+   "bytes": 7958
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "16eb8d75591f866cb9f689714e29f396932db247361c4ac4b66773dbf48ec8a1",
+   "bytes": 1880
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "tcad/physics/doping.py",
+   "sha256": "5bca505bb74632e590b14eab74ea4a77eb0feebeb9996e235fa0e013b95829d1",
+   "bytes": 18912
+  },
+  {
+   "path": "tcad/physics/wafer_state_accumulation.py",
+   "sha256": "dfb12c8a756bfb3582dcdf827f1470f65556aa6662181c1aba42062dbae4f1bb",
+   "bytes": 27500
+  },
+  {
+   "path": "tcad/physics/wafer_state_v2.py",
+   "sha256": "7652062fb0eb03ed1ecab41c72aee3875d61e5503f2193bd015084a7a817de08",
+   "bytes": 61267
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/PLAN_BOUNDARY.md",
+   "sha256": "685a84329517653940de7470c68a5425d140f1a4f77a5cc20a099885e3504da0",
+   "bytes": 2736
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/check_boundary.py",
+   "sha256": "b11fc274c1906cb75b5d778eb5bc4fef2ec98567e9694eedff4a7f0a17b70b2b",
+   "bytes": 9976
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/judge.py",
+   "sha256": "f180b67be8932645e68e3d6b6edb1628ab0f20fd6728a43c5378bf44985d604a",
+   "bytes": 7415
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/judge_boundary.py",
+   "sha256": "6fd4224c9b924bf7b3d045f1e4784bccc7fb05dcf76a3e39449e8037cff68d66",
+   "bytes": 2861
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/test_contract.py",
+   "sha256": "85b284de1497f129b970857771f628012629c253c8e22628fec6c011a7685aa0",
+   "bytes": 3472
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/test_boundary.py",
+   "sha256": "95afaf2388e44ee8e432291bfe4c24714b14bbee06eccfa5413ba8c5ebdba019",
+   "bytes": 2475
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nu-carrier-compensation-order/run_boundary.py",
+   "sha256": "deeddf0529f59d247be20a56111f39f45c4cee4384a48f3b61f3f8bb3c4d1670",
+   "bytes": 1735
+  },
+  {
+   "path": "docs/audits/2026-10-01-batch7h-e6i-uniform-resistor-dd/scripts/resistor_judge.py",
+   "sha256": "8281dfc69e396ccf7c40dbf3ea9bc1aacb44a6a809c1e5749d226e20ef8273d3",
+   "bytes": 5283
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  },
+  {
+   "path": "tests/unit/test_measurement_requested_bias_mock.py",
+   "sha256": "6251b02b3d118fa638dd40b427fd33544aa19b8cf8ddda8885970e4704b34e68",
+   "bytes": 4097
+  },
+  {
+   "path": "tests/unit/test_node_field_caption_mock.py",
+   "sha256": "1dc05178d7413eff749ce00511c469a0daa8c6b491133776e34b1936731e191b",
+   "bytes": 4027
+  },
+  {
+   "path": "tests/unit/test_wafer_state_v2_fail_closed_no_resurrection_mock.py",
+   "sha256": "7d1e741797ba42bc13ac960bb87c7c1146511225d4241bffec394b88a0e16455",
+   "bytes": 3634
+  }
+ ],
+ "request_sha256": "1f0f458a338c9e68b4bb7a9a362349eccff91f0c12786311b4d63ba030ff8671",
+ "source": {
+  "github_sha": "0ac145d48dbb0984b2b417bfa0c71075d668c717",
+  "git_head": "0ac145d48dbb0984b2b417bfa0c71075d668c717",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37977642901",
+  "run_number": "70",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_IMPORTED",
+  "reason": "engine-free profile"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nu-carrier-compensation-order/run_boundary.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T19:05:13.146393+00:00",
+ "duration_s": 7.785,
+ "outputs": [
+  {
+   "path": "e6nu_boundary_out/bias.log",
+   "bytes": 264,
+   "sha256": "9e583bcd88ca2c9d45702ed8935d34f44dbcbe80f2a37dd54c6acd832ada5fa2"
+  },
+  {
+   "path": "e6nu_boundary_out/caption.log",
+   "bytes": 109,
+   "sha256": "097fb46d038e49d08c08b04d3602c0999f84fd5e6a2377f9d60d46d41681b208"
+  },
+  {
+   "path": "e6nu_boundary_out/judge.log",
+   "bytes": 71,
+   "sha256": "22fcc7ab136290709514146611c985f66b63c7260d1378ebb80f664cf8c07783"
+  },
+  {
+   "path": "e6nu_boundary_out/matrix.log",
+   "bytes": 23564,
+   "sha256": "8a4000ecb0e2b3a621e4cd67aaa97fe1f5da58ed9251b8462b38d15987e7ca16"
+  },
+  {
+   "path": "e6nu_boundary_out/n_single_neg_fields.json",
+   "bytes": 10301,
+   "sha256": "b86f6c1236497f6ae8abd357384b372d0381bb14625dbc6f5fb2813abe35c2a3"
+  },
+  {
+   "path": "e6nu_boundary_out/n_single_pos_fields.json",
+   "bytes": 10300,
+   "sha256": "8111c300184eccc680938178e6112fc6e8152e2b4789cc1cdfa79d935df1056f"
+  },
+  {
+   "path": "e6nu_boundary_out/no_resurrection.log",
+   "bytes": 399,
+   "sha256": "23825d815d0e6508e8408624b025bba72e3fc79c1bd316b03da111751ea2a249"
+  },
+  {
+   "path": "e6nu_boundary_out/p_single_neg_fields.json",
+   "bytes": 10371,
+   "sha256": "299e20de0dc28a8f835f68ad1b900eb4cc47fe3704d1d8f7b81e4956f31b7ff5"
+  },
+  {
+   "path": "e6nu_boundary_out/p_single_pos_fields.json",
+   "bytes": 10376,
+   "sha256": "eb0209e18c1dc93141ae79b8d3f4afb866c23734cde2486bf9e1831587c96d4a"
+  },
+  {
+   "path": "e6nu_boundary_out/records.json",
+   "bytes": 224549,
+   "sha256": "a0c2ddf8301212784a3d090351c1ca61951a4026c7e3da5dd69ae2a4bb1d7077"
+  },
+  {
+   "path": "e6nu_boundary_out/tests.json",
+   "bytes": 2477,
+   "sha256": "3c48ef8ed99f62bcf5522907f24339784f7a9d3fae8f46766d4ec2fdbda0b60b"
+  },
+  {
+   "path": "e6nu_boundary_out/verdict.json",
+   "bytes": 5393,
+   "sha256": "04a4f9190a7234e50d805695fabcf6ae5950933bdea39c59338461cddf783088"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "12 actual solves for four single-polarity controls; compensated transport remains refused, no gate removal.",
+ "log": {
+  "file": "run.log",
+  "sha256": "500b0f17a47852f7e5f031869c19f7ebb91128b5566c893ceaaf814af94e6725",
+  "bytes": 98
+ },
+ "redactions": {}
+}
