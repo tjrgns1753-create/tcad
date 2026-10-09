@@ -1,0 +1,1 @@
+{"mode": "after", "cases": {"wrong_source_voltage": "BLOCKED", "wrong_ground_voltage": "BLOCKED", "wrong_region": "BLOCKED", "wrong_sweep_contact": "BLOCKED", "extra_voltage": "BLOCKED", "extra_current": "BLOCKED"}, "normal_bias_controls": 3, "engine_imports": 0}

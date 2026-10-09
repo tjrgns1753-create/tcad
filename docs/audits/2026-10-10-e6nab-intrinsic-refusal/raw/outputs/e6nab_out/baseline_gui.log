@@ -1,0 +1,225 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "ElectronContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "HoleContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "ElectronContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "HoleContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+PASS x_zero {'Si_xmin': 0.0, 'Si_xmax': 0.0}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "ElectronContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "HoleContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.00416e-03
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00416e-03
+      Equation: "ElectronContinuityEquation"	RelError: 1.64898e-16	AbsError: 1.64898e-06
+      Equation: "HoleContinuityEquation"	RelError: 2.50766e-16	AbsError: 2.50766e-06
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 8.66124e-15	AbsError: 3.79969e-06
+    Region: "Si"	RelError: 8.66124e-15	AbsError: 3.79969e-06
+      Equation: "ElectronContinuityEquation"	RelError: 1.90409e-16	AbsError: 1.90409e-06
+      Equation: "HoleContinuityEquation"	RelError: 1.89560e-16	AbsError: 1.89560e-06
+      Equation: "PotentialEquation"	RelError: 8.28127e-15	AbsError: 4.06316e-18
+PASS x_positive {'Si_xmin': -2.4e-10, 'Si_xmax': 2.4000000000000005e-10}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "ElectronContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "HoleContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.00416e-03
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00416e-03
+      Equation: "ElectronContinuityEquation"	RelError: 1.64898e-16	AbsError: 1.64898e-06
+      Equation: "HoleContinuityEquation"	RelError: 2.50766e-16	AbsError: 2.50766e-06
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 8.66288e-15	AbsError: 3.81647e-06
+    Region: "Si"	RelError: 8.66288e-15	AbsError: 3.81647e-06
+      Equation: "ElectronContinuityEquation"	RelError: 1.90735e-16	AbsError: 1.90735e-06
+      Equation: "HoleContinuityEquation"	RelError: 1.90912e-16	AbsError: 1.90912e-06
+      Equation: "PotentialEquation"	RelError: 8.28123e-15	AbsError: 4.06314e-18
+PASS x_negative {'Si_xmin': 2.4e-10, 'Si_xmax': -2.4000000000000005e-10}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 116 Triangles.
+Physical group name Si has 188 Lines.
+Physical group name Si has 73 Points.
+Physical group name Si_ymax has 0 Tetrahedra.
+Physical group name Si_ymax has 0 Triangles.
+Physical group name Si_ymax has 12 Lines.
+Physical group name Si_ymax has 13 Points.
+Physical group name Si_ymin has 0 Tetrahedra.
+Physical group name Si_ymin has 0 Triangles.
+Physical group name Si_ymin has 12 Lines.
+Physical group name Si_ymin has 13 Points.
+Device gui_measure_device has 73 coordinates with max index 72
+Region Si has 73 nodes.
+Contact Si_ymax in region Si with 13 nodes
+Contact Si_ymin in region Si with 13 nodes
+Creating Node Solution Potential
+number of equations 73
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "ElectronContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "HoleContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+number of equations 219
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 2.50107e-04
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 2.50107e-04
+      Equation: "ElectronContinuityEquation"	RelError: 4.19326e-18	AbsError: 4.19326e-08
+      Equation: "HoleContinuityEquation"	RelError: 6.54372e-18	AbsError: 6.54372e-08
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 2.50000e-04
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 6.97166e-16	AbsError: 4.83577e-09
+    Region: "Si"	RelError: 6.97166e-16	AbsError: 4.83577e-09
+      Equation: "ElectronContinuityEquation"	RelError: 2.41555e-19	AbsError: 2.41555e-09
+      Equation: "HoleContinuityEquation"	RelError: 2.42022e-19	AbsError: 2.42022e-09
+      Equation: "PotentialEquation"	RelError: 6.96683e-16	AbsError: 1.10500e-19
+PASS y_positive {'Si_ymin': -9.600000000000002e-10, 'Si_ymax': 9.6e-10}
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 32 Triangles.
+Physical group name Si has 58 Lines.
+Physical group name Si has 27 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 2 Lines.
+Physical group name Si_xmax has 3 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 2 Lines.
+Physical group name Si_xmin has 3 Points.
+Device gui_measure_device has 27 coordinates with max index 26
+Region Si has 27 nodes.
+Contact Si_xmax in region Si with 3 nodes
+Contact Si_xmin in region Si with 3 nodes
+Creating Node Solution Potential
+number of equations 27
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 81
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+    Region: "Si"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "ElectronContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "HoleContinuityEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+      Equation: "PotentialEquation"	RelError: 0.00000e+00	AbsError: 0.00000e+00
+number of equations 81
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.00109e-03
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.00109e-03
+      Equation: "ElectronContinuityEquation"	RelError: 5.08340e-17	AbsError: 5.08340e-07
+      Equation: "HoleContinuityEquation"	RelError: 5.85903e-17	AbsError: 5.85903e-07
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.00000e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 3.14767e-15	AbsError: 2.61100e-08
+    Region: "Si"	RelError: 3.14767e-15	AbsError: 2.61100e-08
+      Equation: "ElectronContinuityEquation"	RelError: 1.30591e-18	AbsError: 1.30591e-08
+      Equation: "HoleContinuityEquation"	RelError: 1.30509e-18	AbsError: 1.30509e-08
+      Equation: "PotentialEquation"	RelError: 3.14506e-15	AbsError: 1.30001e-18
+PASS fresh_gui {'Si_xmin': -2.4e-10, 'Si_xmax': 2.4e-10}
+PASS refusal high_field
+PASS refusal unresolved
+PASS refusal chemical
+PASS refusal active_missing_profile

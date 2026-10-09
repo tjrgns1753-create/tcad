@@ -1,0 +1,274 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T20:04:05.352969+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nab-intrinsic-refusal-001",
+  "profile": "e6nab_intrinsic_refusal",
+  "params": {},
+  "note": "Actual opposite-source controls and explicitly labelled post-solve fault injections; no physical-model or gate changes."
+ },
+ "profile": "e6nab_intrinsic_refusal",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6nab-intrinsic-refusal/PLAN.md",
+   "sha256": "abe328b53ba0121ce6754bf4fef20f0049eea8d520792095f30220ad219c472a",
+   "bytes": 1776
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nab-intrinsic-refusal/check_refusal.py",
+   "sha256": "7d59484b3632a5d138f9aa8f7a01d9d61ad9d4076afca481a2765e832c5f7d59",
+   "bytes": 7357
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nab-intrinsic-refusal/run_checks.py",
+   "sha256": "895e118d87902ad8eab8e224905accb71672d82815bc9e5818e276eedeae48a7",
+   "bytes": 1627
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naa-intrinsic-gui/PLAN.md",
+   "sha256": "38159199bbfd61ecf18bc92390ce4db54841336023846acb21909c1b7b0f354b",
+   "bytes": 2548
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naa-intrinsic-gui/check_gui.py",
+   "sha256": "d112fcb7aee3cabb8325e1f369876e901f100472bcd0ac40b5b6a6d39101a9df",
+   "bytes": 7093
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "tests/unit/test_intrinsic_refusal_status_mock.py",
+   "sha256": "bb41e8452c7c7968f1112e0cd6b014828579797db2784d14ba419c3d13435857",
+   "bytes": 2431
+  },
+  {
+   "path": "tests/unit/test_intrinsic_measurement_contract_mock.py",
+   "sha256": "2e4c0dce1fd5520f42cd6d21ea41417dfdc4ff839e640331fddf75e7ac916ad0",
+   "bytes": 2916
+  },
+  {
+   "path": "tests/unit/test_measurement_missing_profile_status_mock.py",
+   "sha256": "1e2f735f3e3da2c7d9a0ebf184db7f494d63c9f3c51dfebb700d9a4ca187bb53",
+   "bytes": 3277
+  },
+  {
+   "path": "tests/unit/test_measurement_requested_bias_mock.py",
+   "sha256": "6251b02b3d118fa638dd40b427fd33544aa19b8cf8ddda8885970e4704b34e68",
+   "bytes": 4097
+  },
+  {
+   "path": "tests/integration/test_uniform_resistor_dd_current_real.py",
+   "sha256": "a5c27008f62c0a54325f54915c0d9ca738190a63ced6dd85d84bf93dbaee9677",
+   "bytes": 13995
+  },
+  {
+   "path": "tests/integration/test_mesh_gate_poisson_transition_real.py",
+   "sha256": "311642d0af6311f9ddfcbbd6871330e671c8557ae2e24a55c52b26ccfd5ff6f5",
+   "bytes": 11322
+  },
+  {
+   "path": "tcad/characterization/intrinsic.py",
+   "sha256": "553530629db6c595548be34e5f46eca9e080d8957d63ea0367bf05f4e57cc87c",
+   "bytes": 4380
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "269d6d7028cc4985ecd4d0107084428ab4048ebfaad6add63e47a6c1b4a485da",
+   "bytes": 3020
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "b601206dd9e374abf379f5cb28960bb90321c3fe834f370f7829d5d5cbeaea2b",
+   "bytes": 420212
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  },
+  {
+   "path": "tcad/characterization/pn_junction_iv_sweep.py",
+   "sha256": "ce6213cff86fea4c91fca10316be1e44fb5e16e210626f553f07abd7c6710735",
+   "bytes": 5578
+  },
+  {
+   "path": "tcad/physics/wafer_state_v2.py",
+   "sha256": "7652062fb0eb03ed1ecab41c72aee3875d61e5503f2193bd015084a7a817de08",
+   "bytes": 61267
+  }
+ ],
+ "request_sha256": "846cd4eede08bc7c2c679f3b41be8de72c366b25bd94e00b36db6b242d9df79d",
+ "source": {
+  "github_sha": "adb174994d72abf3f6cb9d1a1b857dac2cea7e58",
+  "git_head": "adb174994d72abf3f6cb9d1a1b857dac2cea7e58",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37984357015",
+  "run_number": "77",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nab-intrinsic-refusal/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T20:04:14.646660+00:00",
+ "duration_s": 9.294,
+ "outputs": [
+  {
+   "path": "e6nab_out/baseline_gui.log",
+   "bytes": 11826,
+   "sha256": "decd3df33bea439fc372b86eaaeb9d1dcaf0343206a05d200ce28c0333126c51"
+  },
+  {
+   "path": "e6nab_out/bias.log",
+   "bytes": 264,
+   "sha256": "9e583bcd88ca2c9d45702ed8935d34f44dbcbe80f2a37dd54c6acd832ada5fa2"
+  },
+  {
+   "path": "e6nab_out/contract.log",
+   "bytes": 129,
+   "sha256": "2f02af81b8a11d109df57e9b3543490dbc5d8f27fd1bce0f119ae835b3f6e3c0"
+  },
+  {
+   "path": "e6nab_out/missing.log",
+   "bytes": 51,
+   "sha256": "d71ed7e51698dce33cf031050202da11ad715a1db994fc26af6103461e77fa46"
+  },
+  {
+   "path": "e6nab_out/records.json",
+   "bytes": 108048,
+   "sha256": "35f177ab9b0311fc1dc9fe87bbc28bf515a6c7b992ed8dbdef713a452ece4ad0"
+  },
+  {
+   "path": "e6nab_out/refusal_gui.log",
+   "bytes": 19089,
+   "sha256": "9238786abdedb9b344abc0563e155ef6d320f7d787b9c17a3feb7489bce3d093"
+  },
+  {
+   "path": "e6nab_out/status.log",
+   "bytes": 72,
+   "sha256": "ee1a6e9376638198da26fb4a1b906033e3bb11575c90ef69960ee4b4057a7842"
+  },
+  {
+   "path": "e6nab_out/steps.json",
+   "bytes": 2780,
+   "sha256": "b537534feb0f2488fa2087632cbdd41865a4d399b3883a698d9daadec21e1a86"
+  },
+  {
+   "path": "e6nab_out/verdict.json",
+   "bytes": 90,
+   "sha256": "e3034545b91ca1859d69b605726ab5465ae4767babdc692ffa0278f86965421d"
+  },
+  {
+   "path": "e6nab_out/x_min_negative_fields.json",
+   "bytes": 9618,
+   "sha256": "ef0aeba3af2f3fc69e151294d1c6a88846980f2474ab72c8dddb750be5fbba54"
+  },
+  {
+   "path": "e6nab_out/x_min_positive_fields.json",
+   "bytes": 9547,
+   "sha256": "784f2955bb8725f8629ea5e65d7ab70aea13afa55be4c3fddd51515f2686bc23"
+  },
+  {
+   "path": "e6nab_out/y_min_negative_fields.json",
+   "bytes": 9511,
+   "sha256": "6ce63a5c17f27f1819e5d59e266420995ff3f1c0132d16b37ba0a2c8953e50dd"
+  },
+  {
+   "path": "e6naa_out/fresh_gui_fields.json",
+   "bytes": 5303,
+   "sha256": "ed9b748c89ff635799ffad35c0bafc201829648b1a901c1ea3a4ea03ea8e3ce8"
+  },
+  {
+   "path": "e6naa_out/records.json",
+   "bytes": 78850,
+   "sha256": "7311354162aa767e6a7ebc64911247db876f0073efbeae9a0af71d9db2c886d1"
+  },
+  {
+   "path": "e6naa_out/verdict.json",
+   "bytes": 55,
+   "sha256": "2064f08a030a11608ae1657342746804ff7ee39504084b7402e0c169d07caac6"
+  },
+  {
+   "path": "e6naa_out/x_negative_fields.json",
+   "bytes": 9740,
+   "sha256": "f2e60eeaf40abed03c3850c25877ac95ce154b495986cd394e90e606413ac197"
+  },
+  {
+   "path": "e6naa_out/x_positive_fields.json",
+   "bytes": 9669,
+   "sha256": "9683860cbf4863e950e08e42f8eb4ded90b7e0c6a66fe8854fb80596b21d5ad9"
+  },
+  {
+   "path": "e6naa_out/x_zero_fields.json",
+   "bytes": 9061,
+   "sha256": "2416cf54ccd8f1e53d543dda97cb70dd27d3f35a38e1d264c7a5e24cf3ef615d"
+  },
+  {
+   "path": "e6naa_out/y_positive_fields.json",
+   "bytes": 9514,
+   "sha256": "08d7060174451fb76bac89ffd582219f529d384f9418178a17f756c2287df6ee"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Existing intrinsic GUI matrix plus three reversed-source controls and five injected faults.",
+ "log": {
+  "file": "run.log",
+  "sha256": "cb15d57b08e01d302dc0a7e5a69ffaee0937fcbfae468677fcd7b4dcc3605924",
+  "bytes": 2395
+ },
+ "redactions": {}
+}
