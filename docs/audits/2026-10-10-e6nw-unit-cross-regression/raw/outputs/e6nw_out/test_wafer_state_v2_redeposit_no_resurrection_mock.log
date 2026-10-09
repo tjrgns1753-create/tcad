@@ -1,0 +1,8 @@
+[1] doped Si fully etched
+[2] deposited Si has a NEW instance id (inst_new_si)
+[3] the new Si instance carries zero dopant attachments
+[4] the etched layer's attachment is not linked to the new Si
+[5] lineage/provenance distinguish the old Si and the new Si
+[6] net_doping_at() in the deposited Si reads a real 0 -- nothing resurrected
+
+WaferState v2 test 2 PASS -- redeposition does not resurrect dopant

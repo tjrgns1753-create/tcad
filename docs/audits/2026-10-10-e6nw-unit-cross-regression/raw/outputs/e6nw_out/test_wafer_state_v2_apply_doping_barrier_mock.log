@@ -1,0 +1,3 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+apply_doping() no longer masks the accumulated NetDoping with a generic exclude_windows -- unknown always blocks, known-undoped 0 stays distinct from unknown None, and a real attachment's value reaches every node it covers.

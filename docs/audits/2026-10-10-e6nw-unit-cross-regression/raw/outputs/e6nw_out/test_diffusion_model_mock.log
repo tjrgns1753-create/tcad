@@ -1,0 +1,9 @@
+P in Si @ 900.0 C: D = 1.355886e-15 cm^2/s (expected 1.355886e-15), resolution = Resolution.VERIFIED
+B in Si @ 900.0 C: D = 2.370438e-15 cm^2/s (expected 2.370438e-15), resolution = Resolution.VERIFIED
+P in Si @ 1200.0 C (outside 810-1100 C window): D = 3.383019e-13 cm^2/s, resolution = Resolution.UNVERIFIED
+As in Si @ 900.0 C (no table entry): D = None, resolution = Resolution.UNKNOWN
+P in SiO2 @ 900.0 C (no table entry): D = None, resolution = Resolution.UNKNOWN
+P in Si, 600.0 s anneal @ 900.0 C:  budget = 8.135319e-13 cm^2
+P in Si, 600.0 s anneal @ 1000.0 C: budget = 6.837877e-12 cm^2
+  -> same duration, higher T: budget increased by 8.405x (higher)
+Arrhenius D(T) matches [Christensen2003] exactly inside its measured window, downgrades outside it, and thermal budget genuinely depends on temperature, not just elapsed time.

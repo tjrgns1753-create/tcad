@@ -1,0 +1,9 @@
+  OK  central gate span: mask [[-0.8, 0.8]] -> windows [(-3.0, -0.8), (0.8, 3.0)]
+  OK  MakeTrench equivalent: mask [[-3.0, -0.8], [0.8, 3.0]] -> windows [(-0.8, 0.8)]
+  OK  unsorted + overlapping: mask [[0.8, 2.0], [-0.8, 1.0]] -> windows [(-3.0, -0.8), (2.0, 3.0)]
+  OK  reversed pair: mask [[0.8, -0.8]] -> windows [(-3.0, -0.8), (0.8, 3.0)]
+  OK  no mask at all: mask [] -> windows [(-3.0, 3.0)]
+  OK  mask covers everything: mask [[-3.0, 3.0]] -> windows []
+  OK  two gates: mask [[-2.0, -1.0], [1.0, 2.0]] -> windows [(-3.0, -2.0), (-1.0, 1.0), (2.0, 3.0)]
+
+ALL implant_windows_from_mask_spans CHECKS PASSED

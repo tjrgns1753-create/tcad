@@ -1,0 +1,44 @@
+PASS  01 flat known vertical displacement
+PASS  02 shoulder higher than centre -> centre selected
+PASS  03 remesh, all vertices outside window, material still present
+PASS  04 pre/post x-columns differ
+PASS  05 feature-switch counterexample
+PASS  06 two vertical components on one scanline
+PASS  07 equal-height runs separated in x not merged
+PASS  08 multiple windows independent
+PASS  09 sloped surface refuses a number
+PASS  10 ripple: accidental flat piece not exaggerated
+PASS  11 float32 coordinates
+PASS  12 zero-rate exposed Si: no 'not yet reached'
+PASS  13 oxide remains, Si unchanged: evidence-based text
+PASS  14 negative displacement
+PASS  15 pre absent/post present is not 'newly exposed'
+PASS  16 vertices outside window: not 'fully cleared'
+PASS  17 <2 intervals / zero width refuses
+PASS  18 open_windows=[]
+PASS  19 analyzer exception is diagnostic-only (GUI wrapper)
+PASS  20 static: old node/max method is gone
+PASS  21 pre center present / post whole-window absent -> FULLY_CLEARED_IN_WINDOW
+PASS  22 center absent + edge residual -> CENTER_CLEARED_RESIDUAL_REMAINS
+PASS  23 center-clear span of one interval -> AMBIGUOUS
+PASS  24 post-only edge residual -> POST_ONLY_RESIDUAL
+PASS  25 residual metadata: area / extent / edges / components
+PASS  26 isolated one-triangle island
+PASS  27 residual attached to outside bulk by a shared edge
+PASS  28 hairline gap between same-height bodies in the centre run -> AMBIGUOUS
+PASS  29 vertex-only / T-junction contact = separate components
+PASS  30 shared-edge triangles = one component
+PASS  31 component switch mid-run (post; pre) -> AMBIGUOUS
+PASS  32 reach: start/middle/end all covered -> OVERLAIN
+PASS  33 reach: all exposed -> EXPOSED
+PASS  34 reach: middle covered, end exposed -> UNKNOWN
+PASS  35 reach: epsilon-scale gap mixed -> UNKNOWN (4000-case sweep law)
+PASS  36 Mask post-only text: no created / newly exposed / mask moved
+PASS  37 every state prints 'evidence source: exported volume mesh'
+PASS  38 residual does not erase the center-clear fact
+PASS  39 no size cutoff removes a residual
+PASS  40 several windows keep residual metadata separate
+PASS  41 ripple centre patch prints its run width, no window-wide claim
+PASS  42 static: no cutoff literal; _reach inspects three scanlines
+
+42/42 passed

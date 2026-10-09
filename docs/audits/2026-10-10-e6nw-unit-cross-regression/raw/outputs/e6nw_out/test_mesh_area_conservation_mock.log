@@ -1,0 +1,14 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+single material exact: pass, rel 0.0 B/A 2.0763317285927413e-14
+two materials exact, large-coordinate control: pass
+cancelling region errors: refused per region
+tolerance boundary: B(1 - 2^-10) pass, B(1 + 2^-10) refused
+certification limit boundary: B/A 1e-8(1 - 2^-10) pass, 1e-8(1 + 2^-10) refused
+P0 sliver S = 2A: refused, B/A 2.842170943040401, S/A-1 1.0
+P0 sliver S = A: refused, B/A 2.842170943040401, S/A-1 0.0
+non-finite budget / S overflow / o_t overflow / zero area: refused
+normal shape, S = A + 0.01: MESH_AREA_NOT_CONSERVED
+non-finite / non-positive / missing NodeVolume, element mismatch: refused
+input checks: non-finite, non-planar, extra cells, unmapped tag, empty region, duplicate, degenerate, mixed: refused; consistent clockwise accepted
+ALL MESH AREA CONSERVATION MOCK CHECKS PASSED

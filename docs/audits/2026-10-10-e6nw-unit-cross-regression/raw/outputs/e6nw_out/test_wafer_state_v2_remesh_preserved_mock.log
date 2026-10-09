@@ -1,0 +1,6 @@
+[1] dopant inventory bit-unchanged across the remesh
+[2] material_instance_id and lineage intact
+[3] a PRESERVED provenance event is recorded
+[4] no unresolved-inventory entry created
+
+WaferState v2 test 5 PASS -- remesh preserves inventory and provenance

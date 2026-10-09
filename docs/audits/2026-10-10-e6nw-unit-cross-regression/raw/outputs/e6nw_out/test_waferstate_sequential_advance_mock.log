@@ -1,0 +1,28 @@
+PASS test_1: advance_wafer_state called 3x in order ['etching', 'deposition', 'remesh'], event order ['etching', 'deposition', 'remesh'] matches exactly, not collapsed to the last step
+PASS test_6: first uncertainty event attributed to the etch step; deposition's real new cell is queryable but does not resurrect the old orphaned dopant; old region stays UNSUPPORTED_BY_MODEL
+PASS test_10: 0 `last_step_category` references, run_process_flow() uses advance_wafer_state_sequence() (not the final-step-only sync) and validate_step_results() (not the retired synthetic-entry fallback), 0 mesh-derived GeometryTransform construction sites in production code
+  [A_step_results_none] rejected: step_results is missing or not a list (got None)
+  [B_length_mismatch] rejected: executed_step_count=3 not in (0, requested_step_count=2]
+  [C_duplicate_index] rejected: step_results[1]['index']=0 != actual array position 1
+  [D_index_gap] rejected: step_results[1]['index']=5 != actual array position 1
+  [E_category_none] rejected: step_results[0]['category'] is not a non-empty string: None
+  [F_final_mesh_missing] rejected: step_results[0]['final_mesh'] missing or not a real file: None
+  [G_executed_false] rejected: step_results[0]['executed'] is not True: False
+  [H_step_meshes_mismatch] rejected: step_meshes[0] != step_results[0]['final_mesh']
+  [I_physics_status_mismatch] rejected: step_physics_status[0] != step_results[0]['physics_status']
+  [J_numerical_status_mismatch] rejected: step_numerical_status[1] != step_results[1]['numerical_status']
+  [K_requested_etch_recorded_as_deposition] rejected: REQUESTED/RECORDED PROCESS MISMATCH at index 0: step_results[0]['category']='deposition' != the process this session actually requested at that index ('etching')
+  [L_requested_isotropic_recorded_as_directional] rejected: REQUESTED/RECORDED PROCESS MISMATCH at index 0: step_results[0]['model_key']='directional' != the model this session actually requested at that index ('isotropic')
+  [M_step_count_mismatch] rejected: top-level step_count=3 != executed_step_count=2
+  [N_top_level_final_mesh_mismatch] rejected: top-level final_mesh='definitely_not_the_terminal_mesh.vtu' != terminal step_results[-1]['final_mesh']='<USERPROFILE>\\AppData\\Local\\Temp\\tmpadc763p8.vtu'
+  [O_top_level_state_transition_mismatch] rejected: top-level state_transition={'kind': 'bogus_not_from_any_step'} != terminal step_results[-1]['state_transition']=None
+  [P_top_level_physics_status_mismatch] rejected: top-level physics_status={'resolution': 'bogus_not_from_any_step'} != terminal step_results[-1]['physics_status']=None
+  [Q_top_level_numerical_status_mismatch] rejected: top-level numerical_status={'under_resolved_x': [9.9]} != terminal step_results[-1]['numerical_status']=None
+  [R_terminal_unsupported_but_flag_false] rejected: stopped_unsupported=False but step_results[1] is 'unsupported' -- contradicts the top-level flag
+  [S_stopped_index_set_but_flag_false] rejected: stopped_unsupported=False but stopped_step_index=0 is not None
+  [T_requested_count_disagrees_with_expected_steps] rejected: requested_step_count=7 != len(expected_steps)=2 -- the worker's own reported request count disagrees with what this session actually sent it
+  [U_domain_state_empty] rejected: top-level domain_state missing or not a real file: ''
+  [V_domain_state_nonexistent_path] rejected: top-level domain_state missing or not a real file: '<USERPROFILE>\\AppData\\Local\\Temp\\definitely_does_not_exist_p1_1.vpsd'
+PASS test_P1_1: all 22 malformed step_results variants (A-V) rejected by validate_step_results(), each with its own diagnosis
+
+ALL WAFERSTATE SEQUENTIAL ADVANCE (MOCK) TESTS PASS

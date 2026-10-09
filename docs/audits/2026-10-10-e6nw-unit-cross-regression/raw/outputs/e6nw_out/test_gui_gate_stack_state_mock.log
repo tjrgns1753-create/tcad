@@ -1,0 +1,3 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+GATE STACK STATE CLEARED: completed_steps, step meshes, domain state, physics status
