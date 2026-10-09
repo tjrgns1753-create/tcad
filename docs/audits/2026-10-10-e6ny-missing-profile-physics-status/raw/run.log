@@ -1,0 +1,4 @@
+{"file": "tests/unit/test_measurement_missing_profile_status_mock.py", "status": "COMPLETED", "rc": 0, "completed_files": 1}
+{"file": "tests/unit/test_electrode_source_context_mock.py", "status": "COMPLETED", "rc": 0, "completed_files": 2}
+{"file": "tests/integration/test_measurement_canonical_state_gate_real.py", "status": "COMPLETED", "rc": 0, "completed_files": 3}
+{"pass": true, "counts": {"PASS": 3, "FAIL": 0, "TIMEOUT": 0, "ERROR": 0, "SKIP": 0}, "recorded_files": 3}

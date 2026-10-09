@@ -1,0 +1,13 @@
+{
+  "pass": true,
+  "counts": {
+    "PASS": 3,
+    "FAIL": 0,
+    "TIMEOUT": 0,
+    "ERROR": 0,
+    "SKIP": 0
+  },
+  "expected_files": 3,
+  "recorded_files": 3,
+  "scope": "ACTIVATION_STATUS_CONTRACT_NOT_ACTIVATION_PHYSICS"
+}

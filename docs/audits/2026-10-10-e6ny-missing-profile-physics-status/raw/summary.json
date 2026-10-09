@@ -1,0 +1,159 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-09T19:34:30.643147+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6ny-missing-profile-physics-status-001",
+  "profile": "e6ny_missing_profile_physics_status",
+  "params": {},
+  "note": "Strengthened CHEMICAL refusal status plus supported controls; no new activation model or gate removal."
+ },
+ "profile": "e6ny_missing_profile_physics_status",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6ny-missing-profile-physics-status/PLAN.md",
+   "sha256": "cc2dee9139fcae96007a36c9b9bf35315003fd286ab904aa1f45df99293e1868",
+   "bytes": 1736
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6ny-missing-profile-physics-status/MANIFEST.json",
+   "sha256": "a88a12e9b062cfad98043ca2765af0b3f8cb7fd27a6cd31c548a77d53a54a23e",
+   "bytes": 571
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6ny-missing-profile-physics-status/run_checks.py",
+   "sha256": "cdde394f3e1863bfe91864387bade3c67aad81f46fd543058da3dcb5f25afd03",
+   "bytes": 3671
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "tests/unit/test_measurement_missing_profile_status_mock.py",
+   "sha256": "1e2f735f3e3da2c7d9a0ebf184db7f494d63c9f3c51dfebb700d9a4ca187bb53",
+   "bytes": 3277
+  },
+  {
+   "path": "tests/unit/test_electrode_source_context_mock.py",
+   "sha256": "6bd28fe1d6de166f0406489395b737dc66f647c588a758cf09cb3ab54e722264",
+   "bytes": 2952
+  },
+  {
+   "path": "tests/integration/test_measurement_canonical_state_gate_real.py",
+   "sha256": "f4d36e0162250ff6163684f0ee719db8eb3725797a2994d5a768a59d347787f1",
+   "bytes": 19697
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "59e794c9ff1a98438bfa4a7be15b132593e30a3c064d7e911abbb26c7bbb7b34",
+   "bytes": 417541
+  },
+  {
+   "path": "tcad/characterization/source_context.py",
+   "sha256": "269d6d7028cc4985ecd4d0107084428ab4048ebfaad6add63e47a6c1b4a485da",
+   "bytes": 3020
+  },
+  {
+   "path": "tcad/characterization/interface.py",
+   "sha256": "4d7bf8fd49fc411b0565772242dbe0f7ccafd4209443c0d4385f6de826be217a",
+   "bytes": 7958
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "9f125e1a0f0dfb25105d79bf790d0348a3144be70257dfa578a843c812d7f178",
+   "bytes": 7888
+  }
+ ],
+ "request_sha256": "817e2003f3b670044ee8efedcb48c1d18f6a2aa136f2408438f0eca4411e6aa9",
+ "source": {
+  "github_sha": "576bc1b3ea6d66456675903ee88840f52b2ec890",
+  "git_head": "576bc1b3ea6d66456675903ee88840f52b2ec890",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "37981039050",
+  "run_number": "74",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6ny-missing-profile-physics-status/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-09T19:34:48.571209+00:00",
+ "duration_s": 17.928,
+ "outputs": [
+  {
+   "path": "e6ny_out/records.json",
+   "bytes": 2362,
+   "sha256": "5d7b853a0829d69d8768feac12bface4c665abf06746d6e40698eeab68c55494"
+  },
+  {
+   "path": "e6ny_out/test_electrode_source_context_mock.log",
+   "bytes": 88,
+   "sha256": "0e58508806b2796ccad18a52a6379b00e40e395a9730acb6a1533ccab8008e1b"
+  },
+  {
+   "path": "e6ny_out/test_measurement_canonical_state_gate_real.log",
+   "bytes": 19574,
+   "sha256": "21dae7966354d2286dc0062611306e963c937aa6cc08785863b828f161b720f4"
+  },
+  {
+   "path": "e6ny_out/test_measurement_missing_profile_status_mock.log",
+   "bytes": 51,
+   "sha256": "d71ed7e51698dce33cf031050202da11ad715a1db994fc26af6103461e77fa46"
+  },
+  {
+   "path": "e6ny_out/verdict.json",
+   "bytes": 237,
+   "sha256": "a38c0710b0b6772a7500e7207c2674607642a9eb90b4b05aabb77acfedac0a34"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Status propagation only; unchanged canonical physics and engine/gate equations.",
+ "log": {
+  "file": "run.log",
+  "sha256": "915c03aaf5625227ab9f75b7d8223cd537605c7b1c9cac17866aff34cd94cf50",
+  "bytes": 477
+ },
+ "redactions": {}
+}
