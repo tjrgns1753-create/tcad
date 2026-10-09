@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6ns-requested-bias-evidence-001",
- "profile": "e6ns_requested_bias_evidence",
+ "request_id": "e6nt-uniform-gui-bias-axis-001",
+ "profile": "e6nt_uniform_gui_bias_axis",
  "params": {},
- "note": "Match result to actual requested bias before reporting current or capturing/exporting fields."
+ "note": "Actual uniform Si GUI physical comparisons for polarity, zero bias, swapped contacts and x/y axes."
 }
