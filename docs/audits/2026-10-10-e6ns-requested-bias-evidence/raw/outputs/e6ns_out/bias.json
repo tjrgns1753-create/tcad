@@ -1,0 +1,54 @@
+{
+  "pass": true,
+  "cases": {
+    "normal": {
+      "original_voltages": {
+        "Si_xmin": 0.0,
+        "Si_xmax": 0.001
+      },
+      "returned_voltages": {
+        "Si_xmin": 0.0,
+        "Si_xmax": 0.001
+      },
+      "solves": 3,
+      "has_success_log": true,
+      "history_delta": 1,
+      "field_capture_attempts": null,
+      "device_cleanup": true
+    },
+    "wrong_source_voltage": {
+      "original_voltages": {
+        "Si_xmin": 0.0,
+        "Si_xmax": 0.001
+      },
+      "returned_voltages": {
+        "Si_xmin": 0.0,
+        "Si_xmax": 0.002
+      },
+      "solves": 3,
+      "has_success_log": false,
+      "history_delta": 0,
+      "field_capture_attempts": 0,
+      "device_cleanup": true
+    },
+    "wrong_ground_voltage": {
+      "original_voltages": {
+        "Si_xmin": 0.0,
+        "Si_xmax": 0.001
+      },
+      "returned_voltages": {
+        "Si_xmin": 0.1,
+        "Si_xmax": 0.001
+      },
+      "solves": 3,
+      "has_success_log": false,
+      "history_delta": 0,
+      "field_capture_attempts": 0,
+      "device_cleanup": true
+    }
+  },
+  "total_solves": 9,
+  "fault_injection_after_actual_success": true,
+  "export_unchanged": true,
+  "file_sha256": "8111c300184eccc680938178e6112fc6e8152e2b4789cc1cdfa79d935df1056f"
+}
