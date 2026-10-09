@@ -1,0 +1,17 @@
+{
+  "count": 3,
+  "tests": [
+    {
+      "path": "tests/unit/test_measurement_missing_profile_status_mock.py",
+      "lf_sha256": "fee57677a66f075dadcfd29a69c40b0af824299e442a527fac3e10a34efe57d4"
+    },
+    {
+      "path": "tests/unit/test_electrode_source_context_mock.py",
+      "lf_sha256": "5086597405b985c3b77aeb39591b3d9a36fa50cd30a0a7a58d4f480abc7d965b"
+    },
+    {
+      "path": "tests/integration/test_measurement_canonical_state_gate_real.py",
+      "lf_sha256": "d9965428bc2dfca56d0c01d30a5ec4b55dba72d167a3eb6e631c4bc6fc79a1d2"
+    }
+  ]
+}
