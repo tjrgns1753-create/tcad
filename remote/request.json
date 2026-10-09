@@ -1,7 +1,7 @@
 {
  "schema": 1,
-  "request_id": "e6nv-runner-engine-evidence-scope-001",
-  "profile": "e6nv_runner_engine_evidence_scope",
+  "request_id": "e6nw-unit-cross-regression-001",
+  "profile": "e6nw_unit_cross_regression",
  "params": {},
-  "note": "Evidence scope correction only; no physical calculation is repeated."
+  "note": "One fixed 83-file unit-only cross regression; no integration or previous PN solve repetitions."
 }

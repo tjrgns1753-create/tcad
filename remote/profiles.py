@@ -11,6 +11,19 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nw_unit_cross_regression": {
+        "description": "Exactly 83 fixed tracked unit scripts once; no integration or historical PN audit execution.",
+        "entry": "docs/audits/2026-10-10-e6nw-unit-cross-regression/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 900, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nw-unit-cross-regression/PLAN.md",
+                   "docs/audits/2026-10-10-e6nw-unit-cross-regression/MANIFEST.json",
+                   "docs/audits/2026-10-10-e6nw-unit-cross-regression/run_checks.py",
+                   "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+                   "remote/run_profile.py", "tcad_2d_stagewise.py", "tcad/characterization/interface.py",
+                   "tcad/characterization/node_fields.py", "tcad/physics/wafer_state_v2.py"],
+        "outputs": [{"glob": "e6nw_out/**/*", "max_mb": 8}],
+        "regenerate": "Fixed 83 unit scripts; contract regression, not additional physical capability approval.",
+    },
     "e6nv_runner_engine_evidence_scope": {
         "description": "Engine-free scope metadata checks; does not repeat any physical calculation.",
         "entry": "docs/audits/2026-10-10-e6nv-runner-engine-evidence-scope/run_checks.py",
