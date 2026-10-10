@@ -1,0 +1,104 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-10T14:14:43.228259+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nam-mobility-derivative-001",
+  "profile": "e6nam_mobility_derivative",
+  "params": {},
+  "note": "Official derivative evidence only; roundoff is not independent approval, no solve."
+ },
+ "profile": "e6nam_mobility_derivative",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6nam-mobility-derivative/PLAN.md",
+   "sha256": "f878f4be929487944b6e2bf194ff30395d5a3024eb528ac530675c297eb34814",
+   "bytes": 2385
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nam-mobility-derivative/probe.py",
+   "sha256": "70adcc5f7adbb49a0c1dfbb2230a47d56d10726242d541be0f05dd5f139ac6f8",
+   "bytes": 5922
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nam-mobility-derivative/judge.py",
+   "sha256": "db8bf85069ec40f7e886281a28092b95a6f5eacc09286a8cc55babd00fb5791d",
+   "bytes": 2393
+  }
+ ],
+ "request_sha256": "8798c0bb394fc0992e3a4531d1fbb7281440a71b9f7678fa05ee1c0af544ca28",
+ "source": {
+  "github_sha": "81e0844df10c7c5ab765ad4ceaa983641a949c74",
+  "git_head": "81e0844df10c7c5ab765ad4ceaa983641a949c74",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "38058776477",
+  "run_number": "90",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nam-mobility-derivative/probe.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-10T14:14:44.558168+00:00",
+ "duration_s": 1.33,
+ "outputs": [
+  {
+   "path": "e6nam_out/metrics.json",
+   "bytes": 56928,
+   "sha256": "ffe45b7f9501fec11578459cc823b15cae500e7a686e91e8bf59d6573c204688"
+  },
+  {
+   "path": "e6nam_out/verdict.json",
+   "bytes": 197,
+   "sha256": "fcd668e150b82e4e824d42cc6959a7bf86f3afba44b1fd8fc8db582840cc75f9"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Fixed 64 derivative checks; roundoff-limited is not approval.",
+ "log": {
+  "file": "run.log",
+  "sha256": "f638e7385d386fb078518d5243166015718232b9e681d2e627d86918a933fe03",
+  "bytes": 1684
+ },
+ "redactions": {}
+}

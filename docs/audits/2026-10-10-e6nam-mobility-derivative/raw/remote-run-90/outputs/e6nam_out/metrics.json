@@ -1,0 +1,2059 @@
+{
+  "plan_sha": "461e774f1022a9b29b542ed579af34aad60603b1a4df1a33fad3669942b322e9",
+  "scope": "AUDIT_ONLY_DERIVATIVE_EVALUATION",
+  "helper_source_lf_sha256": "56db2f9b612626a7859732e4bdedd644885fa510e50c5bafd88a31b921696f33",
+  "rows": [
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 0,
+      "carrier_value": 1e+16,
+      "base_mobility": 1176.786403439307,
+      "analytic": 1.5574955339908558e-16,
+      "samples": [
+        {
+          "step": 10000000000000.0,
+          "plus": 1176.7879609247425,
+          "minus": 1176.7848459336744
+        },
+        {
+          "step": 5000000000000.0,
+          "plus": 1176.7871821845492,
+          "minus": 1176.7856246890153
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 1176.786792812559,
+          "minus": 1176.786014064792
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 1.557495534219318e-16,
+        "difference": 2.284622532800901e-26,
+        "budget": 6.09361434301619e-24
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 1,
+      "carrier_value": 1e+16,
+      "base_mobility": 1176.786403439307,
+      "analytic": 1.5574955339908558e-16,
+      "samples": [
+        {
+          "step": 10000000000000.0,
+          "plus": 1176.7879609247425,
+          "minus": 1176.7848459336744
+        },
+        {
+          "step": 5000000000000.0,
+          "plus": 1176.7871821845492,
+          "minus": 1176.7856246890153
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 1176.786792812559,
+          "minus": 1176.786014064792
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 1.557495534219318e-16,
+        "difference": 2.284622532800901e-26,
+        "budget": 6.09361434301619e-24
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 2,
+      "carrier_value": 1e+16,
+      "base_mobility": 1176.786403439307,
+      "analytic": 1.5574955339908558e-16,
+      "samples": [
+        {
+          "step": 10000000000000.0,
+          "plus": 1176.7879609247425,
+          "minus": 1176.7848459336744
+        },
+        {
+          "step": 5000000000000.0,
+          "plus": 1176.7871821845492,
+          "minus": 1176.7856246890153
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 1176.786792812559,
+          "minus": 1176.786014064792
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 1.557495534219318e-16,
+        "difference": 2.284622532800901e-26,
+        "budget": 6.09361434301619e-24
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 3,
+      "carrier_value": 1e+16,
+      "base_mobility": 1176.786403439307,
+      "analytic": 1.5574955339908558e-16,
+      "samples": [
+        {
+          "step": 10000000000000.0,
+          "plus": 1176.7879609247425,
+          "minus": 1176.7848459336744
+        },
+        {
+          "step": 5000000000000.0,
+          "plus": 1176.7871821845492,
+          "minus": 1176.7856246890153
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 1176.786792812559,
+          "minus": 1176.786014064792
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 1.557495534219318e-16,
+        "difference": 2.284622532800901e-26,
+        "budget": 6.09361434301619e-24
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 0,
+      "carrier_value": 10000.0,
+      "base_mobility": 1176.786403439307,
+      "analytic": -1.5827924370745985e-14,
+      "samples": [
+        {
+          "step": 10.0,
+          "plus": 1176.7864034393065,
+          "minus": 1176.7864034393067
+        },
+        {
+          "step": 5.0,
+          "plus": 1176.7864034393067,
+          "minus": 1176.786403439307
+        },
+        {
+          "step": 2.5,
+          "plus": 1176.7864034393067,
+          "minus": 1176.7864034393067
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 7.579122514774402e-15,
+        "difference": 2.3407046885520385e-14,
+        "budget": 6.093614501878619e-12
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 1,
+      "carrier_value": 10000.0,
+      "base_mobility": 1176.786403439307,
+      "analytic": -1.5827924370745985e-14,
+      "samples": [
+        {
+          "step": 10.0,
+          "plus": 1176.7864034393065,
+          "minus": 1176.7864034393067
+        },
+        {
+          "step": 5.0,
+          "plus": 1176.7864034393067,
+          "minus": 1176.786403439307
+        },
+        {
+          "step": 2.5,
+          "plus": 1176.7864034393067,
+          "minus": 1176.7864034393067
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 7.579122514774402e-15,
+        "difference": 2.3407046885520385e-14,
+        "budget": 6.093614501878619e-12
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 2,
+      "carrier_value": 10000.0,
+      "base_mobility": 1176.786403439307,
+      "analytic": -1.5827924370745985e-14,
+      "samples": [
+        {
+          "step": 10.0,
+          "plus": 1176.7864034393065,
+          "minus": 1176.7864034393067
+        },
+        {
+          "step": 5.0,
+          "plus": 1176.7864034393067,
+          "minus": 1176.786403439307
+        },
+        {
+          "step": 2.5,
+          "plus": 1176.7864034393067,
+          "minus": 1176.7864034393067
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 7.579122514774402e-15,
+        "difference": 2.3407046885520385e-14,
+        "budget": 6.093614501878619e-12
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 3,
+      "carrier_value": 10000.0,
+      "base_mobility": 1176.786403439307,
+      "analytic": -1.5827924370745985e-14,
+      "samples": [
+        {
+          "step": 10.0,
+          "plus": 1176.7864034393065,
+          "minus": 1176.7864034393067
+        },
+        {
+          "step": 5.0,
+          "plus": 1176.7864034393067,
+          "minus": 1176.786403439307
+        },
+        {
+          "step": 2.5,
+          "plus": 1176.7864034393067,
+          "minus": 1176.7864034393067
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 7.579122514774402e-15,
+        "difference": 2.3407046885520385e-14,
+        "budget": 6.093614501878619e-12
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 0,
+      "carrier_value": 1e+16,
+      "base_mobility": 415.1774143228512,
+      "analytic": -1.926138286813706e-15,
+      "samples": [
+        {
+          "step": 10000000000000.0,
+          "plus": 415.1581565651178,
+          "minus": 415.19667933289116
+        },
+        {
+          "step": 5000000000000.0,
+          "plus": 415.167784537828,
+          "minus": 415.18704592095077
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 415.1725992037527,
+          "minus": 415.1822298952186
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.9261382868080547e-15,
+        "difference": 5.6513995250033286e-27,
+        "budget": 1.4627677429704278e-24
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 1,
+      "carrier_value": 1e+16,
+      "base_mobility": 415.1774143228512,
+      "analytic": -1.926138286813706e-15,
+      "samples": [
+        {
+          "step": 10000000000000.0,
+          "plus": 415.1581565651178,
+          "minus": 415.19667933289116
+        },
+        {
+          "step": 5000000000000.0,
+          "plus": 415.167784537828,
+          "minus": 415.18704592095077
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 415.1725992037527,
+          "minus": 415.1822298952186
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.9261382868080547e-15,
+        "difference": 5.6513995250033286e-27,
+        "budget": 1.4627677429704278e-24
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 2,
+      "carrier_value": 1e+16,
+      "base_mobility": 415.1774143228512,
+      "analytic": -1.926138286813706e-15,
+      "samples": [
+        {
+          "step": 10000000000000.0,
+          "plus": 415.1581565651178,
+          "minus": 415.19667933289116
+        },
+        {
+          "step": 5000000000000.0,
+          "plus": 415.167784537828,
+          "minus": 415.18704592095077
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 415.1725992037527,
+          "minus": 415.1822298952186
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.9261382868080547e-15,
+        "difference": 5.6513995250033286e-27,
+        "budget": 1.4627677429704278e-24
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 3,
+      "carrier_value": 1e+16,
+      "base_mobility": 415.1774143228512,
+      "analytic": -1.926138286813706e-15,
+      "samples": [
+        {
+          "step": 10000000000000.0,
+          "plus": 415.1581565651178,
+          "minus": 415.19667933289116
+        },
+        {
+          "step": 5000000000000.0,
+          "plus": 415.167784537828,
+          "minus": 415.18704592095077
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 415.1725992037527,
+          "minus": 415.1822298952186
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.9261382868080547e-15,
+        "difference": 5.6513995250033286e-27,
+        "budget": 1.4627677429704278e-24
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 0,
+      "carrier_value": 10000.0,
+      "base_mobility": 415.1774143228512,
+      "analytic": 6.999162231111355e-17,
+      "samples": [
+        {
+          "step": 10.0,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        },
+        {
+          "step": 5.0,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        },
+        {
+          "step": 2.5,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 6.999162231111355e-17,
+        "budget": 1.4551915228366853e-12
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 1,
+      "carrier_value": 10000.0,
+      "base_mobility": 415.1774143228512,
+      "analytic": 6.999162231111355e-17,
+      "samples": [
+        {
+          "step": 10.0,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        },
+        {
+          "step": 5.0,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        },
+        {
+          "step": 2.5,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 6.999162231111355e-17,
+        "budget": 1.4551915228366853e-12
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 2,
+      "carrier_value": 10000.0,
+      "base_mobility": 415.1774143228512,
+      "analytic": 6.999162231111355e-17,
+      "samples": [
+        {
+          "step": 10.0,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        },
+        {
+          "step": 5.0,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        },
+        {
+          "step": 2.5,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 6.999162231111355e-17,
+        "budget": 1.4551915228366853e-12
+      }
+    },
+    {
+      "case": "PURE_N",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 3,
+      "carrier_value": 10000.0,
+      "base_mobility": 415.1774143228512,
+      "analytic": 6.999162231111355e-17,
+      "samples": [
+        {
+          "step": 10.0,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        },
+        {
+          "step": 5.0,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        },
+        {
+          "step": 2.5,
+          "plus": 415.1774143228512,
+          "minus": 415.1774143228512
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 6.999162231111355e-17,
+        "budget": 1.4551915228366853e-12
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 0,
+      "carrier_value": 20000.0,
+      "base_mobility": 1192.211554509337,
+      "analytic": 2.9552581011508973e-16,
+      "samples": [
+        {
+          "step": 20.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        },
+        {
+          "step": 10.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        },
+        {
+          "step": 5.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 2.9552581011508973e-16,
+        "budget": 2.9103830456733705e-12
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 1,
+      "carrier_value": 20000.0,
+      "base_mobility": 1192.211554509337,
+      "analytic": 2.9552581011508973e-16,
+      "samples": [
+        {
+          "step": 20.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        },
+        {
+          "step": 10.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        },
+        {
+          "step": 5.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 2.9552581011508973e-16,
+        "budget": 2.9103830456733705e-12
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 2,
+      "carrier_value": 20000.0,
+      "base_mobility": 1192.211554509337,
+      "analytic": 2.9552581011508973e-16,
+      "samples": [
+        {
+          "step": 20.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        },
+        {
+          "step": 10.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        },
+        {
+          "step": 5.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 2.9552581011508973e-16,
+        "budget": 2.9103830456733705e-12
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 3,
+      "carrier_value": 20000.0,
+      "base_mobility": 1192.211554509337,
+      "analytic": 2.9552581011508973e-16,
+      "samples": [
+        {
+          "step": 20.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        },
+        {
+          "step": 10.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        },
+        {
+          "step": 5.0,
+          "plus": 1192.211554509337,
+          "minus": 1192.211554509337
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 2.9552581011508973e-16,
+        "budget": 2.9103830456733705e-12
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 0,
+      "carrier_value": 5000000000000000.0,
+      "base_mobility": 1192.211554509337,
+      "analytic": -1.576175530456413e-14,
+      "samples": [
+        {
+          "step": 5000000000000.0,
+          "plus": 1192.1327612193018,
+          "minus": 1192.290378781179
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 1192.1721539932494,
+          "minus": 1192.250962770876
+        },
+        {
+          "step": 1250000000000.0,
+          "plus": 1192.1918532833188,
+          "minus": 1192.2312576717181
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.5761755304553542e-14,
+        "difference": 1.0589668791686862e-26,
+        "budget": 1.1944681962239054e-23
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 1,
+      "carrier_value": 5000000000000000.0,
+      "base_mobility": 1192.211554509337,
+      "analytic": -1.576175530456413e-14,
+      "samples": [
+        {
+          "step": 5000000000000.0,
+          "plus": 1192.1327612193018,
+          "minus": 1192.290378781179
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 1192.1721539932494,
+          "minus": 1192.250962770876
+        },
+        {
+          "step": 1250000000000.0,
+          "plus": 1192.1918532833188,
+          "minus": 1192.2312576717181
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.5761755304553542e-14,
+        "difference": 1.0589668791686862e-26,
+        "budget": 1.1944681962239054e-23
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 2,
+      "carrier_value": 5000000000000000.0,
+      "base_mobility": 1192.211554509337,
+      "analytic": -1.576175530456413e-14,
+      "samples": [
+        {
+          "step": 5000000000000.0,
+          "plus": 1192.1327612193018,
+          "minus": 1192.290378781179
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 1192.1721539932494,
+          "minus": 1192.250962770876
+        },
+        {
+          "step": 1250000000000.0,
+          "plus": 1192.1918532833188,
+          "minus": 1192.2312576717181
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.5761755304553542e-14,
+        "difference": 1.0589668791686862e-26,
+        "budget": 1.1944681962239054e-23
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 3,
+      "carrier_value": 5000000000000000.0,
+      "base_mobility": 1192.211554509337,
+      "analytic": -1.576175530456413e-14,
+      "samples": [
+        {
+          "step": 5000000000000.0,
+          "plus": 1192.1327612193018,
+          "minus": 1192.290378781179
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 1192.1721539932494,
+          "minus": 1192.250962770876
+        },
+        {
+          "step": 1250000000000.0,
+          "plus": 1192.1918532833188,
+          "minus": 1192.2312576717181
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.5761755304553542e-14,
+        "difference": 1.0589668791686862e-26,
+        "budget": 1.1944681962239054e-23
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 0,
+      "carrier_value": 20000.0,
+      "base_mobility": 444.2169778414295,
+      "analytic": -4.033881473001944e-15,
+      "samples": [
+        {
+          "step": 20.0,
+          "plus": 444.21697784142947,
+          "minus": 444.21697784142964
+        },
+        {
+          "step": 10.0,
+          "plus": 444.21697784142947,
+          "minus": 444.2169778414296
+        },
+        {
+          "step": 5.0,
+          "plus": 444.2169778414295,
+          "minus": 444.2169778414295
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 1.8947806286936005e-15,
+        "difference": 5.928662101695544e-15,
+        "budget": 7.92018302793925e-13
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 1,
+      "carrier_value": 20000.0,
+      "base_mobility": 444.2169778414295,
+      "analytic": -4.033881473001944e-15,
+      "samples": [
+        {
+          "step": 20.0,
+          "plus": 444.21697784142947,
+          "minus": 444.21697784142964
+        },
+        {
+          "step": 10.0,
+          "plus": 444.21697784142947,
+          "minus": 444.2169778414296
+        },
+        {
+          "step": 5.0,
+          "plus": 444.2169778414295,
+          "minus": 444.2169778414295
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 1.8947806286936005e-15,
+        "difference": 5.928662101695544e-15,
+        "budget": 7.92018302793925e-13
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 2,
+      "carrier_value": 20000.0,
+      "base_mobility": 444.2169778414295,
+      "analytic": -4.033881473001944e-15,
+      "samples": [
+        {
+          "step": 20.0,
+          "plus": 444.21697784142947,
+          "minus": 444.21697784142964
+        },
+        {
+          "step": 10.0,
+          "plus": 444.21697784142947,
+          "minus": 444.2169778414296
+        },
+        {
+          "step": 5.0,
+          "plus": 444.2169778414295,
+          "minus": 444.2169778414295
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 1.8947806286936005e-15,
+        "difference": 5.928662101695544e-15,
+        "budget": 7.92018302793925e-13
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 3,
+      "carrier_value": 20000.0,
+      "base_mobility": 444.2169778414295,
+      "analytic": -4.033881473001944e-15,
+      "samples": [
+        {
+          "step": 20.0,
+          "plus": 444.21697784142947,
+          "minus": 444.21697784142964
+        },
+        {
+          "step": 10.0,
+          "plus": 444.21697784142947,
+          "minus": 444.2169778414296
+        },
+        {
+          "step": 5.0,
+          "plus": 444.2169778414295,
+          "minus": 444.2169778414295
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 1.8947806286936005e-15,
+        "difference": 5.928662101695544e-15,
+        "budget": 7.92018302793925e-13
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 0,
+      "carrier_value": 5000000000000000.0,
+      "base_mobility": 444.2169778414295,
+      "analytic": 3.097887854623128e-17,
+      "samples": [
+        {
+          "step": 5000000000000.0,
+          "plus": 444.2171327349094,
+          "minus": 444.21682294612395
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 444.2170552883978,
+          "minus": 444.216900394005
+        },
+        {
+          "step": 1250000000000.0,
+          "plus": 444.21701656497066,
+          "minus": 444.21693911777425
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 3.0978878570901234e-17,
+        "difference": 2.4669954644339372e-26,
+        "budget": 3.0013324957657245e-24
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 1,
+      "carrier_value": 5000000000000000.0,
+      "base_mobility": 444.2169778414295,
+      "analytic": 3.097887854623128e-17,
+      "samples": [
+        {
+          "step": 5000000000000.0,
+          "plus": 444.2171327349094,
+          "minus": 444.21682294612395
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 444.2170552883978,
+          "minus": 444.216900394005
+        },
+        {
+          "step": 1250000000000.0,
+          "plus": 444.21701656497066,
+          "minus": 444.21693911777425
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 3.0978878570901234e-17,
+        "difference": 2.4669954644339372e-26,
+        "budget": 3.0013324957657245e-24
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 2,
+      "carrier_value": 5000000000000000.0,
+      "base_mobility": 444.2169778414295,
+      "analytic": 3.097887854623128e-17,
+      "samples": [
+        {
+          "step": 5000000000000.0,
+          "plus": 444.2171327349094,
+          "minus": 444.21682294612395
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 444.2170552883978,
+          "minus": 444.216900394005
+        },
+        {
+          "step": 1250000000000.0,
+          "plus": 444.21701656497066,
+          "minus": 444.21693911777425
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 3.0978878570901234e-17,
+        "difference": 2.4669954644339372e-26,
+        "budget": 3.0013324957657245e-24
+      }
+    },
+    {
+      "case": "PURE_P",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 3,
+      "carrier_value": 5000000000000000.0,
+      "base_mobility": 444.2169778414295,
+      "analytic": 3.097887854623128e-17,
+      "samples": [
+        {
+          "step": 5000000000000.0,
+          "plus": 444.2171327349094,
+          "minus": 444.21682294612395
+        },
+        {
+          "step": 2500000000000.0,
+          "plus": 444.2170552883978,
+          "minus": 444.216900394005
+        },
+        {
+          "step": 1250000000000.0,
+          "plus": 444.21701656497066,
+          "minus": 444.21693911777425
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 3.0978878570901234e-17,
+        "difference": 2.4669954644339372e-26,
+        "budget": 3.0013324957657245e-24
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 0,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 1416.9682888666696,
+      "analytic": 2.943361690207253e-18,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 1416.9682888666987,
+          "minus": 1416.9682888666398
+        },
+        {
+          "step": 5000000.0,
+          "plus": 1416.9682888666841,
+          "minus": 1416.9682888666548
+        },
+        {
+          "step": 2500000.0,
+          "plus": 1416.9682888666766,
+          "minus": 1416.9682888666619
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 2.9634369032767907e-18,
+        "difference": 2.0075213069537717e-20,
+        "budget": 6.093614501878613e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 1,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 1416.9682888666696,
+      "analytic": 2.943361690207253e-18,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 1416.9682888666987,
+          "minus": 1416.9682888666398
+        },
+        {
+          "step": 5000000.0,
+          "plus": 1416.9682888666841,
+          "minus": 1416.9682888666548
+        },
+        {
+          "step": 2500000.0,
+          "plus": 1416.9682888666766,
+          "minus": 1416.9682888666619
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 2.9634369032767907e-18,
+        "difference": 2.0075213069537717e-20,
+        "budget": 6.093614501878613e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 2,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 1416.9682888666696,
+      "analytic": 2.943361690207253e-18,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 1416.9682888666987,
+          "minus": 1416.9682888666398
+        },
+        {
+          "step": 5000000.0,
+          "plus": 1416.9682888666841,
+          "minus": 1416.9682888666548
+        },
+        {
+          "step": 2500000.0,
+          "plus": 1416.9682888666766,
+          "minus": 1416.9682888666619
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 2.9634369032767907e-18,
+        "difference": 2.0075213069537717e-20,
+        "budget": 6.093614501878613e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 3,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 1416.9682888666696,
+      "analytic": 2.943361690207253e-18,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 1416.9682888666987,
+          "minus": 1416.9682888666398
+        },
+        {
+          "step": 5000000.0,
+          "plus": 1416.9682888666841,
+          "minus": 1416.9682888666548
+        },
+        {
+          "step": 2500000.0,
+          "plus": 1416.9682888666766,
+          "minus": 1416.9682888666619
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 2.9634369032767907e-18,
+        "difference": 2.0075213069537717e-20,
+        "budget": 6.093614501878613e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 0,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 1416.9682888666696,
+      "analytic": -2.1557161787137197e-12,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 1416.9682673129587,
+          "minus": 1416.9683104272851
+        },
+        {
+          "step": 5000000.0,
+          "plus": 1416.9682780889511,
+          "minus": 1416.9682996461136
+        },
+        {
+          "step": 2500000.0,
+          "plus": 1416.9682834775945,
+          "minus": 1416.9682942561756
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -2.1557162123523687e-12,
+        "difference": 3.3638649028622454e-20,
+        "budget": 5.851082583914236e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 1,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 1416.9682888666696,
+      "analytic": -2.1557161787137197e-12,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 1416.9682673129587,
+          "minus": 1416.9683104272851
+        },
+        {
+          "step": 5000000.0,
+          "plus": 1416.9682780889511,
+          "minus": 1416.9682996461136
+        },
+        {
+          "step": 2500000.0,
+          "plus": 1416.9682834775945,
+          "minus": 1416.9682942561756
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -2.1557162123523687e-12,
+        "difference": 3.3638649028622454e-20,
+        "budget": 5.851082583914236e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 2,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 1416.9682888666696,
+      "analytic": -2.1557161787137197e-12,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 1416.9682673129587,
+          "minus": 1416.9683104272851
+        },
+        {
+          "step": 5000000.0,
+          "plus": 1416.9682780889511,
+          "minus": 1416.9682996461136
+        },
+        {
+          "step": 2500000.0,
+          "plus": 1416.9682834775945,
+          "minus": 1416.9682942561756
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -2.1557162123523687e-12,
+        "difference": 3.3638649028622454e-20,
+        "budget": 5.851082583914236e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 3,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 1416.9682888666696,
+      "analytic": -2.1557161787137197e-12,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 1416.9682673129587,
+          "minus": 1416.9683104272851
+        },
+        {
+          "step": 5000000.0,
+          "plus": 1416.9682780889511,
+          "minus": 1416.9682996461136
+        },
+        {
+          "step": 2500000.0,
+          "plus": 1416.9682834775945,
+          "minus": 1416.9682942561756
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -2.1557162123523687e-12,
+        "difference": 3.3638649028622454e-20,
+        "budget": 5.851082583914236e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 0,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 470.4970741979838,
+      "analytic": -2.1028013636852907e-13,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 470.49707209547825,
+          "minus": 470.49707630108117
+        },
+        {
+          "step": 5000000.0,
+          "plus": 470.49707314665704,
+          "minus": 470.4970752494584
+        },
+        {
+          "step": 2500000.0,
+          "plus": 470.497073672302,
+          "minus": 470.4970747237026
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -2.1028011474300002e-13,
+        "difference": 2.1625529049617e-20,
+        "budget": 1.6143530954874413e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 1,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 470.4970741979838,
+      "analytic": -2.1028013636852907e-13,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 470.49707209547825,
+          "minus": 470.49707630108117
+        },
+        {
+          "step": 5000000.0,
+          "plus": 470.49707314665704,
+          "minus": 470.4970752494584
+        },
+        {
+          "step": 2500000.0,
+          "plus": 470.497073672302,
+          "minus": 470.4970747237026
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -2.1028011474300002e-13,
+        "difference": 2.1625529049617e-20,
+        "budget": 1.6143530954874413e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 2,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 470.4970741979838,
+      "analytic": -2.1028013636852907e-13,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 470.49707209547825,
+          "minus": 470.49707630108117
+        },
+        {
+          "step": 5000000.0,
+          "plus": 470.49707314665704,
+          "minus": 470.4970752494584
+        },
+        {
+          "step": 2500000.0,
+          "plus": 470.497073672302,
+          "minus": 470.4970747237026
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -2.1028011474300002e-13,
+        "difference": 2.1625529049617e-20,
+        "budget": 1.6143530954874413e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 3,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 470.4970741979838,
+      "analytic": -2.1028013636852907e-13,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 470.49707209547825,
+          "minus": 470.49707630108117
+        },
+        {
+          "step": 5000000.0,
+          "plus": 470.49707314665704,
+          "minus": 470.4970752494584
+        },
+        {
+          "step": 2500000.0,
+          "plus": 470.497073672302,
+          "minus": 470.4970747237026
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -2.1028011474300002e-13,
+        "difference": 2.1625529049617e-20,
+        "budget": 1.6143530954874413e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 0,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 470.4970741979838,
+      "analytic": 2.443440754228598e-19,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 470.4970741979862,
+          "minus": 470.4970741979813
+        },
+        {
+          "step": 5000000.0,
+          "plus": 470.497074197985,
+          "minus": 470.49707419798267
+        },
+        {
+          "step": 2500000.0,
+          "plus": 470.49707419798443,
+          "minus": 470.49707419798324
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 2.4063713984408725e-19,
+        "difference": 3.706935578772561e-21,
+        "budget": 1.5461409930139778e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 1,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 470.4970741979838,
+      "analytic": 2.443440754228598e-19,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 470.4970741979862,
+          "minus": 470.4970741979813
+        },
+        {
+          "step": 5000000.0,
+          "plus": 470.497074197985,
+          "minus": 470.49707419798267
+        },
+        {
+          "step": 2500000.0,
+          "plus": 470.49707419798443,
+          "minus": 470.49707419798324
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 2.4063713984408725e-19,
+        "difference": 3.706935578772561e-21,
+        "budget": 1.5461409930139778e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 2,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 470.4970741979838,
+      "analytic": 2.443440754228598e-19,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 470.4970741979862,
+          "minus": 470.4970741979813
+        },
+        {
+          "step": 5000000.0,
+          "plus": 470.497074197985,
+          "minus": 470.49707419798267
+        },
+        {
+          "step": 2500000.0,
+          "plus": 470.49707419798443,
+          "minus": 470.49707419798324
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 2.4063713984408725e-19,
+        "difference": 3.706935578772561e-21,
+        "budget": 1.5461409930139778e-18
+      }
+    },
+    {
+      "case": "INTRINSIC",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 3,
+      "carrier_value": 10000000000.0,
+      "base_mobility": 470.4970741979838,
+      "analytic": 2.443440754228598e-19,
+      "samples": [
+        {
+          "step": 10000000.0,
+          "plus": 470.4970741979862,
+          "minus": 470.4970741979813
+        },
+        {
+          "step": 5000000.0,
+          "plus": 470.497074197985,
+          "minus": 470.49707419798267
+        },
+        {
+          "step": 2500000.0,
+          "plus": 470.49707419798443,
+          "minus": 470.49707419798324
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 2.4063713984408725e-19,
+        "difference": 3.706935578772561e-21,
+        "budget": 1.5461409930139778e-18
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 0,
+      "carrier_value": 9000000000011111.0,
+      "base_mobility": 1168.8583186855444,
+      "analytic": 1.6439763263115966e-16,
+      "samples": [
+        {
+          "step": 9000000000011.111,
+          "plus": 1168.859798253465,
+          "minus": 1168.8568390960772
+        },
+        {
+          "step": 4500000000005.556,
+          "plus": 1168.859058472198,
+          "minus": 1168.8575788935043
+        },
+        {
+          "step": 2250000000002.778,
+          "plus": 1168.8586885795446,
+          "minus": 1168.8579487901977
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 1.643976326399238e-16,
+        "difference": 8.764146049392289e-27,
+        "budget": 6.501203028780014e-24
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 1,
+      "carrier_value": 9000000000011111.0,
+      "base_mobility": 1168.8583186855444,
+      "analytic": 1.6439763263115966e-16,
+      "samples": [
+        {
+          "step": 9000000000011.111,
+          "plus": 1168.859798253465,
+          "minus": 1168.8568390960772
+        },
+        {
+          "step": 4500000000005.556,
+          "plus": 1168.859058472198,
+          "minus": 1168.8575788935043
+        },
+        {
+          "step": 2250000000002.778,
+          "plus": 1168.8586885795446,
+          "minus": 1168.8579487901977
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 1.643976326399238e-16,
+        "difference": 8.764146049392289e-27,
+        "budget": 6.501203028780014e-24
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 2,
+      "carrier_value": 9000000000011111.0,
+      "base_mobility": 1168.8583186855444,
+      "analytic": 1.6439763263115966e-16,
+      "samples": [
+        {
+          "step": 9000000000011.111,
+          "plus": 1168.859798253465,
+          "minus": 1168.8568390960772
+        },
+        {
+          "step": 4500000000005.556,
+          "plus": 1168.859058472198,
+          "minus": 1168.8575788935043
+        },
+        {
+          "step": 2250000000002.778,
+          "plus": 1168.8586885795446,
+          "minus": 1168.8579487901977
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 1.643976326399238e-16,
+        "difference": 8.764146049392289e-27,
+        "budget": 6.501203028780014e-24
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Electrons",
+      "node": 3,
+      "carrier_value": 9000000000011111.0,
+      "base_mobility": 1168.8583186855444,
+      "analytic": 1.6439763263115966e-16,
+      "samples": [
+        {
+          "step": 9000000000011.111,
+          "plus": 1168.859798253465,
+          "minus": 1168.8568390960772
+        },
+        {
+          "step": 4500000000005.556,
+          "plus": 1168.859058472198,
+          "minus": 1168.8575788935043
+        },
+        {
+          "step": 2250000000002.778,
+          "plus": 1168.8586885795446,
+          "minus": 1168.8579487901977
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": 1.643976326399238e-16,
+        "difference": 8.764146049392289e-27,
+        "budget": 6.501203028780014e-24
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 0,
+      "carrier_value": 11111.111111097394,
+      "base_mobility": 1168.8583186855444,
+      "analytic": -1.5143268492951674e-14,
+      "samples": [
+        {
+          "step": 11.111111111097394,
+          "plus": 1168.8583186855442,
+          "minus": 1168.8583186855446
+        },
+        {
+          "step": 5.555555555548697,
+          "plus": 1168.8583186855442,
+          "minus": 1168.8583186855446
+        },
+        {
+          "step": 2.7777777777743484,
+          "plus": 1168.8583186855444,
+          "minus": 1168.8583186855446
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": -4.09272615798323e-14,
+        "difference": 2.5783993086880627e-14,
+        "budget": 5.293259164324978e-12
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 1,
+      "carrier_value": 11111.111111097394,
+      "base_mobility": 1168.8583186855444,
+      "analytic": -1.5143268492951674e-14,
+      "samples": [
+        {
+          "step": 11.111111111097394,
+          "plus": 1168.8583186855442,
+          "minus": 1168.8583186855446
+        },
+        {
+          "step": 5.555555555548697,
+          "plus": 1168.8583186855442,
+          "minus": 1168.8583186855446
+        },
+        {
+          "step": 2.7777777777743484,
+          "plus": 1168.8583186855444,
+          "minus": 1168.8583186855446
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": -4.09272615798323e-14,
+        "difference": 2.5783993086880627e-14,
+        "budget": 5.293259164324978e-12
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 2,
+      "carrier_value": 11111.111111097394,
+      "base_mobility": 1168.8583186855444,
+      "analytic": -1.5143268492951674e-14,
+      "samples": [
+        {
+          "step": 11.111111111097394,
+          "plus": 1168.8583186855442,
+          "minus": 1168.8583186855446
+        },
+        {
+          "step": 5.555555555548697,
+          "plus": 1168.8583186855442,
+          "minus": 1168.8583186855446
+        },
+        {
+          "step": 2.7777777777743484,
+          "plus": 1168.8583186855444,
+          "minus": 1168.8583186855446
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": -4.09272615798323e-14,
+        "difference": 2.5783993086880627e-14,
+        "budget": 5.293259164324978e-12
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_e_Node",
+      "carrier": "Holes",
+      "node": 3,
+      "carrier_value": 11111.111111097394,
+      "base_mobility": 1168.8583186855444,
+      "analytic": -1.5143268492951674e-14,
+      "samples": [
+        {
+          "step": 11.111111111097394,
+          "plus": 1168.8583186855442,
+          "minus": 1168.8583186855446
+        },
+        {
+          "step": 5.555555555548697,
+          "plus": 1168.8583186855442,
+          "minus": 1168.8583186855446
+        },
+        {
+          "step": 2.7777777777743484,
+          "plus": 1168.8583186855444,
+          "minus": 1168.8583186855446
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": -4.09272615798323e-14,
+        "difference": 2.5783993086880627e-14,
+        "budget": 5.293259164324978e-12
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 0,
+      "carrier_value": 9000000000011111.0,
+      "base_mobility": 415.0513177449279,
+      "analytic": -1.9418630063831925e-15,
+      "samples": [
+        {
+          "step": 9000000000011.111,
+          "plus": 415.03384397356626,
+          "minus": 415.0687975092121
+        },
+        {
+          "step": 4500000000005.556,
+          "plus": 415.0425801104188,
+          "minus": 415.0600568776676
+        },
+        {
+          "step": 2250000000002.778,
+          "plus": 415.04694874043037,
+          "minus": 415.05568712398303
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.941863006387792e-15,
+        "difference": 4.599453507891109e-27,
+        "budget": 1.684248191122417e-24
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 1,
+      "carrier_value": 9000000000011111.0,
+      "base_mobility": 415.0513177449279,
+      "analytic": -1.9418630063831925e-15,
+      "samples": [
+        {
+          "step": 9000000000011.111,
+          "plus": 415.03384397356626,
+          "minus": 415.0687975092121
+        },
+        {
+          "step": 4500000000005.556,
+          "plus": 415.0425801104188,
+          "minus": 415.0600568776676
+        },
+        {
+          "step": 2250000000002.778,
+          "plus": 415.04694874043037,
+          "minus": 415.05568712398303
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.941863006387792e-15,
+        "difference": 4.599453507891109e-27,
+        "budget": 1.684248191122417e-24
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 2,
+      "carrier_value": 9000000000011111.0,
+      "base_mobility": 415.0513177449279,
+      "analytic": -1.9418630063831925e-15,
+      "samples": [
+        {
+          "step": 9000000000011.111,
+          "plus": 415.03384397356626,
+          "minus": 415.0687975092121
+        },
+        {
+          "step": 4500000000005.556,
+          "plus": 415.0425801104188,
+          "minus": 415.0600568776676
+        },
+        {
+          "step": 2250000000002.778,
+          "plus": 415.04694874043037,
+          "minus": 415.05568712398303
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.941863006387792e-15,
+        "difference": 4.599453507891109e-27,
+        "budget": 1.684248191122417e-24
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Electrons",
+      "node": 3,
+      "carrier_value": 9000000000011111.0,
+      "base_mobility": 415.0513177449279,
+      "analytic": -1.9418630063831925e-15,
+      "samples": [
+        {
+          "step": 9000000000011.111,
+          "plus": 415.03384397356626,
+          "minus": 415.0687975092121
+        },
+        {
+          "step": 4500000000005.556,
+          "plus": 415.0425801104188,
+          "minus": 415.0600568776676
+        },
+        {
+          "step": 2250000000002.778,
+          "plus": 415.04694874043037,
+          "minus": 415.05568712398303
+        }
+      ],
+      "comparison": {
+        "status": "CONSISTENT_AT_TESTED_STEPS",
+        "richardson": -1.941863006387792e-15,
+        "difference": 4.599453507891109e-27,
+        "budget": 1.684248191122417e-24
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 0,
+      "carrier_value": 11111.111111097394,
+      "base_mobility": 415.0513177449279,
+      "analytic": 6.817877851815021e-17,
+      "samples": [
+        {
+          "step": 11.111111111097394,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        },
+        {
+          "step": 5.555555555548697,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        },
+        {
+          "step": 2.7777777777743484,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 6.817877851815021e-17,
+        "budget": 1.3096723705546336e-12
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 1,
+      "carrier_value": 11111.111111097394,
+      "base_mobility": 415.0513177449279,
+      "analytic": 6.817877851815021e-17,
+      "samples": [
+        {
+          "step": 11.111111111097394,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        },
+        {
+          "step": 5.555555555548697,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        },
+        {
+          "step": 2.7777777777743484,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 6.817877851815021e-17,
+        "budget": 1.3096723705546336e-12
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 2,
+      "carrier_value": 11111.111111097394,
+      "base_mobility": 415.0513177449279,
+      "analytic": 6.817877851815021e-17,
+      "samples": [
+        {
+          "step": 11.111111111097394,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        },
+        {
+          "step": 5.555555555548697,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        },
+        {
+          "step": 2.7777777777743484,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 6.817877851815021e-17,
+        "budget": 1.3096723705546336e-12
+      }
+    },
+    {
+      "case": "BOTH_POSITIVE_CONTROL",
+      "model": "mu_bulk_h_Node",
+      "carrier": "Holes",
+      "node": 3,
+      "carrier_value": 11111.111111097394,
+      "base_mobility": 415.0513177449279,
+      "analytic": 6.817877851815021e-17,
+      "samples": [
+        {
+          "step": 11.111111111097394,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        },
+        {
+          "step": 5.555555555548697,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        },
+        {
+          "step": 2.7777777777743484,
+          "plus": 415.0513177449279,
+          "minus": 415.0513177449279
+        }
+      ],
+      "comparison": {
+        "status": "ROUND_OFF_LIMITED",
+        "richardson": 0.0,
+        "difference": 6.817877851815021e-17,
+        "budget": 1.3096723705546336e-12
+      }
+    }
+  ],
+  "inputs_restored": true,
+  "cleanup_devices": [],
+  "solve_attempts": 0,
+  "engine_source_unchanged": true
+}

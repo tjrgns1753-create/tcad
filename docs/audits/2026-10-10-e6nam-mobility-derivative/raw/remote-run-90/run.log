@@ -1,0 +1,35 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2 Triangles.
+Physical group name Si has 5 Lines.
+Physical group name Si has 4 Points.
+Device mobility_derivative has 4 coordinates with max index 3
+Region Si has 4 nodes.
+Replacing Node Model Z_D in region Si of material Silicon
+Replacing Node Model Z_A in region Si of material Silicon
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2 Triangles.
+Physical group name Si has 5 Lines.
+Physical group name Si has 4 Points.
+Device mobility_derivative has 4 coordinates with max index 3
+Region Si has 4 nodes.
+Replacing Node Model Z_D in region Si of material Silicon
+Replacing Node Model Z_A in region Si of material Silicon
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2 Triangles.
+Physical group name Si has 5 Lines.
+Physical group name Si has 4 Points.
+Device mobility_derivative has 4 coordinates with max index 3
+Region Si has 4 nodes.
+Replacing Node Model Z_D in region Si of material Silicon
+Replacing Node Model Z_A in region Si of material Silicon
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2 Triangles.
+Physical group name Si has 5 Lines.
+Physical group name Si has 4 Points.
+Device mobility_derivative has 4 coordinates with max index 3
+Region Si has 4 nodes.
+Replacing Node Model Z_D in region Si of material Silicon
+Replacing Node Model Z_A in region Si of material Silicon
+{"evidence_complete": true, "counts": {"CONSISTENT_AT_TESTED_STEPS": 32, "ROUND_OFF_LIMITED": 32}, "scope": "AUDIT_ONLY_NO_DD_OR_CALIBRATION", "mismatch_found": false}

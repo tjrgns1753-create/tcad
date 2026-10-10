@@ -1,0 +1,9 @@
+{
+  "evidence_complete": true,
+  "counts": {
+    "CONSISTENT_AT_TESTED_STEPS": 32,
+    "ROUND_OFF_LIMITED": 32
+  },
+  "scope": "AUDIT_ONLY_NO_DD_OR_CALIBRATION",
+  "mismatch_found": false
+}
