@@ -1,0 +1,9 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+levels=1: 340 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.5000, far-field preserved=True
+levels=2: 860 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.2500, far-field preserved=True
+levels=3: 2860 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.1250, far-field preserved=True
+empty predicate -> no-op: OK
+graded (3 rings, half-widths 1.0/0.5/0.25): 1180 triangles, area=100.000000 (delta=0.00e+00), max_edge_multiplicity=2, min_edge=0.1250
+graded, empty ring list -> no-op: OK
+ALL MESH_REFINE MOCK CHECKS PASSED

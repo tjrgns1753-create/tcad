@@ -1,0 +1,7 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[1/2] withdrawn: error logged, no modal dialog raised
+[2/2] deiconify()'d: the SAME error path raises a real dialog again
+
+ERROR DIALOG GATE IS LIVE: silent while withdrawn, restored on
+deiconify() -- not a one-way latch.

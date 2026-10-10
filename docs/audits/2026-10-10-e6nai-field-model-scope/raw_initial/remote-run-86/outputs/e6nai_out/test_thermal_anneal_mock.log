@@ -1,0 +1,9 @@
+B: straggle 0.2 -> 0.200710 um, peak 1.0e18 -> 9.964632e+17 cm^-3
+P: straggle 0.2 -> 0.200406 um, peak 1.0e18 -> 9.979724e+17 cm^-3
+physics_status: None
+uniform_v1 (no handler): model_params unchanged = True
+physics_status: {'resolution': 'UNSUPPORTED_BY_MODEL', 'entries': [{'parameter': 'anneal_redistribution', 'material': 'As', 'resolution': 'UNSUPPORTED_BY_MODEL', 'provenance': 'DERIVED', 'note': "no anneal/redistribution handler registered for model='uniform_v1'"}], 'notes': []}
+P annealed @ 1200C (outside 810-1100C citation window): straggle 0.2 -> 0.283895 um
+physics_status: {'resolution': 'UNVERIFIED', 'entries': [{'parameter': 'anneal_diffusivity_D(T)', 'material': 'P', 'resolution': 'UNVERIFIED', 'provenance': 'LITERATURE', 'note': "T=1200C outside P's citation validity window -- D(T) extrapolated, not verified in-window"}], 'notes': []}
+P at 900C/600s -> straggle 0.200406 um; 1000C/600s -> straggle 0.203390 um
+apply_thermal_anneal() dispatches each profile to its own model's registered anneal handler, widens every gaussian_v1 profile by its own species' real D(T) independently, flags (never silently skips or misapplies) an unregistered model, surfaces an out-of-citation-window anneal as UNVERIFIED (final-review Fix 1), and 900C != 1000C.

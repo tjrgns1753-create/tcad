@@ -1,0 +1,7 @@
+[T1] resolve(intent, state) has no history parameter
+[unknown] UNKNOWN, 2 entries recorded
+[compat] caller rates honoured as USER_SUPPLIED / UNVERIFIED
+[T2] same exposed materials + same intent -> same resolution
+[axes] under_resolved_x carried separately from resolution
+
+RESOLVER OK — pure, history-free, UNKNOWN-safe

@@ -1,0 +1,4 @@
+PHYSICS VALUE TYPES OK
+  condition windows: INSIDE / OUTSIDE / UNSTATED
+  combination: VERIFIED / UNVERIFIED / PARTIAL / UNKNOWN / UNSUPPORTED
+  Resolution and Provenance are separate axes

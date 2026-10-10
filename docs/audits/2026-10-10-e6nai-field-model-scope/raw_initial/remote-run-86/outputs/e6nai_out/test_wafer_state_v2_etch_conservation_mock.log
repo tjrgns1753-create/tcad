@@ -1,0 +1,7 @@
+[1] initial inventory 2.000000e+10 cm^-1 (== C*area 2.000000e+10)
+[2] remaining 1.000000e+10 + removed 1.000000e+10 == initial (conserved)
+[3] removed == C*removed_area; remaining == C*remaining_area
+[4] surviving support clipped to the surviving rectangle; instance id unchanged
+[5] doping outside the removed extent: untouched, no ledger entry
+
+WaferState v2 test 1 PASS -- etch conserves dopant inventory

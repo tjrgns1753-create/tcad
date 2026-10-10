@@ -1,0 +1,6 @@
+1. ACTIVE step_junction_v1 on Si -> detected: ['si#substrate']
+2. uniform_v1 / gaussian_v1 / implant_windows_v1 ACTIVE attachments -> not detected (model string is exact)
+3. CHEMICAL / UNKNOWN step_junction_v1 attachments -> not detected (left to the existing activation gate)
+4. Si step_junction_v1 attachment queried against the unrelated SiO2 instance -> not detected
+
+PASS: active_step_junction_instances() detects an ACTIVE step_junction_v1 attachment exactly, on its own instance only, and defers CHEMICAL/UNKNOWN to the existing activation gate.

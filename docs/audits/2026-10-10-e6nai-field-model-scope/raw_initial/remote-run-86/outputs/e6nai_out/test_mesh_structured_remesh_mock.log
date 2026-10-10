@@ -1,0 +1,9 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+A: old red-green 1 obtuse; template build 11 triangles, 0 obtuse, conforming, area exact
+B: 1180 triangles expected -> 1180 ; far field untouched; permuted input gives the same geometry
+C: float32 anisotropic grid: 850 triangles, exact checks and band resolution hold
+D: two windows: 1248 triangles, exact checks hold
+G: multi-material, missing triangle, non-planar, overlapping halves refused; aspect and cap abort
+C: invalid requests, depth / leaf budgets, midpoint exhaustion and the cap boundary (cap == count passes, cap - 1 aborts)
+ALL STRUCTURED REMESH MOCK CHECKS PASSED

@@ -1,0 +1,8 @@
+[1/6] single centred opening -> [(-5.0, -1.5), (1.5, 5.0)]
+[2/6] two openings -> [(-5.0, -4.0), (-3.0, 3.0), (4.0, 5.0)]
+[3/6] opening at the wafer edge -> [(-3.0, 5.0)]
+[4/6] overlapping/unsorted openings merged -> [(-5.0, -4.0), (-1.0, 3.0), (4.0, 5.0)]
+[5/6] no openings -> fully opaque [(-5.0, 5.0)]
+[6/6] full-width opening -> no mask []
+
+mask_spans_from_openings VERIFIED

@@ -10,3 +10,5 @@ docs/audits/*/data/remote_run_*/outputs/*_out/*.vtu -text
 docs/audits/2026-10-10-e6n*/raw/** -text -diff
 docs/audits/2026-10-10-e6nah-transport-scope/raw_initial/** -text -diff
 docs/audits/2026-10-10-e6nai-field-model-scope/raw/** -text -diff
+docs/audits/2026-10-10-e6nai-field-model-scope/raw_initial/** -text -diff
+docs/audits/2026-10-10-e6naj-official-mobility/raw/** -text -diff

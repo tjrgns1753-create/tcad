@@ -1,0 +1,10 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+GUI LITHOGRAPHY LIFECYCLE OK
+  fresh wafer      -> no mask
+  PR coat          -> blanket resist
+  align / expose   -> no geometry change
+  develop          -> patterned resist
+  strip            -> no mask
+  re-coat          -> blanket again (no stale 'developed')
+  stage markers    -> only steps actually run

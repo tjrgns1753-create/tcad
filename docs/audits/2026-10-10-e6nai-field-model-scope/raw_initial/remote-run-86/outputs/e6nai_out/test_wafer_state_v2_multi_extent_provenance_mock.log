@@ -1,0 +1,5 @@
+[1] two REMOVED events, extent_um == the exact intersection rectangles: [(-5.0, -3.0, 0.0, 2.0), (3.0, 5.0, 0.0, 2.0)]
+[2] each surviving attachment piece's creation_event_id is the event for the rectangle that actually clipped it (not a shared first/last id)
+[3] removed inventory is attributed to each event's own rectangle
+
+WaferState v2 P1 provenance test PASS

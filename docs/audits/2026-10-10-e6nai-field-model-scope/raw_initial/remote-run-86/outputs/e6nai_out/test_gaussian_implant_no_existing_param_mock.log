@@ -1,0 +1,3 @@
+apply_gaussian_implant_doping params: ['result', 'region', 'junction_axis', 'peak_position_um', 'straggle_um', 'peak_conc_cm3', 'donor_peak_conc_cm3', 'acceptor_peak_conc_cm3', 'donor_species', 'acceptor_species', 'chemical_state']
+DopingRegion fields: ['acceptor_conc_cm3', 'acceptor_peak_conc_cm3', 'acceptor_species', 'chemical_state', 'donor_conc_cm3', 'donor_peak_conc_cm3', 'donor_species', 'implant_windows', 'junction_axis', 'junction_position_um', 'net_doping_cm3', 'peak_conc_cm3', 'peak_position_um', 'region', 'straggle_um']
+gaussian_terms/existing= accumulation mechanism confirmed retired.
