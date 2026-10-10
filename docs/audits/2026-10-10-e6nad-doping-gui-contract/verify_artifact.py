@@ -83,9 +83,14 @@ def main():
     for record in summary["outputs"]:
         data=(RAW/"outputs"/record["path"]).read_bytes()
         assert len(data)==record["bytes"] and digest(data)==record["sha256"]
+        rel=(RAW/"outputs"/record["path"]).relative_to(ROOT).as_posix()
+        assert subprocess.check_output(["git","show","HEAD:"+rel],cwd=ROOT)==data
         verified.append(record["path"])
     log=(RAW/"run.log").read_bytes()
     assert len(log)==summary["log"]["bytes"] and digest(log)==summary["log"]["sha256"]
+    for name in ("run.log","summary.json"):
+        rel=(RAW/name).relative_to(ROOT).as_posix()
+        assert subprocess.check_output(["git","show","HEAD:"+rel],cwd=ROOT)==(RAW/name).read_bytes()
     input_verified=[]
     for r in summary["inputs"]:
         blob=subprocess.check_output(["git","show",SOURCE+":"+r["path"]],cwd=ROOT)

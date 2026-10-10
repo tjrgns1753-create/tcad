@@ -1,0 +1,7 @@
+{
+  "pass": true,
+  "files": 8,
+  "plan_sha": "f881d3d5af17363f1c4ed4418e9d545de3ee196ea61053d1c67296b697e86b8a",
+  "source_sha": "48bf6ab951c9851b5328ef0f1d502de540d90042",
+  "scope": "EXPORTED_BARRIER_GEOMETRY_AND_GUI_REFUSAL_NOT_IMPLANT_PHYSICS"
+}

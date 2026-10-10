@@ -1,0 +1,249 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-10T13:14:28.240170+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6naf-barrier-sections-002",
+  "profile": "e6naf_barrier_sections",
+  "params": {},
+  "note": "Exact barrier geometry and GUI refusal; pure n/p supported controls only."
+ },
+ "profile": "e6naf_barrier_sections",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6naf-barrier-sections/PLAN.md",
+   "sha256": "25c46ce1033a4d9d056fe3dbfc7ad84fc1f32961a78c28f57f73f52f77eb8d9b",
+   "bytes": 2704
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naf-barrier-sections/run_checks.py",
+   "sha256": "72ddb067fd4997a0a4df8c7b17c42b2c062f618f4c7efdb87ac987436a44cc0c",
+   "bytes": 3600
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naf-barrier-sections/probe.py",
+   "sha256": "051bfb3dbff3368ebdbf322fda68b160617c99ffb7cddfd0188c7cb3bfce8e16",
+   "bytes": 7902
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naf-barrier-sections/compare_saved.py",
+   "sha256": "ea0460c707ca5116ce95272e1647c3198d0fb44bb0456bf6e57f550b929f22b0",
+   "bytes": 2931
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naf-barrier-sections/gui_failure.py",
+   "sha256": "ed3d9ddb436e604c1fa771e83cfb4441b7ec88d022c747294719de832b5f8ac0",
+   "bytes": 2277
+  },
+  {
+   "path": "tcad/mesh/barrier_sections.py",
+   "sha256": "2adc59a3fb1d185c6cf593523d4b14de57543ad001625d29f1dfb187e66148a3",
+   "bytes": 5360
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "69024219d56264b269dbd1605cd208ccbd55cf8c1ec7204ab5be5a8b49a6948d",
+   "bytes": 59889
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "73b0ebca73510a14d1e23bdc09d38471056c852706dec4ede256f9c165aec52a",
+   "bytes": 421062
+  },
+  {
+   "path": "tests/unit/test_barrier_sections_mock.py",
+   "sha256": "a8508b9ac60e85f99d7df26995ac7e09a4ef98a2560162fcb463c9252850e7d8",
+   "bytes": 3044
+  },
+  {
+   "path": "tests/integration/test_gui_doping_donor_acceptor_real.py",
+   "sha256": "7f9ce37b13b8b956a47c58782d2f18a9bd4e28688cf7cd176c020476131916b9",
+   "bytes": 16000
+  },
+  {
+   "path": "tests/integration/test_measurement_canonical_state_gate_real.py",
+   "sha256": "f4d36e0162250ff6163684f0ee719db8eb3725797a2994d5a768a59d347787f1",
+   "bytes": 19697
+  },
+  {
+   "path": "tests/integration/test_gui_headless_no_modal_hang_real.py",
+   "sha256": "b2d86c65248059a24f72b775bf2b2c156754f3d34e70d993c68ed894f5f71f1e",
+   "bytes": 40204
+  },
+  {
+   "path": "tests/unit/test_doping_staleness_mock.py",
+   "sha256": "b1c22a5c96f8cee0eab85a9590e8a35742b09e4461e908d1761331237e4141f9",
+   "bytes": 11953
+  }
+ ],
+ "request_sha256": "a44ff4297ca1cbc6e9cb194195cb2f5e69ccb5cc01c28d5b57457edf9b80e3cb",
+ "source": {
+  "github_sha": "48bf6ab951c9851b5328ef0f1d502de540d90042",
+  "git_head": "48bf6ab951c9851b5328ef0f1d502de540d90042",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "38054909716",
+  "run_number": "83",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6naf-barrier-sections/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-10T13:15:02.620676+00:00",
+ "duration_s": 34.381,
+ "outputs": [
+  {
+   "path": "e6naf_out/compare_saved.log",
+   "bytes": 291,
+   "sha256": "390b0da878c5442926166c95ef5083121f64c7373b9bf856dba45f6edf1c9d12"
+  },
+  {
+   "path": "e6naf_out/gui_failure.log",
+   "bytes": 180,
+   "sha256": "2218836eabd9463bb8a2513ca431d621048b45127f9aadf44672265c9a42c309"
+  },
+  {
+   "path": "e6naf_out/gui_metrics.json",
+   "bytes": 14546,
+   "sha256": "63d86713176eba567a3642eed62528c529c92710663f1165d2acb3986c4335b6"
+  },
+  {
+   "path": "e6naf_out/probe.log",
+   "bytes": 988,
+   "sha256": "7a792f788dab10c98d1dab44cd5fe77ca34fbb10dcfacff51d13dc4f58c5c4a7"
+  },
+  {
+   "path": "e6naf_out/records.json",
+   "bytes": 5056,
+   "sha256": "d8d7fa3052960561a4f36b82449f18f66885d736f3aca125eed4be2621941c6e"
+  },
+  {
+   "path": "e6naf_out/test_barrier_sections_mock.log",
+   "bytes": 77,
+   "sha256": "c5c22345520941e7a3f09c2a9c8239f794fa91d8decdabac9ee705f645f7d81d"
+  },
+  {
+   "path": "e6naf_out/test_doping_staleness_mock.log",
+   "bytes": 219,
+   "sha256": "97cde87caf08ef7a647baeb526ab5a549338b040e6a0eef2846c764b9287a8d3"
+  },
+  {
+   "path": "e6naf_out/test_gui_doping_donor_acceptor_real.log",
+   "bytes": 22258,
+   "sha256": "52a64b75401fb9faaa803e1b1f1a5e68e8166063e317a087850ab9cc88288c3a"
+  },
+  {
+   "path": "e6naf_out/test_gui_headless_no_modal_hang_real.log",
+   "bytes": 6490,
+   "sha256": "4dbb013634e3bacab6250186adadfe2b4015383e47f260460e23ed70c9f28ca0"
+  },
+  {
+   "path": "e6naf_out/test_measurement_canonical_state_gate_real.log",
+   "bytes": 19574,
+   "sha256": "643d54ba7b8c3db126a5e081507c18118338e0669986fb600e942e925176f5bf"
+  },
+  {
+   "path": "e6naf_out/verdict.json",
+   "bytes": 256,
+   "sha256": "6499a49aca52994103ffae5abb0321d7c3e9e2071b47e06e0cd031ea38f6a4d7"
+  },
+  {
+   "path": "e6naf_probe_out/after.vtu",
+   "bytes": 98236,
+   "sha256": "912c964886f375a6d9df98e6046cb23e84e15ec6b02c659ee56d3b7fcbed9da0"
+  },
+  {
+   "path": "e6naf_probe_out/before.vtu",
+   "bytes": 93016,
+   "sha256": "547608c1612bc01a49825488b48217c2dba230258868e90d9ae0c03174f7876e"
+  },
+  {
+   "path": "e6naf_probe_out/explicit_chain_initial.vpsd",
+   "bytes": 4345,
+   "sha256": "01b3df2fd87a4dd95ac1f5946f753d7f9de69188cbdb15758d77397f601666b9"
+  },
+  {
+   "path": "e6naf_probe_out/explicit_chain_initial_volume.vtu",
+   "bytes": 93016,
+   "sha256": "547608c1612bc01a49825488b48217c2dba230258868e90d9ae0c03174f7876e"
+  },
+  {
+   "path": "e6naf_probe_out/native_columns.npz",
+   "bytes": 1904,
+   "sha256": "e7ef5e29d8b6532f667a8c5f66d2da63ad3af4810f2c13821ecb76fd4a5f8461"
+  },
+  {
+   "path": "e6naf_probe_out/result.json",
+   "bytes": 11640,
+   "sha256": "7c4009888c256f349f9a7912f6a3ac72d290ee27b69a7a116f34f8dcde111e7f"
+  },
+  {
+   "path": "e6naf_probe_out/selective_etch/00_etching_isotropic/000_initial.vtp",
+   "bytes": 5135,
+   "sha256": "0f46e44db65f7c18bcda6c00475db215f8223f79abd0db01b442f407ea61f242"
+  },
+  {
+   "path": "e6naf_probe_out/selective_etch/00_etching_isotropic/001_isotropic_etch.vtp",
+   "bytes": 5187,
+   "sha256": "69de02b5bd109e0031cf17b0a7c4b84e4d2cc13b19fa694fb9285040b1050fc0"
+  },
+  {
+   "path": "e6naf_probe_out/selective_etch/00_etching_isotropic/domain_state.vpsd",
+   "bytes": 4596,
+   "sha256": "cfbe684b6a5d26ab773cc079a41272089295268c37269ce8232bda70793c57b2"
+  },
+  {
+   "path": "e6naf_probe_out/selective_etch/00_etching_isotropic/isotropic_etch_final_volume.vtu",
+   "bytes": 98236,
+   "sha256": "912c964886f375a6d9df98e6046cb23e84e15ec6b02c659ee56d3b7fcbed9da0"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Fixed synthetic/exported geometry checks, actual selective etch, actual GUI controls.",
+ "log": {
+  "file": "run.log",
+  "sha256": "48722eba10d90fa90d5b788303d1bebd2dadee7b6e078bd4d614bb5b6d8f4157",
+  "bytes": 792
+ },
+ "redactions": {}
+}

@@ -1,0 +1,1 @@
+{"agreement": 18, "false_negatives_before": 4, "false_negatives_after": 0, "windows": {"before": [{"min_um": -5.0, "max_um": 5.0}], "after": [{"min_um": -5.0, "max_um": -1.7138825352140428}, {"min_um": 1.7138825352140428, "max_um": 5.0}]}, "seconds": 2.1631940999999983, "engine_imports": 0}

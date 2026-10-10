@@ -1,0 +1,302 @@
+diff --git a/tcad/device/devsim/mesh_import.py b/tcad/device/devsim/mesh_import.py
+index 4f71b3a..674c1f7 100644
+--- a/tcad/device/devsim/mesh_import.py
++++ b/tcad/device/devsim/mesh_import.py
+@@ -589,117 +589,33 @@ def derive_barrier_covered_windows(
+     min_barrier_thickness_um: float = 0.0,
+     bucket_width_um: Optional[float] = None,
+ ) -> List[Dict[str, float]]:
+-    """Real-mesh-derived x (or y) ranges where `doped_region`'s real top
+-    surface sits directly under >= min_barrier_thickness_um of
+-    `barrier_material` -- so a doping call can exclude dopant there
+-    instead of applying it uniformly regardless of what is stacked
+-    above (see docs/investigation_log.md, "SiO2 doesn't block doping").
+-
+-    Derives windows from the ACTUAL exported mesh (same technique
+-    already used for derive_implant_windows_refinement -- see
+-    CLAUDE.md's Development Rules: "Prefer deriving refinement scale
+-    from the doping profile programmatically ... over a caller
+-    hand-picking one"), not from a caller's assumption about where the
+-    barrier is.
+-
+-    result : ProcessResult with volume_mesh_path and material_regions.
+-    doped_region : material name (e.g., "Si") in result.material_regions.
+-    barrier_material : material name (e.g., "SiO2") in result.material_regions.
+-
+-    Returns [{"min_um": float, "max_um": float}, ...] in the same
+-    coordinate convention mask_spans_um/implant_windows already use.
+-    Empty list if `doped_region` or `barrier_material` is absent from
+-    the mesh, or nowhere sufficiently covered.
++    """Connected barrier intervals in the ACTUAL exported triangle union.
++
++    This classifies geometry, not energy-dependent implant transmission.
++    Missing declared materials return no intervals. Invalid geometry raises:
++    callers must not interpret a failed classification as absent barrier.
++    bucket_width_um remains a compatibility argument; it no longer quantizes
++    the result or changes coverage.
+     """
+     import meshio
++    from tcad.mesh.barrier_sections import covered_sections
+ 
+-    # Build name -> tag mapping from ProcessResult (backend-independent).
+-    tag_to_name = {region.tag: region.name for region in result.material_regions}
++    if axis not in ("x", "y"):
++        raise ValueError("BARRIER_AXIS_INVALID")
++    if not math.isfinite(min_barrier_thickness_um) or min_barrier_thickness_um < 0:
++        raise ValueError("BARRIER_THRESHOLD_INVALID")
+     name_to_tag = {region.name: region.tag for region in result.material_regions}
+-
+     if doped_region not in name_to_tag or barrier_material not in name_to_tag:
+         return []
+-
+-    doped_tag = name_to_tag[doped_region]
+-    barrier_tag = name_to_tag[barrier_material]
+-
+     mesh = meshio.read(result.volume_mesh_path)
+-    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
+-    if triangle_block is None or result.material_field not in mesh.cell_data:
+-        return []
+-    block_index = mesh.cells.index(triangle_block)
+-    tags = mesh.cell_data[result.material_field][block_index]
+-    points = mesh.points
+-
+-    axis_idx = 0 if axis == "x" else 1
+-    depth_idx = 1 if axis == "x" else 0
+-
+-    doped_tris = [t for t, tag in zip(triangle_block.data, tags) if int(tag) == doped_tag]
+-    barrier_tris = [t for t, tag in zip(triangle_block.data, tags) if int(tag) == barrier_tag]
+-    if not doped_tris or not barrier_tris:
+-        return []
+-
+-    axis_vals = [points[n][axis_idx] for t in doped_tris for n in t]
+-    axis_min, axis_max = min(axis_vals), max(axis_vals)
+-    if axis_max <= axis_min:
+-        return []
+-
+-    # Ground bucket_width_um in the actual mesh spacing, not domain extent.
+-    if bucket_width_um is None:
+-        spacing_um = _estimate_mesh_spacing_um(points, triangle_block.data)
+-        bucket_width_um = spacing_um if spacing_um > 0 else 0.01  # ponytail: buckets match mesh density; finer if needed
+-
+-    n_buckets = max(1, int((axis_max - axis_min) / bucket_width_um) + 1)
+-
+-    def bucket_of(v: float) -> int:
+-        idx = int((v - axis_min) / bucket_width_um)
+-        return min(max(idx, 0), n_buckets - 1)
+-
+-    doped_top = [None] * n_buckets
+-    for t in doped_tris:
+-        for n in t:
+-            b = bucket_of(points[n][axis_idx])
+-            v = points[n][depth_idx]
+-            if doped_top[b] is None or v > doped_top[b]:
+-                doped_top[b] = v
+-
+-    barrier_top = [None] * n_buckets
+-    barrier_bot = [None] * n_buckets
+-    for t in barrier_tris:
+-        for n in t:
+-            b = bucket_of(points[n][axis_idx])
+-            v = points[n][depth_idx]
+-            if barrier_top[b] is None or v > barrier_top[b]:
+-                barrier_top[b] = v
+-            if barrier_bot[b] is None or v < barrier_bot[b]:
+-                barrier_bot[b] = v
+-
+-    covered = []
+-    for b in range(n_buckets):
+-        if doped_top[b] is None or barrier_top[b] is None or barrier_bot[b] is None:
+-            covered.append(False)
+-            continue
+-        thickness = barrier_top[b] - barrier_bot[b]
+-        sits_above = barrier_bot[b] >= doped_top[b] - 1e-6
+-        covered.append(sits_above and thickness >= min_barrier_thickness_um)
+-
+-    windows: List[Dict[str, float]] = []
+-    start = None
+-    for b in range(n_buckets):
+-        if covered[b] and start is None:
+-            start = axis_min + b * bucket_width_um
+-        elif not covered[b] and start is not None:
+-            windows.append({
+-                "min_um": float(start),
+-                "max_um": float(axis_min + b * bucket_width_um),
+-            })
+-            start = None
+-    if start is not None:
+-        windows.append({
+-            "min_um": float(start),
+-            "max_um": float(axis_max),
+-        })
+-    return windows
++    blocks = [(i,c) for i,c in enumerate(mesh.cells) if c.type == "triangle"]
++    if not blocks or result.material_field not in mesh.cell_data:
++        raise ValueError("BARRIER_MATERIAL_GEOMETRY_MISSING")
++    triangles = np.concatenate([c.data for _,c in blocks])
++    tags = np.concatenate([mesh.cell_data[result.material_field][i] for i,_ in blocks])
++    return covered_sections(mesh.points, triangles, tags,
++                            name_to_tag[doped_region], name_to_tag[barrier_material],
++                            axis=axis, min_thickness=min_barrier_thickness_um)
+ 
+ 
+ def _derive_refine_from_doping(
+diff --git a/tcad/mesh/barrier_sections.py b/tcad/mesh/barrier_sections.py
+new file mode 100644
+index 0000000..ff2982b
+--- /dev/null
++++ b/tcad/mesh/barrier_sections.py
+@@ -0,0 +1,125 @@
++"""Tagged 2D triangle geometry only; NOT an implant stopping/activation model.
++
++Read material unions between exact boundary-coordinate breakpoints. Fraction
++arithmetic preserves the serialized coordinates without rounding or buckets.
++"""
++from collections import Counter
++from fractions import Fraction as F
++import math
++
++
++def covered_sections(points, triangles, tags, doped_tag, barrier_tag,
++                     axis="x", min_thickness=0.0):
++    if axis not in ("x", "y"):
++        raise ValueError("BARRIER_AXIS_INVALID")
++    if not math.isfinite(float(min_thickness)) or min_thickness < 0:
++        raise ValueError("BARRIER_THRESHOLD_INVALID")
++    if len(tags) != len(triangles):
++        raise ValueError("BARRIER_TAG_COUNT_INVALID")
++    if any(not all(math.isfinite(float(v)) for v in p) for p in points):
++        raise ValueError("BARRIER_COORDINATE_NONFINITE")
++    if points.shape[1] > 2 and any(float(p[2]) != float(points[0][2]) for p in points):
++        raise ValueError("BARRIER_NOT_PLANAR")
++    a = 0 if axis == "x" else 1
++    xy = [(F(float(p[a])), F(float(p[1-a]))) for p in points]
++    edges = {doped_tag: Counter(), barrier_tag: Counter()}
++    directions = {doped_tag: Counter(), barrier_tag: Counter()}
++    for tri, tag in zip(triangles, tags):
++        tag = int(tag)
++        if tag not in edges:
++            continue
++        i, j, k = map(int, tri)
++        if any(n < 0 or n >= len(xy) for n in (i,j,k)):
++            raise ValueError("BARRIER_NODE_INDEX_INVALID")
++        p, q, r = xy[i], xy[j], xy[k]
++        cross = (q[0]-p[0])*(r[1]-p[1])-(r[0]-p[0])*(q[1]-p[1])
++        if cross == 0:
++            raise ValueError("BARRIER_TRIANGLE_DEGENERATE")
++        if cross < 0:
++            j,k = k,j
++        for u, v in ((i,j), (j,k), (k,i)):
++            key = tuple(sorted((u,v)))
++            edges[tag][key] += 1
++            directions[tag][key] += 1 if u < v else -1
++    boundary = {}
++    for tag, counts in edges.items():
++        if any(n > 2 for n in counts.values()):
++            raise ValueError("BARRIER_NONMANIFOLD")
++        if any(n == 2 and directions[tag][key] != 0 for key,n in counts.items()):
++            raise ValueError("BARRIER_OVERLAPPING_TRIANGLES")
++        boundary[tag] = [(xy[u],xy[v]) if directions[tag][(u,v)] > 0 else (xy[v],xy[u])
++                         for (u,v), n in counts.items() if n == 1]
++        if counts and not boundary[tag]:
++            raise ValueError("BARRIER_BOUNDARY_MISSING")
++    if not boundary[doped_tag] or not boundary[barrier_tag]:
++        return []
++    breaks = sorted({p[0] for es in boundary.values() for edge in es for p in edge})
++    threshold = F(float(min_thickness))
++    adjacency = F(1e-6)  # Existing exported-interface adjacency convention, not stopping power.
++
++    def line(p, q):
++        slope = (q[1]-p[1])/(q[0]-p[0])
++        return slope, p[1]-slope*p[0]
++
++    def value(l, x):
++        return l[0]*x+l[1]
++
++    def sections(tag, lo, hi):
++        mid = (lo+hi)/2
++        crossings = [(line(p,q), 1 if q[0] > p[0] else -1) for p,q in boundary[tag]
++                 if min(p[0],q[0]) < mid < max(p[0],q[0])]
++        crossings.sort(key=lambda item: (value(item[0],mid),item[1]))
++        lines = [l for l,_ in crossings]
++        if len(lines) % 2:
++            raise ValueError("BARRIER_BOUNDARY_OPEN")
++        # A proper noncrossing boundary keeps its order within each slab.
++        # Do not silently extrapolate a midpoint ordering across crossings.
++        for x in (lo, hi):
++            if any(value(u,x) > value(v,x) for u,v in zip(lines,lines[1:])):
++                raise ValueError("BARRIER_SECTION_ORDER_UNRESOLVED")
++        result = []; winding = 0; bottom = None
++        for l,delta in crossings:
++            winding += delta
++            if winding not in (0,1):
++                raise ValueError("BARRIER_MATERIAL_OVERLAP_OR_OPEN")
++            if winding == 1:
++                bottom = l
++            elif value(l,mid) > value(bottom,mid):
++                result.append((bottom,l))
++        if winding:
++            raise ValueError("BARRIER_BOUNDARY_OPEN")
++        return result
++
++    def clip(lo, hi, inequalities):
++        # Each inequality is m*x+b >= 0. Roots are computed, not sampled.
++        for m,b in inequalities:
++            if m == 0:
++                if b < 0:
++                    return None
++            elif m > 0:
++                lo = max(lo, -b/m)
++            else:
++                hi = min(hi, -b/m)
++            if hi <= lo:
++                return None
++        return lo, hi
++
++    answer = []
++    for lo,hi in zip(breaks,breaks[1:]):
++        si = sections(doped_tag, lo, hi)
++        if not si:
++            continue
++        si_top = si[-1][1]
++        for bottom,top in sections(barrier_tag, lo, hi):
++            gap = (bottom[0]-si_top[0], bottom[1]-si_top[1])
++            thick = (top[0]-bottom[0], top[1]-bottom[1]-threshold)
++            interval = clip(lo,hi,[gap,(-gap[0],adjacency-gap[1]),thick])
++            if interval:
++                answer.append(interval)
++    merged = []
++    for lo,hi in sorted(answer):
++        if merged and lo <= merged[-1][1]:
++            merged[-1] = (merged[-1][0], max(hi,merged[-1][1]))
++        else:
++            merged.append((lo,hi))
++    return [{"min_um":float(lo),"max_um":float(hi)} for lo,hi in merged]
+diff --git a/tcad_2d_stagewise.py b/tcad_2d_stagewise.py
+index 31acb1f..ad3d756 100644
+--- a/tcad_2d_stagewise.py
++++ b/tcad_2d_stagewise.py
+@@ -5257,8 +5257,22 @@ class TCADApplication(tk.Tk):
+                         f"this wafer is unaffected: {barrier_windows}\n"
+                     )
+             except Exception as exc:
+-                barrier_windows = None
+-                self._log(f"\n(Could not derive SiO2 barrier windows: {exc!r})\n")
++                # Unknown coverage is not the same as no barrier. Refuse
++                # THIS request before canonical attachment or device writes;
++                # existing physical state and pre-existing dopants remain.
++                self.last_physics_status = {
++                    "resolution": "UNSUPPORTED_BY_MODEL",
++                    "reason_code": "BARRIER_GEOMETRY_UNRESOLVED",
++                    "entries": [{
++                        "parameter": "barrier_geometry", "material": "Si/SiO2",
++                        "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED",
++                        "note": repr(exc),
++                    }],
++                }
++                self._log_physics_status({"physics_status": self.last_physics_status})
++                self._log("\nDOPING NOT APPLIED: barrier geometry could not be "
++                          "classified. Existing wafer state was not changed.\n")
++                return False
+ 
+         # The physical source of truth is the canonical WaferStateV2, not
+         # the recipe DopingProfile: success needs a NEW active attachment

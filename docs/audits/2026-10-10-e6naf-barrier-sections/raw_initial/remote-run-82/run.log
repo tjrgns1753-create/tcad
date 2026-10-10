@@ -1,0 +1,8 @@
+{"file": "tests/unit/test_barrier_sections_mock.py", "status": "COMPLETED", "rc": 0}
+{"file": "docs/audits/2026-10-10-e6naf-barrier-sections/compare_saved.py", "status": "COMPLETED", "rc": 0}
+{"file": "docs/audits/2026-10-10-e6naf-barrier-sections/probe.py", "status": "COMPLETED", "rc": 0}
+{"file": "docs/audits/2026-10-10-e6naf-barrier-sections/gui_failure.py", "status": "COMPLETED", "rc": 0}
+{"file": "tests/integration/test_gui_doping_donor_acceptor_real.py", "status": "COMPLETED", "rc": 0}
+{"file": "tests/integration/test_measurement_canonical_state_gate_real.py", "status": "COMPLETED", "rc": 0}
+{"file": "tests/integration/test_gui_headless_no_modal_hang_real.py", "status": "COMPLETED", "rc": 0}
+{"file": "tests/unit/test_doping_staleness_mock.py", "status": "COMPLETED", "rc": 0}

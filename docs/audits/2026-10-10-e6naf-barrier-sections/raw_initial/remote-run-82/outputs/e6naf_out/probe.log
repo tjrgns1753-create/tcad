@@ -1,0 +1,33 @@
+    Process time: 0.0833 / 1.0000 s
+[0m    Process time: 0.1666 / 1.0000 s
+[0m    Process time: 0.2475 / 1.0000 s
+[0m    Process time: 0.3286 / 1.0000 s
+[0m    Process time: 0.3908 / 1.0000 s
+[0m    Process time: 0.4723 / 1.0000 s
+[0m    Process time: 0.5367 / 1.0000 s
+[0m    Process time: 0.6109 / 1.0000 s
+[0m    Process time: 0.6749 / 1.0000 s
+[0m    Process time: 0.7693 / 1.0000 s
+[0m    Process time: 0.8379 / 1.0000 s
+[0m    Process time: 0.9212 / 1.0000 s
+[0m    Process time: 0.9971 / 1.0000 s
+[0m    Process time: 1.0000 / 1.0000 s
+[0mbefore -4.75 AGREEMENT
+before -4.5 AGREEMENT
+before -4.25 AGREEMENT
+before -4.0 AGREEMENT
+before -3.0 AGREEMENT
+before 0.0 AGREEMENT
+before 3.0 AGREEMENT
+before 4.25 AGREEMENT
+before 4.75 AGREEMENT
+after -4.75 AGREEMENT
+after -4.5 AGREEMENT
+after -4.25 AGREEMENT
+after -4.0 AGREEMENT
+after -3.0 AGREEMENT
+after 0.0 AGREEMENT
+after 3.0 AGREEMENT
+after 4.25 AGREEMENT
+after 4.75 AGREEMENT
+{"complete": true, "false_negatives": 0}

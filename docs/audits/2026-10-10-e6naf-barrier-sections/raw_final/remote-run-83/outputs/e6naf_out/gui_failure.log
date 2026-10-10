@@ -1,0 +1,3 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+PASS actual GUI detector failure; attach/write/solve/modal 0; prior state identical

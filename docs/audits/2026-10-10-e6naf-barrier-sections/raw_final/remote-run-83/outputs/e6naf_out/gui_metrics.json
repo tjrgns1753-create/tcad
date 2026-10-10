@@ -1,0 +1,327 @@
+{
+  "compensated": {
+    "label": "compensated",
+    "solve_calls": 0,
+    "doping_writes": 0,
+    "doping_write_kinds": [],
+    "currents_in_log": [],
+    "measurement_section_logged": false,
+    "unsupported_in_log": true,
+    "log_delta": "\n(No mesh refinement requested for this uniform device input.)\n\nERROR \u2014 Measurement: UNSUPPORTED_BY_MODEL (COMPENSATED_TRANSPORT_MODEL_MISSING): device 'gui_measure_device' region 'Si' holds donor AND acceptor dopant over a finite area (126 of 126 mesh node(s) blocked (region-level: compensated region)). The canonical concentrations are kept, but the drift-diffusion model has no compensation-aware ionized-impurity scattering / mobility, so the device solve must not proceed.\ninstance 'si#substrate': donor 'att:doping:1:2' and acceptor 'att:doping:2:2' coexist over the finite area (-2.0, 2.0, -1.0, 0.0)\n\nMeasurement blocked: no doping was written to DevSim, no solve was run, and no current is reported.\n",
+    "last_physics_status": {
+      "resolution": "UNSUPPORTED_BY_MODEL",
+      "reason_code": "COMPENSATED_TRANSPORT_MODEL_MISSING",
+      "entries": [
+        {
+          "parameter": "compensated_transport",
+          "material": "Si",
+          "resolution": "UNSUPPORTED_BY_MODEL",
+          "provenance": "DERIVED",
+          "note": "instance 'si#substrate': donor 'att:doping:1:2' and acceptor 'att:doping:2:2' coexist over the finite area (-2.0, 2.0, -1.0, 0.0)"
+        }
+      ],
+      "notes": [
+        "126 of 126 mesh node(s) blocked (region-level: compensated region)"
+      ],
+      "device": "gui_measure_device",
+      "region": "Si",
+      "total_nodes": 126,
+      "blocked_nodes": 126,
+      "first_blocked_node": null
+    },
+    "canonical_state_object_unchanged": true,
+    "history_entries_added": 0,
+    "canonical_vs_solved_netdoping": null
+  },
+  "n": {
+    "label": "n",
+    "solve_calls": 3,
+    "doping_writes": 6,
+    "doping_write_kinds": [
+      [
+        "node_model",
+        "Acceptors"
+      ],
+      [
+        "node_model",
+        "Donors"
+      ],
+      [
+        "node_model",
+        "NetDoping"
+      ],
+      [
+        "set_node_values",
+        "Acceptors"
+      ],
+      [
+        "set_node_values",
+        "Donors"
+      ],
+      [
+        "set_node_values",
+        "NetDoping"
+      ]
+    ],
+    "currents_in_log": [
+      0.0016,
+      -0.0016,
+      0.0016,
+      -0.0016
+    ],
+    "measurement_section_logged": true,
+    "unsupported_in_log": false,
+    "log_delta": "\nNOTE: the doping profile was attached to an earlier mesh. Re-applying the same doping to the current geometry before measuring.\n\n\n================================\nDOPING APPLIED: UNIFORM\n================================\nACTIVE ANALYTIC PROFILE DECLARED (DECLARED ANALYTIC ACTIVE PROFILE: the user's own electrically-active device profile -- not a simulated implant, anneal or activation)\nregion='Si' donor=1.000e+16 acceptor=0.000e+00 -> net_doping_cm3=1.000e+16\nMaterials in mesh: ['Si']\nAccumulated dopant profile(s) on this wafer: 1\n(DopingProfile attached only -- no DevSim solve run.)\n\n\n(No mesh refinement requested for this uniform device input.)\n\n\n================================\nDEVSIM MEASUREMENT\n================================\nRegion='Si' axis='x' doping_kind='uniform'\nVoltage source pin: Si_xmax = +0.0100 V -> I = 1.600000e-03 A/cm\nMultimeter (GND) pin: Si_xmin = 0.0000 V -> I = -1.600000e-03 A/cm\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n\nMeasurement: Voltage source (Si_xmax): +0.0100 V, I = 1.600000e-03 A/cm\n\nMultimeter (Si_xmin): 0.0000 V, I = -1.600000e-03 A/cm\n\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n",
+    "last_physics_status": null,
+    "canonical_state_object_unchanged": true,
+    "history_entries_added": 2,
+    "canonical_vs_solved_netdoping": {
+      "nodes": 126,
+      "mismatched_nodes": 0,
+      "max_abs_diff_cm3": 0.0
+    },
+    "reattach_identity": true,
+    "attachment_count": 1
+  },
+  "p": {
+    "label": "p",
+    "solve_calls": 3,
+    "doping_writes": 6,
+    "doping_write_kinds": [
+      [
+        "node_model",
+        "Acceptors"
+      ],
+      [
+        "node_model",
+        "Donors"
+      ],
+      [
+        "node_model",
+        "NetDoping"
+      ],
+      [
+        "set_node_values",
+        "Acceptors"
+      ],
+      [
+        "set_node_values",
+        "Donors"
+      ],
+      [
+        "set_node_values",
+        "NetDoping"
+      ]
+    ],
+    "currents_in_log": [
+      0.0004,
+      -0.0004,
+      0.0004,
+      -0.0004
+    ],
+    "measurement_section_logged": true,
+    "unsupported_in_log": false,
+    "log_delta": "\nNOTE: the doping profile was attached to an earlier mesh. Re-applying the same doping to the current geometry before measuring.\n\n\n================================\nDOPING APPLIED: UNIFORM\n================================\nACTIVE ANALYTIC PROFILE DECLARED (DECLARED ANALYTIC ACTIVE PROFILE: the user's own electrically-active device profile -- not a simulated implant, anneal or activation)\nregion='Si' donor=0.000e+00 acceptor=5.000e+15 -> net_doping_cm3=-5.000e+15\nMaterials in mesh: ['Si']\nAccumulated dopant profile(s) on this wafer: 1\n(DopingProfile attached only -- no DevSim solve run.)\n\n\n(No mesh refinement requested for this uniform device input.)\n\n\n================================\nDEVSIM MEASUREMENT\n================================\nRegion='Si' axis='x' doping_kind='uniform'\nVoltage source pin: Si_xmax = +0.0100 V -> I = 4.000000e-04 A/cm\nMultimeter (GND) pin: Si_xmin = 0.0000 V -> I = -4.000000e-04 A/cm\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n\nMeasurement: Voltage source (Si_xmax): +0.0100 V, I = 4.000000e-04 A/cm\n\nMultimeter (Si_xmin): 0.0000 V, I = -4.000000e-04 A/cm\n\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n",
+    "last_physics_status": null,
+    "canonical_state_object_unchanged": true,
+    "history_entries_added": 2,
+    "canonical_vs_solved_netdoping": {
+      "nodes": 126,
+      "mismatched_nodes": 0,
+      "max_abs_diff_cm3": 0.0
+    },
+    "reattach_identity": true,
+    "attachment_count": 1
+  },
+  "gaussian": {
+    "label": "gaussian",
+    "solve_calls": 0,
+    "doping_writes": 0,
+    "doping_write_kinds": [],
+    "currents_in_log": [],
+    "measurement_section_logged": false,
+    "unsupported_in_log": true,
+    "log_delta": "\nPHYSICS: UNSUPPORTED_BY_MODEL\n\n  reason_code: DOPANT_ACTIVATION_MODEL_MISSING\n\n  measurement_device_input [?]: UNSUPPORTED_BY_MODEL / DERIVED \u2014 Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs.\n\nDevice measurement: Measurement blocked (UNSUPPORTED_BY_MODEL): DOPANT_ACTIVATION_MODEL_MISSING. Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs. No doping write or solve was run; no carrier or current value was computed.\n",
+    "last_physics_status": {
+      "resolution": "UNSUPPORTED_BY_MODEL",
+      "reason_code": "DOPANT_ACTIVATION_MODEL_MISSING",
+      "entries": [
+        {
+          "parameter": "measurement_device_input",
+          "material": "?",
+          "resolution": "UNSUPPORTED_BY_MODEL",
+          "provenance": "DERIVED",
+          "note": "Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs."
+        }
+      ]
+    },
+    "canonical_state_object_unchanged": true,
+    "history_entries_added": 0,
+    "canonical_vs_solved_netdoping": null,
+    "new_attachments": [
+      {
+        "model": "gaussian_v1",
+        "species": "P",
+        "polarity": "donor",
+        "chemical_state": "CHEMICAL",
+        "model_params": {
+          "peak_conc_cm3": 2e+17,
+          "peak_position_um": 0.0,
+          "straggle_um": 0.5
+        }
+      },
+      {
+        "model": "gaussian_v1",
+        "species": "B",
+        "polarity": "acceptor",
+        "chemical_state": "CHEMICAL",
+        "model_params": {
+          "peak_conc_cm3": 3e+16,
+          "peak_position_um": 0.0,
+          "straggle_um": 0.5
+        }
+      }
+    ]
+  },
+  "windows": {
+    "label": "windows",
+    "solve_calls": 0,
+    "doping_writes": 0,
+    "doping_write_kinds": [],
+    "currents_in_log": [],
+    "measurement_section_logged": false,
+    "unsupported_in_log": true,
+    "log_delta": "\nPHYSICS: UNSUPPORTED_BY_MODEL\n\n  reason_code: DOPANT_ACTIVATION_MODEL_MISSING\n\n  measurement_device_input [?]: UNSUPPORTED_BY_MODEL / DERIVED \u2014 Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs.\n\nDevice measurement: Measurement blocked (UNSUPPORTED_BY_MODEL): DOPANT_ACTIVATION_MODEL_MISSING. Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs. No doping write or solve was run; no carrier or current value was computed.\n",
+    "last_physics_status": {
+      "resolution": "UNSUPPORTED_BY_MODEL",
+      "reason_code": "DOPANT_ACTIVATION_MODEL_MISSING",
+      "entries": [
+        {
+          "parameter": "measurement_device_input",
+          "material": "?",
+          "resolution": "UNSUPPORTED_BY_MODEL",
+          "provenance": "DERIVED",
+          "note": "Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs."
+        }
+      ]
+    },
+    "canonical_state_object_unchanged": true,
+    "history_entries_added": 0,
+    "canonical_vs_solved_netdoping": null,
+    "new_attachments": [
+      {
+        "model": "implant_windows_v1",
+        "species": null,
+        "polarity": "donor",
+        "chemical_state": "CHEMICAL",
+        "model_params": {
+          "background_cm3": 100000000000000.0,
+          "windows": [
+            [
+              -1.6,
+              -0.6,
+              1e+20
+            ],
+            [
+              0.6,
+              1.6,
+              9e+19
+            ]
+          ]
+        }
+      },
+      {
+        "model": "implant_windows_v1",
+        "species": null,
+        "polarity": "acceptor",
+        "chemical_state": "CHEMICAL",
+        "model_params": {
+          "background_cm3": 1e+17,
+          "windows": [
+            [
+              0.6,
+              1.6,
+              1e+19
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "barrier_x": {
+    "label": "barrier_x",
+    "solve_calls": 0,
+    "doping_writes": 0,
+    "doping_write_kinds": [],
+    "currents_in_log": [],
+    "measurement_section_logged": false,
+    "unsupported_in_log": true,
+    "log_delta": "\nPHYSICS: UNSUPPORTED_BY_MODEL\n\n  reason_code: DEVICE_PROFILE_NOT_AVAILABLE\n\n  measurement_device_input [?]: UNSUPPORTED_BY_MODEL / DERIVED \u2014 This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers.\n\nDevice measurement: Measurement blocked (UNSUPPORTED_BY_MODEL): DEVICE_PROFILE_NOT_AVAILABLE. This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers. No doping write or solve was run; no carrier or current value was computed.\n",
+    "last_physics_status": {
+      "resolution": "UNSUPPORTED_BY_MODEL",
+      "reason_code": "DEVICE_PROFILE_NOT_AVAILABLE",
+      "entries": [
+        {
+          "parameter": "measurement_device_input",
+          "material": "?",
+          "resolution": "UNSUPPORTED_BY_MODEL",
+          "provenance": "DERIVED",
+          "note": "This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers."
+        }
+      ]
+    },
+    "canonical_state_object_unchanged": true,
+    "history_entries_added": 0,
+    "canonical_vs_solved_netdoping": null,
+    "barrier_windows": [
+      {
+        "min_um": -5.0,
+        "max_um": -1.7138825352140428
+      },
+      {
+        "min_um": 1.7138825352140428,
+        "max_um": 5.0
+      }
+    ],
+    "detector_axis": "x",
+    "input_provenance": "DIRECT_EXPLICIT_GEOMETRY"
+  },
+  "barrier_y": {
+    "label": "barrier_y",
+    "solve_calls": 0,
+    "doping_writes": 0,
+    "doping_write_kinds": [],
+    "currents_in_log": [],
+    "measurement_section_logged": false,
+    "unsupported_in_log": true,
+    "log_delta": "\nPHYSICS: UNSUPPORTED_BY_MODEL\n\n  reason_code: DEVICE_PROFILE_NOT_AVAILABLE\n\n  measurement_device_input [?]: UNSUPPORTED_BY_MODEL / DERIVED \u2014 This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers.\n\nDevice measurement: Measurement blocked (UNSUPPORTED_BY_MODEL): DEVICE_PROFILE_NOT_AVAILABLE. This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers. No doping write or solve was run; no carrier or current value was computed.\n",
+    "last_physics_status": {
+      "resolution": "UNSUPPORTED_BY_MODEL",
+      "reason_code": "DEVICE_PROFILE_NOT_AVAILABLE",
+      "entries": [
+        {
+          "parameter": "measurement_device_input",
+          "material": "?",
+          "resolution": "UNSUPPORTED_BY_MODEL",
+          "provenance": "DERIVED",
+          "note": "This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers."
+        }
+      ]
+    },
+    "canonical_state_object_unchanged": true,
+    "history_entries_added": 0,
+    "canonical_vs_solved_netdoping": null,
+    "barrier_windows": [
+      {
+        "min_um": -5.0,
+        "max_um": -1.7138825352140428
+      },
+      {
+        "min_um": 1.7138825352140428,
+        "max_um": 5.0
+      }
+    ],
+    "detector_axis": "x",
+    "input_provenance": "DIRECT_EXPLICIT_GEOMETRY"
+  }
+}
