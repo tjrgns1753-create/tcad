@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nal-mobility-zero-limit-001",
- "profile": "e6nal_mobility_zero_limit",
+ "request_id": "e6nam-mobility-derivative-001",
+ "profile": "e6nam_mobility_derivative",
  "params": {},
- "note": "Audit-only continuous extension of official model; no production model change or solve."
+ "note": "Official derivative evidence only; roundoff is not independent approval, no solve."
 }

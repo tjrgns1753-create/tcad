@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nam_mobility_derivative": {
+        "description": "Audit-only official carrier derivatives vs fixed central-difference evidence; no solve or production change.",
+        "entry": "docs/audits/2026-10-10-e6nam-mobility-derivative/probe.py",
+        "args": [], "params": {}, "timeout_s": 120, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nam-mobility-derivative/PLAN.md", "docs/audits/2026-10-10-e6nam-mobility-derivative/probe.py", "docs/audits/2026-10-10-e6nam-mobility-derivative/judge.py"],
+        "outputs": [{"glob": "e6nam_out/**/*", "max_mb": 10}],
+        "regenerate": "Fixed 64 derivative checks; roundoff-limited is not approval.",
+    },
     "e6nal_mobility_zero_limit": {
         "description": "Audit-only algebraically identical zero-limit expression via public node_model; no production or solve.",
         "entry": "docs/audits/2026-10-10-e6nal-mobility-zero-limit/run_checks.py",
