@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "request_id": "e6nae-barrier-detection-001",
+ "request_id": "e6nae-barrier-detection-002",
  "profile": "e6nae_barrier_detection",
  "params": {},
  "note": "Native vs exported mesh vs barrier classification only; no electrical solve."

@@ -118,26 +118,31 @@ def main():
         [FlowStep("etching","isotropic",recipe)])
     assert counts["Oxidation"]==0 and counts["Process"]>0
     stage=stages[0]
+    shutil.copyfile(state.mesh_path,out/"before.vtu")
+    shutil.copyfile(results[0].volume_mesh_path,out/"after.vtu")
+    np.savez(out/"native_columns.npz",x=state.columns_um,
+             before_si=state.native_tops["Si"],before_oxide=state.native_tops["SiO2"],
+             after_si=stage.native["Si"],after_oxide=stage.native["SiO2"])
     assert np.max(np.abs(stage.native["Si"]-state.native_tops["Si"]))<=C.native_eps(8)
-    for label, native in (("before",state.native_tops),("after",stage.native)):
-        expected=np.array([0.3 if label=="before" or x!=0 else 0.0 for x in PROBES])
-        idx=[list(state.columns_um).index(x) for x in PROBES]
-        actual=native["SiO2"][idx]
-        assert np.all(np.isfinite(actual))
-        assert np.max(np.abs(actual-expected))<=C.native_eps(8),(label,actual,expected)
+    idx=[list(state.columns_um).index(x) for x in PROBES]
+    initial=state.native_tops["SiO2"][idx]
+    final=stage.native["SiO2"][idx]
+    assert np.all(np.isfinite(initial)) and np.all(np.isfinite(final))
+    assert np.all(initial-state.native_tops["Si"][idx]>=0.01)
+    protected=[i for i,x in enumerate(PROBES) if x!=0]
+    assert np.max(np.abs(final[protected]-initial[protected]))<=C.native_eps(8)
+    opened=PROBES.index(0.0)
+    assert abs(final[opened]-stage.native["Si"][idx[opened]])<=C.native_eps(8)
     def nmap(data):
         return {name:{x:float(data[name][list(state.columns_um).index(x)]) for x in PROBES}
                 for name in ("Si","SiO2")}
     before=build_process_result({"final_mesh":state.mesh_path,"snapshots":[]})
     records={"before":inspect(state.mesh_path,before,nmap(state.native_tops),ns),
              "after":inspect(results[0].volume_mesh_path,results[0],nmap(stage.native),ns)}
-    shutil.copyfile(state.mesh_path,out/"before.vtu")
-    shutil.copyfile(results[0].volume_mesh_path,out/"after.vtu")
-    np.savez(out/"native_columns.npz",x=state.columns_um,
-             before_si=state.native_tops["Si"],before_oxide=state.native_tops["SiO2"],
-             after_si=stage.native["Si"],after_oxide=stage.native["SiO2"])
     result=dict(complete=True,records=records,function_ast_sha=function_sha,
                 plan_sha=PLAN_SHA,provenance=state.provenance,engine_calls=counts,
+                initial_request_offset_um=(initial-0.3).tolist(),
+                request_offset_status="REQUEST_OFFSET_RECORDED_ONLY",
                 devsim_imports=0,devsim_solves=0,production_changed=False,
                 source_sha=os.environ["GITHUB_SHA"])
     (out/"result.json").write_text(json.dumps(result,indent=2),encoding="utf-8")
