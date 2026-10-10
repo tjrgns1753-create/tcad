@@ -5257,8 +5257,22 @@ class TCADApplication(tk.Tk):
                         f"this wafer is unaffected: {barrier_windows}\n"
                     )
             except Exception as exc:
-                barrier_windows = None
-                self._log(f"\n(Could not derive SiO2 barrier windows: {exc!r})\n")
+                # Unknown coverage is not the same as no barrier. Refuse
+                # THIS request before canonical attachment or device writes;
+                # existing physical state and pre-existing dopants remain.
+                self.last_physics_status = {
+                    "resolution": "UNSUPPORTED_BY_MODEL",
+                    "reason_code": "BARRIER_GEOMETRY_UNRESOLVED",
+                    "entries": [{
+                        "parameter": "barrier_geometry", "material": "Si/SiO2",
+                        "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED",
+                        "note": repr(exc),
+                    }],
+                }
+                self._log_physics_status({"physics_status": self.last_physics_status})
+                self._log("\nDOPING NOT APPLIED: barrier geometry could not be "
+                          "classified. Existing wafer state was not changed.\n")
+                return False
 
         # The physical source of truth is the canonical WaferStateV2, not
         # the recipe DopingProfile: success needs a NEW active attachment

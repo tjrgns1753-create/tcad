@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6naf_barrier_sections": {
+        "description": "Exact exported barrier geometry and GUI fail-closed checks; unchanged physics gates.",
+        "entry": "docs/audits/2026-10-10-e6naf-barrier-sections/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 240, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6naf-barrier-sections/PLAN.md", "docs/audits/2026-10-10-e6naf-barrier-sections/run_checks.py", "docs/audits/2026-10-10-e6naf-barrier-sections/probe.py", "docs/audits/2026-10-10-e6naf-barrier-sections/compare_saved.py", "docs/audits/2026-10-10-e6naf-barrier-sections/gui_failure.py", "tcad/mesh/barrier_sections.py", "tcad/device/devsim/mesh_import.py", "tcad_2d_stagewise.py", "tests/unit/test_barrier_sections_mock.py", "tests/integration/test_gui_doping_donor_acceptor_real.py", "tests/integration/test_measurement_canonical_state_gate_real.py", "tests/integration/test_gui_headless_no_modal_hang_real.py", "tests/unit/test_doping_staleness_mock.py"],
+        "outputs": [{"glob":"e6naf_out/**/*","max_mb":20},{"glob":"e6naf_probe_out/**/*","max_mb":25}],
+        "regenerate": "Fixed synthetic/exported geometry checks, actual selective etch, actual GUI controls.",
+    },
     "e6nae_barrier_detection": {
         "description": "Read-only native vs exported triangle vs vertex bucket barrier probe; no DEVSIM.",
         "entry": "docs/audits/2026-10-10-e6nae-barrier-detection/probe.py",

@@ -1,0 +1,146 @@
+{
+ "schema": 1,
+ "status": "FAIL",
+ "started_utc": "2026-10-10T12:56:42.508866+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nae-barrier-detection-001",
+  "profile": "e6nae_barrier_detection",
+  "params": {},
+  "note": "Native vs exported mesh vs barrier classification only; no electrical solve."
+ },
+ "profile": "e6nae_barrier_detection",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6nae-barrier-detection/PLAN.md",
+   "sha256": "5cceb7ca92c6a83aebd9f196a292d23508e4ada3d03c0089e1441ef858ba186e",
+   "bytes": 2419
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nae-barrier-detection/probe.py",
+   "sha256": "33b8ef9c026cd4fffa7ac0bc76470ec4627e4beebcc6debe748c8d2d5e430093",
+   "bytes": 7610
+  },
+  {
+   "path": "tests/integration/_explicit_chain_fixture.py",
+   "sha256": "b48bf2bd985c2c221a61bd8824bd6dab5be7f4cc5154fc1027dceaccfcedaab3",
+   "bytes": 24084
+  },
+  {
+   "path": "tests/integration/_explicit_oxide_fixture.py",
+   "sha256": "87b089175674eec685363e3de8de6725e6cb35955db5f37e92f22a3844a4b4c8",
+   "bytes": 18830
+  },
+  {
+   "path": "tcad/device/devsim/mesh_import.py",
+   "sha256": "cbc4111e0a7d30d7b0f1317ba26c7947c132e580802e6bd1913fc9bc7310a62d",
+   "bytes": 63052
+  },
+  {
+   "path": "tcad/process/etching/isotropic.py",
+   "sha256": "c3917dd6f8f52b9213fea50eccfbafe65b05c67dd5ab2a419629a8d787c646ab",
+   "bytes": 5670
+  },
+  {
+   "path": "tcad/mesh/viennaps_adapter.py",
+   "sha256": "b1a7eb5ae219a794e8a807c169621331a03e08dcae5240fd3428421342f2b8eb",
+   "bytes": 3680
+  }
+ ],
+ "request_sha256": "9e5e1e7e0fd2161887860d2da871f682efff90db9d44a252f7cd3c91adb39a3d",
+ "source": {
+  "github_sha": "6d9695b6b9bba92c6ee680f2fe6050b2fb500fb9",
+  "git_head": "6d9695b6b9bba92c6ee680f2fe6050b2fb500fb9",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "38053776361",
+  "run_number": "80",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nae-barrier-detection/probe.py"
+ ],
+ "exit_code": 1,
+ "log_truncated": false,
+ "ended_utc": "2026-10-10T12:56:43.607182+00:00",
+ "duration_s": 1.098,
+ "outputs": [
+  {
+   "path": "e6nae_out/explicit_chain_initial.vpsd",
+   "bytes": 4345,
+   "sha256": "01b3df2fd87a4dd95ac1f5946f753d7f9de69188cbdb15758d77397f601666b9"
+  },
+  {
+   "path": "e6nae_out/explicit_chain_initial_volume.vtu",
+   "bytes": 93016,
+   "sha256": "547608c1612bc01a49825488b48217c2dba230258868e90d9ae0c03174f7876e"
+  },
+  {
+   "path": "e6nae_out/selective_etch/00_etching_isotropic/000_initial.vtp",
+   "bytes": 5135,
+   "sha256": "0f46e44db65f7c18bcda6c00475db215f8223f79abd0db01b442f407ea61f242"
+  },
+  {
+   "path": "e6nae_out/selective_etch/00_etching_isotropic/001_isotropic_etch.vtp",
+   "bytes": 5187,
+   "sha256": "69de02b5bd109e0031cf17b0a7c4b84e4d2cc13b19fa694fb9285040b1050fc0"
+  },
+  {
+   "path": "e6nae_out/selective_etch/00_etching_isotropic/domain_state.vpsd",
+   "bytes": 4596,
+   "sha256": "cfbe684b6a5d26ab773cc079a41272089295268c37269ce8232bda70793c57b2"
+  },
+  {
+   "path": "e6nae_out/selective_etch/00_etching_isotropic/isotropic_etch_final_volume.vtu",
+   "bytes": 98236,
+   "sha256": "912c964886f375a6d9df98e6046cb23e84e15ec6b02c659ee56d3b7fcbed9da0"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Fixed explicit input stack and one actual selective etch; not oxidation.",
+ "log": {
+  "file": "run.log",
+  "sha256": "79eafb91d0ddb91d3cbcdd368f6f47177e16c29dd0adcef52160a292fc9a630e",
+  "bytes": 1127
+ },
+ "redactions": {
+  "<WORKSPACE>": 2
+ }
+}

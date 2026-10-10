@@ -1,0 +1,22 @@
+    Process time: 0.0833 / 1.0000 s
+[0m    Process time: 0.1666 / 1.0000 s
+[0m    Process time: 0.2475 / 1.0000 s
+[0m    Process time: 0.3286 / 1.0000 s
+[0m    Process time: 0.3908 / 1.0000 s
+[0m    Process time: 0.4723 / 1.0000 s
+[0m    Process time: 0.5367 / 1.0000 s
+[0m    Process time: 0.6109 / 1.0000 s
+[0m    Process time: 0.6749 / 1.0000 s
+[0m    Process time: 0.7693 / 1.0000 s
+[0m    Process time: 0.8379 / 1.0000 s
+[0m    Process time: 0.9212 / 1.0000 s
+[0m    Process time: 0.9971 / 1.0000 s
+[0m    Process time: 1.0000 / 1.0000 s
+[0mTraceback (most recent call last):
+  File "<WORKSPACE>\docs\audits\2026-10-10-e6nae-barrier-detection\probe.py", line 154, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "<WORKSPACE>\docs\audits\2026-10-10-e6nae-barrier-detection\probe.py", line 127, in main
+    assert np.max(np.abs(actual-expected))<=C.native_eps(8),(label,actual,expected)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('before', array([0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]), array([0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]))

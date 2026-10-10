@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nae-barrier-detection-002",
- "profile": "e6nae_barrier_detection",
+ "request_id": "e6naf-barrier-sections-001",
+ "profile": "e6naf_barrier_sections",
  "params": {},
- "note": "Native vs exported mesh vs barrier classification only; no electrical solve."
+ "note": "Exact barrier geometry and GUI refusal; pure n/p supported controls only."
 }

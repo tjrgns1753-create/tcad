@@ -1,0 +1,447 @@
+{
+  "complete": true,
+  "records": {
+    "before": {
+      "probes": [
+        {
+          "x_um": -4.75,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0004975124611519277
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0004975124611519277,
+              0.30000001192092896
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": false,
+          "diagnosis": "DETECTOR_FALSE_NEGATIVE"
+        },
+        {
+          "x_um": -4.5,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0004975124611519277
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0004975124611519277,
+              0.30000001192092896
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": -4.25,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0004975124611519277
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0004975124611519277,
+              0.30000001192092896
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": false,
+          "diagnosis": "DETECTOR_FALSE_NEGATIVE"
+        },
+        {
+          "x_um": -4.0,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0004975124611519277
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0004975124611519277,
+              0.30000001192092896
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": -3.0,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0004975124611519277
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0004975124611519277,
+              0.30000001192092896
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": 0.0,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0004975124611519277
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0004975124611519277,
+              0.30000001192092896
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": 3.0,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0004975124611519277
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0004975124611519277,
+              0.30000001192092896
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": 4.25,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0004975124611519277
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0004975124611519277,
+              0.30000001192092896
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": 4.75,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0004975124611519277
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0004975124611519277,
+              0.30000001192092896
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        }
+      ],
+      "windows": [
+        {
+          "min_um": -5.0,
+          "max_um": -4.800000190734863
+        },
+        {
+          "min_um": -4.699999809265137,
+          "max_um": -4.299999713897705
+        },
+        {
+          "min_um": -4.199999809265137,
+          "max_um": 5.0
+        }
+      ],
+      "spacing_um": 0.10000002384185791,
+      "points": 5555,
+      "triangles": 10800
+    },
+    "after": {
+      "probes": [
+        {
+          "x_um": -4.75,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0009900990407913923
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0009900990407913923,
+              0.30049753189086914
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": false,
+          "diagnosis": "DETECTOR_FALSE_NEGATIVE"
+        },
+        {
+          "x_um": -4.5,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0009900990407913923
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0009900990407913923,
+              0.30049753189086914
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": -4.25,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0009900990407913923
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0009900990407913923,
+              0.30049753189086914
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": false,
+          "diagnosis": "DETECTOR_FALSE_NEGATIVE"
+        },
+        {
+          "x_um": -4.0,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0009900990407913923
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0009900990407913923,
+              0.30049753189086914
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": -3.0,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0009900990407913923
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0009900990407913923,
+              0.30049753189086914
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": 0.0,
+          "native_si_top": -1e-13,
+          "native_oxide_top": -1e-13,
+          "native_covered": false,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0
+            ]
+          ],
+          "exported_oxide_intervals": [],
+          "exported_covered": false,
+          "detector_covered": false,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": 3.0,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0009900990407913923
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0009900990407913923,
+              0.30049753189086914
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": 4.25,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0009900990407913923
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0009900990407913923,
+              0.30049753189086914
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        },
+        {
+          "x_um": 4.75,
+          "native_si_top": -1e-13,
+          "native_oxide_top": 0.2999999999999,
+          "native_covered": true,
+          "exported_si_intervals": [
+            [
+              -5.0,
+              0.0009900990407913923
+            ]
+          ],
+          "exported_oxide_intervals": [
+            [
+              0.0009900990407913923,
+              0.30049753189086914
+            ]
+          ],
+          "exported_covered": true,
+          "detector_covered": true,
+          "diagnosis": "AGREEMENT"
+        }
+      ],
+      "windows": [
+        {
+          "min_um": -5.0,
+          "max_um": -4.800000190734863
+        },
+        {
+          "min_um": -4.699999809265137,
+          "max_um": -4.299999713897705
+        },
+        {
+          "min_um": -4.199999809265137,
+          "max_um": -1.7999992370605469
+        },
+        {
+          "min_um": 1.7000017166137695,
+          "max_um": 5.0
+        }
+      ],
+      "spacing_um": 0.10000002384185791,
+      "points": 5861,
+      "triangles": 11370
+    }
+  },
+  "function_ast_sha": "252ba4e2ebb3f94c9feb21c5ba850d8a0c92a57aeafbcc6d989c4ab25c7cd5b5",
+  "plan_sha": "b41c37cace5393ca4824b9d8aea23752a1e4290f35385297768e07f2a5ebfe13",
+  "provenance": "DIRECT_EXPLICIT_GEOMETRY",
+  "engine_calls": {
+    "Oxidation": 0,
+    "Process": 1
+  },
+  "initial_request_offset_um": [
+    -9.997558336749535e-14,
+    -9.997558336749535e-14,
+    -9.997558336749535e-14,
+    -9.997558336749535e-14,
+    -9.997558336749535e-14,
+    -9.997558336749535e-14,
+    -9.997558336749535e-14,
+    -9.997558336749535e-14,
+    -9.997558336749535e-14
+  ],
+  "request_offset_status": "REQUEST_OFFSET_RECORDED_ONLY",
+  "devsim_imports": 0,
+  "devsim_solves": 0,
+  "production_changed": false,
+  "source_sha": "6615d28e06f03af29c4d95cfbf0c2a68525c1af8"
+}

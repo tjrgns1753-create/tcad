@@ -589,117 +589,33 @@ def derive_barrier_covered_windows(
     min_barrier_thickness_um: float = 0.0,
     bucket_width_um: Optional[float] = None,
 ) -> List[Dict[str, float]]:
-    """Real-mesh-derived x (or y) ranges where `doped_region`'s real top
-    surface sits directly under >= min_barrier_thickness_um of
-    `barrier_material` -- so a doping call can exclude dopant there
-    instead of applying it uniformly regardless of what is stacked
-    above (see docs/investigation_log.md, "SiO2 doesn't block doping").
+    """Connected barrier intervals in the ACTUAL exported triangle union.
 
-    Derives windows from the ACTUAL exported mesh (same technique
-    already used for derive_implant_windows_refinement -- see
-    CLAUDE.md's Development Rules: "Prefer deriving refinement scale
-    from the doping profile programmatically ... over a caller
-    hand-picking one"), not from a caller's assumption about where the
-    barrier is.
-
-    result : ProcessResult with volume_mesh_path and material_regions.
-    doped_region : material name (e.g., "Si") in result.material_regions.
-    barrier_material : material name (e.g., "SiO2") in result.material_regions.
-
-    Returns [{"min_um": float, "max_um": float}, ...] in the same
-    coordinate convention mask_spans_um/implant_windows already use.
-    Empty list if `doped_region` or `barrier_material` is absent from
-    the mesh, or nowhere sufficiently covered.
+    This classifies geometry, not energy-dependent implant transmission.
+    Missing declared materials return no intervals. Invalid geometry raises:
+    callers must not interpret a failed classification as absent barrier.
+    bucket_width_um remains a compatibility argument; it no longer quantizes
+    the result or changes coverage.
     """
     import meshio
+    from tcad.mesh.barrier_sections import covered_sections
 
-    # Build name -> tag mapping from ProcessResult (backend-independent).
-    tag_to_name = {region.tag: region.name for region in result.material_regions}
+    if axis not in ("x", "y"):
+        raise ValueError("BARRIER_AXIS_INVALID")
+    if not math.isfinite(min_barrier_thickness_um) or min_barrier_thickness_um < 0:
+        raise ValueError("BARRIER_THRESHOLD_INVALID")
     name_to_tag = {region.name: region.tag for region in result.material_regions}
-
     if doped_region not in name_to_tag or barrier_material not in name_to_tag:
         return []
-
-    doped_tag = name_to_tag[doped_region]
-    barrier_tag = name_to_tag[barrier_material]
-
     mesh = meshio.read(result.volume_mesh_path)
-    triangle_block = next((c for c in mesh.cells if c.type == "triangle"), None)
-    if triangle_block is None or result.material_field not in mesh.cell_data:
-        return []
-    block_index = mesh.cells.index(triangle_block)
-    tags = mesh.cell_data[result.material_field][block_index]
-    points = mesh.points
-
-    axis_idx = 0 if axis == "x" else 1
-    depth_idx = 1 if axis == "x" else 0
-
-    doped_tris = [t for t, tag in zip(triangle_block.data, tags) if int(tag) == doped_tag]
-    barrier_tris = [t for t, tag in zip(triangle_block.data, tags) if int(tag) == barrier_tag]
-    if not doped_tris or not barrier_tris:
-        return []
-
-    axis_vals = [points[n][axis_idx] for t in doped_tris for n in t]
-    axis_min, axis_max = min(axis_vals), max(axis_vals)
-    if axis_max <= axis_min:
-        return []
-
-    # Ground bucket_width_um in the actual mesh spacing, not domain extent.
-    if bucket_width_um is None:
-        spacing_um = _estimate_mesh_spacing_um(points, triangle_block.data)
-        bucket_width_um = spacing_um if spacing_um > 0 else 0.01  # ponytail: buckets match mesh density; finer if needed
-
-    n_buckets = max(1, int((axis_max - axis_min) / bucket_width_um) + 1)
-
-    def bucket_of(v: float) -> int:
-        idx = int((v - axis_min) / bucket_width_um)
-        return min(max(idx, 0), n_buckets - 1)
-
-    doped_top = [None] * n_buckets
-    for t in doped_tris:
-        for n in t:
-            b = bucket_of(points[n][axis_idx])
-            v = points[n][depth_idx]
-            if doped_top[b] is None or v > doped_top[b]:
-                doped_top[b] = v
-
-    barrier_top = [None] * n_buckets
-    barrier_bot = [None] * n_buckets
-    for t in barrier_tris:
-        for n in t:
-            b = bucket_of(points[n][axis_idx])
-            v = points[n][depth_idx]
-            if barrier_top[b] is None or v > barrier_top[b]:
-                barrier_top[b] = v
-            if barrier_bot[b] is None or v < barrier_bot[b]:
-                barrier_bot[b] = v
-
-    covered = []
-    for b in range(n_buckets):
-        if doped_top[b] is None or barrier_top[b] is None or barrier_bot[b] is None:
-            covered.append(False)
-            continue
-        thickness = barrier_top[b] - barrier_bot[b]
-        sits_above = barrier_bot[b] >= doped_top[b] - 1e-6
-        covered.append(sits_above and thickness >= min_barrier_thickness_um)
-
-    windows: List[Dict[str, float]] = []
-    start = None
-    for b in range(n_buckets):
-        if covered[b] and start is None:
-            start = axis_min + b * bucket_width_um
-        elif not covered[b] and start is not None:
-            windows.append({
-                "min_um": float(start),
-                "max_um": float(axis_min + b * bucket_width_um),
-            })
-            start = None
-    if start is not None:
-        windows.append({
-            "min_um": float(start),
-            "max_um": float(axis_max),
-        })
-    return windows
+    blocks = [(i,c) for i,c in enumerate(mesh.cells) if c.type == "triangle"]
+    if not blocks or result.material_field not in mesh.cell_data:
+        raise ValueError("BARRIER_MATERIAL_GEOMETRY_MISSING")
+    triangles = np.concatenate([c.data for _,c in blocks])
+    tags = np.concatenate([mesh.cell_data[result.material_field][i] for i,_ in blocks])
+    return covered_sections(mesh.points, triangles, tags,
+                            name_to_tag[doped_region], name_to_tag[barrier_material],
+                            axis=axis, min_thickness=min_barrier_thickness_um)
 
 
 def _derive_refine_from_doping(
