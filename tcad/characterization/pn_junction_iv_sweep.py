@@ -29,6 +29,7 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 
 from tcad.characterization.interface import BiasPoint, CharacterizationResult, current_unit_metadata
+from tcad.characterization.transport_evidence import capture_transport_evidence
 from tcad.device.devsim import backend
 from tcad.device.devsim.resistor_equation import set_bias
 from tcad.device.devsim.semiconductor_equation import (
@@ -92,6 +93,7 @@ def run_pn_junction_iv_sweep(
 
     # 2. Enable drift-diffusion transport at the same equilibrium bias
     setup_drift_diffusion_equation(device, region, all_contacts)
+    transport = capture_transport_evidence(module, device, region)
     module.solve(type="dc", absolute_error=1e10, relative_error=relative_error, maximum_iterations=maximum_iterations)
 
     for contact, voltage in fixed_contacts.items():
@@ -118,6 +120,7 @@ def run_pn_junction_iv_sweep(
             "temperature_k": temperature_k,
             "fixed_contacts": fixed_contacts,
             "physics": "drift_diffusion",
+            "transport_model": transport,
             **current_unit_metadata(module.get_dimension(device=device)),
         },
     )

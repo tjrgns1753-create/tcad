@@ -83,6 +83,7 @@ import math
 from typing import Dict, List, Optional
 
 from tcad.characterization.interface import BiasPoint, CharacterizationResult, current_unit_metadata
+from tcad.characterization.transport_evidence import capture_transport_evidence
 from tcad.device.devsim import backend
 from tcad.device.devsim.doping_mapping import canonical_node_doping
 from tcad.device.devsim.semiconductor_equation import (
@@ -271,6 +272,7 @@ def run_robust_pn_junction_iv_sweep(
 
     module = backend.require_devsim()
     setup_drift_diffusion_equation(device, region, all_contacts)
+    transport = capture_transport_evidence(module, device, region)
     module.solve(
         type="dc",
         absolute_error=_DD_ABSOLUTE_ERROR,
@@ -299,6 +301,7 @@ def run_robust_pn_junction_iv_sweep(
             "temperature_k": temperature_k,
             "fixed_contacts": fixed_contacts,
             "physics": "drift_diffusion",
+            "transport_model": transport,
             "strategy": "doping_continuation + devsim_dd_tolerances + restoring_bias_ramp",
             **current_unit_metadata(module.get_dimension(device=device)),
         },

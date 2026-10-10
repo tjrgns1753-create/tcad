@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nah_transport_evidence": {
+        "description": "Actual DD parameter evidence, GUI/export identity, two faults and 88 unit controls; no model calibration claim.",
+        "entry": "docs/audits/2026-10-10-e6nah-transport-scope/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 900, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nah-transport-scope/PLAN.md", "docs/audits/2026-10-10-e6nah-transport-scope/run_checks.py", "tcad/characterization/transport_evidence.py", "tcad/characterization/pn_junction_iv_sweep.py", "tcad/characterization/robust_iv_sweep.py", "tcad_2d_stagewise.py", "tests/unit/test_transport_evidence_mock.py", "tests/integration/test_transport_evidence_gui_real.py", "docs/audits/2026-10-10-e6nag-barrier-unit-regression/MANIFEST.json"],
+        "outputs": [{"glob": "e6nah_out/**/*", "max_mb": 25}],
+        "regenerate": "Fixed 92 files once; known gates remain unchanged.",
+    },
     "e6nag_barrier_unit_regression": {
         "description": "Fixed 87 unit contracts after exact barrier correction; no physical gate changes.",
         "entry": "docs/audits/2026-10-10-e6nag-barrier-unit-regression/run_checks.py",

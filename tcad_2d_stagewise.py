@@ -5881,6 +5881,7 @@ class TCADApplication(tk.Tk):
         from tcad.device.devsim.mesh_conservation import MeshAreaConservationError
         from tcad.device.devsim.doping_mapping import apply_doping, UnsupportedDopingState
         from tcad.characterization.interface import current_unit_note, format_current, validate_bias_point
+        from tcad.characterization.transport_evidence import TransportEvidenceError, transport_model_note
         from tcad.characterization.pn_junction_iv_sweep import run_pn_junction_iv_sweep
         from tcad.characterization.robust_iv_sweep import (
             run_robust_pn_junction_iv_sweep,
@@ -6076,7 +6077,11 @@ class TCADApplication(tk.Tk):
             return
 
         except Exception as exc:
-            if intrinsic_input:
+            if isinstance(exc, TransportEvidenceError):
+                from tcad.characterization.intrinsic import intrinsic_refusal_status
+                self.last_physics_status = intrinsic_refusal_status('TRANSPORT_PARAMETER_EVIDENCE_INVALID', str(exc))
+                self._log_physics_status({'physics_status': self.last_physics_status})
+            elif intrinsic_input:
                 from tcad.characterization.intrinsic import intrinsic_refusal_status
                 self.last_physics_status = intrinsic_refusal_status('INTRINSIC_RESULT_NOT_VALIDATED', str(exc))
                 self._log_physics_status({'physics_status': self.last_physics_status})
@@ -6115,6 +6120,7 @@ class TCADApplication(tk.Tk):
             f"Multimeter (GND) pin: {gnd_contact} = 0.0000 V "
             f"-> I = {format_current(gnd_i, result.metadata)}\n"
             f"{current_unit_note(result.metadata)}\n"
+            f"{transport_model_note(result.metadata)}\n"
         )
 
         self._notify_info(
@@ -6123,7 +6129,7 @@ class TCADApplication(tk.Tk):
             f"I = {format_current(source_i, result.metadata)}\n\n"
             f"Multimeter ({gnd_contact}): 0.0000 V, "
             f"I = {format_current(gnd_i, result.metadata)}\n\n"
-            f"{current_unit_note(result.metadata)}",
+            f"{current_unit_note(result.metadata)}\n{transport_model_note(result.metadata)}",
         )
 
     # --------------------------------------------------------
