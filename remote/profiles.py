@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nal_mobility_zero_limit": {
+        "description": "Audit-only algebraically identical zero-limit expression via public node_model; no production or solve.",
+        "entry": "docs/audits/2026-10-10-e6nal-mobility-zero-limit/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 240, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nal-mobility-zero-limit/PLAN.md", "docs/audits/2026-10-10-e6nal-mobility-zero-limit/probe.py", "docs/audits/2026-10-10-e6nal-mobility-zero-limit/judge.py", "docs/audits/2026-10-10-e6nal-mobility-zero-limit/run_checks.py", "docs/audits/2026-10-10-e6naj-official-mobility/judge.py"],
+        "outputs": [{"glob": "e6nal_out/**/*", "max_mb": 10}],
+        "regenerate": "Four fixed synthetic cases; compare positive original artifact and retain exact zero.",
+    },
     "e6nak_field_color_range": {
         "description": "Actual raw-value color range disclosure and unchanged nine canvas layers; no model changes.",
         "entry": "docs/audits/2026-10-10-e6nak-field-color-range/run_checks.py",

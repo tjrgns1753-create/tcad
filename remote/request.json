@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nak-field-color-range-001",
- "profile": "e6nak_field_color_range",
+ "request_id": "e6nal-mobility-zero-limit-001",
+ "profile": "e6nal_mobility_zero_limit",
  "params": {},
- "note": "Exact color limits and automatic contrast disclosure; actual nine canvas layers, unchanged physics."
+ "note": "Audit-only continuous extension of official model; no production model change or solve."
 }
