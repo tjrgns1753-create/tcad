@@ -1,0 +1,179 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-10T12:48:07.802618+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nad-doping-gui-contract-001",
+  "profile": "e6nad_doping_gui_contract",
+  "params": {},
+  "note": "Fixed seven GUI contracts with unchanged controls; no physics capability gate removed."
+ },
+ "profile": "e6nad_doping_gui_contract",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6nad-doping-gui-contract/PLAN.md",
+   "sha256": "476e38f74c5e96104e8ce05ac8c90ee3e3380e3e0c05e003d4a714ccaabdfa97",
+   "bytes": 4127
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py",
+   "sha256": "79a5aa2d73895560a74a02c2d9ee54b456ab0e0014b67cd07ae07bfd5e6910c6",
+   "bytes": 5302
+  },
+  {
+   "path": "tests/integration/test_gui_doping_donor_acceptor_real.py",
+   "sha256": "7f9ce37b13b8b956a47c58782d2f18a9bd4e28688cf7cd176c020476131916b9",
+   "bytes": 16000
+  },
+  {
+   "path": "tests/integration/test_measurement_canonical_state_gate_real.py",
+   "sha256": "f4d36e0162250ff6163684f0ee719db8eb3725797a2994d5a768a59d347787f1",
+   "bytes": 19697
+  },
+  {
+   "path": "tests/integration/test_gui_headless_no_modal_hang_real.py",
+   "sha256": "b2d86c65248059a24f72b775bf2b2c156754f3d34e70d993c68ed894f5f71f1e",
+   "bytes": 40204
+  },
+  {
+   "path": "tests/unit/test_doping_staleness_mock.py",
+   "sha256": "b1c22a5c96f8cee0eab85a9590e8a35742b09e4461e908d1761331237e4141f9",
+   "bytes": 11953
+  },
+  {
+   "path": "tests/integration/_explicit_chain_fixture.py",
+   "sha256": "b48bf2bd985c2c221a61bd8824bd6dab5be7f4cc5154fc1027dceaccfcedaab3",
+   "bytes": 24084
+  },
+  {
+   "path": "tests/integration/_explicit_oxide_fixture.py",
+   "sha256": "87b089175674eec685363e3de8de6725e6cb35955db5f37e92f22a3844a4b4c8",
+   "bytes": 18830
+  },
+  {
+   "path": "tcad_2d_stagewise.py",
+   "sha256": "b601206dd9e374abf379f5cb28960bb90321c3fe834f370f7829d5d5cbeaea2b",
+   "bytes": 420212
+  },
+  {
+   "path": "tcad/physics/wafer_state_accumulation.py",
+   "sha256": "dfb12c8a756bfb3582dcdf827f1470f65556aa6662181c1aba42062dbae4f1bb",
+   "bytes": 27500
+  },
+  {
+   "path": "tcad/device/devsim/doping_mapping.py",
+   "sha256": "96f5abc44b44132964b5c5f26b3622b85311a44cbad1f98558781d38843356ea",
+   "bytes": 50207
+  },
+  {
+   "path": "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py",
+   "sha256": "20e9e7023cb02416edf075522cf3f31f9eb7bd653b5a6d0562f28427d48288fa",
+   "bytes": 10135
+  },
+  {
+   "path": "remote/run_profile.py",
+   "sha256": "dada5ddc9c42b7b1db4a6bf2aa0f9512c64962a8cf400f3b7becda1f3accbb8a",
+   "bytes": 14660
+  }
+ ],
+ "request_sha256": "2d72a939541660d965e6382c6f0cbea47f19fc49601d96dd26c5ac4209d0b1a7",
+ "source": {
+  "github_sha": "586b6f9f4da4f80f456cde1b65431558af8686e0",
+  "git_head": "586b6f9f4da4f80f456cde1b65431558af8686e0",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "38053242103",
+  "run_number": "79",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-10T12:48:32.671430+00:00",
+ "duration_s": 24.869,
+ "outputs": [
+  {
+   "path": "e6nad_out/gui_metrics.json",
+   "bytes": 14930,
+   "sha256": "eb9b38b48fef9b2b34713c121fae8f27cb00e1c81d533d32f12b75c68c9d1898"
+  },
+  {
+   "path": "e6nad_out/records.json",
+   "bytes": 3119,
+   "sha256": "bafa068c9671fe8f40259d22df3f75f202366a3f1d6f02186198e3a16873afe3"
+  },
+  {
+   "path": "e6nad_out/test_doping_staleness_mock.log",
+   "bytes": 219,
+   "sha256": "97cde87caf08ef7a647baeb526ab5a549338b040e6a0eef2846c764b9287a8d3"
+  },
+  {
+   "path": "e6nad_out/test_gui_doping_donor_acceptor_real.log",
+   "bytes": 22506,
+   "sha256": "5b40593fa6fb8315479874cd17372d2caa17ae4a3bbfabebf1b18cf4a408280f"
+  },
+  {
+   "path": "e6nad_out/test_gui_headless_no_modal_hang_real.log",
+   "bytes": 6490,
+   "sha256": "ba793e90188a156ca03446e0a1c3f0da66a514ec6a70168e1ac0aef713c4b431"
+  },
+  {
+   "path": "e6nad_out/test_measurement_canonical_state_gate_real.log",
+   "bytes": 19574,
+   "sha256": "519578698f32a72dba729118d931662f20e76137f7727b9dcf316ce686878d25"
+  },
+  {
+   "path": "e6nad_out/verdict.json",
+   "bytes": 297,
+   "sha256": "f0a30ae60c7a12a3335d7e5a228d8786d7c5980987e52af5adffa8c250d1823b"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Rerun this fixed profile; explicit oxide input is not an oxidation result.",
+ "log": {
+  "file": "run.log",
+  "sha256": "d6c94ea5d378110142288b70200a0f048edf969d9fedd477b3ac0025bda0971a",
+  "bytes": 653
+ },
+ "redactions": {}
+}

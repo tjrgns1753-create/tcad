@@ -1,0 +1,188 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 200 Triangles.
+Physical group name Si has 325 Lines.
+Physical group name Si has 126 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 5 Lines.
+Physical group name Si_xmax has 6 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 5 Lines.
+Physical group name Si_xmin has 6 Points.
+Device gui_measure_device has 126 coordinates with max index 125
+Region Si has 126 nodes.
+Contact Si_xmax in region Si with 6 nodes
+Contact Si_xmin in region Si with 6 nodes
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 200 Triangles.
+Physical group name Si has 325 Lines.
+Physical group name Si has 126 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 5 Lines.
+Physical group name Si_xmax has 6 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 5 Lines.
+Physical group name Si_xmin has 6 Points.
+Device gui_measure_device has 126 coordinates with max index 125
+Region Si has 126 nodes.
+Contact Si_xmax in region Si with 6 nodes
+Contact Si_xmin in region Si with 6 nodes
+Creating Node Solution Potential
+number of equations 126
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.85098e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.85098e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.85098e-01
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.80644e-01	AbsError: 1.64302e-01
+    Region: "Si"	RelError: 4.80644e-01	AbsError: 1.64302e-01
+      Equation: "PotentialEquation"	RelError: 4.80644e-01	AbsError: 1.64302e-01
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.03726e-01	AbsError: 6.71217e-02
+    Region: "Si"	RelError: 3.03726e-01	AbsError: 6.71217e-02
+      Equation: "PotentialEquation"	RelError: 3.03726e-01	AbsError: 6.71217e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+    Region: "Si"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+      Equation: "PotentialEquation"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 4.93876e-16	AbsError: 1.76632e-16
+    Region: "Si"	RelError: 4.93876e-16	AbsError: 1.76632e-16
+      Equation: "PotentialEquation"	RelError: 4.93876e-16	AbsError: 1.76632e-16
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 378
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 4.52291e-15	AbsError: 2.20000e+01
+    Region: "Si"	RelError: 4.52291e-15	AbsError: 2.20000e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.20000e-15	AbsError: 2.20000e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.16769e-15	AbsError: 2.16769e-11
+      Equation: "PotentialEquation"	RelError: 1.55213e-16	AbsError: 5.55112e-17
+number of equations 378
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.72002e-02	AbsError: 3.29520e-01
+    Region: "Si"	RelError: 2.72002e-02	AbsError: 3.29520e-01
+      Equation: "ElectronContinuityEquation"	RelError: 3.19520e-17	AbsError: 3.19520e-01
+      Equation: "HoleContinuityEquation"	RelError: 2.08039e-15	AbsError: 2.08039e-11
+      Equation: "PotentialEquation"	RelError: 2.72002e-02	AbsError: 1.00000e-02
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 2.11469e-15	AbsError: 3.88521e-03
+    Region: "Si"	RelError: 2.11469e-15	AbsError: 3.88521e-03
+      Equation: "ElectronContinuityEquation"	RelError: 3.88521e-19	AbsError: 3.88521e-03
+      Equation: "HoleContinuityEquation"	RelError: 1.96135e-15	AbsError: 1.96135e-11
+      Equation: "PotentialEquation"	RelError: 1.52949e-16	AbsError: 5.55425e-17
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 200 Triangles.
+Physical group name Si has 325 Lines.
+Physical group name Si has 126 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 5 Lines.
+Physical group name Si_xmax has 6 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 5 Lines.
+Physical group name Si_xmin has 6 Points.
+Device gui_measure_device has 126 coordinates with max index 125
+Region Si has 126 nodes.
+Contact Si_xmax in region Si with 6 nodes
+Contact Si_xmin in region Si with 6 nodes
+Creating Node Solution Potential
+number of equations 126
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.67418e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.67418e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.67418e-01
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.82216e-01	AbsError: 1.54878e-01
+    Region: "Si"	RelError: 4.82216e-01	AbsError: 1.54878e-01
+      Equation: "PotentialEquation"	RelError: 4.82216e-01	AbsError: 1.54878e-01
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.01953e-01	AbsError: 6.54653e-02
+    Region: "Si"	RelError: 3.01953e-01	AbsError: 6.54653e-02
+      Equation: "PotentialEquation"	RelError: 3.01953e-01	AbsError: 6.54653e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.08624e-01	AbsError: 4.97567e-02
+    Region: "Si"	RelError: 2.08624e-01	AbsError: 4.97567e-02
+      Equation: "PotentialEquation"	RelError: 2.08624e-01	AbsError: 4.97567e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.47302e-01	AbsError: 4.12004e-02
+    Region: "Si"	RelError: 1.47302e-01	AbsError: 4.12004e-02
+      Equation: "PotentialEquation"	RelError: 1.47302e-01	AbsError: 4.12004e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 9.99287e-02	AbsError: 3.10531e-02
+    Region: "Si"	RelError: 9.99287e-02	AbsError: 3.10531e-02
+      Equation: "PotentialEquation"	RelError: 9.99287e-02	AbsError: 3.10531e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 5.88567e-02	AbsError: 1.94337e-02
+    Region: "Si"	RelError: 5.88567e-02	AbsError: 1.94337e-02
+      Equation: "PotentialEquation"	RelError: 5.88567e-02	AbsError: 1.94337e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 2.80099e-02	AbsError: 9.51498e-03
+    Region: "Si"	RelError: 2.80099e-02	AbsError: 9.51498e-03
+      Equation: "PotentialEquation"	RelError: 2.80099e-02	AbsError: 9.51498e-03
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 1.25309e-16	AbsError: 4.25675e-17
+    Region: "Si"	RelError: 1.25309e-16	AbsError: 4.25675e-17
+      Equation: "PotentialEquation"	RelError: 1.25309e-16	AbsError: 4.25675e-17
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 378
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 3.40050e-15	AbsError: 8.00000e+00
+    Region: "Si"	RelError: 3.40050e-15	AbsError: 8.00000e+00
+      Equation: "ElectronContinuityEquation"	RelError: 1.63709e-15	AbsError: 3.27418e-11
+      Equation: "HoleContinuityEquation"	RelError: 1.60000e-15	AbsError: 8.00000e+00
+      Equation: "PotentialEquation"	RelError: 1.63412e-16	AbsError: 5.55112e-17
+number of equations 378
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 3.03305e-02	AbsError: 3.56146e-01
+    Region: "Si"	RelError: 3.03305e-02	AbsError: 3.56146e-01
+      Equation: "ElectronContinuityEquation"	RelError: 2.51048e-15	AbsError: 5.02097e-11
+      Equation: "HoleContinuityEquation"	RelError: 6.92293e-17	AbsError: 3.46146e-01
+      Equation: "PotentialEquation"	RelError: 3.03305e-02	AbsError: 1.00000e-02
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 3.08726e-15	AbsError: 3.97946e-03
+    Region: "Si"	RelError: 3.08726e-15	AbsError: 3.97946e-03
+      Equation: "ElectronContinuityEquation"	RelError: 2.58539e-15	AbsError: 5.17078e-11
+      Equation: "HoleContinuityEquation"	RelError: 7.95891e-19	AbsError: 3.97945e-03
+      Equation: "PotentialEquation"	RelError: 5.01074e-16	AbsError: 1.66708e-16
+    Process time: 0.0833 / 1.0000 s
+[0m    Process time: 0.1666 / 1.0000 s
+[0m    Process time: 0.2475 / 1.0000 s
+[0m    Process time: 0.3286 / 1.0000 s
+[0m    Process time: 0.3908 / 1.0000 s
+[0m    Process time: 0.4723 / 1.0000 s
+[0m    Process time: 0.5367 / 1.0000 s
+[0m    Process time: 0.6109 / 1.0000 s
+[0m    Process time: 0.6749 / 1.0000 s
+[0m    Process time: 0.7693 / 1.0000 s
+[0m    Process time: 0.8379 / 1.0000 s
+[0m    Process time: 0.9212 / 1.0000 s
+[0m    Process time: 0.9971 / 1.0000 s
+[0m    Process time: 1.0000 / 1.0000 s
+[0mGaussian Implant donor/acceptor -> peak_conc_cm3=1.700e+17 (donor - acceptor); raw donor=2.000e+17(P) acceptor=3.000e+16(B) preserved on the DopingRegion.
+Implant Windows donor/acceptor -> background net=-9.990e+16 (donor 1.000e+14 - acceptor 1.000e+17); source conc_cm3=1.000e+20, drain conc_cm3=8.000e+19; raw donor/acceptor preserved on both region and window dicts.
+METRICS {"compensated": {"label": "compensated", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": true, "log_delta": "\n(No mesh refinement requested for this uniform device input.)\n\nERROR \u2014 Measurement: UNSUPPORTED_BY_MODEL (COMPENSATED_TRANSPORT_MODEL_MISSING): device 'gui_measure_device' region 'Si' holds donor AND acceptor dopant over a finite area (126 of 126 mesh node(s) blocked (region-level: compensated region)). The canonical concentrations are kept, but the drift-diffusion model has no compensation-aware ionized-impurity scattering / mobility, so the device solve must not proceed.\ninstance 'si#substrate': donor 'att:doping:1:2' and acceptor 'att:doping:2:2' coexist over the finite area (-2.0, 2.0, -1.0, 0.0)\n\nMeasurement blocked: no doping was written to DevSim, no solve was run, and no current is reported.\n", "last_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "reason_code": "COMPENSATED_TRANSPORT_MODEL_MISSING", "entries": [{"parameter": "compensated_transport", "material": "Si", "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED", "note": "instance 'si#substrate': donor 'att:doping:1:2' and acceptor 'att:doping:2:2' coexist over the finite area (-2.0, 2.0, -1.0, 0.0)"}], "notes": ["126 of 126 mesh node(s) blocked (region-level: compensated region)"], "device": "gui_measure_device", "region": "Si", "total_nodes": 126, "blocked_nodes": 126, "first_blocked_node": null}, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null}, "n": {"label": "n", "solve_calls": 3, "doping_writes": 6, "doping_write_kinds": [["node_model", "Acceptors"], ["node_model", "Donors"], ["node_model", "NetDoping"], ["set_node_values", "Acceptors"], ["set_node_values", "Donors"], ["set_node_values", "NetDoping"]], "currents_in_log": [0.0016, -0.0016, 0.0016, -0.0016], "measurement_section_logged": true, "unsupported_in_log": false, "log_delta": "\nNOTE: the doping profile was attached to an earlier mesh. Re-applying the same doping to the current geometry before measuring.\n\n\n================================\nDOPING APPLIED: UNIFORM\n================================\nACTIVE ANALYTIC PROFILE DECLARED (DECLARED ANALYTIC ACTIVE PROFILE: the user's own electrically-active device profile -- not a simulated implant, anneal or activation)\nregion='Si' donor=1.000e+16 acceptor=0.000e+00 -> net_doping_cm3=1.000e+16\nMaterials in mesh: ['Si']\nAccumulated dopant profile(s) on this wafer: 1\n(DopingProfile attached only -- no DevSim solve run.)\n\n\n(No mesh refinement requested for this uniform device input.)\n\n\n================================\nDEVSIM MEASUREMENT\n================================\nRegion='Si' axis='x' doping_kind='uniform'\nVoltage source pin: Si_xmax = +0.0100 V -> I = 1.600000e-03 A/cm\nMultimeter (GND) pin: Si_xmin = 0.0000 V -> I = -1.600000e-03 A/cm\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n\nMeasurement: Voltage source (Si_xmax): +0.0100 V, I = 1.600000e-03 A/cm\n\nMultimeter (Si_xmin): 0.0000 V, I = -1.600000e-03 A/cm\n\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n", "last_physics_status": null, "canonical_state_object_unchanged": true, "history_entries_added": 2, "canonical_vs_solved_netdoping": {"nodes": 126, "mismatched_nodes": 0, "max_abs_diff_cm3": 0.0}, "reattach_identity": true, "attachment_count": 1}, "p": {"label": "p", "solve_calls": 3, "doping_writes": 6, "doping_write_kinds": [["node_model", "Acceptors"], ["node_model", "Donors"], ["node_model", "NetDoping"], ["set_node_values", "Acceptors"], ["set_node_values", "Donors"], ["set_node_values", "NetDoping"]], "currents_in_log": [0.0004, -0.0004, 0.0004, -0.0004], "measurement_section_logged": true, "unsupported_in_log": false, "log_delta": "\nNOTE: the doping profile was attached to an earlier mesh. Re-applying the same doping to the current geometry before measuring.\n\n\n================================\nDOPING APPLIED: UNIFORM\n================================\nACTIVE ANALYTIC PROFILE DECLARED (DECLARED ANALYTIC ACTIVE PROFILE: the user's own electrically-active device profile -- not a simulated implant, anneal or activation)\nregion='Si' donor=0.000e+00 acceptor=5.000e+15 -> net_doping_cm3=-5.000e+15\nMaterials in mesh: ['Si']\nAccumulated dopant profile(s) on this wafer: 1\n(DopingProfile attached only -- no DevSim solve run.)\n\n\n(No mesh refinement requested for this uniform device input.)\n\n\n================================\nDEVSIM MEASUREMENT\n================================\nRegion='Si' axis='x' doping_kind='uniform'\nVoltage source pin: Si_xmax = +0.0100 V -> I = 4.000000e-04 A/cm\nMultimeter (GND) pin: Si_xmin = 0.0000 V -> I = -4.000000e-04 A/cm\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n\nMeasurement: Voltage source (Si_xmax): +0.0100 V, I = 4.000000e-04 A/cm\n\nMultimeter (Si_xmin): 0.0000 V, I = -4.000000e-04 A/cm\n\nCurrent per unit out-of-plane depth (A/cm) -- not the total current of a device; multiply by the real device depth in cm for a total current.\n", "last_physics_status": null, "canonical_state_object_unchanged": true, "history_entries_added": 2, "canonical_vs_solved_netdoping": {"nodes": 126, "mismatched_nodes": 0, "max_abs_diff_cm3": 0.0}, "reattach_identity": true, "attachment_count": 1}, "gaussian": {"label": "gaussian", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": true, "log_delta": "\nPHYSICS: UNSUPPORTED_BY_MODEL\n\n  reason_code: DOPANT_ACTIVATION_MODEL_MISSING\n\n  measurement_device_input [?]: UNSUPPORTED_BY_MODEL / DERIVED \u2014 Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs.\n\nDevice measurement: Measurement blocked (UNSUPPORTED_BY_MODEL): DOPANT_ACTIVATION_MODEL_MISSING. Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs. No doping write or solve was run; no carrier or current value was computed.\n", "last_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "reason_code": "DOPANT_ACTIVATION_MODEL_MISSING", "entries": [{"parameter": "measurement_device_input", "material": "?", "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED", "note": "Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs."}]}, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null, "new_attachments": [{"model": "gaussian_v1", "species": "P", "polarity": "donor", "chemical_state": "CHEMICAL", "model_params": {"peak_conc_cm3": 2e+17, "peak_position_um": 0.0, "straggle_um": 0.5}}, {"model": "gaussian_v1", "species": "B", "polarity": "acceptor", "chemical_state": "CHEMICAL", "model_params": {"peak_conc_cm3": 3e+16, "peak_position_um": 0.0, "straggle_um": 0.5}}]}, "windows": {"label": "windows", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": true, "log_delta": "\nPHYSICS: UNSUPPORTED_BY_MODEL\n\n  reason_code: DOPANT_ACTIVATION_MODEL_MISSING\n\n  measurement_device_input [?]: UNSUPPORTED_BY_MODEL / DERIVED \u2014 Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs.\n\nDevice measurement: Measurement blocked (UNSUPPORTED_BY_MODEL): DOPANT_ACTIVATION_MODEL_MISSING. Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs. No doping write or solve was run; no carrier or current value was computed.\n", "last_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "reason_code": "DOPANT_ACTIVATION_MODEL_MISSING", "entries": [{"parameter": "measurement_device_input", "material": "?", "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED", "note": "Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs."}]}, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null, "new_attachments": [{"model": "implant_windows_v1", "species": null, "polarity": "donor", "chemical_state": "CHEMICAL", "model_params": {"background_cm3": 100000000000000.0, "windows": [[-1.6, -0.6, 1e+20], [0.6, 1.6, 9e+19]]}}, {"model": "implant_windows_v1", "species": null, "polarity": "acceptor", "chemical_state": "CHEMICAL", "model_params": {"background_cm3": 1e+17, "windows": [[0.6, 1.6, 1e+19]]}}]}, "barrier_x": {"label": "barrier_x", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": true, "log_delta": "\nPHYSICS: UNSUPPORTED_BY_MODEL\n\n  reason_code: DEVICE_PROFILE_NOT_AVAILABLE\n\n  measurement_device_input [?]: UNSUPPORTED_BY_MODEL / DERIVED \u2014 This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers.\n\nDevice measurement: Measurement blocked (UNSUPPORTED_BY_MODEL): DEVICE_PROFILE_NOT_AVAILABLE. This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers. No doping write or solve was run; no carrier or current value was computed.\n", "last_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "reason_code": "DEVICE_PROFILE_NOT_AVAILABLE", "entries": [{"parameter": "measurement_device_input", "material": "?", "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED", "note": "This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers."}]}, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null, "barrier_windows": [{"min_um": -5.0, "max_um": -4.800000190734863}, {"min_um": -4.699999809265137, "max_um": -4.299999713897705}, {"min_um": -4.199999809265137, "max_um": -1.7999992370605469}, {"min_um": 1.7000017166137695, "max_um": 5.0}], "detector_axis": "x", "input_provenance": "DIRECT_EXPLICIT_GEOMETRY"}, "barrier_y": {"label": "barrier_y", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": true, "log_delta": "\nPHYSICS: UNSUPPORTED_BY_MODEL\n\n  reason_code: DEVICE_PROFILE_NOT_AVAILABLE\n\n  measurement_device_input [?]: UNSUPPORTED_BY_MODEL / DERIVED \u2014 This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers.\n\nDevice measurement: Measurement blocked (UNSUPPORTED_BY_MODEL): DEVICE_PROFILE_NOT_AVAILABLE. This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers. No doping write or solve was run; no carrier or current value was computed.\n", "last_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "reason_code": "DEVICE_PROFILE_NOT_AVAILABLE", "entries": [{"parameter": "measurement_device_input", "material": "?", "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED", "note": "This GUI request has no available validated device profile. This does not imply that the semiconductor has no thermal carriers."}]}, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null, "barrier_windows": [{"min_um": -5.0, "max_um": -4.800000190734863}, {"min_um": -4.699999809265137, "max_um": -4.299999713897705}, {"min_um": -4.199999809265137, "max_um": -1.7999992370605469}, {"min_um": 1.7000017166137695, "max_um": 5.0}], "detector_axis": "x", "input_provenance": "DIRECT_EXPLICIT_GEOMETRY"}}
+PASS: 7 GUI cases; pure n/p stale reattach supported, compensated/chemical/unresolved barrier blocked; original donor/acceptor/species fields preserved.

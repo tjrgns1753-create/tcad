@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "expected_files": 4,
+  "recorded_files": 4,
+  "gui": {
+    "pass": true,
+    "cases": 7,
+    "scope": "GUI_CONTRACTS_NOT_GENERAL_PHYSICS_APPROVAL"
+  },
+  "production_unchanged": true,
+  "plan_sha": "e56c4eb99142e01a2aea347bc2cb0ed98961c913f2059531f2e3994cf8e5b935"
+}

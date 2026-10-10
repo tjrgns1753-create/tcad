@@ -1,0 +1,745 @@
+diff --git a/docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py b/docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py
+new file mode 100644
+index 0000000..6d3608d
+--- /dev/null
++++ b/docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py
+@@ -0,0 +1,104 @@
++"""고정된 GUI 계약 migration과 대조군 4개. 실제 엔진은 원격에서만."""
++import ast
++import hashlib
++import json
++import os
++from pathlib import Path
++import subprocess
++import sys
++ROOT = Path(__file__).resolve().parents[3]
++HERE = Path(__file__).resolve().parent
++PLAN_SHA = "e56c4eb99142e01a2aea347bc2cb0ed98961c913f2059531f2e3994cf8e5b935"
++BASELINE = "e1c0c025d955540251e00a8f295db836044e61f7"
++TESTS = (
++    "tests/integration/test_gui_doping_donor_acceptor_real.py",
++    "tests/integration/test_measurement_canonical_state_gate_real.py",
++    "tests/integration/test_gui_headless_no_modal_hang_real.py",
++    "tests/unit/test_doping_staleness_mock.py",
++)
++
++
++def preflight():
++    if os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted":
++        raise RuntimeError("REMOTE_ONLY")
++    if hashlib.sha256((HERE/"PLAN.md").read_bytes().replace(b"\r\n",b"\n")).hexdigest() != PLAN_SHA:
++        raise ValueError("PLAN_HASH_MISMATCH_BEFORE_ENGINE_IMPORT")
++    if subprocess.run(["git","diff","--exit-code",BASELINE,"HEAD","--","tcad","tcad_2d_stagewise.py"],
++                      cwd=ROOT, stdout=subprocess.DEVNULL).returncode:
++        raise ValueError("PRODUCTION_OR_GATE_CHANGED")
++    for path in TESTS:
++        ast.parse((ROOT/path).read_text(encoding="utf-8"), filename=path)
++
++
++def judge_gui(m):
++    expected = {"compensated","n","p","gaussian","windows","barrier_x","barrier_y"}
++    assert set(m) == expected, ("missing/extra GUI cases",set(m))
++    for name in ("n","p"):
++        r=m[name]
++        assert r["solve_calls"]>=1 and r["doping_writes"]>=1 and r["reattach_identity"]
++        assert r["attachment_count"] == 1 and r["canonical_state_object_unchanged"]
++        c=r["currents_in_log"][:2]
++        assert len(c)==2 and abs(c[0])>0 and abs(c[0]+c[1])<=1e-4*abs(c[0])
++        assert r["canonical_vs_solved_netdoping"]["mismatched_nodes"]==0
++        assert not r["unsupported_in_log"] and r["measurement_section_logged"]
++    for name in expected-{"n","p"}:
++        r=m[name]
++        assert r["solve_calls"]==r["doping_writes"]==r["history_entries_added"]==0
++        assert not r["currents_in_log"] and r["unsupported_in_log"]
++        assert r["last_physics_status"]["resolution"]=="UNSUPPORTED_BY_MODEL"
++    assert m["compensated"]["last_physics_status"]["reason_code"]=="COMPENSATED_TRANSPORT_MODEL_MISSING"
++    for name in ("gaussian","windows"):
++        assert m[name]["last_physics_status"]["reason_code"]=="DOPANT_ACTIVATION_MODEL_MISSING"
++        assert m[name]["new_attachments"]
++        assert all(a["chemical_state"]=="CHEMICAL" for a in m[name]["new_attachments"])
++    for name in ("barrier_x","barrier_y"):
++        assert m[name]["detector_axis"]=="x" and m[name]["input_provenance"]=="DIRECT_EXPLICIT_GEOMETRY"
++        assert m[name]["barrier_windows"]
++    return {"pass":True,"cases":7,"scope":"GUI_CONTRACTS_NOT_GENERAL_PHYSICS_APPROVAL"}
++
++
++def main():
++    preflight()
++    sys.path.insert(0,str(ROOT/"docs/audits/2026-10-02-e6na-import-reduction"))
++    sys.path.insert(0,str(ROOT/"remote"))
++    from resource_supervisor import supervise
++    from run_profile import Sanitizer
++    out=ROOT/"e6nad_out"
++    out.mkdir(exist_ok=True)
++    records={}
++    sanitizer=Sanitizer()
++    gui_verdict={"pass":False,"reason":"NOT_RECORDED"}
++    for i,path in enumerate(TESTS):
++        log=out/(Path(path).stem+".log")
++        r=supervise([sys.executable,"-B",path],ROOT,log,candidate_s=180)
++        text=log.read_text(encoding="utf-8",errors="replace")
++        text=sanitizer.clean(text)
++        log.write_text(text,encoding="utf-8",newline="\n")
++        r.update(input_lf_sha256=hashlib.sha256((ROOT/path).read_bytes().replace(b"\r\n",b"\n")).hexdigest(),
++                 log_sha256=hashlib.sha256(log.read_bytes()).hexdigest(),log_file=log.name,
++                 skip_detected=("SKIPPED:" in text or "SKIP:" in text))
++        records[path]=r
++        (out/"records.json").write_text(json.dumps(records,indent=2),encoding="utf-8")
++        print(json.dumps({"file":path,"status":r["status"],"rc":r.get("exit_code")}),flush=True)
++        if i==0 and r.get("exit_code")==0:
++            lines=[line[len("METRICS "):] for line in text.splitlines() if line.startswith("METRICS ")]
++            if len(lines)!=1:
++                gui_verdict={"pass":False,"reason":"GUI_METRICS_MISSING_OR_DUPLICATED"}
++            else:
++                m=json.loads(lines[0])
++                (out/"gui_metrics.json").write_text(json.dumps(m,indent=2),encoding="utf-8")
++                try:
++                    gui_verdict=judge_gui(m)
++                except Exception as exc:
++                    gui_verdict={"pass":False,"reason":repr(exc)}
++    passed=len(records)==4 and all(r["status"]=="COMPLETED" and r.get("exit_code")==0
++                and r["cleanup_ok"] and not r["skip_detected"] for r in records.values()) and gui_verdict["pass"]
++    verdict={"pass":passed,"expected_files":4,"recorded_files":len(records),"gui":gui_verdict,
++             "production_unchanged":True,"plan_sha":PLAN_SHA}
++    (out/"verdict.json").write_text(json.dumps(verdict,indent=2),encoding="utf-8")
++    print(json.dumps(verdict),flush=True)
++    return 0 if passed else 1
++
++
++if __name__=="__main__":
++    raise SystemExit(main())
+diff --git a/remote/profiles.py b/remote/profiles.py
+index 891f3b0..4cc99fd 100644
+--- a/remote/profiles.py
++++ b/remote/profiles.py
+@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
+ 
+ # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
+ PROFILES = {
++    "e6nad_doping_gui_contract": {
++        "description": "Seven actual GUI contracts and three unchanged controls; no production/gate change.",
++        "entry": "docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py",
++        "args": [], "params": {}, "timeout_s": 1000, "engine_info": False,
++        "inputs": ["docs/audits/2026-10-10-e6nad-doping-gui-contract/PLAN.md","docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py","tests/integration/test_gui_doping_donor_acceptor_real.py","tests/integration/test_measurement_canonical_state_gate_real.py","tests/integration/test_gui_headless_no_modal_hang_real.py","tests/unit/test_doping_staleness_mock.py","tests/integration/_explicit_chain_fixture.py","tests/integration/_explicit_oxide_fixture.py","tcad_2d_stagewise.py","tcad/physics/wafer_state_accumulation.py","tcad/device/devsim/doping_mapping.py","docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py","remote/run_profile.py"],
++        "outputs": [{"glob": "e6nad_out/**/*", "max_mb": 20}],
++        "regenerate": "Rerun this fixed profile; explicit oxide input is not an oxidation result.",
++    },
+     "e6nac_unit_cross_regression": {
+         "description": "Exactly 86 fixed unit scripts after intrinsic GUI changes; no physical capability approval.",
+         "entry": "docs/audits/2026-10-10-e6nac-unit-cross-regression/run_checks.py",
+diff --git a/remote/request.json b/remote/request.json
+index f9c4ec7..6a8f664 100644
+--- a/remote/request.json
++++ b/remote/request.json
+@@ -1,7 +1,7 @@
+ {
+  "schema": 1,
+-  "request_id": "e6nac-unit-cross-regression-001",
+-  "profile": "e6nac_unit_cross_regression",
++ "request_id": "e6nad-doping-gui-contract-001",
++ "profile": "e6nad_doping_gui_contract",
+  "params": {},
+-  "note": "Exactly 86 manifest-fixed unit scripts after intrinsic GUI changes; regression only, not broader physical approval."
++ "note": "Fixed seven GUI contracts with unchanged controls; no physics capability gate removed."
+ }
+diff --git a/tests/integration/test_gui_doping_donor_acceptor_real.py b/tests/integration/test_gui_doping_donor_acceptor_real.py
+index a9247b2..46b1dd0 100644
+--- a/tests/integration/test_gui_doping_donor_acceptor_real.py
++++ b/tests/integration/test_gui_doping_donor_acceptor_real.py
+@@ -1,164 +1,146 @@
+ #!/usr/bin/env python3
+ # -*- coding: utf-8 -*-
+-"""
+-Donor/Acceptor doping, the color-overlay auto-switch, and the
+-stale-doping re-attachment popup fix -- real TCADApplication (window
+-withdrawn), real ViennaPS + DevSim.
+-
+-Root causes this pins (see docs/investigation_log.md, "Doping: five
+-confirmed gaps"):
++"""실제 GUI의 donor/acceptor 입력·stale cache·chemical profile·barrier 계약.
+ 
+-  1. Uniform doping used to take one net-concentration field; it now
+-     takes independent Donor/Acceptor fields (net = donor - acceptor),
+-     matching how Step Junction already worked.
+-  2. The P/N color overlay (_doping_color_segments) was already
+-     correct but invisible by default (viewer_layer_var defaulted to
+-     "geometry"); a successful run_doping() now switches it to
+-     "doping" automatically.
+-  3. run_measurement()'s internal stale-doping re-attachment used to
+-     call the SAME run_doping() a direct button click uses, popping
+-     "No DevSim solve was run" in the middle of a MEASURE click --
+-     exactly when a real DevSim solve is about to run a few lines
+-     later. run_doping() gained a `silent` parameter; the internal
+-     re-attachment call passes silent=True, a direct click does not.
+-
+-No ViennaPS-installed check up front: driving the real GUI needs a Tk
+-display too, so both are treated as environment gaps and reported as
+-SKIPPED, matching this project's other _real.py tests that also need
+-optional infra.
++순수 n/p ACTIVE 선언만 실제 측정한다. 보상 도핑 및 GUI implant CHEMICAL은
++측정 성공으로 승격하지 않는다. 산화막은 DIRECT_EXPLICIT_GEOMETRY 입력이고,
++실제 selective etch 이후 exact transition이 없으면 숫자 대신 거부해야 한다.
++필수 Tk/ViennaPS/DEVSIM 결손은 실패다. 기존 scalar/species 입력 검증을 유지한다.
+ """
+-
++import json
+ import os
+ import sys
++import tempfile
+ from pathlib import Path
++from unittest.mock import patch
+ 
+ os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT))
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++from test_measurement_canonical_state_gate_real import _measure, _assert_supported
++
++MESSAGEBOX = ("showinfo", "showerror", "showwarning", "askquestion",
++              "askyesno", "askyesnocancel", "askokcancel", "askretrycancel")
++
++
++def _configure(app):
++    app.wafer.width_um = 4.0
++    app.wafer.silicon_depth_um = 1.0
++    app.grid_var.set(0.2)
++    app.meas_axis_var.set("x")
++    app.meas_source_pin.set("max")
++    app.meas_voltage_var.set(0.01)
++
++
++def _blocked(app, devsim, label, reason=None):
++    b = _measure(app, devsim, label)
++    assert b["solve_calls"] == b["doping_writes"] == 0, b
++    assert not b["currents_in_log"] and not b["measurement_section_logged"], b
++    assert b["history_entries_added"] == 0 and b["unsupported_in_log"], b
++    assert b["last_physics_status"]["resolution"] == "UNSUPPORTED_BY_MODEL", b
++    if reason:
++        assert b["last_physics_status"]["reason_code"] == reason, b
++    assert app._measurement_fields is None and app._measurement_fields_result is None
++    assert not devsim.get_device_list()
++    return b
++
++
++def _chemical_apply(app, gui, devsim, calls, metrics, function_name, label):
++    real = getattr(gui, function_name)
++    requested = []
++
++    def observe(*a, **kw):
++        result = real(*a, **kw)
++        requested.append(result)
++        return result
++
++    history, layer, cached = len(app.history), app.viewer_layer_var.get(), app.last_doped_result
++    prior_ids = {a.attachment_id for a in app.wafer_state.attachments}
++    with patch.object(gui, function_name, observe):
++        assert app.run_doping() is False
++    assert len(requested) == 1
++    added = [a for a in app.wafer_state.attachments if a.attachment_id not in prior_ids]
++    assert added and all(a.chemical_state == "CHEMICAL" for a in added)
++    assert app.last_doped_result is cached and len(app.history) == history
++    assert app.viewer_layer_var.get() == layer
++    assert not calls, calls
++    metrics[label] = _blocked(app, devsim, label, "DOPANT_ACTIVATION_MODEL_MISSING")
++    metrics[label]["new_attachments"] = [
++        {"model":a.model, "species":a.species, "polarity":a.polarity,
++         "chemical_state":a.chemical_state, "model_params":a.model_params}
++        for a in added]
++    return requested[0].doping.regions[0]
+ 
+ 
+ def main():
+-    try:
+-        import tkinter  # noqa: F401
+-        import tcad_2d_stagewise as gui
+-
+-        app = gui.TCADApplication()
+-    except Exception as exc:
+-        print(f"SKIPPED: no usable Tk display ({exc!r})")
+-        return
+-
+-    from tcad.backends.viennaps import session as viennaps_session
+-    if not viennaps_session.is_available():
+-        app.destroy()
+-        print("SKIPPED: ViennaPS is not installed")
+-        return
+-    from tcad.device.devsim import backend as devsim_backend
+-    if not devsim_backend.is_available():
+-        app.destroy()
+-        print("SKIPPED: DevSim is not installed")
+-        return
+-
++    import tcad_2d_stagewise as gui
++    from tcad.backends.viennaps import session
++    from tcad.device.devsim import backend
++    assert session.is_available(), "mandatory ViennaPS unavailable"
++    assert backend.is_available(), "mandatory DEVSIM unavailable"
++    devsim = backend.require_devsim()
++    app = gui.TCADApplication()  # Tk error is a real test failure, never SKIP
+     calls = []
+-
+-    def make_trap(name):
+-        def trap(*args, **kwargs):
+-            calls.append((name, args[:2]))
+-            return True
+-        return trap
+-
+-    for name in ("showinfo", "showwarning", "showerror", "askyesno", "askokcancel"):
+-        if hasattr(gui.messagebox, name):
+-            setattr(gui.messagebox, name, make_trap(name))
+-
++    saved = {n:getattr(gui.messagebox,n) for n in MESSAGEBOX}
++    for name in saved:
++        setattr(gui.messagebox, name,
++                lambda *a, _name=name, **kw: calls.append((_name,str(a))) or True)
++    metrics = {}
+     try:
+         app.withdraw()
+         app.update_idletasks()
+-
+-        # Keep the solve cheap -- this project's own finding: grid 0.2
+-        # keeps a 2-terminal solve a few seconds; the raw GUI default
+-        # (0.05) can take 5+ minutes on the default 10x8um wafer.
+-        app.grid_var.set(0.2)
+-
+-        ok = app._materialize_current_wafer()
+-        assert ok, "materializing a real ViennaPS wafer failed"
+-        mesh_a = app.last_final_mesh
+-
++        _configure(app)
++        assert app._materialize_current_wafer()
+         app.doping_kind.set("Uniform")
+         app.dope_uniform_region_var.set("Si")
+-        app.dope_uniform_donor_var.set(1.0e16)
+-        app.dope_uniform_acceptor_var.set(5.0e15)
+-
++        app.dope_uniform_donor_var.set(1e16)
++        app.dope_uniform_acceptor_var.set(5e15)
++        before = app.log.get("1.0","end-1c")
+         assert app.viewer_layer_var.get() == "geometry"
+-        calls.clear()
+-        log_before = app.log.get("1.0", "end")
+         assert app.run_doping() is True
++        assert app.viewer_layer_var.get() == "doping"
++        assert "Doping: Doping profile attached" in app.log.get("1.0","end-1c")[len(before):]
++        r = app.last_doped_result.doping.regions[0]
++        assert abs(r.net_doping_cm3 - 5e15) < 1.0
++        q = app.wafer_state.net_doping_at(0.0,-0.5)
++        assert q.donor_concentration == 1e16 and q.acceptor_concentration == 5e15
++        assert q.net_doping == 5e15
++        metrics["compensated"] = _blocked(
++            app, devsim, "compensated", "COMPENSATED_TRANSPORT_MODEL_MISSING")
++
++        # Stale cache is tested on SUPPORTED controls, not by bypassing compensation.
++        for name, donor, acceptor in (("n",1e16,0.0),("p",0.0,5e15)):
++            app.reset()
++            _configure(app)
++            assert app._materialize_current_wafer()
++            app.doping_kind.set("Uniform")
++            app.dope_uniform_region_var.set("Si")
++            app.dope_uniform_donor_var.set(donor)
++            app.dope_uniform_acceptor_var.set(acceptor)
++            assert app.run_doping() is True
++            old_mesh, state = app.last_final_mesh, app.wafer_state
++            ids = [a.attachment_id for a in state.attachments]
++            inventories = [a.inventory_cm_per_depth for a in state.attachments]
++            events = len(state.events)
++            assert app._materialize_current_wafer()
++            assert app.last_final_mesh != old_mesh and app._doping_is_stale()
++            metrics[name] = _measure(app, devsim, name)
++            _assert_supported(name, metrics[name])
++            assert not app._doping_is_stale()
++            assert app.wafer_state is state
++            assert [a.attachment_id for a in state.attachments] == ids
++            assert [a.inventory_cm_per_depth for a in state.attachments] == inventories
++            assert len(state.events) == events
++            assert app._measurement_fields is not None
++            assert app._measurement_fields_result is not None
++            metrics[name]["reattach_identity"] = True
++            metrics[name]["attachment_count"] = len(ids)
++            assert not devsim.get_device_list()
+ 
+-        assert app.viewer_layer_var.get() == "doping", (
+-            "a successful doping apply must auto-switch the color-overlay "
+-            f"layer, got {app.viewer_layer_var.get()!r}")
+-        # See docs/handoffs/gui-modal-hang-fix.md: a direct click's own
+-        # success no longer pops a modal (it hung the Tk main thread
+-        # forever in any headless/automated session with nobody present
+-        # to dismiss it) -- it is reported in the real GUI log panel
+-        # instead, unconditionally, via _notify_info().
+-        doping_popups = [c for c in calls if c[0] == "showinfo" and c[1][0] == "Doping"]
+-        assert not doping_popups, (
+-            f"a direct doping click must stay log-only, no modal -- "
+-            f"got {doping_popups}")
+-        log_delta = app.log.get("1.0", "end")[len(log_before):]
+-        assert "Doping: Doping profile attached" in log_delta, (
+-            f"a direct doping click must still report its result in the "
+-            f"log panel, got: {log_delta!r}")
+-
+-        net = app.last_doped_result.doping.regions[0].net_doping_cm3
+-        assert abs(net - 5.0e15) < 1.0, (
+-            f"net doping must equal donor - acceptor = 5e15, got {net:.3e}")
+-
+-        # Make the doping stale: a later real step replaces the mesh.
+-        ok = app._materialize_current_wafer()
+-        assert ok
+-        assert app.last_final_mesh != mesh_a
+-        assert app._doping_is_stale()
+-
+-        app.meas_axis_var.set("x")
+-        app.meas_source_pin.set("max")
+-        app.meas_voltage_var.set(0.3)
+-        calls.clear()
+-        meas_log_before = app.log.get("1.0", "end")
+-        app.run_measurement()
+-
+-        # See docs/handoffs/gui-modal-hang-fix.md: NEITHER the internal
+-        # stale-doping re-attachment NOR the real DevSim solve's own
+-        # result pops a modal anymore -- both stay log-only, always
+-        # (not just while silent=True), so this session should never
+-        # have recorded a single messagebox call across the whole
+-        # MEASURE click.
+-        stale_popups = [c for c in calls if c[0] == "showinfo" and c[1][0] == "Doping"]
+-        assert not stale_popups, (
+-            f"MEASURE's internal stale-doping re-attachment must stay silent, "
+-            f"got {stale_popups}")
+-        errors = [c for c in calls if c[0] == "showerror"]
+-        assert not errors, f"MEASURE reported an error: {errors}"
+-        measurement_popups = [
+-            c for c in calls if c[0] == "showinfo" and c[1][0] == "Measurement"
+-        ]
+-        assert not measurement_popups, (
+-            f"a real DevSim solve must stay log-only, no modal -- "
+-            f"got {measurement_popups}")
+-        meas_log_delta = app.log.get("1.0", "end")[len(meas_log_before):]
+-        assert "Measurement: Voltage source" in meas_log_delta, (
+-            f"a real DevSim solve must still report its own result in the "
+-            f"log panel, got: {meas_log_delta!r}")
+-        assert not app._doping_is_stale(), (
+-            "doping must be re-attached to the new mesh after MEASURE, not "
+-            "left stale")
+-
+-        print("Donor/Acceptor doping -> correct net concentration; color "
+-              "layer auto-switches; a direct click stays log-only (no "
+-              "modal); MEASURE's internal re-attachment stays silent while "
+-              "its own real DevSim result still logs:",
+-              meas_log_delta.strip().splitlines()[-1] if meas_log_delta.strip() else "")
+-
+-        # ------------------------------------------------------------
++        app.reset()
++        _configure(app)
++        assert app._materialize_current_wafer()
+         # Gaussian Implant: donor/acceptor input fields (Task 8). Same
+         # mesh as the Uniform scenario above -- this only checks the
+         # Python-level DopingRegion the panel builds, no new DevSim
+@@ -172,10 +154,8 @@ def main():
+         app.dope_gauss_acceptor_var.set(3.0e16)
+         app.dope_gauss_donor_species_var.set("P")
+         app.dope_gauss_acceptor_species_var.set("B")
+-        calls.clear()
+-        assert app.run_doping() is True
+-
+-        gauss_region = app.last_doped_result.doping.regions[0]
++        gauss_region = _chemical_apply(app, gui, devsim, calls, metrics,
++                                       "apply_gaussian_implant_doping", "gaussian")
+         expected_gauss_net = 2.0e17 - 3.0e16
+         assert abs(gauss_region.peak_conc_cm3 - expected_gauss_net) < 1.0, (
+             f"Gaussian Implant peak_conc_cm3 must equal donor - acceptor = "
+@@ -212,10 +192,8 @@ def main():
+         app.dope_win_drn_max_var.set(1.6)
+         app.dope_win_drn_donor_var.set(9.0e19)
+         app.dope_win_drn_acceptor_var.set(1.0e19)
+-        calls.clear()
+-        assert app.run_doping() is True
+-
+-        win_region = app.last_doped_result.doping.regions[0]
++        win_region = _chemical_apply(app, gui, devsim, calls, metrics,
++                                     "apply_implant_windows_doping", "windows")
+         expected_bg_net = 1.0e14 - 1.0e17
+         assert abs(win_region.net_doping_cm3 - expected_bg_net) < 1.0, (
+             f"Implant Windows background net_doping_cm3 must equal donor - "
+@@ -252,216 +230,76 @@ def main():
+               "preserved on both region and window dicts.")
+ 
+         # ------------------------------------------------------------
+-        # SiO2-barrier exclusion, through the REAL run_measurement()
+-        # path -- see docs/investigation_log.md, "SiO2 doesn't block
+-        # doping". Mirrors Task 1's own fixture
+-        # (tests/integration/test_doping_barrier_windows_real.py:
+-        # blanket oxidation, then a lithography-masked isotropic etch
+-        # that clears SiO2 only through the developed opening) but
+-        # drives it through the real GUI process panels instead of a
+-        # hand-built recipe, to prove the new field is actually read
+-        # and derive_barrier_covered_windows()'s call args are correct
+-        # end-to-end, not just that the library function works in
+-        # isolation.
+-        import tcad.device.devsim.doping_mapping as doping_mapping_module
+-        from tcad.device.devsim import backend as devsim_backend
+-
+-        app.reset()
+-
+-        # Real ViennaPS worker runs as a subprocess per RUN click; grid
+-        # 0.1 matches test_doping_barrier_windows_real.py's own BASE
+-        # (already real-verified: fine enough to resolve a thin real
+-        # SiO2 barrier, cheap enough to run in a regression suite).
+-        app.grid_var.set(0.1)
+-
+-        # --- Step 1: blanket thermal oxidation. Plain oxidation is
+-        # ALWAYS blanket (run_oxidation() never invents a mask), so
+-        # this needs no lithography first -- it grows real SiO2 over
+-        # the whole wafer surface.
+-        app.oxidant_var.set("Dry")
+-        app.ox_temp_var.set(1000.0)
+-        app.ox_time_var.set(1.0)
+-        calls.clear()
+-        app.run_oxidation()
+-        errors = [c for c in calls if c[0] == "showerror"]
+-        assert not errors, f"oxidation reported an error: {errors}"
+-        mesh_after_ox = app.last_final_mesh
+-        assert mesh_after_ox, "oxidation produced no mesh"
+-
+-        # --- Step 2: lithography, left at every GUI default. The
+-        # default mask_openings_um [[3.5, 6.5]] on the default 10um
+-        # -wide wafer develops to a domain-centered opening at
+-        # x=[-1.5, 1.5] (PATTERNED_SPANS in
+-        # tests/unit/test_gui_litho_lifecycle_mock.py) -- resist covers
+-        # everywhere else.
+-        app.process_pr_coat()
+-        app.process_mask_alignment()
+-        app.process_exposure()
+-        app.process_develop()
+-        assert app.wafer.developed
+-
+-        # --- Step 3: isotropic etch, masked by the just-developed
+-        # resist (_mask_recipe_keys_for_current_step() remasks a
+-        # chained step from the real resist state). Clears the SiO2
+-        # down to Si through the opening while the resist protects the
+-        # SiO2 everywhere else -- exactly Task 1's fixture geometry,
+-        # built through real GUI panels instead of a hand-written
+-        # recipe.
+-        app.etch_model.set("Isotropic etch")
+-        app.isotropic_rate_var.set(0.3)
+-        app.etch_time_var.set(1.0)
+-        calls.clear()
+-        app.run_etch()
+-        errors = [c for c in calls if c[0] == "showerror"]
+-        assert not errors, f"etch reported an error: {errors}"
+-        assert app.last_final_mesh != mesh_after_ox, "etch produced no new mesh"
+-
+-        # --- Step 4: Uniform doping on Si. ---
+-        app.doping_kind.set("Uniform")
+-        app.dope_uniform_region_var.set("Si")
+-        app.dope_uniform_donor_var.set(1.0e17)
+-        app.dope_uniform_acceptor_var.set(0.0)
+-        calls.clear()
+-        assert app.run_doping() is True
+-
+-        # --- Step 5: set the new barrier-threshold field, then
+-        # MEASURE. run_measurement() deletes its DevSim device in its
+-        # own `finally`, so NetDoping is captured by wrapping the real
+-        # apply_doping() (called internally by run_measurement()) --
+-        # this also captures the exact `exclude_windows` kwarg
+-        # run_measurement() computed and passed, proving the GUI
+-        # wiring end-to-end rather than re-deriving it separately here.
+-        app.dope_barrier_threshold_var.set(0.01)
+-        app.meas_axis_var.set("x")
+-        app.meas_source_pin.set("max")
+-        app.meas_voltage_var.set(0.0)
+-
+-        captured = {}
+-        real_apply_doping = doping_mapping_module.apply_doping
+-
+-        def spy_apply_doping(device, region, state, **kwargs):
+-            real_apply_doping(device, region, state, **kwargs)
+-            captured["exclude_windows"] = kwargs.get("exclude_windows")
+-            region_name = region
+-            module_ds = devsim_backend.require_devsim()
+-            captured["x"] = module_ds.get_node_model_values(
+-                device=device, region=region_name, name="x")
+-            captured["net"] = module_ds.get_node_model_values(
+-                device=device, region=region_name, name="NetDoping")
+-
+-        doping_mapping_module.apply_doping = spy_apply_doping
+-        calls.clear()
+-        logged = []
+-        real_log = app._log
+-        app._log = lambda msg: (logged.append(msg), real_log(msg))[0]
+-        try:
+-            app.run_measurement()
+-        finally:
+-            doping_mapping_module.apply_doping = real_apply_doping
+-            app._log = real_log
+-
+-        errors = [c for c in calls if c[0] == "showerror"]
+-        assert not errors, f"MEASURE reported an error: {errors}"
+-        assert captured.get("exclude_windows"), (
+-            f"run_measurement() must derive real barrier-covered windows "
+-            f"and pass them into apply_doping(), got "
+-            f"{captured.get('exclude_windows')!r}")
+-
+-        # Finding 2: exclusion must be user-visible, not silent.
+-        combined_log = "".join(logged)
+-        assert "SiO2 barrier exclusion" in combined_log, (
+-            f"barrier exclusion must be logged so the user can see it "
+-            f"happened, got log: {combined_log!r}")
+-
+-        # run_measurement() imports with length_scale_to_cm=1.0e-4 (real
+-        # um -> cm physical scaling), so DevSim's own "x" node model is
+-        # in that NATIVE (cm) scale, while exclude_windows' min_um/max_um
+-        # are raw mesh microns -- apply_doping() itself converts between
+-        # them internally (see doping_mapping.py's own
+-        # `w["min_um"] * length_scale_to_cm`), so the same conversion is
+-        # applied here to compare on the same axis.
+-        length_scale_to_cm = 1.0e-4
+-        node_x = captured["x"]
+-        net = captured["net"]
+-        windows = captured["exclude_windows"]
+-        covered_vals = [
+-            n for x, n in zip(node_x, net)
+-            if any(
+-                w["min_um"] * length_scale_to_cm <= x <= w["max_um"] * length_scale_to_cm
+-                for w in windows
+-            )
+-        ]
+-        open_vals = [
+-            n for x, n in zip(node_x, net)
+-            if not any(
+-                w["min_um"] * length_scale_to_cm <= x <= w["max_um"] * length_scale_to_cm
+-                for w in windows
+-            )
+-        ]
+-        assert covered_vals and max(abs(v) for v in covered_vals) < 1.0, (
+-            f"NetDoping must be excluded (~0) under the real SiO2 barrier "
+-            f"the GUI derived, got max |v|="
+-            f"{max(abs(v) for v in covered_vals):.3e}")
+-        assert open_vals and min(abs(v) for v in open_vals) > 1.0e16, (
+-            f"NetDoping must still be the full concentration in the "
+-            f"lithography-opened window, got min |v|="
+-            f"{min(abs(v) for v in open_vals):.3e}")
+-
+-        print("GUI-driven SiO2 barrier exclusion -> run_measurement() derived "
+-              f"{len(windows)} real barrier-covered window(s) "
+-              f"({windows}) from the actual mesh; NetDoping excluded "
+-              f"(max |v|={max(abs(v) for v in covered_vals):.3e}) under the "
+-              f"barrier and intact (min |v|="
+-              f"{min(abs(v) for v in open_vals):.3e}) in the open window.")
+-
+-        # ------------------------------------------------------------
+-        # Finding 3: the barrier's own stacking direction (this
+-        # project's fixed 2D convention: x lateral, y depth/growth)
+-        # must NOT be confused with whichever axis the user picked for
+-        # the MEASUREMENT CONTACTS. Switch the contact axis to "y" and
+-        # confirm derive_barrier_covered_windows() is STILL called with
+-        # axis="x" (hardcoded), not "y" (the contact axis) -- and that
+-        # it still derives the same real barrier windows either way,
+-        # proving the two are decoupled.
+-        #
+-        # This device's own Si top surface is mostly covered by SiO2
+-        # (only the litho-opened strip is exposed), so deriving TWO
+-        # real y-axis CONTACTS on it is a separate, physically distinct
+-        # limitation unrelated to this fix -- the exclude_windows
+-        # derivation itself runs, and is asserted on, before
+-        # import_process_result()'s contact search even happens, so
+-        # that unrelated limitation does not need to be worked around
+-        # here.
+-        import tcad.device.devsim.mesh_import as mesh_import_module
+-        real_derive_barrier_windows = mesh_import_module.derive_barrier_covered_windows
+-        captured_axis = {}
+-
+-        def spy_derive_barrier_windows(*args, **kwargs):
+-            captured_axis["axis"] = kwargs.get("axis")
+-            return real_derive_barrier_windows(*args, **kwargs)
+-
+-        mesh_import_module.derive_barrier_covered_windows = spy_derive_barrier_windows
+-        app.meas_axis_var.set("y")
+-        app.meas_source_pin.set("max")
+-        app.meas_voltage_var.set(0.0)
+-        calls.clear()
+-        try:
+-            app.run_measurement()
+-        finally:
+-            mesh_import_module.derive_barrier_covered_windows = real_derive_barrier_windows
+-
+-        assert captured_axis.get("axis") == "x", (
+-            f"derive_barrier_covered_windows() must always be called with "
+-            f"axis='x' (the barrier's own fixed stacking convention), "
+-            f"never the user-editable measurement-contact axis, got "
+-            f"{captured_axis.get('axis')!r}")
+-
+-        print("Barrier axis independence confirmed -> switching the "
+-              "MEASUREMENT CONTACT axis to 'y' left "
+-              "derive_barrier_covered_windows() called with axis='x', "
+-              "proving the barrier's own x/y stacking convention is no "
+-              "longer confused with the user-editable contact axis.")
++        # Explicit oxide input + real selective etch. NOT oxidation or activation.
++        from _explicit_chain_fixture import build_explicit_chain_state, run_steps_from_state, native_eps
++        from tcad.process.flow import FlowStep
++        import tcad.process.etching  # registry
++        from tcad.physics.wafer_state_accumulation import advance_wafer_state
++        import tcad.device.devsim.mesh_import as mesh_import
++        import numpy as np
++
++        with tempfile.TemporaryDirectory() as tmp:
++            stack = build_explicit_chain_state(
++                tmp, x_extent_um=10.0, y_extent_um=8.0, silicon_depth_um=5.0,
++                oxide_top_um=0.3, grid_delta_um=0.1)
++            assert stack.provenance == "DIRECT_EXPLICIT_GEOMETRY"
++            assert stack.forbidden_call_counts == {"Oxidation":0,"Process":0}
++            recipe = dict(grid_delta_um=0.1, x_extent_um=10.0, y_extent_um=8.0,
++                          silicon_depth_um=5.0, pr_thickness_um=0.5,
++                          remask_spans_um=[[-5.0,-1.5],[1.5,5.0]], mask_material="PHS",
++                          material_rates={"SiO2":-0.6,"Si":0.0,"PHS":0.0},
++                          default_rate=0.0, etch_time_s=1.0)
++            results, counts, stages = run_steps_from_state(
++                stack, tmp, "selective_etch", [FlowStep("etching","isotropic",recipe)])
++            assert len(results) == 1 and counts["Oxidation"] == 0 and counts["Process"] > 0
++            stage = stages[0]
++            assert np.max(np.abs(stage.native["Si"] - stack.native_tops["Si"])) <= native_eps(8.0)
++            windows = mesh_import.derive_barrier_covered_windows(
++                results[0], doped_region="Si", barrier_material="SiO2", axis="x",
++                min_barrier_thickness_um=0.01)
++            assert windows and not any(w["min_um"] < 0.0 < w["max_um"] for w in windows), windows
++            assert any(w["min_um"] <= -4.0 <= w["max_um"] for w in windows), windows
++            app.reset()
++            _configure(app)
++            app.last_final_mesh = results[0].volume_mesh_path
++            app.last_domain_state = results[0].domain_state_path
++            # No explicit transform exists for the actual curved etch: never infer one.
++            app.wafer_state = advance_wafer_state(None, results[0], "etching")
++            app.doping_kind.set("Uniform")
++            app.dope_uniform_region_var.set("Si")
++            app.dope_uniform_donor_var.set(1e17)
++            app.dope_uniform_acceptor_var.set(0.0)
++            app.dope_barrier_threshold_var.set(0.01)
++            observed = []
++            real_derive = mesh_import.derive_barrier_covered_windows
++
++            def observe_derive(*a, **kw):
++                found = real_derive(*a, **kw)
++                observed.append({"axis":kw.get("axis"),"windows":found})
++                return found
++
++            for axis in ("x","y"):
++                app.meas_axis_var.set(axis)
++                with patch.object(mesh_import, "derive_barrier_covered_windows", observe_derive):
++                    assert app.run_doping() is False
++                assert observed[-1]["axis"] == "x" and observed[-1]["windows"] == windows
++                assert not app.wafer_state.attachments
++                assert app.wafer_state.unresolved_inventory
++                b = _blocked(app, devsim, "barrier_"+axis)
++                b["barrier_windows"] = windows
++                b["detector_axis"] = observed[-1]["axis"]
++                b["input_provenance"] = stack.provenance
++                metrics["barrier_"+axis] = b
++            assert len(observed) == 2
++        assert not calls, calls
++        assert not devsim.get_device_list()
++        # Machine-readable evidence with all refusal/normal cases; runner sanitizes paths.
++        print("METRICS " + json.dumps(metrics, default=str))
++        print("PASS: 7 GUI cases; pure n/p stale reattach supported, compensated/chemical/"
++              "unresolved barrier blocked; original donor/acceptor/species fields preserved.")
+     finally:
++        for name, callback in saved.items():
++            setattr(gui.messagebox, name, callback)
+         app.destroy()
