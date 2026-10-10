@@ -1,0 +1,9 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2 Triangles.
+Physical group name Si has 5 Lines.
+Physical group name Si has 4 Points.
+Device mobility_probe has 4 coordinates with max index 3
+Region Si has 4 nodes.
+{"case": "BOTH_POSITIVE_CONTROL", "status": "NUMERIC_EVALUABLE", "solve_attempts": 0}

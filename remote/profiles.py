@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nak_field_color_range": {
+        "description": "Actual raw-value color range disclosure and unchanged nine canvas layers; no model changes.",
+        "entry": "docs/audits/2026-10-10-e6nak-field-color-range/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 360, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nak-field-color-range/PLAN.md", "docs/audits/2026-10-10-e6nak-field-color-range/run_checks.py", "tcad/characterization/node_fields.py", "tests/unit/test_field_color_range_mock.py", "tests/integration/test_field_model_scope_gui_real.py", "tests/integration/test_transport_evidence_gui_real.py"],
+        "outputs": [{"glob": "e6nak_out/**/*", "max_mb": 10}, {"glob": "e6nai_canvas_out/**/*", "max_mb": 10}],
+        "regenerate": "Fixed six controls and nine live captions; no numeric suppression.",
+    },
     "e6naj_official_mobility": {
         "description": "Official Klaassen helper on fixed synthetic inputs; solve forbidden, no calibration or production changes.",
         "entry": "docs/audits/2026-10-10-e6naj-official-mobility/run_checks.py",

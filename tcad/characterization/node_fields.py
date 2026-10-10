@@ -101,10 +101,15 @@ def field_caption(fields, result, layer):
     samples, lo, hi = field_samples(fields, layer)
     bias = "; ".join(f"{contact}={float(value):+.6g} V" for contact, value in point.voltages.items())
     text = (f"영역 {fields.region} | {len(samples)} 실제 노드 (actual node samples) | {bias}\n"
-            f"{layer}: 선형색 파랑={lo:.4e}, 빨강={hi:.4e} {FIELD_UNITS[layer]}; "
+            f"{layer}: 선형색 파랑={lo:.17g}, 빨강={hi:.17g} {FIELD_UNITS[layer]}; "
             "보간 없음 (No interpolation).")
+    span = hi - lo
+    magnitude = max(abs(lo), abs(hi))
+    relative = span / magnitude if magnitude else 0.0
+    text += (f"\nΔ={span:.17g} {FIELD_UNITS[layer]}; 상대 범위={relative:.6g}; "
+             "자동 색 확대; 물리적 유의성 보장 아님.")
     if layer == "potential":
-        text += "\nDEVSIM 원시 Potential; 접점 인가전압과 전위 기준이 다를 수 있음."
+        text += "\nDEVSIM 원시 Potential; 상대 범위는 전위 기준 의존; 접점 인가전압과 전위 기준이 다를 수 있음."
     from tcad.characterization.transport_evidence import transport_model_scope
     text += "\n" + transport_model_scope(result.metadata)
     return text

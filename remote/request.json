@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6naj-official-mobility-001",
- "profile": "e6naj_official_mobility",
+ "request_id": "e6nak-field-color-range-001",
+ "profile": "e6nak_field_color_range",
  "params": {},
- "note": "Official mobility API capability only; no solve, no calibration, no production change."
+ "note": "Exact color limits and automatic contrast disclosure; actual nine canvas layers, unchanged physics."
 }

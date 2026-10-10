@@ -1,0 +1,62 @@
+{
+  "PURE_N": {
+    "status": "COMPLETED",
+    "started_unix": 1791640851.8455582,
+    "cleanup_ok": true,
+    "peak_sampled_tree_working_set": 55447552,
+    "peak_sampled_tree_commit": 30068736,
+    "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+    "interval_s": 0.5,
+    "candidate_budget_s": 45,
+    "pid": 4856,
+    "exit_code": 0,
+    "ended_unix": 1791640852.8522444,
+    "duration_s": 1.0,
+    "log_sha256": "a7f45197ba0e9ee0f215b505ba191e49893c4bf8689771e29823431bab1cc52c"
+  },
+  "PURE_P": {
+    "status": "COMPLETED",
+    "started_unix": 1791640852.854254,
+    "cleanup_ok": true,
+    "peak_sampled_tree_working_set": 2064384,
+    "peak_sampled_tree_commit": 565248,
+    "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+    "interval_s": 0.5,
+    "candidate_budget_s": 45,
+    "pid": 7744,
+    "exit_code": 0,
+    "ended_unix": 1791640853.3579848,
+    "duration_s": 0.5,
+    "log_sha256": "b80337e8ffc71a60e1d5b6c4a132915c40ec2e58925adaf6f424e728eade8bf0"
+  },
+  "INTRINSIC": {
+    "status": "COMPLETED",
+    "started_unix": 1791640853.3597684,
+    "cleanup_ok": true,
+    "peak_sampled_tree_working_set": 2064384,
+    "peak_sampled_tree_commit": 565248,
+    "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+    "interval_s": 0.5,
+    "candidate_budget_s": 45,
+    "pid": 8844,
+    "exit_code": 0,
+    "ended_unix": 1791640853.8638847,
+    "duration_s": 0.5,
+    "log_sha256": "823d79d8486f12c4332b2de07e9c375a60cc4bf4eda9b8ca05d4e36b6144da96"
+  },
+  "BOTH_POSITIVE_CONTROL": {
+    "status": "COMPLETED",
+    "started_unix": 1791640853.86564,
+    "cleanup_ok": true,
+    "peak_sampled_tree_working_set": 2048000,
+    "peak_sampled_tree_commit": 438272,
+    "memory_semantics": "sampled process-tree working-set sum; commit separately observed",
+    "interval_s": 0.5,
+    "candidate_budget_s": 45,
+    "pid": 5376,
+    "exit_code": 0,
+    "ended_unix": 1791640854.3694162,
+    "duration_s": 0.5160000000000196,
+    "log_sha256": "0b9b13c9334d5bf04b32fca45b45aebad05a8fbd76f492463d5b48e26ea54dc5"
+  }
+}

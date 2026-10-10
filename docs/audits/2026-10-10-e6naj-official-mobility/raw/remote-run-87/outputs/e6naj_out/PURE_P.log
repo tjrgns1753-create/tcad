@@ -1,0 +1,54 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 2 Triangles.
+Physical group name Si has 5 Lines.
+Physical group name Si has 4 Points.
+Device mobility_probe has 4 coordinates with max index 3
+Region Si has 4 nodes.
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating model Z_D: expression (1 + (1 * pow((c_D + pow((Nref_D * pow(Donors,(-1))),2)),(-1)))) evaluates to invalid
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating model Z_D: expression (1 + (1 * pow((c_D + pow((Nref_D * pow(Donors,(-1))),2)),(-1)))) evaluates to invalid
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating model Z_D: expression (1 + (1 * pow((c_D + pow((Nref_D * pow(Donors,(-1))),2)),(-1)))) evaluates to invalid
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating model Z_D: expression (1 + (1 * pow((c_D + pow((Nref_D * pow(Donors,(-1))),2)),(-1)))) evaluates to invalid
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating node model Z_D on Device: mobility_probe on Region: Si
+There was a Divide-by-zero floating point exception while evaluating pow(Donors,(-1))
+Invalid argument while evaluating function pow
+Invalid argument while evaluating function pow
+while evaluating model Z_D: expression (1 + (1 * pow((c_D + pow((Nref_D * pow(Donors,(-1))),2)),(-1)))) evaluates to invalid
+{"case": "PURE_P", "status": "CAPABILITY_UNAVAILABLE", "solve_attempts": 0}

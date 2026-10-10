@@ -1,0 +1,110 @@
+{
+  "case": "BOTH_POSITIVE_CONTROL",
+  "scope": "SYNTHETIC_MODEL_INPUT_ONLY",
+  "plan_sha": "43b43558a4949363af10b9b2801454a0ad1d061378a13d6715a2b63ed3534516",
+  "devsim_version": "2.11.0",
+  "helper_source_sha256": "56db2f9b612626a7859732e4bdedd644885fa510e50c5bafd88a31b921696f33",
+  "helper_source_lf_sha256": "56db2f9b612626a7859732e4bdedd644885fa510e50c5bafd88a31b921696f33",
+  "helper": "devsim.python_packages.Klaassen",
+  "temperature_K": 300.0,
+  "models": {
+    "Z_D": {
+      "status": "FINITE_POSITIVE",
+      "values": [
+        1.000000000625,
+        1.000000000625,
+        1.000000000625,
+        1.000000000625
+      ]
+    },
+    "Z_A": {
+      "status": "FINITE_POSITIVE",
+      "values": [
+        1.000000000001929,
+        1.000000000001929,
+        1.000000000001929,
+        1.000000000001929
+      ]
+    },
+    "mu_bulk_e_Node": {
+      "status": "FINITE_POSITIVE",
+      "values": [
+        1168.8583186855444,
+        1168.8583186855444,
+        1168.8583186855444,
+        1168.8583186855444
+      ]
+    },
+    "mu_bulk_h_Node": {
+      "status": "FINITE_POSITIVE",
+      "values": [
+        415.0513177449279,
+        415.0513177449279,
+        415.0513177449279,
+        415.0513177449279
+      ]
+    },
+    "mu_bulk_e": {
+      "status": "FINITE_POSITIVE",
+      "values": [
+        1168.8583186855444,
+        1168.8583186855444,
+        1168.8583186855444,
+        1168.8583186855444,
+        1168.8583186855444
+      ]
+    },
+    "mu_bulk_h": {
+      "status": "FINITE_POSITIVE",
+      "values": [
+        415.0513177449279,
+        415.0513177449279,
+        415.0513177449279,
+        415.0513177449279,
+        415.0513177449279
+      ]
+    }
+  },
+  "status": "NUMERIC_EVALUABLE",
+  "inputs": {
+    "Donors": [
+      1e+16,
+      1e+16,
+      1e+16,
+      1e+16
+    ],
+    "Acceptors": [
+      1000000000000000.0,
+      1000000000000000.0,
+      1000000000000000.0,
+      1000000000000000.0
+    ],
+    "Electrons": [
+      9000000000011111.0,
+      9000000000011111.0,
+      9000000000011111.0,
+      9000000000011111.0
+    ],
+    "Holes": [
+      11111.111111097394,
+      11111.111111097394,
+      11111.111111097394,
+      11111.111111097394
+    ]
+  },
+  "coefficient_species_comments": [
+    "As donor",
+    "B acceptor"
+  ],
+  "parameters": {
+    "mu_min_e": 52.2,
+    "mu_max_e": 1417,
+    "mu_min_h": 44.9,
+    "mu_max_h": 470.5,
+    "Nref_D": 4e+20,
+    "Nref_A": 7.2e+20
+  },
+  "creation": "COMPLETE",
+  "cleanup_devices": [],
+  "solve_attempts": 0
+}

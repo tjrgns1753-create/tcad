@@ -1,0 +1,149 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-10T14:00:51.623642+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6naj-official-mobility-001",
+  "profile": "e6naj_official_mobility",
+  "params": {},
+  "note": "Official mobility API capability only; no solve, no calibration, no production change."
+ },
+ "profile": "e6naj_official_mobility",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6naj-official-mobility/PLAN.md",
+   "sha256": "140a90cd61ea1469a77e95bd9a88a5b2f5d76537f76d571ab547979f84d946af",
+   "bytes": 3610
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naj-official-mobility/probe.py",
+   "sha256": "f4b16ef7b10e2b7299961326b7cd0f52ef0ce711173bb09a1e45551bfc13b38a",
+   "bytes": 5627
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naj-official-mobility/judge.py",
+   "sha256": "4f241f402e7a0a05a69b80ba8375fd834381d8d632ad0618d312ef8c04e964e4",
+   "bytes": 2842
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naj-official-mobility/run_checks.py",
+   "sha256": "2449e5ab38f13adab4596a5bf608cec69a9b25e0a0f1b503edfd11b972bd812f",
+   "bytes": 1821
+  }
+ ],
+ "request_sha256": "626e2cc80d020132c7c4569128faa3b6c5ac44d41dce9c8ee67067677c7ee974",
+ "source": {
+  "github_sha": "d726b8c48bf6064521af09c204807818d716331f",
+  "git_head": "d726b8c48bf6064521af09c204807818d716331f",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "38057859918",
+  "run_number": "87",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6naj-official-mobility/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-10T14:00:54.382990+00:00",
+ "duration_s": 2.759,
+ "outputs": [
+  {
+   "path": "e6naj_out/BOTH_POSITIVE_CONTROL.json",
+   "bytes": 2605,
+   "sha256": "09e58e874aac71a3795d8a1669c5d6cc194a52ed309f51e44ad1a8b117ca8e2b"
+  },
+  {
+   "path": "e6naj_out/BOTH_POSITIVE_CONTROL.log",
+   "bytes": 416,
+   "sha256": "0b9b13c9334d5bf04b32fca45b45aebad05a8fbd76f492463d5b48e26ea54dc5"
+  },
+  {
+   "path": "e6naj_out/INTRINSIC.json",
+   "bytes": 4177,
+   "sha256": "ef382480e97484c0698f52fb0c8994064068cfc9668ee54850f041d2caef7ab5"
+  },
+  {
+   "path": "e6naj_out/INTRINSIC.log",
+   "bytes": 4228,
+   "sha256": "823d79d8486f12c4332b2de07e9c375a60cc4bf4eda9b8ca05d4e36b6144da96"
+  },
+  {
+   "path": "e6naj_out/PURE_N.json",
+   "bytes": 3829,
+   "sha256": "14e280e369df76cd14f0d1d2d7ec405134ca45e6149c8c807ef967be8ffea5d7"
+  },
+  {
+   "path": "e6naj_out/PURE_N.log",
+   "bytes": 3596,
+   "sha256": "a7f45197ba0e9ee0f215b505ba191e49893c4bf8689771e29823431bab1cc52c"
+  },
+  {
+   "path": "e6naj_out/PURE_P.json",
+   "bytes": 3919,
+   "sha256": "4c4c14c1b0b6254c55dbc83c21fec55c2954072ab3156eb823dec3bb7f8cfd23"
+  },
+  {
+   "path": "e6naj_out/PURE_P.log",
+   "bytes": 3551,
+   "sha256": "b80337e8ffc71a60e1d5b6c4a132915c40ec2e58925adaf6f424e728eade8bf0"
+  },
+  {
+   "path": "e6naj_out/records.json",
+   "bytes": 2192,
+   "sha256": "aa50bfdf44a4a5a2a53c9bf3f5de4084af3131a15c643e79800bd47da4320022"
+  },
+  {
+   "path": "e6naj_out/verdict.json",
+   "bytes": 316,
+   "sha256": "876a4b98b63a372008a0a754ee36a411f948af13f06b4bc78ed8781dc43e0ab9"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Four isolated official model evaluations, zero exact inputs unchanged.",
+ "log": {
+  "file": "run.log",
+  "sha256": "5a9d3eb7354ad3d971a72a7e6bd4ca1f3bb505a1b1d33b5675364e86f6ea7503",
+  "bytes": 158
+ },
+ "redactions": {}
+}

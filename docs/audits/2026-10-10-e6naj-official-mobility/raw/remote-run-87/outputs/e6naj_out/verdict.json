@@ -1,0 +1,11 @@
+{
+  "evidence_complete": true,
+  "model_evaluation": {
+    "PURE_N": "CAPABILITY_UNAVAILABLE",
+    "PURE_P": "CAPABILITY_UNAVAILABLE",
+    "INTRINSIC": "CAPABILITY_UNAVAILABLE",
+    "BOTH_POSITIVE_CONTROL": "NUMERIC_EVALUABLE"
+  },
+  "production_changed": false,
+  "material_calibration": "NOT_VALIDATED"
+}
