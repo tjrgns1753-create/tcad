@@ -1,7 +1,7 @@
 {
  "schema": 1,
-  "request_id": "e6nac-unit-cross-regression-001",
-  "profile": "e6nac_unit_cross_regression",
+ "request_id": "e6nad-doping-gui-contract-001",
+ "profile": "e6nad_doping_gui_contract",
  "params": {},
-  "note": "Exactly 86 manifest-fixed unit scripts after intrinsic GUI changes; regression only, not broader physical approval."
+ "note": "Fixed seven GUI contracts with unchanged controls; no physics capability gate removed."
 }

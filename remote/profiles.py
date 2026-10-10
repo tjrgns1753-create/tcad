@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nad_doping_gui_contract": {
+        "description": "Seven actual GUI contracts and three unchanged controls; no production/gate change.",
+        "entry": "docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 1000, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nad-doping-gui-contract/PLAN.md","docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py","tests/integration/test_gui_doping_donor_acceptor_real.py","tests/integration/test_measurement_canonical_state_gate_real.py","tests/integration/test_gui_headless_no_modal_hang_real.py","tests/unit/test_doping_staleness_mock.py","tests/integration/_explicit_chain_fixture.py","tests/integration/_explicit_oxide_fixture.py","tcad_2d_stagewise.py","tcad/physics/wafer_state_accumulation.py","tcad/device/devsim/doping_mapping.py","docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py","remote/run_profile.py"],
+        "outputs": [{"glob": "e6nad_out/**/*", "max_mb": 20}],
+        "regenerate": "Rerun this fixed profile; explicit oxide input is not an oxidation result.",
+    },
     "e6nac_unit_cross_regression": {
         "description": "Exactly 86 fixed unit scripts after intrinsic GUI changes; no physical capability approval.",
         "entry": "docs/audits/2026-10-10-e6nac-unit-cross-regression/run_checks.py",
