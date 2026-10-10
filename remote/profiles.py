@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6naj_official_mobility": {
+        "description": "Official Klaassen helper on fixed synthetic inputs; solve forbidden, no calibration or production changes.",
+        "entry": "docs/audits/2026-10-10-e6naj-official-mobility/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 240, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6naj-official-mobility/PLAN.md", "docs/audits/2026-10-10-e6naj-official-mobility/probe.py", "docs/audits/2026-10-10-e6naj-official-mobility/judge.py", "docs/audits/2026-10-10-e6naj-official-mobility/run_checks.py"],
+        "outputs": [{"glob": "e6naj_out/**/*", "max_mb": 10}],
+        "regenerate": "Four isolated official model evaluations, zero exact inputs unchanged.",
+    },
     "e6nai_field_model_scope": {
         "description": "Nine actual canvas field layers and fixed 94-file regression; model scope only.",
         "entry": "docs/audits/2026-10-10-e6nai-field-model-scope/run_checks.py",

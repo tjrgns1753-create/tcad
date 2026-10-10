@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nai-field-model-scope-001",
- "profile": "e6nai_field_model_scope",
+ "request_id": "e6naj-official-mobility-001",
+ "profile": "e6naj_official_mobility",
  "params": {},
- "note": "Actual canvas model scope and 94 regression files; not material calibration."
+ "note": "Official mobility API capability only; no solve, no calibration, no production change."
 }
