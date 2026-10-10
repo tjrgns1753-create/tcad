@@ -1,0 +1,155 @@
+{
+  "n": {
+    "solve_calls": 3,
+    "layers": {
+      "potential": {
+        "nodes": 126,
+        "caption": "영역 Si | 126 실제 노드 (actual node samples) | Si_xmin=+0 V; Si_xmax=+0.01 V\npotential: 선형색 파랑=0.35764478993452359, 빨강=0.3676447899345236 V; 보간 없음 (No interpolation).\nΔ=0.010000000000000009 V; 상대 범위=0.0272002; 자동 색 확대; 물리적 유의성 보장 아님.\nDEVSIM 원시 Potential; 상대 범위는 전위 기준 의존; 접점 인가전압과 전위 기준이 다를 수 있음.\n고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.",
+        "bbox": [
+          100,
+          138,
+          601,
+          228
+        ],
+        "canvas_size": [
+          631,
+          292
+        ],
+        "screenshot": "CAPTURED_CANVAS"
+      },
+      "electron": {
+        "nodes": 126,
+        "caption": "영역 Si | 126 실제 노드 (actual node samples) | Si_xmin=+0 V; Si_xmax=+0.01 V\nelectron: 선형색 파랑=10000000000010000, 빨강=10000000000010000 cm^-3; 보간 없음 (No interpolation).\nΔ=0 cm^-3; 상대 범위=0; 자동 색 확대; 물리적 유의성 보장 아님.\n고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.",
+        "bbox": [
+          109,
+          153,
+          592,
+          228
+        ],
+        "canvas_size": [
+          631,
+          292
+        ],
+        "screenshot": "CAPTURED_CANVAS"
+      },
+      "hole": {
+        "nodes": 126,
+        "caption": "영역 Si | 126 실제 노드 (actual node samples) | Si_xmin=+0 V; Si_xmax=+0.01 V\nhole: 선형색 파랑=9999.9999999899992, 빨강=9999.9999999899992 cm^-3; 보간 없음 (No interpolation).\nΔ=0 cm^-3; 상대 범위=0; 자동 색 확대; 물리적 유의성 보장 아님.\n고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.",
+        "bbox": [
+          116,
+          153,
+          585,
+          228
+        ],
+        "canvas_size": [
+          631,
+          292
+        ],
+        "screenshot": "CAPTURED_CANVAS"
+      }
+    },
+    "arrays_unchanged": true
+  },
+  "p": {
+    "solve_calls": 3,
+    "layers": {
+      "potential": {
+        "nodes": 126,
+        "caption": "영역 Si | 126 실제 노드 (actual node samples) | Si_xmin=+0 V; Si_xmax=+0.01 V\npotential: 선형색 파랑=-0.33970115500739673, 빨강=-0.32970115500739672 V; 보간 없음 (No interpolation).\nΔ=0.010000000000000009 V; 상대 범위=0.0294376; 자동 색 확대; 물리적 유의성 보장 아님.\nDEVSIM 원시 Potential; 상대 범위는 전위 기준 의존; 접점 인가전압과 전위 기준이 다를 수 있음.\n고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.",
+        "bbox": [
+          100,
+          138,
+          601,
+          228
+        ],
+        "canvas_size": [
+          631,
+          292
+        ],
+        "screenshot": "CAPTURED_CANVAS"
+      },
+      "electron": {
+        "nodes": 126,
+        "caption": "영역 Si | 126 실제 노드 (actual node samples) | Si_xmin=+0 V; Si_xmax=+0.01 V\nelectron: 선형색 파랑=19999.999999919997, 빨강=19999.999999920001 cm^-3; 보간 없음 (No interpolation).\nΔ=3.637978807091713e-12 cm^-3; 상대 범위=1.81899e-16; 자동 색 확대; 물리적 유의성 보장 아님.\n고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.",
+        "bbox": [
+          92,
+          153,
+          608,
+          228
+        ],
+        "canvas_size": [
+          631,
+          292
+        ],
+        "screenshot": "CAPTURED_CANVAS"
+      },
+      "hole": {
+        "nodes": 126,
+        "caption": "영역 Si | 126 실제 노드 (actual node samples) | Si_xmin=+0 V; Si_xmax=+0.01 V\nhole: 선형색 파랑=5000000000020000, 빨강=5000000000020000 cm^-3; 보간 없음 (No interpolation).\nΔ=0 cm^-3; 상대 범위=0; 자동 색 확대; 물리적 유의성 보장 아님.\n고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.",
+        "bbox": [
+          125,
+          153,
+          576,
+          228
+        ],
+        "canvas_size": [
+          631,
+          292
+        ],
+        "screenshot": "CAPTURED_CANVAS"
+      }
+    },
+    "arrays_unchanged": true
+  },
+  "intrinsic": {
+    "solve_calls": 3,
+    "layers": {
+      "potential": {
+        "nodes": 126,
+        "caption": "영역 Si | 126 실제 노드 (actual node samples) | Si_xmin=+0 V; Si_xmax=+0.001 V\npotential: 선형색 파랑=0, 빨강=0.001 V; 보간 없음 (No interpolation).\nΔ=0.001 V; 상대 범위=1; 자동 색 확대; 물리적 유의성 보장 아님.\nDEVSIM 원시 Potential; 상대 범위는 전위 기준 의존; 접점 인가전압과 전위 기준이 다를 수 있음.\n고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.",
+        "bbox": [
+          100,
+          153,
+          601,
+          228
+        ],
+        "canvas_size": [
+          631,
+          292
+        ],
+        "screenshot": "CAPTURED_CANVAS"
+      },
+      "electron": {
+        "nodes": 126,
+        "caption": "영역 Si | 126 실제 노드 (actual node samples) | Si_xmin=+0 V; Si_xmax=+0.001 V\nelectron: 선형색 파랑=10000000000, 빨강=10000000000 cm^-3; 보간 없음 (No interpolation).\nΔ=0 cm^-3; 상대 범위=0; 자동 색 확대; 물리적 유의성 보장 아님.\n고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.",
+        "bbox": [
+          106,
+          168,
+          595,
+          228
+        ],
+        "canvas_size": [
+          631,
+          292
+        ],
+        "screenshot": "CAPTURED_CANVAS"
+      },
+      "hole": {
+        "nodes": 126,
+        "caption": "영역 Si | 126 실제 노드 (actual node samples) | Si_xmin=+0 V; Si_xmax=+0.001 V\nhole: 선형색 파랑=10000000000, 빨강=10000000000 cm^-3; 보간 없음 (No interpolation).\nΔ=0 cm^-3; 상대 범위=0; 자동 색 확대; 물리적 유의성 보장 아님.\n고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.",
+        "bbox": [
+          116,
+          168,
+          585,
+          228
+        ],
+        "canvas_size": [
+          631,
+          292
+        ],
+        "screenshot": "CAPTURED_CANVAS"
+      }
+    },
+    "arrays_unchanged": true
+  }
+}

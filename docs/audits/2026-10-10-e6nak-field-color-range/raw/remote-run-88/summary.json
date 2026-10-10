@@ -1,0 +1,199 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-10T14:04:46.666459+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nak-field-color-range-001",
+  "profile": "e6nak_field_color_range",
+  "params": {},
+  "note": "Exact color limits and automatic contrast disclosure; actual nine canvas layers, unchanged physics."
+ },
+ "profile": "e6nak_field_color_range",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6nak-field-color-range/PLAN.md",
+   "sha256": "9849e241a886c7aac6a084d064ea2588815c277c08be88143f31488b1f53cbb5",
+   "bytes": 1571
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nak-field-color-range/run_checks.py",
+   "sha256": "f8b2075326414e9aa9fba6d3c77c24ccba4df190a9181cf779533b2780e82247",
+   "bytes": 2064
+  },
+  {
+   "path": "tcad/characterization/node_fields.py",
+   "sha256": "30b13948fce8a3de09c66eb61d4ea4d9ee1b6a6ae8ca0563f53bd25eadeeadec",
+   "bytes": 8340
+  },
+  {
+   "path": "tests/unit/test_field_color_range_mock.py",
+   "sha256": "4a93069d8f52b317ca6f8fca7fbe591f9ceeae4bd01639fe6c8a9e3b9ae57c12",
+   "bytes": 2255
+  },
+  {
+   "path": "tests/integration/test_field_model_scope_gui_real.py",
+   "sha256": "4ffda8527841820a8e6695b0cdb9ef79e2ebed459f67723ce53a738e1dba1b4b",
+   "bytes": 5116
+  },
+  {
+   "path": "tests/integration/test_transport_evidence_gui_real.py",
+   "sha256": "08dedde68d149aef81080a7e5f0611b8280a13cb5a49d2dda6594b22ba8aa566",
+   "bytes": 6697
+  }
+ ],
+ "request_sha256": "229424645dd6901da2ee17a3a40ca2e4f4efc9f6571e99fe3d37a3183dab9ed6",
+ "source": {
+  "github_sha": "5c53b146c13044e14b1cc5c0d304d12a53fcaa0c",
+  "git_head": "5c53b146c13044e14b1cc5c0d304d12a53fcaa0c",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "38058145706",
+  "run_number": "88",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nak-field-color-range/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-10T14:04:57.874790+00:00",
+ "duration_s": 11.208,
+ "outputs": [
+  {
+   "path": "e6nak_out/records.json",
+   "bytes": 4378,
+   "sha256": "2f18708d43b4d35ccf2c4472a2a84305c6e65fe891a79e652324f24552a8ddb6"
+  },
+  {
+   "path": "e6nak_out/test_field_color_range_mock.log",
+   "bytes": 100,
+   "sha256": "d3d556efc46248822d33b958efcecbbfc06a6f43b542daba7fcb1df23da74382"
+  },
+  {
+   "path": "e6nak_out/test_field_model_scope_gui_real.log",
+   "bytes": 10894,
+   "sha256": "53d4cb625c6f67841d6a1e0e584c1bcb603a06fd56b460ff57957f8c50e65c8a"
+  },
+  {
+   "path": "e6nak_out/test_field_model_scope_mock.log",
+   "bytes": 76,
+   "sha256": "829c810e3dca58697657e0bec81590845460e71de1379a68f4b28b45c532fc59"
+  },
+  {
+   "path": "e6nak_out/test_node_field_caption_mock.log",
+   "bytes": 109,
+   "sha256": "097fb46d038e49d08c08b04d3602c0999f84fd5e6a2377f9d60d46d41681b208"
+  },
+  {
+   "path": "e6nak_out/test_node_fields_mock.log",
+   "bytes": 87,
+   "sha256": "e8bd0c6b5c6b75001b58305314ffeba553c3d074d095f5ba0871a2ce306da959"
+  },
+  {
+   "path": "e6nak_out/test_transport_evidence_gui_real.log",
+   "bytes": 28944,
+   "sha256": "6c7e7d84da6cda9673ca1a52e265b31281de8aa0d5015da25b62bde4762b1575"
+  },
+  {
+   "path": "e6nak_out/verdict.json",
+   "bytes": 167,
+   "sha256": "55846b5750f1dd238ee9910e07b6a30ff4f3bda21230e52051873d59cd533715"
+  },
+  {
+   "path": "e6nai_canvas_out/intrinsic_electron.png",
+   "bytes": 13090,
+   "sha256": "1d4927a3500542f39b6a10c92927bed0ffd6e2efa943e59b095fdb13eb7355e9"
+  },
+  {
+   "path": "e6nai_canvas_out/intrinsic_hole.png",
+   "bytes": 13052,
+   "sha256": "34f53c8600f0daab45ea353043b6d8db06235e266bfa656015a013ef88e72cd1"
+  },
+  {
+   "path": "e6nai_canvas_out/intrinsic_potential.png",
+   "bytes": 15812,
+   "sha256": "eb8e1180fbc55b3d3d959ce9cbb209abed151e8db501015e54fbc6958999d00c"
+  },
+  {
+   "path": "e6nai_canvas_out/metrics.json",
+   "bytes": 6438,
+   "sha256": "4adf81eb5b855ce9c9bea959c0ff7b8ac1ffad64ff202b2d7b56f0c7028319af"
+  },
+  {
+   "path": "e6nai_canvas_out/n_electron.png",
+   "bytes": 13952,
+   "sha256": "ceae88b509ffea46cd7ebfcbaea031894c4837e3b99af7778e267afa35605a9f"
+  },
+  {
+   "path": "e6nai_canvas_out/n_hole.png",
+   "bytes": 14100,
+   "sha256": "36b6150b02ab511120952c126c746bacc67ad30eb4633309ffcb55f643b68832"
+  },
+  {
+   "path": "e6nai_canvas_out/n_potential.png",
+   "bytes": 17581,
+   "sha256": "2f13ef3904a7d3b872b4c391e9ff81fd904ae174cb5d24968374e194e781bb61"
+  },
+  {
+   "path": "e6nai_canvas_out/p_electron.png",
+   "bytes": 15007,
+   "sha256": "d3b604dc95d4053dff6eac2c0dd66bc2daf11373a55435854a1190f913d6895d"
+  },
+  {
+   "path": "e6nai_canvas_out/p_hole.png",
+   "bytes": 14018,
+   "sha256": "476ece6738e01017c5581c46dcf3d7b9ad8ee332a0e9ce1bf49d564e1c1b93c9"
+  },
+  {
+   "path": "e6nai_canvas_out/p_potential.png",
+   "bytes": 17581,
+   "sha256": "8ab041677d8fa53bb9d4ce0a88fd5afbe70a27081aab205611a0faf5fcd91ac9"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Fixed six controls and nine live captions; no numeric suppression.",
+ "log": {
+  "file": "run.log",
+  "sha256": "b91d8331b1bf10692f42b2325541f7e0b862c9477732765ef4979e2b3518dbeb",
+  "bytes": 450
+ },
+ "redactions": {}
+}

@@ -1,0 +1,154 @@
+{
+ "schema": 1,
+ "status": "PASS",
+ "started_utc": "2026-10-10T14:08:27.372806+00:00",
+ "request": {
+  "schema": 1,
+  "request_id": "e6nal-mobility-zero-limit-001",
+  "profile": "e6nal_mobility_zero_limit",
+  "params": {},
+  "note": "Audit-only continuous extension of official model; no production model change or solve."
+ },
+ "profile": "e6nal_mobility_zero_limit",
+ "inputs": [
+  {
+   "path": "docs/audits/2026-10-10-e6nal-mobility-zero-limit/PLAN.md",
+   "sha256": "98e6eca060663e4157941a4cdfb8564962b3a92f60d6b2537af7319273a7c1d4",
+   "bytes": 2826
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nal-mobility-zero-limit/probe.py",
+   "sha256": "7756d898518112a30eefb22d75ef33c45e4f33191829f7337b1a9e7979d79d63",
+   "bytes": 6864
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nal-mobility-zero-limit/judge.py",
+   "sha256": "8c905915a0d46293a76759dc247ff28e8902ce50fafa16f81b9b98e667417b91",
+   "bytes": 1462
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6nal-mobility-zero-limit/run_checks.py",
+   "sha256": "bfc5339363b2fe769082ecfdc49ad22fd8f34b62f421341c9457fcda4f0699fb",
+   "bytes": 1851
+  },
+  {
+   "path": "docs/audits/2026-10-10-e6naj-official-mobility/judge.py",
+   "sha256": "4f241f402e7a0a05a69b80ba8375fd834381d8d632ad0618d312ef8c04e964e4",
+   "bytes": 2842
+  }
+ ],
+ "request_sha256": "b5b0112fad74b8507564c4932e33196ad1839f901dc5efef7573269373896b20",
+ "source": {
+  "github_sha": "02c9605679b244cf6cf51ed64607737ea109f441",
+  "git_head": "02c9605679b244cf6cf51ed64607737ea109f441",
+  "ref": "refs/heads/claude/remote-runner",
+  "repository": "tjrgns1753-create/tcad",
+  "run_id": "38058384455",
+  "run_number": "89",
+  "run_attempt": "1",
+  "review_sha": "023bcb90f8b8a0972d6df84f097ca6387f0ab82a",
+  "code_paths_identical_to_review_sha": false,
+  "code_paths_checked": [
+   "tcad",
+   "tests",
+   "tcad_2d_stagewise.py",
+   "examples"
+  ]
+ },
+ "runner": {
+  "github_actions": "true",
+  "runner_environment": "github-hosted",
+  "runner_os": "Windows",
+  "runner_arch": "X64",
+  "github_hosted_confirmed": true,
+  "platform": "Windows-10-10.0.26100-SP0",
+  "python": "3.11.9",
+  "cpu_count": 4
+ },
+ "packages": {
+  "ViennaPS": "4.6.2",
+  "ViennaLS": "5.8.5",
+  "devsim": "2.11.0",
+  "mkl": "2026.1.0",
+  "intel-openmp": "2026.1.1",
+  "tbb": "2023.1.0",
+  "numpy": "2.4.6",
+  "meshio": "5.3.5",
+  "matplotlib": "3.11.1",
+  "pillow": "12.3.0"
+ },
+ "devsim": {
+  "status": "NOT_PROBED",
+  "scope": "ISOLATED_VERSION_PROBE",
+  "profile_execution_observed": false,
+  "reason": "engine_info disabled; child engine imports/solves are not observed by this record; inspect profile outputs"
+ },
+ "argv": [
+  "<python>",
+  "docs/audits/2026-10-10-e6nal-mobility-zero-limit/run_checks.py"
+ ],
+ "exit_code": 0,
+ "log_truncated": false,
+ "ended_utc": "2026-10-10T14:08:30.090807+00:00",
+ "duration_s": 2.718,
+ "outputs": [
+  {
+   "path": "e6nal_out/BOTH_POSITIVE_CONTROL.json",
+   "bytes": 2752,
+   "sha256": "5cc6dcd5ea350019a255efa145676b0ec64e452b502c94144e4535df37dbed38"
+  },
+  {
+   "path": "e6nal_out/BOTH_POSITIVE_CONTROL.log",
+   "bytes": 532,
+   "sha256": "c2c08b182aa77d886876aace881c9b87130b8ffcb70aabc6f27b44d9bb8dba9b"
+  },
+  {
+   "path": "e6nal_out/INTRINSIC.json",
+   "bytes": 2489,
+   "sha256": "f44599ce5dbbb2d741cfbdf614e2669bfcffe44070dc0d963b72849e2416c8c1"
+  },
+  {
+   "path": "e6nal_out/INTRINSIC.log",
+   "bytes": 520,
+   "sha256": "0ee7ad83d8e0c38bb8ff014fd61b96fde5f648830e32b751199018fdd5f211ac"
+  },
+  {
+   "path": "e6nal_out/PURE_N.json",
+   "bytes": 2473,
+   "sha256": "bd65bca75e31dd89cea61497f990efab4bd6e4ba73904222bd9d4af07d3686d8"
+  },
+  {
+   "path": "e6nal_out/PURE_N.log",
+   "bytes": 517,
+   "sha256": "a4e6df14551e11f8af9cb34c632657ca2017e57b9bf7daa06ae5726e343f8497"
+  },
+  {
+   "path": "e6nal_out/PURE_P.json",
+   "bytes": 2593,
+   "sha256": "bffc0a7c5e7cf38f784160fc280a8f8543f7683809957facef4710e8369efa9a"
+  },
+  {
+   "path": "e6nal_out/PURE_P.log",
+   "bytes": 517,
+   "sha256": "bcc2a37f99fbda1fedd8cbb0afb037adf1ecc2e31337220afa2ff58f5e0a5b47"
+  },
+  {
+   "path": "e6nal_out/records.json",
+   "bytes": 2192,
+   "sha256": "d3c45ef91defd4a29e5775f845dd8a82eb2ac7d12b6c8022f9c5d0b490e2cb92"
+  },
+  {
+   "path": "e6nal_out/verdict.json",
+   "bytes": 352,
+   "sha256": "d4e7a34267f0e7fff3f62e722b9c223655450231187e661c74df099a5619d3de"
+  }
+ ],
+ "omitted_outputs": [],
+ "regenerate": "Four fixed synthetic cases; compare positive original artifact and retain exact zero.",
+ "log": {
+  "file": "run.log",
+  "sha256": "43e40a3908941c8c67443ab251371ce468e656d431b4bab737e72135a8d44c08",
+  "bytes": 143
+ },
+ "redactions": {}
+}

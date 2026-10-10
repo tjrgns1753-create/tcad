@@ -1,0 +1,12 @@
+{
+  "evidence_complete": true,
+  "model_evaluation": {
+    "PURE_N": "NUMERIC_EVALUABLE",
+    "PURE_P": "NUMERIC_EVALUABLE",
+    "INTRINSIC": "NUMERIC_EVALUABLE",
+    "BOTH_POSITIVE_CONTROL": "NUMERIC_EVALUABLE"
+  },
+  "candidate": "AUDIT_ONLY_CONTINUOUS_EXTENSION",
+  "production_changed": false,
+  "material_calibration": "NOT_VALIDATED"
+}
