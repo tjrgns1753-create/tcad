@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6naf-barrier-sections-002",
- "profile": "e6naf_barrier_sections",
+ "request_id": "e6nag-barrier-unit-regression-001",
+ "profile": "e6nag_barrier_unit_regression",
  "params": {},
- "note": "Exact barrier geometry and GUI refusal; pure n/p supported controls only."
+ "note": "Fixed 87 unit regression; not physical capability approval."
 }

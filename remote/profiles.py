@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nag_barrier_unit_regression": {
+        "description": "Fixed 87 unit contracts after exact barrier correction; no physical gate changes.",
+        "entry": "docs/audits/2026-10-10-e6nag-barrier-unit-regression/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 900, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nag-barrier-unit-regression/PLAN.md", "docs/audits/2026-10-10-e6nag-barrier-unit-regression/MANIFEST.json", "docs/audits/2026-10-10-e6nag-barrier-unit-regression/run_checks.py", "tcad/mesh/barrier_sections.py", "tcad/device/devsim/mesh_import.py", "tcad_2d_stagewise.py", "docs/audits/2026-10-02-e6na-import-reduction/resource_supervisor.py"],
+        "outputs": [{"glob":"e6nag_out/**/*","max_mb":25}],
+        "regenerate": "Exactly 87 manifest-bound unit scripts; original 86 AC hashes plus new barrier test.",
+    },
     "e6naf_barrier_sections": {
         "description": "Exact exported barrier geometry and GUI fail-closed checks; unchanged physics gates.",
         "entry": "docs/audits/2026-10-10-e6naf-barrier-sections/run_checks.py",
