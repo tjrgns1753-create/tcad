@@ -13,22 +13,27 @@ BATCHES = [('2026-10-10-e6nai-field-model-scope', 'raw_initial/remote-run-86'),
 
 def main():
     rows = []
+    failures = []
     for batch, suffix in BATCHES:
+        initial_failure_count = len(failures)
         raw = ROOT/'docs/audits'/batch/suffix
         summary = json.loads((raw/'summary.json').read_text(encoding='utf-8'))
         for row in summary['outputs']:
             p = raw/'outputs'/row['path']
             name = p.relative_to(ROOT).as_posix()
             blob = subprocess.check_output(['git', 'show', 'HEAD:'+name], cwd=ROOT)
-            assert blob == p.read_bytes(), name
-            assert hashlib.sha256(blob).hexdigest() == row['sha256'], name
+            if blob != p.read_bytes() or hashlib.sha256(blob).hexdigest() != row['sha256']:
+                failures.append(name)
         for name in ('run.log', 'summary.json'):
             p = raw/name
             blob = subprocess.check_output(['git', 'show', 'HEAD:'+p.relative_to(ROOT).as_posix()], cwd=ROOT)
-            assert blob == p.read_bytes()
-            if name == 'run.log': assert hashlib.sha256(blob).hexdigest() == summary['log']['sha256']
-        rows.append({'batch': batch, 'outputs': len(summary['outputs']), 'git_blob_equals_artifact': True})
-    print(json.dumps(rows, indent=2))
+            if blob != p.read_bytes(): failures.append(p.relative_to(ROOT).as_posix())
+            if name == 'run.log' and hashlib.sha256(blob).hexdigest() != summary['log']['sha256']:
+                failures.append(p.relative_to(ROOT).as_posix())
+        rows.append({'batch': batch, 'outputs': len(summary['outputs']),
+                     'git_blob_equals_artifact': len(failures) == initial_failure_count})
+    print(json.dumps({'batches': rows, 'mismatches': failures}, indent=2))
+    assert not failures, 'RAW_GIT_BLOB_MISMATCH'
 
 
 if __name__ == '__main__': main()
