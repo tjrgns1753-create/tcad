@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "request_id": "e6nad-doping-gui-contract-001",
- "profile": "e6nad_doping_gui_contract",
+ "request_id": "e6nae-barrier-detection-001",
+ "profile": "e6nae_barrier_detection",
  "params": {},
- "note": "Fixed seven GUI contracts with unchanged controls; no physics capability gate removed."
+ "note": "Native vs exported mesh vs barrier classification only; no electrical solve."
 }

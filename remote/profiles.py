@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nae_barrier_detection": {
+        "description": "Read-only native vs exported triangle vs vertex bucket barrier probe; no DEVSIM.",
+        "entry": "docs/audits/2026-10-10-e6nae-barrier-detection/probe.py",
+        "args": [], "params": {}, "timeout_s": 180, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nae-barrier-detection/PLAN.md","docs/audits/2026-10-10-e6nae-barrier-detection/probe.py","tests/integration/_explicit_chain_fixture.py","tests/integration/_explicit_oxide_fixture.py","tcad/device/devsim/mesh_import.py","tcad/process/etching/isotropic.py","tcad/mesh/viennaps_adapter.py"],
+        "outputs": [{"glob": "e6nae_out/**/*", "max_mb": 25}],
+        "regenerate": "Fixed explicit input stack and one actual selective etch; not oxidation.",
+    },
     "e6nad_doping_gui_contract": {
         "description": "Seven actual GUI contracts and three unchanged controls; no production/gate change.",
         "entry": "docs/audits/2026-10-10-e6nad-doping-gui-contract/run_checks.py",
