@@ -1,0 +1,6 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+PASS: real UNSUPPORTED explanation present and correctly worded
+PASS: silent outside the doping overlay view
+PASS: silent when the doping value is genuinely computable (not unsupported)
+DONE

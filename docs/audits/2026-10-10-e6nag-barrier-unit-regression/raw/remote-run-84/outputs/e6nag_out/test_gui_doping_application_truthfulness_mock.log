@@ -1,0 +1,15 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+A supported uniform 1e16/0: True, +1 ACTIVE attachment, query donor 1e16 / acceptor 0 / net 1e16, declared-analytic log
+A2 compensated uniform 1e17/1e17: True, 2 ACTIVE attachments [('donor', 1e+17), ('acceptor', 1e+17)], query donor 1e+17 / acceptor 1e+17 / net 0
+B UNRESOLVED: False, 0 attachments, refusal recorded, last_doped_result/history/overlay unchanged, no modal
+C LEGACY_UNRESOLVED: False, 0 attachments, refusal recorded, last_doped_result/history/overlay unchanged, no modal
+D refused reattach (no attachment): False, stale result kept, measurement stopped before import/write/solve
+E exact reattach (same fingerprint): proceeds, refreshed result, no duplicate attachment
+E2 reattach negatives (all refused, nothing replaced): different concentration, different polarity (unrelated attachment only), different model, different chemical state
+G Gaussian donor=acceptor=1e18 (GUI): False, 2 CHEMICAL attachments [('donor', 'P'), ('acceptor', 'B')], query (None, None, None) UNSUPPORTED_BY_MODEL, last result/history/overlay unchanged
+G2 Implant Windows (GUI): False, 2 CHEMICAL attachments, query None/None/None
+G3 partial application (1 attachable + 1 refused profile): False, 0 new attachments, prior attachment preserved, 2 refusal events + 2 ledger entries
+F zero concentration: known no-op for all 4 kinds on MODELLED and UNRESOLVED states (False, no attachment/ledger/event)
+GUARDS: 24 mutant observations were rejected for the stated reason
+DOPING APPLICATION TRUTHFULNESS: supported / compensated / refused / chemical / reattach / zero-concentration contracts hold

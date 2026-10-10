@@ -1,0 +1,9 @@
+[1] the new SiO2 carries zero dopant attachments -- nothing placed into it
+[2] unresolved ledger entry: 5.0000e+10 cm^-1, KNOWN_EXACT
+[3] chemical inventory conserved: kept 5.0000e+10 + ledgered 5.0000e+10 == initial
+[4] query IN the converted region: UNSUPPORTED_BY_MODEL, not a number
+[5] query in the mask-protected remaining Si: real value -1e18, no gap
+[6] zero invented active dopant in the converted volume
+[7] fail-closed oxidation (no transform): attachment dropped to ledger, nothing invented
+
+WaferState v2 test 4 PASS -- oxidation redistribution stays UNSUPPORTED_BY_MODEL

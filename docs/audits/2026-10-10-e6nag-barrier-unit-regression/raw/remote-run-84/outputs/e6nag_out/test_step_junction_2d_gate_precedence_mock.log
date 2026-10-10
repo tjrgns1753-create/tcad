@@ -1,0 +1,11 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+1. valid geometry + ACTIVE step_junction + 2D -> STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED (get_dimension called 1x)
+2. overlapping bounded cells + ACTIVE step_junction + 2D -> the pre-existing geometry/ownership reason (positive-area overlap), NOT masked by STEP_JUNCTION_2D_MESH_CONVERGENCE_UNVERIFIED (get_dimension never even called)
+3. LEGACY_UNRESOLVED + attempted step-junction doping -> the pre-existing canonical geometry reason (attach_dopant already refused the attachment), get_dimension never called
+4. CHEMICAL step_junction_v1 -> the pre-existing activation reason, get_dimension never called
+4. UNKNOWN step_junction_v1 -> the pre-existing activation reason, get_dimension never called
+5. finite-area compensated uniform doping (no step_junction_v1) -> COMPENSATED_TRANSPORT_MODEL_MISSING, unchanged by the new gate
+6. co-occurring compensation + step_junction on the SAME region -> reason_code=COMPENSATED_TRANSPORT_MODEL_MISSING (precedence), step-junction problem still named in notes (not silently dropped), reasons never merged
+
+PASS: canonical_node_doping()'s judgment order is geometry/ownership/activation FIRST, region-level transport capability (compensation, then 2D step-junction mesh convergence) LAST -- no reason is ever masked or silently dropped, and every blocked case writes 0 node models and runs 0 solves.

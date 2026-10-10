@@ -1,0 +1,9 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+[1] representable + exact active doping: NetDoping written = [1e+17, 1e+17, 1e+17]
+[2] LEGACY_UNRESOLVED region: UnsupportedDopingState, 0 node models written
+[3] fail-closed region: UnsupportedDopingState, nothing written
+[4] oxidation-converted region: UnsupportedDopingState, nothing written
+[5] no RECOVERY path: an UNSUPPORTED node is never written as a numeric value
+
+WaferState v2 test B PASS -- DevSim write/solve gated on a fully modellable state

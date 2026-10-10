@@ -1,0 +1,5 @@
+[1] the untargeted instance (inst_B) is PRESERVED bit-for-bit, despite the removed rectangle overlapping it
+[2] the targeted instance (inst_A) is etched; event.extent_um is the real intersection rectangle; attachment provenance points at that event
+[3] empty / nonexistent instances, overlapping extents, zero-area extents: all fail closed
+
+WaferState v2 transform-targets-instance test PASS

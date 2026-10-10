@@ -1,0 +1,6 @@
+[1] query in a LEGACY_UNRESOLVED cell: donor/acceptor/net all None
+[2] query in an oxidation-converted region: donor/acceptor/net all None
+[3] query after a fail-closed step: donor/acceptor/net all None
+[4] a supported, genuinely un-doped point still returns 0.0 (known un-doped)
+
+WaferState v2 unsupported-None test PASS -- unknown state is None, not 0

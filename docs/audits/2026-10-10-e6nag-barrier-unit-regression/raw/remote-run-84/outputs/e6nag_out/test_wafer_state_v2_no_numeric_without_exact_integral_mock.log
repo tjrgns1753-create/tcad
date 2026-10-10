@@ -1,0 +1,5 @@
+[1] no exact integral: net_doping_at donor/acceptor/net all None
+[2] unknown 2D support: net_doping_at donor/acceptor/net all None
+[3] attach_dopant onto an UNRESOLVED instance: 0 active attachments, no numeric doping
+
+WaferState v2 P0 test PASS -- no numeric doping without an exact integral / support

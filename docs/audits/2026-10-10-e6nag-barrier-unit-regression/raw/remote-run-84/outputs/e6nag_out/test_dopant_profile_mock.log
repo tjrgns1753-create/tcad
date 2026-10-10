@@ -1,0 +1,4 @@
+gaussian_implant branch with junction_axis='y' raised as expected: dopant_profiles_from_doping_profile evaluates along x only; got junction_axis='y'
+DopantProfile fields (model-agnostic): ['chemical_state', 'concentration_at', 'host_material', 'model', 'model_params', 'polarity', 'source', 'species', 'thermal_history']
+model='gaussian_v1', model_params={'peak_conc_cm3': 1e+18, 'peak_position_um': 1.0, 'straggle_um': 0.2}, concentration_at(1.0, 0.0)=1.000e+18
+DopantProfile conversion matches doping_mapping.py's real DevSim equations for uniform/step_junction/implant_windows, in both net-only and donor/acceptor-split input forms, and the new model-agnostic schema carries host_material/model/model_params correctly for gaussian_implant.

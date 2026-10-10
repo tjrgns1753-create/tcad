@@ -1,0 +1,14 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+A compensated uniform 1e17/1e17: attachments [('donor', 'ACTIVE', 1e+17), ('acceptor', 'ACTIVE', 1e+17)], query donor/acceptor/net (1e+17, 1e+17, 0.0)
+B one-polarity control 1e17/0: attachments ['donor'], query (1e+17, 0.0, 1e+17)
+C Gaussian donor=acceptor=1e18: 2 DopantProfiles [('donor', 'P'), ('acceptor', 'B')], canonical states ['CHEMICAL', 'CHEMICAL'], query (None, None, None) -> DevSim mapping blocked
+D CHEMICAL: donor/acceptor/net = (None, None, None), physics_status UNSUPPORTED_BY_MODEL, DevSim writes 0, solves 0
+D UNKNOWN: donor/acceptor/net = (None, None, None), physics_status UNSUPPORTED_BY_MODEL, DevSim writes 0, solves 0
+D invalid chemical_state strings raise ValueError at all 8 entries; mixed ACTIVE+CHEMICAL support gates exactly where CHEMICAL covers
+E ACTIVE control (single polarity): numeric query (1e+17, 0.0, 1e+17), DevSim writes ['Donors', 'Donors', 'Acceptors', 'Acceptors', 'NetDoping', 'NetDoping']
+F exact reattach: same fingerprint -> True; refused for ['different chemical state', 'different concentration', 'different host material (no such instance)', 'different model', 'different polarity (acceptor-only request, no acceptor attachment on a donor-only state)', 'different species'] + unrelated-attachment-only, no attachment, unknown/outside support, duplicate-need
+G partial atomicity: 2 profiles (1 attachable, 1 not) -> 0 new attachments, prior attachments preserved (1), 2 refusal events, +2 ledger entries with no numbers
+H all-zero request: no profile, state identical (attachments/events/ledger unchanged)
+GUARDS: 4 mutant states were rejected for the stated reason
+DOPANT ACTIVATION + COMPENSATION: compensation kept, chemical_state gates the query and DevSim, reattach exact, request atomic, invalid state rejected

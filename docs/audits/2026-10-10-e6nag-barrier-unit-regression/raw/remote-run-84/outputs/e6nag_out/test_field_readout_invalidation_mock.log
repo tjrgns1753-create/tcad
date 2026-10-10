@@ -1,0 +1,1 @@
+PASS actual redraw prefix clears stale numeric readout; engine/Tk imports 0
