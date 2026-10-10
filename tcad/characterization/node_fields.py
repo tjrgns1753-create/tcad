@@ -105,6 +105,8 @@ def field_caption(fields, result, layer):
             "보간 없음 (No interpolation).")
     if layer == "potential":
         text += "\nDEVSIM 원시 Potential; 접점 인가전압과 전위 기준이 다를 수 있음."
+    from tcad.characterization.transport_evidence import transport_model_scope
+    text += "\n" + transport_model_scope(result.metadata)
     return text
 
 

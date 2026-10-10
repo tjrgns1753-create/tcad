@@ -57,15 +57,28 @@ def capture_transport_evidence(module, device, region):
     }
 
 
+def _record_values(metadata):
+    record = metadata['transport_model']
+    if (record['schema'] != 1 or record['capture_api'] != 'devsim.get_parameter'
+            or record['model'] != 'DEVSIM_SIMPLE_PHYSICS_CONSTANT_MOBILITY_BOLTZMANN_SRH'
+            or record['material_calibration'] != 'NOT_VALIDATED'):
+        raise ValueError('unknown contract')
+    return _values(record)
+
+
+def transport_model_scope(metadata):
+    """좁은 화면 공간의 한계 안내. 값은 긴 note/JSON에 그대로 기록된다."""
+    try:
+        _record_values(metadata)
+    except (KeyError, TypeError, ValueError):
+        return '물성 기록 미기록/불완전 — 실제 재료 정확성 미검증.'
+    return '고정 이동도 · Boltzmann · SRH 모델 — 재료 calibration 미검증.'
+
+
 def transport_model_note(metadata):
     """화면/로그는 저장된 값만 사용한다. 기록 결손을 기본 예제값으로 채우지 않는다."""
     try:
-        record = metadata['transport_model']
-        if (record['schema'] != 1 or record['capture_api'] != 'devsim.get_parameter'
-                or record['model'] != 'DEVSIM_SIMPLE_PHYSICS_CONSTANT_MOBILITY_BOLTZMANN_SRH'
-                or record['material_calibration'] != 'NOT_VALIDATED'):
-            raise ValueError('unknown contract')
-        p = _values(record)
+        p = _record_values(metadata)
     except (KeyError, TypeError, ValueError):
         return '수송 모델의 실제 물성값 미기록/불완전 — 실제 재료의 정량 검증으로 해석할 수 없습니다.'
     values = '; '.join(f"{k}={p[k]['value']:.6g} {p[k]['unit']}" for k in PARAMETER_UNITS)

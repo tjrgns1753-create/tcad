@@ -11,6 +11,14 @@ remote/request.json that selects it. See remote/README.md.
 
 # Every profile runs as:  <venv python> <entry> <args...>   (no shell)
 PROFILES = {
+    "e6nai_field_model_scope": {
+        "description": "Nine actual canvas field layers and fixed 94-file regression; model scope only.",
+        "entry": "docs/audits/2026-10-10-e6nai-field-model-scope/run_checks.py",
+        "args": [], "params": {}, "timeout_s": 900, "engine_info": False,
+        "inputs": ["docs/audits/2026-10-10-e6nai-field-model-scope/PLAN.md", "docs/audits/2026-10-10-e6nai-field-model-scope/run_checks.py", "tcad/characterization/transport_evidence.py", "tcad/characterization/node_fields.py", "tcad_2d_stagewise.py", "tests/unit/test_field_model_scope_mock.py", "tests/integration/test_field_model_scope_gui_real.py"],
+        "outputs": [{"glob": "e6nai_out/**/*", "max_mb": 25}, {"glob": "e6nai_canvas_out/**/*", "max_mb": 10}],
+        "regenerate": "Fixed nine actual canvas layers; old 88 unit source hashes unchanged.",
+    },
     "e6nah_transport_evidence": {
         "description": "Actual DD parameter evidence, GUI/export identity, two faults and 88 unit controls; no model calibration claim.",
         "entry": "docs/audits/2026-10-10-e6nah-transport-scope/run_checks.py",
