@@ -46,6 +46,11 @@ def main():
         try: covered_sections(q,u,np.concatenate([g,g[:1],g[:1]]) if len(u)>len(t) else g,10,30)
         except ValueError: pass
         else: raise AssertionError("invalid geometry accepted")
+    for u,gg in ((np.concatenate([t,t[:1]]),np.concatenate([g,g[:1]])),
+                 (np.array([[-1,0,1]]),np.array([10]))):
+        try: covered_sections(p,u,gg,10,30)
+        except ValueError: pass
+        else: raise AssertionError("duplicate or negative-index geometry accepted")
     assert not any(name in sys.modules for name in ("viennaps","devsim","viennals"))
     print("PASS continuous/gap/float32/permutation/axis/wedge/invalid; engine imports 0")
 
