@@ -1,0 +1,4 @@
+[1] attachments_for_instance: doped instance has 1, fresh instance has 0
+[2] net_doping_at: 0 over the fresh Si, 1e17 over the doped Si -- same name, different result
+
+WaferState v2 test 3 PASS -- attachments resolve by instance id, not material name

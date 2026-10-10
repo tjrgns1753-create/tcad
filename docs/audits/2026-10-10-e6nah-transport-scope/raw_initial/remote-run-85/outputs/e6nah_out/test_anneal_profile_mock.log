@@ -1,0 +1,17 @@
+anneal P donor @ 900.0 C, 600.0 s:
+  straggle_um: 0.100000 -> 0.100810 (broadened)
+  peak_conc_cm3: 1.000000e+19 -> 9.919626e+18 (dropped)
+  dose Q: 2.506628e+18 -> 2.506628e+18 (relative change 2.043e-16)
+anneal B acceptor @ 950.0 C, 300.0 s: D*t = 2.511029e-12 cm^2
+  straggle_um^2: 4.050221e-02 (expected 4.050221e-02)
+anneal P donor, 600.0 s: straggle_um @ 900.0 C = 0.100810, @ 1000.0 C = 0.106619 (higher T broadens more)
+no-shape profile (no straggle_um) annealed @ 900.0 C, 600.0 s: returned same object = True, resolution = None
+no-species profile (species=None) annealed @ 900.0 C, 600.0 s: straggle_um 0.100000 -> 0.100000 (unchanged)
+cumulative anneal P donor: initial straggle_um = 0.100000
+  after step1 (900.0 C, 600.0 s): straggle_um = 0.100810
+  after step2 (1000.0 C, 300.0 s): straggle_um = 0.104147
+straggle 0.2000 -> 0.2007 um (host_material=Si), resolution=Resolution.VERIFIED
+host_material=SiGe (no citation): straggle unchanged = True, resolution=None
+P @ 900C (inside 810-1100C citation window): resolution = Resolution.VERIFIED
+P @ 1200C (outside 810-1100C citation window): resolution = Resolution.UNVERIFIED
+anneal_profile() conserves dose exactly, matches the real Gaussian-diffusion broadening formula, is genuinely temperature-dependent (not just elapsed time), accumulates correctly across repeated anneal calls, and uses the profile's own host_material (not a hardcoded 'Si') for D(T). Its resolution channel correctly reports VERIFIED in-window and UNVERIFIED out-of-window (final-review Fix 1).

@@ -1,0 +1,4 @@
+[1] AST scan of 90 production modules: 0 name references to ['MATERIAL_CHANGE_KIND_BY_CATEGORY', 'last_step_category']
+[2] etch / deposition / oxidation decisions are driven only by SpatialEvent / GeometryTransform / unresolved ledger
+
+WaferState v2 test A PASS -- last_step_category heuristic fully retired

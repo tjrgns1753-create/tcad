@@ -1,0 +1,19 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+A helpers: 4/4 raise TypeError when the state is omitted; explicit ACTIVE/CHEMICAL/UNKNOWN preserved; invalid -> ValueError; 11 production call sites all write the keyword
+B CLI uniform         : no state -> rejected | ACTIVE -> declared analytic | CHEMICAL/UNKNOWN allowed
+B CLI step_junction   : no state -> rejected | ACTIVE -> declared analytic | CHEMICAL/UNKNOWN allowed
+B CLI gaussian_implant: no state -> rejected | bare ACTIVE -> rejected | CHEMICAL/UNKNOWN -> recorded + DevSim-blocked | ACTIVE + DIRECT_ANALYTIC_ACTIVE -> declared analytic
+B CLI implant_windows : no state -> rejected | bare ACTIVE -> rejected | CHEMICAL/UNKNOWN -> recorded + DevSim-blocked | ACTIVE + DIRECT_ANALYTIC_ACTIVE -> declared analytic
+C uniform ACTIVE 1e17/1e17: canonical donor/acceptor/net (1e+17, 1e+17, 0.0); gate -> blocked, reason_code COMPENSATED_TRANSPORT_MODEL_MISSING, DevSim writes 0, solves 0, no current
+C Gaussian ACTIVE donor=acceptor=1e18 (same support/shape): canonical (1e+18, 1e+18, 0.0); blocked COMPENSATED_TRANSPORT_MODEL_MISSING, writes 0, solves 0
+C different-shape overlap (uniform acceptor + Gaussian donor) and a counter-doped implant window over an acceptor body: blocked, writes 0, solves 0
+C donor + acceptor of an unknown model: relation cannot be proven -> blocked (fail closed)
+C controls: single polarity -> gate passes, 3 DevSim models written; disjoint donor/acceptor windows pass; ideal Step Junction 1e17/1e17 passes; at the junction x=0 donor/acceptor/net = (1e+17, 1e+17, 0.0) (official step() convention, both fire), left (0.0, 1e+17, -1e+17), right (1e+17, 0.0, 1e+17)
+D reattach 1 same support: True (result refreshed, history +1, overlay doping)
+D reattach 2 attachment = strict subset of the requested support: False (all unchanged)
+D reattach 3 attachment = strict superset of the requested support: False (all unchanged)
+D reattach 4 same barrier carve: True; another carve: False; no carve: False
+D reattach 5 geometry clipped (cell (-2.0, 2.0, -1.0, -0.3), attachment (-2.0, 2.0, -1.0, -0.3)): True
+D reattach 6 support None / outside the geometry: False (both)
+BATCH 7C REV.2 / 7D CONTRACT: no implicit ACTIVE (helpers + CLI), compensated transport fail-closed at the central gate, ideal step junction uses DEVSIM's official step() convention (both polarities on the junction LINE, not compensated), reattach compares the exact desired support

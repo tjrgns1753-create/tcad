@@ -1,0 +1,247 @@
+Searching DEVSIM_MATH_LIBS="mkl_rt.3.dll"
+Loading "mkl_rt.3.dll": Intel MKL with PARDISO LOADED
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1630 Triangles.
+Physical group name Si has 2505 Lines.
+Physical group name Si has 876 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 10 Lines.
+Physical group name Si_xmax has 11 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 10 Lines.
+Physical group name Si_xmin has 11 Points.
+Device gui_measure_device has 876 coordinates with max index 875
+Region Si has 876 nodes.
+Contact Si_xmax in region Si with 11 nodes
+Contact Si_xmin in region Si with 11 nodes
+Creating Node Solution Potential
+number of equations 876
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.85116e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.85116e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.85116e-01
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.80645e-01	AbsError: 1.64341e-01
+    Region: "Si"	RelError: 4.80645e-01	AbsError: 1.64341e-01
+      Equation: "PotentialEquation"	RelError: 4.80645e-01	AbsError: 1.64341e-01
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.03727e-01	AbsError: 6.68655e-02
+    Region: "Si"	RelError: 3.03727e-01	AbsError: 6.68655e-02
+      Equation: "PotentialEquation"	RelError: 3.03727e-01	AbsError: 6.68655e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.11187e-01	AbsError: 5.16826e-02
+    Region: "Si"	RelError: 2.11187e-01	AbsError: 5.16826e-02
+      Equation: "PotentialEquation"	RelError: 2.11187e-01	AbsError: 5.16826e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50883e-01	AbsError: 4.34860e-02
+    Region: "Si"	RelError: 1.50883e-01	AbsError: 4.34860e-02
+      Equation: "PotentialEquation"	RelError: 1.50883e-01	AbsError: 4.34860e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04837e-01	AbsError: 3.37538e-02
+    Region: "Si"	RelError: 1.04837e-01	AbsError: 3.37538e-02
+      Equation: "PotentialEquation"	RelError: 1.04837e-01	AbsError: 3.37538e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51439e-02	AbsError: 2.24356e-02
+    Region: "Si"	RelError: 6.51439e-02	AbsError: 2.24356e-02
+      Equation: "PotentialEquation"	RelError: 6.51439e-02	AbsError: 2.24356e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70563e-02	AbsError: 1.32533e-02
+    Region: "Si"	RelError: 3.70563e-02	AbsError: 1.32533e-02
+      Equation: "PotentialEquation"	RelError: 3.70563e-02	AbsError: 1.32533e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 5.15771e-13	AbsError: 1.84467e-13
+    Region: "Si"	RelError: 5.15771e-13	AbsError: 1.84467e-13
+      Equation: "PotentialEquation"	RelError: 5.15771e-13	AbsError: 1.84467e-13
+number of equations 876
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 8.83990e-04	AbsError: 3.16473e-04
+    Region: "Si"	RelError: 8.83990e-04	AbsError: 3.16473e-04
+      Equation: "PotentialEquation"	RelError: 8.83990e-04	AbsError: 3.16473e-04
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 5.17030e-06	AbsError: 1.85098e-06
+    Region: "Si"	RelError: 5.17030e-06	AbsError: 1.85098e-06
+      Equation: "PotentialEquation"	RelError: 5.17030e-06	AbsError: 1.85098e-06
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 1.72971e-10	AbsError: 6.19240e-11
+    Region: "Si"	RelError: 1.72971e-10	AbsError: 6.19240e-11
+      Equation: "PotentialEquation"	RelError: 1.72971e-10	AbsError: 6.19240e-11
+number of equations 876
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 8.66564e-03	AbsError: 3.12945e-03
+    Region: "Si"	RelError: 8.66564e-03	AbsError: 3.12945e-03
+      Equation: "PotentialEquation"	RelError: 8.66564e-03	AbsError: 3.12945e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.68659e-04	AbsError: 1.69166e-04
+    Region: "Si"	RelError: 4.68659e-04	AbsError: 1.69166e-04
+      Equation: "PotentialEquation"	RelError: 4.68659e-04	AbsError: 1.69166e-04
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 1.45135e-06	AbsError: 5.23877e-07
+    Region: "Si"	RelError: 1.45135e-06	AbsError: 5.23877e-07
+      Equation: "PotentialEquation"	RelError: 1.45135e-06	AbsError: 5.23877e-07
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 1.33512e-11	AbsError: 4.81924e-12
+    Region: "Si"	RelError: 1.33512e-11	AbsError: 4.81924e-12
+      Equation: "PotentialEquation"	RelError: 1.33512e-11	AbsError: 4.81924e-12
+number of equations 876
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.70293e-02	AbsError: 6.25354e-03
+    Region: "Si"	RelError: 1.70293e-02	AbsError: 6.25354e-03
+      Equation: "PotentialEquation"	RelError: 1.70293e-02	AbsError: 6.25354e-03
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 1.70537e-03	AbsError: 6.25099e-04
+    Region: "Si"	RelError: 1.70537e-03	AbsError: 6.25099e-04
+      Equation: "PotentialEquation"	RelError: 1.70537e-03	AbsError: 6.25099e-04
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 2.00671e-05	AbsError: 7.35542e-06
+    Region: "Si"	RelError: 2.00671e-05	AbsError: 7.35542e-06
+      Equation: "PotentialEquation"	RelError: 2.00671e-05	AbsError: 7.35542e-06
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.64861e-09	AbsError: 9.70824e-10
+    Region: "Si"	RelError: 2.64861e-09	AbsError: 9.70824e-10
+      Equation: "PotentialEquation"	RelError: 2.64861e-09	AbsError: 9.70824e-10
+number of equations 876
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 4.64041e-02	AbsError: 1.78399e-02
+    Region: "Si"	RelError: 4.64041e-02	AbsError: 1.78399e-02
+      Equation: "PotentialEquation"	RelError: 4.64041e-02	AbsError: 1.78399e-02
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 1.00904e-02	AbsError: 3.84016e-03
+    Region: "Si"	RelError: 1.00904e-02	AbsError: 3.84016e-03
+      Equation: "PotentialEquation"	RelError: 1.00904e-02	AbsError: 3.84016e-03
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 8.13632e-04	AbsError: 3.09185e-04
+    Region: "Si"	RelError: 8.13632e-04	AbsError: 3.09185e-04
+      Equation: "PotentialEquation"	RelError: 8.13632e-04	AbsError: 3.09185e-04
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 4.73527e-06	AbsError: 1.79942e-06
+    Region: "Si"	RelError: 4.73527e-06	AbsError: 1.79942e-06
+      Equation: "PotentialEquation"	RelError: 4.73527e-06	AbsError: 1.79942e-06
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.55022e-10	AbsError: 5.89092e-11
+    Region: "Si"	RelError: 1.55022e-10	AbsError: 5.89092e-11
+      Equation: "PotentialEquation"	RelError: 1.55022e-10	AbsError: 5.89092e-11
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 2628
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 4.68546e-15	AbsError: 4.87874e+01
+    Region: "Si"	RelError: 4.68546e-15	AbsError: 4.87874e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.19926e-15	AbsError: 4.87874e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.28052e-15	AbsError: 2.18279e-11
+      Equation: "PotentialEquation"	RelError: 2.05674e-16	AbsError: 7.73399e-17
+number of equations 2628
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 7.08464e-02	AbsError: 7.53005e+12
+    Region: "Si"	RelError: 7.08464e-02	AbsError: 7.53005e+12
+      Equation: "ElectronContinuityEquation"	RelError: 6.30660e-04	AbsError: 7.53005e+12
+      Equation: "HoleContinuityEquation"	RelError: 4.30162e-02	AbsError: 3.37774e+02
+      Equation: "PotentialEquation"	RelError: 2.71995e-02	AbsError: 1.00000e-02
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 2.80499e-03	AbsError: 1.12446e+10
+    Region: "Si"	RelError: 2.80499e-03	AbsError: 1.12446e+10
+      Equation: "ElectronContinuityEquation"	RelError: 6.49714e-07	AbsError: 1.12446e+10
+      Equation: "HoleContinuityEquation"	RelError: 2.80322e-03	AbsError: 1.66715e+01
+      Equation: "PotentialEquation"	RelError: 1.11396e-06	AbsError: 4.23913e-07
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 1.52480e-08	AbsError: 8.50178e+03
+    Region: "Si"	RelError: 1.52480e-08	AbsError: 8.50178e+03
+      Equation: "ElectronContinuityEquation"	RelError: 7.13593e-13	AbsError: 8.50178e+03
+      Equation: "HoleContinuityEquation"	RelError: 1.52471e-08	AbsError: 7.65761e-05
+      Equation: "PotentialEquation"	RelError: 1.90820e-13	AbsError: 6.94227e-14
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 1630 Triangles.
+Physical group name Si has 2505 Lines.
+Physical group name Si has 876 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 10 Lines.
+Physical group name Si_xmax has 11 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 10 Lines.
+Physical group name Si_xmin has 11 Points.
+Device gui_measure_device has 876 coordinates with max index 875
+Region Si has 876 nodes.
+Contact Si_xmax in region Si with 11 nodes
+Contact Si_xmin in region Si with 11 nodes
+Physical group name Si has 0 Tetrahedra.
+Physical group name Si has 200 Triangles.
+Physical group name Si has 325 Lines.
+Physical group name Si has 126 Points.
+Physical group name Si_xmax has 0 Tetrahedra.
+Physical group name Si_xmax has 0 Triangles.
+Physical group name Si_xmax has 5 Lines.
+Physical group name Si_xmax has 6 Points.
+Physical group name Si_xmin has 0 Tetrahedra.
+Physical group name Si_xmin has 0 Triangles.
+Physical group name Si_xmin has 5 Lines.
+Physical group name Si_xmin has 6 Points.
+Device gui_measure_device has 126 coordinates with max index 125
+Region Si has 126 nodes.
+Contact Si_xmax in region Si with 6 nodes
+Contact Si_xmin in region Si with 6 nodes
+Creating Node Solution Potential
+number of equations 126
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 1.00000e+00	AbsError: 1.85098e-01
+    Region: "Si"	RelError: 1.00000e+00	AbsError: 1.85098e-01
+      Equation: "PotentialEquation"	RelError: 1.00000e+00	AbsError: 1.85098e-01
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 4.80644e-01	AbsError: 1.64302e-01
+    Region: "Si"	RelError: 4.80644e-01	AbsError: 1.64302e-01
+      Equation: "PotentialEquation"	RelError: 4.80644e-01	AbsError: 1.64302e-01
+Iteration: 2
+  Device: "gui_measure_device"	RelError: 3.03726e-01	AbsError: 6.71217e-02
+    Region: "Si"	RelError: 3.03726e-01	AbsError: 6.71217e-02
+      Equation: "PotentialEquation"	RelError: 3.03726e-01	AbsError: 6.71217e-02
+Iteration: 3
+  Device: "gui_measure_device"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+    Region: "Si"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+      Equation: "PotentialEquation"	RelError: 2.11186e-01	AbsError: 5.16817e-02
+Iteration: 4
+  Device: "gui_measure_device"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+    Region: "Si"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+      Equation: "PotentialEquation"	RelError: 1.50881e-01	AbsError: 4.34850e-02
+Iteration: 5
+  Device: "gui_measure_device"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+    Region: "Si"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+      Equation: "PotentialEquation"	RelError: 1.04835e-01	AbsError: 3.37525e-02
+Iteration: 6
+  Device: "gui_measure_device"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+    Region: "Si"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+      Equation: "PotentialEquation"	RelError: 6.51410e-02	AbsError: 2.24341e-02
+Iteration: 7
+  Device: "gui_measure_device"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+    Region: "Si"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+      Equation: "PotentialEquation"	RelError: 3.70516e-02	AbsError: 1.32513e-02
+Iteration: 8
+  Device: "gui_measure_device"	RelError: 4.93876e-16	AbsError: 1.76632e-16
+    Region: "Si"	RelError: 4.93876e-16	AbsError: 1.76632e-16
+      Equation: "PotentialEquation"	RelError: 4.93876e-16	AbsError: 1.76632e-16
+Warning: Replacing equation with equation of the same name.
+Region: Si, Equation: PotentialEquation, Variable: Potential
+number of equations 378
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 4.52291e-15	AbsError: 2.20000e+01
+    Region: "Si"	RelError: 4.52291e-15	AbsError: 2.20000e+01
+      Equation: "ElectronContinuityEquation"	RelError: 2.20000e-15	AbsError: 2.20000e+01
+      Equation: "HoleContinuityEquation"	RelError: 2.16769e-15	AbsError: 2.16769e-11
+      Equation: "PotentialEquation"	RelError: 1.55213e-16	AbsError: 5.55112e-17
+number of equations 378
+Iteration: 0
+  Device: "gui_measure_device"	RelError: 2.72002e-02	AbsError: 3.29520e-01
+    Region: "Si"	RelError: 2.72002e-02	AbsError: 3.29520e-01
+      Equation: "ElectronContinuityEquation"	RelError: 3.19520e-17	AbsError: 3.19520e-01
+      Equation: "HoleContinuityEquation"	RelError: 2.08039e-15	AbsError: 2.08039e-11
+      Equation: "PotentialEquation"	RelError: 2.72002e-02	AbsError: 1.00000e-02
+Iteration: 1
+  Device: "gui_measure_device"	RelError: 2.11469e-15	AbsError: 3.88521e-03
+    Region: "Si"	RelError: 2.11469e-15	AbsError: 3.88521e-03
+      Equation: "ElectronContinuityEquation"	RelError: 3.88521e-19	AbsError: 3.88521e-03
+      Equation: "HoleContinuityEquation"	RelError: 1.96135e-15	AbsError: 1.96135e-11
+      Equation: "PotentialEquation"	RelError: 1.52949e-16	AbsError: 5.55425e-17
+METRICS {"B0_states": [["gaussian_v1", "CHEMICAL"], ["implant_windows_v1", "CHEMICAL"]], "B0": {"label": "B0 blocked: GUI Gaussian + Implant Windows are CHEMICAL", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": true, "last_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "reason_code": "DOPANT_ACTIVATION_MODEL_MISSING", "entries": [{"parameter": "measurement_device_input", "material": "?", "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED", "note": "Canonical dopant records exist but electrical activation is unresolved; CHEMICAL/UNKNOWN records are not electrically active device inputs."}]}, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null}, "B1_attachments": [["gaussian_v1", "P", "donor", "si#substrate", [-2.0, 2.0, -1.0, 0.0]], ["implant_windows_v1", null, "donor", "si#substrate", [-2.0, 2.0, -1.0, 0.0]]], "B1": {"label": "B1 supported: Gaussian then Implant Windows, robust path", "solve_calls": 7, "doping_writes": 7, "doping_write_kinds": [["node_model", "NetDoping"], ["set_node_values", "NetDoping"]], "currents_in_log": [0.002670276, -0.002670276, 0.002670276, -0.002670276], "measurement_section_logged": true, "unsupported_in_log": false, "last_physics_status": null, "canonical_state_object_unchanged": true, "history_entries_added": 1, "canonical_vs_solved_netdoping": {"nodes": 876, "mismatched_nodes": 0, "max_abs_diff_cm3": 0.0, "max_rel_diff_vs_independent_sum": 0.0, "max_gaussian_v1_part_cm3": 1e+16, "nodes_needing_gaussian_v1": 454, "max_implant_windows_v1_part_cm3": 2e+16, "nodes_needing_implant_windows_v1": 876}}, "A_state_before_measure": {"net_doping": null, "resolution": "UNSUPPORTED_BY_MODEL", "active_attachments": 0, "cells": [["si#substrate", "Si", "UNRESOLVED", [-2.0, 2.0, -1.0, 0.0]]]}, "A": {"label": "A blocked: implant_windows robust path after anneal", "solve_calls": 0, "doping_writes": 0, "doping_write_kinds": [], "currents_in_log": [], "measurement_section_logged": false, "unsupported_in_log": true, "last_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "entries": [{"parameter": "canonical_cell_ownership", "material": "Si", "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED", "note": "cell cell:init:2 containing this node has lifecycle UNRESOLVED -- not ACTIVE modelled geometry"}, {"parameter": "dopant_fate_2d_state", "material": "?", "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED", "note": "point lies in a region an UNSUPPORTED_BY_MODEL 'anneal' event covers (no GeometryTransform supplied; no modelled clip/split/conversion performed)"}], "notes": ["876 of 876 mesh node(s) blocked"], "device": "gui_measure_device", "region": "Si", "total_nodes": 876, "blocked_nodes": 876, "first_blocked_node": {"x_um": -2.0, "y_um": -0.800000011920929, "region": "Si", "material_instance_ids": ["si#substrate"], "cells": [{"cell_id": "cell:init:2", "material_instance_id": "si#substrate", "material": "Si", "lifecycle": "UNRESOLVED", "bounds_um": [-2.0, 2.0, -1.0, 0.0]}], "reason": "cell cell:init:2 containing this node has lifecycle UNRESOLVED -- not ACTIVE modelled geometry", "query": "physics_status UNSUPPORTED_BY_MODEL -- point lies in a region an UNSUPPORTED_BY_MODEL 'anneal' event covers (no GeometryTransform supplied; no modelled clip/split/conversion performed)", "query_physics_status": {"resolution": "UNSUPPORTED_BY_MODEL", "entries": [{"parameter": "dopant_fate_2d_state", "material": "?", "resolution": "UNSUPPORTED_BY_MODEL", "provenance": "DERIVED", "note": "point lies in a region an UNSUPPORTED_BY_MODEL 'anneal' event covers (no GeometryTransform supplied; no modelled clip/split/conversion performed)"}], "notes": []}}}, "canonical_state_object_unchanged": true, "history_entries_added": 0, "canonical_vs_solved_netdoping": null, "canonical_net_after_measure": null}, "B2": {"label": "B2 supported: uniform apply_doping path", "solve_calls": 3, "doping_writes": 6, "doping_write_kinds": [["node_model", "Acceptors"], ["node_model", "Donors"], ["node_model", "NetDoping"], ["set_node_values", "Acceptors"], ["set_node_values", "Donors"], ["set_node_values", "NetDoping"]], "currents_in_log": [0.0016, -0.0016, 0.0016, -0.0016], "measurement_section_logged": true, "unsupported_in_log": false, "last_physics_status": null, "canonical_state_object_unchanged": true, "history_entries_added": 1, "canonical_vs_solved_netdoping": {"nodes": 126, "mismatched_nodes": 0, "max_abs_diff_cm3": 0.0}}, "leaked_devices": []}
+A_LOG_DELTA "\nDoping-derived mesh refinement (implant_windows) applied -- see <USERPROFILE>\\AppData\\Local\\Temp\\tcad2d_wafer_svhgqu4o\\wafer_volume.vtu.implant_refined.vtu\n\n\nUsing the robust solve path (doping-level continuation + DevSim's own drift-diffusion tolerances + restoring bias ramp).\n\nERROR \u2014 Measurement: UNSUPPORTED_BY_MODEL: the canonical WaferStateV2 cannot supply a fully-known doping for device 'gui_measure_device' region 'Si' (876 of 876 mesh node(s) blocked). The device solve must not proceed.\nFirst blocked node: x=-2 um, y=-0.8000000119 um in DevSim region 'Si'.\nCanonical material instance(s) containing it: si#substrate.\nCell(s) containing it: cell:init:2 (instance si#substrate, material Si, lifecycle UNRESOLVED, bounds_um (-2.0, 2.0, -1.0, 0.0)).\nBlocked because: cell cell:init:2 containing this node has lifecycle UNRESOLVED -- not ACTIVE modelled geometry.\nCanonical query at this node: physics_status UNSUPPORTED_BY_MODEL -- point lies in a region an UNSUPPORTED_BY_MODEL 'anneal' event covers (no GeometryTransform supplied; no modelled clip/split/conversion performed).\nDistinct reasons over all blocked nodes: cell cell:init:2 containing this node has lifecycle UNRESOLVED -- not ACTIVE modelled geometry.\n\nMeasurement blocked: no doping was written to DevSim, no solve was run, and no current is reported.\n"
+PASS: accumulated Gaussian + Implant Windows doping solves on exactly the canonical sum; the unsupported (annealed) state blocks the robust measurement with 0 solves / 0 doping writes / no current and full node diagnostics in the GUI log; uniform doping still solves on the canonical NetDoping.
